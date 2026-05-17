@@ -1,5 +1,7 @@
 import { CloseOutlined } from '@ant-design/icons';
+import { ListBox } from '@heroui/react';
 import React, { useMemo } from 'react';
+import { Header } from 'react-aria-components';
 import styled from 'styled-components';
 
 import { isPresetActive } from '@/components/common/DatePicker/utils/dateUtils';
@@ -328,34 +330,47 @@ export const PresetsSection = ({
     return Object.entries(grouped) as [string, DatePickerPreset[]][];
   }, [presetItems, normalizedLayout]);
 
+  const selectedKey = useMemo(() => {
+    const active = presetItems.find((p) => isPresetActive(value, p, mode));
+    return active ? active.label : null;
+  }, [presetItems, value, mode]);
+
   if (normalizedLayout === 'sidebar') {
     return (
-      <PresetsContainer $layout={normalizedLayout}>
-        <SidebarWrapper>
-          <SidebarScroll>
-            {groupedEntries.map(([groupName, items]) => (
-              <SidebarGroup key={groupName}>
-                {groupedEntries.length > 1 && (
-                  <SidebarGroupTitle>{groupName}</SidebarGroupTitle>
-                )}
-                {items.map((preset) => {
-                  const isActive = isPresetActive(value, preset, mode);
-                  return (
-                    <PresetButton
-                      key={`${groupName}-${preset.label}`}
-                      $active={isActive}
-                      $layout="sidebar"
-                      onClick={() => onPresetClick?.(preset)}
-                    >
-                      {preset.label}
-                    </PresetButton>
-                  );
-                })}
-              </SidebarGroup>
+      <ListBox
+        aria-label="Rangos de fecha"
+        selectionMode="single"
+        disallowEmptySelection
+        selectedKeys={selectedKey ? new Set([selectedKey]) : new Set()}
+        onSelectionChange={(keys) => {
+          if (keys === 'all') return;
+          const key = [...keys][0] as string | undefined;
+          if (!key) return;
+          const preset = presetItems.find((p) => p.label === key);
+          if (preset) onPresetClick?.(preset);
+        }}
+        className="h-full overflow-y-auto"
+      >
+        {groupedEntries.map(([groupName, items]) => (
+          <ListBox.Section key={groupName} id={groupName}>
+            {groupedEntries.length > 1 && (
+              <Header className="px-2 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-default-400">
+                {groupName}
+              </Header>
+            )}
+            {items.map((preset) => (
+              <ListBox.Item
+                key={preset.label}
+                id={preset.label}
+                textValue={preset.label}
+                className="data-[selected=true]:bg-primary/10 data-[selected=true]:font-medium data-[selected=true]:text-primary"
+              >
+                {preset.label}
+              </ListBox.Item>
             ))}
-          </SidebarScroll>
-        </SidebarWrapper>
-      </PresetsContainer>
+          </ListBox.Section>
+        ))}
+      </ListBox>
     );
   }
 

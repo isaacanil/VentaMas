@@ -1,6 +1,5 @@
-import { Button } from '@heroui/react';
-import { Popover } from 'antd';
-import React, { useRef } from 'react';
+import { Button, Popover } from '@heroui/react';
+import React, { useMemo, useRef } from 'react';
 import styled from 'styled-components';
 
 import { CalendarSection } from './components/CalendarSection';
@@ -22,8 +21,7 @@ const DatePickerContent = styled.div<{ $isMobile?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-width: ${({ $isMobile }) => ($isMobile ? 'auto' : '540px')};
-  max-width: ${({ $isMobile }) => ($isMobile ? '100%' : '680px')};
+  width: ${({ $isMobile }) => ($isMobile ? '100%' : 'max-content')};
   height: ${({ $isMobile }) => ($isMobile ? 'auto' : '350px')};
   min-height: 0;
   max-height: ${({ $isMobile }) => ($isMobile ? 'none' : '460px')};
@@ -43,8 +41,8 @@ const ActionsSection = styled.div<{ $isMobile?: boolean }>`
 
 const DesktopLayout = styled.div`
   display: grid;
-  grid-template-columns: 1fr 220px;
-  gap: 16px;
+  grid-template-columns: auto 220px;
+  gap: 0;
   align-items: stretch;
   height: 100%;
   min-height: 0;
@@ -67,11 +65,12 @@ const SidebarPane = styled.aside`
   min-height: 0;
   max-height: 100%;
   overflow: hidden;
+  border-left: 1px solid var(--ds-color-border-subtle);
 `;
 
 const EMPTY_PRESETS: DatePickerPreset[] = [];
 
-export const HeroUIDatePicker = ({
+export const VmDatePicker = ({
   mode = 'single',
   value,
   onChange,
@@ -87,8 +86,10 @@ export const HeroUIDatePicker = ({
 }: DatePickerProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const isMobile = useMobile();
-  const finalPresets =
-    presets.length > 0 ? presets : createDefaultPresets(mode);
+  const finalPresets = useMemo<DatePickerPreset[]>(
+    () => (presets.length > 0 ? presets : createDefaultPresets(mode)),
+    [mode, presets],
+  );
 
   const {
     open,
@@ -116,14 +117,6 @@ export const HeroUIDatePicker = ({
   const currentRangeEnd = getCurrentRangeEnd();
   const inputValue = formatDisplayValue(value ?? null, format, mode);
   const hasValue = inputValue !== '';
-
-  const handleTriggerKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (disabled || (event.key !== 'Enter' && event.key !== ' ')) {
-      return;
-    }
-    event.preventDefault();
-    setOpen((currentOpen) => !currentOpen);
-  };
 
   const mobileContent = (
     <DatePickerContent $isMobile>
@@ -201,7 +194,6 @@ export const HeroUIDatePicker = ({
         <HeroUIDatePickerInput
           value={inputValue}
           placeholder={placeholder}
-       
           disabled={disabled}
           allowClear={allowClear}
           hasValue={hasValue}
@@ -238,25 +230,8 @@ export const HeroUIDatePicker = ({
 
   return (
     <Container ref={containerRef} className={className} style={style}>
-      <Popover
-        content={desktopContent}
-        trigger="click"
-        open={open}
-        onOpenChange={setOpen}
-        placement="bottomLeft"
-        overlayClassName="custom-datepicker-popover"
-        getPopupContainer={() => document.body}
-        destroyOnHidden
-        fresh
-      >
-        <div
-          role="button"
-          tabIndex={disabled ? -1 : 0}
-          aria-disabled={disabled}
-          aria-haspopup="dialog"
-          onClick={() => !disabled && setOpen(!open)}
-          onKeyDown={handleTriggerKeyDown}
-        >
+      <Popover isOpen={open} onOpenChange={(v) => !disabled && setOpen(v)}>
+        <Popover.Trigger>
           <HeroUIDatePickerInput
             value={inputValue}
             placeholder={placeholder}
@@ -268,7 +243,10 @@ export const HeroUIDatePicker = ({
             onClick={undefined}
             {...props}
           />
-        </div>
+        </Popover.Trigger>
+        <Popover.Content placement="bottom start" className="overflow-hidden">
+          {desktopContent}
+        </Popover.Content>
       </Popover>
     </Container>
   );

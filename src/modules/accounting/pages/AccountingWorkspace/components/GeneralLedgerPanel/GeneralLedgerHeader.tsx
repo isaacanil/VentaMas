@@ -1,7 +1,8 @@
 import { Button } from '@heroui/react';
 import styled from 'styled-components';
 
-import { FileExcelOutlined } from '@/constants/icons/antd';
+import { VmTooltip } from '@/components/heroui';
+import { FileExcelOutlined, InfoCircleOutlined } from '@/constants/icons/antd';
 
 interface GeneralLedgerHeaderProps {
   exporting: boolean;
@@ -18,7 +19,19 @@ export const GeneralLedgerHeader = ({
 }: GeneralLedgerHeaderProps) => (
   <PageHeader>
     <HeaderCopy>
-      <SectionTitle>Libro Mayor</SectionTitle>
+      <TitleRow>
+        <SectionTitle>Libro Mayor</SectionTitle>
+        <VmTooltip>
+          <HeaderTooltipTrigger aria-label="Ayuda sobre el Libro Mayor">
+            <InfoCircleOutlined aria-hidden />
+          </HeaderTooltipTrigger>
+          <VmTooltip.Content showArrow placement="right">
+            <VmTooltip.Arrow />
+            Muestra movimientos contables por cuenta, con saldo inicial, debitos,
+            creditos y saldo acumulado segun los filtros activos.
+          </VmTooltip.Content>
+        </VmTooltip>
+      </TitleRow>
       <SectionText>
         Movimientos por cuenta contable{periodLabel ? ` — ${periodLabel}` : ''}
       </SectionText>
@@ -56,12 +69,42 @@ const HeaderActions = styled.div`
   gap: var(--ds-space-2);
 `;
 
+const TitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+`;
+
 const SectionTitle = styled.h2`
   margin: 0;
   color: var(--ds-color-text-primary);
   font-size: clamp(1.5rem, 1.7vw, 1.8rem);
   font-weight: var(--ds-font-weight-semibold);
   line-height: var(--ds-line-height-tight);
+`;
+
+const HeaderTooltipTrigger = styled(VmTooltip.Trigger)`
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  color: var(--ds-color-text-secondary);
+  cursor: help;
+  background: var(--ds-color-bg-subtle);
+  border: 1px solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-md);
+
+  &:hover {
+    color: var(--ds-color-text-primary);
+    border-color: var(--ds-color-border-strong);
+  }
+
+  &:focus-visible {
+    border-color: var(--ds-color-border-focus);
+    outline: none;
+    box-shadow: 0 0 0 3px rgb(22 119 255 / 24%);
+  }
 `;
 
 const SectionText = styled.p`

@@ -21,6 +21,14 @@ describe('chartOfAccounts', () => {
     const cashOverShortExpenseAccount = DEFAULT_CHART_OF_ACCOUNTS_TEMPLATE.find(
       (account) => account.systemKey === 'cash_over_short_expense',
     );
+    const bankReconciliationIncomeAccount =
+      DEFAULT_CHART_OF_ACCOUNTS_TEMPLATE.find(
+        (account) => account.systemKey === 'bank_reconciliation_income',
+      );
+    const bankReconciliationExpenseAccount =
+      DEFAULT_CHART_OF_ACCOUNTS_TEMPLATE.find(
+        (account) => account.systemKey === 'bank_reconciliation_expense',
+      );
 
     expect(cashAccount).toMatchObject({
       code: '1100',
@@ -39,6 +47,16 @@ describe('chartOfAccounts', () => {
     });
     expect(cashOverShortExpenseAccount).toMatchObject({
       code: '5250',
+      type: 'expense',
+      normalSide: 'debit',
+    });
+    expect(bankReconciliationIncomeAccount).toMatchObject({
+      code: '4160',
+      type: 'income',
+      normalSide: 'credit',
+    });
+    expect(bankReconciliationExpenseAccount).toMatchObject({
+      code: '5260',
       type: 'expense',
       normalSide: 'debit',
     });

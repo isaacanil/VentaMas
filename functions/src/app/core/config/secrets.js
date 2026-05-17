@@ -7,11 +7,15 @@ export const MAIL_PASS = defineSecret('STOCK_ALERT_MAIL_PASS');
 export const OPEN_EXCHANGE_RATES_APP_ID = defineSecret(
   'OPEN_EXCHANGE_RATES_APP_ID',
 );
+export const GISYS_FACT_CLIENT_TOKEN_SECRET = defineSecret(
+  'GISYS_FACT_CLIENT_TOKEN',
+);
 
 export const MAIL_SECRETS = [MAIL_USER, MAIL_PASS];
 export const ACCOUNTING_EXCHANGE_RATE_REFERENCE_SECRETS = [
   OPEN_EXCHANGE_RATES_APP_ID,
 ];
+export const GISYS_FACT_SECRETS = [GISYS_FACT_CLIENT_TOKEN_SECRET];
 
 // Parametrizables no sensibles (opcionalmente podrían ser secrets también)
 export const MAIL_SERVICE = defineString('STOCK_ALERT_MAIL_SERVICE', {

@@ -27,9 +27,8 @@ const safeNumber = (value: unknown): number => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const normalizeLiquidityAccountType = (
-  value: unknown,
-): LiquidityAccountType => (value === 'cash' ? 'cash' : 'bank');
+const normalizeLiquidityAccountType = (value: unknown): LiquidityAccountType =>
+  value === 'cash' ? 'cash' : 'bank';
 
 const normalizeLiquidityDirection = (
   value: unknown,
@@ -71,7 +70,9 @@ const resolveLedgerAccountType = (value: unknown): LiquidityAccountType => {
 
 const toBoolean = (value: unknown): boolean => value === true;
 
-const resolveCashMovementAccountId = (movement: Record<string, unknown>): string => {
+const resolveCashMovementAccountId = (
+  movement: Record<string, unknown>,
+): string => {
   const bankAccountId = toCleanString(movement.bankAccountId);
   if (bankAccountId) return bankAccountId;
 
@@ -134,7 +135,8 @@ export const normalizeCashMovementAsLiquidityLedgerEntry = (
   businessId: string,
   value: unknown,
 ): LiquidityLedgerEntry | null => {
-  const record = asRecord(value) as Record<string, unknown> & Partial<CashMovement>;
+  const record = asRecord(value) as Record<string, unknown> &
+    Partial<CashMovement>;
   const sourceType = normalizeLiquidityEntrySourceType(record.sourceType);
   const accountId = resolveCashMovementAccountId(record);
   if (!accountId) {
@@ -245,6 +247,8 @@ export const normalizeInternalTransferRecord = (
 
 export interface BankReconciliationDraft {
   bankAccountId: string;
+  openingStatementBalance: number;
+  periodStart?: unknown;
   statementBalance: number;
   statementDate?: unknown;
   notes?: string | null;
@@ -287,11 +291,51 @@ export const normalizeBankReconciliationRecord = (
     id,
     businessId,
     bankAccountId: String(record.bankAccountId ?? ''),
+    periodStart: record.periodStart ?? metadata.periodStart ?? null,
+    periodEnd:
+      record.periodEnd ??
+      metadata.periodEnd ??
+      record.statementDate ??
+      record.createdAt ??
+      null,
     statementDate: record.statementDate ?? record.createdAt ?? null,
+    openingStatementBalance:
+      record.openingStatementBalance == null
+        ? null
+        : safeNumber(record.openingStatementBalance),
     statementBalance,
+    ledgerOpeningBalance:
+      record.ledgerOpeningBalance == null
+        ? null
+        : safeNumber(record.ledgerOpeningBalance),
+    ledgerPeriodMovementTotal:
+      record.ledgerPeriodMovementTotal == null
+        ? null
+        : safeNumber(record.ledgerPeriodMovementTotal),
     ledgerBalance,
+    statementMovementTotal:
+      record.statementMovementTotal == null
+        ? null
+        : safeNumber(record.statementMovementTotal),
+    openingVariance:
+      record.openingVariance == null
+        ? null
+        : safeNumber(record.openingVariance),
+    periodVariance:
+      record.periodVariance == null ? null : safeNumber(record.periodVariance),
     variance,
-    status: record.status === 'balanced' ? 'balanced' : variance === 0 ? 'balanced' : 'variance',
+    status:
+      record.status === 'balanced'
+        ? 'balanced'
+        : variance === 0
+          ? 'balanced'
+          : 'variance',
+    carriedMovementCount: safeNumber(
+      record.carriedMovementCount ?? metadata.carriedMovementCount,
+    ),
+    periodMovementCount: safeNumber(
+      record.periodMovementCount ?? metadata.periodMovementCount,
+    ),
     reconciledMovementCount: safeNumber(
       record.reconciledMovementCount ?? metadata.reconciledMovementCount,
     ),
@@ -321,7 +365,8 @@ export const normalizeBankStatementLineRecord = (
     businessId,
     bankAccountId: String(record.bankAccountId ?? ''),
     reconciliationId: toCleanString(record.reconciliationId),
-    lineType: record.lineType === 'transaction' ? 'transaction' : 'closing_balance',
+    lineType:
+      record.lineType === 'transaction' ? 'transaction' : 'closing_balance',
     status:
       record.status === 'pending'
         ? 'pending'
@@ -329,12 +374,15 @@ export const normalizeBankStatementLineRecord = (
           ? 'written_off'
           : 'reconciled',
     statementDate: record.statementDate ?? record.createdAt ?? null,
-    amount:
-      record.amount == null ? null : safeNumber(record.amount),
+    amount: record.amount == null ? null : safeNumber(record.amount),
     runningBalance:
       record.runningBalance == null ? null : safeNumber(record.runningBalance),
     direction:
-      record.direction === 'out' ? 'out' : record.direction === 'in' ? 'in' : null,
+      record.direction === 'out'
+        ? 'out'
+        : record.direction === 'in'
+          ? 'in'
+          : null,
     description: toCleanString(record.description),
     reference: toCleanString(record.reference),
     createdAt: record.createdAt ?? null,

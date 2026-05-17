@@ -74,18 +74,21 @@ export const buildTreasuryCockpitCsv = ({
 }: {
   accounts: TreasuryLiquidityAccount[];
   currentBalancesByAccountKey: Record<string, number>;
-  latestReconciliationsByBankAccountId: Record<string, BankReconciliationRecord>;
+  latestReconciliationsByBankAccountId: Record<
+    string,
+    BankReconciliationRecord
+  >;
   statementLinesByBankAccountId: Record<string, BankStatementLine[]>;
 }) =>
   buildCsv(
     accounts.map((account) => {
       const statementLines =
         account.kind === 'bank'
-          ? statementLinesByBankAccountId[account.id] ?? []
+          ? (statementLinesByBankAccountId[account.id] ?? [])
           : [];
       const latestReconciliation =
         account.kind === 'bank'
-          ? latestReconciliationsByBankAccountId[account.id] ?? null
+          ? (latestReconciliationsByBankAccountId[account.id] ?? null)
           : null;
 
       return {
@@ -101,7 +104,21 @@ export const buildTreasuryCockpitCsv = ({
         latestReconciliationDate: formatDate(
           latestReconciliation?.statementDate ?? null,
         ),
+        latestReconciliationPeriodEnd: formatDate(
+          latestReconciliation?.periodEnd ??
+            latestReconciliation?.statementDate ??
+            null,
+        ),
+        latestReconciliationPeriodStart: formatDate(
+          latestReconciliation?.periodStart ?? null,
+        ),
+        latestStatementMovementTotal:
+          latestReconciliation?.statementMovementTotal ?? '',
         latestVariance: latestReconciliation?.variance ?? '',
+        latestLedgerPeriodMovementTotal:
+          latestReconciliation?.ledgerPeriodMovementTotal ?? '',
+        latestOpeningVariance: latestReconciliation?.openingVariance ?? '',
+        latestPeriodVariance: latestReconciliation?.periodVariance ?? '',
         pendingStatementLines: statementLines.filter(
           (line) => line.status === 'pending',
         ).length,

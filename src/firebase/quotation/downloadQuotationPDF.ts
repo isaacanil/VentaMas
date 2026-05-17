@@ -2,7 +2,10 @@ import { httpsCallable } from 'firebase/functions';
 
 import { functions } from '@/firebase/firebaseconfig';
 import { printPdfBase64 } from '@/utils/printPdf';
-import { isInvoiceTemplateV2Beta } from '@/utils/invoice/template';
+import {
+  isInvoiceTemplateV2Beta,
+  isInvoiceTemplateV4PdfMake,
+} from '@/utils/invoice/template';
 // import { generateInvoiceLetterPdf, generateInvoiceLetterPdfNoLogo } from "@/pdf/invoices/templates/template2-pdf-lib/InvoiceLetterPdf";
 
 type BusinessData = Record<string, unknown>;
@@ -130,13 +133,19 @@ export async function downloadInvoicePdf({
   invoiceType?: string | null;
 }): Promise<void> {
   try {
-    const templateModule: InvoicePdfModule = isInvoiceTemplateV2Beta(invoiceType)
+    const templateModule: InvoicePdfModule = isInvoiceTemplateV4PdfMake(
+      invoiceType,
+    )
       ? await import(
-          '../../pdf/invoicesAndQuotation/invoices/templates/template2-v2/InvoiceLetterPdf'
+          '../../pdf/invoicesAndQuotation/invoices/templates/template2-v4/InvoiceLetterPdf'
         )
-      : await import(
-          '../../pdf/invoicesAndQuotation/invoices/templates/template2/InvoiceLetterPdf'
-        );
+      : isInvoiceTemplateV2Beta(invoiceType)
+        ? await import(
+            '../../pdf/invoicesAndQuotation/invoices/templates/template2-v2/InvoiceLetterPdf'
+          )
+        : await import(
+            '../../pdf/invoicesAndQuotation/invoices/templates/template2/InvoiceLetterPdf'
+          );
     const { generateInvoiceLetterPdf } = templateModule;
     const base64 = await generateInvoiceLetterPdf(business, data);
 

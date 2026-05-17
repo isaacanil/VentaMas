@@ -6,6 +6,7 @@ import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
 } from '../../../versions/v2/invoice/services/repairTasks.service.js';
+import { buildAccountingEvent } from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
 import { assertBusinessSubscriptionAccess } from '../../../versions/v2/billing/utils/subscriptionAccess.util.js';
 import { toCleanString } from '../../../versions/v2/billing/utils/billingCommon.util.js';
 import { buildTreasuryIdempotencyRequestHash } from './treasuryIdempotency.shared.js';
@@ -377,6 +378,7 @@ export const resolveBankStatementLineMatch = onCall(async (request) => {
     );
     let nextStatementLineStatus = 'reconciled';
     let adjustmentMovement = null;
+    let adjustmentAccountingEvent = null;
 
     if (resolutionMode === 'match') {
       if (
@@ -421,6 +423,42 @@ export const resolveBankStatementLineMatch = onCall(async (request) => {
         writeOffNotes,
         writeOffReason,
       });
+      adjustmentAccountingEvent = buildAccountingEvent({
+        businessId,
+        eventType: 'bank_statement_adjustment.recorded',
+        occurredAt: statementLineRecord.statementDate ?? now,
+        recordedAt: now,
+        sourceType: 'bankStatementLine',
+        sourceId: statementLineId,
+        sourceDocumentType: 'bank_statement_line',
+        sourceDocumentId: statementLineId,
+        currency: adjustmentMovement.currency,
+        functionalCurrency: adjustmentMovement.currency,
+        monetary: {
+          amount: differenceAmount,
+          functionalAmount: differenceAmount,
+        },
+        treasury: {
+          bankAccountId,
+          paymentChannel: 'bank',
+        },
+        payload: {
+          adjustmentMovementId: adjustmentMovement.id,
+          differenceAmount,
+          direction: adjustmentMovement.direction,
+          matchedAmount,
+          movementIds,
+          statementAmount: signedStatementAmount,
+          writeOffNotes,
+          writeOffReason,
+        },
+        createdAt: now,
+        createdBy: authUid,
+        metadata: {
+          statementLineId,
+          resolutionMode: 'write_off',
+        },
+      });
       nextStatementLineStatus = 'written_off';
 
       transaction.set(
@@ -428,6 +466,13 @@ export const resolveBankStatementLineMatch = onCall(async (request) => {
           `businesses/${businessId}/cashMovements/${adjustmentMovement.id}`,
         ),
         adjustmentMovement,
+      );
+      transaction.set(
+        db.doc(
+          `businesses/${businessId}/accountingEvents/${adjustmentAccountingEvent.id}`,
+        ),
+        adjustmentAccountingEvent,
+        { merge: true },
       );
     }
 

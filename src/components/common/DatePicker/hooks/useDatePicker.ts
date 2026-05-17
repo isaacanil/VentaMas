@@ -2,10 +2,26 @@ import { DateTime } from 'luxon';
 import { useState, useEffect, useRef } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import type {
+  DatePickerMode,
   DatePickerPreset,
   DatePickerValue,
   UseDatePickerArgs,
 } from '../types';
+
+const getValueAnchorDate = (
+  mode: DatePickerMode,
+  value: DatePickerValue,
+): DateTime | null => {
+  if (mode === 'range' && Array.isArray(value) && value[0]) {
+    return value[0];
+  }
+
+  if (mode === 'single' && value && !Array.isArray(value)) {
+    return value;
+  }
+
+  return null;
+};
 
 export const useDatePicker = ({
   mode,
@@ -14,41 +30,14 @@ export const useDatePicker = ({
   presets,
 }: UseDatePickerArgs) => {
   const [open, setOpen] = useState(false);
-  // Inicializar currentDate basado en el valor
   const [currentDate, setCurrentDate] = useState<DateTime>(() => {
-    if (value) {
-      if (mode === 'range' && Array.isArray(value) && value[0]) {
-        return value[0];
-      } else if (mode === 'single' && !Array.isArray(value) && value) {
-        return value as DateTime;
-      }
-    }
-    return DateTime.local();
+    return getValueAnchorDate(mode, value) ?? DateTime.local();
   });
   const [hoverDate, setHoverDate] = useState<DateTime | null>(null);
   const [rangeStart, setRangeStart] = useState<DateTime | null>(null);
   const [showPresetsDropdown, setShowPresetsDropdown] = useState(false);
   const presetsDropdownRef = useRef<HTMLDivElement | null>(null);
   const initialValueRef = useRef<DatePickerValue>(value);
-
-  const [prevValue, setPrevValue] = useState<DatePickerValue>(value);
-
-  if (value !== prevValue) {
-    setPrevValue(value);
-    if (value) {
-      let nextDate: DateTime | null = null;
-
-      if (mode === 'range' && Array.isArray(value) && value[0]) {
-        nextDate = value[0];
-      } else if (mode === 'single' && !Array.isArray(value)) {
-        nextDate = value as DateTime;
-      }
-
-      if (nextDate) {
-        setCurrentDate(nextDate);
-      }
-    }
-  }
 
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {
@@ -68,6 +57,10 @@ export const useDatePicker = ({
   }, []);
 
   const handlePresetClick = (preset: DatePickerPreset, _isMobile = false) => {
+    const nextDate = getValueAnchorDate(mode, preset.value);
+    if (nextDate) {
+      setCurrentDate(nextDate);
+    }
     onChange(preset.value);
     setRangeStart(null);
     setOpen(false);
@@ -84,11 +77,16 @@ export const useDatePicker = ({
       finalPresets.length > 0 ? finalPresets : presets || [];
     const fallback = fallbackSource.length > 0 ? fallbackSource[0].value : null;
     const newValue = initialValueRef.current ?? fallback;
+    const nextDate = getValueAnchorDate(mode, newValue);
+    if (nextDate) {
+      setCurrentDate(nextDate);
+    }
     onChange(newValue);
     setRangeStart(null);
   };
 
   const handleDateClick = (date: DateTime) => {
+    setCurrentDate(date);
     if (mode === 'single') {
       onChange(date);
     } else {

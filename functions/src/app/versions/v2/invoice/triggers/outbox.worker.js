@@ -2,6 +2,7 @@ import { logger } from 'firebase-functions';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 
 import { db, FieldValue, Timestamp } from '../../../../core/config/firebase.js';
+import { GISYS_FACT_SECRETS } from '../../../../core/config/secrets.js';
 import {
   buildClientWritePayload,
   CLIENT_ROOT_FIELDS,
@@ -30,6 +31,7 @@ async function loadDeps() {
       import('../../../../modules/insurance/services/insurance.service.js'),
       import('../../../../modules/accountReceivable/services/insuranceAuth.js'),
       import('../services/audit.service.js'),
+      import('../../../../modules/electronicTaxReceipts/services/electronicTaxReceiptOutbox.service.js'),
     ]).then(
       ([
         inventoryQueries,
@@ -45,6 +47,7 @@ async function loadDeps() {
         insuranceService,
         insuranceAuthMod,
         auditService,
+        electronicTaxReceiptOutbox,
       ]) => {
         const cashCountHelpers = cashCountQueries?.default ?? cashCountQueries;
         return {
@@ -63,6 +66,8 @@ async function loadDeps() {
           addInsuranceAuth: insuranceAuthMod.addInsuranceAuth,
           auditTx: auditService.auditTx,
           auditSafe: auditService.auditSafe,
+          processElectronicTaxReceiptOutboxTask:
+            electronicTaxReceiptOutbox.processElectronicTaxReceiptOutboxTask,
         };
       },
     );
@@ -141,6 +146,7 @@ export const processInvoiceOutbox = onDocumentCreated(
   {
     document: 'businesses/{businessId}/invoicesV2/{invoiceId}/outbox/{taskId}',
     region: 'us-central1',
+    secrets: GISYS_FACT_SECRETS,
   },
   async (event) => {
     const snap = event.data;
@@ -183,7 +189,69 @@ export const processInvoiceOutbox = onDocumentCreated(
       addInsuranceAuth,
       auditTx,
       auditSafe,
+      processElectronicTaxReceiptOutboxTask,
     } = await loadDeps();
+
+    if (type === 'issueElectronicTaxReceipt') {
+      try {
+        await processElectronicTaxReceiptOutboxTask({
+          businessId,
+          invoiceId,
+          taskId,
+          taskRef,
+          invoiceRef,
+          task,
+        });
+        try {
+          await attemptFinalizeInvoice({ businessId, invoiceId });
+        } catch (e) {
+          logger.error('attemptFinalizeInvoice error', {
+            invoiceId,
+            taskId,
+            error: e,
+          });
+        }
+      } catch (err) {
+        logger.error('processInvoiceOutbox electronic tax receipt error', {
+          invoiceId,
+          taskId,
+          error: err,
+        });
+        try {
+          const currentTask = await taskRef.get();
+          if (currentTask.data()?.status !== 'failed') {
+            await taskRef.set(
+              {
+                status: 'failed',
+                lastError: err?.message || String(err),
+                attempts: FieldValue.increment(1),
+                updatedAt: FieldValue.serverTimestamp(),
+              },
+              { merge: true },
+            );
+          }
+          await auditSafe({
+            businessId,
+            invoiceId,
+            event: 'task_failed',
+            level: 'error',
+            data: { taskId, type, error: err?.message || String(err) },
+          });
+        } catch {
+          /* suppress audit failure to keep worker running */
+        }
+        try {
+          await attemptFinalizeInvoice({ businessId, invoiceId });
+        } catch (e) {
+          logger.error('attemptFinalizeInvoice error', {
+            invoiceId,
+            taskId,
+            error: e,
+          });
+        }
+      }
+      return null;
+    }
 
     try {
       await db.runTransaction(async (tx) => {

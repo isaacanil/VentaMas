@@ -418,6 +418,16 @@ export const DEFAULT_CHART_OF_ACCOUNTS_TEMPLATE: ChartOfAccountTemplate[] = [
     parentCode: '4000',
   },
   {
+    code: '4160',
+    name: 'Ingresos por conciliación bancaria',
+    type: 'income',
+    postingAllowed: true,
+    normalSide: 'credit',
+    currencyMode: 'functional_only',
+    systemKey: 'bank_reconciliation_income',
+    parentCode: '4000',
+  },
+  {
     code: '4200',
     name: 'Ingresos por diferencia cambiaria',
     type: 'income',
@@ -464,6 +474,16 @@ export const DEFAULT_CHART_OF_ACCOUNTS_TEMPLATE: ChartOfAccountTemplate[] = [
     normalSide: 'debit',
     currencyMode: 'functional_only',
     systemKey: 'cash_over_short_expense',
+    parentCode: '5000',
+  },
+  {
+    code: '5260',
+    name: 'Gastos por conciliación bancaria',
+    type: 'expense',
+    postingAllowed: true,
+    normalSide: 'debit',
+    currencyMode: 'functional_only',
+    systemKey: 'bank_reconciliation_expense',
     parentCode: '5000',
   },
   {

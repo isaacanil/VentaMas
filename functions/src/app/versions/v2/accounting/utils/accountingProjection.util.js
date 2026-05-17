@@ -327,6 +327,10 @@ export const resolveEventAmountSource = (event, amountSource) => {
       return roundJournalAmount(gain);
     case 'cash_over_short_loss':
       return roundJournalAmount(loss);
+    case 'bank_statement_adjustment_gain':
+      return roundJournalAmount(gain);
+    case 'bank_statement_adjustment_loss':
+      return roundJournalAmount(loss);
     case 'fx_gain':
       return roundJournalAmount(Math.max(total, 0));
     case 'fx_loss':

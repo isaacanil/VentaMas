@@ -1,32 +1,51 @@
 import { CalendarOutlined, CloseOutlined } from '@ant-design/icons';
-import { Input } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
+
+import { VmInput } from '@/components/heroui/Input';
 import type { DatePickerInputProps } from '../types';
 
-interface StyledInputProps {
-  $hasValue?: boolean;
+const InputWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const PrefixIcon = styled.span`
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8c8c8c;
+  font-size: 14px;
+  pointer-events: none;
+  z-index: 1;
+`;
+
+const SuffixArea = styled.div`
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+`;
+
+interface StyledVmInputProps {
+  $hasClear?: boolean;
 }
 
-const StyledInput = styled(Input)<StyledInputProps>`
-  cursor: pointer;
+const StyledVmInput = styled(VmInput)<StyledVmInputProps>`
+  width: 100%;
+  padding-left: 32px !important;
+  padding-right: ${({ $hasClear }: StyledVmInputProps) =>
+    $hasClear ? '36px' : '12px'} !important;
+  cursor: pointer !important;
 
-  input {
-    color: ${(props) => (props.$hasValue ? 'inherit' : '#bfbfbf')} !important;
-    cursor: pointer !important;
-  }
-
-  &:hover {
-    border-color: #40a9ff;
-  }
-
-  &:focus-within {
-    border-color: #1890ff;
-    box-shadow: 0 0 0 2px rgb(24 144 255 / 20%);
+  &::placeholder {
+    color: var(--ds-color-text-placeholder);
   }
 `;
 
-const ClearIcon = styled.div`
+const ClearButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -36,8 +55,9 @@ const ClearIcon = styled.div`
   color: white;
   cursor: pointer;
   background: #bfbfbf;
+  border: none;
   border-radius: 50%;
-  transition: all 0.3s;
+  transition: background 0.2s;
 
   &:hover {
     background: #8c8c8c;
@@ -47,32 +67,47 @@ const ClearIcon = styled.div`
 export const DatePickerInput = ({
   value,
   placeholder,
-  size,
   disabled,
   allowClear,
   hasValue,
   onClear,
   onClick,
-  ...props
+  className,
+  style,
 }: DatePickerInputProps) => {
+  const showClear = allowClear && hasValue;
+
   return (
-    <StyledInput
-      value={hasValue ? value : ''}
-      placeholder={placeholder}
-      readOnly
+    <InputWrapper
       onClick={() => !disabled && onClick?.()}
-      size={size}
-      disabled={disabled}
-      prefix={<CalendarOutlined />}
-      suffix={
-        allowClear && hasValue ? (
-          <ClearIcon onClick={onClear}>
+      className={className}
+      style={style}
+    >
+      <PrefixIcon>
+        <CalendarOutlined />
+      </PrefixIcon>
+
+      <StyledVmInput
+        value={hasValue ? (value ?? '') : ''}
+        placeholder={placeholder}
+        readOnly
+        disabled={disabled}
+        $hasClear={showClear}
+      />
+
+      {showClear ? (
+        <SuffixArea>
+          <ClearButton
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClear?.(e as unknown as React.MouseEvent<HTMLElement>);
+            }}
+          >
             <CloseOutlined />
-          </ClearIcon>
-        ) : null
-      }
-      $hasValue={hasValue}
-      {...props}
-    />
+          </ClearButton>
+        </SuffixArea>
+      ) : null}
+    </InputWrapper>
   );
 };

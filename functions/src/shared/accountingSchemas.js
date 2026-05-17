@@ -13,6 +13,7 @@ export const ACCOUNTING_EVENT_TYPE_VALUES = [
   'supplier_credit_note.applied',
   'expense.recorded',
   'cash_over_short.recorded',
+  'bank_statement_adjustment.recorded',
   'internal_transfer.posted',
   'manual.entry.recorded',
   'fx_settlement.recorded',

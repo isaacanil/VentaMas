@@ -7,6 +7,12 @@ const Lab = lazy(() =>
 const HeroUiPlayground = lazy(
   () => import('@/modules/dev/pages/DevTools/HeroUiPlayground/HeroUiPlayground'),
 );
+const CustomHeroUiPlayground = lazy(
+  () =>
+    import(
+      '@/modules/dev/pages/DevTools/CustomHeroUiPlayground/CustomHeroUiPlayground'
+    ),
+);
 
 const Routes: AppRoute[] = [
   {
@@ -16,6 +22,12 @@ const Routes: AppRoute[] = [
       {
         path: 'heroui',
         element: <HeroUiPlayground />,
+        devOnly: true,
+        hideInMenu: true,
+      },
+      {
+        path: 'heroui/custom',
+        element: <CustomHeroUiPlayground />,
         devOnly: true,
         hideInMenu: true,
       },

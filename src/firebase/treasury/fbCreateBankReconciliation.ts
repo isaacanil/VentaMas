@@ -6,8 +6,10 @@ import { functions } from '@/firebase/firebaseconfig';
 export interface CreateBankReconciliationInput {
   businessId: string;
   bankAccountId: string;
+  openingStatementBalance: number;
+  periodStart: number;
   statementBalance: number;
-  statementDate?: number | null;
+  statementDate: number;
   reference?: string | null;
   note?: string | null;
   idempotencyKey: string;
@@ -23,19 +25,31 @@ export interface CreateBankReconciliationResult {
 export interface PreviewBankReconciliationInput {
   businessId: string;
   bankAccountId: string;
+  openingStatementBalance: number;
+  periodStart: number;
   statementBalance: number;
-  statementDate?: number | null;
+  statementDate: number;
 }
 
 export interface PreviewBankReconciliationResult {
   ok: boolean;
   preview: {
     bankAccountId: string;
+    carriedMovementCount: number;
     ledgerBalance: number;
+    ledgerOpeningBalance: number;
+    ledgerPeriodMovementTotal: number;
+    openingStatementBalance: number;
+    openingVariance: number;
+    periodEnd: number | null;
+    periodMovementCount: number;
+    periodStart: number | null;
+    periodVariance: number;
     reconciledMovementCount: number;
     referenceDate: number | null;
     statementBalance: number;
     statementDate: number | null;
+    statementMovementTotal: number;
     status: 'balanced' | 'variance';
     unreconciledMovementCount: number;
     variance: number;
@@ -61,6 +75,8 @@ export const fbCreateBankReconciliation = async (
     ...input,
     reference: toCleanString(input.reference),
     note: toCleanString(input.note),
+    periodStart:
+      typeof input.periodStart === 'number' ? input.periodStart : null,
     statementDate:
       typeof input.statementDate === 'number' ? input.statementDate : null,
     ...(sessionToken ? { sessionToken } : {}),
@@ -84,6 +100,8 @@ export const fbPreviewBankReconciliation = async (
 
   const response = await callable({
     ...input,
+    periodStart:
+      typeof input.periodStart === 'number' ? input.periodStart : null,
     statementDate:
       typeof input.statementDate === 'number' ? input.statementDate : null,
     ...(sessionToken ? { sessionToken } : {}),

@@ -62,6 +62,7 @@ export type AccountingEventType =
   | 'supplier_credit_note.applied'
   | 'expense.recorded'
   | 'cash_over_short.recorded'
+  | 'bank_statement_adjustment.recorded'
   | 'internal_transfer.posted'
   | 'manual.entry.recorded'
   | 'fx_settlement.recorded';
@@ -86,6 +87,8 @@ export type AccountingPostingAmountSource =
   | 'tax_total'
   | 'cash_over_short_gain'
   | 'cash_over_short_loss'
+  | 'bank_statement_adjustment_gain'
+  | 'bank_statement_adjustment_loss'
   | 'accounts_receivable_payment_amount'
   | 'accounts_payable_payment_amount'
   | 'transfer_amount'
@@ -100,7 +103,10 @@ export type AccountingPostingDocumentNature =
   | 'expense'
   | 'asset'
   | 'service';
-export type AccountingPostingSettlementTiming = 'any' | 'immediate' | 'deferred';
+export type AccountingPostingSettlementTiming =
+  | 'any'
+  | 'immediate'
+  | 'deferred';
 export type JournalEntryStatus = 'posted' | 'reversed';
 
 export type AccountingOperationType =
@@ -248,11 +254,21 @@ export interface BankReconciliationRecord {
   id: string;
   businessId: string;
   bankAccountId: string;
+  periodStart?: TimestampLike | null;
+  periodEnd?: TimestampLike | null;
   statementDate: TimestampLike;
+  openingStatementBalance?: number | null;
   statementBalance: number;
+  ledgerOpeningBalance?: number | null;
+  ledgerPeriodMovementTotal?: number | null;
   ledgerBalance: number;
+  statementMovementTotal?: number | null;
+  openingVariance?: number | null;
+  periodVariance?: number | null;
   variance: number;
   status: BankReconciliationStatus;
+  carriedMovementCount?: number;
+  periodMovementCount?: number;
   reconciledMovementCount?: number;
   unreconciledMovementCount?: number;
   statementLineCount?: number;

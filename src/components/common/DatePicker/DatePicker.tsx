@@ -1,4 +1,4 @@
-import { Popover } from 'antd';
+import { Popover } from '@heroui/react';
 import React, { useRef } from 'react';
 import styled from 'styled-components';
 
@@ -16,6 +16,17 @@ import type { DatePickerProps, DatePickerPreset } from './types';
 const Container = styled.div`
   position: relative;
   width: 100%;
+`;
+
+const VmPopoverContent = styled(Popover.Content)`
+  border: 1px solid var(--ds-color-border-default);
+  border-radius: 8px;
+  background: var(--ds-color-bg-surface, #fff);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.12),
+    0 1px 4px rgba(0, 0, 0, 0.06);
+  padding: 0;
+  overflow: hidden;
 `;
 
 interface DatePickerContentProps {
@@ -165,13 +176,6 @@ export const DatePicker = ({
   const inputValue = formatDisplayValue(value ?? null, format, mode);
   const hasValue = inputValue !== '';
 
-  const handleTriggerKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (disabled || (event.key !== 'Enter' && event.key !== ' ')) {
-      return;
-    }
-    event.preventDefault();
-    setOpen((currentOpen) => !currentOpen);
-  };
 
   const mobileContent = (
     <DatePickerContent $isMobile>
@@ -281,25 +285,11 @@ export const DatePicker = ({
 
   return (
     <Container ref={containerRef} className={className} style={style}>
-      <Popover
-        content={desktopContent}
-        trigger="click"
-        open={open}
-        onOpenChange={setOpen}
-        placement="bottomLeft"
-        overlayClassName="custom-datepicker-popover"
-        getPopupContainer={() => document.body}
-        destroyOnHidden={true}
-        fresh={true}
+      <Popover.Root
+        isOpen={open}
+        onOpenChange={(v) => !disabled && setOpen(v)}
       >
-        <div
-          role="button"
-          tabIndex={disabled ? -1 : 0}
-          aria-disabled={disabled}
-          aria-haspopup="dialog"
-          onClick={() => !disabled && setOpen(!open)}
-          onKeyDown={handleTriggerKeyDown}
-        >
+        <Popover.Trigger>
           <DatePickerInput
             value={inputValue}
             placeholder={placeholder}
@@ -314,8 +304,11 @@ export const DatePicker = ({
             onClick={undefined}
             {...props}
           />
-        </div>
-      </Popover>
+        </Popover.Trigger>
+        <VmPopoverContent placement="bottom start">
+          {desktopContent}
+        </VmPopoverContent>
+      </Popover.Root>
     </Container>
   );
 };

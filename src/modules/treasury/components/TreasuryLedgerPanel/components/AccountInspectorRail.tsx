@@ -101,6 +101,29 @@ export const AccountInspectorRail = ({
               <Label>Última conciliación</Label>
               <Value>{formatDate(latestReconciliation.statementDate)}</Value>
             </ControlLine>
+            {latestReconciliation.periodStart ? (
+              <ControlLine>
+                <Label>Periodo</Label>
+                <Value>
+                  {formatDate(latestReconciliation.periodStart)} -{' '}
+                  {formatDate(
+                    latestReconciliation.periodEnd ??
+                      latestReconciliation.statementDate,
+                  )}
+                </Value>
+              </ControlLine>
+            ) : null}
+            {latestReconciliation.openingStatementBalance != null ? (
+              <ControlLine>
+                <Label>Balance inicial</Label>
+                <Value>
+                  {formatMoney(
+                    latestReconciliation.openingStatementBalance,
+                    account.currency,
+                  )}
+                </Value>
+              </ControlLine>
+            ) : null}
             <ControlLine>
               <Label>Balance banco</Label>
               <Value>
@@ -113,9 +136,23 @@ export const AccountInspectorRail = ({
             <ControlLine>
               <Label>Balance ledger</Label>
               <Value>
-                {formatMoney(latestReconciliation.ledgerBalance, account.currency)}
+                {formatMoney(
+                  latestReconciliation.ledgerBalance,
+                  account.currency,
+                )}
               </Value>
             </ControlLine>
+            {latestReconciliation.ledgerPeriodMovementTotal != null ? (
+              <ControlLine>
+                <Label>Movimiento periodo</Label>
+                <Value>
+                  {formatMoney(
+                    latestReconciliation.ledgerPeriodMovementTotal,
+                    account.currency,
+                  )}
+                </Value>
+              </ControlLine>
+            ) : null}
             <ControlLine>
               <Label>Variación</Label>
               <VarianceValue
@@ -184,12 +221,16 @@ export const AccountInspectorRail = ({
             </ControlLine>
             <ControlLine>
               <Label>Mov. conciliados</Label>
-              <Value>{latestReconciliation?.reconciledMovementCount ?? 0}</Value>
+              <Value>
+                {latestReconciliation?.reconciledMovementCount ?? 0}
+              </Value>
             </ControlLine>
             <ControlLine>
               <Label>Mov. pendientes</Label>
               <VarianceValue
-                $warning={(latestReconciliation?.unreconciledMovementCount ?? 0) > 0}
+                $warning={
+                  (latestReconciliation?.unreconciledMovementCount ?? 0) > 0
+                }
               >
                 {latestReconciliation?.unreconciledMovementCount ?? 0}
               </VarianceValue>

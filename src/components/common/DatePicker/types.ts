@@ -1,4 +1,3 @@
-import type { InputProps } from 'antd';
 import type { DateTime } from 'luxon';
 import type { CSSProperties, MouseEvent, RefObject } from 'react';
 
@@ -17,15 +16,17 @@ export interface DatePickerPreset {
   group?: string;
 }
 
-export interface DatePickerInputProps extends Omit<
-  InputProps,
-  'value' | 'onChange' | 'onClick' | 'onClear'
-> {
+export interface DatePickerInputProps {
   value?: string;
+  placeholder?: string;
+  size?: 'small' | 'middle' | 'large';
+  disabled?: boolean;
   allowClear?: boolean;
   hasValue?: boolean;
   onClear?: (event: MouseEvent<HTMLElement>) => void;
   onClick?: () => void;
+  className?: string;
+  style?: CSSProperties;
 }
 
 export interface DatePickerProps extends Omit<
@@ -38,7 +39,7 @@ export interface DatePickerProps extends Omit<
   placeholder?: string;
   format?: string;
   allowClear?: boolean;
-  size?: InputProps['size'];
+  size?: 'small' | 'middle' | 'large';
   disabled?: boolean;
   presets?: DatePickerPreset[];
   className?: string;

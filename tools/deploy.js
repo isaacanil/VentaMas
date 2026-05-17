@@ -1,5 +1,5 @@
 import pkg from 'enquirer';
-const { Confirm, Input, Select } = pkg;
+const { Confirm, Input, Password, Select } = pkg;
 import { consola } from 'consola';
 import { spawn } from 'child_process';
 import fs from 'fs';
@@ -73,6 +73,7 @@ function usage() {
     '  npm run deploy',
     '  npm run deploy -- --help',
     '  npm run deploy -- staging',
+    '  npm run deploy -- staging:functions:all',
     '  npm run deploy -- staging:functions reserveCreditNoteNcf,createBusiness',
     '  npm run deploy -- prod:functions reserveCreditNoteNcf',
     '  npm run deploy -- staging:functions reserveCreditNoteNcf --dry-run',
@@ -107,6 +108,23 @@ const DEPLOYS = {
     args: [...FIREBASE_CLI_ARGS, 'deploy', '--project', 'staging'],
     requiresDist: false,
     requiresFunctionNames: true,
+  },
+  'staging:functions:all': {
+    label: 'Firebase staging todas las functions (ventamax-staging)',
+    environment: 'staging',
+    projectAlias: 'staging',
+    projectId: 'ventamax-staging',
+    cmd: 'npx',
+    args: [
+      ...FIREBASE_CLI_ARGS,
+      'deploy',
+      '--project',
+      'staging',
+      '--only',
+      'functions',
+    ],
+    requiresDist: false,
+    requiredSecrets: ['GISYS_FACT_CLIENT_TOKEN'],
   },
   prod: {
     label: 'Firebase produccion hosting (ventamaxpos)',
@@ -180,6 +198,11 @@ async function confirm(message, initial = true) {
 
 async function input(message) {
   const prompt = new Input({ name: 'input', message });
+  return await prompt.run();
+}
+
+async function password(message) {
+  const prompt = new Password({ name: 'password', message });
   return await prompt.run();
 }
 
@@ -285,23 +308,69 @@ async function assertProductionGuard(cfg, canPrompt) {
   }
 }
 
-async function runCommand(command, args) {
+async function runCommand(command, args, options = {}) {
   return new Promise((resolve) => {
     const child = spawn(command, args, {
       cwd: ROOT_DIR,
-      stdio: 'inherit',
+      stdio: options.input ? ['pipe', 'inherit', 'inherit'] : 'inherit',
       shell: true,
     });
+
+    if (options.input && child.stdin) {
+      child.stdin.end(`${options.input}\n`);
+    }
 
     child.on('close', (code) => resolve(code ?? 1));
   });
 }
 
-async function runOrExit(command, args) {
+async function runOrExit(command, args, options = {}) {
   consola.info(`Running: ${command} ${args.join(' ')}`);
-  const code = await runCommand(command, args);
+  const code = await runCommand(command, args, options);
   if (code !== 0) {
     process.exit(code);
+  }
+}
+
+async function ensureDeploySecrets(cfg, canPrompt) {
+  if (!Array.isArray(cfg.requiredSecrets) || cfg.requiredSecrets.length === 0) {
+    return;
+  }
+
+  for (const secretName of cfg.requiredSecrets) {
+    let secretValue = process.env[secretName];
+
+    if (!secretValue && canPrompt) {
+      const shouldSet = await confirm(
+        `Actualizar secret ${secretName} antes del deploy?`,
+        true,
+      );
+      if (!shouldSet) {
+        consola.warn(
+          `${secretName} no actualizado. Firebase puede bloquear el deploy si no existe en ${cfg.projectId}.`,
+        );
+        continue;
+      }
+
+      secretValue = await password(`Valor para ${secretName}`);
+    }
+
+    if (!secretValue) {
+      consola.error(
+        `Falta ${secretName}. Define env var ${secretName} o ejecuta en modo interactivo.`,
+      );
+      process.exit(1);
+    }
+
+    await runOrExit('npx', [
+      ...FIREBASE_CLI_ARGS,
+      'functions:secrets:set',
+      secretName,
+      '--project',
+      cfg.projectId || cfg.projectAlias,
+    ], {
+      input: secretValue,
+    });
   }
 }
 
@@ -412,6 +481,8 @@ async function main() {
   } else if (cfg.buildScript) {
     consola.warn('Skipping build.');
   }
+
+  await ensureDeploySecrets(cfg, canPrompt);
 
   await runOrExit(cfg.cmd, deployArgs);
 }

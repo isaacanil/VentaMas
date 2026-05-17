@@ -1,8 +1,8 @@
 import { CalendarOutlined, CloseOutlined } from '@ant-design/icons';
-import { Input } from '@heroui/react';
 import React from 'react';
 import styled from 'styled-components';
 
+import { VmInput } from '@/components/heroui/Input';
 import type { DatePickerInputProps } from '../types';
 
 export const HeroUIDatePickerInput = ({
@@ -59,7 +59,7 @@ const PrefixIcon = styled.span`
   font-size: 13px;
 `;
 
-const StyledInput = styled(Input)<{ $hasValue?: boolean }>`
+const StyledInput = styled(VmInput)<{ $hasValue?: boolean }>`
   width: 100%;
   /* leave room for the prefix calendar icon */
   padding-left: 32px !important;

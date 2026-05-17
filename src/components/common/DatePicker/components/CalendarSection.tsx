@@ -8,13 +8,66 @@ import { renderCalendarGrid } from '@/components/common/DatePicker/utils/dateUti
 import type { DatePickerMode, DatePickerValue } from '../types';
 
 const DATE_LOCALE = 'es';
+const DAYS_PER_WEEK = 7;
+
+interface RangeSegment {
+  row: number;
+  startColumn: number;
+  endColumn: number;
+}
+
+const buildRangeSegments = ({
+  currentRangeEnd,
+  currentRangeStart,
+  days,
+  hoverDate,
+  mode,
+}: {
+  currentRangeEnd: DateTime | null;
+  currentRangeStart: DateTime | null;
+  days: DateTime[];
+  hoverDate: DateTime | null;
+  mode: DatePickerMode;
+}): RangeSegment[] => {
+  if (mode !== 'range') return [];
+
+  const end = currentRangeEnd || hoverDate;
+  if (!currentRangeStart || !end) return [];
+
+  const isForward = currentRangeStart.toMillis() <= end.toMillis();
+  const startOfRange = (isForward ? currentRangeStart : end).startOf('day');
+  const endOfRange = (isForward ? end : currentRangeStart).startOf('day');
+  const rowCount = Math.ceil(days.length / DAYS_PER_WEEK);
+  const segments: RangeSegment[] = [];
+
+  for (let row = 0; row < rowCount; row += 1) {
+    const rowStartIndex = row * DAYS_PER_WEEK;
+    const rowDays = days.slice(rowStartIndex, rowStartIndex + DAYS_PER_WEEK);
+    const selectedColumns = rowDays.reduce<number[]>((columns, date, column) => {
+      const day = date.startOf('day');
+      if (day >= startOfRange && day <= endOfRange) {
+        columns.push(column);
+      }
+      return columns;
+    }, []);
+
+    if (!selectedColumns.length) continue;
+
+    segments.push({
+      row,
+      startColumn: selectedColumns[0],
+      endColumn: selectedColumns[selectedColumns.length - 1],
+    });
+  }
+
+  return segments;
+};
 
 const CalendarContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  min-height: 0;
-  overflow-y: auto;
+  gap: 4px;
+  width: fit-content;
 `;
 
 const CalendarHeader = styled.div`
@@ -22,6 +75,7 @@ const CalendarHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 0 4px;
+  width: calc(7 * 38px);
 `;
 
 const NavButton = styled.button`
@@ -52,12 +106,11 @@ const MonthYear = styled.div`
 
 const WeekDaysHeader = styled.div`
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  margin-bottom: 4px;
+  grid-template-columns: repeat(7, 38px);
 `;
 
 const WeekDay = styled.div`
-  padding: 8px 4px;
+  padding: 4px 0;
   font-size: 12px;
   font-weight: 500;
   color: #8c8c8c;
@@ -65,82 +118,99 @@ const WeekDay = styled.div`
 `;
 
 const CalendarGrid = styled.div`
+  position: relative;
+  isolation: isolate;
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
+  grid-template-columns: repeat(7, 38px);
+  gap: 0;
+`;
+
+const RangeTraceSvg = styled.svg`
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+
+  rect {
+    fill: var(--ds-color-action-primary-subtle);
+    shape-rendering: geometricprecision;
+  }
 `;
 
 interface CalendarDayProps {
   $isCurrentMonth?: boolean;
+  $isInRange?: boolean;
   $isSelected?: boolean;
   $isToday?: boolean;
-  $isInRange?: boolean;
-  $isRangeStart?: boolean;
-  $isRangeEnd?: boolean;
 }
 
-const CalendarDay = styled.div<CalendarDayProps>`
+const CalendarDay = styled.div`
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 32px;
-  font-size: 12px;
+  height: 38px;
+  font-size: 13px;
   cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.3s;
-  position: relative;
+`;
+
+const DayNumber = styled.span<CalendarDayProps>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 999px;
   color: ${(props: CalendarDayProps) => {
-    if (!props.$isCurrentMonth) return '#bfbfbf';
-    if (props.$isSelected) return 'white';
-    if (props.$isToday) return '#1890ff';
-    return '#262626';
+    if (props.$isSelected) return 'var(--ds-color-text-inverse)';
+    if (!props.$isCurrentMonth) return 'var(--ds-color-text-disabled)';
+    if (props.$isToday) return 'var(--ds-color-action-primary)';
+    return 'var(--ds-color-text-primary)';
   }};
   background: ${(props: CalendarDayProps) => {
-    if (props.$isSelected) return '#1890ff';
-    if (props.$isInRange && !props.$isSelected) return '#e6f7ff';
+    if (props.$isSelected) return 'var(--ds-color-action-primary)';
     return 'transparent';
   }};
   font-weight: ${(props: CalendarDayProps) => {
     if (props.$isSelected || props.$isToday) return '500';
     return '400';
   }};
-
-  ${(props: CalendarDayProps) =>
-    props.$isRangeStart &&
-    `
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
-    `}
-
-  ${(props: CalendarDayProps) =>
-    props.$isRangeEnd &&
-    `
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
-    `}
-    
-  ${(props: CalendarDayProps) =>
-    props.$isInRange &&
-    !props.$isRangeStart &&
-    !props.$isRangeEnd &&
-    `
-        border-radius: 0;
-    `}
-    
-  &:hover {
-    ${(props: CalendarDayProps) =>
-      !props.$isSelected &&
-      `
-            background: #f5f5f5;
-            color: #1890ff;
-        `}
-  }
+  line-height: 1;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
 
   ${(props: CalendarDayProps) =>
     props.$isToday &&
     !props.$isSelected &&
     `
-        border: 1px solid #1890ff;
+        border-color: var(--ds-color-action-primary);
+    `}
+
+  ${(props: CalendarDayProps) =>
+    !props.$isSelected &&
+    !props.$isInRange &&
+    `
+      ${CalendarDay}:hover & {
+        color: var(--ds-color-action-primary);
+        background: var(--ds-color-bg-muted);
+      }
+    `}
+
+  ${(props: CalendarDayProps) =>
+    props.$isSelected &&
+    !props.$isInRange &&
+      `
+      ${CalendarDay}:hover & {
+        color: var(--ds-color-text-inverse);
+        background: var(--ds-color-action-primary-hover);
+      }
     `}
 `;
 
@@ -168,7 +238,28 @@ export const CalendarSection = ({
   hoverDate,
 }: CalendarSectionProps) => {
   const days = renderCalendarGrid(currentDate);
+  const rowCount = Math.ceil(days.length / DAYS_PER_WEEK);
+  const rangeSegments = buildRangeSegments({
+    currentRangeEnd,
+    currentRangeStart,
+    days,
+    hoverDate,
+    mode,
+  });
   const today = DateTime.local().setLocale(DATE_LOCALE);
+  const isDateInRange = (date: DateTime) => {
+    if (mode !== 'range') return false;
+
+    const end = currentRangeEnd || hoverDate;
+    if (!currentRangeStart || !end) return false;
+
+    const isForward = currentRangeStart.toMillis() <= end.toMillis();
+    const startOfRange = (isForward ? currentRangeStart : end).startOf('day');
+    const endOfRange = (isForward ? end : currentRangeStart).startOf('day');
+    const day = date.startOf('day');
+
+    return day >= startOfRange && day <= endOfRange;
+  };
 
   return (
     <CalendarContainer>
@@ -197,9 +288,29 @@ export const CalendarSection = ({
       </WeekDaysHeader>
 
       <CalendarGrid>
+        {rangeSegments.length ? (
+          <RangeTraceSvg
+            aria-hidden="true"
+            focusable="false"
+            preserveAspectRatio="none"
+            viewBox={`0 0 ${DAYS_PER_WEEK} ${rowCount}`}
+          >
+            {rangeSegments.map((segment) => (
+              <rect
+                key={`${segment.row}:${segment.startColumn}-${segment.endColumn}`}
+                height={0.8}
+                rx={0.4}
+                width={segment.endColumn - segment.startColumn + 1}
+                x={segment.startColumn}
+                y={segment.row + 0.1}
+              />
+            ))}
+          </RangeTraceSvg>
+        ) : null}
         {days.map((date) => {
           const isCurrentMonth = date.month === currentDate.month;
           const isToday = date.hasSame(today, 'day');
+          const isInRange = isDateInRange(date);
           const isSelected =
             mode === 'single'
               ? value &&
@@ -208,44 +319,21 @@ export const CalendarSection = ({
               : (currentRangeStart && date.hasSame(currentRangeStart, 'day')) ||
                 (currentRangeEnd && date.hasSame(currentRangeEnd, 'day'));
 
-          let isInRange = false;
-          if (mode === 'range') {
-            const start = currentRangeStart;
-            const end = currentRangeEnd || hoverDate;
-            if (start && end) {
-              const isBefore = start.toMillis() < end.toMillis();
-              const s = isBefore ? start : end;
-              const e = isBefore ? end : start;
-              const dayMillis = date.startOf('day').toMillis();
-              isInRange =
-                dayMillis >= s.startOf('day').toMillis() &&
-                dayMillis <= e.startOf('day').toMillis();
-            }
-          }
-
-          const isRangeStart =
-            mode === 'range' &&
-            currentRangeStart &&
-            date.hasSame(currentRangeStart, 'day');
-          const isRangeEnd =
-            mode === 'range' &&
-            currentRangeEnd &&
-            date.hasSame(currentRangeEnd, 'day');
-
           return (
             <CalendarDay
               key={date.toISODate() || date.toMillis()}
               onClick={() => onDateClick(date)}
-              $isCurrentMonth={isCurrentMonth}
-              $isToday={isToday}
-              $isSelected={isSelected}
-              $isInRange={isInRange}
-              $isRangeStart={isRangeStart}
-              $isRangeEnd={isRangeEnd}
               onMouseEnter={() => mode === 'range' && onDateHover(date)}
               onMouseLeave={() => mode === 'range' && onDateHover(null)}
             >
-              {date.day}
+              <DayNumber
+                $isCurrentMonth={isCurrentMonth}
+                $isInRange={isInRange}
+                $isToday={isToday}
+                $isSelected={Boolean(isSelected)}
+              >
+                {date.day}
+              </DayNumber>
             </CalendarDay>
           );
         })}

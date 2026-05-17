@@ -24,7 +24,6 @@ import { Invoice } from '../Invoice/Invoice';
 import InvoiceTemplateSelector from '../InvoiceTemplateSelector/InvoiceTemplateSelector';
 import {
   LETTER_INVOICE_TEMPLATE_V3_KEY,
-  LETTER_INVOICE_TEMPLATE_V3_1_KEY,
   resolveInvoicePreviewTemplate,
   resolveInvoiceSelectionTemplate,
   type InvoicePreviewTemplateKey,
@@ -184,8 +183,7 @@ const InvoicePaper = styled.div<{
   min-height: ${({ $template }) =>
     TEMPLATES_CONFIG[$template].minHeight || 'auto'};
   padding: ${({ $template, $selectionTemplate }) =>
-    $selectionTemplate === LETTER_INVOICE_TEMPLATE_V3_KEY ||
-    $selectionTemplate === LETTER_INVOICE_TEMPLATE_V3_1_KEY
+    $selectionTemplate === LETTER_INVOICE_TEMPLATE_V3_KEY
       ? '0'
       : TEMPLATES_CONFIG[$template].padding};
   background: white;
@@ -507,8 +505,7 @@ export default function InvoiceTemplates({
   const previewTemplate = resolveInvoicePreviewTemplate(effectiveTemplate);
   const pageStyle = useMemo(
     () =>
-      effectiveTemplate === LETTER_INVOICE_TEMPLATE_V3_KEY ||
-      effectiveTemplate === LETTER_INVOICE_TEMPLATE_V3_1_KEY
+      effectiveTemplate === LETTER_INVOICE_TEMPLATE_V3_KEY
         ? '@page { size: A4 portrait; margin: 0; } html, body { margin: 0 !important; }'
         : undefined,
     [effectiveTemplate],

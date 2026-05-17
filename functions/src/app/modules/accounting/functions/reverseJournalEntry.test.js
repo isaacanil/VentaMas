@@ -109,12 +109,15 @@ vi.mock('../../../versions/v2/invoice/services/repairTasks.service.js', () => ({
   assertUserAccess: (...args) => assertUserAccessMock(...args),
 }));
 
-vi.mock('../../../versions/v2/accounting/utils/accountingRollout.util.js', () => ({
-  getPilotAccountingSettingsForBusiness: (...args) =>
-    getPilotAccountingSettingsForBusinessMock(...args),
-  isAccountingRolloutEnabledForBusiness: (...args) =>
-    isAccountingRolloutEnabledForBusinessMock(...args),
-}));
+vi.mock(
+  '../../../versions/v2/accounting/utils/accountingRollout.util.js',
+  () => ({
+    getPilotAccountingSettingsForBusiness: (...args) =>
+      getPilotAccountingSettingsForBusinessMock(...args),
+    isAccountingRolloutEnabledForBusiness: (...args) =>
+      isAccountingRolloutEnabledForBusinessMock(...args),
+  }),
+);
 
 import { reverseJournalEntry } from './reverseJournalEntry.js';
 
@@ -161,6 +164,7 @@ describe('reverseJournalEntry', () => {
     transactionSnapshots.set('businesses/business-1/journalEntries/entry-1', {
       eventId: 'manual.entry.recorded__entry-1',
       eventType: 'manual.entry.recorded',
+      sourceType: 'manual_entry',
       status: 'posted',
       description: 'Ajuste original',
       currency: 'DOP',
@@ -169,7 +173,7 @@ describe('reverseJournalEntry', () => {
         { accountId: 'cash', debit: 100, credit: 0, description: 'Caja' },
         { accountId: 'sales', debit: 0, credit: 100, description: 'Ventas' },
       ],
-      metadata: {},
+      metadata: { entryOrigin: 'manual' },
     });
 
     const result = await reverseJournalEntry({
@@ -196,6 +200,45 @@ describe('reverseJournalEntry', () => {
       }),
     );
     expect(transactionSetMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects direct reversal of automatic journal entries', async () => {
+    transactionSnapshots.set('businesses/business-1/settings/accounting', {});
+    transactionSnapshots.set(
+      'businesses/business-1/accountingPeriodClosures/2026-04',
+      null,
+    );
+    transactionSnapshots.set('businesses/business-1/journalEntries/entry-1', {
+      eventId: 'invoice.committed__invoice-1',
+      eventType: 'invoice.committed',
+      sourceType: 'invoice',
+      sourceId: 'invoice-1',
+      status: 'posted',
+      description: 'Factura posteada',
+      currency: 'DOP',
+      functionalCurrency: 'DOP',
+      lines: [
+        { accountId: 'ar', debit: 100, credit: 0, description: 'CxC' },
+        { accountId: 'sales', debit: 0, credit: 100, description: 'Ventas' },
+      ],
+      metadata: {},
+    });
+
+    await expect(
+      reverseJournalEntry({
+        data: {
+          businessId: 'business-1',
+          entryId: 'entry-1',
+          reversalDate: '2026-04-12',
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      message:
+        'Los asientos automaticos deben corregirse desde el documento de origen o con su flujo operativo de anulacion.',
+    });
+    expect(transactionUpdateMock).not.toHaveBeenCalled();
+    expect(transactionSetMock).not.toHaveBeenCalled();
   });
 
   it('returns reused when the original entry was already reversed', async () => {

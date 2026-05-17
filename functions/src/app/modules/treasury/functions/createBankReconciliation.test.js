@@ -39,9 +39,7 @@ const {
     id: path.split('/').at(-1) ?? null,
     data: () => data,
     get: (field) =>
-      field
-        .split('.')
-        .reduce((current, key) => current?.[key], data ?? null),
+      field.split('.').reduce((current, key) => current?.[key], data ?? null),
   });
 
   const hoistedGetDocRef = (path) => {
@@ -121,10 +119,13 @@ vi.mock('../../../versions/v2/invoice/services/repairTasks.service.js', () => ({
   assertUserAccess: (...args) => assertUserAccessMock(...args),
 }));
 
-vi.mock('../../../versions/v2/billing/utils/subscriptionAccess.util.js', () => ({
-  assertBusinessSubscriptionAccess: (...args) =>
-    assertBusinessSubscriptionAccessMock(...args),
-}));
+vi.mock(
+  '../../../versions/v2/billing/utils/subscriptionAccess.util.js',
+  () => ({
+    assertBusinessSubscriptionAccess: (...args) =>
+      assertBusinessSubscriptionAccessMock(...args),
+  }),
+);
 
 import {
   createBankReconciliation,
@@ -171,25 +172,33 @@ describe('createBankReconciliation', () => {
                 amount: 100,
                 direction: 'in',
                 status: 'posted',
-                occurredAt: { toMillis: () => Date.parse('2026-04-10T12:00:00.000Z') },
+                occurredAt: {
+                  toMillis: () => Date.parse('2026-04-10T12:00:00.000Z'),
+                },
               }),
               toSnapshot('businesses/business-1/cashMovements/out-1', {
                 amount: 25,
                 direction: 'out',
                 status: 'posted',
-                occurredAt: { toMillis: () => Date.parse('2026-04-11T12:00:00.000Z') },
+                occurredAt: {
+                  toMillis: () => Date.parse('2026-04-11T12:00:00.000Z'),
+                },
               }),
               toSnapshot('businesses/business-1/cashMovements/future-1', {
                 amount: 10,
                 direction: 'in',
                 status: 'posted',
-                occurredAt: { toMillis: () => Date.parse('2026-04-14T12:00:00.000Z') },
+                occurredAt: {
+                  toMillis: () => Date.parse('2026-04-14T12:00:00.000Z'),
+                },
               }),
               toSnapshot('businesses/business-1/cashMovements/draft-1', {
                 amount: 99,
                 direction: 'in',
                 status: 'draft',
-                occurredAt: { toMillis: () => Date.parse('2026-04-10T12:00:00.000Z') },
+                occurredAt: {
+                  toMillis: () => Date.parse('2026-04-10T12:00:00.000Z'),
+                },
               }),
             ],
           })),
@@ -234,6 +243,8 @@ describe('createBankReconciliation', () => {
         businessId: 'business-1',
         bankAccountId: 'bank-1',
         idempotencyKey: 'recon-1',
+        openingStatementBalance: 200,
+        periodStart: '2026-04-01T00:00:00.000Z',
         statementDate: '2026-04-12T00:00:00.000Z',
         statementBalance: 275,
         reference: 'APR-2026',
@@ -249,8 +260,15 @@ describe('createBankReconciliation', () => {
         reconciliation: expect.objectContaining({
           bankAccountId: 'bank-1',
           ledgerBalance: 275,
+          ledgerOpeningBalance: 200,
+          ledgerPeriodMovementTotal: 75,
+          openingStatementBalance: 200,
+          openingVariance: 0,
+          periodMovementCount: 2,
+          periodVariance: 0,
           reconciledMovementCount: 2,
           statementLineCount: 1,
+          statementMovementTotal: 75,
           variance: 0,
           status: 'balanced',
           unreconciledMovementCount: 1,
@@ -308,6 +326,8 @@ describe('createBankReconciliation', () => {
         businessId: 'business-1',
         bankAccountId: 'bank-1',
         idempotencyKey: 'recon-1',
+        openingStatementBalance: 200,
+        periodStart: '2026-04-01T00:00:00.000Z',
         statementDate: '2026-04-12T00:00:00.000Z',
         statementBalance: 275,
         reference: 'APR-2026',
@@ -341,13 +361,15 @@ describe('createBankReconciliation', () => {
           businessId: 'business-1',
           bankAccountId: 'bank-1',
           idempotencyKey: 'recon-invalid-date',
+          openingStatementBalance: 200,
+          periodStart: '2026-04-01T00:00:00.000Z',
           statementDate: 'not-a-date',
           statementBalance: 275,
         },
       }),
     ).rejects.toMatchObject({
       code: 'invalid-argument',
-      message: 'statementDate debe ser una fecha válida.',
+      message: 'statementDate debe ser una fecha válida y requerida.',
     });
 
     expect(runTransactionMock).not.toHaveBeenCalled();
@@ -375,13 +397,17 @@ describe('previewBankReconciliation', () => {
                   amount: 100,
                   direction: 'in',
                   status: 'posted',
-                  occurredAt: { toMillis: () => Date.parse('2026-04-10T12:00:00.000Z') },
+                  occurredAt: {
+                    toMillis: () => Date.parse('2026-04-10T12:00:00.000Z'),
+                  },
                 }),
                 toSnapshot('businesses/business-1/cashMovements/out-1', {
                   amount: 25,
                   direction: 'out',
                   status: 'posted',
-                  occurredAt: { toMillis: () => Date.parse('2026-04-11T12:00:00.000Z') },
+                  occurredAt: {
+                    toMillis: () => Date.parse('2026-04-11T12:00:00.000Z'),
+                  },
                 }),
               ],
             })),
@@ -403,6 +429,8 @@ describe('previewBankReconciliation', () => {
       data: {
         businessId: 'business-1',
         bankAccountId: 'bank-1',
+        openingStatementBalance: 200,
+        periodStart: '2026-04-01T00:00:00.000Z',
         statementDate: '2026-04-12T00:00:00.000Z',
         statementBalance: 290,
       },
@@ -413,8 +441,13 @@ describe('previewBankReconciliation', () => {
       preview: expect.objectContaining({
         bankAccountId: 'bank-1',
         ledgerBalance: 275,
+        ledgerOpeningBalance: 200,
+        ledgerPeriodMovementTotal: 75,
+        openingStatementBalance: 200,
+        periodMovementCount: 2,
         reconciledMovementCount: 2,
         statementBalance: 290,
+        statementMovementTotal: 90,
         status: 'variance',
         unreconciledMovementCount: 0,
         variance: 15,

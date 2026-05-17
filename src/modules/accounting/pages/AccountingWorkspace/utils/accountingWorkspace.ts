@@ -435,6 +435,8 @@ const resolveEventAmountSource = (
     toFiniteAmount(monetary.functionalTaxAmount) ||
     toFiniteAmount(monetary.taxAmount);
   const netSales = Math.max(total - tax, 0);
+  const gain = Math.max(total, 0);
+  const loss = Math.abs(Math.min(total, 0));
 
   switch (source) {
     case 'tax_total':
@@ -448,10 +450,16 @@ const resolveEventAmountSource = (
     case 'accounts_payable_payment_amount':
     case 'transfer_amount':
       return total;
+    case 'cash_over_short_gain':
+    case 'bank_statement_adjustment_gain':
+      return gain;
+    case 'cash_over_short_loss':
+    case 'bank_statement_adjustment_loss':
+      return loss;
     case 'fx_gain':
-      return Math.max(total, 0);
+      return gain;
     case 'fx_loss':
-      return Math.abs(Math.min(total, 0));
+      return loss;
     default:
       return total;
   }

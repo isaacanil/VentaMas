@@ -356,6 +356,107 @@ describe('accountingWorkspace automatic entry aliases', () => {
   });
 });
 
+describe('accountingWorkspace projected profile lines', () => {
+  it('previsualiza ajustes bancarios negativos contra gasto de conciliacion y banco', () => {
+    const bankAccount = buildAccount({
+      id: 'bank-1',
+      code: '1102',
+      name: 'Banco principal',
+      type: 'asset',
+      normalSide: 'debit',
+    });
+    const reconciliationExpense = buildAccount({
+      id: 'expense-1',
+      code: '5260',
+      name: 'Gastos por conciliacion bancaria',
+      type: 'expense',
+      normalSide: 'debit',
+    });
+
+    const [record] = buildLedgerRecords({
+      accounts: [bankAccount, reconciliationExpense],
+      events: [
+        {
+          id: 'bank_statement_adjustment.recorded__statement-line-1',
+          businessId: 'business-1',
+          eventType: 'bank_statement_adjustment.recorded',
+          eventVersion: 1,
+          status: 'recorded',
+          occurredAt: new Date('2026-04-18T12:00:00.000Z'),
+          recordedAt: new Date('2026-04-18T12:00:00.000Z'),
+          sourceId: 'statement-line-1',
+          sourceDocumentType: 'bank_statement_line',
+          sourceDocumentId: 'statement-line-1',
+          counterpartyType: null,
+          counterpartyId: null,
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: { amount: -12.5, functionalAmount: -12.5 },
+          treasury: { bankAccountId: 'bank-1', paymentChannel: 'bank' },
+          payload: {},
+          dedupeKey: 'dedupe-bank-adjustment',
+          idempotencyKey: 'idem-bank-adjustment',
+          projection: { status: 'pending', journalEntryId: null },
+          reversalOfEventId: null,
+          createdAt: new Date('2026-04-18T12:00:00.000Z'),
+          createdBy: 'ana@ventamas.do',
+          metadata: {},
+        },
+      ],
+      journalEntries: [],
+      postingProfiles: [
+        {
+          id: 'profile-bank-adjustment',
+          businessId: 'business-1',
+          name: 'Ajuste por diferencia bancaria',
+          eventType: 'bank_statement_adjustment.recorded',
+          moduleKey: 'banking',
+          status: 'active',
+          priority: 1,
+          linesTemplate: [
+            {
+              id: 'debit-loss',
+              side: 'debit',
+              accountId: 'expense-1',
+              accountCode: '5260',
+              accountName: 'Gastos por conciliacion bancaria',
+              accountSystemKey: 'bank_reconciliation_expense',
+              amountSource: 'bank_statement_adjustment_loss',
+              omitIfZero: true,
+            },
+            {
+              id: 'credit-bank',
+              side: 'credit',
+              accountId: 'bank-1',
+              accountCode: '1102',
+              accountName: 'Banco principal',
+              accountSystemKey: 'bank',
+              amountSource: 'bank_statement_adjustment_loss',
+              omitIfZero: true,
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(record.detailMode).toBe('projected');
+    expect(record.lines).toEqual([
+      expect.objectContaining({
+        accountId: 'expense-1',
+        debit: 12.5,
+        credit: 0,
+        amountSource: 'bank_statement_adjustment_loss',
+      }),
+      expect.objectContaining({
+        accountId: 'bank-1',
+        debit: 0,
+        credit: 12.5,
+        amountSource: 'bank_statement_adjustment_loss',
+      }),
+    ]);
+  });
+});
+
 describe('buildGeneralLedgerSnapshot', () => {
   it('calcula saldo inicial y saldo corrido para cuentas deudoras', () => {
     const cashAccount = buildAccount({

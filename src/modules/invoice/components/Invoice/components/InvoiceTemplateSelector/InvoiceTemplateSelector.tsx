@@ -25,7 +25,7 @@ import { isFrontendFeatureEnabled } from '@/utils/runtime/frontendFeatureAccess'
 import {
   LETTER_INVOICE_TEMPLATE_V2_KEY,
   LETTER_INVOICE_TEMPLATE_V3_KEY,
-  LETTER_INVOICE_TEMPLATE_V3_1_KEY,
+  LETTER_INVOICE_TEMPLATE_V4_KEY,
   type InvoiceTemplateStorageKey,
 } from '@/utils/invoice/template';
 
@@ -185,7 +185,7 @@ const InvoiceTemplateSelector = ({
     !isTemplateV2Enabled &&
     (template === LETTER_INVOICE_TEMPLATE_V2_KEY ||
       template === LETTER_INVOICE_TEMPLATE_V3_KEY ||
-      template === LETTER_INVOICE_TEMPLATE_V3_1_KEY)
+      template === LETTER_INVOICE_TEMPLATE_V4_KEY)
       ? 'template2'
       : template;
 
@@ -205,9 +205,9 @@ const InvoiceTemplateSelector = ({
               description: 'Beta HTML/CSS con impresión del navegador',
             },
             {
-              id: LETTER_INVOICE_TEMPLATE_V3_1_KEY,
-              name: 'Plantilla Carta V3.1 HTML',
-              description: 'Beta HTML/CSS paginada para evitar saltos rotos',
+              id: LETTER_INVOICE_TEMPLATE_V4_KEY,
+              name: 'Plantilla Carta V4 PDFMake',
+              description: 'Beta PDF programático con tabla multi-página',
             },
           ]
         : BASE_INVOICE_TEMPLATES,
@@ -251,7 +251,7 @@ const InvoiceTemplateSelector = ({
     selectedTemplateMeta?.id === 'template2' ||
     selectedTemplateMeta?.id === LETTER_INVOICE_TEMPLATE_V2_KEY ||
     selectedTemplateMeta?.id === LETTER_INVOICE_TEMPLATE_V3_KEY ||
-    selectedTemplateMeta?.id === LETTER_INVOICE_TEMPLATE_V3_1_KEY
+    selectedTemplateMeta?.id === LETTER_INVOICE_TEMPLATE_V4_KEY
       ? 'Carta'
       : 'Compacta';
 

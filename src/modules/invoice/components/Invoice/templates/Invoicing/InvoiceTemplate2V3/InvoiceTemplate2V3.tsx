@@ -55,40 +55,12 @@ const Container = styled.div<{ $visible?: boolean }>`
   }
 `;
 
-const PrintLayout = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  height: 100vh;
-
-  thead {
-    display: table-header-group;
-  }
-
-  tfoot {
-    display: table-footer-group;
-  }
-`;
-
-const Section = styled.div`
+const Section = styled.section`
   margin-bottom: 14px;
 `;
 
-const HeaderCell = styled.td`
-  padding: 0 0 16px;
-`;
-
-const FooterCell = styled.td`
-  padding: 16px 0 0;
-`;
-
-const ContentCell = styled.td`
-  vertical-align: top;
-`;
-
-const SpacerCell = styled.td`
-  height: 100%;
-  padding: 0;
-  border: 0;
+const FooterSection = styled.section`
+  margin-top: 16px;
 `;
 
 export const InvoiceTemplate2V3 = React.forwardRef<
@@ -103,41 +75,22 @@ export const InvoiceTemplate2V3 = React.forwardRef<
 
   return data ? (
     <Container $visible={Boolean(ignoreHidden)} ref={ref}>
-      <PrintLayout>
-        <thead>
-          <tr>
-            <HeaderCell>
-              <Header business={business} data={data} />
-            </HeaderCell>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <ContentCell>
-              <Section>
-                <Content
-                  products={previewProducts}
-                  documentCurrency={documentCurrency}
-                />
-              </Section>
-            </ContentCell>
-          </tr>
-          <tr>
-            <SpacerCell />
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr>
-            <FooterCell>
-              <Footer
-                business={business}
-                data={data}
-                previewSignatureAssets={previewSignatureAssets}
-              />
-            </FooterCell>
-          </tr>
-        </tfoot>
-      </PrintLayout>
+      <Section>
+        <Header business={business} data={data} />
+      </Section>
+      <Section>
+        <Content
+          products={previewProducts}
+          documentCurrency={documentCurrency}
+        />
+      </Section>
+      <FooterSection>
+        <Footer
+          business={business}
+          data={data}
+          previewSignatureAssets={previewSignatureAssets}
+        />
+      </FooterSection>
     </Container>
   ) : null;
 });

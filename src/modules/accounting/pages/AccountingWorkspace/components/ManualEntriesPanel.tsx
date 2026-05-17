@@ -1,15 +1,11 @@
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  Alert,
   Button,
-  Card,
-  Input,
   ListBox,
-  NumberField,
-  Select,
   Table,
 } from '@heroui/react';
+import { parseDate } from '@internationalized/date';
 import { message } from 'antd';
 import type { Key } from 'react';
 import { useMemo, useState } from 'react';
@@ -20,6 +16,15 @@ import {
   PlusOutlined,
   SaveOutlined,
 } from '@/constants/icons/antd';
+import {
+  VmAlert,
+  VmCard,
+  VmDateField,
+  VmInput,
+  VmNumberField,
+  VmSelect,
+  VmSurface,
+} from '@/components/heroui';
 import type { ChartOfAccount } from '@/types/accounting';
 
 import {
@@ -102,6 +107,7 @@ export const ManualEntriesPanel = ({
   const [note, setNote] = useState('');
   const [lines, setLines] = useState<ManualLineState[]>(buildInitialLines);
   const [error, setError] = useState<string | null>(null);
+  const entryDateValue = useMemo(() => parseDate(entryDate), [entryDate]);
 
   const accountOptions = useMemo(
     () =>
@@ -269,275 +275,279 @@ export const ManualEntriesPanel = ({
       </HeaderBar>
 
       {error ? (
-        <Alert status="danger">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Title>{error}</Alert.Title>
-          </Alert.Content>
-        </Alert>
+        <VmAlert status="danger">
+          <VmAlert.Indicator />
+          <VmAlert.Content>
+            <VmAlert.Title>{error}</VmAlert.Title>
+          </VmAlert.Content>
+        </VmAlert>
       ) : null}
 
       <EditorLayout>
-        <MainCard variant="secondary">
-          <CardHeader>
-            <SectionTitle>
-              Asiento <span>{validLinesCount} lineas</span>
-            </SectionTitle>
-            <Button variant="tertiary">Desde plantilla</Button>
-          </CardHeader>
+        <MainSurface>
+          <MainSurfaceContent>
+            <CardHeader>
+              <SectionTitle>
+                Asiento <span>{validLinesCount} lineas</span>
+              </SectionTitle>
+              <Button variant="tertiary">Desde plantilla</Button>
+            </CardHeader>
 
-          <FormGrid>
-            <Field $compact>
-              <FieldLabel>Fecha</FieldLabel>
-              <Input
-                fullWidth
-                variant="secondary"
-                aria-label="Fecha del asiento"
-                type="date"
-                value={entryDate}
-                onChange={(event) => setEntryDate(event.target.value)}
-              />
-            </Field>
+            <FormGrid>
+              <Field $compact>
+                <FieldLabel>Fecha</FieldLabel>
+                <VmDateField
+                  aria-label="Fecha del asiento"
+                  value={entryDateValue}
+                  onChange={(value) => {
+                    if (value) setEntryDate(value.toString());
+                  }}
+                >
+                  <VmDateField.Group fullWidth>
+                    <VmDateField.Input>
+                      {(segment) => <VmDateField.Segment segment={segment} />}
+                    </VmDateField.Input>
+                  </VmDateField.Group>
+                </VmDateField>
+              </Field>
 
-            <Field>
-              <FieldLabel>Concepto / memo</FieldLabel>
-              <Input
-                fullWidth
-                variant="secondary"
-                aria-label="Concepto o memo del asiento"
-                type="text"
-                placeholder="Descripcion general del asiento"
-                value={description}
-                onChange={(event) => setDescription(event.target.value)}
-              />
-            </Field>
+              <Field>
+                <FieldLabel>Concepto / memo</FieldLabel>
+                <VmInput
+                  fullWidth
+                  aria-label="Concepto o memo del asiento"
+                  type="text"
+                  placeholder="Descripcion general del asiento"
+                  value={description}
+                  onChange={(event) => setDescription(event.target.value)}
+                />
+              </Field>
 
-            <Field $compact>
-              <FieldLabel>Tipo</FieldLabel>
-              <Select
-                fullWidth
-                variant="secondary"
-                aria-label="Tipo de asiento"
-                selectedKey={entryType}
-                onSelectionChange={handleEntryTypeChange}
-              >
-                <Select.Trigger>
-                  <Select.Value />
-                  <Select.Indicator />
-                </Select.Trigger>
-                <Select.Popover>
-                  <ListBox>
-                    {ENTRY_TYPE_OPTIONS.map((option) => (
-                      <ListBox.Item
-                        key={option.value}
-                        id={option.value}
-                        textValue={option.label}
-                      >
-                        {option.label}
-                        <ListBox.ItemIndicator />
-                      </ListBox.Item>
-                    ))}
-                  </ListBox>
-                </Select.Popover>
-              </Select>
-            </Field>
+              <Field $compact>
+                <FieldLabel>Tipo</FieldLabel>
+                <VmSelect
+                  fullWidth
+                  aria-label="Tipo de asiento"
+                  selectedKey={entryType}
+                  onSelectionChange={handleEntryTypeChange}
+                >
+                  <VmSelect.Trigger>
+                    <VmSelect.Value />
+                    <VmSelect.Indicator />
+                  </VmSelect.Trigger>
+                  <VmSelect.Popover>
+                    <ListBox>
+                      {ENTRY_TYPE_OPTIONS.map((option) => (
+                        <ListBox.Item
+                          key={option.value}
+                          id={option.value}
+                          textValue={option.label}
+                        >
+                          {option.label}
+                          <ListBox.ItemIndicator />
+                        </ListBox.Item>
+                      ))}
+                    </ListBox>
+                  </VmSelect.Popover>
+                </VmSelect>
+              </Field>
 
-            <Field $compact>
-              <FieldLabel>Ref. externa</FieldLabel>
-              <Input
-                fullWidth
-                variant="secondary"
-                aria-label="Referencia externa"
-                type="text"
-                placeholder="ej. NC-023"
-                value={note}
-                onChange={(event) => setNote(event.target.value)}
-              />
-            </Field>
-          </FormGrid>
+              <Field $compact>
+                <FieldLabel>Ref. externa</FieldLabel>
+                <VmInput
+                  fullWidth
+                  aria-label="Referencia externa"
+                  type="text"
+                  placeholder="ej. NC-023"
+                  value={note}
+                  onChange={(event) => setNote(event.target.value)}
+                />
+              </Field>
+            </FormGrid>
 
-          <LinesShell>
-            <LinesTable variant="secondary">
-              <Table.ScrollContainer>
-                <ManualLinesContent aria-label="Lineas del asiento manual">
-                  <ManualLinesHeader>
-                    <Table.Column isRowHeader>#</Table.Column>
-                    <Table.Column>Cuenta</Table.Column>
-                    <Table.Column>Descripcion</Table.Column>
-                    <Table.Column>Debito</Table.Column>
-                    <Table.Column>Credito</Table.Column>
-                    <Table.Column aria-label="Acciones" />
-                  </ManualLinesHeader>
-                  <Table.Body>
-                    {lines.map((line, index) => {
-                      const isLastLine = index === lines.length - 1;
-                      return (
-                        <Table.Row key={line.id} id={line.id}>
-                          <Table.Cell>{index + 1}</Table.Cell>
-                          <Table.Cell>
-                            <Select
-                              fullWidth
-                              variant="secondary"
-                              aria-label={`Cuenta linea ${index + 1}`}
-                              placeholder="Seleccionar cuenta"
-                              selectedKey={line.accountId || null}
-                              onSelectionChange={(key) =>
-                                handleLineAccountChange(line.id, key)
-                              }
-                            >
-                              <Select.Trigger>
-                                <Select.Value />
-                                <Select.Indicator />
-                              </Select.Trigger>
-                              <Select.Popover>
-                                <ListBox>
-                                  {accountOptions.map((account) => (
-                                    <ListBox.Item
-                                      key={account.id}
-                                      id={account.id}
-                                      textValue={account.label}
-                                    >
-                                      {account.label}
-                                      <ListBox.ItemIndicator />
-                                    </ListBox.Item>
-                                  ))}
-                                </ListBox>
-                              </Select.Popover>
-                            </Select>
-                          </Table.Cell>
-                          <Table.Cell>
-                            <Input
-                              fullWidth
-                              variant="secondary"
-                              aria-label={`Descripcion linea ${index + 1}`}
-                              value={line.description}
-                              onChange={(event) =>
-                                updateLine(
-                                  line.id,
-                                  'description',
-                                  event.target.value,
-                                )
-                              }
-                              placeholder="Descripcion de la linea"
-                            />
-                          </Table.Cell>
-                          <Table.Cell>
-                            <AmountNumberField
-                              fullWidth
-                              variant="secondary"
-                              aria-label={`Debito linea ${index + 1}`}
-                              minValue={0}
-                              step={0.01}
-                              value={line.debit || 0}
-                              onChange={(value) =>
-                                updateLine(line.id, 'debit', Number(value) || 0)
-                              }
-                            >
-                              <NumberField.Group>
-                                <NumberField.Input />
-                              </NumberField.Group>
-                            </AmountNumberField>
-                          </Table.Cell>
-                          <Table.Cell>
-                            <AmountNumberField
-                              fullWidth
-                              variant="secondary"
-                              aria-label={`Credito linea ${index + 1}`}
-                              minValue={0}
-                              step={0.01}
-                              value={line.credit || 0}
-                              onChange={(value) =>
-                                updateLine(
-                                  line.id,
-                                  'credit',
-                                  Number(value) || 0,
-                                )
-                              }
-                            >
-                              <NumberField.Group>
-                                <NumberField.Input
-                                  onKeyDown={(e) => {
-                                    if (
-                                      isLastLine &&
-                                      (e.key === 'Enter' ||
-                                        (e.key === 'Tab' && !e.shiftKey))
-                                    ) {
-                                      e.preventDefault();
-                                      addLine();
-                                    }
-                                  }}
-                                />
-                              </NumberField.Group>
-                            </AmountNumberField>
-                          </Table.Cell>
-                          <Table.Cell>
-                            <Button
-                              aria-label="Quitar linea"
-                              isIconOnly
-                              isDisabled={lines.length <= 2}
-                              size="sm"
-                              variant="danger-soft"
-                              onPress={() => removeLine(line.id)}
-                            >
-                              <FontAwesomeIcon icon={faTrash} />
-                            </Button>
-                          </Table.Cell>
-                        </Table.Row>
-                      );
-                    })}
-                    <TotalsRow id="manual-entry-totals">
-                      <Table.Cell colSpan={3}>
-                        <TfootLabel>Totales · RD$</TfootLabel>
-                      </Table.Cell>
-                      <TotalsNumCell
-                        $tone="debit"
-                        $error={hasAmounts && !balanced}
-                      >
-                        {formatAccountingMoney(totals.debit)}
-                      </TotalsNumCell>
-                      <TotalsNumCell
-                        $tone="credit"
-                        $error={hasAmounts && !balanced}
-                      >
-                        {formatAccountingMoney(totals.credit)}
-                      </TotalsNumCell>
-                      <Table.Cell />
-                    </TotalsRow>
-                  </Table.Body>
-                </ManualLinesContent>
-              </Table.ScrollContainer>
-            </LinesTable>
-          </LinesShell>
+            <LinesShell>
+              <LinesTable>
+                <Table.ScrollContainer>
+                  <ManualLinesContent aria-label="Lineas del asiento manual">
+                    <ManualLinesHeader>
+                      <Table.Column isRowHeader>#</Table.Column>
+                      <Table.Column>Cuenta</Table.Column>
+                      <Table.Column>Descripcion</Table.Column>
+                      <Table.Column>Debito</Table.Column>
+                      <Table.Column>Credito</Table.Column>
+                      <Table.Column aria-label="Acciones" />
+                    </ManualLinesHeader>
+                    <Table.Body>
+                      {lines.map((line, index) => {
+                        const isLastLine = index === lines.length - 1;
+                        return (
+                          <Table.Row key={line.id} id={line.id}>
+                            <Table.Cell>{index + 1}</Table.Cell>
+                            <Table.Cell>
+                              <VmSelect
+                                fullWidth
+                                aria-label={`Cuenta linea ${index + 1}`}
+                                placeholder="Seleccionar cuenta"
+                                selectedKey={line.accountId || null}
+                                onSelectionChange={(key) =>
+                                  handleLineAccountChange(line.id, key)
+                                }
+                              >
+                                <VmSelect.Trigger>
+                                  <VmSelect.Value />
+                                  <VmSelect.Indicator />
+                                </VmSelect.Trigger>
+                                <VmSelect.Popover>
+                                  <ListBox>
+                                    {accountOptions.map((account) => (
+                                      <ListBox.Item
+                                        key={account.id}
+                                        id={account.id}
+                                        textValue={account.label}
+                                      >
+                                        {account.label}
+                                        <ListBox.ItemIndicator />
+                                      </ListBox.Item>
+                                    ))}
+                                  </ListBox>
+                                </VmSelect.Popover>
+                              </VmSelect>
+                            </Table.Cell>
+                            <Table.Cell>
+                              <VmInput
+                                fullWidth
+                                aria-label={`Descripcion linea ${index + 1}`}
+                                value={line.description}
+                                onChange={(event) =>
+                                  updateLine(
+                                    line.id,
+                                    'description',
+                                    event.target.value,
+                                  )
+                                }
+                                placeholder="Descripcion de la linea"
+                              />
+                            </Table.Cell>
+                            <Table.Cell>
+                              <AmountNumberField
+                                fullWidth
+                                aria-label={`Debito linea ${index + 1}`}
+                                minValue={0}
+                                step={0.01}
+                                value={line.debit || 0}
+                                onChange={(value) =>
+                                  updateLine(
+                                    line.id,
+                                    'debit',
+                                    Number(value) || 0,
+                                  )
+                                }
+                              >
+                                <VmNumberField.Group>
+                                  <VmNumberField.Input />
+                                </VmNumberField.Group>
+                              </AmountNumberField>
+                            </Table.Cell>
+                            <Table.Cell>
+                              <AmountNumberField
+                                fullWidth
+                                aria-label={`Credito linea ${index + 1}`}
+                                minValue={0}
+                                step={0.01}
+                                value={line.credit || 0}
+                                onChange={(value) =>
+                                  updateLine(
+                                    line.id,
+                                    'credit',
+                                    Number(value) || 0,
+                                  )
+                                }
+                              >
+                                <VmNumberField.Group>
+                                  <VmNumberField.Input
+                                    onKeyDown={(e) => {
+                                      if (
+                                        isLastLine &&
+                                        (e.key === 'Enter' ||
+                                          (e.key === 'Tab' && !e.shiftKey))
+                                      ) {
+                                        e.preventDefault();
+                                        addLine();
+                                      }
+                                    }}
+                                  />
+                                </VmNumberField.Group>
+                              </AmountNumberField>
+                            </Table.Cell>
+                            <Table.Cell>
+                              <Button
+                                aria-label="Quitar linea"
+                                isIconOnly
+                                isDisabled={lines.length <= 2}
+                                size="sm"
+                                variant="danger-soft"
+                                onPress={() => removeLine(line.id)}
+                              >
+                                <FontAwesomeIcon icon={faTrash} />
+                              </Button>
+                            </Table.Cell>
+                          </Table.Row>
+                        );
+                      })}
+                      <TotalsRow id="manual-entry-totals">
+                        <Table.Cell colSpan={3}>
+                          <TfootLabel>Totales · RD$</TfootLabel>
+                        </Table.Cell>
+                        <TotalsNumCell
+                          $tone="debit"
+                          $error={hasAmounts && !balanced}
+                        >
+                          {formatAccountingMoney(totals.debit)}
+                        </TotalsNumCell>
+                        <TotalsNumCell
+                          $tone="credit"
+                          $error={hasAmounts && !balanced}
+                        >
+                          {formatAccountingMoney(totals.credit)}
+                        </TotalsNumCell>
+                        <Table.Cell />
+                      </TotalsRow>
+                    </Table.Body>
+                  </ManualLinesContent>
+                </Table.ScrollContainer>
+              </LinesTable>
+            </LinesShell>
 
-          <AddLineButton variant="tertiary" onPress={addLine}>
-            <PlusOutlined />
-            Agregar linea
-          </AddLineButton>
+            <AddLineButton variant="tertiary" onPress={addLine}>
+              <PlusOutlined />
+              Agregar linea
+            </AddLineButton>
 
-          {hasAmounts ? (
-            <BalanceBanner $balanced={balanced}>
-              {balanced ? (
-                <>
-                  <CheckCircleOutlined />
-                  <strong>Asiento cuadrado.</strong>
+            {hasAmounts ? (
+              <BalanceBanner $balanced={balanced}>
+                {balanced ? (
+                  <>
+                    <CheckCircleOutlined />
+                    <strong>Asiento cuadrado.</strong>
+                    <span>
+                      Debitos = Creditos = RD${' '}
+                      {formatAccountingMoney(totals.debit)}. Listo para
+                      contabilizar.
+                    </span>
+                  </>
+                ) : (
                   <span>
-                    Debitos = Creditos = RD${' '}
-                    {formatAccountingMoney(totals.debit)}. Listo para
-                    contabilizar.
+                    Diferencia RD$ {formatAccountingMoney(difference)}. Debitos
+                    y creditos deben cuadrar.
                   </span>
-                </>
-              ) : (
-                <span>
-                  Diferencia RD$ {formatAccountingMoney(difference)}. Debitos y
-                  creditos deben cuadrar.
-                </span>
-              )}
-            </BalanceBanner>
-          ) : null}
-        </MainCard>
+                )}
+              </BalanceBanner>
+            ) : null}
+          </MainSurfaceContent>
+        </MainSurface>
 
         <SupportGrid>
-          <SideCard variant="secondary">
+          <SideCard>
             <SideTitle>Resumen</SideTitle>
             <SummaryRows>
               <SummaryRow>
@@ -565,7 +575,7 @@ export const ManualEntriesPanel = ({
             </SummaryRows>
           </SideCard>
 
-          <SideCard variant="secondary">
+          <SideCard>
             <SideTitle>Validaciones</SideTitle>
             <ValidationList>
               <ValidationItem $ok={balanced}>
@@ -591,7 +601,7 @@ export const ManualEntriesPanel = ({
             </ValidationList>
           </SideCard>
 
-          <SideCard variant="secondary">
+          <SideCard>
             <SideTitle>Plantillas recientes</SideTitle>
             <TemplateList>
               {RECENT_TEMPLATES.map((template) => (
@@ -666,12 +676,15 @@ const EditorLayout = styled.div`
   gap: var(--ds-space-4);
 `;
 
-const MainCard = styled(Card)`
-  border: 1px solid var(--ds-color-border-default);
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-color-bg-surface);
-  box-shadow: var(--ds-shadow-sm);
-  overflow: hidden;
+const MainSurface = styled(VmSurface)`
+  border-radius: calc(var(--radius) * 3);
+`;
+
+const MainSurfaceContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
 `;
 
 const CardHeader = styled.div`
@@ -679,8 +692,7 @@ const CardHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: var(--ds-space-3);
-  padding: var(--ds-space-4);
-  border-bottom: 1px solid var(--ds-color-border-default);
+  padding: 0;
 `;
 
 const StatusPill = styled.div<{ $balanced: boolean; $active: boolean }>`
@@ -729,7 +741,7 @@ const FormGrid = styled.div`
     minmax(150px, 170px);
   gap: var(--ds-space-3);
   align-items: end;
-  padding: var(--ds-space-4);
+  padding: var(--ds-space-2) 0;
 
   @media (max-width: 860px) {
     grid-template-columns: 1fr;
@@ -851,9 +863,20 @@ const ManualLinesHeader = styled(Table.Header)`
   .table__column {
     background: var(--ds-color-bg-subtle);
   }
+
+  && .table__row:not(#manual-entry-totals):hover > .table__cell,
+  && .table__row:not(#manual-entry-totals)[data-hovered='true']
+    > .table__cell {
+    background: var(--ds-color-bg-surface) !important;
+  }
+
+  && #manual-entry-totals:hover > .table__cell,
+  && #manual-entry-totals[data-hovered='true'] > .table__cell {
+    background: var(--ds-color-bg-subtle) !important;
+  }
 `;
 
-const AmountNumberField = styled(NumberField)`
+const AmountNumberField = styled(VmNumberField)`
   width: 100%;
 
   .number-field__input {
@@ -896,6 +919,10 @@ const TotalsRow = styled(Table.Row)`
     padding: var(--ds-space-3) var(--ds-space-4);
     border-top: 1px solid var(--ds-color-border-default);
   }
+
+  .table__cell:first-child {
+    text-align: left;
+  }
 `;
 
 const TfootLabel = styled.span`
@@ -910,6 +937,10 @@ const TotalsNumCell = styled(Table.Cell)<{
   $error?: boolean;
   $tone: 'debit' | 'credit';
 }>`
+  && {
+    text-align: right;
+  }
+
   font-variant-numeric: tabular-nums;
   font-weight: var(--ds-font-weight-semibold);
   font-size: var(--ds-font-size-base);
@@ -933,11 +964,7 @@ const SupportGrid = styled.section`
   }
 `;
 
-const SideCard = styled(Card)`
-  border: 1px solid var(--ds-color-border-default);
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-color-bg-surface);
-  box-shadow: var(--ds-shadow-sm);
+const SideCard = styled(VmCard)`
   overflow: hidden;
 `;
 

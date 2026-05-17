@@ -1153,4 +1153,140 @@ describe('projectAccountingEventToJournalEntry', () => {
       }),
     ]);
   });
+
+  it('projects bank statement adjustment losses into the general ledger', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+      functionalCurrency: 'DOP',
+    });
+    collectionSnapshots.set('businesses/business-1/accountingPostingProfiles', [
+      {
+        id: 'profile-bank-statement-adjustment',
+        data: {
+          id: 'profile-bank-statement-adjustment',
+          name: 'Ajuste por diferencia bancaria',
+          eventType: 'bank_statement_adjustment.recorded',
+          status: 'active',
+          priority: 10,
+          linesTemplate: [
+            {
+              id: 'l1',
+              side: 'debit',
+              accountSystemKey: 'bank',
+              amountSource: 'bank_statement_adjustment_gain',
+            },
+            {
+              id: 'l2',
+              side: 'debit',
+              accountSystemKey: 'bank_reconciliation_expense',
+              amountSource: 'bank_statement_adjustment_loss',
+            },
+            {
+              id: 'l3',
+              side: 'credit',
+              accountSystemKey: 'bank',
+              amountSource: 'bank_statement_adjustment_loss',
+            },
+            {
+              id: 'l4',
+              side: 'credit',
+              accountSystemKey: 'bank_reconciliation_income',
+              amountSource: 'bank_statement_adjustment_gain',
+            },
+          ],
+        },
+      },
+    ]);
+    collectionSnapshots.set('businesses/business-1/chartOfAccounts', [
+      {
+        id: 'bank-1',
+        data: {
+          id: 'bank-1',
+          code: '1110',
+          name: 'Banco',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'bank',
+        },
+      },
+      {
+        id: 'bank-reconciliation-expense-1',
+        data: {
+          id: 'bank-reconciliation-expense-1',
+          code: '5260',
+          name: 'Gastos por conciliación bancaria',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'bank_reconciliation_expense',
+        },
+      },
+      {
+        id: 'bank-reconciliation-income-1',
+        data: {
+          id: 'bank-reconciliation-income-1',
+          code: '4160',
+          name: 'Ingresos por conciliación bancaria',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'bank_reconciliation_income',
+        },
+      },
+    ]);
+
+    await projectAccountingEventToJournalEntry({
+      params: {
+        businessId: 'business-1',
+        eventId: 'bank_statement_adjustment.recorded__statement-line-1',
+      },
+      data: {
+        data: () => ({
+          id: 'bank_statement_adjustment.recorded__statement-line-1',
+          businessId: 'business-1',
+          eventType: 'bank_statement_adjustment.recorded',
+          eventVersion: 1,
+          sourceType: 'bankStatementLine',
+          sourceId: 'statement-line-1',
+          sourceDocumentId: 'statement-line-1',
+          sourceDocumentType: 'bank_statement_line',
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: {
+            amount: -12.5,
+            functionalAmount: -12.5,
+          },
+          treasury: {
+            bankAccountId: 'bank-1',
+            paymentChannel: 'bank',
+          },
+        }),
+      },
+    });
+
+    const journalEntry =
+      documentSnapshots.get(
+        'businesses/business-1/journalEntries/bank_statement_adjustment.recorded__statement-line-1',
+      ) ?? null;
+
+    expect(journalEntry).toMatchObject({
+      id: 'bank_statement_adjustment.recorded__statement-line-1',
+      eventType: 'bank_statement_adjustment.recorded',
+      totals: {
+        debit: 12.5,
+        credit: 12.5,
+      },
+    });
+    expect(journalEntry.lines).toEqual([
+      expect.objectContaining({
+        accountSystemKey: 'bank_reconciliation_expense',
+        debit: 12.5,
+        credit: 0,
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'bank',
+        debit: 0,
+        credit: 12.5,
+      }),
+    ]);
+  });
 });

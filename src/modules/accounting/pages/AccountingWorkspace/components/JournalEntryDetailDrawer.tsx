@@ -32,7 +32,9 @@ const DOCUMENT_SOURCE_LABELS: Record<string, string> = {
   vendor: 'proveedor',
 };
 
-const formatVisibleDocumentReference = (value: string | null): string | null => {
+const formatVisibleDocumentReference = (
+  value: string | null,
+): string | null => {
   if (!value) {
     return null;
   }
@@ -43,7 +45,8 @@ const formatVisibleDocumentReference = (value: string | null): string | null => 
     return value;
   }
 
-  const typeLabel = DOCUMENT_TYPE_LABELS[groups.type.toLowerCase()] ?? 'Documento';
+  const typeLabel =
+    DOCUMENT_TYPE_LABELS[groups.type.toLowerCase()] ?? 'Documento';
   const sourceLabel =
     DOCUMENT_SOURCE_LABELS[groups.source.toLowerCase()] ?? groups.source;
   const shortFolio = groups.sequence.slice(-4).padStart(4, '0');
@@ -71,17 +74,24 @@ export const JournalEntryDetailDrawer = ({
   record,
   reversing = false,
 }: JournalEntryDetailDrawerProps) => {
-  const canReverse =
-    record?.detailMode === 'posted' &&
-    record.journalEntry?.status === 'posted';
+  const isPostedEntry =
+    record?.detailMode === 'posted' && record.journalEntry?.status === 'posted';
+  const isManualEntry =
+    record?.sourceKind === 'manual' &&
+    record.journalEntry?.eventType === 'manual.entry.recorded';
+  const isAutomaticEntry = record?.sourceKind === 'automatic';
+  const canReverse = isPostedEntry && isManualEntry;
   const originTarget = resolveAccountingOriginTarget(record);
   const visibleDocumentReference =
-    record?.documentReference && record.documentReference !== record.entryReference
+    record?.documentReference &&
+    record.documentReference !== record.entryReference
       ? record.documentReference
       : record?.reference && record.reference !== record.entryReference
         ? record.reference
         : null;
-  const documentLabel = formatVisibleDocumentReference(visibleDocumentReference);
+  const documentLabel = formatVisibleDocumentReference(
+    visibleDocumentReference,
+  );
 
   return (
     <Modal
@@ -104,6 +114,9 @@ export const JournalEntryDetailDrawer = ({
                     ? 'Asiento posteado'
                     : 'Vista previa'}
                 </HeaderBadge>
+                {isAutomaticEntry ? (
+                  <HeaderBadge>No editable</HeaderBadge>
+                ) : null}
               </SummaryBadges>
             </SummaryHeader>
 
@@ -188,6 +201,16 @@ export const JournalEntryDetailDrawer = ({
               </tfoot>
             </LinesTable>
           </LinesTableShell>
+
+          {isPostedEntry && isAutomaticEntry ? (
+            <CorrectionNotice>
+              <strong>Asiento automatico no editable.</strong>
+              <span>
+                Corrige desde el documento origen para mantener operacion y
+                contabilidad alineadas.
+              </span>
+            </CorrectionNotice>
+          ) : null}
 
           {originTarget || (canReverse && record.journalEntry) ? (
             <ActionRow>
@@ -298,6 +321,23 @@ const HeaderBlock = styled.div`
   border: 1px solid var(--ds-color-border-default);
   border-radius: var(--ds-radius-lg);
   background: var(--ds-color-bg-subtle);
+`;
+
+const CorrectionNotice = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border: 1px solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-color-state-warning-subtle);
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-sm);
+  line-height: var(--ds-line-height-normal);
+
+  span {
+    color: var(--ds-color-text-secondary);
+  }
 `;
 
 const MetaGrid = styled.div`

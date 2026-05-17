@@ -14,6 +14,12 @@ import {
   buildClosedPeriodInvoiceMessage,
   resolveInvoiceEffectiveDate,
 } from '../../accounting/utils/periodClosure.util.js';
+import { resolveBusinessFiscalRollout } from '../../../../modules/taxReceipt/utils/fiscalRollout.util.js';
+import {
+  getGisysFactConfigIssues,
+  resolveGisysFactConfig,
+} from '../../../../modules/electronicTaxReceipts/config/gisysFact.config.js';
+import { resolveGisysDocumentType } from '../../../../modules/electronicTaxReceipts/utils/gisysDocumentType.util.js';
 
 const safeNumber = (value) => {
   const parsed = Number(value);
@@ -268,9 +274,14 @@ export async function createPendingInvoice({
       },
     };
 
-    // Opcional: reserva NCF en esta fase si está habilitado
+    // Opcional: reserva NCF legacy o prepara e-CF cuando GISYS esta activo.
     const ncfEnabled = !!(payload?.ncf?.enabled || payload?.taxReceiptEnabled);
     const ncfType = payload?.ncf?.type || payload?.ncfType;
+    const fiscalRollout = resolveBusinessFiscalRollout(businessData);
+    const electronicTaxReceiptEnabled =
+      ncfEnabled &&
+      fiscalRollout.electronicModelEnabled === true &&
+      fiscalRollout.electronicTransportEnabled === true;
 
     if (businessRequiresFiscalReceipt && !ncfEnabled) {
       throw new https.HttpsError(
@@ -283,6 +294,7 @@ export async function createPendingInvoice({
     }
 
     let ncfReservation = null;
+    let electronicDocumentType = null;
     if (ncfEnabled) {
       if (!ncfType) {
         throw new https.HttpsError(
@@ -291,43 +303,96 @@ export async function createPendingInvoice({
           { reason: 'missing-ncf-type' },
         );
       }
-      try {
-        ncfReservation = await reserveNcf(tx, { businessId, userId, ncfType });
-      } catch (error) {
-        const rawMessage =
-          error instanceof Error ? error.message : String(error || '');
-        const normalizedMessage = rawMessage.toLowerCase();
-        const isNcfUnavailable =
-          normalizedMessage.includes('cantidad insuficiente') ||
-          normalizedMessage.includes('no se pudo encontrar un ncf') ||
-          normalizedMessage.includes('tipo de ncf no configurado') ||
-          normalizedMessage.includes('serie de ncf no configurada');
 
-        if (isNcfUnavailable) {
+      if (electronicTaxReceiptEnabled) {
+        const providerConfig = resolveGisysFactConfig(businessData);
+        const configIssues = getGisysFactConfigIssues(providerConfig);
+        if (configIssues.length > 0) {
           throw new https.HttpsError(
             'failed-precondition',
-            'No hay comprobantes disponibles para el tipo seleccionado',
+            'GISYS FACT no esta configurado para emitir comprobantes electronicos.',
             {
-              reason: 'ncf-unavailable',
-              ncfType,
-              message: rawMessage,
+              reason: 'gisys-config-invalid',
+              issues: configIssues,
             },
           );
         }
 
-        throw error;
+        electronicDocumentType = resolveGisysDocumentType({
+          ncfType,
+          ncf: payload?.ncf,
+          cart: canonicalCartPayload,
+        });
+        if (!electronicDocumentType) {
+          throw new https.HttpsError(
+            'invalid-argument',
+            'No se pudo mapear el comprobante fiscal al tipo e-CF de GISYS.',
+            {
+              reason: 'gisys-document-type-unresolved',
+              ncfType,
+            },
+          );
+        }
+
+        baseDoc.snapshot.ncf = {
+          ...baseDoc.snapshot.ncf,
+          type: ncfType,
+          code: null,
+          usageId: null,
+          status: 'electronic_pending',
+          documentFormat: 'electronic',
+          provider: providerConfig.providerId,
+          documentType: electronicDocumentType,
+        };
+        baseDoc.snapshot.electronicTaxReceipt = {
+          provider: providerConfig.providerId,
+          mode: providerConfig.mode,
+          status: 'pending',
+          documentType: electronicDocumentType,
+        };
+        baseDoc.statusTimeline.push({
+          status: 'electronic_tax_receipt_pending',
+          at: Timestamp.now(),
+        });
+      } else {
+        try {
+          ncfReservation = await reserveNcf(tx, { businessId, userId, ncfType });
+        } catch (error) {
+          const rawMessage =
+            error instanceof Error ? error.message : String(error || '');
+          const normalizedMessage = rawMessage.toLowerCase();
+          const isNcfUnavailable =
+            normalizedMessage.includes('cantidad insuficiente') ||
+            normalizedMessage.includes('no se pudo encontrar un ncf') ||
+            normalizedMessage.includes('tipo de ncf no configurado') ||
+            normalizedMessage.includes('serie de ncf no configurada');
+
+          if (isNcfUnavailable) {
+            throw new https.HttpsError(
+              'failed-precondition',
+              'No hay comprobantes disponibles para el tipo seleccionado',
+              {
+                reason: 'ncf-unavailable',
+                ncfType,
+                message: rawMessage,
+              },
+            );
+          }
+
+          throw error;
+        }
+        baseDoc.snapshot.ncf = {
+          ...baseDoc.snapshot.ncf,
+          type: ncfType,
+          code: ncfReservation.ncfCode,
+          usageId: ncfReservation.usageId,
+          status: 'reserved',
+        };
+        baseDoc.statusTimeline.push({
+          status: 'ncf_reserved',
+          at: Timestamp.now(),
+        });
       }
-      baseDoc.snapshot.ncf = {
-        ...baseDoc.snapshot.ncf,
-        type: ncfType,
-        code: ncfReservation.ncfCode,
-        usageId: ncfReservation.usageId,
-        status: 'reserved',
-      };
-      baseDoc.statusTimeline.push({
-        status: 'ncf_reserved',
-        at: Timestamp.now(),
-      });
     }
 
     tx.set(invoiceRef, baseDoc);
@@ -335,7 +400,12 @@ export async function createPendingInvoice({
       businessId,
       invoiceId: newInvoiceId,
       event: 'invoice_init',
-      data: { idempotencyKey, ncfReserved: !!ncfReservation, cartHash },
+      data: {
+        idempotencyKey,
+        ncfReserved: !!ncfReservation,
+        electronicTaxReceipt: !!electronicTaxReceiptEnabled,
+        cartHash,
+      },
     });
 
     // Crear tarea de outbox: actualizar inventario (Fase 3)
@@ -402,6 +472,40 @@ export async function createPendingInvoice({
       event: 'task_scheduled',
       data: { type: 'createCanonicalInvoice' },
     });
+
+    if (electronicTaxReceiptEnabled) {
+      const electronicTaskId = nanoid();
+      const electronicOutboxRef = db.doc(
+        `businesses/${businessId}/invoicesV2/${newInvoiceId}/outbox/${electronicTaskId}`,
+      );
+      tx.set(electronicOutboxRef, {
+        id: electronicTaskId,
+        type: 'issueElectronicTaxReceipt',
+        status: 'pending',
+        attempts: 0,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+        payload: {
+          businessId,
+          userId,
+          cart: canonicalCartPayload,
+          client: payload?.client || null,
+          ncfType,
+          documentType: electronicDocumentType,
+          dueDate: derivedDueDate || null,
+          invoiceComment: derivedInvoiceComment || null,
+        },
+      });
+      auditTx(tx, {
+        businessId,
+        invoiceId: newInvoiceId,
+        event: 'task_scheduled',
+        data: {
+          type: 'issueElectronicTaxReceipt',
+          documentType: electronicDocumentType,
+        },
+      });
+    }
 
     // Crear tarea de outbox: attach a cash count abierto (Fase 7)
     const ccTaskId = nanoid();

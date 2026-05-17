@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { message } from 'antd';
-import {
-  Timestamp,
-  collection,
-  onSnapshot,
-} from 'firebase/firestore';
+import { Timestamp, collection, onSnapshot } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 import { fbCreateBankReconciliation } from '@/firebase/treasury/fbCreateBankReconciliation';
@@ -168,9 +164,7 @@ export const useTreasuryWorkspace = ({
                   movementDoc.data(),
                 ),
               )
-              .filter(
-                (entry): entry is LiquidityLedgerEntry => entry != null,
-              ),
+              .filter((entry): entry is LiquidityLedgerEntry => entry != null),
           ),
           error: null,
           key: ledgerQueryKey,
@@ -213,7 +207,8 @@ export const useTreasuryWorkspace = ({
         console.error('Error cargando transferencias internas:', cause);
         setInternalTransfersState({
           error:
-            cause.message || 'No se pudieron cargar las transferencias internas.',
+            cause.message ||
+            'No se pudieron cargar las transferencias internas.',
           key: internalTransfersQueryKey,
           transfers: [],
         });
@@ -252,7 +247,8 @@ export const useTreasuryWorkspace = ({
         console.error('Error cargando conciliaciones bancarias:', cause);
         setReconciliationsState({
           error:
-            cause.message || 'No se pudieron cargar las conciliaciones bancarias.',
+            cause.message ||
+            'No se pudieron cargar las conciliaciones bancarias.',
           key: reconciliationsQueryKey,
           reconciliations: [],
         });
@@ -291,7 +287,8 @@ export const useTreasuryWorkspace = ({
         console.error('Error cargando líneas de extracto bancario:', cause);
         setStatementLinesState({
           error:
-            cause.message || 'No se pudieron cargar las líneas de extracto bancario.',
+            cause.message ||
+            'No se pudieron cargar las líneas de extracto bancario.',
           key: statementLinesQueryKey,
           statementLines: [],
         });
@@ -333,15 +330,20 @@ export const useTreasuryWorkspace = ({
       reconciliationsState.reconciliations,
     ],
   );
-  const ledgerLoading = Boolean(ledgerQueryKey && ledgerState.key !== ledgerQueryKey);
+  const ledgerLoading = Boolean(
+    ledgerQueryKey && ledgerState.key !== ledgerQueryKey,
+  );
   const internalTransfersLoading = Boolean(
-    internalTransfersQueryKey && internalTransfersState.key !== internalTransfersQueryKey,
+    internalTransfersQueryKey &&
+    internalTransfersState.key !== internalTransfersQueryKey,
   );
   const reconciliationsLoading = Boolean(
-    reconciliationsQueryKey && reconciliationsState.key !== reconciliationsQueryKey,
+    reconciliationsQueryKey &&
+    reconciliationsState.key !== reconciliationsQueryKey,
   );
   const statementLinesLoading = Boolean(
-    statementLinesQueryKey && statementLinesState.key !== statementLinesQueryKey,
+    statementLinesQueryKey &&
+    statementLinesState.key !== statementLinesQueryKey,
   );
 
   const liquidityAccounts = useMemo(
@@ -378,10 +380,15 @@ export const useTreasuryWorkspace = ({
   );
   const resolvedStatementLines = useMemo(
     () =>
-      statementLinesQueryKey && statementLinesState.key === statementLinesQueryKey
+      statementLinesQueryKey &&
+      statementLinesState.key === statementLinesQueryKey
         ? statementLinesState.statementLines
         : [],
-    [statementLinesQueryKey, statementLinesState.key, statementLinesState.statementLines],
+    [
+      statementLinesQueryKey,
+      statementLinesState.key,
+      statementLinesState.statementLines,
+    ],
   );
   const statementLinesByBankAccountId = useMemo(
     () =>
@@ -412,7 +419,9 @@ export const useTreasuryWorkspace = ({
 
       const amount = Number(draft.amount ?? 0);
       if (!Number.isFinite(amount) || amount <= 0) {
-        void message.error('El monto de la transferencia debe ser mayor a cero.');
+        void message.error(
+          'El monto de la transferencia debe ser mayor a cero.',
+        );
         return;
       }
 
@@ -462,7 +471,8 @@ export const useTreasuryWorkspace = ({
         return;
       }
 
-      const occurredAt = toNormalizedOccurredAt(draft.occurredAt) ?? Timestamp.now();
+      const occurredAt =
+        toNormalizedOccurredAt(draft.occurredAt) ?? Timestamp.now();
       try {
         await fbCreateInternalTransfer({
           allowOverdraft: draft.allowOverdraft === true,
@@ -535,13 +545,32 @@ export const useTreasuryWorkspace = ({
         void message.error('El balance del estado de cuenta no es válido.');
         return;
       }
+      const openingStatementBalance = Number(
+        draft.openingStatementBalance ?? 0,
+      );
+      if (!Number.isFinite(openingStatementBalance)) {
+        void message.error(
+          'El balance inicial del estado de cuenta no es válido.',
+        );
+        return;
+      }
 
+      const periodStart =
+        toNormalizedOccurredAt(draft.periodStart) ?? Timestamp.now();
       const statementDate =
         toNormalizedOccurredAt(draft.statementDate) ?? Timestamp.now();
+      if (periodStart.toMillis() > statementDate.toMillis()) {
+        void message.error(
+          'El inicio del periodo no puede ser posterior al cierre.',
+        );
+        return;
+      }
       try {
         await fbCreateBankReconciliation({
           businessId,
           bankAccountId: draft.bankAccountId,
+          openingStatementBalance,
+          periodStart: periodStart.toMillis(),
           statementBalance,
           statementDate: statementDate.toMillis(),
           reference: draft.reference?.trim() || null,
@@ -549,6 +578,8 @@ export const useTreasuryWorkspace = ({
           idempotencyKey: buildTreasuryIdempotencyKey('bank-reconciliation', [
             businessId,
             draft.bankAccountId,
+            openingStatementBalance,
+            periodStart.toMillis(),
             statementBalance,
             statementDate.toMillis(),
             draft.reference?.trim() || '',
@@ -583,7 +614,9 @@ export const useTreasuryWorkspace = ({
 
       const amount = Number(draft.amount ?? 0);
       if (!Number.isFinite(amount) || amount <= 0) {
-        void message.error('El monto de la línea bancaria debe ser mayor a cero.');
+        void message.error(
+          'El monto de la línea bancaria debe ser mayor a cero.',
+        );
         return;
       }
 
@@ -678,16 +711,19 @@ export const useTreasuryWorkspace = ({
             businessId,
             description: draft.description?.trim() || null,
             direction: draft.direction,
-            idempotencyKey: buildTreasuryIdempotencyKey('bank-statement-line-import', [
-              businessId,
-              draft.bankAccountId,
-              draft.direction,
-              amount,
-              statementDate.toMillis(),
-              draft.reference?.trim() || '',
-              movementIds.join(','),
-              index + 1,
-            ]),
+            idempotencyKey: buildTreasuryIdempotencyKey(
+              'bank-statement-line-import',
+              [
+                businessId,
+                draft.bankAccountId,
+                draft.direction,
+                amount,
+                statementDate.toMillis(),
+                draft.reference?.trim() || '',
+                movementIds.join(','),
+                index + 1,
+              ],
+            ),
             movementIds,
             reference: draft.reference?.trim() || null,
             statementDate: statementDate.toMillis(),
@@ -741,7 +777,8 @@ export const useTreasuryWorkspace = ({
         return;
       }
 
-      const resolutionMode = draft.resolutionMode === 'write_off' ? 'write_off' : 'match';
+      const resolutionMode =
+        draft.resolutionMode === 'write_off' ? 'write_off' : 'match';
       const movementIds = Array.isArray(draft.movementIds)
         ? draft.movementIds.filter(Boolean)
         : [];
@@ -757,14 +794,17 @@ export const useTreasuryWorkspace = ({
       try {
         const response = await fbResolveBankStatementLineMatch({
           businessId,
-          idempotencyKey: buildTreasuryIdempotencyKey('resolve-bank-statement-line', [
-            businessId,
-            draft.statementLineId,
-            resolutionMode,
-            movementIds.join(','),
-            draft.writeOffReason?.trim() || '',
-            draft.writeOffNotes?.trim() || '',
-          ]),
+          idempotencyKey: buildTreasuryIdempotencyKey(
+            'resolve-bank-statement-line',
+            [
+              businessId,
+              draft.statementLineId,
+              resolutionMode,
+              movementIds.join(','),
+              draft.writeOffReason?.trim() || '',
+              draft.writeOffNotes?.trim() || '',
+            ],
+          ),
           movementIds,
           resolutionMode,
           statementLineId: draft.statementLineId,
@@ -799,14 +839,14 @@ export const useTreasuryWorkspace = ({
     reconciliationsLoading ||
     statementLinesLoading;
   const error = businessId
-    ? ledgerState.error ??
+    ? (ledgerState.error ??
       internalTransfersState.error ??
       reconciliationsState.error ??
       statementLinesState.error ??
       cashAccountsError ??
       accountingError ??
-      null
-    : accountingError ?? null;
+      null)
+    : (accountingError ?? null);
 
   const recentLedgerEntries = useMemo(
     () => sortByOccurredAtDesc(resolvedLedgerEntries).slice(0, 20),
@@ -859,4 +899,6 @@ export const useTreasuryWorkspace = ({
   };
 };
 
-export type UseTreasuryWorkspaceResult = ReturnType<typeof useTreasuryWorkspace>;
+export type UseTreasuryWorkspaceResult = ReturnType<
+  typeof useTreasuryWorkspace
+>;

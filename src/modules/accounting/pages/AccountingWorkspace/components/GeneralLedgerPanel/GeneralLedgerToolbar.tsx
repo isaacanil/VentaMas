@@ -1,10 +1,11 @@
-import { ListBox, SearchField, Select } from '@heroui/react';
+import { ListBox } from '@heroui/react';
 import { useCallback, useMemo } from 'react';
 import type { Key } from 'react';
 import styled from 'styled-components';
 
-import { HeroUIDatePicker } from '@/components/common/DatePicker/HeroUIDatePicker';
+import { VmDatePicker } from '@/components/common/DatePicker/VmDatePicker';
 import type { DatePickerRangeValue } from '@/components/common/DatePicker/types';
+import { VmSearchField, VmSelect } from '@/components/heroui';
 
 import type { GeneralLedgerAccountOption } from '../../utils/accountingWorkspace';
 
@@ -62,19 +63,18 @@ export const GeneralLedgerToolbar = ({
         <ToolbarField>
           <ToolbarLabel>Cuenta</ToolbarLabel>
           <SelectWrapper>
-            <Select
+            <VmSelect
               aria-label="Cuenta contable"
               placeholder="Seleccionar cuenta"
               selectedKey={selectedAccountId || null}
-              variant="secondary"
               fullWidth
               onSelectionChange={handleAccountSelectionChange}
             >
-              <Select.Trigger>
-                <Select.Value />
-                <Select.Indicator />
-              </Select.Trigger>
-              <Select.Popover>
+              <VmSelect.Trigger>
+                <VmSelect.Value />
+                <VmSelect.Indicator />
+              </VmSelect.Trigger>
+              <VmSelect.Popover>
                 <ListBox items={accountSelectItems}>
                   {(option) => (
                     <ListBox.Item id={option.id} textValue={option.label}>
@@ -83,14 +83,14 @@ export const GeneralLedgerToolbar = ({
                     </ListBox.Item>
                   )}
                 </ListBox>
-              </Select.Popover>
-            </Select>
+              </VmSelect.Popover>
+            </VmSelect>
           </SelectWrapper>
         </ToolbarField>
 
         <ToolbarField $dateRange>
           <ToolbarLabel>Fechas</ToolbarLabel>
-          <HeroUIDatePicker
+          <VmDatePicker
             mode="range"
             value={dateRangeValue}
             placeholder="Seleccionar rango"
@@ -103,20 +103,20 @@ export const GeneralLedgerToolbar = ({
 
         <ToolbarField $search>
           <ToolbarLabel htmlFor="general-ledger-search">Buscar</ToolbarLabel>
-          <SearchField
+          <VmSearchField
             aria-label="Buscar movimientos del libro mayor"
             value={query}
             onChange={onQueryChange}
           >
-            <SearchField.Group>
-              <SearchField.SearchIcon />
-              <SearchField.Input
+            <VmSearchField.Group>
+              <VmSearchField.SearchIcon />
+              <VmSearchField.Input
                 id="general-ledger-search"
                 placeholder="Filtrar movimientos..."
               />
-              <SearchField.ClearButton />
-            </SearchField.Group>
-          </SearchField>
+              <VmSearchField.ClearButton />
+            </VmSearchField.Group>
+          </VmSearchField>
         </ToolbarField>
       </Toolbar>
     </ToolbarShell>

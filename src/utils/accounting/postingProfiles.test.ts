@@ -57,6 +57,12 @@ describe('postingProfiles', () => {
       type: 'income',
       systemKey: 'cash_over_short_income',
     }),
+    normalizeChartOfAccountRecord('bank-reconciliation-income-id', 'business-1', {
+      code: '4160',
+      name: 'Ingresos por conciliación bancaria',
+      type: 'income',
+      systemKey: 'bank_reconciliation_income',
+    }),
     normalizeChartOfAccountRecord('sales-id', 'business-1', {
       code: '4100',
       name: 'Ventas',
@@ -74,6 +80,12 @@ describe('postingProfiles', () => {
       name: 'Pérdidas por faltante de caja',
       type: 'expense',
       systemKey: 'cash_over_short_expense',
+    }),
+    normalizeChartOfAccountRecord('bank-reconciliation-expense-id', 'business-1', {
+      code: '5260',
+      name: 'Gastos por conciliación bancaria',
+      type: 'expense',
+      systemKey: 'bank_reconciliation_expense',
     }),
   ];
 
@@ -102,6 +114,9 @@ describe('postingProfiles', () => {
     expect(normalizeAccountingPostingAmountSource('cash_over_short_gain')).toBe(
       'cash_over_short_gain',
     );
+    expect(
+      normalizeAccountingPostingAmountSource('bank_statement_adjustment_loss'),
+    ).toBe('bank_statement_adjustment_loss');
   });
 
   it('construye templates base cuando existen las cuentas canonicas', () => {
@@ -162,6 +177,11 @@ describe('postingProfiles', () => {
     );
     expect(
       result.some((profile) => profile.name === 'Diferencia de cuadre de caja'),
+    ).toBe(true);
+    expect(
+      result.some(
+        (profile) => profile.name === 'Ajuste por diferencia bancaria',
+      ),
     ).toBe(true);
   });
 });

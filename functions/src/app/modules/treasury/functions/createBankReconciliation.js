@@ -21,6 +21,12 @@ const safeNumber = (value) => {
 
 const roundToTwoDecimals = (value) => Math.round(safeNumber(value) * 100) / 100;
 
+const parseMoneyAmount = (value) => {
+  if (value == null || value === '') return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? roundToTwoDecimals(parsed) : null;
+};
+
 const toMillis = (value) => {
   if (value == null) return null;
   if (typeof value === 'number') {
@@ -73,9 +79,11 @@ const isMovementPosted = (movementRecord) => {
 
 const classifyMovementsForReconciliation = ({
   cashMovementsSnap,
+  periodStartMillis,
   resolvedStatementDateMillis,
 }) => {
-  const eligibleMovementSnaps = [];
+  const openingMovementSnaps = [];
+  const periodMovementSnaps = [];
   let unreconciledMovementCount = 0;
 
   cashMovementsSnap.docs.forEach((movementSnap) => {
@@ -95,11 +103,21 @@ const classifyMovementsForReconciliation = ({
       return;
     }
 
-    eligibleMovementSnaps.push(movementSnap);
+    if (
+      periodStartMillis != null &&
+      movementMillis != null &&
+      movementMillis < periodStartMillis
+    ) {
+      openingMovementSnaps.push(movementSnap);
+      return;
+    }
+
+    periodMovementSnaps.push(movementSnap);
   });
 
   return {
-    eligibleMovementSnaps,
+    openingMovementSnaps,
+    periodMovementSnaps,
     unreconciledMovementCount,
   };
 };
@@ -110,15 +128,21 @@ const resolveBankReconciliationPayload = (payload) => {
     toCleanString(payload.businessID) ||
     null;
   const bankAccountId = toCleanString(payload.bankAccountId);
+  const openingStatementBalance = parseMoneyAmount(
+    payload.openingStatementBalance,
+  );
+  const periodStartMillis = toMillis(payload.periodStart);
   const reference = toCleanString(payload.reference);
   const note = toCleanString(payload.note ?? payload.notes);
-  const statementBalance = roundToTwoDecimals(payload.statementBalance);
+  const statementBalance = parseMoneyAmount(payload.statementBalance);
   const statementDateMillis = toMillis(payload.statementDate);
 
   return {
     bankAccountId,
     businessId,
     note,
+    openingStatementBalance,
+    periodStartMillis,
     reference,
     statementBalance,
     statementDateMillis,
@@ -129,6 +153,8 @@ const assertBankReconciliationPayload = ({
   bankAccountId,
   businessId,
   requireIdempotencyKey = false,
+  openingStatementBalance,
+  periodStartMillis,
   statementBalance,
   statementDateMillis,
   payload,
@@ -150,18 +176,33 @@ const assertBankReconciliationPayload = ({
       'statementBalance debe ser numérico.',
     );
   }
-  if (payload.statementDate != null && statementDateMillis == null) {
+  if (!Number.isFinite(openingStatementBalance)) {
     throw new HttpsError(
       'invalid-argument',
-      'statementDate debe ser una fecha válida.',
+      'openingStatementBalance debe ser numérico.',
+    );
+  }
+  if (payload.statementDate == null || statementDateMillis == null) {
+    throw new HttpsError(
+      'invalid-argument',
+      'statementDate debe ser una fecha válida y requerida.',
+    );
+  }
+  if (payload.periodStart == null || periodStartMillis == null) {
+    throw new HttpsError(
+      'invalid-argument',
+      'periodStart debe ser una fecha válida y requerida.',
+    );
+  }
+  if (periodStartMillis > statementDateMillis) {
+    throw new HttpsError(
+      'invalid-argument',
+      'periodStart no puede ser posterior a statementDate.',
     );
   }
 };
 
-const assertBankReconciliationAccess = async ({
-  authUid,
-  businessId,
-}) => {
+const assertBankReconciliationAccess = async ({ authUid, businessId }) => {
   await assertUserAccess({
     authUid,
     businessId,
@@ -177,6 +218,8 @@ const assertBankReconciliationAccess = async ({
 const buildReconciliationPreview = async ({
   bankAccountId,
   businessId,
+  openingStatementBalance,
+  periodStartMillis,
   resolvedStatementDateMillis,
   statementBalance,
   transaction,
@@ -209,27 +252,58 @@ const buildReconciliationPreview = async ({
     ? await transaction.get(cashMovementsQuery)
     : await cashMovementsQuery.get();
   const {
-    eligibleMovementSnaps,
+    openingMovementSnaps,
+    periodMovementSnaps,
     unreconciledMovementCount,
   } = classifyMovementsForReconciliation({
     cashMovementsSnap,
+    periodStartMillis,
     resolvedStatementDateMillis,
   });
-  const ledgerBalance = roundToTwoDecimals(
+  const ledgerOpeningBalance = roundToTwoDecimals(
     roundToTwoDecimals(bankAccount.openingBalance) +
-      eligibleMovementSnaps.reduce((sum, movementSnap) => {
+      openingMovementSnaps.reduce((sum, movementSnap) => {
         const movementRecord = asRecord(movementSnap.data());
         return sum + resolveMovementSignedAmount(movementRecord);
       }, 0),
   );
+  const ledgerPeriodMovementTotal = roundToTwoDecimals(
+    periodMovementSnaps.reduce((sum, movementSnap) => {
+      const movementRecord = asRecord(movementSnap.data());
+      return sum + resolveMovementSignedAmount(movementRecord);
+    }, 0),
+  );
+  const ledgerBalance = roundToTwoDecimals(
+    ledgerOpeningBalance + ledgerPeriodMovementTotal,
+  );
+  const statementMovementTotal = roundToTwoDecimals(
+    statementBalance - openingStatementBalance,
+  );
+  const openingVariance = roundToTwoDecimals(
+    openingStatementBalance - ledgerOpeningBalance,
+  );
+  const periodVariance = roundToTwoDecimals(
+    statementMovementTotal - ledgerPeriodMovementTotal,
+  );
   const variance = roundToTwoDecimals(statementBalance - ledgerBalance);
+  const status =
+    openingVariance === 0 && periodVariance === 0 && variance === 0
+      ? 'balanced'
+      : 'variance';
 
   return {
     bankAccount,
-    eligibleMovementSnaps,
+    carriedMovementCount: openingMovementSnaps.length,
     ledgerBalance,
-    reconciledMovementCount: eligibleMovementSnaps.length,
-    status: variance === 0 ? 'balanced' : 'variance',
+    ledgerOpeningBalance,
+    ledgerPeriodMovementTotal,
+    openingVariance,
+    periodMovementCount: periodMovementSnaps.length,
+    periodMovementSnaps,
+    periodVariance,
+    statementMovementTotal,
+    status,
+    reconciledMovementCount: periodMovementSnaps.length,
     unreconciledMovementCount,
     variance,
   };
@@ -245,6 +319,8 @@ export const previewBankReconciliation = onCall(async (request) => {
   const {
     bankAccountId,
     businessId,
+    openingStatementBalance,
+    periodStartMillis,
     statementBalance,
     statementDateMillis,
   } = resolveBankReconciliationPayload(payload);
@@ -252,6 +328,8 @@ export const previewBankReconciliation = onCall(async (request) => {
   assertBankReconciliationPayload({
     bankAccountId,
     businessId,
+    openingStatementBalance,
+    periodStartMillis,
     payload,
     statementBalance,
     statementDateMillis,
@@ -262,11 +340,15 @@ export const previewBankReconciliation = onCall(async (request) => {
     businessId,
   });
 
-  const resolvedStatementDateMillis = statementDateMillis ?? Date.now();
+  const resolvedStatementDateMillis = statementDateMillis;
+  const resolvedPeriodStartMillis = periodStartMillis;
   const statementDate = timestampFromMillis(resolvedStatementDateMillis);
+  const periodStart = timestampFromMillis(resolvedPeriodStartMillis);
   const preview = await buildReconciliationPreview({
     bankAccountId,
     businessId,
+    openingStatementBalance,
+    periodStartMillis: resolvedPeriodStartMillis,
     resolvedStatementDateMillis,
     statementBalance,
   });
@@ -275,11 +357,21 @@ export const previewBankReconciliation = onCall(async (request) => {
     ok: true,
     preview: sanitizeForResponse({
       bankAccountId,
+      carriedMovementCount: preview.carriedMovementCount,
       ledgerBalance: preview.ledgerBalance,
+      ledgerOpeningBalance: preview.ledgerOpeningBalance,
+      ledgerPeriodMovementTotal: preview.ledgerPeriodMovementTotal,
+      openingStatementBalance,
+      openingVariance: preview.openingVariance,
+      periodEnd: statementDate,
+      periodMovementCount: preview.periodMovementCount,
+      periodStart,
+      periodVariance: preview.periodVariance,
       reconciledMovementCount: preview.reconciledMovementCount,
       referenceDate: statementDate,
       statementBalance,
       statementDate,
+      statementMovementTotal: preview.statementMovementTotal,
       status: preview.status,
       unreconciledMovementCount: preview.unreconciledMovementCount,
       variance: preview.variance,
@@ -298,6 +390,8 @@ export const createBankReconciliation = onCall(async (request) => {
     bankAccountId,
     businessId,
     note,
+    openingStatementBalance,
+    periodStartMillis,
     reference,
     statementBalance,
     statementDateMillis,
@@ -308,6 +402,8 @@ export const createBankReconciliation = onCall(async (request) => {
     bankAccountId,
     businessId,
     idempotencyKey,
+    openingStatementBalance,
+    periodStartMillis,
     payload,
     requireIdempotencyKey: true,
     statementBalance,
@@ -319,10 +415,13 @@ export const createBankReconciliation = onCall(async (request) => {
     businessId,
   });
 
-  const resolvedStatementDateMillis = statementDateMillis ?? Date.now();
+  const resolvedStatementDateMillis = statementDateMillis;
+  const resolvedPeriodStartMillis = periodStartMillis;
   const requestHash = buildTreasuryIdempotencyRequestHash({
     businessId,
     bankAccountId,
+    openingStatementBalance,
+    periodStart: resolvedPeriodStartMillis,
     statementBalance,
     statementDate: resolvedStatementDateMillis,
     reference,
@@ -334,6 +433,7 @@ export const createBankReconciliation = onCall(async (request) => {
   );
 
   const statementDate = timestampFromMillis(resolvedStatementDateMillis);
+  const periodStart = timestampFromMillis(resolvedPeriodStartMillis);
 
   let result = null;
 
@@ -387,28 +487,40 @@ export const createBankReconciliation = onCall(async (request) => {
     const preview = await buildReconciliationPreview({
       bankAccountId,
       businessId,
+      openingStatementBalance,
+      periodStartMillis: resolvedPeriodStartMillis,
       resolvedStatementDateMillis,
       statementBalance,
       transaction,
     });
 
-    const reconciliationRef = db.collection(
-      `businesses/${businessId}/bankReconciliations`,
-    ).doc();
-    const statementLineRef = db.collection(
-      `businesses/${businessId}/bankStatementLines`,
-    ).doc();
+    const reconciliationRef = db
+      .collection(`businesses/${businessId}/bankReconciliations`)
+      .doc();
+    const statementLineRef = db
+      .collection(`businesses/${businessId}/bankStatementLines`)
+      .doc();
     const now = Timestamp.now();
     const reconciliationRecord = {
       id: reconciliationRef.id,
       businessId,
       bankAccountId,
+      periodStart,
+      periodEnd: statementDate,
       statementDate,
+      openingStatementBalance,
       statementBalance,
+      ledgerOpeningBalance: preview.ledgerOpeningBalance,
+      ledgerPeriodMovementTotal: preview.ledgerPeriodMovementTotal,
       ledgerBalance: preview.ledgerBalance,
       reconciledMovementCount: preview.reconciledMovementCount,
+      periodMovementCount: preview.periodMovementCount,
+      carriedMovementCount: preview.carriedMovementCount,
       statementLineCount: 1,
       unreconciledMovementCount: preview.unreconciledMovementCount,
+      statementMovementTotal: preview.statementMovementTotal,
+      openingVariance: preview.openingVariance,
+      periodVariance: preview.periodVariance,
       variance: preview.variance,
       status: preview.status,
       reference,
@@ -419,6 +531,7 @@ export const createBankReconciliation = onCall(async (request) => {
       updatedBy: authUid,
       metadata: {
         idempotencyKey,
+        sessionKind: 'period_close',
         statementLineId: statementLineRef.id,
       },
     };
@@ -439,22 +552,33 @@ export const createBankReconciliation = onCall(async (request) => {
       createdBy: authUid,
       metadata: {
         idempotencyKey,
+        openingStatementBalance,
         ledgerBalance: preview.ledgerBalance,
+        ledgerOpeningBalance: preview.ledgerOpeningBalance,
+        ledgerPeriodMovementTotal: preview.ledgerPeriodMovementTotal,
+        periodEnd: statementDate,
+        periodStart,
+        periodVariance: preview.periodVariance,
+        statementMovementTotal: preview.statementMovementTotal,
         variance: preview.variance,
       },
     };
 
     transaction.set(reconciliationRef, reconciliationRecord);
     transaction.set(statementLineRef, statementLineRecord);
-    preview.eligibleMovementSnaps.forEach((movementSnap) => {
+    preview.periodMovementSnaps.forEach((movementSnap) => {
+      const movementRecord = asRecord(movementSnap.data());
+      const movementUpdate = {
+        reconciliationId: reconciliationRef.id,
+        reconciliationStatus: 'reconciled',
+        reconciledAt: now,
+      };
+      if (!toCleanString(movementRecord.bankStatementLineId)) {
+        movementUpdate.bankStatementLineId = statementLineRef.id;
+      }
       transaction.set(
         db.doc(`businesses/${businessId}/cashMovements/${movementSnap.id}`),
-        {
-          reconciliationId: reconciliationRef.id,
-          reconciliationStatus: 'reconciled',
-          reconciledAt: now,
-          bankStatementLineId: statementLineRef.id,
-        },
+        movementUpdate,
         { merge: true },
       );
     });

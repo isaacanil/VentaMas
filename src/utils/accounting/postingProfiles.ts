@@ -152,6 +152,8 @@ export const ACCOUNTING_POSTING_AMOUNT_SOURCE_LABELS: Record<
   tax_total: 'Total de impuesto',
   cash_over_short_gain: 'Sobrante de caja',
   cash_over_short_loss: 'Faltante de caja',
+  bank_statement_adjustment_gain: 'Ajuste bancario a favor',
+  bank_statement_adjustment_loss: 'Ajuste bancario en contra',
   accounts_receivable_payment_amount: 'Monto del cobro',
   accounts_payable_payment_amount: 'Monto del pago',
   transfer_amount: 'Monto transferido',
@@ -243,6 +245,8 @@ export const normalizeAccountingPostingAmountSource = (
     case 'tax_total':
     case 'cash_over_short_gain':
     case 'cash_over_short_loss':
+    case 'bank_statement_adjustment_gain':
+    case 'bank_statement_adjustment_loss':
     case 'accounts_receivable_payment_amount':
     case 'accounts_payable_payment_amount':
     case 'transfer_amount':
@@ -944,6 +948,41 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
         side: 'credit',
         accountSystemKey: 'cash_over_short_income',
         amountSource: 'cash_over_short_gain',
+        omitIfZero: true,
+      },
+    ],
+  },
+  {
+    seedKey: 'bank_statement_adjustment',
+    name: 'Ajuste por diferencia bancaria',
+    description:
+      'Registra diferencias aceptadas al conciliar líneas de extracto bancario.',
+    eventType: 'bank_statement_adjustment.recorded',
+    moduleKey: 'banking',
+    priority: 72,
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'bank',
+        amountSource: 'bank_statement_adjustment_gain',
+        omitIfZero: true,
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'bank_reconciliation_expense',
+        amountSource: 'bank_statement_adjustment_loss',
+        omitIfZero: true,
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'bank',
+        amountSource: 'bank_statement_adjustment_loss',
+        omitIfZero: true,
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'bank_reconciliation_income',
+        amountSource: 'bank_statement_adjustment_gain',
         omitIfZero: true,
       },
     ],

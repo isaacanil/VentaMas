@@ -108,6 +108,13 @@ export const ACCOUNTING_EVENT_DEFINITIONS: AccountingEventDefinition[] = [
     description: 'Sobrante o faltante detectado al cerrar un cuadre de caja.',
   },
   {
+    eventType: 'bank_statement_adjustment.recorded',
+    moduleKey: 'banking',
+    label: 'Ajuste de extracto bancario registrado',
+    description:
+      'Diferencia aceptada al resolver una línea de extracto bancario.',
+  },
+  {
     eventType: 'internal_transfer.posted',
     moduleKey: 'banking',
     label: 'Transferencia interna posteada',

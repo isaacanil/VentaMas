@@ -316,6 +316,26 @@ describe('resolveBankStatementLineMatch', () => {
     );
     expect(transactionSetMock).toHaveBeenCalledWith(
       expect.objectContaining({
+        path: 'businesses/business-1/accountingEvents/bank_statement_adjustment.recorded__statement-line-3',
+      }),
+      expect.objectContaining({
+        businessId: 'business-1',
+        eventType: 'bank_statement_adjustment.recorded',
+        monetary: expect.objectContaining({
+          amount: 10,
+          functionalAmount: 10,
+        }),
+        sourceDocumentId: 'statement-line-3',
+        sourceDocumentType: 'bank_statement_line',
+        treasury: expect.objectContaining({
+          bankAccountId: 'bank-1',
+          paymentChannel: 'bank',
+        }),
+      }),
+      { merge: true },
+    );
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
         path: 'businesses/business-1/bankStatementLines/statement-line-3',
       }),
       expect.objectContaining({
