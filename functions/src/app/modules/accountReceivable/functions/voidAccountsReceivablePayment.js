@@ -148,6 +148,14 @@ const paymentMethodsRequireCashCount = (paymentMethods) =>
     return methodCode === 'cash' || methodCode === 'open_cash';
   });
 
+const isReconciledMovement = (movementRecord) =>
+  Boolean(
+    toCleanString(movementRecord.reconciliationId) ||
+      toCleanString(movementRecord.bankStatementLineId) ||
+      toCleanString(movementRecord.reconciliationStatus)?.toLowerCase() ===
+        'reconciled',
+  );
+
 const resolvePaymentAmount = (paymentRecord) => {
   const totalApplied = roundToTwoDecimals(paymentRecord?.totalApplied);
   if (totalApplied > THRESHOLD) {
@@ -484,7 +492,13 @@ export const voidAccountsReceivablePayment = onCall(async (request) => {
   let result = null;
 
   await db.runTransaction(async (transaction) => {
-    const paymentSnap = await transaction.get(paymentRef);
+    const cashMovementsQuery = db
+      .collection(`businesses/${businessId}/cashMovements`)
+      .where('sourceId', '==', paymentId);
+    const [paymentSnap, cashMovementsSnap] = await Promise.all([
+      transaction.get(paymentRef),
+      transaction.get(cashMovementsQuery),
+    ]);
     if (!paymentSnap.exists) {
       throw new HttpsError('not-found', 'El pago de cuentas por cobrar no existe.');
     }
@@ -501,6 +515,16 @@ export const voidAccountsReceivablePayment = onCall(async (request) => {
         alreadyVoided: true,
       });
       return;
+    }
+
+    const reconciledMovement = cashMovementsSnap.docs.find((docSnap) =>
+      isReconciledMovement(asRecord(docSnap.data())),
+    );
+    if (reconciledMovement) {
+      throw new HttpsError(
+        'failed-precondition',
+        'El cobro tiene movimientos de caja/banco conciliados. Debe revertirse mediante un flujo de conciliación/refund controlado.',
+      );
     }
 
     const paymentMethods = Array.isArray(paymentRecord.paymentMethods)

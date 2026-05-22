@@ -1,4 +1,9 @@
-import { ApartmentOutlined, BugOutlined } from '@ant-design/icons';
+import {
+  ApartmentOutlined,
+  ApiOutlined,
+  AppstoreOutlined,
+  BugOutlined,
+} from '@ant-design/icons';
 
 import { icons } from '@/constants/icons/icons';
 import ROUTES_NAME from '@/router/routes/routesName';
@@ -12,10 +17,31 @@ export const developerShortcuts = [
     category: 'Herramientas',
   },
   {
+    id: 'heroui-playground',
+    title: 'HeroUI base',
+    icon: <AppstoreOutlined />,
+    route: ROUTES_NAME.LAB_TERM.HEROUI,
+    category: 'UI',
+  },
+  {
+    id: 'vm-components-playground',
+    title: 'Componentes VM',
+    icon: <AppstoreOutlined />,
+    route: ROUTES_NAME.LAB_TERM.HEROUI_CUSTOM,
+    category: 'UI',
+  },
+  {
     id: 'fiscal-audit',
     title: 'Análisis de comprobantes',
     icon: <BugOutlined />,
     route: ROUTES_NAME.DEV_VIEW_TERM.FISCAL_RECEIPTS_AUDIT,
+    category: 'Comprobantes Fiscal',
+  },
+  {
+    id: 'electronic-tax-receipt-provider',
+    title: 'Runtime e-CF GISYS',
+    icon: <ApiOutlined />,
+    route: ROUTES_NAME.DEV_VIEW_TERM.ELECTRONIC_TAX_RECEIPT_PROVIDER,
     category: 'Comprobantes Fiscal',
   },
   {

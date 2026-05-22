@@ -20,6 +20,7 @@ export type LiquidityEntrySourceType =
   | 'receivable_payment'
   | 'receivable_payment_void'
   | 'supplier_payment'
+  | 'supplier_payment_void'
   | 'expense'
   | 'credit_note_application'
   | 'cash_adjustment';

@@ -15,6 +15,8 @@ export type {
   VmCardProps,
   VmCardTitleProps,
 } from './Card';
+export { VmButton } from './Button';
+export type { VmButtonProps } from './Button';
 export { VmDateField } from './DateField';
 export type {
   VmDateFieldGroupProps,
@@ -45,6 +47,19 @@ export type {
   VmDropdownSubmenuTriggerProps,
   VmDropdownTriggerProps,
 } from './Dropdown';
+export { VmDrawer } from './Drawer';
+export type {
+  VmDrawerBackdropProps,
+  VmDrawerBodyProps,
+  VmDrawerContentProps,
+  VmDrawerDialogProps,
+  VmDrawerFooterProps,
+  VmDrawerHandleProps,
+  VmDrawerHeaderProps,
+  VmDrawerHeadingProps,
+  VmDrawerProps,
+  VmDrawerRootBaseProps,
+} from './Drawer';
 export { VmInput } from './Input';
 export type { VmInputProps } from './Input';
 export { VmInputOTP } from './InputOTP';
@@ -54,6 +69,18 @@ export type {
   VmInputOTPSeparatorProps,
   VmInputOTPSlotProps,
 } from './InputOTP';
+export { VmModal } from './Modal';
+export type {
+  VmModalBackdropProps,
+  VmModalBodyProps,
+  VmModalContainerProps,
+  VmModalDialogProps,
+  VmModalFooterProps,
+  VmModalHeaderProps,
+  VmModalHeadingProps,
+  VmModalProps,
+  VmModalRootBaseProps,
+} from './Modal';
 export { VmNumberField } from './NumberField';
 export type {
   VmNumberFieldDecrementButtonProps,
@@ -80,6 +107,8 @@ export type {
 } from './Select';
 export { VmSurface } from './Surface';
 export type { VmSurfaceProps } from './Surface';
+export { VmSwitch } from './Switch';
+export type { VmSwitchProps } from './Switch';
 export { VmTooltip } from './Tooltip';
 export type {
   VmTooltipArrowProps,

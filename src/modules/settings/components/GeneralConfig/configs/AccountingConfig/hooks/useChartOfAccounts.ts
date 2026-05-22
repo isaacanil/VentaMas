@@ -7,15 +7,17 @@ import {
 } from 'react';
 import { message } from 'antd';
 import {
-  Timestamp,
   collection,
-  doc,
   onSnapshot,
   orderBy,
   query,
-  writeBatch,
 } from 'firebase/firestore';
 
+import {
+  createChartOfAccountConfig,
+  disableChartOfAccountConfig,
+  updateChartOfAccountConfig,
+} from '@/firebase/accounting/accountingConfiguration';
 import { db } from '@/firebase/firebaseconfig';
 import type { ChartOfAccount } from '@/types/accounting';
 import {
@@ -88,34 +90,6 @@ const getProtectedAccountReason = ({
 
   return null;
 };
-
-const buildChartOfAccountSnapshot = ({
-  businessId,
-  chartOfAccountId,
-  draft,
-  metadata,
-  status = 'active',
-}: {
-  businessId: string;
-  chartOfAccountId: string;
-  draft: ChartOfAccountDraft;
-  metadata?: Record<string, unknown> | null;
-  status?: ChartOfAccount['status'];
-}) => ({
-  id: chartOfAccountId,
-  businessId,
-  code: draft.code,
-  name: draft.name,
-  type: draft.type,
-  subtype: draft.subtype ?? null,
-  parentId: draft.parentId ?? null,
-  postingAllowed: draft.postingAllowed !== false,
-  status,
-  normalSide: draft.normalSide,
-  currencyMode: draft.currencyMode,
-  systemKey: draft.systemKey ?? null,
-  metadata: metadata ?? draft.metadata ?? {},
-});
 
 export const useChartOfAccounts = ({
   businessId,
@@ -217,26 +191,14 @@ export const useChartOfAccounts = ({
 
       setSaving(true);
       try {
-        const accountRef = doc(
-          collection(db, 'businesses', businessId, 'chartOfAccounts'),
-        );
-        const now = Timestamp.now();
-        const accountSnapshot = buildChartOfAccountSnapshot({
+        await createChartOfAccountConfig({
           businessId,
-          chartOfAccountId: accountRef.id,
-          draft,
-          status: 'active',
+          account: {
+            ...draft,
+            status: 'active',
+          },
+          clientUserId: userId,
         });
-        const batch = writeBatch(db);
-
-        batch.set(accountRef, {
-          ...accountSnapshot,
-          createdAt: now,
-          updatedAt: now,
-          createdBy: userId ?? null,
-          updatedBy: userId ?? null,
-        });
-        await batch.commit();
 
         message.success('Cuenta contable creada.');
         return true;
@@ -365,37 +327,20 @@ export const useChartOfAccounts = ({
 
       setSaving(true);
       try {
-        const accountRef = doc(
-          db,
-          'businesses',
-          businessId,
-          'chartOfAccounts',
-          chartOfAccountId,
-        );
-        const now = Timestamp.now();
         const nextMetadata = {
           ...existingAccount.metadata,
           ...draft.metadata,
         };
-        const nextSnapshot = buildChartOfAccountSnapshot({
+        await updateChartOfAccountConfig({
           businessId,
-          chartOfAccountId,
-          draft,
-          metadata: nextMetadata,
-          status: existingAccount.status,
-        });
-        const batch = writeBatch(db);
-
-        batch.set(
-          accountRef,
-          {
-            ...nextSnapshot,
-            updatedAt: now,
-            updatedBy: userId ?? null,
+          accountId: chartOfAccountId,
+          account: {
+            ...draft,
+            metadata: nextMetadata,
+            status: existingAccount.status,
           },
-          { merge: true },
-        );
-        await batch.commit();
+          clientUserId: userId,
+        });
 
         message.success('Cuenta contable actualizada.');
         return true;
@@ -455,26 +400,23 @@ export const useChartOfAccounts = ({
 
       setSaving(true);
       try {
-        const accountRef = doc(
-          db,
-          'businesses',
-          businessId,
-          'chartOfAccounts',
-          chartOfAccountId,
-        );
-        const now = Timestamp.now();
-        const batch = writeBatch(db);
-
-        batch.set(
-          accountRef,
-          {
-            status,
-            updatedAt: now,
-            updatedBy: userId ?? null,
-          },
-          { merge: true },
-        );
-        await batch.commit();
+        if (status === 'inactive') {
+          await disableChartOfAccountConfig({
+            businessId,
+            accountId: chartOfAccountId,
+            clientUserId: userId,
+          });
+        } else {
+          await updateChartOfAccountConfig({
+            businessId,
+            accountId: chartOfAccountId,
+            account: {
+              ...targetAccount,
+              status,
+            },
+            clientUserId: userId,
+          });
+        }
 
         message.success(
           status === 'active'
@@ -542,26 +484,17 @@ export const useChartOfAccounts = ({
 
     setSeeding(true);
     try {
-      const chartRef = collection(db, 'businesses', businessId, 'chartOfAccounts');
-      const refsByCode = new Map(
-        templatesToCreate.map((template) => [template.code, doc(chartRef)]),
-      );
-      const batch = writeBatch(db);
-      const now = Timestamp.now();
+      const createdByCode = new Map<string, string>();
 
-      templatesToCreate.forEach((template) => {
-        const accountRef = refsByCode.get(template.code);
-        if (!accountRef) return;
-
+      for (const template of templatesToCreate) {
         const parentId = template.parentCode
           ? existingByCode.get(template.parentCode)?.id ??
-            refsByCode.get(template.parentCode)?.id ??
+            createdByCode.get(template.parentCode) ??
             null
           : null;
-        const accountSnapshot = buildChartOfAccountSnapshot({
+        const result = await createChartOfAccountConfig({
           businessId,
-          chartOfAccountId: accountRef.id,
-          draft: {
+          account: {
             ...template,
             parentId,
             currencyMode:
@@ -572,22 +505,10 @@ export const useChartOfAccounts = ({
               seededBy: 'default_chart_template',
             },
           },
-          metadata: {
-            seededBy: 'default_chart_template',
-          },
-          status: 'active',
+          clientUserId: userId,
         });
-
-        batch.set(accountRef, {
-          ...accountSnapshot,
-          createdAt: now,
-          updatedAt: now,
-          createdBy: userId ?? null,
-          updatedBy: userId ?? null,
-        });
-      });
-
-      await batch.commit();
+        createdByCode.set(template.code, result.accountId);
+      }
       message.success('Plantilla base de catálogo de cuentas creada.');
     } catch (cause) {
       console.error('Error sembrando chartOfAccounts:', cause);

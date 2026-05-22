@@ -1,17 +1,13 @@
-import {
-  Modal,
-  Select,
-  Typography,
-  Button,
-  type ModalProps as AntdModalProps,
-} from 'antd';
+import { Label, ListBox, ListBoxItem } from '@heroui/react';
 import PropTypes from 'prop-types';
+import type { Key } from 'react';
 import styled from 'styled-components';
+import { VmButton, VmModal, VmSelect } from '@/components/heroui';
 import type { TaxReceiptData, TaxReceiptItem } from '@/types/taxReceipt';
 
 type ReceiptOption = {
-  value?: string;
-  label?: string;
+  id: string;
+  label: string;
   remaining?: string | number;
 };
 
@@ -24,12 +20,9 @@ type TaxReceiptDepletedModalProps = {
   onRetry?: () => void;
   onContinueWithout?: () => void;
   onCancel?: () => void;
-  getContainer?: AntdModalProps['getContainer'];
 };
 
 const EMPTY_TAX_RECEIPT_ITEMS: TaxReceiptItem[] = [];
-const getSelectPopupContainer = (triggerNode: HTMLElement) =>
-  triggerNode.parentElement ?? triggerNode;
 
 const resolveReceiptData = (
   receipt: TaxReceiptItem | null | undefined,
@@ -40,6 +33,10 @@ const resolveReceiptData = (
   }
   return receipt ?? null;
 };
+
+const isReceiptOption = (
+  option: ReceiptOption | null,
+): option is ReceiptOption => option !== null;
 
 const buildOptions = (receipts: TaxReceiptItem[]): ReceiptOption[] => {
   if (!Array.isArray(receipts)) return [];
@@ -72,28 +69,32 @@ const buildOptions = (receipts: TaxReceiptItem[]): ReceiptOption[] => {
       const normalizedQuantity = Number.isFinite(quantity) ? quantity : 0;
       return normalizedQuantity >= normalizedIncrease;
     })
-    .map((receipt) => ({
-      value: resolveReceiptData(receipt)?.name,
-      label: resolveReceiptData(receipt)?.name,
-      remaining: resolveReceiptData(receipt)?.quantity,
-    }));
-};
+    .map((receipt) => {
+      const data = resolveReceiptData(receipt);
+      const name = data?.name?.trim();
 
-const FooterContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: flex-end;
-`;
+      if (!name) return null;
+
+      return {
+        id: name,
+        label: name,
+        remaining: data?.quantity,
+      };
+    })
+    .filter(isReceiptOption);
+};
 
 const OptionLabel = styled.div`
   display: flex;
+  width: 100%;
+  gap: var(--ds-space-3);
   justify-content: space-between;
 `;
 
 const RemainingTag = styled.span`
-  font-size: 12px;
-  color: var(--text-secondary-color, #595959);
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-xs);
+  white-space: nowrap;
 `;
 
 const ContentWrapper = styled.div`
@@ -105,6 +106,27 @@ const Highlight = styled.span`
   font-weight: 600;
 `;
 
+const BodyText = styled.p`
+  margin: 0;
+  color: var(--ds-color-text-primary);
+  line-height: var(--ds-line-height-normal);
+`;
+
+const MutedText = styled.p`
+  margin: 0;
+  color: var(--ds-color-text-secondary);
+  line-height: var(--ds-line-height-normal);
+`;
+
+const ReceiptField = styled.div`
+  display: grid;
+  gap: var(--ds-space-2);
+`;
+
+const FieldLabel = styled(Label)`
+  font-weight: var(--ds-font-weight-semibold);
+`;
+
 export const TaxReceiptDepletedModal = ({
   open,
   receipts = EMPTY_TAX_RECEIPT_ITEMS,
@@ -114,88 +136,101 @@ export const TaxReceiptDepletedModal = ({
   onRetry = () => undefined,
   onContinueWithout = undefined,
   onCancel = () => undefined,
-  getContainer = undefined,
 }: TaxReceiptDepletedModalProps) => {
   const options = buildOptions(receipts);
-  const selectedOption = options.find(
-    (option) => option.value === currentReceipt,
+  const selectedOption = options.find((option) => option.id === currentReceipt);
+  const selectedKey = selectedOption?.id ?? null;
+  const handleSelectionChange = (key: Key | null) => {
+    if (key !== null) {
+      onSelectReceipt(String(key));
+    }
+  };
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      onCancel();
+    }
+  };
+  const footer = (
+    <>
+      <VmButton variant="outline" onPress={onCancel} isDisabled={loading}>
+        Volver
+      </VmButton>
+      {onContinueWithout ? (
+        <VmButton
+          variant="secondary"
+          onPress={onContinueWithout}
+          isDisabled={loading}
+        >
+          Continuar sin comprobante
+        </VmButton>
+      ) : null}
+      <VmButton
+        variant="primary"
+        onPress={onRetry}
+        isDisabled={!selectedOption || loading}
+        isPending={loading}
+      >
+        Continuar con comprobante
+      </VmButton>
+    </>
   );
 
   return (
-    <Modal
-      open={open}
-      onCancel={onCancel}
-      footer={null}
+    <VmModal
+      isOpen={open}
+      onOpenChange={handleOpenChange}
       title="Sin comprobantes"
-      destroyOnHidden
-      getContainer={getContainer}
-      focusable={{ focusTriggerAfterClose: false }}
+      size="sm"
+      footer={footer}
     >
       <ContentWrapper>
-        <Typography.Paragraph>
+        <BodyText>
           No hay comprobantes del tipo{' '}
           <Highlight>{currentReceipt || 'actual'}</Highlight>. Debes elegir otro
           comprobante disponible para continuar.
-        </Typography.Paragraph>
+        </BodyText>
 
         {options.length > 0 ? (
-          <div>
-            <Typography.Text strong>Elige un comprobante</Typography.Text>
-            <Select
-              value={currentReceipt}
-              style={{ width: '100%', marginTop: '0.5rem' }}
+          <ReceiptField>
+            <VmSelect
+              selectedKey={selectedKey}
+              onSelectionChange={handleSelectionChange}
               placeholder="Elige un comprobante"
-              showSearch
-              optionFilterProp="label"
-              getPopupContainer={getSelectPopupContainer}
-              onChange={onSelectReceipt}
-              filterOption={(input, option) =>
-                typeof option?.label === 'string' &&
-                option.label.toLowerCase().includes(input.toLowerCase())
-              }
-              options={options.map((option) => ({
-                value: option.value,
-                label: option.label,
-                remaining: option.remaining,
-              }))}
-              optionRender={(opt) => (
-                <OptionLabel>
-                  <span>{opt.data.label as string}</span>
-                  {(opt.data as any).remaining && (
-                    <RemainingTag>Quedan: {(opt.data as any).remaining}</RemainingTag>
+              fullWidth
+            >
+              <FieldLabel>Elige un comprobante</FieldLabel>
+              <VmSelect.Trigger>
+                <VmSelect.Value />
+                <VmSelect.Indicator />
+              </VmSelect.Trigger>
+              <VmSelect.Popover>
+                <ListBox aria-label="Comprobantes disponibles" items={options}>
+                  {(option) => (
+                    <ListBoxItem id={option.id} textValue={option.label}>
+                      <OptionLabel>
+                        <span>{option.label}</span>
+                        {option.remaining ? (
+                          <RemainingTag>
+                            Quedan: {option.remaining}
+                          </RemainingTag>
+                        ) : null}
+                      </OptionLabel>
+                      <ListBoxItem.Indicator />
+                    </ListBoxItem>
                   )}
-                </OptionLabel>
-              )}
-            />
-          </div>
+                </ListBox>
+              </VmSelect.Popover>
+            </VmSelect>
+          </ReceiptField>
         ) : (
-          <Typography.Text type="secondary">
+          <MutedText>
             No hay otros comprobantes con numeración disponible. No puedes
             completar la venta sin comprobante mientras la facturación fiscal
             esté activa.
-          </Typography.Text>
+          </MutedText>
         )}
-
-        <FooterContainer>
-          <Button onClick={onCancel} disabled={loading}>
-            Volver
-          </Button>
-          {onContinueWithout ? (
-            <Button onClick={onContinueWithout} disabled={loading}>
-              Continuar sin comprobante
-            </Button>
-          ) : null}
-          <Button
-            type="primary"
-            onClick={onRetry}
-            disabled={!selectedOption || loading}
-            loading={loading}
-          >
-            Continuar con comprobante
-          </Button>
-        </FooterContainer>
       </ContentWrapper>
-    </Modal>
+    </VmModal>
   );
 };
 
@@ -215,10 +250,6 @@ TaxReceiptDepletedModal.propTypes = {
   loading: PropTypes.bool,
   onSelectReceipt: PropTypes.func,
   onRetry: PropTypes.func,
+  onContinueWithout: PropTypes.func,
   onCancel: PropTypes.func,
-  getContainer: PropTypes.oneOfType([
-    PropTypes.bool,
-    PropTypes.func,
-    PropTypes.object,
-  ]),
 };

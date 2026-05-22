@@ -22,6 +22,7 @@ const {
   SETTING_TERM,
   DEV_VIEW_TERM,
   ACCOUNTING_TERM,
+  LAB_TERM,
 } = ROUTES_NAME;
 
 const {
@@ -213,6 +214,8 @@ export const routePreloaders: Record<string, RoutePreloader> = {
     import('@/modules/controlPanel/AppConfig/AppConfig'),
   [DEV_VIEW_TERM.FISCAL_RECEIPTS_AUDIT]: () =>
     import('@/modules/dev/pages/DevTools/FiscalReceiptsAudit/FiscalReceiptsAudit'),
+  [DEV_VIEW_TERM.ELECTRONIC_TAX_RECEIPT_PROVIDER]: () =>
+    import('@/modules/dev/pages/DevTools/ElectronicTaxReceiptProvider/ElectronicTaxReceiptProviderConfigPage'),
   [DEV_VIEW_TERM.INVOICE_V2_RECOVERY]: () =>
     import('@/modules/dev/pages/DevTools/InvoiceV2Recovery/InvoiceV2Recovery'),
   [DEV_VIEW_TERM.B_SERIES_INVOICES]: () =>
@@ -223,6 +226,10 @@ export const routePreloaders: Record<string, RoutePreloader> = {
     import('@/modules/dev/pages/DevTools/ErrorScreenPreview/ErrorScreenPreview'),
   [DEV_VIEW_TERM.ERROR_REPORTS]: () =>
     import('@/modules/dev/pages/DevTools/ErrorReports/ErrorReports'),
+  [LAB_TERM.HEROUI]: () =>
+    import('@/modules/dev/pages/DevTools/HeroUiPlayground/HeroUiPlayground'),
+  [LAB_TERM.HEROUI_CUSTOM]: () =>
+    import('@/modules/dev/pages/DevTools/CustomHeroUiPlayground/CustomHeroUiPlayground'),
   [SUBSCRIPTION_MAINTENANCE]: () =>
     import('@/modules/settings/pages/subscription/DeveloperSubscriptionMaintenancePage'),
   [SUBSCRIPTION_MAINTENANCE_OVERVIEW]: async () => {

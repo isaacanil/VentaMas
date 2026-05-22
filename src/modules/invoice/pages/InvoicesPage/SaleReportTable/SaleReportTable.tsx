@@ -1,10 +1,14 @@
 import { MoreOutlined } from '@/constants/icons/antd';
 import { faMoneyBillWave, faPrint } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, Dropdown, notification, Tooltip } from 'antd';
+import { notification, Tooltip } from 'antd';
 import { DateTime } from 'luxon';
-import { useCallback, useMemo, useRef } from 'react';
-import type { InvoiceData, InvoiceBusinessInfo } from '@/types/invoice';
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
+import type {
+  ElectronicTaxReceiptSnapshot,
+  InvoiceData,
+  InvoiceBusinessInfo,
+} from '@/types/invoice';
 import type { InvoiceRecord } from '@/modules/invoice/pages/InvoicesPage/types';
 import type { AccountsReceivableDoc } from '@/utils/accountsReceivable/types';
 import { useDispatch, useSelector } from 'react-redux';
@@ -14,10 +18,12 @@ import styled from 'styled-components';
 import { icons } from '@/constants/icons/icons';
 import { setAccountPayment } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
 import { selectBusinessData } from '@/features/auth/businessSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import { SelectSettingCart } from '@/features/cart/cartSlice';
 import { addInvoice } from '@/features/invoice/invoiceFormSlice';
 import { openInvoicePreviewModal } from '@/features/invoice/invoicePreviewSlice';
 import { useFbGetAccountReceivableByInvoice } from '@/firebase/accountsReceivable/useFbGetAccountReceivableByInvoice';
+import { fbRefreshElectronicTaxReceiptStatus } from '@/firebase/electronicTaxReceipts/fbRefreshElectronicTaxReceiptStatus';
 import { downloadInvoicePdf } from '@/firebase/quotation/downloadQuotationPDF';
 import { formatPrice } from '@/utils/format';
 import {
@@ -25,9 +31,15 @@ import {
   prepareInvoiceForEdit,
   getInvoicePaymentInfo,
 } from '@/utils/invoice';
+import {
+  resolveElectronicTaxReceiptSnapshot,
+  resolveElectronicTaxReceiptStatusLabel,
+  resolveFiscalDocumentNumber,
+} from '@/utils/invoice/electronicTaxReceipt';
 import { isProgrammaticLetterPdfTemplate } from '@/utils/invoice/template';
 import { getProductsTax, getTotalItems } from '@/utils/pricing';
 import { Invoice } from '@/modules/invoice/components/Invoice/components/Invoice/Invoice';
+import { VmDropdown } from '@/components/heroui';
 import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
 import { Tag } from '@/components/ui/Tag/Tag';
 
@@ -43,6 +55,13 @@ type ActionsMenuProps = {
   value: { data: InvoiceData };
 };
 
+type ActionMenuItem = {
+  key: 'preview' | 'edit' | 'print' | 'payReceivable' | 'refreshElectronic';
+  label: string;
+  icon: ReactNode;
+  disabled: boolean;
+};
+
 type PaymentInfo = ReturnType<typeof getInvoicePaymentInfo>;
 
 type TableRow = {
@@ -56,6 +75,7 @@ type TableRow = {
   change?: number;
   total?: number;
   paymentStatus?: PaymentInfo;
+  fiscalStatus?: ElectronicTaxReceiptSnapshot | null;
   ver?: { data: InvoiceData };
   accion?: { data: InvoiceData };
   data?: InvoiceData;
@@ -86,9 +106,16 @@ const ActionsMenu = ({ value }: ActionsMenuProps) => {
   const business = useSelector(
     selectBusinessData,
   ) as InvoiceBusinessInfo | null;
+  const user = useSelector(selectUser) as {
+    businessID?: string;
+    businessId?: string;
+    activeBusinessId?: string;
+  } | null;
   const componentToPrintRef = useRef<HTMLDivElement>(null);
   const cartSettings = useSelector(SelectSettingCart) as CartSettings | null;
   const invoiceType = cartSettings?.billing?.invoiceType;
+  const [refreshingElectronic, setRefreshingElectronic] = useState(false);
+  const electronicSnapshot = resolveElectronicTaxReceiptSnapshot(data);
 
   const isEditDisabled = useMemo(() => {
     return isInvoiceEditLocked(data);
@@ -237,8 +264,45 @@ const ActionsMenu = ({ value }: ActionsMenuProps) => {
     receivableAccount,
   ]);
 
-  const menuItems = useMemo(() => {
-    const items = [
+  const handleRefreshElectronicStatus = useCallback(async () => {
+    const businessId =
+      user?.businessID ||
+      user?.businessId ||
+      user?.activeBusinessId ||
+      business?.id ||
+      business?.businessID ||
+      business?.businessId ||
+      null;
+    if (!businessId || !data?.id) {
+      notification.error({
+        message: 'No se puede consultar GISYS',
+        description: 'Falta el negocio o la factura activa.',
+      });
+      return;
+    }
+
+    setRefreshingElectronic(true);
+    try {
+      const result = await fbRefreshElectronicTaxReceiptStatus({
+        businessId: String(businessId),
+        invoiceId: data.id,
+      });
+      notification.success({
+        message: 'Estado e-CF actualizado',
+        description: result.electronicTaxReceipt?.eNcf || result.submissionId,
+      });
+    } catch (error: any) {
+      notification.error({
+        message: 'No se pudo consultar GISYS',
+        description: error?.message || 'Intenta nuevamente.',
+      });
+    } finally {
+      setRefreshingElectronic(false);
+    }
+  }, [business, data?.id, user]);
+
+  const menuItems = useMemo<ActionMenuItem[]>(() => {
+    const items: ActionMenuItem[] = [
       {
         key: 'preview',
         label: 'Ver detalle',
@@ -268,16 +332,27 @@ const ActionsMenu = ({ value }: ActionsMenuProps) => {
       });
     }
 
+    if (electronicSnapshot) {
+      items.push({
+        key: 'refreshElectronic',
+        label: 'Consultar e-CF',
+        icon: icons.settings.taxReceipt,
+        disabled: refreshingElectronic || !electronicSnapshot.submissionId,
+      });
+    }
+
     return items;
   }, [
+    electronicSnapshot,
     isEditDisabled,
     isProcessing,
     isReceivableInvoice,
     receivableAccount,
     receivableLoading,
+    refreshingElectronic,
   ]);
 
-  const handleMenuClick = ({ key }: { key: string }) => {
+  const handleMenuClick = (key: string) => {
     switch (key) {
       case 'print':
         handleInvoicePrinting();
@@ -290,6 +365,9 @@ const ActionsMenu = ({ value }: ActionsMenuProps) => {
         break;
       case 'payReceivable':
         handlePayReceivable();
+        break;
+      case 'refreshElectronic':
+        void handleRefreshElectronicStatus();
         break;
       default:
         break;
@@ -305,23 +383,43 @@ const ActionsMenu = ({ value }: ActionsMenuProps) => {
           template={invoiceType || undefined}
         />
       </HiddenPrintArea>
-      <Dropdown
-        menu={{
-          items: menuItems,
-          onClick: handleMenuClick,
-        }}
-        trigger={['click']}
-        placement="bottomRight"
+      <ActionMenuRoot
+        title={
+          isEditDisabled
+            ? 'Las facturas solo se pueden editar durante las primeras 48 horas.'
+            : undefined
+        }
       >
-        <Button
-          icon={<MoreOutlined />}
-          title={
-            isEditDisabled
-              ? 'Las facturas solo se pueden editar durante las primeras 48 horas.'
-              : undefined
-          }
-        />
-      </Dropdown>
+        <VmDropdown>
+          <ActionMenuButton
+            isIconOnly
+            size="sm"
+            aria-label="Mas acciones de factura"
+          >
+            <MoreOutlined />
+          </ActionMenuButton>
+          <ActionMenuPopover placement="bottom end">
+            <VmDropdown.Menu
+              aria-label="Acciones de factura"
+              onAction={(key) => handleMenuClick(String(key))}
+            >
+              {menuItems.map((item) => (
+                <VmDropdown.Item
+                  key={item.key}
+                  id={item.key}
+                  textValue={item.label}
+                  isDisabled={item.disabled}
+                >
+                  <ActionMenuItemLabel>
+                    <ActionMenuItemIcon>{item.icon}</ActionMenuItemIcon>
+                    <span>{item.label}</span>
+                  </ActionMenuItemLabel>
+                </VmDropdown.Item>
+              ))}
+            </VmDropdown.Menu>
+          </ActionMenuPopover>
+        </VmDropdown>
+      </ActionMenuRoot>
       {authorizationModal}
     </div>
   );
@@ -341,7 +439,7 @@ const columns = [
     min: '90px',
   },
   {
-    Header: 'RNC',
+    Header: 'NCF / e-NCF',
     accessor: 'ncf',
     sortable: true,
     align: 'left',
@@ -355,6 +453,26 @@ const columns = [
         return <div>{value}</div>;
       }
       return <span>-</span>;
+    },
+  },
+  {
+    Header: 'e-CF',
+    accessor: 'fiscalStatus',
+    align: 'left',
+    maxWidth: '1fr',
+    minWidth: '130px',
+    cell: ({ value }: CellProps) => {
+      if (!value) return <span>-</span>;
+      const label = resolveElectronicTaxReceiptStatusLabel(value) || 'Pendiente';
+      const normalized = label.toLowerCase();
+      const color = normalized.includes('acept')
+        ? 'green'
+        : normalized.includes('rech') || normalized.includes('error')
+          ? 'red'
+          : normalized.includes('shadow')
+            ? 'blue'
+            : 'gold';
+      return <FiscalStatusBadge $statusColor={color}>{label}</FiscalStatusBadge>;
     },
   },
   {
@@ -467,7 +585,8 @@ const SaleReportTable = ({
 
     return {
       numberID: (data?.numberID ?? undefined) as string | number | undefined,
-      ncf: data?.NCF as string | undefined,
+      ncf: resolveFiscalDocumentNumber(data) || undefined,
+      fiscalStatus: resolveElectronicTaxReceiptSnapshot(data),
       client: data?.client?.name || 'Generic Client',
       date: invoiceDateSeconds,
       itbis: getProductsTax((data?.products || []) as any),
@@ -566,6 +685,37 @@ const PaymentStatusCell = styled.div`
   gap: 4px;
 `;
 
+const ActionMenuRoot = styled.div`
+  display: inline-flex;
+  align-items: center;
+`;
+
+const ActionMenuButton = styled(VmDropdown.Button)`
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: var(--ds-radius-md);
+`;
+
+const ActionMenuPopover = styled(VmDropdown.Popover)`
+  min-width: 180px;
+`;
+
+const ActionMenuItemLabel = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  color: var(--ds-color-text-primary);
+`;
+
+const ActionMenuItemIcon = styled.span`
+  display: inline-flex;
+  width: 16px;
+  justify-content: center;
+  color: var(--ds-color-text-secondary);
+`;
+
 const PaymentBadge = styled.span<{ $complete: boolean }>`
   display: inline-flex;
   align-items: center;
@@ -594,6 +744,32 @@ const PendingChip = styled.span`
   font-weight: 700;
   font-size: 12px;
   border: 1px solid #ffa39e;
+`;
+
+const FiscalStatusBadge = styled.span<{ $statusColor: string }>`
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: ${({ $statusColor }) =>
+    $statusColor === 'green'
+      ? '#237804'
+      : $statusColor === 'red'
+        ? '#cf1322'
+        : $statusColor === 'blue'
+          ? '#0958d9'
+          : '#ad6800'};
+  background: ${({ $statusColor }) =>
+    $statusColor === 'green'
+      ? 'rgba(82, 196, 26, 0.12)'
+      : $statusColor === 'red'
+        ? 'rgba(255, 77, 79, 0.12)'
+        : $statusColor === 'blue'
+          ? 'rgba(22, 119, 255, 0.12)'
+          : 'rgba(250, 173, 20, 0.14)'};
 `;
 
 const PendingTooltip = ({ value }: { value: PaymentInfo }) => (

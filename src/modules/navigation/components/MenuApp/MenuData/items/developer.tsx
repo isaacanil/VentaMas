@@ -5,6 +5,7 @@ import {
   TeamOutlined,
   ApartmentOutlined,
   ProfileOutlined,
+  ApiOutlined,
 } from '@/constants/icons/antd';
 
 import { icons } from '@/constants/icons/icons';
@@ -79,6 +80,12 @@ const developer: MenuItem[] = [
         title: 'Análisis de comprobantes',
         route: dev.FISCAL_RECEIPTS_AUDIT,
         icon: <BugOutlined />,
+        group: 'tools',
+      },
+      {
+        title: 'Runtime e-CF GISYS',
+        route: dev.ELECTRONIC_TAX_RECEIPT_PROVIDER,
+        icon: <ApiOutlined />,
         group: 'tools',
       },
       {

@@ -20,6 +20,7 @@ import {
   InvoicePanelDrawerDialog,
   InvoicePanelDrawerFooter,
   InvoicePanelFooter,
+  InvoicePanelModalContainer,
   PrintToggleItem,
   ScrollableBody,
 } from './styles';
@@ -155,7 +156,6 @@ export const InvoicePanel = () => {
       onSelectReceipt={handleSelectTaxReceiptFromModal}
       onRetry={retryWithTaxReceipt}
       onCancel={closeTaxReceiptModal}
-      getContainer={false}
     />
   );
 
@@ -175,7 +175,9 @@ export const InvoicePanel = () => {
                   <Drawer.Heading>Pago de Factura</Drawer.Heading>
                 </Drawer.Header>
                 <InvoicePanelDrawerBody>{panelBody}</InvoicePanelDrawerBody>
-                <InvoicePanelDrawerFooter>{panelFooter}</InvoicePanelDrawerFooter>
+                <InvoicePanelDrawerFooter>
+                  {panelFooter}
+                </InvoicePanelDrawerFooter>
                 {taxReceiptDialog}
               </InvoicePanelDrawerDialog>
             </Drawer.Content>
@@ -184,7 +186,7 @@ export const InvoicePanel = () => {
       ) : (
         <Modal>
           <Modal.Backdrop isOpen={invoicePanel} onOpenChange={handleOpenChange}>
-            <Modal.Container placement="center" scroll="inside">
+            <InvoicePanelModalContainer placement="center" scroll="inside">
               <InvoicePanelDialog>
                 <Modal.CloseTrigger />
                 <Modal.Header>
@@ -194,7 +196,7 @@ export const InvoicePanel = () => {
                 <InvoicePanelFooter>{panelFooter}</InvoicePanelFooter>
                 {taxReceiptDialog}
               </InvoicePanelDialog>
-            </Modal.Container>
+            </InvoicePanelModalContainer>
           </Modal.Backdrop>
         </Modal>
       )}

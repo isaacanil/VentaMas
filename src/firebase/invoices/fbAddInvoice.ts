@@ -1,18 +1,34 @@
-import { doc, serverTimestamp } from 'firebase/firestore';
-import { nanoid } from 'nanoid';
-
-import { fbAddBillToOpenCashCount } from '@/firebase/cashCount/fbAddBillToOpenCashCount';
-import { db } from '@/firebase/firebaseconfig';
-import { fbSetDoc } from '@/firebase/firebaseOperations';
-import { getNextID } from '@/firebase/Tools/getNextID';
+import {
+  generateIdempotencyKey,
+  submitInvoice,
+  waitForInvoiceResult,
+} from '@/services/invoice/invoice.service';
 import type { InvoiceData } from '@/types/invoice';
 import type { UserIdentity } from '@/types/users';
 
-import { fbGetInvoice } from './fbGetInvoice';
 import { isInvoiceUser } from './types';
 
-type InvoiceWriteData = InvoiceData & {
-  date?: InvoiceData['date'] | ReturnType<typeof serverTimestamp>;
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+
+const toCleanString = (value: unknown): string | null => {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length ? trimmed : null;
+};
+
+const resolveLegacyNcfType = (invoice: InvoiceData): string | null => {
+  const record = asRecord(invoice);
+  const taxReceipt = asRecord(record.taxReceipt);
+  return (
+    toCleanString(record.ncfType) ||
+    toCleanString(record.taxReceiptName) ||
+    toCleanString(record.selectedTaxReceiptType) ||
+    toCleanString(taxReceipt.type) ||
+    null
+  );
 };
 
 export const fbAddInvoice = async (
@@ -22,27 +38,38 @@ export const fbAddInvoice = async (
   if (!isInvoiceUser(user)) return null;
 
   try {
-    const userRef = doc(db, 'users', user.uid);
-    const nextNumberId = await getNextID(user, 'lastInvoiceId');
+    const ncfType = resolveLegacyNcfType(data);
+    const submission = await submitInvoice({
+      cart: data as any,
+      user,
+      client: (data as any).client ?? null,
+      accountsReceivable:
+        (data as any).accountsReceivable ?? (data as any).receivableState ?? null,
+      taxReceiptEnabled: Boolean(
+        (data as any).taxReceiptEnabled || (data as any).NCF || (data as any).ncf,
+      ),
+      ncfType,
+      ncf: {
+        enabled: Boolean(
+          (data as any).taxReceiptEnabled ||
+            (data as any).NCF ||
+            (data as any).ncf,
+        ),
+        type: ncfType,
+      },
+      dueDate: (data as any).dueDate ?? (data as any).paymentDate ?? null,
+      invoiceComment: (data as any).invoiceComment ?? null,
+      idempotencyKey: data?.id
+        ? `legacy-invoice:${data.id}`
+        : generateIdempotencyKey(),
+      businessId: user.businessID,
+    });
+    const result = await waitForInvoiceResult({
+      businessId: submission.businessId,
+      invoiceId: submission.invoiceId,
+    });
 
-    const bill: InvoiceWriteData = {
-      ...data,
-      id: data?.id || nanoid(),
-      date: serverTimestamp(),
-      numberID: nextNumberId,
-      userID: user.uid,
-      user: userRef,
-    };
-
-    const billRef = doc(db, 'businesses', user.businessID, 'invoices', bill.id);
-
-    await fbSetDoc(billRef, { data: bill });
-
-    await fbAddBillToOpenCashCount(user, billRef);
-
-    const invoice = await fbGetInvoice(user.businessID, bill.id);
-
-    return invoice?.data ?? null;
+    return result.invoice ?? null;
   } catch (error) {
     console.log(error);
     return null;

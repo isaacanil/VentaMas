@@ -89,6 +89,16 @@ export const buildAccountsPayablePaymentCashMovementId = (
   return `app_${normalizedPaymentId}_${normalizedMethod}_${index + 1}`;
 };
 
+export const buildAccountsPayablePaymentVoidCashMovementId = (
+  paymentId,
+  method,
+  index,
+) => {
+  const normalizedPaymentId = toCleanString(paymentId) || 'unknown-payment';
+  const normalizedMethod = normalizePaymentMethodCode(method) || 'unknown-method';
+  return `appv_${normalizedPaymentId}_${normalizedMethod}_${index + 1}`;
+};
+
 export const buildInternalTransferCashMovementId = (transferId, side) => {
   const normalizedTransferId = toCleanString(transferId) || 'unknown-transfer';
   const normalizedSide = toCleanString(side) || 'unknown-side';
@@ -808,6 +818,94 @@ export const buildAccountsPayablePaymentCashMovements = ({
           supplierId,
           receiptNumber: toCleanString(paymentRecord.receiptNumber),
           nextPaymentAt: paymentRecord.nextPaymentAt ?? null,
+          paymentMethodIndex: index,
+          paymentMethodCount: paymentMethods.length,
+        },
+      }),
+    )
+    .filter(Boolean);
+};
+
+export const buildAccountsPayablePaymentVoidCashMovements = ({
+  businessId,
+  payment,
+  createdAt,
+}) => {
+  const paymentRecord = asRecord(payment);
+  const paymentId = toCleanString(paymentRecord.id);
+  const normalizedBusinessId = toCleanString(businessId);
+
+  if (!paymentId || !normalizedBusinessId) {
+    return [];
+  }
+
+  const paymentMethods = normalizeSupportedPaymentMethods(
+    paymentRecord.paymentMethods,
+  );
+
+  if (!paymentMethods.length) {
+    return [];
+  }
+
+  const occurredAt =
+    paymentRecord.voidedAt ??
+    paymentRecord.updatedAt ??
+    paymentRecord.occurredAt ??
+    paymentRecord.createdAt ??
+    createdAt;
+  const vendorBillId = toCleanString(paymentRecord.vendorBillId);
+  const purchaseId = toCleanString(paymentRecord.purchaseId);
+  const supplierId = toCleanString(
+    paymentRecord.supplierId ?? paymentRecord.counterpartyId,
+  );
+
+  return paymentMethods
+    .map((methodEntry, index) =>
+      createMovement({
+        id: buildAccountsPayablePaymentVoidCashMovementId(
+          paymentId,
+          methodEntry.method,
+          index,
+        ),
+        businessId: normalizedBusinessId,
+        direction: 'in',
+        sourceType: 'supplier_payment_void',
+        sourceId: paymentId,
+        sourceDocumentId: vendorBillId ?? purchaseId,
+        sourceDocumentType: vendorBillId
+          ? 'vendorBill'
+          : purchaseId
+            ? 'purchase'
+            : null,
+        cashAccountId:
+          methodEntry.cashAccountId ?? paymentRecord.cashAccountId ?? null,
+        cashCountId:
+          methodEntry.cashCountId ?? paymentRecord.cashCountId ?? null,
+        bankAccountId:
+          methodEntry.bankAccountId ?? paymentRecord.bankAccountId ?? null,
+        method: methodEntry.method,
+        amount: methodEntry.amount,
+        counterpartyType: 'supplier',
+        counterpartyId: supplierId,
+        reference:
+          methodEntry.reference ??
+          paymentRecord.reference ??
+          paymentRecord.receiptNumber,
+        occurredAt,
+        createdAt: paymentRecord.voidedAt ?? paymentRecord.updatedAt ?? createdAt,
+        createdBy: paymentRecord.voidedBy ?? paymentRecord.updatedBy ?? null,
+        status: 'posted',
+        metadata: {
+          vendorBillId,
+          purchaseId,
+          supplierId,
+          receiptNumber: toCleanString(paymentRecord.receiptNumber),
+          reversalOfSourceType: 'supplier_payment',
+          reversalOfPaymentId: paymentId,
+          originalCashCountId: toCleanString(paymentRecord.cashCountId),
+          voidReason:
+            toCleanString(paymentRecord.voidReason) ??
+            toCleanString(paymentRecord.metadata?.voidReason),
           paymentMethodIndex: index,
           paymentMethodCount: paymentMethods.length,
         },

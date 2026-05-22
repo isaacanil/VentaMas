@@ -10,6 +10,7 @@ import {
 
 import {
   CATEGORY_ORDER,
+  MAX_PINNED_SHORTCUTS,
   getInitialPinnedKeys,
   normalizeSearch,
   normalizeShortcuts,
@@ -107,7 +108,17 @@ export const useModuleShortcuts = ({
     () => getInitialPinnedKeys(userShortcuts),
     [userShortcuts],
   );
-  const pinnedKeys = customPinnedKeys ?? defaultPinnedKeys;
+  const userShortcutKeys = useMemo(
+    () => new Set(userShortcuts.map((shortcut) => shortcut.key)),
+    [userShortcuts],
+  );
+  const pinnedKeys = useMemo(
+    () =>
+      (customPinnedKeys ?? defaultPinnedKeys)
+        .filter((key) => userShortcutKeys.has(key))
+        .slice(0, MAX_PINNED_SHORTCUTS),
+    [customPinnedKeys, defaultPinnedKeys, userShortcutKeys],
+  );
   const pinnedShortcuts = useMemo(() => {
     const byKey = new Map(
       userShortcuts.map((shortcut) => [shortcut.key, shortcut]),
@@ -115,7 +126,7 @@ export const useModuleShortcuts = ({
     return pinnedKeys
       .map((key) => byKey.get(key))
       .filter((shortcut): shortcut is LauncherShortcut => Boolean(shortcut))
-      .slice(0, 6);
+      .slice(0, MAX_PINNED_SHORTCUTS);
   }, [pinnedKeys, userShortcuts]);
 
   const normalizedQuery = normalizeSearch(searchValue);
@@ -155,15 +166,21 @@ export const useModuleShortcuts = ({
   const handleTogglePin = useCallback(
     (shortcut: LauncherShortcut) => {
       setCustomPinnedKeys((current) => {
-        const base = current ?? defaultPinnedKeys;
+        const base = (current ?? defaultPinnedKeys).filter((key) =>
+          userShortcutKeys.has(key),
+        );
         if (base.includes(shortcut.key)) {
           return base.filter((key) => key !== shortcut.key);
         }
 
-        return [shortcut.key, ...base].slice(0, 6);
+        if (base.length >= MAX_PINNED_SHORTCUTS) {
+          return base;
+        }
+
+        return [shortcut.key, ...base].slice(0, MAX_PINNED_SHORTCUTS);
       });
     },
-    [defaultPinnedKeys],
+    [defaultPinnedKeys, userShortcutKeys],
   );
 
   return {

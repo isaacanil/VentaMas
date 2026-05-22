@@ -41,7 +41,7 @@ export interface HomeDashboardProps {
 
 type HomePanelKey = 'metrics' | 'modules' | 'developer';
 
-const MOBILE_DOCK_RESERVED_SPACE =
+const BOTTOM_DOCK_RESERVED_SPACE =
   'calc(96px + env(safe-area-inset-bottom, 0px))';
 
 const getGreetingLabel = (hour: number): string => {
@@ -173,131 +173,134 @@ export const HomeDashboard = ({
 
   return (
     <DashboardShell>
-      <HomePanelTabs aria-label="Vista principal" role="tablist">
-        <HomePanelTab
-          $active={resolvedPanel === 'metrics'}
-          aria-controls="home-metrics-panel"
-          aria-selected={resolvedPanel === 'metrics'}
-          id="home-metrics-tab"
-          onClick={handleOpenMetricsPanel}
-          role="tab"
-          type="button"
-        >
-          <FontAwesomeIcon icon={faChartLine} />
-          Métricas
-        </HomePanelTab>
-        <HomePanelTab
-          $active={resolvedPanel === 'modules'}
-          aria-controls="home-modules-panel"
-          aria-selected={resolvedPanel === 'modules'}
-          id="home-modules-tab"
-          onClick={handleOpenModulesPanel}
-          role="tab"
-          type="button"
-        >
-          <FontAwesomeIcon icon={faGrip} />
-          Módulos
-        </HomePanelTab>
-        {canShowDeveloperPanel ? (
+      <DashboardMain>
+        <HomePanelTabs aria-label="Vista principal" role="tablist">
           <HomePanelTab
-            $active={resolvedPanel === 'developer'}
-            aria-controls="home-developer-panel"
-            aria-selected={resolvedPanel === 'developer'}
-            id="home-developer-tab"
-            onClick={handleOpenDeveloperPanel}
+            $active={resolvedPanel === 'metrics'}
+            aria-controls="home-metrics-panel"
+            aria-selected={resolvedPanel === 'metrics'}
+            id="home-metrics-tab"
+            onClick={handleOpenMetricsPanel}
             role="tab"
             type="button"
           >
-            <FontAwesomeIcon icon={faCode} />
-            Desarrollador
+            <FontAwesomeIcon icon={faChartLine} />
+            Métricas
           </HomePanelTab>
+          <HomePanelTab
+            $active={resolvedPanel === 'modules'}
+            aria-controls="home-modules-panel"
+            aria-selected={resolvedPanel === 'modules'}
+            id="home-modules-tab"
+            onClick={handleOpenModulesPanel}
+            role="tab"
+            type="button"
+          >
+            <FontAwesomeIcon icon={faGrip} />
+            Módulos
+          </HomePanelTab>
+          {canShowDeveloperPanel ? (
+            <HomePanelTab
+              $active={resolvedPanel === 'developer'}
+              aria-controls="home-developer-panel"
+              aria-selected={resolvedPanel === 'developer'}
+              id="home-developer-tab"
+              onClick={handleOpenDeveloperPanel}
+              role="tab"
+              type="button"
+            >
+              <FontAwesomeIcon icon={faCode} />
+              Desarrollador
+            </HomePanelTab>
+          ) : null}
+        </HomePanelTabs>
+
+        {resolvedPanel === 'metrics' ? (
+          <HeaderBand>
+            <HeaderContent>
+              <HeaderTitle>{headerTitle}</HeaderTitle>
+              <HeaderMeta>{todayLabel}</HeaderMeta>
+            </HeaderContent>
+            <HeaderActions>
+              <Button
+                onPress={() => navigate(ROUTES_NAME.SALES_TERM.SALES)}
+                size="sm"
+                variant="primary"
+              >
+                <FontAwesomeIcon icon={faCashRegister} />
+                Nueva venta
+              </Button>
+              <Button
+                onPress={() => navigate(ROUTES_NAME.SALES_TERM.BILLS)}
+                size="sm"
+                variant="secondary"
+              >
+                <FontAwesomeIcon icon={faReceipt} />
+                Facturas
+              </Button>
+              <Button
+                onPress={() => navigate(ROUTES_NAME.SALES_TERM.BILLS_ANALYTICS)}
+                size="sm"
+                variant="secondary"
+              >
+                <FontAwesomeIcon icon={faChartLine} />
+                Analíticas
+              </Button>
+            </HeaderActions>
+          </HeaderBand>
         ) : null}
-      </HomePanelTabs>
 
-      {resolvedPanel === 'metrics' ? (
-        <HeaderBand>
-          <HeaderContent>
-            <HeaderTitle>{headerTitle}</HeaderTitle>
-            <HeaderMeta>{todayLabel}</HeaderMeta>
-          </HeaderContent>
-          <HeaderActions>
-            <Button
-              onPress={() => navigate(ROUTES_NAME.SALES_TERM.SALES)}
-              size="sm"
-              variant="primary"
-            >
-              <FontAwesomeIcon icon={faCashRegister} />
-              Nueva venta
-            </Button>
-            <Button
-              onPress={() => navigate(ROUTES_NAME.SALES_TERM.BILLS)}
-              size="sm"
-              variant="secondary"
-            >
-              <FontAwesomeIcon icon={faReceipt} />
-              Facturas
-            </Button>
-            <Button
-              onPress={() => navigate(ROUTES_NAME.SALES_TERM.BILLS_ANALYTICS)}
-              size="sm"
-              variant="secondary"
-            >
-              <FontAwesomeIcon icon={faChartLine} />
-              Analíticas
-            </Button>
-          </HeaderActions>
-        </HeaderBand>
-      ) : null}
+        {resolvedPanel === 'metrics' ? (
+          <PanelRegion
+            aria-labelledby="home-metrics-tab"
+            id="home-metrics-panel"
+            role="tabpanel"
+          >
+            <DashboardAlertList alerts={dashboard.alerts} />
+            <OverviewGrid>
+              <DailyPulseCard summary={dashboard.summary} />
+              <FinancialHealthCard summary={dashboard.summary} />
+            </OverviewGrid>
 
-      {resolvedPanel === 'metrics' ? (
-        <PanelRegion
-          aria-labelledby="home-metrics-tab"
-          id="home-metrics-panel"
-          role="tabpanel"
-        >
-          <DashboardAlertList alerts={dashboard.alerts} />
-          <OverviewGrid>
-            <DailyPulseCard summary={dashboard.summary} />
-            <FinancialHealthCard summary={dashboard.summary} />
-          </OverviewGrid>
-
-          <MainGrid>
-            <HomeTrendPanel
-              trend={dashboard.trend}
-              topProducts={dashboard.topProducts}
+            <MainGrid>
+              <HomeTrendPanel
+                trend={dashboard.trend}
+                topProducts={dashboard.topProducts}
+              />
+              <HomeActivityFeed activities={dashboard.activities} />
+            </MainGrid>
+          </PanelRegion>
+        ) : (
+          <ModulesPanel
+            aria-labelledby={
+              resolvedPanel === 'developer'
+                ? 'home-developer-tab'
+                : 'home-modules-tab'
+            }
+            id={
+              resolvedPanel === 'developer'
+                ? 'home-developer-panel'
+                : 'home-modules-panel'
+            }
+            role="tabpanel"
+          >
+            <ModuleShortcutGrid
+              controller={moduleLauncher}
+              onOpenShortcut={handleOpenModuleShortcut}
+              showSearchField={false}
+              showScopeTabs={false}
             />
-            <HomeActivityFeed activities={dashboard.activities} />
-          </MainGrid>
-        </PanelRegion>
-      ) : (
-        <ModulesPanel
-          aria-labelledby={
-            resolvedPanel === 'developer'
-              ? 'home-developer-tab'
-              : 'home-modules-tab'
-          }
-          id={
-            resolvedPanel === 'developer'
-              ? 'home-developer-panel'
-              : 'home-modules-panel'
-          }
-          role="tabpanel"
-        >
-          <ModuleShortcutGrid
-            controller={moduleLauncher}
-            onOpenShortcut={handleOpenModuleShortcut}
-            showSearchField={false}
-            showPinnedSection={resolvedPanel !== 'developer'}
-            showScopeTabs={false}
-          />
-        </ModulesPanel>
-      )}
+          </ModulesPanel>
+        )}
+      </DashboardMain>
 
-      <ModuleLauncherDock
-        alertCount={dashboard.alerts.length}
-        controller={moduleLauncher}
-        onOpenModules={handleOpenModulesPanel}
-      />
+      <DockRail aria-label="Atajos fijados">
+        <ModuleLauncherDock
+          alertCount={dashboard.alerts.length}
+          controller={moduleLauncher}
+          onOpenModules={handleOpenModulesPanel}
+        />
+      </DockRail>
     </DashboardShell>
   );
 };
@@ -386,14 +389,27 @@ const FinancialHealthCard = ({
 };
 
 const DashboardShell = styled.div`
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-4);
+  padding-bottom: var(--ds-space-5);
   width: 100%;
 
-  @media (width <= 768px) {
-    padding-bottom: ${MOBILE_DOCK_RESERVED_SPACE};
+  @media (width < 1300px) {
+    padding-bottom: calc(${BOTTOM_DOCK_RESERVED_SPACE} + var(--ds-space-5));
   }
+`;
+
+const DashboardMain = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  min-width: 0;
+`;
+
+const DockRail = styled.aside`
+  display: contents;
 `;
 
 const HeaderBand = styled.section`
@@ -501,12 +517,9 @@ const PanelRegion = styled.div`
 `;
 
 const ModulesPanel = styled.section`
+  display: grid;
+  gap: var(--ds-space-4);
   min-width: 0;
-  padding: var(--ds-space-5);
-  background: var(--ds-color-bg-surface);
-  border: 1px solid var(--ds-color-border-default);
-  border-radius: var(--ds-radius-lg);
-  box-shadow: var(--ds-shadow-sm);
 `;
 
 const OverviewGrid = styled.section`

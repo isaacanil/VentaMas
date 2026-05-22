@@ -2,13 +2,29 @@ import { Drawer, Modal } from '@heroui/react';
 import styled from 'styled-components';
 
 export const InvoicePanelDialog = styled(Modal.Dialog)`
-  width: min(520px, calc(100vw - 40px));
-  max-width: min(520px, calc(100vw - 40px));
-  max-height: calc(100vh - 32px);
+  width: min(520px, calc(100vw - var(--ds-space-8, 32px)));
+  max-width: min(520px, calc(100vw - var(--ds-space-8, 32px)));
+  height: min(
+    720px,
+    calc(var(--visual-viewport-height, 100vh) - var(--ds-space-4, 16px))
+  );
+  max-height: calc(
+    var(--visual-viewport-height, 100vh) - var(--ds-space-4, 16px)
+  );
   padding: 0;
 
   .modal__header {
-    padding: 24px 24px 0;
+    padding: var(--ds-space-5, 20px) var(--ds-space-5, 20px) 0;
+  }
+`;
+
+export const InvoicePanelModalContainer = styled(Modal.Container)`
+  padding-block: var(--ds-space-2, 8px);
+  padding-inline: var(--ds-space-4, 16px);
+
+  @media (width >= 640px) {
+    padding-block: var(--ds-space-2, 8px);
+    padding-inline: var(--ds-space-6, 24px);
   }
 `;
 
@@ -20,15 +36,21 @@ export const InvoicePanelFooter = styled(Modal.Footer)`
   display: flex;
   gap: 8px;
   justify-content: flex-end;
-  padding: 0 16px 16px;
+  padding: 0 var(--ds-space-4, 16px) var(--ds-space-3, 12px);
 `;
 
 export const InvoicePanelDrawerDialog = styled(Drawer.Dialog)`
-  max-height: 92vh;
+  height: min(
+    720px,
+    calc(var(--visual-viewport-height, 100vh) - var(--ds-space-3, 12px))
+  );
+  max-height: calc(
+    var(--visual-viewport-height, 100vh) - var(--ds-space-3, 12px)
+  );
   padding: 0;
 
   .drawer__header {
-    padding: 20px 20px 0;
+    padding: var(--ds-space-4, 16px) var(--ds-space-5, 20px) 0;
   }
 `;
 
@@ -40,11 +62,11 @@ export const InvoicePanelDrawerFooter = styled(Drawer.Footer)`
   display: flex;
   gap: 8px;
   justify-content: flex-end;
-  padding: 0 16px 16px;
+  padding: 0 var(--ds-space-4, 16px) var(--ds-space-3, 12px);
 `;
 
 export const ScrollableBody = styled.div`
-  padding: 0px 20px;
+  padding: 0 var(--ds-space-5, 20px) var(--ds-space-3, 12px);
 `;
 
 export const PrintToggleItem = styled.div`
@@ -57,6 +79,6 @@ export const PrintToggleItem = styled.div`
 
   span {
     font-size: 13px;
-    color: rgba(0, 0, 0, 0.85);
+    color: var(--ds-color-text-primary, rgb(17 24 39));
   }
 `;

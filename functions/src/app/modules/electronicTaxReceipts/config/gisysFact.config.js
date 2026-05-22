@@ -28,6 +28,12 @@ const toPositiveInteger = (value, fallback) => {
     : fallback;
 };
 
+const toBoolean = (value, fallback = false) =>
+  typeof value === 'boolean' ? value : fallback;
+
+const hasOwn = (value, key) =>
+  Object.prototype.hasOwnProperty.call(value || {}, key);
+
 const normalizeMode = (value) => {
   const normalized = toCleanString(value)?.toLowerCase();
   return VALID_MODES.has(normalized) ? normalized : 'pilot';
@@ -58,60 +64,78 @@ const resolveConfigNode = (fiscalNode) => {
   return {};
 };
 
-export const resolveGisysFactConfig = (businessDoc) => {
+export const resolveGisysFactConfig = (businessDoc, platformDoc = {}) => {
   const fiscalNode = resolveFiscalNode(businessDoc);
   const providerNode = resolveConfigNode(fiscalNode);
+  const platformNode = asRecord(platformDoc) || {};
+  const platformOwnsElectronicModel = hasOwn(
+    platformNode,
+    'electronicModelEnabled',
+  );
 
   const baseUrl =
+    toCleanString(platformNode.baseUrl) ||
+    toCleanString(process.env.GISYS_FACT_BASE_URL) ||
     toCleanString(providerNode.baseUrl) ||
-    toCleanString(providerNode.apiBaseUrl) ||
-    toCleanString(process.env.GISYS_FACT_BASE_URL);
+    toCleanString(providerNode.apiBaseUrl);
   const integrationInstanceCode =
+    toCleanString(platformNode.integrationInstanceCode) ||
+    toCleanString(platformNode.instanceCode) ||
+    toCleanString(process.env.GISYS_FACT_INTEGRATION_INSTANCE_CODE) ||
     toCleanString(providerNode.integrationInstanceCode) ||
-    toCleanString(providerNode.instanceCode) ||
-    toCleanString(process.env.GISYS_FACT_INTEGRATION_INSTANCE_CODE);
+    toCleanString(providerNode.instanceCode);
   const taxpayerCode =
     toCleanString(providerNode.taxpayerCode) ||
     toCleanString(providerNode.taxpayer) ||
     toCleanString(process.env.GISYS_FACT_TAXPAYER_CODE);
   const tokenEnvName =
-    toCleanString(providerNode.tokenEnvName) ||
-    toCleanString(providerNode.clientTokenEnvName) ||
+    toCleanString(process.env.GISYS_FACT_TOKEN_ENV_NAME) ||
     GISYS_FACT_DEFAULT_TOKEN_ENV;
   const issuePath =
+    toCleanString(platformNode.issuePath) ||
     toCleanString(providerNode.issuePath) ||
     toCleanString(process.env.GISYS_FACT_ISSUE_PATH);
-  const dgiiEnvironment =
-    toCleanString(providerNode.dgiiEnvironment) ||
-    toCleanString(providerNode.environment) ||
-    toCleanString(process.env.GISYS_FACT_DGII_ENVIRONMENT);
+  const mode = normalizeMode(
+    platformNode.mode || process.env.GISYS_FACT_MODE || providerNode.mode,
+  );
+  const electronicModelEnabled = platformOwnsElectronicModel
+    ? toBoolean(platformNode.electronicModelEnabled)
+    : toBoolean(fiscalNode?.electronicModelEnabled);
+  const electronicTransportEnabled =
+    electronicModelEnabled &&
+    (platformOwnsElectronicModel
+      ? mode !== 'shadow'
+      : toBoolean(fiscalNode?.electronicTransportEnabled));
 
   return {
     providerId: GISYS_FACT_PROVIDER_ID,
-    enabled: providerNode.enabled !== false,
-    mode: normalizeMode(providerNode.mode || process.env.GISYS_FACT_MODE),
+    enabled: platformNode.enabled !== false && providerNode.enabled !== false,
+    mode,
+    electronicModelEnabled,
+    electronicTransportEnabled,
     baseUrl,
     integrationInstanceCode,
     taxpayerCode,
     tokenEnvName,
     issuePath,
-    dgiiEnvironment,
     timeoutMs: toPositiveInteger(
-      providerNode.timeoutMs ?? process.env.GISYS_FACT_TIMEOUT_MS,
+      platformNode.timeoutMs ??
+        process.env.GISYS_FACT_TIMEOUT_MS ??
+        providerNode.timeoutMs,
       20000,
     ),
   };
 };
 
-export const getGisysFactConfigIssues = (config) => {
+export const getGisysFactConfigIssues = (config, options = {}) => {
+  const requireTransport = options.requireTransport !== false;
   const issues = [];
   if (!config?.enabled) issues.push('provider-disabled');
-  if (!config?.baseUrl) issues.push('missing-base-url');
+  if (requireTransport && !config?.baseUrl) issues.push('missing-base-url');
   if (!config?.integrationInstanceCode) {
     issues.push('missing-integration-instance-code');
   }
   if (!config?.taxpayerCode) issues.push('missing-taxpayer-code');
-  if (!config?.tokenEnvName) issues.push('missing-token-env-name');
   return issues;
 };
 

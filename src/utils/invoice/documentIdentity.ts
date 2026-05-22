@@ -18,6 +18,17 @@ export interface DocumentIdentity {
 interface InvoiceLike {
   NCF?: string;
   comprobante?: string;
+  eNcf?: string;
+  electronicTaxReceipt?: {
+    eNcf?: string | null;
+    documentType?: string | null;
+  } | null;
+  fiscal?: {
+    electronic?: {
+      eNcf?: string | null;
+      documentType?: string | null;
+    } | null;
+  };
   type?: string;
   status?: string;
   numberID?: string | number;
@@ -44,6 +55,18 @@ const RECEIPT_MAP: Record<string, Omit<DocumentIdentity, 'value'>> = {
     title: 'FACTURA DE CONSUMO',
     label: 'NCF',
     description: 'FACTURA PARA CONSUMIDOR FINAL',
+    type: 'fiscal-consumer',
+  },
+  E31: {
+    title: 'FACTURA DE CRÉDITO FISCAL ELECTRÓNICA',
+    label: 'e-NCF',
+    description: 'FACTURA ELECTRÓNICA PARA CRÉDITO FISCAL',
+    type: 'fiscal-credit',
+  },
+  E32: {
+    title: 'FACTURA DE CONSUMO ELECTRÓNICA',
+    label: 'e-NCF',
+    description: 'FACTURA ELECTRÓNICA PARA CONSUMIDOR FINAL',
     type: 'fiscal-consumer',
   },
 };
@@ -96,7 +119,13 @@ export const isPreorderDocument = (
 export function resolveDocumentIdentity(
   invoice: InvoiceLike | null | undefined = {},
 ): DocumentIdentity {
-  const rawNcf = (invoice?.NCF ?? invoice?.comprobante ?? '').toString().trim();
+  const electronicNcf =
+    invoice?.electronicTaxReceipt?.eNcf ??
+    invoice?.fiscal?.electronic?.eNcf ??
+    invoice?.eNcf;
+  const rawNcf = (electronicNcf ?? invoice?.NCF ?? invoice?.comprobante ?? '')
+    .toString()
+    .trim();
   const isPreorder = isPreorderDocument(invoice, { rawNcf });
   const preorderNumber =
     invoice?.preorderDetails?.numberID ??

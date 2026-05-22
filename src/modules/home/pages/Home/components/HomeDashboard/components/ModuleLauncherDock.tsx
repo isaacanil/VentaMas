@@ -1,12 +1,14 @@
 import { Button } from '@heroui/react';
-import { faGrip } from '@fortawesome/free-solid-svg-icons';
+import { faGrip, faThumbtack } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+
+import { VmDropdown } from '@/components/heroui';
 
 import { ShortcutIcon } from './ModuleLauncher/ModuleShortcutGrid';
 
-import type { JSX } from 'react';
+import type { JSX, MouseEvent } from 'react';
 import type {
   LauncherShortcut,
   ModuleShortcutsController,
@@ -58,6 +60,9 @@ export const ModuleLauncherDock = ({
 }: ModuleLauncherDockProps): JSX.Element => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const [openShortcutMenuKey, setOpenShortcutMenuKey] = useState<string | null>(
+    null,
+  );
 
   const navigateToShortcut = useCallback(
     (shortcut: LauncherShortcut) => {
@@ -65,27 +70,57 @@ export const ModuleLauncherDock = ({
     },
     [navigate],
   );
+  const handleShortcutMenuOpenChange = useCallback(
+    (shortcutKey: string, isOpen: boolean) => {
+      setOpenShortcutMenuKey(isOpen ? shortcutKey : null);
+    },
+    [],
+  );
+  const handleShortcutContextMenu = useCallback(
+    (event: MouseEvent, shortcutKey: string) => {
+      event.preventDefault();
+      setOpenShortcutMenuKey(shortcutKey);
+    },
+    [],
+  );
+  const handleUnpinShortcut = useCallback(
+    (shortcut: LauncherShortcut) => {
+      controller.handleTogglePin(shortcut);
+      setOpenShortcutMenuKey(null);
+    },
+    [controller],
+  );
 
   return (
-    <div className="heroui-scope pointer-events-none fixed bottom-4 left-1/2 z-[260] -translate-x-1/2 md:bottom-auto md:left-auto md:right-5 md:top-1/2 md:-translate-y-1/2 md:translate-x-0">
+    <div className="heroui-scope pointer-events-none fixed bottom-4 left-1/2 z-[260] -translate-x-1/2 min-[1300px]:bottom-auto min-[1300px]:left-auto min-[1300px]:right-5 min-[1300px]:top-1/2 min-[1300px]:-translate-y-1/2 min-[1300px]:translate-x-0">
       <nav
         aria-label="Dock de módulos"
-        className="pointer-events-auto flex max-w-[calc(100vw-1rem)] items-stretch gap-1 overflow-x-auto rounded-[22px] border border-neutral-200/80 bg-white/95 p-1.5 shadow-xl shadow-neutral-900/10 backdrop-blur-xl md:max-w-none md:flex-col md:overflow-visible"
+        className="pointer-events-auto flex max-w-[calc(100vw-1rem)] items-stretch gap-1 overflow-x-auto rounded-[22px] border border-neutral-200/80 bg-white/95 p-1.5 shadow-xl shadow-neutral-900/10 backdrop-blur-xl min-[1300px]:max-w-none min-[1300px]:flex-col min-[1300px]:overflow-visible"
       >
         {controller.pinnedShortcuts.map((shortcut) => {
           const isActive = isShortcutActive(pathname, shortcut.route);
           const label = getDockLabel(shortcut);
 
           return (
-            <span key={shortcut.key} className="inline-flex" title={shortcut.title}>
+            <VmDropdown
+              key={shortcut.key}
+              isOpen={openShortcutMenuKey === shortcut.key}
+              onOpenChange={(isOpen) =>
+                handleShortcutMenuOpenChange(shortcut.key, isOpen)
+              }
+              trigger="longPress"
+            >
               <Button
                 aria-label={shortcut.title}
                 className={[
-                  'flex h-[58px] w-[58px] min-w-[58px] flex-col justify-center gap-1 rounded-[14px] border px-1.5 shadow-sm transition md:w-[66px] md:min-w-[66px]',
+                  'flex h-[58px] w-[58px] min-w-[58px] flex-col justify-center gap-1 rounded-[14px] border px-1.5 shadow-sm transition min-[1300px]:w-[66px] min-[1300px]:min-w-[66px]',
                   isActive
                     ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-blue-900/10'
                     : 'border-neutral-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700',
                 ].join(' ')}
+                onContextMenu={(event) =>
+                  handleShortcutContextMenu(event, shortcut.key)
+                }
                 onPress={() => navigateToShortcut(shortcut)}
                 size="sm"
                 variant={isActive ? 'secondary' : 'ghost'}
@@ -95,19 +130,41 @@ export const ModuleLauncherDock = ({
                   {label}
                 </span>
               </Button>
-            </span>
+              <VmDropdown.Popover className="z-[320] min-w-44" placement="top">
+                <VmDropdown.Menu
+                  aria-label={`Acciones de ${shortcut.title}`}
+                  onAction={(key) => {
+                    if (key === 'unpin') handleUnpinShortcut(shortcut);
+                  }}
+                >
+                  <VmDropdown.Item
+                    id="unpin"
+                    textValue="Quitar del dock"
+                    variant="danger"
+                  >
+                    <span
+                      className="inline-flex items-center gap-2"
+                      data-slot="label"
+                    >
+                      <FontAwesomeIcon icon={faThumbtack} fixedWidth />
+                      Quitar del dock
+                    </span>
+                  </VmDropdown.Item>
+                </VmDropdown.Menu>
+              </VmDropdown.Popover>
+            </VmDropdown>
           );
         })}
 
-        <div className="mx-0.5 h-10 w-px self-center bg-neutral-200 md:mx-0 md:my-0.5 md:h-px md:w-12" />
+        <div className="mx-0.5 h-10 w-px self-center bg-neutral-200 min-[1300px]:mx-0 min-[1300px]:my-0.5 min-[1300px]:h-px min-[1300px]:w-12" />
 
         <span
-          className="relative inline-flex h-[58px] min-w-[60px] md:w-[66px] md:min-w-[66px]"
+          className="relative inline-flex h-[58px] min-w-[60px] min-[1300px]:w-[66px] min-[1300px]:min-w-[66px]"
           title="Módulos"
         >
           <Button
             aria-label="Ver módulos"
-            className="flex h-[58px] w-[60px] min-w-[60px] flex-col justify-center gap-1 rounded-[14px] bg-blue-600 px-1.5 text-white shadow-md shadow-blue-900/20 hover:bg-blue-700 md:w-[66px] md:min-w-[66px]"
+            className="flex h-[58px] w-[60px] min-w-[60px] flex-col justify-center gap-1 rounded-[14px] bg-blue-600 px-1.5 text-white shadow-md shadow-blue-900/20 hover:bg-blue-700 min-[1300px]:w-[66px] min-[1300px]:min-w-[66px]"
             onPress={onOpenModules}
             size="sm"
             variant="primary"
@@ -118,7 +175,7 @@ export const ModuleLauncherDock = ({
             </span>
           </Button>
           {alertCount > 0 ? (
-            <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white md:right-0 md:top-0">
+            <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white min-[1300px]:right-0 min-[1300px]:top-0">
               {alertCount}
             </span>
           ) : null}

@@ -38,6 +38,7 @@ const DEV_VIEW_TERM = {
   ALL_USERS: '/all-users',
   PRUEBA: '/prueba',
   FISCAL_RECEIPTS_AUDIT: '/dev/tools/fiscal-receipts-audit',
+  ELECTRONIC_TAX_RECEIPT_PROVIDER: '/dev/tools/electronic-tax-receipt-provider',
   B_SERIES_INVOICES: '/dev/tools/b-series-invoices',
   INVOICE_V2_RECOVERY: '/dev/tools/invoice-v2-recovery',
   INVENTORY_MIGRATION: '/dev/tools/inventory-migration',
@@ -72,6 +73,12 @@ const BASIC_TERM = {
   WELCOME_V2: '/welcome-v2',
   CHECKOUT_PROXY: '/checkout',
   BILLING_PORTAL: '/portal',
+} as const;
+
+const LAB_TERM = {
+  LAB: '/lab',
+  HEROUI: '/lab/heroui',
+  HEROUI_CUSTOM: '/lab/heroui/custom',
 } as const;
 
 const AUTH_TERM = {
@@ -245,6 +252,7 @@ export const ROUTES_PATH = {
   CREDIT_NOTE_TERM,
   AUTHORIZATIONS_TERM,
   INSURANCE_TERM,
+  LAB_TERM,
 } as const;
 
 export type RoutesPath = typeof ROUTES_PATH;

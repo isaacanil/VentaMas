@@ -182,12 +182,30 @@ describe('voidAccountsReceivablePayment accounting period validation', () => {
     });
     isAccountingRolloutEnabledForBusinessMock.mockReturnValue(true);
     buildAccountingEventIdMock.mockReturnValue('event-recorded-1');
-    collectionMock.mockImplementation(() => {
-      throw new Error('Unexpected collection lookup in this test.');
+    collectionMock.mockImplementation((path) => {
+      if (path === 'businesses/business-1/cashMovements') {
+        return {
+          where: vi.fn((_field, _operator, sourceId) => ({
+            kind: 'cash-movements-by-source',
+            sourceId,
+          })),
+        };
+      }
+      throw new Error(`Unexpected collection lookup in this test: ${path}`);
     });
-    transactionGetMock.mockImplementation(async (ref) =>
-      toSnapshot(ref.path, transactionSnapshots.get(ref.path)),
-    );
+    transactionGetMock.mockImplementation(async (ref) => {
+      if (ref?.kind === 'cash-movements-by-source') {
+        const docs = (
+          transactionSnapshots.get(`cashMovements:${ref.sourceId}`) || []
+        ).map((entry) => ({
+          id: entry.id,
+          data: () => entry,
+        }));
+        return { docs };
+      }
+
+      return toSnapshot(ref.path, transactionSnapshots.get(ref.path));
+    });
     runTransactionMock.mockImplementation(async (callback) =>
       callback({
         get: transactionGetMock,
@@ -237,6 +255,55 @@ describe('voidAccountsReceivablePayment accounting period validation', () => {
       }),
     );
     expect(transactionSetMock).not.toHaveBeenCalled();
-    expect(collectionMock).not.toHaveBeenCalled();
+    expect(collectionMock).toHaveBeenCalledWith(
+      'businesses/business-1/cashMovements',
+    );
+  });
+
+  it('rejects voiding an AR payment when treasury movements are reconciled', async () => {
+    const paymentRecord = {
+      status: 'posted',
+      paymentMethods: [
+        {
+          method: 'transfer',
+          value: 125,
+          bankAccountId: 'bank-1',
+        },
+      ],
+      totalApplied: 125,
+    };
+
+    documentSnapshots.set(
+      'businesses/business-1/accountsReceivablePayments/payment-1',
+      paymentRecord,
+    );
+    transactionSnapshots.set(
+      'businesses/business-1/accountsReceivablePayments/payment-1',
+      paymentRecord,
+    );
+    transactionSnapshots.set('cashMovements:payment-1', [
+      {
+        id: 'arp_payment-1_transfer_1',
+        sourceId: 'payment-1',
+        reconciliationStatus: 'reconciled',
+        reconciliationId: 'rec-1',
+      },
+    ]);
+
+    await expect(
+      voidAccountsReceivablePayment({
+        data: {
+          businessId: 'business-1',
+          paymentId: 'payment-1',
+          reason: 'Error de registro',
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      message:
+        'El cobro tiene movimientos de caja/banco conciliados. Debe revertirse mediante un flujo de conciliación/refund controlado.',
+    });
+
+    expect(transactionSetMock).not.toHaveBeenCalled();
   });
 });

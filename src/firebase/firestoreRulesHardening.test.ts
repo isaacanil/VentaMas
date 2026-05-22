@@ -35,24 +35,38 @@ describe('firestore financial hardening rules', () => {
     expectCollectionLocked('dgiiReports', 'reportId');
   });
 
-  it('requires finance configuration roles for accounting setup writes', () => {
-    expect(rules).toMatch(
-      /match \/businesses\/\{businessId\}\/chartOfAccounts\/\{chartOfAccountId\} \{[\s\S]*?allow create, update: if hasFinanceConfigAccess\(businessId\);/,
-    );
-    expect(rules).toMatch(
-      /match \/businesses\/\{businessId\}\/accountingPostingProfiles\/\{postingProfileId\} \{[\s\S]*?allow create, update: if hasFinanceConfigAccess\(businessId\);/,
+  it('forces accounting setup writes through backend callables', () => {
+    expectCollectionLocked('chartOfAccounts', 'chartOfAccountId');
+    expectCollectionLocked(
+      'accountingPostingProfiles',
+      'postingProfileId',
     );
     expect(rules).toMatch(
       /match \/businesses\/\{businessId\}\/bankAccounts\/\{bankAccountId\} \{[\s\S]*?allow create, update: if hasTreasuryConfigAccess\(businessId\);/,
     );
   });
 
-  it('only lets legacy invoice writes update/delete draft documents without posted footprint', () => {
+  it('only lets legacy invoice writes create/update/delete drafts without posted footprint', () => {
+    expect(rules).toMatch(
+      /allow create: if hasBusinessAccess\(businessId\)[\s\S]*?isSafeInvoiceDraftCreate\(request\.resource\.data\);/,
+    );
     expect(rules).toMatch(
       /match \/businesses\/\{businessId\}\/invoices\/\{invoiceId\} \{[\s\S]*?allow update: if hasBusinessAccess\(businessId\)[\s\S]*?isDraftFinancialDocument\(resource\.data\)[\s\S]*?isDraftFinancialDocument\(request\.resource\.data\)[\s\S]*?!isLockedInvoiceDocument\(resource\.data\)[\s\S]*?!isLockedInvoiceDocument\(request\.resource\.data\);/,
     );
     expect(rules).toMatch(
       /allow delete: if hasBusinessAccess\(businessId\)[\s\S]*?isDraftFinancialDocument\(resource\.data\)[\s\S]*?!isLockedInvoiceDocument\(resource\.data\);/,
+    );
+  });
+
+  it('locks purchases after they leave the mutable receipt draft state', () => {
+    expect(rules).toMatch(
+      /match \/businesses\/\{businessId\}\/purchases\/\{purchaseId\} \{[\s\S]*?allow create: if hasBusinessAccess\(businessId\)[\s\S]*?isMutablePurchaseSource\(request\.resource\.data\)[\s\S]*?!isLockedPurchaseDocument\(request\.resource\.data\);/,
+    );
+    expect(rules).toMatch(
+      /allow update: if hasBusinessAccess\(businessId\)[\s\S]*?isMutablePurchaseSource\(resource\.data\)[\s\S]*?!isLockedPurchaseDocument\(resource\.data\);/,
+    );
+    expect(rules).toMatch(
+      /allow delete: if hasBusinessAccess\(businessId\)[\s\S]*?isDeletablePurchaseSource\(resource\.data\)[\s\S]*?!isLockedPurchaseDocument\(resource\.data\);/,
     );
   });
 

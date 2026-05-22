@@ -103,6 +103,13 @@ export const buildJournalEntry = ({
   const normalizedLines = (Array.isArray(lines) ? lines : []).map((line, index) =>
     normalizeJournalEntryLine(line, index),
   );
+  const accountIds = Array.from(
+    new Set(
+      normalizedLines
+        .map((line) => toCleanString(line.accountId))
+        .filter(Boolean),
+    ),
+  );
   const totals = computeJournalEntryTotals(normalizedLines);
   const resolvedEntryDate =
     entryDate ??
@@ -134,6 +141,7 @@ export const buildJournalEntry = ({
       toCleanString(eventRecord.reversalOfEventId),
     totals,
     lines: normalizedLines,
+    accountIds,
     projectorVersion:
       Number.isFinite(Number(projectorVersion)) && Number(projectorVersion) > 0
         ? Number(projectorVersion)

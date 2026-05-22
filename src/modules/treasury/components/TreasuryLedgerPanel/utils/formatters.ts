@@ -36,6 +36,8 @@ export const humanizeSourceType = (value: string) => {
       return 'Reverso cobro CxC';
     case 'supplier_payment':
       return 'Pago suplidor';
+    case 'supplier_payment_void':
+      return 'Reverso pago suplidor';
     case 'expense':
       return 'Gasto';
     case 'credit_note_application':

@@ -10,6 +10,8 @@ export const DEFAULT_PINNED_TITLES = [
   'Cuadre de Caja',
 ];
 
+export const MAX_PINNED_SHORTCUTS = 6;
+
 export const CATEGORY_ORDER: Record<string, number> = {
   Ventas: 10,
   Inventario: 20,

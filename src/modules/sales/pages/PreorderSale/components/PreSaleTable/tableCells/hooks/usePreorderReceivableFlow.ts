@@ -37,6 +37,7 @@ type UsePreorderReceivableFlowParams = {
   effectiveClient: ClientLike | null;
   handleInvoicePanelOpen: () => void;
   invoiceTiming: string;
+  electronicTaxReceiptModelEnabled?: boolean;
   isTestMode: boolean;
   isValidClient: (client?: ClientLike | null) => boolean;
   ncfType: string | null;
@@ -60,6 +61,7 @@ export const usePreorderReceivableFlow = ({
   effectiveClient,
   handleInvoicePanelOpen,
   invoiceTiming,
+  electronicTaxReceiptModelEnabled = false,
   isTestMode,
   isValidClient,
   ncfType,
@@ -107,13 +109,18 @@ export const usePreorderReceivableFlow = ({
       effectiveNcfType: string | null;
     }) => {
       if (!effectiveTaxReceiptEnabled) return false;
+      const selectedNcfType =
+        typeof effectiveNcfType === 'string' ? effectiveNcfType.trim() : '';
+      if (!selectedNcfType) return true;
+      if (electronicTaxReceiptModelEnabled) return false;
+
       const { depleted } = getTaxReceiptAvailability(
         taxReceiptData,
-        effectiveNcfType,
+        selectedNcfType,
       );
       return depleted;
     },
-    [taxReceiptData],
+    [electronicTaxReceiptModelEnabled, taxReceiptData],
   );
 
   const buildOriginMeta = useCallback(

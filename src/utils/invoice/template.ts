@@ -3,6 +3,7 @@ export type InvoiceTemplateStorageKey =
   | 'template2'
   | 'template2_v2'
   | 'template2_v3'
+  | 'template2_v3_1'
   | 'template2_v4'
   | 'template3'
   | 'template4';
@@ -16,6 +17,8 @@ export const LETTER_INVOICE_TEMPLATE_V2_KEY: InvoiceTemplateStorageKey =
   'template2_v2';
 export const LETTER_INVOICE_TEMPLATE_V3_KEY: InvoiceTemplateStorageKey =
   'template2_v3';
+export const LETTER_INVOICE_TEMPLATE_V3_1_KEY: InvoiceTemplateStorageKey =
+  'template2_v3_1';
 export const LETTER_INVOICE_TEMPLATE_V4_KEY: InvoiceTemplateStorageKey =
   'template2_v4';
 export const LEGACY_INVOICE_TEMPLATE_3_KEY: InvoiceTemplateStorageKey =
@@ -27,6 +30,7 @@ const INVOICE_TEMPLATE_KEYS = new Set<InvoiceTemplateStorageKey>([
   LETTER_INVOICE_TEMPLATE_KEY,
   LETTER_INVOICE_TEMPLATE_V2_KEY,
   LETTER_INVOICE_TEMPLATE_V3_KEY,
+  LETTER_INVOICE_TEMPLATE_V3_1_KEY,
   LETTER_INVOICE_TEMPLATE_V4_KEY,
   LEGACY_INVOICE_TEMPLATE_3_KEY,
   MATRIX_INVOICE_TEMPLATE_KEY,
@@ -36,10 +40,6 @@ export const resolveInvoiceSelectionTemplate = (
   value?: string | null,
 ): InvoiceTemplateStorageKey => {
   const normalizedValue = value?.trim().toLowerCase();
-
-  if (normalizedValue === 'template2_v3_1') {
-    return LETTER_INVOICE_TEMPLATE_V4_KEY;
-  }
 
   return (
     normalizedValue &&
@@ -56,6 +56,7 @@ export const resolveInvoicePreviewTemplate = (
     case LETTER_INVOICE_TEMPLATE_KEY:
     case LETTER_INVOICE_TEMPLATE_V2_KEY:
     case LETTER_INVOICE_TEMPLATE_V3_KEY:
+    case LETTER_INVOICE_TEMPLATE_V3_1_KEY:
     case LETTER_INVOICE_TEMPLATE_V4_KEY:
       return LETTER_INVOICE_TEMPLATE_KEY;
     case LEGACY_INVOICE_TEMPLATE_3_KEY:
@@ -88,6 +89,7 @@ export const isInvoiceTemplateV3Beta = (value?: string | null): boolean =>
   (
     [
       LETTER_INVOICE_TEMPLATE_V3_KEY,
+      LETTER_INVOICE_TEMPLATE_V3_1_KEY,
     ] as readonly InvoiceTemplateStorageKey[]
   ).includes(
     resolveInvoiceSelectionTemplate(value),
@@ -102,6 +104,7 @@ export const isProgrammaticLetterPdfTemplate = (
     case LETTER_INVOICE_TEMPLATE_V4_KEY:
       return true;
     case LETTER_INVOICE_TEMPLATE_V3_KEY:
+    case LETTER_INVOICE_TEMPLATE_V3_1_KEY:
     case LEGACY_INVOICE_TEMPLATE_3_KEY:
     case MATRIX_INVOICE_TEMPLATE_KEY:
     case DEFAULT_INVOICE_TEMPLATE_KEY:
@@ -118,6 +121,8 @@ export const getInvoiceTemplateSummaryLabel = (
       return 'Carta V2 Beta';
     case LETTER_INVOICE_TEMPLATE_V3_KEY:
       return 'Carta V3 HTML Beta';
+    case LETTER_INVOICE_TEMPLATE_V3_1_KEY:
+      return 'Carta V3.1 HTML Beta';
     case LETTER_INVOICE_TEMPLATE_V4_KEY:
       return 'Carta V4 PDFMake Beta';
     case LETTER_INVOICE_TEMPLATE_KEY:

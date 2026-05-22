@@ -17,6 +17,7 @@ import type { InvoiceData } from '@/types/invoice';
 import type { TaxReceiptItem } from '@/types/taxReceipt';
 import type { UserIdentity } from '@/types/users';
 import type { AccountsReceivableDoc } from '@/utils/accountsReceivable/types';
+import { resolveBusinessFiscalRollout } from '@/utils/fiscal/fiscalRollout';
 import { measure } from '@/utils/perf/measure';
 
 import type { DocumentCurrencyContext } from '../components/Body/components/DocumentCurrencySelector';
@@ -120,14 +121,35 @@ export const submitInvoicePanel = async ({
 }: SubmitInvoicePanelArgs) => {
   try {
     const effectiveTaxReceiptEnabled = taxReceiptEnabled;
+    const electronicTaxReceiptModelEnabled =
+      resolveBusinessFiscalRollout(business).electronicModelEnabled;
+    const selectedNcfType =
+      typeof ncfType === 'string' ? ncfType.trim() : '';
 
     if (effectiveTaxReceiptEnabled) {
-      const { depleted } = getTaxReceiptAvailability(taxReceiptData, ncfType);
-      if (depleted) {
-        setTaxReceiptModalOpen(true);
+      if (!selectedNcfType) {
+        notification.warning({
+          message: 'Comprobante requerido',
+          description:
+            'Selecciona el tipo de comprobante fiscal antes de completar la venta.',
+          duration: 6,
+        });
         dispatch(unlockTaxReceiptType());
         return;
       }
+
+      if (!electronicTaxReceiptModelEnabled) {
+        const { depleted } = getTaxReceiptAvailability(
+          taxReceiptData,
+          selectedNcfType,
+        );
+        if (depleted) {
+          setTaxReceiptModalOpen(true);
+          dispatch(unlockTaxReceiptType());
+          return;
+        }
+      }
+
       dispatch(lockTaxReceiptType());
     } else {
       dispatch(unlockTaxReceiptType());
@@ -191,6 +213,7 @@ export const submitInvoicePanel = async ({
       userId: user?.uid ?? null,
       testMode: Boolean(isTestMode),
       taxReceiptEnabled: effectiveTaxReceiptEnabled,
+      electronicTaxReceiptModelEnabled,
       idempotencyKey,
       invoice: cart,
     });
@@ -202,7 +225,7 @@ export const submitInvoicePanel = async ({
         client,
         accountsReceivable,
         taxReceiptEnabled: effectiveTaxReceiptEnabled,
-        ncfType: effectiveTaxReceiptEnabled ? ncfType : null,
+        ncfType: effectiveTaxReceiptEnabled ? selectedNcfType : null,
         dueDate,
         insuranceEnabled,
         insuranceAR: toInvoiceRecord(insuranceAR),

@@ -31,6 +31,7 @@ import { TaxReceiptDepletedModal } from '@/modules/sales/pages/Sale/components/C
 import type { InvoiceBusinessInfo } from '@/types/invoice';
 import type { TaxReceiptItem } from '@/types/taxReceipt';
 import type { UserIdentity } from '@/types/users';
+import { resolveBusinessFiscalRollout } from '@/utils/fiscal/fiscalRollout';
 import { calculateInvoiceChange } from '@/utils/invoice';
 
 import { ActionButtons } from './components/ActionButtons';
@@ -101,6 +102,10 @@ export const PreorderActionsCell = ({
       )?.billing?.invoiceGenerationTiming ?? 'first-payment',
     [cartSettings],
   );
+  const electronicTaxReceiptModelEnabled = useMemo(
+    () => resolveBusinessFiscalRollout(business).electronicModelEnabled,
+    [business],
+  );
 
   const { convertToCart, handleInvoicePanelOpen, handlePreloadPreorder } =
     usePreorderCartActions({ data, dispatch, navigate });
@@ -135,6 +140,7 @@ export const PreorderActionsCell = ({
     effectiveClient,
     handleInvoicePanelOpen,
     invoiceTiming,
+    electronicTaxReceiptModelEnabled,
     isTestMode,
     isValidClient,
     ncfType,

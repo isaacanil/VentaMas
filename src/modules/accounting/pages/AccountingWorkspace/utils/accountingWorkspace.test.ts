@@ -357,6 +357,281 @@ describe('accountingWorkspace automatic entry aliases', () => {
 });
 
 describe('accountingWorkspace projected profile lines', () => {
+  it('previsualiza venta mixta separando caja, banco y saldo por cobrar', () => {
+    const cashAccount = buildAccount({
+      id: 'cash-1',
+      code: '101',
+      name: 'Caja general',
+      type: 'asset',
+      normalSide: 'debit',
+    });
+    const bankAccount = buildAccount({
+      id: 'bank-1',
+      code: '102',
+      name: 'Banco principal',
+      type: 'asset',
+      normalSide: 'debit',
+    });
+    const receivableAccount = buildAccount({
+      id: 'ar-1',
+      code: '103',
+      name: 'Cuentas por cobrar',
+      type: 'asset',
+      normalSide: 'debit',
+    });
+    const salesAccount = buildAccount({
+      id: 'sales-1',
+      code: '401',
+      name: 'Ventas',
+      type: 'income',
+      normalSide: 'credit',
+    });
+
+    const [record] = buildLedgerRecords({
+      accounts: [cashAccount, bankAccount, receivableAccount, salesAccount],
+      events: [
+        {
+          id: 'invoice.committed__invoice-mixed-1',
+          businessId: 'business-1',
+          eventType: 'invoice.committed',
+          eventVersion: 1,
+          status: 'recorded',
+          occurredAt: new Date('2026-04-18T12:00:00.000Z'),
+          recordedAt: new Date('2026-04-18T12:00:00.000Z'),
+          sourceId: 'invoice-mixed-1',
+          sourceDocumentType: 'invoice',
+          sourceDocumentId: 'invoice-mixed-1',
+          counterpartyType: 'customer',
+          counterpartyId: 'customer-1',
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: { amount: 1000, functionalAmount: 1000 },
+          treasury: { paymentChannel: 'other' },
+          payload: {
+            paymentTerm: 'cash',
+            paymentMethods: [
+              { method: 'cash', value: 200 },
+              { method: 'card', value: 300 },
+            ],
+          },
+          dedupeKey: 'dedupe-mixed-sale',
+          idempotencyKey: 'idem-mixed-sale',
+          projection: { status: 'pending', journalEntryId: null },
+          reversalOfEventId: null,
+          createdAt: new Date('2026-04-18T12:00:00.000Z'),
+          createdBy: 'ana@ventamas.do',
+          metadata: {},
+        },
+      ],
+      journalEntries: [],
+      postingProfiles: [
+        {
+          id: 'profile-mixed-sale',
+          businessId: 'business-1',
+          name: 'Venta mixta',
+          eventType: 'invoice.committed',
+          moduleKey: 'sales',
+          status: 'active',
+          priority: 1,
+          conditions: {
+            paymentTerm: 'cash',
+            settlementKind: 'other',
+          },
+          linesTemplate: [
+            {
+              id: 'debit-cash',
+              side: 'debit',
+              accountId: 'cash-1',
+              accountCode: '101',
+              accountName: 'Caja general',
+              amountSource: 'sale_cash_received',
+              omitIfZero: true,
+            },
+            {
+              id: 'debit-bank',
+              side: 'debit',
+              accountId: 'bank-1',
+              accountCode: '102',
+              accountName: 'Banco principal',
+              amountSource: 'sale_bank_received',
+              omitIfZero: true,
+            },
+            {
+              id: 'debit-ar',
+              side: 'debit',
+              accountId: 'ar-1',
+              accountCode: '103',
+              accountName: 'Cuentas por cobrar',
+              amountSource: 'sale_receivable_balance',
+              omitIfZero: true,
+            },
+            {
+              id: 'credit-sales',
+              side: 'credit',
+              accountId: 'sales-1',
+              accountCode: '401',
+              accountName: 'Ventas',
+              amountSource: 'document_total',
+              omitIfZero: true,
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(record.detailMode).toBe('projected');
+    expect(record.lines).toEqual([
+      expect.objectContaining({
+        accountId: 'cash-1',
+        debit: 200,
+        credit: 0,
+        amountSource: 'sale_cash_received',
+      }),
+      expect.objectContaining({
+        accountId: 'bank-1',
+        debit: 300,
+        credit: 0,
+        amountSource: 'sale_bank_received',
+      }),
+      expect.objectContaining({
+        accountId: 'ar-1',
+        debit: 500,
+        credit: 0,
+        amountSource: 'sale_receivable_balance',
+      }),
+      expect.objectContaining({
+        accountId: 'sales-1',
+        debit: 0,
+        credit: 1000,
+        amountSource: 'document_total',
+      }),
+    ]);
+  });
+
+  it('respeta condiciones de naturaleza documental en perfiles proyectados', () => {
+    const inventoryAccount = buildAccount({
+      id: 'inventory-1',
+      code: '130',
+      name: 'Inventario',
+      type: 'asset',
+      normalSide: 'debit',
+    });
+    const payableAccount = buildAccount({
+      id: 'payable-1',
+      code: '201',
+      name: 'Cuentas por pagar',
+      type: 'liability',
+      normalSide: 'credit',
+    });
+
+    const [record] = buildLedgerRecords({
+      accounts: [inventoryAccount, payableAccount],
+      events: [
+        {
+          id: 'purchase.committed__purchase-inventory-1',
+          businessId: 'business-1',
+          eventType: 'purchase.committed',
+          eventVersion: 1,
+          status: 'recorded',
+          occurredAt: new Date('2026-04-18T12:00:00.000Z'),
+          recordedAt: new Date('2026-04-18T12:00:00.000Z'),
+          sourceId: 'purchase-inventory-1',
+          sourceDocumentType: 'purchase',
+          sourceDocumentId: 'purchase-inventory-1',
+          counterpartyType: 'supplier',
+          counterpartyId: 'supplier-1',
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: { amount: 850, functionalAmount: 850 },
+          treasury: {},
+          payload: {
+            documentNature: 'inventory',
+          },
+          dedupeKey: 'dedupe-inventory-purchase',
+          idempotencyKey: 'idem-inventory-purchase',
+          projection: { status: 'pending', journalEntryId: null },
+          reversalOfEventId: null,
+          createdAt: new Date('2026-04-18T12:00:00.000Z'),
+          createdBy: 'ana@ventamas.do',
+          metadata: {},
+        },
+      ],
+      journalEntries: [],
+      postingProfiles: [
+        {
+          id: 'profile-expense-purchase',
+          businessId: 'business-1',
+          name: 'Compra de gasto',
+          eventType: 'purchase.committed',
+          moduleKey: 'purchases',
+          status: 'active',
+          priority: 1,
+          conditions: {
+            documentNature: 'expense',
+          },
+          linesTemplate: [
+            {
+              id: 'debit-expense',
+              side: 'debit',
+              accountId: 'inventory-1',
+              amountSource: 'purchase_total',
+              omitIfZero: true,
+            },
+            {
+              id: 'credit-payable-expense',
+              side: 'credit',
+              accountId: 'payable-1',
+              amountSource: 'purchase_total',
+              omitIfZero: true,
+            },
+          ],
+        },
+        {
+          id: 'profile-inventory-purchase',
+          businessId: 'business-1',
+          name: 'Compra de inventario',
+          eventType: 'purchase.committed',
+          moduleKey: 'purchases',
+          status: 'active',
+          priority: 2,
+          conditions: {
+            documentNature: 'inventory',
+          },
+          linesTemplate: [
+            {
+              id: 'debit-inventory',
+              side: 'debit',
+              accountId: 'inventory-1',
+              amountSource: 'purchase_total',
+              omitIfZero: true,
+            },
+            {
+              id: 'credit-payable-inventory',
+              side: 'credit',
+              accountId: 'payable-1',
+              amountSource: 'purchase_total',
+              omitIfZero: true,
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(record.profile?.id).toBe('profile-inventory-purchase');
+    expect(record.lines).toEqual([
+      expect.objectContaining({
+        accountId: 'inventory-1',
+        debit: 850,
+        credit: 0,
+      }),
+      expect.objectContaining({
+        accountId: 'payable-1',
+        debit: 0,
+        credit: 850,
+      }),
+    ]);
+  });
+
   it('previsualiza ajustes bancarios negativos contra gasto de conciliacion y banco', () => {
     const bankAccount = buildAccount({
       id: 'bank-1',

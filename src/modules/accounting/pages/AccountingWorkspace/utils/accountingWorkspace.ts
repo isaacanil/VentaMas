@@ -22,6 +22,7 @@ import {
   toDateOrNull,
 } from '@/utils/accounting/journalEntries';
 import { isAccountingPeriodClosed } from '@/utils/accounting/periodClosures';
+import { normalizePaymentMethodCode } from '@/utils/payments/contracts';
 
 export type AccountingWorkspacePanelKey =
   | 'journal-book'
@@ -254,6 +255,99 @@ const toFiniteAmount = (value: unknown): number => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+const roundAccountingAmount = (value: number): number =>
+  Math.round((value + Number.EPSILON) * 100) / 100;
+
+const CASH_PAYMENT_METHODS = new Set(['cash']);
+const BANK_PAYMENT_METHODS = new Set(['card', 'transfer']);
+const OTHER_PAYMENT_METHODS = new Set(['creditNote', 'supplierCreditNote']);
+
+const resolveSaleSettlementBreakdown = (event: AccountingEvent) => {
+  const payload = asRecord(event.payload);
+  const monetary = asRecord(event.monetary);
+  const documentTotal = toFiniteAmount(monetary.amount);
+  const total =
+    toFiniteAmount(monetary.functionalAmount) ||
+    toFiniteAmount(monetary.amount);
+  const functionalRate =
+    documentTotal > 0 && total > 0 ? total / documentTotal : 1;
+  const paymentMethods = Array.isArray(payload.paymentMethods)
+    ? payload.paymentMethods
+    : [];
+
+  const breakdown = paymentMethods.reduce(
+    (accumulator, method) => {
+      const methodRecord = asRecord(method);
+      const explicitFunctionalAmount = toFiniteAmount(
+        methodRecord.functionalValue ??
+          methodRecord.functionalAmount ??
+          methodRecord.functionalTotal,
+      );
+      const documentAmount = toFiniteAmount(
+        methodRecord.value ?? methodRecord.amount,
+      );
+      const amount =
+        explicitFunctionalAmount > 0
+          ? explicitFunctionalAmount
+          : documentAmount * functionalRate;
+
+      if (amount <= 0) {
+        return accumulator;
+      }
+
+      const methodCode = normalizePaymentMethodCode(
+        methodRecord.method ?? methodRecord.code ?? method,
+      );
+
+      if (CASH_PAYMENT_METHODS.has(methodCode ?? '')) {
+        accumulator.cash += amount;
+        return accumulator;
+      }
+
+      if (BANK_PAYMENT_METHODS.has(methodCode ?? '')) {
+        accumulator.bank += amount;
+        return accumulator;
+      }
+
+      if (OTHER_PAYMENT_METHODS.has(methodCode ?? '')) {
+        accumulator.other += amount;
+        return accumulator;
+      }
+
+      accumulator.other += amount;
+      return accumulator;
+    },
+    { cash: 0, bank: 0, other: 0 },
+  );
+
+  const explicitSettled =
+    toFiniteAmount(payload.functionalSettledAmount) ||
+    toFiniteAmount(payload.functionalPaidAmount) ||
+    (toFiniteAmount(payload.settledAmount) ||
+      toFiniteAmount(payload.paidAmount)) *
+      functionalRate;
+  const settledAmount = Math.max(
+    explicitSettled || breakdown.cash + breakdown.bank + breakdown.other,
+    0,
+  );
+  const explicitReceivableBalance =
+    toFiniteAmount(payload.functionalReceivableBalance) ||
+    toFiniteAmount(payload.receivableFunctionalBalance) ||
+    toFiniteAmount(payload.receivableBalance) * functionalRate;
+  const receivableBalance = Math.max(
+    explicitReceivableBalance || total - settledAmount,
+    0,
+  );
+
+  return {
+    cash: roundAccountingAmount(breakdown.cash),
+    bank: roundAccountingAmount(breakdown.bank),
+    other: roundAccountingAmount(breakdown.other),
+    settledAmount: roundAccountingAmount(settledAmount),
+    receivableBalance: roundAccountingAmount(receivableBalance),
+  };
+};
+
 const buildEntryAlias = (
   entryDate: Date | null,
   entryId: string | null,
@@ -326,12 +420,20 @@ const resolveEventContext = (event: AccountingEvent) => {
     toFiniteAmount(asRecord(event.monetary).taxAmount);
   const paymentTermCandidate =
     toCleanString(payload.paymentTerm) ??
+    toCleanString(payload.paymentCondition) ??
     toCleanString(payload.saleCondition) ??
     toCleanString(payload.terms);
   const settlementKindCandidate =
     toCleanString(treasury.paymentChannel) ??
     toCleanString(payload.settlementKind) ??
     toCleanString(payload.paymentChannel);
+  const documentNatureCandidate =
+    toCleanString(payload.documentNature) ??
+    toCleanString(payload.financialType) ??
+    toCleanString(payload.purchaseNature);
+  const settlementTimingCandidate =
+    toCleanString(payload.settlementTiming) ??
+    toCleanString(payload.settlementMode);
 
   return {
     paymentTerm:
@@ -339,12 +441,24 @@ const resolveEventContext = (event: AccountingEvent) => {
         ? paymentTermCandidate
         : 'any',
     settlementKind:
-      settlementKindCandidate === 'cash' || settlementKindCandidate === 'bank'
+      settlementKindCandidate === 'cash' ||
+      settlementKindCandidate === 'bank' ||
+      settlementKindCandidate === 'other'
         ? settlementKindCandidate
         : 'any',
-    documentNature: 'any',
-    settlementTiming: 'any',
     taxTreatment: taxAmount > 0 ? 'taxed' : 'untaxed',
+    documentNature:
+      documentNatureCandidate === 'inventory' ||
+      documentNatureCandidate === 'expense' ||
+      documentNatureCandidate === 'asset' ||
+      documentNatureCandidate === 'service'
+        ? documentNatureCandidate
+        : 'any',
+    settlementTiming:
+      settlementTimingCandidate === 'immediate' ||
+      settlementTimingCandidate === 'deferred'
+        ? settlementTimingCandidate
+        : 'any',
   } satisfies Required<AccountingPostingCondition>;
 };
 
@@ -375,6 +489,22 @@ const matchesProfileConditions = (
     conditions.taxTreatment &&
     conditions.taxTreatment !== 'any' &&
     conditions.taxTreatment !== eventContext.taxTreatment
+  ) {
+    return false;
+  }
+
+  if (
+    conditions.documentNature &&
+    conditions.documentNature !== 'any' &&
+    conditions.documentNature !== eventContext.documentNature
+  ) {
+    return false;
+  }
+
+  if (
+    conditions.settlementTiming &&
+    conditions.settlementTiming !== 'any' &&
+    conditions.settlementTiming !== eventContext.settlementTiming
   ) {
     return false;
   }
@@ -437,6 +567,7 @@ const resolveEventAmountSource = (
     toFiniteAmount(monetary.functionalTaxAmount) ||
     toFiniteAmount(monetary.taxAmount);
   const netSales = Math.max(total - tax, 0);
+  const saleSettlement = resolveSaleSettlementBreakdown(event);
   const gain = Math.max(total, 0);
   const loss = Math.abs(Math.min(total, 0));
 
@@ -444,6 +575,18 @@ const resolveEventAmountSource = (
     case 'tax_total':
       return tax;
     case 'net_sales':
+      return netSales;
+    case 'sale_settled_amount':
+      return saleSettlement.settledAmount;
+    case 'sale_receivable_balance':
+      return saleSettlement.receivableBalance;
+    case 'sale_cash_received':
+      return saleSettlement.cash;
+    case 'sale_bank_received':
+      return saleSettlement.bank;
+    case 'sale_other_received':
+      return saleSettlement.other;
+    case 'credit_note_net_total':
       return netSales;
     case 'purchase_total':
     case 'expense_total':

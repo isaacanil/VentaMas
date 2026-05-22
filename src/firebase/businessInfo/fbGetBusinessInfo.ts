@@ -22,7 +22,32 @@ const toCleanString = (value: unknown): string | null => {
   return trimmed.length ? trimmed : null;
 };
 
-const resolveBusinessPayload = (snapshotData: unknown): BusinessInfoData | null => {
+const mergeRecords = (...values: unknown[]): Record<string, unknown> =>
+  values.reduce<Record<string, unknown>>((acc, value) => {
+    if (!isRecord(value)) return acc;
+    return {
+      ...acc,
+      ...value,
+    };
+  }, {});
+
+const mergeFeaturePayload = (...values: unknown[]): Record<string, unknown> => {
+  const features = mergeRecords(...values);
+  const fiscal = mergeRecords(
+    ...values.map((value) => (isRecord(value) ? value.fiscal : null)),
+  );
+
+  if (Object.keys(fiscal).length === 0) return features;
+
+  return {
+    ...features,
+    fiscal,
+  };
+};
+
+export const resolveBusinessPayload = (
+  snapshotData: unknown,
+): BusinessInfoData | null => {
   const root = isRecord(snapshotData) ? snapshotData : null;
   if (!root) return null;
 
@@ -37,6 +62,16 @@ const resolveBusinessPayload = (snapshotData: unknown): BusinessInfoData | null 
     ...businessNode,
     ...nestedBusinessNode,
   };
+
+  const mergedFeatures = mergeFeaturePayload(
+    businessNode?.features,
+    nestedBusinessNode?.features,
+    root.features,
+  );
+
+  if (Object.keys(mergedFeatures).length > 0) {
+    merged.features = mergedFeatures;
+  }
 
   // Normaliza el nombre para no caer en fallback cuando existe en algún nivel.
   const resolvedName =

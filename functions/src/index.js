@@ -10,6 +10,11 @@ import { createProduct } from './app/modules/products/functions/createProduct.js
 import { createClient } from './app/modules/client/functions/createClient.js';
 import { createProvider } from './app/modules/provider/functions/createProvider.js';
 import { reserveCreditNoteNcf } from './app/modules/taxReceipt/functions/reserveCreditNoteNcf.js';
+import { refreshElectronicTaxReceiptStatus } from './app/modules/electronicTaxReceipts/functions/refreshElectronicTaxReceiptStatus.js';
+import { updateElectronicTaxReceiptConfig } from './app/modules/electronicTaxReceipts/functions/updateElectronicTaxReceiptConfig.js';
+import { validateElectronicTaxReceiptConfig } from './app/modules/electronicTaxReceipts/functions/validateElectronicTaxReceiptConfig.js';
+import { validateElectronicTaxReceiptPlatformConfig } from './app/modules/electronicTaxReceipts/functions/validateElectronicTaxReceiptPlatformConfig.js';
+import { updateElectronicTaxReceiptPlatformConfig } from './app/modules/electronicTaxReceipts/functions/updateElectronicTaxReceiptPlatformConfig.js';
 import {
   deleteDraftInvoice,
   updateInvoiceFinancialDocument,
@@ -21,8 +26,17 @@ import { closeAccountingPeriod } from './app/modules/accounting/functions/closeA
 import { createManualJournalEntry } from './app/modules/accounting/functions/createManualJournalEntry.js';
 import { getAccountingReports } from './app/modules/accounting/functions/getAccountingReports.js';
 import { analyzeFinanceReadiness } from './app/modules/accounting/functions/analyzeFinanceReadiness.js';
+import { backfillJournalEntryAccountIds } from './app/modules/accounting/functions/backfillJournalEntryAccountIds.js';
 import { replayAccountingEventProjection } from './app/modules/accounting/functions/replayAccountingEventProjection.js';
 import { reverseJournalEntry } from './app/modules/accounting/functions/reverseJournalEntry.js';
+import {
+  createAccountingPostingProfile,
+  createChartOfAccount,
+  disableAccountingPostingProfile,
+  disableChartOfAccount,
+  updateAccountingPostingProfile,
+  updateChartOfAccount,
+} from './app/modules/accounting/functions/manageAccountingConfiguration.js';
 import { syncAccountingPostingProfilesDerivedHistory } from './app/modules/accounting/functions/syncAccountingPostingProfilesDerivedHistory.js';
 import { syncAccountingSettingsDerivedRecords } from './app/modules/accounting/functions/syncAccountingSettingsDerivedRecords.js';
 import { syncBankAccountDerivedHistory } from './app/modules/accounting/functions/syncBankAccountDerivedHistory.js';
@@ -170,6 +184,11 @@ export {
   createClient,
   createProvider,
   reserveCreditNoteNcf,
+  refreshElectronicTaxReceiptStatus,
+  updateElectronicTaxReceiptConfig,
+  validateElectronicTaxReceiptConfig,
+  validateElectronicTaxReceiptPlatformConfig,
+  updateElectronicTaxReceiptPlatformConfig,
   deleteDraftInvoice,
   updateInvoiceFinancialDocument,
   voidInvoiceFinancialDocument,
@@ -179,8 +198,15 @@ export {
   createManualJournalEntry,
   getAccountingReports,
   analyzeFinanceReadiness,
+  backfillJournalEntryAccountIds,
   replayAccountingEventProjection,
   reverseJournalEntry,
+  createAccountingPostingProfile,
+  createChartOfAccount,
+  disableAccountingPostingProfile,
+  disableChartOfAccount,
+  updateAccountingPostingProfile,
+  updateChartOfAccount,
   syncAccountingPostingProfilesDerivedHistory,
   syncAccountingSettingsDerivedRecords,
   syncBankAccountDerivedHistory,

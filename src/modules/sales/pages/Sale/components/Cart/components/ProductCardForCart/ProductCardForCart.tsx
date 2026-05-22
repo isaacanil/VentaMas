@@ -10,11 +10,12 @@ import {
   faCircleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Tooltip, Badge, Button, Dropdown } from 'antd';
-import { useState, type KeyboardEvent } from 'react';
+import { Tooltip, Badge, Button } from 'antd';
+import { useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { VmDropdown } from '@/components/heroui';
 import { icons } from '@/constants/icons/icons';
 import {
   changeProductPrice,
@@ -38,7 +39,6 @@ import { PriceEditor } from './components/PriceEditor/PriceEditor';
 import { WeightInput } from './components/WeightInput/WeightInput';
 import { extraerPreciosConImpuesto } from './utils/priceUtils';
 
-import type { MenuProps } from 'antd';
 import type {
   PricingTax,
   ProductBatchInfo,
@@ -88,6 +88,14 @@ type SaleUnitRecord = Partial<ProductSaleUnit> & { id: string };
 type ExpiredStyleProps = { $expired: boolean };
 type HasBatchStyleProps = { $hasBatch: boolean };
 type DiscountStyleProps = { $hasDiscount: boolean };
+type ProductActionMenuTone = 'warning' | 'success' | 'info' | 'neutral';
+type ProductActionMenuItem = {
+  key: string;
+  label: string;
+  icon: ReactNode;
+  tone: ProductActionMenuTone;
+  onClick: () => void;
+};
 
 interface ProductCardForCartProps {
   item: CartItem;
@@ -275,19 +283,14 @@ export const ProductCardForCart = ({
     setModalVisible(false);
   };
 
-  const actionMenuItems: MenuProps['items'] = [
+  const actionMenuItems: ProductActionMenuItem[] = [
     ...(requiresPhysicalSelection
       ? [
           {
             key: 'select-physical-stock',
-            label: (
-              <span
-                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-              >
-                <EnvironmentOutlined style={{ color: '#d97706' }} />
-                Seleccionar ubicación
-              </span>
-            ),
+            label: 'Seleccionar ubicación',
+            icon: <EnvironmentOutlined />,
+            tone: 'warning' as const,
             onClick: () =>
               dispatch(openProductStockSimple(item as unknown as ProductRecord)),
           },
@@ -295,40 +298,25 @@ export const ProductCardForCart = ({
       : []),
     {
       key: 'discount',
-      label: (
-        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <PercentageOutlined
-            style={{ color: item.discount ? '#52c41a' : '#8c8c8c' }}
-          />
-          {item.discount ? 'Editar descuento' : 'Aplicar descuento'}
-        </span>
-      ),
+      label: item.discount ? 'Editar descuento' : 'Aplicar descuento',
+      icon: <PercentageOutlined />,
+      tone: item.discount ? 'success' : 'neutral',
       onClick: () => onOpenDiscountModal(item),
     },
     {
       key: 'comment',
-      label: (
-        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <MessageOutlined
-            style={{ color: item.comment ? '#1890ff' : '#8c8c8c' }}
-          />
-          {item.comment ? 'Editar comentario' : 'Agregar comentario'}
-        </span>
-      ),
+      label: item.comment ? 'Editar comentario' : 'Agregar comentario',
+      icon: <MessageOutlined />,
+      tone: item.comment ? 'info' : 'neutral',
       onClick: () => onOpenCommentModal(item),
     },
     ...(hasBatchInfo
       ? [
           {
             key: 'batch-info',
-            label: (
-              <span
-                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-              >
-                <InfoCircleOutlined style={{ color: '#4096ff' }} />
-                Ver información del lote
-              </span>
-            ),
+            label: 'Ver información del lote',
+            icon: <InfoCircleOutlined />,
+            tone: 'info' as const,
             onClick: () => onOpenBatchInfoModal(item),
           },
         ]
@@ -516,13 +504,13 @@ export const ProductCardForCart = ({
           </LeftSlot>
           <RightCluster>
             <PriceContainer>
-              <PriceMetaRow>
-                {usesConvertedDocumentPrice && (
+              {usesConvertedDocumentPrice && (
+                <PriceMetaRow>
                   <SourcePriceNote>
                     Orig. {formatPriceByCurrency(finalPrice, sourceCurrency)}
                   </SourcePriceNote>
-                )}
-              </PriceMetaRow>
+                </PriceMetaRow>
+              )}
               {hasDiscount && (
                 <OriginalPrice>
                   {formatPriceByCurrency(displayedOriginalPrice, documentCurrency)}
@@ -535,24 +523,46 @@ export const ProductCardForCart = ({
             <TopActions>
               <Tooltip title="Opciones del producto">
                 <Badge dot={hasActions} color={badgeColor} offset={[-2, 2]}>
-                  <Dropdown
-                    menu={{ items: actionMenuItems }}
-                    trigger={['click']}
-                    placement="bottomRight"
-                  >
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={
-                        <MoreOutlined
-                          style={{
-                            fontSize: '16px',
-                            color: hasActions ? badgeColor : '#8c8c8c',
-                          }}
-                        />
-                      }
-                    />
-                  </Dropdown>
+                  <VmDropdown>
+                    <ProductActionMenuButton
+                      isIconOnly
+                      size="sm"
+                      aria-label="Opciones del producto"
+                    >
+                      <MoreOutlined
+                        style={{
+                          fontSize: '16px',
+                          color: hasActions ? badgeColor : '#8c8c8c',
+                        }}
+                      />
+                    </ProductActionMenuButton>
+                    <ProductActionMenuPopover placement="bottom end">
+                      <VmDropdown.Menu
+                        aria-label="Opciones del producto"
+                        onAction={(key) => {
+                          const selectedItem = actionMenuItems.find(
+                            (menuItem) => menuItem.key === String(key),
+                          );
+                          selectedItem?.onClick();
+                        }}
+                      >
+                        {actionMenuItems.map((menuItem) => (
+                          <VmDropdown.Item
+                            key={menuItem.key}
+                            id={menuItem.key}
+                            textValue={menuItem.label}
+                          >
+                            <ProductActionMenuItemLabel>
+                              <ProductActionMenuItemIcon $tone={menuItem.tone}>
+                                {menuItem.icon}
+                              </ProductActionMenuItemIcon>
+                              <span>{menuItem.label}</span>
+                            </ProductActionMenuItemLabel>
+                          </VmDropdown.Item>
+                        ))}
+                      </VmDropdown.Menu>
+                    </ProductActionMenuPopover>
+                  </VmDropdown>
                 </Badge>
               </Tooltip>
               <Button
@@ -795,6 +805,47 @@ const TopActions = styled.div`
   display: flex;
   gap: 4px;
   align-items: center;
+`;
+
+const ProductActionMenuButton = styled(VmDropdown.Button)`
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0;
+  border-color: transparent;
+  color: var(--ds-color-text-secondary);
+  background: transparent;
+
+  &:hover,
+  &[data-hovered='true'] {
+    color: var(--ds-color-text-primary);
+    background: var(--ds-color-bg-subtle);
+  }
+`;
+
+const ProductActionMenuPopover = styled(VmDropdown.Popover)`
+  min-width: 220px;
+`;
+
+const ProductActionMenuItemLabel = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+`;
+
+const ProductActionMenuItemIcon = styled.span<{
+  $tone: ProductActionMenuTone;
+}>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  color: ${(props) => {
+    if (props.$tone === 'warning') return 'var(--ds-color-state-warning-text)';
+    if (props.$tone === 'success') return 'var(--ds-color-state-success-text)';
+    if (props.$tone === 'info') return 'var(--ds-color-state-info-text)';
+    return 'var(--ds-color-text-tertiary)';
+  }};
 `;
 
 const TitleLabel = styled.span`

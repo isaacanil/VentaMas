@@ -14,6 +14,7 @@ import {
 } from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
 import {
   buildAccountsPayablePaymentCashMovements,
+  buildAccountsPayablePaymentVoidCashMovements,
 } from '../../../versions/v2/accounting/utils/cashMovement.util.js';
 import {
   applyOverduePaymentState,
@@ -366,6 +367,8 @@ const syncCashMovementsForPayment = async ({
   beforePayment,
   afterPayment,
 }) => {
+  const previousStatus = resolvePaymentStatus(beforePayment);
+  const nextStatus = resolvePaymentStatus(afterPayment);
   const beforeMovements = buildAccountsPayablePaymentCashMovements({
     businessId,
     payment: beforePayment ? { ...beforePayment, id: paymentId } : null,
@@ -378,16 +381,31 @@ const syncCashMovementsForPayment = async ({
     createdAt: afterPayment?.createdAt ?? afterPayment?.occurredAt ?? Date.now(),
   });
 
-  const afterIds = new Set(afterMovements.map((movement) => movement.id));
+  const voidMovements =
+    previousStatus !== 'void' && nextStatus === 'void'
+      ? buildAccountsPayablePaymentVoidCashMovements({
+          businessId,
+          payment: afterPayment ? { ...afterPayment, id: paymentId } : null,
+          createdAt:
+            afterPayment?.voidedAt ??
+            afterPayment?.updatedAt ??
+            afterPayment?.createdAt ??
+            Date.now(),
+        })
+      : [];
   const batch = db.batch();
+  const afterIds = new Set(afterMovements.map((movement) => movement.id));
+  const shouldPreserveOriginalMovements = nextStatus === 'void';
 
-  beforeMovements.forEach((movement) => {
-    if (afterIds.has(movement.id)) {
-      return;
-    }
+  if (!shouldPreserveOriginalMovements) {
+    beforeMovements.forEach((movement) => {
+      if (afterIds.has(movement.id)) {
+        return;
+      }
 
-    batch.delete(db.doc(`businesses/${businessId}/cashMovements/${movement.id}`));
-  });
+      batch.delete(db.doc(`businesses/${businessId}/cashMovements/${movement.id}`));
+    });
+  }
 
   afterMovements.forEach((movement) => {
     batch.set(
@@ -396,8 +414,15 @@ const syncCashMovementsForPayment = async ({
       { merge: true },
     );
   });
+  voidMovements.forEach((movement) => {
+    batch.set(
+      db.doc(`businesses/${businessId}/cashMovements/${movement.id}`),
+      movement,
+      { merge: true },
+    );
+  });
 
-  if (beforeMovements.length || afterMovements.length) {
+  if (beforeMovements.length || afterMovements.length || voidMovements.length) {
     await batch.commit();
   }
 };

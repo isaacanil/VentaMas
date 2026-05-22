@@ -13,6 +13,8 @@ const readString = (value) =>
 
 export const aiBusinessSeedingAgent = onCall(
   {
+    cors: true,
+    invoker: 'public',
     region: AI_AGENT_REGION,
     timeoutSeconds: 180,
     memory: '512MiB',
@@ -43,4 +45,3 @@ export const aiBusinessSeedingAgent = onCall(
     );
   },
 );
-

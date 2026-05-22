@@ -1,11 +1,12 @@
-import { Button as HeroButton, InputGroup } from '@heroui/react';
-import { Button as AntButton, Checkbox, Select, Tooltip } from 'antd';
+import { Button as HeroButton, InputGroup, ListBox } from '@heroui/react';
+import { Button as AntButton, Checkbox, Tooltip } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { useEffect, useMemo, useRef, type ChangeEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
+import { VmSelect } from '@/components/heroui';
 import { OPERATION_MODES } from '@/constants/modes.js';
 import { selectBusinessData } from '@/features/auth/businessSlice.js';
 import {
@@ -35,6 +36,11 @@ import {
 import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt.js';
 import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
 import { useWindowWidth } from '@/hooks/useWindowWidth';
+import {
+  formatCompactElectronicTaxReceiptLabel,
+  formatElectronicTaxReceiptLabel,
+} from '@/utils/fiscal/electronicTaxReceiptDocumentTypes';
+import { resolveBusinessFiscalRollout } from '@/utils/fiscal/fiscalRollout';
 import { updateObject } from '@/utils/object/updateObject';
 import type { TaxReceiptDocument } from '@/types/taxReceipt';
 
@@ -83,6 +89,10 @@ export const ClientControl = () => {
     ReturnType<typeof selectNcfTypeLocked>
   >(selectNcfTypeLocked);
   const insuranceEnabled = useInsuranceEnabled();
+  const electronicTaxReceiptModelEnabled = useMemo(
+    () => resolveBusinessFiscalRollout(business).electronicModelEnabled,
+    [business],
+  );
 
   const inputIcon = useMemo(() => {
     switch (mode) {
@@ -183,11 +193,48 @@ export const ClientControl = () => {
   const handleCloseCart = () => dispatch(toggleCart());
 
   const limitByWindowWidth = useWindowWidth();
+  const selectedFiscalReceiptLabel = formatCompactElectronicTaxReceiptLabel(nfcType, {
+    electronicModelEnabled: electronicTaxReceiptModelEnabled,
+  });
+  const selectedFiscalReceiptFullLabel = formatElectronicTaxReceiptLabel(nfcType, {
+    electronicModelEnabled: electronicTaxReceiptModelEnabled,
+  });
   const comprobanteTooltipTitle = nfcType
-    ? `Comprobante seleccionado: ${nfcType}`
+    ? `Comprobante seleccionado: ${selectedFiscalReceiptFullLabel}`
     : 'Seleccionar el tipo de comprobante fiscal para la factura';
   const clientInputValue =
     mode === CLIENT_MODE_BAR.SEARCH.id ? searchTerm : client.name;
+  const fiscalReceiptOptions = useMemo(() => {
+    const receipts = Array.isArray(taxReceiptData.taxReceipt)
+      ? taxReceiptData.taxReceipt
+      : [];
+
+    return receipts
+      .filter((receipt) => !receipt.data?.disabled)
+      .filter((receipt) => {
+        const rawName = receipt?.data?.name || '';
+        // Normalizar acentos
+        const name = rawName
+          .normalize('NFD')
+          .replace(/\p{Diacritic}/gu, '')
+          .toLowerCase();
+        const serie = (receipt?.data?.serie || '')
+          .toString()
+          .padStart(2, '0');
+        // Regla principal: excluir serie 04 (Notas de Crédito en RD) o nombres que contengan ambos tokens
+        const containsNota = name.includes('nota');
+        const containsCredito = name.includes('credito');
+        const isCreditNoteBySerie = serie === '04';
+        const isCreditNoteByName = containsNota && containsCredito;
+        return !(isCreditNoteBySerie || isCreditNoteByName);
+      })
+      .map(({ data }) => ({
+        value: data.name,
+        label: formatElectronicTaxReceiptLabel(data.name, {
+          electronicModelEnabled: electronicTaxReceiptModelEnabled,
+        }),
+      }));
+  }, [electronicTaxReceiptModelEnabled, taxReceiptData.taxReceipt]);
   const clientAction =
     mode === CLIENT_MODE_BAR.SEARCH.id
       ? {
@@ -262,50 +309,48 @@ export const ClientControl = () => {
           </ClientInputGroup>
         </InputWrapper>
       </Header>
-      <ClientDetails mode={mode === CLIENT_MODE_BAR.CREATE.id} />
+      <ClientDetails />
 
       {(taxReceiptSettingEnabled || business?.businessType === 'pharmacy') && (
         <ControlsContainer>
           {taxReceiptSettingEnabled && (
-            <Select
-              style={{ width: 200 }}
-              value={nfcType}
-              onChange={(e) => dispatch(selectTaxReceiptType(e))}
-              disabled={ncfTypeLocked}
-              placeholder="Selecciona comprobante"
-              showSearch
-              optionFilterProp="label"
-              filterOption={(input, option) =>
-                typeof option?.label === 'string' &&
-                option.label.toLowerCase().includes(input.toLowerCase())
-              }
-              title={comprobanteTooltipTitle}
-              options={[
-                {
-                  label: 'Comprobantes Fiscal',
-                  options: taxReceiptData.taxReceipt
-                    .filter((receipt) => !receipt.data?.disabled)
-                    .filter((receipt) => {
-                      const rawName = receipt?.data?.name || '';
-                      // Normalizar acentos
-                      const name = rawName
-                        .normalize('NFD')
-                        .replace(/\p{Diacritic}/gu, '')
-                        .toLowerCase();
-                      const serie = (receipt?.data?.serie || '')
-                        .toString()
-                        .padStart(2, '0');
-                      // Regla principal: excluir serie 04 (Notas de Crédito en RD) o nombres que contengan ambos tokens
-                      const containsNota = name.includes('nota');
-                      const containsCredito = name.includes('credito');
-                      const isCreditNoteBySerie = serie === '04';
-                      const isCreditNoteByName = containsNota && containsCredito;
-                      return !(isCreditNoteBySerie || isCreditNoteByName);
-                    })
-                    .map(({ data }) => ({ value: data.name, label: data.name })),
-                },
-              ]}
-            />
+            <FiscalReceiptSelect title={comprobanteTooltipTitle}>
+              <VmSelect
+                aria-label="Comprobante fiscal"
+                selectedKey={nfcType || null}
+                onSelectionChange={(key) => {
+                  if (key !== null) {
+                    dispatch(selectTaxReceiptType(String(key)));
+                  }
+                }}
+                isDisabled={ncfTypeLocked}
+                placeholder="Selecciona comprobante"
+                fullWidth
+              >
+                <VmSelect.Trigger>
+                  <VmSelect.Value>
+                    {selectedFiscalReceiptLabel || 'Selecciona comprobante'}
+                  </VmSelect.Value>
+                  <VmSelect.Indicator />
+                </VmSelect.Trigger>
+                <VmSelect.Popover>
+                  <ListBox
+                    aria-label="Comprobantes fiscales"
+                    items={fiscalReceiptOptions}
+                  >
+                    {(option) => (
+                      <ListBox.Item
+                        id={option.value}
+                        textValue={option.label}
+                      >
+                        {option.label}
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
+                    )}
+                  </ListBox>
+                </VmSelect.Popover>
+              </VmSelect>
+            </FiscalReceiptSelect>
           )}
 
           {business?.businessType === 'pharmacy' && (
@@ -414,16 +459,17 @@ const ControlsContainer = styled.div`
   width: 100%;
   padding: 0 6px;
 
-  .ant-select {
-    width: 200px;
-  }
-
-  .ant-select:hover {
-    border-color: var(--primary-color);
-  }
-
   .ant-checkbox-wrapper {
     margin-left: auto;
     white-space: nowrap;
+  }
+`;
+
+const FiscalReceiptSelect = styled.div`
+  width: 220px;
+  min-width: 0;
+
+  @media (max-width: 520px) {
+    width: min(100%, 260px);
   }
 `;

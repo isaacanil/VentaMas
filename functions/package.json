@@ -42,7 +42,7 @@
     "nodemailer": "^8.0.7",
     "pdfmake": "^0.2.19",
     "typeface-roboto": "^1.1.13",
-    "ventamax": "file:..",
+    "winston": "^3.19.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {

@@ -18,16 +18,13 @@ import {
   clearTaxReceiptData,
 } from '@/features/taxReceipt/taxReceiptSlice';
 import { fbAddInvoice } from '@/firebase/invoices/fbAddInvoice';
-import { fbUpdateProductsStock } from '@/firebase/products/fbUpdateProductStock';
-import { fbUpdateTaxReceipt } from '@/firebase/taxReceipt/fbUpdateTaxReceipt';
 
 type DispatchFn = (action: unknown) => void;
-type StockUpdateProduct = Parameters<typeof fbUpdateProductsStock>[0][number];
 
 type SaveToFirebaseOptions = {
   taxReceiptEnabled?: boolean;
   isSelectMode?: boolean;
-  selectedProducts?: StockUpdateProduct[];
+  selectedProducts?: unknown[];
 };
 
 export const handleTaxReceipt = async (
@@ -69,26 +66,16 @@ export const savingDataToFirebase = async (
   dispatch: DispatchFn,
   user: UserIdentity | null | undefined,
   bill: InvoiceData,
-  taxReceipt: TaxReceiptDocument[] | null | undefined,
+  _taxReceipt: TaxReceiptDocument[] | null | undefined,
   options: SaveToFirebaseOptions = {},
 ) => {
   const {
-    taxReceiptEnabled = false,
     isSelectMode = false,
-    selectedProducts = [],
   } = options ?? {};
 
   try {
     if (isSelectMode) {
       await fbAddInvoice(bill, user);
-
-      if (taxReceiptEnabled && taxReceipt?.length && user) {
-        await fbUpdateTaxReceipt(user as any, taxReceipt);
-      }
-
-      if (selectedProducts.length > 0) {
-        await fbUpdateProductsStock(selectedProducts, user as any);
-      }
 
       notification.success({
         message: 'Completada',

@@ -59,6 +59,10 @@ const ErrorScreenPreview = lazy(
 const ErrorReports = lazy(
   () => import('@/modules/dev/pages/DevTools/ErrorReports/ErrorReports'),
 );
+const ElectronicTaxReceiptProviderConfigPage = lazy(
+  () =>
+    import('@/modules/dev/pages/DevTools/ElectronicTaxReceiptProvider/ElectronicTaxReceiptProviderConfigPage'),
+);
 const BusinessSelectorPage = lazy(() =>
   import('@/modules/auth/pages/BusinessSelectorPage/BusinessSelectorPage').then(
     (module) => ({ default: module.BusinessSelectorPage }),
@@ -114,6 +118,7 @@ const {
   PRODUCT_FORM_V2_TEST,
   ACCOUNTING_PILOT_AUDIT,
   FINANCE_READINESS_AUDIT,
+  ELECTRONIC_TAX_RECEIPT_PROVIDER,
 } = RoutesName.DEV_VIEW_TERM;
 
 // Todas estas rutas se consideran de desarrollo; se filtrarán en producción salvo que se active VITE_ENABLE_DEV_ROUTES
@@ -161,6 +166,12 @@ const Routes: AppRoute[] = [
     element: <FiscalReceiptsAudit />,
     requiresDevAccess: true,
     // enabledEnvs: ['development'] // Ejemplo: sólo en dev incluso si se fuerza dev routes en staging
+  },
+  {
+    path: ELECTRONIC_TAX_RECEIPT_PROVIDER,
+    element: <ElectronicTaxReceiptProviderConfigPage />,
+    requiresDevAccess: true,
+    status: ROUTE_STATUS.BETA,
   },
   {
     path: RoutesName.DEV_VIEW_TERM.B_SERIES_INVOICES,

@@ -42,6 +42,7 @@ const normalizeLiquidityEntrySourceType = (
     case 'receivable_payment':
     case 'receivable_payment_void':
     case 'supplier_payment':
+    case 'supplier_payment_void':
     case 'expense':
     case 'credit_note_application':
     case 'cash_adjustment':
@@ -115,6 +116,8 @@ const buildCashMovementDescription = (
       return 'Reverso de cobro CxC';
     case 'supplier_payment':
       return 'Pago a suplidor';
+    case 'supplier_payment_void':
+      return 'Reverso de pago a suplidor';
     case 'expense':
       return 'Gasto pagado';
     case 'credit_note_application':

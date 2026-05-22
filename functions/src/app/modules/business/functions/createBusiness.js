@@ -12,7 +12,7 @@ import {
   resolveSubscriptionOperationAccess,
 } from '../../../versions/v2/billing/config/limitOperations.config.js';
 import {
-  ensureBusinessBillingSetup,
+  ensureBusinessOnboardingSubscription,
   getActiveSubscriptionForBillingAccount,
 } from '../../../versions/v2/billing/services/subscriptionSnapshot.service.js';
 import { assertUsageCanIncrease } from '../../../versions/v2/billing/services/usage.service.js';
@@ -240,12 +240,12 @@ export const runBusinessPostProvisioning = async ({
   actorUserId,
 }) => {
   try {
-    await ensureBusinessBillingSetup({
+    await ensureBusinessOnboardingSubscription({
       businessId,
       actorUserId,
     });
   } catch (error) {
-    logger.error('[createBusiness] billing setup failed', {
+    logger.error('[createBusiness] subscription onboarding failed', {
       businessId,
       error,
     });

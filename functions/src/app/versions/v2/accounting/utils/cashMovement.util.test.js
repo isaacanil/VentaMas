@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import {
   buildAccountsPayablePaymentCashMovementId,
   buildAccountsPayablePaymentCashMovements,
+  buildAccountsPayablePaymentVoidCashMovementId,
+  buildAccountsPayablePaymentVoidCashMovements,
   buildExpenseCashMovement,
   buildExpenseCashMovementId,
   buildInternalTransferCashMovementId,
@@ -23,6 +25,9 @@ describe('cashMovement.util', () => {
     expect(
       buildAccountsPayablePaymentCashMovementId('pay_sup_1', 'transfer', 0),
     ).toBe('app_pay_sup_1_transfer_1');
+    expect(
+      buildAccountsPayablePaymentVoidCashMovementId('pay_sup_1', 'cash', 0),
+    ).toBe('appv_pay_sup_1_cash_1');
     expect(buildInvoicePosCashMovementId('inv_1', 'transfer', 1)).toBe(
       'inv_inv_1_transfer_2',
     );
@@ -536,6 +541,59 @@ describe('cashMovement.util', () => {
         bankAccountId: 'bank_sup_1',
         method: 'transfer',
         amount: 150,
+      }),
+    ]);
+  });
+
+  it('builds supplier payment void movements as traceable reverse inflows', () => {
+    const voidedAt = new Date('2026-03-18T11:00:00.000Z');
+
+    expect(
+      buildAccountsPayablePaymentVoidCashMovements({
+        businessId: 'biz_1',
+        createdAt: voidedAt,
+        payment: {
+          id: 'pay_sup_4',
+          purchaseId: 'purchase_4',
+          vendorBillId: 'purchase:purchase_4',
+          supplierId: 'supplier_4',
+          voidedAt,
+          voidedBy: 'controller_1',
+          voidReason: 'Pago duplicado',
+          paymentMethods: [
+            {
+              method: 'transfer',
+              value: 80,
+              reference: 'TRX-80',
+              bankAccountId: 'bank_sup_4',
+              status: true,
+            },
+          ],
+        },
+      }),
+    ).toEqual([
+      expect.objectContaining({
+        id: 'appv_pay_sup_4_transfer_1',
+        businessId: 'biz_1',
+        direction: 'in',
+        sourceType: 'supplier_payment_void',
+        sourceId: 'pay_sup_4',
+        sourceDocumentId: 'purchase:purchase_4',
+        sourceDocumentType: 'vendorBill',
+        bankAccountId: 'bank_sup_4',
+        method: 'transfer',
+        amount: 80,
+        counterpartyType: 'supplier',
+        counterpartyId: 'supplier_4',
+        occurredAt: voidedAt,
+        createdAt: voidedAt,
+        createdBy: 'controller_1',
+        status: 'posted',
+        metadata: expect.objectContaining({
+          reversalOfSourceType: 'supplier_payment',
+          reversalOfPaymentId: 'pay_sup_4',
+          voidReason: 'Pago duplicado',
+        }),
       }),
     ]);
   });

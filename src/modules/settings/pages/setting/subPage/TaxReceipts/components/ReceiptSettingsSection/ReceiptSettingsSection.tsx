@@ -1,14 +1,11 @@
-// File: src/components/TaxReceiptSetting/ReceiptSettingsSection.tsx
-import { Switch, Typography } from 'antd';
-import type { SwitchProps } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
-const { Title, Text } = Typography;
+import { VmCard, VmSwitch } from '@/components/heroui';
 
 interface ReceiptSettingsSectionProps {
   enabled: boolean;
-  onToggle: SwitchProps['onChange'];
+  onToggle: (enabled: boolean) => void;
 }
 
 export function ReceiptSettingsSection({
@@ -18,41 +15,45 @@ export function ReceiptSettingsSection({
   return (
     <SectionContainer>
       <Info>
-        <Title level={4}>Habilitar emisión fiscal</Title>
-        <Text>
+        <Title>Habilitar emisión fiscal</Title>
+        <Description>
           Controla si el negocio puede emitir NCF. Al desactivar, las ventas
           siguen operando pero sin comprobantes fiscales.
-        </Text>
+        </Description>
       </Info>
-      <Switch checked={enabled} onChange={onToggle} />
+      <VmSwitch
+        aria-label="Habilitar emisión fiscal"
+        isSelected={enabled}
+        onChange={onToggle}
+      />
     </SectionContainer>
   );
 }
 
-const SectionContainer = styled.div`
+const SectionContainer = styled(VmCard)`
   display: flex;
-  gap: 1em;
   align-items: center;
   justify-content: space-between;
+  gap: var(--ds-space-4);
   padding: var(--ds-space-4);
-  background-color: var(--ds-color-bg-subtle);
-  border-radius: var(--ds-radius-lg);
-  border: 1px solid var(--ds-color-border-subtle);
+  background: var(--ds-color-bg-surface);
 `;
 
 const Info = styled.div`
   display: flex;
   flex-direction: column;
+  min-width: 0;
+`;
 
-  > h4 {
-    margin: 0;
-    font-size: var(--ds-font-size-md);
-    font-weight: var(--ds-font-weight-semibold);
-  }
+const Title = styled.h4`
+  margin: 0;
+  font-size: var(--ds-font-size-md);
+  font-weight: var(--ds-font-weight-semibold);
+  color: var(--ds-color-text-primary);
+`;
 
-  > p {
-    margin: 0;
-    font-size: var(--ds-font-size-sm);
-    color: var(--ds-color-text-secondary);
-  }
+const Description = styled.p`
+  margin: 0;
+  font-size: var(--ds-font-size-sm);
+  color: var(--ds-color-text-secondary);
 `;

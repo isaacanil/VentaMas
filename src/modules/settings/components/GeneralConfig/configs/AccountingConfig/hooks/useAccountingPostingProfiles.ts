@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { message } from 'antd';
-import {
-  Timestamp,
-  collection,
-  doc,
-  onSnapshot,
-  writeBatch,
-} from 'firebase/firestore';
+import { collection, onSnapshot } from 'firebase/firestore';
 
+import {
+  createAccountingPostingProfileConfig,
+  disableAccountingPostingProfileConfig,
+  updateAccountingPostingProfileConfig,
+} from '@/firebase/accounting/accountingConfiguration';
 import { db } from '@/firebase/firebaseconfig';
 import type { AccountingPostingProfile, ChartOfAccount } from '@/types/accounting';
 import {
@@ -83,30 +82,6 @@ const buildValidationError = ({
 
   return null;
 };
-
-const buildPostingProfileSnapshot = ({
-  businessId,
-  profileId,
-  draft,
-  metadata,
-}: {
-  businessId: string;
-  profileId: string;
-  draft: AccountingPostingProfileDraft;
-  metadata?: Record<string, unknown> | null;
-}) => ({
-  id: profileId,
-  businessId,
-  name: draft.name,
-  description: draft.description ?? null,
-  eventType: draft.eventType,
-  moduleKey: draft.moduleKey,
-  status: draft.status ?? 'active',
-  priority: draft.priority,
-  conditions: draft.conditions ?? {},
-  linesTemplate: draft.linesTemplate,
-  metadata: metadata ?? draft.metadata ?? {},
-});
 
 const normalizeConditionsForComparison = (
   conditions: AccountingPostingProfileDraft['conditions'],
@@ -243,25 +218,11 @@ export const useAccountingPostingProfiles = ({
 
       setSaving(true);
       try {
-        const profileRef = doc(
-          collection(db, 'businesses', businessId, 'accountingPostingProfiles'),
-        );
-        const now = Timestamp.now();
-        const profileSnapshot = buildPostingProfileSnapshot({
+        await createAccountingPostingProfileConfig({
           businessId,
-          profileId: profileRef.id,
-          draft,
+          profile: draft,
+          clientUserId: userId,
         });
-        const batch = writeBatch(db);
-
-        batch.set(profileRef, {
-          ...profileSnapshot,
-          createdAt: now,
-          updatedAt: now,
-          createdBy: userId ?? null,
-          updatedBy: userId ?? null,
-        });
-        await batch.commit();
 
         message.success('Perfil contable creado.');
         return true;
@@ -320,87 +281,22 @@ export const useAccountingPostingProfiles = ({
 
       setSaving(true);
       try {
-        const now = Timestamp.now();
         const nextMetadata = {
           ...existingProfile.metadata,
           ...draft.metadata,
         };
-        const collectionRef = collection(
-          db,
-          'businesses',
+        const result = await updateAccountingPostingProfileConfig({
           businessId,
-          'accountingPostingProfiles',
-        );
-        const profileRef = doc(collectionRef, postingProfileId);
-        const batch = writeBatch(db);
-
-        if (structuralChanges) {
-          const rootProfileId =
-            typeof existingProfile.metadata?.rootProfileId === 'string'
-              ? existingProfile.metadata.rootProfileId
-              : postingProfileId;
-          const currentVersion =
-            typeof existingProfile.metadata?.profileVersion === 'number' &&
-            Number.isFinite(existingProfile.metadata.profileVersion)
-              ? existingProfile.metadata.profileVersion
-              : 1;
-          const nextProfileRef = doc(collectionRef);
-          const nextSnapshot = buildPostingProfileSnapshot({
-            businessId,
-            profileId: nextProfileRef.id,
-            draft,
-            metadata: {
-              ...nextMetadata,
-              rootProfileId,
-              profileVersion: currentVersion + 1,
-              previousProfileId: postingProfileId,
-            },
-          });
-
-          batch.set(nextProfileRef, {
-            ...nextSnapshot,
-            createdAt: now,
-            updatedAt: now,
-            createdBy: userId ?? null,
-            updatedBy: userId ?? null,
-          });
-          batch.set(
-            profileRef,
-            {
-              status: 'inactive',
-              updatedAt: now,
-              updatedBy: userId ?? null,
-              metadata: {
-                ...existingProfile.metadata,
-                rootProfileId,
-                profileVersion: currentVersion,
-                replacedByProfileId: nextProfileRef.id,
-              },
-            },
-            { merge: true },
-          );
-        } else {
-          const nextSnapshot = buildPostingProfileSnapshot({
-            businessId,
-            profileId: postingProfileId,
-            draft,
+          profileId: postingProfileId,
+          profile: {
+            ...draft,
             metadata: nextMetadata,
-          });
-
-          batch.set(
-            profileRef,
-            {
-              ...nextSnapshot,
-              updatedAt: now,
-              updatedBy: userId ?? null,
-            },
-            { merge: true },
-          );
-        }
-        await batch.commit();
+          },
+          clientUserId: userId,
+        });
 
         message.success(
-          structuralChanges
+          structuralChanges || result.versioned
             ? 'Se creó una nueva versión del perfil contable.'
             : 'Perfil contable actualizado.',
         );
@@ -441,27 +337,23 @@ export const useAccountingPostingProfiles = ({
 
       setSaving(true);
       try {
-
-        const profileRef = doc(
-          db,
-          'businesses',
-          businessId,
-          'accountingPostingProfiles',
-          postingProfileId,
-        );
-        const now = Timestamp.now();
-        const batch = writeBatch(db);
-
-        batch.set(
-          profileRef,
-          {
-            status,
-            updatedAt: now,
-            updatedBy: userId ?? null,
-          },
-          { merge: true },
-        );
-        await batch.commit();
+        if (status === 'inactive') {
+          await disableAccountingPostingProfileConfig({
+            businessId,
+            profileId: postingProfileId,
+            clientUserId: userId,
+          });
+        } else {
+          await updateAccountingPostingProfileConfig({
+            businessId,
+            profileId: postingProfileId,
+            profile: {
+              ...existingProfile,
+              status,
+            },
+            clientUserId: userId,
+          });
+        }
 
         message.success(
           status === 'active'
@@ -527,36 +419,19 @@ export const useAccountingPostingProfiles = ({
 
     setSeeding(true);
     try {
-      const collectionRef = collection(
-        db,
-        'businesses',
-        businessId,
-        'accountingPostingProfiles',
-      );
-      const batch = writeBatch(db);
-      const now = Timestamp.now();
-
-      templatesToCreate.forEach((template) => {
-        const profileRef = doc(collectionRef);
-        const profileSnapshot = buildPostingProfileSnapshot({
+      for (const template of templatesToCreate) {
+        await createAccountingPostingProfileConfig({
           businessId,
-          profileId: profileRef.id,
-          draft: template,
-          metadata: {
-            ...template.metadata,
-            seededBy: 'default_posting_profiles',
+          profile: {
+            ...template,
+            metadata: {
+              ...template.metadata,
+              seededBy: 'default_posting_profiles',
+            },
           },
+          clientUserId: userId,
         });
-        batch.set(profileRef, {
-          ...profileSnapshot,
-          createdAt: now,
-          updatedAt: now,
-          createdBy: userId ?? null,
-          updatedBy: userId ?? null,
-        });
-      });
-
-      await batch.commit();
+      }
       message.success('Perfiles contables base creados.');
       return true;
     } catch (cause) {

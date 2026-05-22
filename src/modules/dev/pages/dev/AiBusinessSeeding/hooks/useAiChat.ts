@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { message } from 'antd';
+import { App as AntApp } from 'antd';
 
 import { ACTIONS } from '../aiActions';
 import { fbAiBusinessSeedingAgentAnalyze } from '../api/fbAiBusinessSeedingAgentAnalyze';
@@ -24,6 +24,7 @@ type AgentPhase =
   | 'error';
 
 export function useAiChat() {
+  const { message: messageApi } = AntApp.useApp();
   const actions: Record<string, ActionDefinition> = ACTIONS;
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
@@ -222,18 +223,18 @@ export function useAiChat() {
   const handleApplyRecoverableSuggestion = (suggestion: string) => {
     const recoverable = lastRecoverableError;
     if (!recoverable) {
-      message.warning('No hay una corrección pendiente para aplicar.');
+      messageApi.warning('No hay una corrección pendiente para aplicar.');
       return false;
     }
 
     if (!activeAction || actionData == null) {
-      message.warning('No hay borrador activo para corregir.');
+      messageApi.warning('No hay borrador activo para corregir.');
       return false;
     }
 
     const parsedField = parseRecoverableField(recoverable.field);
     if (!parsedField) {
-      message.info('Esta corrección requiere IA. Usa "Corregir con IA y reintentar".');
+      messageApi.info('Esta corrección requiere IA. Usa "Corregir con IA y reintentar".');
       return false;
     }
 
@@ -242,7 +243,7 @@ export function useAiChat() {
 
     const cloned = cloneJsonLike(actionData);
     if (!cloned || typeof cloned !== 'object' || Array.isArray(cloned)) {
-      message.error('No se pudo aplicar la sugerencia al borrador actual.');
+      messageApi.error('No se pudo aplicar la sugerencia al borrador actual.');
       return false;
     }
 
@@ -250,7 +251,7 @@ export function useAiChat() {
     const users = Array.isArray(nextData.users) ? nextData.users : null;
     const targetUser = users?.[parsedField.index];
     if (!users || !targetUser || typeof targetUser !== 'object' || Array.isArray(targetUser)) {
-      message.error('No se encontró el usuario a corregir en el borrador.');
+      messageApi.error('No se encontró el usuario a corregir en el borrador.');
       return false;
     }
 
@@ -270,7 +271,7 @@ export function useAiChat() {
       `Sugerencia aplicada sin IA: ${parsedField.key} -> ${normalizedSuggestion}. Revisa el preview y ejecuta nuevamente.`,
       'success',
     );
-    message.success('Sugerencia aplicada al borrador.');
+    messageApi.success('Sugerencia aplicada al borrador.');
     return true;
   };
 
@@ -279,7 +280,7 @@ export function useAiChat() {
       typeof promptOverride === 'string' ? promptOverride : prompt;
     const submittedPrompt = promptSource.trim();
     if (!submittedPrompt) {
-      message.error('Escribe algo primero');
+      messageApi.error('Escribe algo primero');
       return;
     }
 
@@ -305,7 +306,7 @@ export function useAiChat() {
       if (!analyzeResponse?.ok || !analyzeResponse.action) {
         addLog('No se detectó una acción válida', 'error');
         setAgentPhase('error');
-        message.error('No entendí la solicitud');
+        messageApi.error('No entendí la solicitud');
         setLoading(false);
         return;
       }
@@ -346,12 +347,12 @@ export function useAiChat() {
           'La IA tardó demasiado en responder. Intenta de nuevo con una solicitud más corta o vuelve a intentar en unos segundos.',
           'warning',
         );
-        message.warning('La IA tardó demasiado en responder. Intenta nuevamente.');
+        messageApi.warning('La IA tardó demasiado en responder. Intenta nuevamente.');
         return;
       }
       const msg = getErrorMessage(error).replace(/^Error:\s*/i, '');
       addLog(`Error: ${msg}`, 'error');
-      message.error('Error al analizar');
+      messageApi.error('Error al analizar');
     } finally {
       setLoading(false);
     }
@@ -396,7 +397,7 @@ export function useAiChat() {
           setPrompt(recoverable.suggestedUserPrompt);
         }
 
-        message.warning(
+        messageApi.warning(
           recoverable.clarificationQuestion || recoverable.message || 'Necesito una aclaración para continuar.',
         );
         return;
@@ -413,7 +414,7 @@ export function useAiChat() {
       setAgentPhase('completed');
       setLastRecoverableError(null);
       addLog('Finalizado', 'success');
-      message.success('Listo!');
+      messageApi.success('Listo!');
     } catch (error: unknown) {
       console.error(error);
       setAgentPhase('error');
@@ -422,13 +423,13 @@ export function useAiChat() {
           'La ejecución tardó más de lo esperado. Verifica si el negocio ya se creó antes de reintentar para evitar duplicados.',
           'warning',
         );
-        message.warning(
+        messageApi.warning(
           'La ejecución tardó demasiado. Verifica si se creó el negocio antes de reintentar.',
         );
         return;
       }
       addLog(`Error: ${getErrorMessage(error).replace(/^Error:\s*/i, '')}`, 'error');
-      message.error('Falló la ejecución');
+      messageApi.error('Falló la ejecución');
     } finally {
       setLoading(false);
     }

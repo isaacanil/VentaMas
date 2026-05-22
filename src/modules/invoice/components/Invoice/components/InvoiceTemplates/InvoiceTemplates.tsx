@@ -23,6 +23,7 @@ import { useElementSize } from '@/hooks/useElementSize';
 import { Invoice } from '../Invoice/Invoice';
 import InvoiceTemplateSelector from '../InvoiceTemplateSelector/InvoiceTemplateSelector';
 import {
+  LETTER_INVOICE_TEMPLATE_V3_1_KEY,
   LETTER_INVOICE_TEMPLATE_V3_KEY,
   resolveInvoicePreviewTemplate,
   resolveInvoiceSelectionTemplate,
@@ -179,18 +180,27 @@ const InvoicePaper = styled.div<{
   $selectionTemplate: InvoiceTemplateStorageKey;
 }>`
   width: ${({ $template }) => TEMPLATES_CONFIG[$template].width};
-  height: ${({ $template }) => TEMPLATES_CONFIG[$template].height};
-  min-height: ${({ $template }) =>
-    TEMPLATES_CONFIG[$template].minHeight || 'auto'};
+  height: ${({ $template, $selectionTemplate }) =>
+    $selectionTemplate === LETTER_INVOICE_TEMPLATE_V3_1_KEY
+      ? 'auto'
+      : TEMPLATES_CONFIG[$template].height};
+  min-height: ${({ $template, $selectionTemplate }) =>
+    $selectionTemplate === LETTER_INVOICE_TEMPLATE_V3_1_KEY
+      ? '297mm'
+      : TEMPLATES_CONFIG[$template].minHeight || 'auto'};
   padding: ${({ $template, $selectionTemplate }) =>
-    $selectionTemplate === LETTER_INVOICE_TEMPLATE_V3_KEY
+    $selectionTemplate === LETTER_INVOICE_TEMPLATE_V3_KEY ||
+    $selectionTemplate === LETTER_INVOICE_TEMPLATE_V3_1_KEY
       ? '0'
       : TEMPLATES_CONFIG[$template].padding};
   background: white;
   box-shadow: 0 15px 45px rgb(0 0 0 / 12%);
   margin: 0 auto;
   position: relative;
-  overflow: hidden;
+  overflow: ${({ $selectionTemplate }) =>
+    $selectionTemplate === LETTER_INVOICE_TEMPLATE_V3_1_KEY
+      ? 'visible'
+      : 'hidden'};
   box-sizing: border-box;
   border: 1px solid #e0e0e0;
 
@@ -505,7 +515,8 @@ export default function InvoiceTemplates({
   const previewTemplate = resolveInvoicePreviewTemplate(effectiveTemplate);
   const pageStyle = useMemo(
     () =>
-      effectiveTemplate === LETTER_INVOICE_TEMPLATE_V3_KEY
+      effectiveTemplate === LETTER_INVOICE_TEMPLATE_V3_KEY ||
+      effectiveTemplate === LETTER_INVOICE_TEMPLATE_V3_1_KEY
         ? '@page { size: A4 portrait; margin: 0; } html, body { margin: 0 !important; }'
         : undefined,
     [effectiveTemplate],

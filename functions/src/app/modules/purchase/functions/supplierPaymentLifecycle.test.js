@@ -180,6 +180,14 @@ describe('supplier payment lifecycle', () => {
           })),
         };
       }
+      if (path === 'businesses/business-1/cashMovements') {
+        return {
+          where: vi.fn((_field, _operator, sourceId) => ({
+            kind: 'cash-movements-by-source',
+            sourceId,
+          })),
+        };
+      }
       throw new Error(`Unexpected collection path: ${path}`);
     });
 
@@ -187,6 +195,15 @@ describe('supplier payment lifecycle', () => {
       if (ref?.kind === 'ap-payments-by-purchase') {
         const docs = (
           transactionSnapshots.get(`query:${ref.purchaseId}`) || []
+        ).map((entry) => ({
+          id: entry.id,
+          data: () => entry,
+        }));
+        return { docs };
+      }
+      if (ref?.kind === 'cash-movements-by-source') {
+        const docs = (
+          transactionSnapshots.get(`cashMovements:${ref.sourceId}`) || []
         ).map((entry) => ({
           id: entry.id,
           data: () => entry,
@@ -357,6 +374,67 @@ describe('supplier payment lifecycle', () => {
       }),
       { merge: true },
     );
+  });
+
+  it('blocks voiding a supplier payment when treasury movements are reconciled', async () => {
+    transactionSnapshots.set(
+      'businesses/business-1/accountsPayablePayments/payment-1',
+      {
+        id: 'payment-1',
+        purchaseId: 'purchase-1',
+        vendorBillId: 'purchase:purchase-1',
+        supplierId: 'supplier-1',
+        status: 'posted',
+        occurredAt: '2026-04-12T12:00:00.000Z',
+        paymentMethods: [
+          {
+            method: 'transfer',
+            amount: 40,
+            value: 40,
+            status: true,
+            bankAccountId: 'bank-1',
+          },
+        ],
+        metadata: {},
+      },
+    );
+    transactionSnapshots.set('businesses/business-1/purchases/purchase-1', {
+      providerId: 'supplier-1',
+      workflowStatus: 'completed',
+      completedAt: '2026-04-10T12:00:00.000Z',
+      totalAmount: 100,
+      paymentState: {
+        total: 100,
+        paid: 40,
+        balance: 60,
+        paymentCount: 1,
+      },
+      paymentTerms: {},
+    });
+    transactionSnapshots.set('cashMovements:payment-1', [
+      {
+        id: 'app_payment-1_transfer_1',
+        sourceId: 'payment-1',
+        reconciliationStatus: 'reconciled',
+        reconciliationId: 'rec-1',
+      },
+    ]);
+
+    await expect(
+      voidSupplierPayment({
+        data: {
+          businessId: 'business-1',
+          paymentId: 'payment-1',
+          reason: 'Pago duplicado',
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      message:
+        'El pago tiene movimientos de caja/banco conciliados. Debe revertirse mediante un flujo de conciliación/refund controlado.',
+    });
+
+    expect(transactionSetMock).not.toHaveBeenCalled();
   });
 
   it('rejects malformed occurredAt instead of silently using current time', async () => {

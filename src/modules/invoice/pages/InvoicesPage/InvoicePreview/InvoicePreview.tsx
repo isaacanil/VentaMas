@@ -2,6 +2,7 @@ import { Button, Modal, Tabs, notification } from 'antd';
 import type { TabsProps } from 'antd';
 import React, { useState } from 'react';
 import type {
+  ElectronicTaxReceiptSnapshot,
   InvoiceClient,
   InvoiceData,
   InvoicePaymentMethod,
@@ -36,6 +37,7 @@ type InvoicePreviewState = {
 
 import { AccountReceivableInfoCard } from './components/AccountReceivableInfoCard';
 import { ClientInfoCard } from './components/ClientInfo';
+import { ElectronicTaxReceiptInfoCard } from './components/ElectronicTaxReceiptInfoCard';
 import Products from './components/Products';
 import SummaryInfoCard from './components/SummaryInfoCard';
 
@@ -49,6 +51,27 @@ export const InvoicePreview = () => {
   const isOpen = invoicePreviewSelected?.isOpen;
   const invoiceData = invoicePreviewSelected?.data || null;
   const [syncing, setSyncing] = useState(false);
+  const [refreshedElectronicSnapshot, setRefreshedElectronicSnapshot] =
+    useState<{
+      invoiceId?: string | null;
+      snapshot: ElectronicTaxReceiptSnapshot;
+    } | null>(null);
+  const activeRefreshedSnapshot =
+    refreshedElectronicSnapshot &&
+    invoiceData?.id &&
+    refreshedElectronicSnapshot.invoiceId === invoiceData.id
+      ? refreshedElectronicSnapshot.snapshot
+      : null;
+  const displayInvoiceData = activeRefreshedSnapshot && invoiceData
+    ? {
+        ...invoiceData,
+        electronicTaxReceipt: activeRefreshedSnapshot,
+        fiscal: {
+          ...(invoiceData.fiscal || {}),
+          electronic: activeRefreshedSnapshot,
+        },
+      }
+    : invoiceData;
   const businessId =
     user?.businessID ?? user?.businessId ?? user?.activeBusinessId ?? null;
   const isAccountingRolloutEnabled = useAccountingRolloutEnabled(businessId);
@@ -66,7 +89,7 @@ export const InvoicePreview = () => {
     change = {},
     totalPurchase = {},
     totalPurchaseWithoutTaxes = {},
-  } = invoiceData || {};
+  } = displayInvoiceData || {};
 
   // Obtener aplicaciones de notas de crédito para esta factura
   const { applications: creditNoteApplications } =
@@ -147,12 +170,12 @@ export const InvoicePreview = () => {
       children: (
         <Group>
           <PaymentMethodInfoCard
-            invoiceData={invoiceData}
+            invoiceData={displayInvoiceData}
             paymentMethod={paymentMethod as InvoicePaymentMethod[]}
             creditNoteApplications={creditNoteApplications}
           />
           <SummaryInfoCard
-            invoiceData={invoiceData}
+            invoiceData={displayInvoiceData}
             summaryData={{
               sourceOfPurchase,
               totalShoppingItems,
@@ -166,7 +189,7 @@ export const InvoicePreview = () => {
             <ReceivablePaymentsInfoCard
               user={user}
               invoiceId={invoiceId}
-              invoiceData={invoiceData}
+              invoiceData={displayInvoiceData}
               accountsReceivable={accountsReceivable as AccountsReceivableDoc[]}
               invoiceTotal={Number((totalPurchase as any)?.value ?? 0)}
               invoicePayment={payment as any}
@@ -174,6 +197,20 @@ export const InvoicePreview = () => {
             />
           )}
         </Group>
+      ),
+    },
+    {
+      key: 'electronicTaxReceipt',
+      label: 'e-CF',
+      children: (
+        <ElectronicTaxReceiptInfoCard
+          businessId={businessId}
+          invoiceId={invoiceId}
+          invoiceData={displayInvoiceData}
+          onRefreshed={(snapshot) =>
+            setRefreshedElectronicSnapshot({ invoiceId, snapshot })
+          }
+        />
       ),
     },
     {
@@ -193,7 +230,7 @@ export const InvoicePreview = () => {
           <AccountReceivableInfoCard
             accountsReceivable={accountsReceivable as AccountsReceivableDoc[]}
             client={client as InvoiceClient}
-            invoiceData={invoiceData}
+            invoiceData={displayInvoiceData}
           />
         </TabSection>
       ) : (
@@ -206,7 +243,7 @@ export const InvoicePreview = () => {
       children: hasGeneratedCreditNotes ? (
         <CreditNotesInfoCard
           creditNotes={generatedCreditNotes}
-          invoiceData={invoiceData}
+          invoiceData={displayInvoiceData}
         />
       ) : (
         <EmptyMessage>No hay notas de crédito generadas.</EmptyMessage>
@@ -226,14 +263,14 @@ export const InvoicePreview = () => {
       >
         <Container>
           <InvoiceDocumentHeader
-            invoice={invoiceData}
+            invoice={displayInvoiceData}
             canOpenAccountingEntry={canOpenAccountingEntry}
             onOpenAccountingEntry={handleOpenAccountingEntry}
           />
           <ClientInfoCard client={client as InvoiceClient} />
           <Products
             products={products as InvoiceProduct[]}
-            invoiceData={invoiceData}
+            invoiceData={displayInvoiceData}
           />
           <StyledTabs defaultActiveKey="payment" items={tabs} />
         </Container>

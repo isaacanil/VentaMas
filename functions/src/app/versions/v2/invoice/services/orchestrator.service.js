@@ -19,6 +19,7 @@ import {
   getGisysFactConfigIssues,
   resolveGisysFactConfig,
 } from '../../../../modules/electronicTaxReceipts/config/gisysFact.config.js';
+import { GISYS_FACT_PLATFORM_CONFIG_PATH } from '../../../../modules/electronicTaxReceipts/config/gisysFactPlatform.config.js';
 import { resolveGisysDocumentType } from '../../../../modules/electronicTaxReceipts/utils/gisysDocumentType.util.js';
 
 const safeNumber = (value) => {
@@ -71,7 +72,9 @@ export async function createPendingInvoice({
     const idemSnap = await tx.get(idempotencyRef);
     if (idemSnap.exists) {
       const data = idemSnap.data() || {};
-      const storedPayloadHash = toCleanString(data.payloadHash ?? data.requestHash);
+      const storedPayloadHash = toCleanString(
+        data.payloadHash ?? data.requestHash,
+      );
       if (storedPayloadHash && storedPayloadHash !== requestHash) {
         throw new https.HttpsError(
           'already-exists',
@@ -98,6 +101,7 @@ export async function createPendingInvoice({
     const taxReceiptSettingsRef = db.doc(
       `businesses/${businessId}/settings/taxReceipt`,
     );
+    const gisysPlatformConfigRef = db.doc(GISYS_FACT_PLATFORM_CONFIG_PATH);
     const usageCurrentRef = db.doc(`businesses/${businessId}/usage/current`);
     const usageMonthlyRef = db.doc(
       `businesses/${businessId}/usage/monthly/entries/${monthKey}`,
@@ -109,21 +113,26 @@ export async function createPendingInvoice({
       usageMonthlySnap,
       accountingSettingsSnap,
       taxReceiptSettingsSnap,
-    ] =
-      await Promise.all([
-        tx.get(businessRef),
-        tx.get(usageCurrentRef),
-        tx.get(usageMonthlyRef),
-        rolloutEnabled ? tx.get(accountingSettingsRef) : Promise.resolve(null),
-        tx.get(taxReceiptSettingsRef),
-      ]);
+      gisysPlatformConfigSnap,
+    ] = await Promise.all([
+      tx.get(businessRef),
+      tx.get(usageCurrentRef),
+      tx.get(usageMonthlyRef),
+      rolloutEnabled ? tx.get(accountingSettingsRef) : Promise.resolve(null),
+      tx.get(taxReceiptSettingsRef),
+      tx.get(gisysPlatformConfigRef),
+    ]);
 
     const businessData = businessSnap.exists ? businessSnap.data() || {} : {};
+    const gisysPlatformConfig = gisysPlatformConfigSnap.exists
+      ? gisysPlatformConfigSnap.data() || {}
+      : {};
     const accountingSettingsData =
       rolloutEnabled && accountingSettingsSnap?.exists
         ? accountingSettingsSnap.data() || {}
         : {};
-    const accountingEnabled = accountingSettingsData.generalAccountingEnabled === true;
+    const accountingEnabled =
+      accountingSettingsData.generalAccountingEnabled === true;
     const taxReceiptSettingsData = taxReceiptSettingsSnap?.exists
       ? taxReceiptSettingsSnap.data() || {}
       : {};
@@ -141,11 +150,16 @@ export async function createPendingInvoice({
         new https.HttpsError('failed-precondition', message),
     });
 
-    const subscriptionSnapshot = resolveSubscriptionFromBusinessData(businessData);
+    const subscriptionSnapshot =
+      resolveSubscriptionFromBusinessData(businessData);
     const planId =
       toCleanString(subscriptionSnapshot.planId)?.toLowerCase() || 'legacy';
-    const currentUsageData = usageCurrentSnap.exists ? usageCurrentSnap.data() || {} : {};
-    const monthlyUsageData = usageMonthlySnap.exists ? usageMonthlySnap.data() || {} : {};
+    const currentUsageData = usageCurrentSnap.exists
+      ? usageCurrentSnap.data() || {}
+      : {};
+    const monthlyUsageData = usageMonthlySnap.exists
+      ? usageMonthlySnap.data() || {}
+      : {};
 
     if (STRICT_LIMIT_PLANS.has(planId)) {
       const currentValue = Number(
@@ -211,24 +225,26 @@ export async function createPendingInvoice({
       cashCountId || payload?.cashCountId || payload?.cart?.cashCountId || null;
     const pilotMonetarySnapshot = rolloutEnabled
       ? await resolvePilotMonetarySnapshotForBusiness({
-        businessId,
-        monetary: payload?.cart?.monetary,
-        source: payload?.cart,
-        settings: accountingSettingsSnap?.exists
-          ? accountingSettingsSnap.data()
-          : null,
-        totals: {
-          subtotal: safeNumber(payload?.cart?.totalPurchaseWithoutTaxes?.value),
-          taxes: safeNumber(payload?.cart?.totalTaxes?.value),
-          total:
-            safeNumber(payload?.cart?.totalPurchase?.value) ??
-            safeNumber(payload?.cart?.totalAmount),
-          paid:
-            safeNumber(payload?.cart?.payment?.value) ??
-            safeNumber(payload?.cart?.totalPaid),
-        },
-        capturedBy: userId,
-      })
+          businessId,
+          monetary: payload?.cart?.monetary,
+          source: payload?.cart,
+          settings: accountingSettingsSnap?.exists
+            ? accountingSettingsSnap.data()
+            : null,
+          totals: {
+            subtotal: safeNumber(
+              payload?.cart?.totalPurchaseWithoutTaxes?.value,
+            ),
+            taxes: safeNumber(payload?.cart?.totalTaxes?.value),
+            total:
+              safeNumber(payload?.cart?.totalPurchase?.value) ??
+              safeNumber(payload?.cart?.totalAmount),
+            paid:
+              safeNumber(payload?.cart?.payment?.value) ??
+              safeNumber(payload?.cart?.totalPaid),
+          },
+          capturedBy: userId,
+        })
       : null;
 
     const canonicalCartPayload = payload?.cart ? { ...payload.cart } : {};
@@ -278,10 +294,18 @@ export async function createPendingInvoice({
     const ncfEnabled = !!(payload?.ncf?.enabled || payload?.taxReceiptEnabled);
     const ncfType = payload?.ncf?.type || payload?.ncfType;
     const fiscalRollout = resolveBusinessFiscalRollout(businessData);
-    const electronicTaxReceiptEnabled =
+    const rawElectronicProviderConfig = resolveGisysFactConfig(
+      businessData,
+      gisysPlatformConfig,
+    );
+    const electronicTaxReceiptModelEnabled =
       ncfEnabled &&
-      fiscalRollout.electronicModelEnabled === true &&
-      fiscalRollout.electronicTransportEnabled === true;
+      (rawElectronicProviderConfig.electronicModelEnabled === true ||
+        fiscalRollout.electronicModelEnabled === true);
+    const electronicTaxReceiptTransportEnabled =
+      electronicTaxReceiptModelEnabled &&
+      (rawElectronicProviderConfig.electronicTransportEnabled === true ||
+        fiscalRollout.electronicTransportEnabled === true);
 
     if (businessRequiresFiscalReceipt && !ncfEnabled) {
       throw new https.HttpsError(
@@ -304,13 +328,20 @@ export async function createPendingInvoice({
         );
       }
 
-      if (electronicTaxReceiptEnabled) {
-        const providerConfig = resolveGisysFactConfig(businessData);
-        const configIssues = getGisysFactConfigIssues(providerConfig);
+      if (electronicTaxReceiptModelEnabled) {
+        const providerConfig = electronicTaxReceiptTransportEnabled
+          ? rawElectronicProviderConfig
+          : {
+              ...rawElectronicProviderConfig,
+              mode: 'shadow',
+            };
+        const configIssues = getGisysFactConfigIssues(providerConfig, {
+          requireTransport: electronicTaxReceiptTransportEnabled,
+        });
         if (configIssues.length > 0) {
           throw new https.HttpsError(
             'failed-precondition',
-            'GISYS FACT no esta configurado para emitir comprobantes electronicos.',
+            'GISYS FACT no esta configurado para preparar comprobantes electronicos.',
             {
               reason: 'gisys-config-invalid',
               issues: configIssues,
@@ -344,11 +375,14 @@ export async function createPendingInvoice({
           provider: providerConfig.providerId,
           documentType: electronicDocumentType,
         };
+        baseDoc.snapshot.fiscalMode = 'electronic_ecf';
+        baseDoc.snapshot.documentFormat = 'electronic';
         baseDoc.snapshot.electronicTaxReceipt = {
           provider: providerConfig.providerId,
           mode: providerConfig.mode,
           status: 'pending',
           documentType: electronicDocumentType,
+          transportEnabled: electronicTaxReceiptTransportEnabled,
         };
         baseDoc.statusTimeline.push({
           status: 'electronic_tax_receipt_pending',
@@ -356,7 +390,11 @@ export async function createPendingInvoice({
         });
       } else {
         try {
-          ncfReservation = await reserveNcf(tx, { businessId, userId, ncfType });
+          ncfReservation = await reserveNcf(tx, {
+            businessId,
+            userId,
+            ncfType,
+          });
         } catch (error) {
           const rawMessage =
             error instanceof Error ? error.message : String(error || '');
@@ -403,7 +441,8 @@ export async function createPendingInvoice({
       data: {
         idempotencyKey,
         ncfReserved: !!ncfReservation,
-        electronicTaxReceipt: !!electronicTaxReceiptEnabled,
+        electronicTaxReceipt: !!electronicTaxReceiptModelEnabled,
+        electronicTransport: !!electronicTaxReceiptTransportEnabled,
         cartHash,
       },
     });
@@ -415,13 +454,13 @@ export async function createPendingInvoice({
     );
     const products = Array.isArray(payload?.cart?.products)
       ? payload.cart.products.map((p) => ({
-        id: p.id,
-        name: p.name,
-        amountToBuy: p.amountToBuy,
-        trackInventory: !!p.trackInventory,
-        productStockId: p.productStockId,
-        batchId: p.batchId,
-      }))
+          id: p.id,
+          name: p.name,
+          amountToBuy: p.amountToBuy,
+          trackInventory: !!p.trackInventory,
+          productStockId: p.productStockId,
+          batchId: p.batchId,
+        }))
       : [];
 
     tx.set(outboxRef, {
@@ -473,7 +512,7 @@ export async function createPendingInvoice({
       data: { type: 'createCanonicalInvoice' },
     });
 
-    if (electronicTaxReceiptEnabled) {
+    if (electronicTaxReceiptModelEnabled) {
       const electronicTaskId = nanoid();
       const electronicOutboxRef = db.doc(
         `businesses/${businessId}/invoicesV2/${newInvoiceId}/outbox/${electronicTaskId}`,
@@ -492,6 +531,8 @@ export async function createPendingInvoice({
           client: payload?.client || null,
           ncfType,
           documentType: electronicDocumentType,
+          transportEnabled: electronicTaxReceiptTransportEnabled,
+          mode: electronicTaxReceiptTransportEnabled ? null : 'shadow',
           dueDate: derivedDueDate || null,
           invoiceComment: derivedInvoiceComment || null,
         },
@@ -503,6 +544,7 @@ export async function createPendingInvoice({
         data: {
           type: 'issueElectronicTaxReceipt',
           documentType: electronicDocumentType,
+          transportEnabled: electronicTaxReceiptTransportEnabled,
         },
       });
     }

@@ -69,6 +69,14 @@ const buildVoidResponse = ({
   payment: sanitizeForResponse(paymentRecord),
 });
 
+const isReconciledMovement = (movementRecord) =>
+  Boolean(
+    toCleanString(movementRecord.reconciliationId) ||
+      toCleanString(movementRecord.bankStatementLineId) ||
+      toCleanString(movementRecord.reconciliationStatus)?.toLowerCase() ===
+        'reconciled',
+  );
+
 export const voidSupplierPayment = onCall(async (request) => {
   const authUid = await resolveCallableAuthUid(request);
   if (!authUid) {
@@ -116,10 +124,16 @@ export const voidSupplierPayment = onCall(async (request) => {
   const paymentRef = db.doc(
     `businesses/${businessId}/accountsPayablePayments/${paymentId}`,
   );
+  const cashMovementsQuery = db
+    .collection(`businesses/${businessId}/cashMovements`)
+    .where('sourceId', '==', paymentId);
   let result = null;
 
   await db.runTransaction(async (transaction) => {
-    const paymentSnap = await transaction.get(paymentRef);
+    const [paymentSnap, cashMovementsSnap] = await Promise.all([
+      transaction.get(paymentRef),
+      transaction.get(cashMovementsQuery),
+    ]);
     if (!paymentSnap.exists) {
       throw new HttpsError('not-found', 'El pago a suplidor no existe.');
     }
@@ -168,6 +182,16 @@ export const voidSupplierPayment = onCall(async (request) => {
         alreadyVoided: true,
       });
       return;
+    }
+
+    const reconciledMovement = cashMovementsSnap.docs.find((docSnap) =>
+      isReconciledMovement(asRecord(docSnap.data())),
+    );
+    if (reconciledMovement) {
+      throw new HttpsError(
+        'failed-precondition',
+        'El pago tiene movimientos de caja/banco conciliados. Debe revertirse mediante un flujo de conciliación/refund controlado.',
+      );
     }
 
     await assertAccountingPeriodOpenInTransaction({

@@ -5,8 +5,13 @@ import {
   getGisysFactConfigIssues,
   resolveGisysFactConfig,
 } from '../config/gisysFact.config.js';
+import { getGisysFactPlatformConfig } from '../config/gisysFactPlatform.config.js';
 import { buildGisysIssuePayload } from '../mappers/gisysIssuePayload.mapper.js';
-import { issueGisysFactDocument } from './gisysFactClient.service.js';
+import {
+  getGisysFactDocumentStatus,
+  issueGisysFactDocument,
+  refreshGisysFactDocumentStatus,
+} from './gisysFactClient.service.js';
 
 const toErrorMessage = (error) =>
   error instanceof Error ? error.message : String(error || 'Unknown error');
@@ -16,6 +21,44 @@ const resolveNested = (value, ...path) =>
     if (!current || typeof current !== 'object') return null;
     return current[key] ?? null;
   }, value);
+
+const toCleanString = (value) => {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length ? trimmed : null;
+};
+
+const normalizeProviderMode = (mode) => {
+  const normalized = toCleanString(mode)?.toLowerCase();
+  return ['shadow', 'pilot', 'required'].includes(normalized)
+    ? normalized
+    : 'pilot';
+};
+
+const resolveEffectiveProviderConfig = ({ providerConfig, taskPayload }) => {
+  const transportEnabled = taskPayload?.transportEnabled !== false;
+  if (transportEnabled) {
+    return {
+      ...providerConfig,
+      mode: normalizeProviderMode(taskPayload?.mode || providerConfig.mode),
+    };
+  }
+
+  return {
+    ...providerConfig,
+    mode: 'shadow',
+  };
+};
+
+export const buildGisysFactIdempotencyKey = ({
+  businessId,
+  invoiceId,
+  documentType,
+}) => {
+  const normalizedDocumentType =
+    toCleanString(documentType)?.toUpperCase() || 'ECF';
+  return `ventamas:${businessId}:${invoiceId}:ecf:${normalizedDocumentType}:v1`;
+};
 
 const buildElectronicSnapshot = ({
   status,
@@ -52,6 +95,7 @@ const buildElectronicSnapshot = ({
   pdfUrl: response?.links?.pdf || null,
   correlationId: response?.correlationId || null,
   lastError: error ? toErrorMessage(error) : null,
+  lastSyncAt: FieldValue.serverTimestamp(),
   updatedAt: FieldValue.serverTimestamp(),
 });
 
@@ -79,6 +123,8 @@ const updateTaskDoneTx = ({
   const invoiceUpdate = {
     'snapshot.electronicTaxReceipt': electronicSnapshot,
     'snapshot.ncf': ncfSnapshot,
+    'snapshot.fiscalMode': 'electronic_ecf',
+    'snapshot.documentFormat': 'electronic',
     statusTimeline: FieldValue.arrayUnion({
       status: `electronic_tax_receipt_${electronicSnapshot.status}`,
       at: Timestamp.now(),
@@ -108,9 +154,19 @@ const updateTaskDoneTx = ({
   tx.update(invoiceRef, invoiceUpdate);
 
   const canonicalUpdate = {
-    'data.electronicTaxReceipt': electronicSnapshot,
+    data: {
+      electronicTaxReceipt: electronicSnapshot,
+      fiscal: {
+        electronic: electronicSnapshot,
+      },
+      fiscalMode: 'electronic_ecf',
+      documentFormat: 'electronic',
+    },
   };
-  if (eNcf) canonicalUpdate['data.NCF'] = eNcf;
+  if (eNcf) {
+    canonicalUpdate.data.NCF = eNcf;
+    canonicalUpdate.data.eNcf = eNcf;
+  }
   tx.set(canonRef, canonicalUpdate, { merge: true });
 };
 
@@ -142,6 +198,8 @@ const updateTaskFailedTx = ({
       provider: 'gisys_fact',
       documentType: electronicSnapshot.documentType || null,
     },
+    'snapshot.fiscalMode': 'electronic_ecf',
+    'snapshot.documentFormat': 'electronic',
     updatedAt: FieldValue.serverTimestamp(),
   });
 };
@@ -164,8 +222,15 @@ export const processElectronicTaxReceiptOutboxTask = async ({
   const business = businessSnap.exists ? businessSnap.data() || {} : {};
   const invoice = invoiceSnap.data() || {};
   const payload = task?.payload || {};
-  const providerConfig = resolveGisysFactConfig(business);
-  const configIssues = getGisysFactConfigIssues(providerConfig);
+  const platformConfig = await getGisysFactPlatformConfig();
+  const rawProviderConfig = resolveGisysFactConfig(business, platformConfig);
+  const providerConfig = resolveEffectiveProviderConfig({
+    providerConfig: rawProviderConfig,
+    taskPayload: payload,
+  });
+  const configIssues = getGisysFactConfigIssues(providerConfig, {
+    requireTransport: providerConfig.mode !== 'shadow',
+  });
   if (configIssues.length > 0) {
     throw new Error(`gisys_config_invalid(${configIssues.join(',')})`);
   }
@@ -214,7 +279,11 @@ export const processElectronicTaxReceiptOutboxTask = async ({
     const response = await issueGisysFactDocument({
       config: providerConfig,
       payload: issuePayload,
-      idempotencyKey: `${invoiceId}:${taskId}`,
+      idempotencyKey: buildGisysFactIdempotencyKey({
+        businessId,
+        invoiceId,
+        documentType,
+      }),
     });
     const electronicSnapshot = buildElectronicSnapshot({
       status: response?.eNcf ? 'issued' : 'submitted',
@@ -298,4 +367,122 @@ export const processElectronicTaxReceiptOutboxTask = async ({
     if (shouldBlockInvoice) throw error;
     return { status: 'local_failed', documentType, requestHash, error };
   }
+};
+
+export const refreshElectronicTaxReceiptStatus = async ({
+  businessId,
+  invoiceId,
+  refreshRemote = true,
+}) => {
+  const invoiceRef = db.doc(`businesses/${businessId}/invoicesV2/${invoiceId}`);
+  const invoiceSnap = await invoiceRef.get();
+  if (!invoiceSnap.exists) {
+    throw new Error('Invoice document not found');
+  }
+
+  const businessRef = db.doc(`businesses/${businessId}`);
+  const businessSnap = await businessRef.get();
+  const business = businessSnap.exists ? businessSnap.data() || {} : {};
+  const invoice = invoiceSnap.data() || {};
+  const currentSnapshot = invoice?.snapshot?.electronicTaxReceipt || {};
+  const submissionId = toCleanString(currentSnapshot.submissionId);
+  if (!submissionId) {
+    throw new Error('Electronic tax receipt submissionId not found');
+  }
+
+  const platformConfig = await getGisysFactPlatformConfig();
+  const providerConfig = resolveGisysFactConfig(business, platformConfig);
+  const configIssues = getGisysFactConfigIssues(providerConfig, {
+    requireTransport: true,
+  });
+  if (configIssues.length > 0) {
+    throw new Error(`gisys_config_invalid(${configIssues.join(',')})`);
+  }
+
+  const response = refreshRemote
+    ? await refreshGisysFactDocumentStatus({
+        config: providerConfig,
+        submissionId,
+      })
+    : await getGisysFactDocumentStatus({
+        config: providerConfig,
+        submissionId,
+      });
+
+  const nextStatus =
+    response?.dgiiValidationStatus ||
+    response?.dgiiStatus ||
+    response?.requestStatus ||
+    response?.status ||
+    currentSnapshot.status ||
+    'submitted';
+  const electronicSnapshot = buildElectronicSnapshot({
+    status: nextStatus,
+    mode: currentSnapshot.mode || providerConfig.mode,
+    documentType:
+      response?.documentType || currentSnapshot.documentType || null,
+    requestHash: currentSnapshot.requestHash || null,
+    response: {
+      ...currentSnapshot,
+      ...response,
+      submissionId,
+      eNcf: response?.eNcf || currentSnapshot.eNcf || null,
+    },
+  });
+
+  await db.runTransaction(async (tx) => {
+    const currentInvoice = (await tx.get(invoiceRef)).data() || invoice;
+    const eNcf =
+      electronicSnapshot.eNcf || currentInvoice?.snapshot?.ncf?.code || null;
+    const ncfSnapshot = {
+      ...(currentInvoice?.snapshot?.ncf || {}),
+      code: eNcf,
+      status: electronicSnapshot.status,
+      documentFormat: 'electronic',
+      provider: 'gisys_fact',
+      submissionId,
+      documentType: electronicSnapshot.documentType,
+    };
+
+    tx.update(invoiceRef, {
+      'snapshot.electronicTaxReceipt': electronicSnapshot,
+      'snapshot.ncf': ncfSnapshot,
+      'snapshot.fiscalMode': 'electronic_ecf',
+      'snapshot.documentFormat': 'electronic',
+      statusTimeline: FieldValue.arrayUnion({
+        status: `electronic_tax_receipt_${electronicSnapshot.status}`,
+        at: Timestamp.now(),
+      }),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    const canonicalUpdate = {
+      data: {
+        electronicTaxReceipt: electronicSnapshot,
+        fiscal: {
+          electronic: electronicSnapshot,
+        },
+        fiscalMode: 'electronic_ecf',
+        documentFormat: 'electronic',
+      },
+      updatedAt: FieldValue.serverTimestamp(),
+    };
+    if (eNcf) {
+      canonicalUpdate.data.NCF = eNcf;
+      canonicalUpdate.data.eNcf = eNcf;
+    }
+    tx.set(
+      db.doc(`businesses/${businessId}/invoices/${invoiceId}`),
+      canonicalUpdate,
+      { merge: true },
+    );
+  });
+
+  return {
+    ok: true,
+    businessId,
+    invoiceId,
+    submissionId,
+    electronicTaxReceipt: electronicSnapshot,
+  };
 };

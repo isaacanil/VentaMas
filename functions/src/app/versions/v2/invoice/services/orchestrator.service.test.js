@@ -118,7 +118,9 @@ describe('orchestrator.service', () => {
         if (ref.path === 'businesses/business-1/usage/current') {
           return { exists: true, data: () => ({ monthlyInvoices: 2 }) };
         }
-        if (ref.path.startsWith('businesses/business-1/usage/monthly/entries/')) {
+        if (
+          ref.path.startsWith('businesses/business-1/usage/monthly/entries/')
+        ) {
           return { exists: true, data: () => ({ monthlyInvoices: 3 }) };
         }
         if (ref.path === 'businesses/business-1/settings/accounting') {
@@ -127,7 +129,12 @@ describe('orchestrator.service', () => {
         if (ref.path === 'businesses/business-1/settings/taxReceipt') {
           return { exists: true, data: () => ({ taxReceiptEnabled: false }) };
         }
-        if (ref.path.startsWith('businesses/business-1/accountingPeriodClosures/')) {
+        if (
+          ref.path.startsWith('businesses/business-1/accountingPeriodClosures/')
+        ) {
+          return { exists: false, data: () => ({}) };
+        }
+        if (ref.path === 'platformConfig/gisysFact') {
           return { exists: false, data: () => ({}) };
         }
         throw new Error(`Unexpected tx.get path: ${ref.path}`);
@@ -151,6 +158,9 @@ describe('orchestrator.service', () => {
             invoiceId: 'invoice-existing',
           }),
         };
+      }
+      if (ref.path === 'platformConfig/gisysFact') {
+        return { exists: false, data: () => ({}) };
       }
       throw new Error(`Unexpected tx.get path: ${ref.path}`);
     });
@@ -181,6 +191,9 @@ describe('orchestrator.service', () => {
             payloadHash: 'other-payload-hash',
           }),
         };
+      }
+      if (ref.path === 'platformConfig/gisysFact') {
+        return { exists: false, data: () => ({}) };
       }
       throw new Error(`Unexpected tx.get path: ${ref.path}`);
     });
@@ -217,7 +230,12 @@ describe('orchestrator.service', () => {
             },
           },
           products: [
-            { id: 'p1', name: 'Producto A', amountToBuy: 1, comment: 'observacion' },
+            {
+              id: 'p1',
+              name: 'Producto A',
+              amountToBuy: 1,
+              comment: 'observacion',
+            },
           ],
           payment: { value: 250 },
           totalPurchaseWithoutTaxes: { value: 200 },
@@ -296,6 +314,126 @@ describe('orchestrator.service', () => {
     ).rejects.toThrow('ncfType requerido cuando ncf.enabled=true');
   });
 
+  it('schedules an electronic receipt shadow task without reserving legacy NCF', async () => {
+    nanoidMock
+      .mockReset()
+      .mockReturnValueOnce('task-inventory')
+      .mockReturnValueOnce('task-canonical')
+      .mockReturnValueOnce('task-electronic')
+      .mockReturnValueOnce('task-cash-count');
+
+    tx.get.mockImplementation(async (ref) => {
+      if (ref.path === 'idempotency:business-1:idem-1') {
+        return { exists: false };
+      }
+      if (ref.path === 'businesses/business-1') {
+        return {
+          exists: true,
+          data: () => ({
+            features: {
+              fiscal: {
+                electronicModelEnabled: true,
+                electronicTransportEnabled: false,
+                gisysFact: {
+                  enabled: true,
+                  integrationInstanceCode: 'vm-local',
+                  taxpayerCode: '132619201',
+                  mode: 'pilot',
+                },
+              },
+            },
+            subscription: {
+              status: 'active',
+              planId: 'plus',
+              limits: { monthlyInvoices: 10 },
+            },
+          }),
+        };
+      }
+      if (ref.path === 'businesses/business-1/usage/current') {
+        return { exists: true, data: () => ({ monthlyInvoices: 2 }) };
+      }
+      if (ref.path.startsWith('businesses/business-1/usage/monthly/entries/')) {
+        return { exists: true, data: () => ({ monthlyInvoices: 3 }) };
+      }
+      if (ref.path === 'businesses/business-1/settings/accounting') {
+        return { exists: false, data: () => ({}) };
+      }
+      if (ref.path === 'businesses/business-1/settings/taxReceipt') {
+        return { exists: true, data: () => ({ taxReceiptEnabled: true }) };
+      }
+      if (
+        ref.path.startsWith('businesses/business-1/accountingPeriodClosures/')
+      ) {
+        return { exists: false, data: () => ({}) };
+      }
+      if (ref.path === 'platformConfig/gisysFact') {
+        return { exists: false, data: () => ({}) };
+      }
+      throw new Error(`Unexpected tx.get path: ${ref.path}`);
+    });
+
+    await expect(
+      createPendingInvoice({
+        businessId: 'business-1',
+        userId: 'user-1',
+        idempotencyKey: 'idem-1',
+        payload: {
+          cart: {
+            id: 'cart-ecf-shadow',
+            products: [{ id: 'p1', name: 'Producto A', amountToBuy: 1 }],
+            payment: { value: 118 },
+            totalPurchaseWithoutTaxes: { value: 100 },
+            totalTaxes: { value: 18 },
+            totalPurchase: { value: 118 },
+          },
+          taxReceiptEnabled: true,
+          ncf: {
+            enabled: true,
+            type: 'fiscal-consumer',
+          },
+        },
+      }),
+    ).resolves.toMatchObject({
+      invoiceId: 'cart-ecf-shadow',
+      status: 'pending',
+    });
+
+    expect(reserveNcfMock).not.toHaveBeenCalled();
+
+    const invoiceWrite = tx.set.mock.calls.find(
+      ([ref]) =>
+        ref.path === 'businesses/business-1/invoicesV2/cart-ecf-shadow',
+    );
+    expect(invoiceWrite[1].snapshot).toEqual(
+      expect.objectContaining({
+        fiscalMode: 'electronic_ecf',
+        documentFormat: 'electronic',
+        electronicTaxReceipt: expect.objectContaining({
+          mode: 'shadow',
+          status: 'pending',
+          documentType: 'E32',
+          transportEnabled: false,
+        }),
+      }),
+    );
+
+    const electronicTaskWrite = tx.set.mock.calls.find(
+      ([ref, data]) =>
+        ref.path ===
+          'businesses/business-1/invoicesV2/cart-ecf-shadow/outbox/task-electronic' &&
+        data.type === 'issueElectronicTaxReceipt',
+    );
+    expect(electronicTaskWrite[1].payload).toEqual(
+      expect.objectContaining({
+        ncfType: 'fiscal-consumer',
+        documentType: 'E32',
+        transportEnabled: false,
+        mode: 'shadow',
+      }),
+    );
+  });
+
   it('blocks invoices without NCF when fiscal receipts are enabled for the business', async () => {
     tx.get.mockImplementation(async (ref) => {
       if (ref.path === 'idempotency:business-1:idem-1') {
@@ -330,7 +468,12 @@ describe('orchestrator.service', () => {
           }),
         };
       }
-      if (ref.path.startsWith('businesses/business-1/accountingPeriodClosures/')) {
+      if (
+        ref.path.startsWith('businesses/business-1/accountingPeriodClosures/')
+      ) {
+        return { exists: false, data: () => ({}) };
+      }
+      if (ref.path === 'platformConfig/gisysFact') {
         return { exists: false, data: () => ({}) };
       }
       throw new Error(`Unexpected tx.get path: ${ref.path}`);
@@ -395,7 +538,9 @@ describe('orchestrator.service', () => {
       if (ref.path === 'businesses/business-1/settings/taxReceipt') {
         return { exists: true, data: () => ({ taxReceiptEnabled: false }) };
       }
-      if (ref.path === 'businesses/business-1/accountingPeriodClosures/2026-03') {
+      if (
+        ref.path === 'businesses/business-1/accountingPeriodClosures/2026-03'
+      ) {
         return {
           exists: true,
           data: () => ({
@@ -403,6 +548,9 @@ describe('orchestrator.service', () => {
             status: 'closed',
           }),
         };
+      }
+      if (ref.path === 'platformConfig/gisysFact') {
+        return { exists: false, data: () => ({}) };
       }
       throw new Error(`Unexpected tx.get path: ${ref.path}`);
     });
@@ -466,7 +614,12 @@ describe('orchestrator.service', () => {
       if (ref.path === 'businesses/business-1/settings/taxReceipt') {
         return { exists: true, data: () => ({ taxReceiptEnabled: false }) };
       }
-      if (ref.path === 'businesses/business-1/accountingPeriodClosures/2026-03') {
+      if (
+        ref.path === 'businesses/business-1/accountingPeriodClosures/2026-03'
+      ) {
+        return { exists: false, data: () => ({}) };
+      }
+      if (ref.path === 'platformConfig/gisysFact') {
         return { exists: false, data: () => ({}) };
       }
       throw new Error(`Unexpected tx.get path: ${ref.path}`);

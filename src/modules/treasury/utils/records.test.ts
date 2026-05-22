@@ -79,6 +79,57 @@ describe('normalizeCashMovementAsLiquidityLedgerEntry', () => {
     });
   });
 
+  it('keeps supplier payment reversals as explicit treasury activity', () => {
+    const entry = normalizeCashMovementAsLiquidityLedgerEntry(
+      'appv_1',
+      'business-1',
+      {
+        amount: 1250,
+        bankAccountId: 'bank-1',
+        businessId: 'business-1',
+        counterpartyId: 'supplier-1',
+        counterpartyType: 'supplier',
+        direction: 'in',
+        impactsBankLedger: true,
+        metadata: {
+          reversalOfPaymentId: 'payment-1',
+          reversalOfSourceType: 'supplier_payment',
+        },
+        method: 'transfer',
+        occurredAt: 1_713_000_000_000,
+        reference: 'TRX-1',
+        sourceDocumentId: 'vendor-bill-1',
+        sourceDocumentType: 'vendorBill',
+        sourceId: 'payment-1',
+        sourceType: 'supplier_payment_void',
+        status: 'posted',
+      },
+    );
+
+    expect(entry).toMatchObject({
+      id: 'appv_1',
+      accountId: 'bank-1',
+      accountType: 'bank',
+      amount: 1250,
+      direction: 'in',
+      sourceId: 'payment-1',
+      sourceType: 'supplier_payment_void',
+      description: 'Reverso de pago a suplidor',
+      reference: 'TRX-1',
+      status: 'posted',
+    });
+    expect(entry?.metadata).toMatchObject({
+      bankAccountId: 'bank-1',
+      counterpartyId: 'supplier-1',
+      counterpartyType: 'supplier',
+      method: 'transfer',
+      reversalOfPaymentId: 'payment-1',
+      reversalOfSourceType: 'supplier_payment',
+      sourceDocumentId: 'vendor-bill-1',
+      sourceDocumentType: 'vendorBill',
+    });
+  });
+
   it('drops cash movements without treasury account identity', () => {
     expect(
       normalizeCashMovementAsLiquidityLedgerEntry('broken', 'business-1', {

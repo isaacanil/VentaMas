@@ -39,9 +39,15 @@ const resolveFromToken = (value) => {
   if (compact.startsWith('E45')) return 'E45';
 
   if (token.includes('CONSUMIDOR')) return 'E32';
+  if (token.includes('FISCAL CONSUMER')) return 'E32';
+  if (token.includes('CONSUMER')) return 'E32';
   if (token.includes('CREDITO FISCAL')) return 'E31';
+  if (token.includes('FISCAL CREDIT')) return 'E31';
+  if (token.includes('TAX CREDIT')) return 'E31';
   if (token.includes('GUBERNAMENTAL')) return 'E45';
+  if (token.includes('GOVERNMENT')) return 'E45';
   if (token.includes('NOTA') && token.includes('CREDITO')) return 'E34';
+  if (token.includes('CREDIT NOTE')) return 'E34';
 
   return null;
 };

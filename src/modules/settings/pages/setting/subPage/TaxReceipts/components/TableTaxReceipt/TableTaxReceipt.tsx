@@ -5,12 +5,12 @@ import {
   MoreOutlined,
   StopOutlined,
 } from '@/constants/icons/antd';
-import { Button, Dropdown, Modal, Tooltip, message } from 'antd';
-import type { MenuProps } from 'antd';
+import { Modal, Tooltip, message } from 'antd';
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { VmDropdown } from '@/components/heroui';
 import { selectUser } from '@/features/auth/userSlice';
 import { updateTaxReceipt } from '@/firebase/taxReceipt/updateTaxReceipt';
 import TaxReceiptForm from '@/modules/settings/pages/setting/subPage/TaxReceipts/components/TaxReceiptForm/TaxReceiptForm';
@@ -35,6 +35,7 @@ interface TableTaxReceiptProps {
 }
 
 interface RowProps {
+  $tone?: HealthState['tone'];
   disabled?: boolean;
 }
 
@@ -301,7 +302,7 @@ export const TableTaxReceipt = ({
         const limit = calculateLimit(item.data);
         const healthState = resolveHealthState(item.data);
         const sequenceMeta = buildSequenceMeta(item.data);
-        const menuItems: MenuProps['items'] = [
+        const menuItems = [
           {
             key: 'edit',
             icon: <EditOutlined />,
@@ -322,6 +323,7 @@ export const TableTaxReceipt = ({
           <DataRow
             key={item.data?.id || idx}
             onDoubleClick={() => handleEditTaxReceipt(sourceIndex)}
+            $tone={healthState.tone}
             disabled={item.data?.disabled}
           >
             <CompositeCell>
@@ -338,11 +340,17 @@ export const TableTaxReceipt = ({
 
             <CompositeCell>
               <PrimaryText $tone={healthState.tone}>
-                {quantity === null ? 'Disponibilidad N/D' : `${quantity} disponibles`}
+                {quantity === null
+                  ? 'Disponibilidad N/D'
+                  : `${quantity} disponibles`}
               </PrimaryText>
               <SecondaryText $tone={healthState.tone}>
                 <Tooltip title="Ultimo NCF disponible dentro del rango configurado">
-                  <span>{limit === 'N/D' ? 'Límite no disponible' : `Límite ${limit}`}</span>
+                  <span>
+                    {limit === 'N/D'
+                      ? 'Límite no disponible'
+                      : `Límite ${limit}`}
+                  </span>
                 </Tooltip>
               </SecondaryText>
             </CompositeCell>
@@ -357,14 +365,42 @@ export const TableTaxReceipt = ({
             </CompositeCell>
 
             <ActionCell>
-              <Dropdown menu={{ items: menuItems }} trigger={['click']} placement="bottomRight">
+              <VmDropdown>
                 <MenuButton
-                  type="text"
-                  size="small"
-                  icon={<MoreOutlined />}
-                  onClick={(event) => event.stopPropagation()}
-                />
-              </Dropdown>
+                  isIconOnly
+                  size="sm"
+                  aria-label={`Acciones de ${item.data?.name || 'serie fiscal'}`}
+                >
+                  <MoreOutlined />
+                </MenuButton>
+                <MenuPopover placement="bottom end">
+                  <VmDropdown.Menu
+                    aria-label="Acciones de serie fiscal"
+                    onAction={(key) => {
+                      const selectedItem = menuItems.find(
+                        (menuItem) => menuItem.key === key,
+                      );
+                      selectedItem?.onClick();
+                    }}
+                  >
+                    {menuItems.map((menuItem) => (
+                      <VmDropdown.Item
+                        key={menuItem.key}
+                        id={menuItem.key}
+                        textValue={menuItem.label}
+                        variant={
+                          menuItem.key === 'toggle' ? 'danger' : 'default'
+                        }
+                      >
+                        <MenuItemLabel>
+                          <MenuItemIcon>{menuItem.icon}</MenuItemIcon>
+                          <span>{menuItem.label}</span>
+                        </MenuItemLabel>
+                      </VmDropdown.Item>
+                    ))}
+                  </VmDropdown.Menu>
+                </MenuPopover>
+              </VmDropdown>
             </ActionCell>
           </DataRow>
         );
@@ -433,8 +469,26 @@ const DataRow = styled.div<RowProps>`
   min-height: 72px;
   padding: 0 var(--ds-space-2);
   border-bottom: 1px solid var(--ds-color-border-default);
-  background: ${(props) =>
-    props.disabled ? 'var(--ds-color-bg-subtle)' : 'var(--ds-color-bg-surface)'};
+  background: ${(props) => {
+    if (props.disabled) return 'var(--ds-color-bg-subtle)';
+    if (props.$tone === 'danger') {
+      return 'var(--ds-color-state-danger-subtle)';
+    }
+    if (props.$tone === 'warning') {
+      return 'var(--ds-color-state-warning-subtle)';
+    }
+    return 'var(--ds-color-bg-surface)';
+  }};
+  box-shadow: ${(props) => {
+    if (props.disabled) return 'none';
+    if (props.$tone === 'danger') {
+      return 'inset 3px 0 0 var(--ds-color-state-danger)';
+    }
+    if (props.$tone === 'warning') {
+      return 'inset 3px 0 0 var(--ds-color-state-warning)';
+    }
+    return 'none';
+  }};
   transition: background-color 0.18s ease;
 
   &:last-child {
@@ -442,7 +496,16 @@ const DataRow = styled.div<RowProps>`
   }
 
   &:hover {
-    background: var(--ds-color-bg-subtle);
+    background: ${(props) => {
+      if (props.disabled) return 'var(--ds-color-bg-subtle)';
+      if (props.$tone === 'danger') {
+        return 'var(--ds-color-state-danger-subtle)';
+      }
+      if (props.$tone === 'warning') {
+        return 'var(--ds-color-state-warning-subtle)';
+      }
+      return 'var(--ds-color-bg-subtle)';
+    }};
   }
 `;
 
@@ -469,25 +532,25 @@ const StatusPill = styled.span<{ $tone: HealthState['pillTone'] }>`
   ${(props) => {
     if (props.$tone === 'positive') {
       return `
-        color: #166534;
-        background: #dcfce7;
-        border-color: #86efac;
+        color: var(--ds-color-state-success-text);
+        background: var(--ds-color-state-success-subtle);
+        border-color: var(--ds-color-state-success);
       `;
     }
 
     if (props.$tone === 'warning') {
       return `
-        color: #92400e;
-        background: #fef3c7;
-        border-color: #fcd34d;
+        color: var(--ds-color-state-warning-text);
+        background: var(--ds-color-state-warning-subtle);
+        border-color: var(--ds-color-state-warning);
       `;
     }
 
     if (props.$tone === 'danger') {
       return `
-        color: #991b1b;
-        background: #fee2e2;
-        border-color: #fca5a5;
+        color: var(--ds-color-state-danger-text);
+        background: var(--ds-color-state-danger-subtle);
+        border-color: var(--ds-color-state-danger);
       `;
     }
 
@@ -503,8 +566,8 @@ const PrimaryText = styled.span<{ $tone?: HealthState['tone'] }>`
   font-size: var(--ds-font-size-sm);
   font-weight: var(--ds-font-weight-semibold);
   color: ${(props) => {
-    if (props.$tone === 'danger') return 'var(--ds-color-text-danger, #cf1322)';
-    if (props.$tone === 'warning') return 'var(--ds-color-text-warning, #ad6800)';
+    if (props.$tone === 'danger') return 'var(--ds-color-state-danger-text)';
+    if (props.$tone === 'warning') return 'var(--ds-color-state-warning-text)';
     return 'var(--ds-color-text-primary)';
   }};
   white-space: nowrap;
@@ -515,8 +578,8 @@ const PrimaryText = styled.span<{ $tone?: HealthState['tone'] }>`
 const SecondaryText = styled.span<{ $tone?: HealthState['tone'] }>`
   font-size: var(--ds-font-size-xs);
   color: ${(props) => {
-    if (props.$tone === 'danger') return 'var(--ds-color-text-danger, #cf1322)';
-    if (props.$tone === 'warning') return 'var(--ds-color-text-warning, #ad6800)';
+    if (props.$tone === 'danger') return 'var(--ds-color-state-danger-text)';
+    if (props.$tone === 'warning') return 'var(--ds-color-state-warning-text)';
     return 'var(--ds-color-text-secondary)';
   }};
   white-space: nowrap;
@@ -531,19 +594,35 @@ const ActionCell = styled.div`
   height: 100%;
 `;
 
-const MenuButton = styled(Button)`
-  && {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: var(--ds-radius-md);
-    color: var(--ds-color-text-secondary);
-  }
+const MenuButton = styled(VmDropdown.Button)`
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0;
+  border-color: transparent;
+  color: var(--ds-color-text-secondary);
+  background: transparent;
 
-  &&:hover {
+  &:hover,
+  &[data-hovered='true'] {
     color: var(--ds-color-text-primary);
     background: var(--ds-color-bg-subtle);
   }
+`;
+
+const MenuPopover = styled(VmDropdown.Popover)`
+  min-width: 156px;
+`;
+
+const MenuItemLabel = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+`;
+
+const MenuItemIcon = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
 `;

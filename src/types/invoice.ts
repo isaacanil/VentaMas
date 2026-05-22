@@ -95,6 +95,32 @@ export interface InvoicePreorderDetails {
   [key: string]: unknown;
 }
 
+export interface ElectronicTaxReceiptSnapshot {
+  provider?: string | null;
+  mode?: 'shadow' | 'pilot' | 'required' | string | null;
+  status?: string | null;
+  documentType?: string | null;
+  submissionId?: string | null;
+  eNcf?: string | null;
+  requestStatus?: string | null;
+  localStatus?: string | null;
+  dgiiSubmissionStatus?: string | null;
+  dgiiValidationStatus?: string | null;
+  dgiiStatus?: string | null;
+  trackId?: string | null;
+  dgiiTrackId?: string | null;
+  securityCode?: string | null;
+  qr?: { url?: string | null; profile?: string | null } | string | null;
+  links?: {
+    status?: string | null;
+    xml?: string | null;
+    signedXml?: string | null;
+    pdf?: string | null;
+  } | null;
+  lastError?: string | null;
+  [key: string]: unknown;
+}
+
 type InvoiceTimestamp =
   | number
   | string
@@ -107,6 +133,14 @@ export interface InvoiceData {
   numberID?: string | number;
   NCF?: string;
   comprobante?: string;
+  eNcf?: string;
+  fiscalMode?: 'legacy_ncf' | 'electronic_ecf' | string;
+  documentFormat?: 'traditional' | 'electronic' | string;
+  electronicTaxReceipt?: ElectronicTaxReceiptSnapshot | null;
+  fiscal?: {
+    electronic?: ElectronicTaxReceiptSnapshot | null;
+    [key: string]: unknown;
+  };
   date?: InvoiceTimestamp;
   client?: InvoiceClient | null;
   products?: InvoiceProduct[];

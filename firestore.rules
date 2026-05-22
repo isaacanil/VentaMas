@@ -185,6 +185,69 @@ service cloud.firestore {
       return isLockedInvoiceStatus(data) || hasPostedInvoiceFootprint(data);
     }
 
+    function isSafeInvoiceDraftCreate(data) {
+      return isDraftFinancialDocument(data)
+        && !isLockedInvoiceDocument(data);
+    }
+
+    function isLockedPurchaseStatus(data) {
+      return documentStatus(data) in [
+        'completed',
+        'delivered',
+        'posted',
+        'billed',
+        'received',
+        'paid',
+        'voided',
+        'canceled',
+        'cancelled',
+        'reversed'
+      ];
+    }
+
+    function isMutablePurchaseSource(data) {
+      return documentStatus(data) in [
+        'draft',
+        'pending',
+        'requested',
+        'pending_receipt',
+        'processing',
+        'partial_receipt'
+      ];
+    }
+
+    function isDeletablePurchaseSource(data) {
+      return documentStatus(data) in [
+        'draft',
+        'pending',
+        'requested',
+        'pending_receipt'
+      ];
+    }
+
+    function hasPostedPurchaseFootprint(data) {
+      return documentPayload(data).keys().hasAny([
+        'vendorBillId',
+        'accountsPayableId',
+        'accountingEventId',
+        'journalEntryId',
+        'completedAt',
+        'receivedAt',
+        'billedAt',
+        'canceledAt',
+        'voidedAt'
+      ]) || data.keys().hasAny([
+        'vendorBillId',
+        'accountsPayableId',
+        'accountingEventId',
+        'journalEntryId'
+      ]);
+    }
+
+    function isLockedPurchaseDocument(data) {
+      return isLockedPurchaseStatus(data) || hasPostedPurchaseFootprint(data);
+    }
+
     function isSelfProfileCreate() {
       return !request.resource.data.keys().hasAny([
         'role',
@@ -335,8 +398,7 @@ service cloud.firestore {
 
     match /businesses/{businessId}/chartOfAccounts/{chartOfAccountId} {
       allow read: if hasAccountingReadAccess(businessId);
-      allow create, update: if hasFinanceConfigAccess(businessId);
-      allow delete: if false;
+      allow create, update, delete: if false;
 
       match /history/{entryId} {
         allow read: if hasBusinessAccess(businessId);
@@ -346,8 +408,7 @@ service cloud.firestore {
 
     match /businesses/{businessId}/accountingPostingProfiles/{postingProfileId} {
       allow read: if hasAccountingReadAccess(businessId);
-      allow create, update: if hasFinanceConfigAccess(businessId);
-      allow delete: if false;
+      allow create, update, delete: if false;
 
       match /history/{entryId} {
         allow read: if hasBusinessAccess(businessId);
@@ -357,10 +418,10 @@ service cloud.firestore {
 
     match /businesses/{businessId}/invoices/{invoiceId} {
       allow read: if hasBusinessAccess(businessId);
-      // Creación directa se mantiene temporalmente por compatibilidad legacy.
-      // Una vez creada con huella fiscal/operativa, la factura queda inmutable
-      // desde cliente y debe corregirse por callable/anulación formal.
-      allow create: if hasBusinessAccess(businessId);
+      // Creación directa solo queda abierta para borradores sin huella
+      // fiscal/contable. La emisión/finalización pasa por createInvoiceV2.
+      allow create: if hasBusinessAccess(businessId)
+        && isSafeInvoiceDraftCreate(request.resource.data);
       allow update: if hasBusinessAccess(businessId)
         && isDraftFinancialDocument(resource.data)
         && isDraftFinancialDocument(request.resource.data)
@@ -570,8 +631,22 @@ service cloud.firestore {
       allow read, write: if hasBusinessAccess(businessId);
     }
 
-    match /businesses/{businessId}/purchases/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+    match /businesses/{businessId}/purchases/{purchaseId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create: if hasBusinessAccess(businessId)
+        && isMutablePurchaseSource(request.resource.data)
+        && !isLockedPurchaseDocument(request.resource.data);
+      allow update: if hasBusinessAccess(businessId)
+        && isMutablePurchaseSource(resource.data)
+        && !isLockedPurchaseDocument(resource.data);
+      allow delete: if hasBusinessAccess(businessId)
+        && isDeletablePurchaseSource(resource.data)
+        && !isLockedPurchaseDocument(resource.data);
+
+      match /{document=**} {
+        allow read: if hasBusinessAccess(businessId);
+        allow write: if false;
+      }
     }
 
     match /businesses/{businessId}/expenses/{document=**} {

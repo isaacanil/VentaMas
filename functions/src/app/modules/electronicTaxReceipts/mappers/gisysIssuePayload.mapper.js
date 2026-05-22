@@ -333,7 +333,6 @@ export const buildGisysIssuePayload = ({
       integrationInstanceCode: providerConfig.integrationInstanceCode,
       taxpayerCode: providerConfig.taxpayerCode,
       documentType,
-      dgiiEnvironment: providerConfig.dgiiEnvironment || undefined,
       invoiceInternalId: invoiceId,
       issuedAt,
       currency: resolveCurrency(cart),

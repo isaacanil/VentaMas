@@ -28,11 +28,7 @@ import {
 const SUBSCRIPTIONS_SUBCOLLECTION = 'subscriptions';
 const BUSINESS_LINKS_SUBCOLLECTION = 'businessLinks';
 const ACTIVE_SUBSCRIPTION_STATUSES = new Set(['active', 'trialing']);
-const DEFAULT_ONBOARDING_PLAN_CODE = 'demo';
-const DEFAULT_ONBOARDING_TRIAL_DAYS = Math.max(
-  1,
-  Number(process.env.BILLING_ONBOARDING_TRIAL_DAYS) || 14,
-);
+const DEFAULT_ONBOARDING_PLAN_CODE = 'legacy';
 const NOTICE_WINDOW_SET = new Set(PLAN_NOTICE_WINDOWS);
 const ENTITLEMENT_RECORD_KEYS = ['modules', 'addons', 'features', 'moduleAccess'];
 
@@ -502,21 +498,18 @@ export const ensureBusinessOnboardingSubscription = async ({
   }
 
   const now = Date.now();
-  const trialEndsAtMs = now + DEFAULT_ONBOARDING_TRIAL_DAYS * 24 * 60 * 60 * 1000;
 
   const seededSubscription = await assignSubscriptionToBillingAccount({
     billingAccountId,
     planCode: DEFAULT_ONBOARDING_PLAN_CODE,
-    status: 'trialing',
+    status: 'active',
     scope: 'account',
     targetBusinessId: normalizedBusinessId,
     provider: BILLING_DEFAULT_PROVIDER,
     actorUserId,
-    source: 'onboarding_initial_demo',
+    source: 'onboarding_initial_legacy',
     periodStartMs: now,
-    periodEndMs: trialEndsAtMs,
-    trialEndsAtMs,
-    note: `Onboarding inicial con demo de ${DEFAULT_ONBOARDING_TRIAL_DAYS} dias`,
+    note: 'Onboarding inicial con plan legacy',
   });
 
   return {

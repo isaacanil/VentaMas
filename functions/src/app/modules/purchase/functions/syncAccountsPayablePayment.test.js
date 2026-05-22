@@ -4,6 +4,7 @@ const {
   buildAccountingEventIdMock,
   buildAccountingEventMock,
   buildAccountsPayablePaymentCashMovementsMock,
+  batchMocks,
   collectionEntries,
   documentRefs,
   documentSnapshots,
@@ -14,6 +15,7 @@ const {
   const hoistedBuildAccountingEventIdMock = vi.fn();
   const hoistedBuildAccountingEventMock = vi.fn();
   const hoistedBuildAccountsPayablePaymentCashMovementsMock = vi.fn();
+  const hoistedBatchMocks = [];
   const hoistedGetPilotAccountingSettingsForBusinessMock = vi.fn();
   const hoistedIsAccountingRolloutEnabledForBusinessMock = vi.fn();
   const hoistedDocumentRefs = new Map();
@@ -41,6 +43,7 @@ const {
     buildAccountingEventMock: hoistedBuildAccountingEventMock,
     buildAccountsPayablePaymentCashMovementsMock:
       hoistedBuildAccountsPayablePaymentCashMovementsMock,
+    batchMocks: hoistedBatchMocks,
     collectionEntries: hoistedCollectionEntries,
     documentRefs: hoistedDocumentRefs,
     documentSnapshots: hoistedDocumentSnapshots,
@@ -69,11 +72,15 @@ vi.mock('../../../core/config/firebase.js', () => ({
         })),
       })),
     }),
-    batch: () => ({
-      delete: vi.fn(),
-      set: vi.fn(),
-      commit: vi.fn(async () => undefined),
-    }),
+    batch: () => {
+      const batchMock = {
+        delete: vi.fn(),
+        set: vi.fn(),
+        commit: vi.fn(async () => undefined),
+      };
+      batchMocks.push(batchMock);
+      return batchMock;
+    },
   },
 }));
 
@@ -117,6 +124,7 @@ import {
 describe('buildAccountsPayablePaymentAccountingEvents', () => {
   beforeEach(() => {
     collectionEntries.clear();
+    batchMocks.length = 0;
     documentRefs.clear();
     documentSnapshots.clear();
     vi.clearAllMocks();
@@ -412,6 +420,7 @@ describe('buildAccountsPayablePaymentAccountingEvents', () => {
 describe('syncAccountsPayablePayment', () => {
   beforeEach(() => {
     collectionEntries.clear();
+    batchMocks.length = 0;
     documentRefs.clear();
     documentSnapshots.clear();
     vi.clearAllMocks();
@@ -537,5 +546,188 @@ describe('syncAccountsPayablePayment', () => {
       { merge: true },
     );
     expect(buildAccountingEventMock).not.toHaveBeenCalled();
+  });
+
+  it('deletes stale cash movements when an active supplier payment changes method', async () => {
+    buildAccountsPayablePaymentCashMovementsMock.mockImplementation(
+      ({ payment }) => {
+        if (!payment || payment.status !== 'posted') {
+          return [];
+        }
+
+        const method = payment.paymentMethods?.[0]?.method;
+        return [
+          {
+            id:
+              method === 'transfer'
+                ? 'app_payment-1_transfer_1'
+                : 'app_payment-1_cash_1',
+            businessId: 'business-1',
+            sourceId: 'payment-1',
+          },
+        ];
+      },
+    );
+    documentSnapshots.set('businesses/business-1/purchases/purchase-1', {
+      id: 'purchase-1',
+      status: 'completed',
+      workflowStatus: 'completed',
+      totalAmount: 100,
+      paymentState: {
+        total: 100,
+        paid: 40,
+        balance: 60,
+        paymentCount: 1,
+      },
+      paymentTerms: {},
+    });
+    collectionEntries.set('businesses/business-1/accountsPayablePayments', [
+      {
+        id: 'payment-1',
+        data: {
+          purchaseId: 'purchase-1',
+          status: 'posted',
+          totalAmount: 40,
+          paymentMethods: [
+            {
+              method: 'transfer',
+              value: 40,
+              bankAccountId: 'bank-1',
+            },
+          ],
+        },
+      },
+    ]);
+
+    await syncAccountsPayablePayment({
+      params: {
+        businessId: 'business-1',
+        paymentId: 'payment-1',
+      },
+      data: {
+        before: {
+          data: () => ({
+            purchaseId: 'purchase-1',
+            status: 'posted',
+            totalAmount: 40,
+            paymentMethods: [
+              {
+                method: 'cash',
+                value: 40,
+                cashCountId: 'cash-1',
+              },
+            ],
+          }),
+        },
+        after: {
+          data: () => ({
+            purchaseId: 'purchase-1',
+            status: 'posted',
+            totalAmount: 40,
+            paymentMethods: [
+              {
+                method: 'transfer',
+                value: 40,
+                bankAccountId: 'bank-1',
+              },
+            ],
+          }),
+        },
+      },
+    });
+
+    expect(batchMocks[0].delete).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/cashMovements/app_payment-1_cash_1',
+      }),
+    );
+    expect(batchMocks[0].set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/cashMovements/app_payment-1_transfer_1',
+      }),
+      expect.objectContaining({
+        id: 'app_payment-1_transfer_1',
+      }),
+      { merge: true },
+    );
+  });
+
+  it('preserves original cash movements and writes a reversal on void transitions', async () => {
+    buildAccountsPayablePaymentCashMovementsMock.mockImplementation(
+      ({ payment }) =>
+        payment?.status === 'posted'
+          ? [
+              {
+                id: 'app_payment-1_transfer_1',
+                businessId: 'business-1',
+                sourceId: 'payment-1',
+              },
+            ]
+          : [],
+    );
+    documentSnapshots.set('businesses/business-1/purchases/purchase-1', {
+      id: 'purchase-1',
+      status: 'completed',
+      workflowStatus: 'completed',
+      totalAmount: 100,
+      paymentState: {
+        total: 100,
+        paid: 40,
+        balance: 60,
+        paymentCount: 1,
+      },
+      paymentTerms: {},
+    });
+    collectionEntries.set('businesses/business-1/accountsPayablePayments', []);
+
+    await syncAccountsPayablePayment({
+      params: {
+        businessId: 'business-1',
+        paymentId: 'payment-1',
+      },
+      data: {
+        before: {
+          data: () => ({
+            purchaseId: 'purchase-1',
+            status: 'posted',
+            totalAmount: 40,
+            paymentMethods: [
+              {
+                method: 'transfer',
+                value: 40,
+                bankAccountId: 'bank-1',
+              },
+            ],
+          }),
+        },
+        after: {
+          data: () => ({
+            purchaseId: 'purchase-1',
+            status: 'void',
+            totalAmount: 40,
+            voidedAt: 10,
+            paymentMethods: [
+              {
+                method: 'transfer',
+                value: 40,
+                bankAccountId: 'bank-1',
+              },
+            ],
+          }),
+        },
+      },
+    });
+
+    expect(batchMocks[0].delete).not.toHaveBeenCalled();
+    expect(batchMocks[0].set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/cashMovements/appv_payment-1_transfer_1',
+      }),
+      expect.objectContaining({
+        direction: 'in',
+        sourceType: 'supplier_payment_void',
+      }),
+      { merge: true },
+    );
   });
 });

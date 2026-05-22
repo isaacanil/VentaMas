@@ -1,9 +1,19 @@
-import { Button, Spin, Typography, message } from 'antd';
+import { Spin, message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { VmAlert, VmButton, VmDropdown } from '@/components/heroui';
+import {
+  ApiOutlined,
+  CheckOutlined,
+  FileTextOutlined,
+  SettingOutlined,
+  StopOutlined,
+  WarningOutlined,
+} from '@/constants/icons/antd';
 import { useDialog } from '@/Context/Dialog/useDialog';
+import { selectBusinessData } from '@/features/auth/businessSlice';
 import { selectUser } from '@/features/auth/userSlice';
 import {
   getTaxReceiptData,
@@ -18,27 +28,108 @@ import { useCompareArrays } from '@/hooks/useCompareArrays';
 import { useLoadingStatus } from '@/hooks/useLoadingStatus';
 import { serializeFirestoreDocuments } from '@/utils/serialization/serializeFirestoreData';
 import type { TaxReceiptDocument } from '@/types/taxReceipt';
-import {
-  filterPredefinedReceipts,
-  generateNewTaxReceipt,
-} from '@/utils/taxReceipt';
+import { filterPredefinedReceipts } from '@/utils/taxReceipt';
 
 import AddReceiptDrawer from './components/AddReceiptModal/AddReceiptModal';
+import { ElectronicTaxReceiptBusinessLinkSection } from './components/ElectronicTaxReceiptBusinessLinkSection/ElectronicTaxReceiptBusinessLinkSection';
 import type { FiscalReceiptsAlertConfigState } from './components/FiscalReceiptsAlertSettings/FiscalReceiptsAlertSettings';
 import FiscalReceiptsAlertWidget from './components/FiscalReceiptsAlertWidget/FiscalReceiptsAlertWidget';
-import { ReceiptSettingsSection } from './components/ReceiptSettingsSection/ReceiptSettingsSection';
 import { ReceiptTableSection } from './components/ReceiptTableSection/ReceiptTableSection';
 import TaxReceiptAuthorizationModal from './components/TaxReceiptAuthorizationModal/TaxReceiptAuthorizationModal';
-const { Title, Paragraph } = Typography;
 
 const DEFAULT_QUANTITY_WARNING = 100;
 const DEFAULT_QUANTITY_CRITICAL = 50;
 const DEFAULT_EXPIRATION_WARNING = 30;
 const DEFAULT_EXPIRATION_CRITICAL = 7;
 
+type FiscalAttentionTone = 'neutral' | 'warning' | 'danger';
+
+interface FiscalAttentionSummary {
+  primaryIssue: string | null;
+  tone: FiscalAttentionTone;
+}
+
+const parseReceiptQuantity = (value?: number | string): number | null => {
+  if (value === undefined || value === null || value === '') return null;
+  const parsed = Number.parseInt(String(value), 10);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
+const getReceiptLabel = (receipt: TaxReceiptDocument): string => {
+  const name = receipt.data?.name?.trim();
+  if (name) return name;
+
+  const type = receipt.data?.type?.trim();
+  const serie = receipt.data?.serie?.trim();
+  return [type, serie].filter(Boolean).join('') || 'Serie sin nombre';
+};
+
+const hasCompleteFiscalRange = (receipt: TaxReceiptDocument): boolean => {
+  const { quantity, sequence, serie, type } = receipt.data ?? {};
+  return Boolean(
+    type &&
+    serie &&
+    sequence !== undefined &&
+    sequence !== null &&
+    sequence !== '' &&
+    quantity !== undefined &&
+    quantity !== null &&
+    quantity !== '',
+  );
+};
+
+const buildFiscalAttentionSummary = (
+  receipts: TaxReceiptDocument[],
+  taxReceiptEnabled: boolean,
+): FiscalAttentionSummary => {
+  const activeReceipts = receipts.filter((item) => !item.data?.disabled);
+  const depletedReceipts = activeReceipts.filter(
+    (item) => parseReceiptQuantity(item.data?.quantity) === 0,
+  );
+  const incompleteReceipts = activeReceipts.filter(
+    (item) =>
+      parseReceiptQuantity(item.data?.quantity) !== 0 &&
+      !hasCompleteFiscalRange(item),
+  );
+
+  if (!taxReceiptEnabled) {
+    return {
+      primaryIssue: null,
+      tone: 'neutral',
+    };
+  }
+
+  if (!activeReceipts.length) {
+    return {
+      primaryIssue: 'No hay series activas para emitir comprobantes.',
+      tone: 'warning',
+    };
+  }
+
+  if (depletedReceipts.length > 0) {
+    return {
+      primaryIssue: `${getReceiptLabel(depletedReceipts[0])} no tiene disponibilidad.`,
+      tone: 'danger',
+    };
+  }
+
+  if (incompleteReceipts.length > 0) {
+    return {
+      primaryIssue: `${getReceiptLabel(incompleteReceipts[0])} necesita completar su rango fiscal.`,
+      tone: 'warning',
+    };
+  }
+
+  return {
+    primaryIssue: null,
+    tone: 'neutral',
+  };
+};
+
 export const TaxReceiptSetting = () => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
+  const business = useSelector(selectBusinessData);
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
   const { taxReceipt, isLoading: loadingReceipts } = useFbGetTaxReceipt();
   const { setDialogConfirm, onClose } = useDialog();
@@ -55,7 +146,11 @@ export const TaxReceiptSetting = () => {
   const [hasLocalEdits, setHasLocalEdits] = useState(false);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [authModalVisible, setAuthModalVisible] = useState(false);
-  const [alertConfig, setAlertConfig] = useState<FiscalAlertsConfig | null>(null);
+  const [alertModalVisible, setAlertModalVisible] = useState(false);
+  const [electronicLinkModalOpen, setElectronicLinkModalOpen] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<FiscalAlertsConfig | null>(
+    null,
+  );
   const [loadingAlertConfig, setLoadingAlertConfig] = useState(true);
   const [savingAlertConfig, setSavingAlertConfig] = useState(false);
 
@@ -139,14 +234,6 @@ export const TaxReceiptSetting = () => {
     }
   };
 
-  const handleAddNewTaxReceipt = () => {
-    const newItem = generateNewTaxReceipt(itemsLocal);
-    setItemsLocal([...itemsLocal, newItem]);
-    message.success(
-      'Nuevo comprobante agregado. No olvides guardar los cambios.',
-    );
-  };
-
   const handleOpenAddPredefinedReceipt = () => setIsAddModalVisible(true);
   const handleCloseAddPredefinedReceipt = () => setIsAddModalVisible(false);
 
@@ -177,16 +264,10 @@ export const TaxReceiptSetting = () => {
     }
   };
 
-  const summaryMetrics = useMemo(() => {
-    const activeCount = itemsLocal.filter((item) => !item.data?.disabled).length;
-    const archivedCount = itemsLocal.filter((item) => item.data?.disabled).length;
-    return {
-      status: taxReceiptEnabled ? 'Activo' : 'Inactivo',
-      mode: 'NCF',
-      activeCount,
-      archivedCount,
-    };
-  }, [itemsLocal, taxReceiptEnabled]);
+  const summaryMetrics = useMemo(
+    () => buildFiscalAttentionSummary(itemsLocal, Boolean(taxReceiptEnabled)),
+    [itemsLocal, taxReceiptEnabled],
+  );
 
   const handleSaveAlertConfig = useCallback(
     async (nextConfig: FiscalReceiptsAlertConfigState) => {
@@ -202,8 +283,10 @@ export const TaxReceiptSetting = () => {
           expirationEnabled: nextConfig.monitoring.expirationEnabled,
         },
         globalThresholds: {
-          warning: nextConfig.globalThresholds.warning ?? DEFAULT_QUANTITY_WARNING,
-          critical: nextConfig.globalThresholds.critical ?? DEFAULT_QUANTITY_CRITICAL,
+          warning:
+            nextConfig.globalThresholds.warning ?? DEFAULT_QUANTITY_WARNING,
+          critical:
+            nextConfig.globalThresholds.critical ?? DEFAULT_QUANTITY_CRITICAL,
         },
         customThresholds: Object.entries(nextConfig.customThresholds).reduce<
           FiscalAlertsConfig['customThresholds']
@@ -307,112 +390,183 @@ export const TaxReceiptSetting = () => {
   return (
     <Spin spinning={isLoading} description={tip}>
       <Page>
-        <Head>
-          <Title
-            level={3}
-            style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: 600 }}
+        <HeroHeader>
+          <HeaderCopy>
+            <PageKicker>Fiscal</PageKicker>
+            <PageTitle>Facturación fiscal</PageTitle>
+            <PageDescription>
+              Administra emisión NCF, rangos autorizados y preparación e-CF.
+            </PageDescription>
+          </HeaderCopy>
+          <HeaderActions>
+            <VmDropdown>
+              <HeaderActionMenuButton variant="primary">
+                <ButtonContent>
+                  <SettingOutlined />
+                  Acciones fiscales
+                </ButtonContent>
+              </HeaderActionMenuButton>
+              <HeaderActionPopover placement="bottom end">
+                <VmDropdown.Menu
+                  aria-label="Acciones de facturación fiscal"
+                  onAction={(key) => {
+                    switch (String(key)) {
+                      case 'templates':
+                        handleOpenAddPredefinedReceipt();
+                        break;
+                      case 'alerts':
+                        setAlertModalVisible(true);
+                        break;
+                      case 'sequence':
+                        setAuthModalVisible(true);
+                        break;
+                      case 'toggleReceipts':
+                        handleTaxReceiptEnabled();
+                        break;
+                      case 'electronicConfig':
+                        setElectronicLinkModalOpen(true);
+                        break;
+                    }
+                  }}
+                >
+                  <VmDropdown.Item id="templates" textValue="Agregar plantilla">
+                    <ActionMenuItemLabel>
+                      <ActionMenuItemIcon>
+                        <FileTextOutlined />
+                      </ActionMenuItemIcon>
+                      <span>Agregar plantilla</span>
+                    </ActionMenuItemLabel>
+                  </VmDropdown.Item>
+                  <VmDropdown.Item id="alerts" textValue="Configurar alertas">
+                    <ActionMenuItemLabel>
+                      <ActionMenuItemIcon>
+                        <SettingOutlined />
+                      </ActionMenuItemIcon>
+                      <span>Configurar alertas</span>
+                    </ActionMenuItemLabel>
+                  </VmDropdown.Item>
+                  <VmDropdown.Item
+                    id="sequence"
+                    textValue="Registrar secuencia DGII"
+                  >
+                    <ActionMenuItemLabel>
+                      <ActionMenuItemIcon>
+                        <FileTextOutlined />
+                      </ActionMenuItemIcon>
+                      <span>Registrar secuencia DGII</span>
+                    </ActionMenuItemLabel>
+                  </VmDropdown.Item>
+                  <VmDropdown.Item
+                    id="electronicConfig"
+                    textValue="Configurar comprobante fiscal electrónico"
+                  >
+                    <ActionMenuItemLabel>
+                      <ActionMenuItemIcon>
+                        <ApiOutlined />
+                      </ActionMenuItemIcon>
+                      <span>Configurar comprobante fiscal electrónico</span>
+                    </ActionMenuItemLabel>
+                  </VmDropdown.Item>
+                  <VmDropdown.Item
+                    id="toggleReceipts"
+                    textValue={
+                      taxReceiptEnabled
+                        ? 'Deshabilitar comprobantes fiscales'
+                        : 'Habilitar comprobantes fiscales'
+                    }
+                    variant={taxReceiptEnabled ? 'danger' : 'default'}
+                  >
+                    <ActionMenuItemLabel>
+                      <ActionMenuItemIcon>
+                        {taxReceiptEnabled ? (
+                          <StopOutlined />
+                        ) : (
+                          <CheckOutlined />
+                        )}
+                      </ActionMenuItemIcon>
+                      <span>
+                        {taxReceiptEnabled
+                          ? 'Deshabilitar comprobantes fiscales'
+                          : 'Habilitar comprobantes fiscales'}
+                      </span>
+                    </ActionMenuItemLabel>
+                  </VmDropdown.Item>
+                </VmDropdown.Menu>
+              </HeaderActionPopover>
+            </VmDropdown>
+          </HeaderActions>
+        </HeroHeader>
+
+        <FiscalReceiptsAlertWidget
+          alertConfig={alertConfig}
+          loading={loadingAlertConfig}
+          saving={savingAlertConfig}
+          onSave={handleSaveAlertConfig}
+          open={alertModalVisible}
+          onOpenChange={setAlertModalVisible}
+          hideTrigger
+        />
+
+        {summaryMetrics.primaryIssue && summaryMetrics.tone !== 'neutral' ? (
+          <AttentionBanner
+            data-tone={summaryMetrics.tone}
+            status={summaryMetrics.tone}
           >
-            Facturación fiscal
-          </Title>
-          <Paragraph
-            style={{
-              fontSize: '16px',
-              margin: 0,
-              lineHeight: '1.5',
-              color: 'var(--ds-color-text-secondary)',
-            }}
-          >
-            Administra la emisión de NCF, sus series y los rangos autorizados por DGII.
-          </Paragraph>
-        </Head>
+            <AttentionIcon>
+              <WarningOutlined />
+            </AttentionIcon>
+            <AttentionCopy>
+              <AttentionTitle>{summaryMetrics.primaryIssue}</AttentionTitle>
+              <AttentionText>
+                Revisa la disponibilidad o registra una secuencia DGII antes de
+                continuar con la emisión fiscal.
+              </AttentionText>
+            </AttentionCopy>
+            <VmButton
+              variant="outline"
+              onPress={() => setAuthModalVisible(true)}
+            >
+              Registrar secuencia
+            </VmButton>
+          </AttentionBanner>
+        ) : null}
 
         <SectionCard>
-          <SectionTitle>Estado fiscal</SectionTitle>
-          <SummaryGrid>
-            <SummaryItem>
-              <SummaryLabel>Estado general</SummaryLabel>
-              <SummaryValue>{summaryMetrics.status}</SummaryValue>
-            </SummaryItem>
-            <SummaryItem>
-              <SummaryLabel>Modo</SummaryLabel>
-              <SummaryValue>{summaryMetrics.mode}</SummaryValue>
-            </SummaryItem>
-            <SummaryItem>
-              <SummaryLabel>Series activas</SummaryLabel>
-              <SummaryValue>{summaryMetrics.activeCount}</SummaryValue>
-            </SummaryItem>
-            <SummaryItem>
-              <SummaryLabel>Series archivadas</SummaryLabel>
-              <SummaryValue>{summaryMetrics.archivedCount}</SummaryValue>
-            </SummaryItem>
-          </SummaryGrid>
-        </SectionCard>
-
-        <Section>
-          <SectionHeader>
-            <SectionTitle>Activación y alcance</SectionTitle>
-            <SectionDescription>
-              Controla si el negocio puede emitir comprobantes fiscales.
-            </SectionDescription>
-          </SectionHeader>
-          <ReceiptSettingsSection
-            enabled={taxReceiptEnabled}
-            onToggle={handleTaxReceiptEnabled}
-          />
-        </Section>
-
-        <Section>
-          <SectionHeader>
-            <SectionTitle>Series y tipos de comprobante</SectionTitle>
-            <SectionDescription>
-              Gestiona las series activas y el catálogo fiscal operativo.
-            </SectionDescription>
-          </SectionHeader>
           <ReceiptTableSection
             enabled={taxReceiptEnabled}
             itemsLocal={itemsLocal}
             setItemsLocal={setItemsLocal}
             isUnchanged={isUnchanged}
-            onAddBlank={handleAddNewTaxReceipt}
+            actions={
+              <VmButton
+                variant="primary"
+                onPress={handleOpenAddPredefinedReceipt}
+              >
+                <ButtonContent>
+                  <FileTextOutlined />
+                  Agregar desde plantilla
+                </ButtonContent>
+              </VmButton>
+            }
           />
-        </Section>
+        </SectionCard>
 
         <Section>
           <SectionHeader>
-            <SectionTitle>Alertas y secuencias DGII</SectionTitle>
+            <SectionTitle>Comprobante fiscal electrónico</SectionTitle>
             <SectionDescription>
-              Configura alertas por agotamiento y vencimiento, y registra rangos autorizados por serie.
+              Prepara el enlace e-CF con el proveedor sin mezclarlo con el
+              catálogo de series.
             </SectionDescription>
           </SectionHeader>
-          <TwoColumn>
-            <FiscalReceiptsAlertWidget
-              taxReceipts={itemsLocal}
-              alertConfig={alertConfig}
-              loading={loadingAlertConfig}
-              saving={savingAlertConfig}
-              onSave={handleSaveAlertConfig}
-            />
-            <ActionButton
-              type="default"
-              onClick={() => setAuthModalVisible(true)}
-              size="large"
-            >
-              Registrar secuencia DGII
-            </ActionButton>
-          </TwoColumn>
+          <ElectronicTaxReceiptBusinessLinkSection
+            businessId={user?.businessID || user?.businessId || null}
+            business={business as any}
+            taxReceiptEnabled={Boolean(taxReceiptEnabled)}
+            modalOpen={electronicLinkModalOpen}
+            onModalOpenChange={setElectronicLinkModalOpen}
+          />
         </Section>
-
-        <SectionCard>
-          <SectionTitle>Enlaces relacionados</SectionTitle>
-          <SectionDescription>
-            Accesos secundarios para plantillas y recursos fiscales.
-          </SectionDescription>
-          <LinkRow>
-            <Button type="link" onClick={handleOpenAddPredefinedReceipt}>
-              Plantillas de comprobantes
-            </Button>
-          </LinkRow>
-        </SectionCard>
 
         <AddReceiptDrawer
           visible={isAddModalVisible}
@@ -441,12 +595,85 @@ export const TaxReceiptSetting = () => {
 
 const Page = styled.div`
   display: grid;
-  gap: var(--ds-space-6);
+  gap: var(--ds-space-5);
   padding: var(--ds-space-5);
+  padding-bottom: calc(var(--ds-space-8) + env(safe-area-inset-bottom, 0px));
 `;
-const Head = styled.div`
+
+const HeroHeader = styled.header`
   display: grid;
-  width: 100%;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--ds-space-4);
+
+  @media (max-width: 760px) {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+`;
+
+const HeaderCopy = styled.div`
+  display: grid;
+  gap: var(--ds-space-1);
+`;
+
+const PageKicker = styled.span`
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-color-text-tertiary);
+`;
+
+const PageTitle = styled.h2`
+  margin: 0;
+  font-size: var(--ds-font-size-xl);
+  font-weight: var(--ds-font-weight-semibold);
+  line-height: 1.2;
+  color: var(--ds-color-text-primary);
+`;
+
+const PageDescription = styled.p`
+  margin: 0;
+  max-width: 680px;
+  font-size: var(--ds-font-size-sm);
+  color: var(--ds-color-text-secondary);
+`;
+
+const HeaderActions = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--ds-space-2);
+
+  @media (max-width: 760px) {
+    justify-content: stretch;
+
+    > button {
+      flex: 1 1 180px;
+    }
+  }
+`;
+
+const HeaderActionMenuButton = styled(VmButton)`
+  white-space: nowrap;
+`;
+
+const HeaderActionPopover = styled(VmDropdown.Popover)`
+  min-width: 256px;
+`;
+
+const ActionMenuItemLabel = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+`;
+
+const ActionMenuItemIcon = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
 `;
 
 const Section = styled.section`
@@ -481,47 +708,55 @@ const SectionDescription = styled.p`
   color: var(--ds-color-text-secondary);
 `;
 
-const SummaryGrid = styled.div`
+const AttentionBanner = styled(VmAlert)`
   display: grid;
-  gap: var(--ds-space-3);
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-`;
-
-const SummaryItem = styled.div`
-  display: grid;
-  gap: var(--ds-space-1);
-`;
-
-const SummaryLabel = styled.span`
-  font-size: var(--ds-font-size-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--ds-color-text-tertiary);
-`;
-
-const SummaryValue = styled.span`
-  font-size: var(--ds-font-size-sm);
-  font-weight: var(--ds-font-weight-semibold);
-  color: var(--ds-color-text-primary);
-`;
-
-const TwoColumn = styled.div`
-  display: grid;
-  gap: var(--ds-space-3);
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  align-items: start;
-`;
-
-const LinkRow = styled.div`
-  display: flex;
-  gap: var(--ds-space-3);
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  border-color: var(--ds-color-border-default);
+  border-radius: var(--ds-radius-xl);
+  background: var(--ds-color-bg-surface);
+  box-shadow: var(--ds-shadow-sm);
+
+  @media (max-width: 760px) {
+    grid-template-columns: auto minmax(0, 1fr);
+
+    > button {
+      grid-column: 1 / -1;
+      width: 100%;
+    }
+  }
 `;
 
-const ActionButton = styled(Button)`
-  width: 100%;
-  height: 48px;
+const AttentionIcon = styled(VmAlert.Indicator)`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-color-bg-subtle);
+`;
+
+const AttentionCopy = styled(VmAlert.Content)`
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+`;
+
+const AttentionTitle = styled(VmAlert.Title)`
+  margin: 0;
   font-size: var(--ds-font-size-sm);
   font-weight: var(--ds-font-weight-semibold);
-  border-radius: var(--ds-radius-lg);
+`;
+
+const AttentionText = styled(VmAlert.Description)`
+  font-size: var(--ds-font-size-sm);
+`;
+
+const ButtonContent = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
 `;

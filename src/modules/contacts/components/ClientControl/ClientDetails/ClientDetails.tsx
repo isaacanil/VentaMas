@@ -1,34 +1,59 @@
+import { faMapMarkerAlt, faPhone } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AnimatePresence, LazyMotion, domAnimation, m } from 'framer-motion';
-import { useRef, useState, type ChangeEvent } from 'react';
+import { InputGroup } from '@heroui/react';
+import { useRef, useState, type ReactNode } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { VmButton } from '@/components/heroui';
 import { setAccountPayment } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
 import { selectUser } from '@/features/auth/userSlice';
-import { selectClient, setClient } from '@/features/clientCart/clientCartSlice';
+import { selectClient } from '@/features/clientCart/clientCartSlice';
 import { useClientPendingBalance } from '@/firebase/accountsReceivable/useClientPendingBalance';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
 import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
 import { formatPrice } from '@/utils/format';
-import { updateObject } from '@/utils/object/updateObject';
-import { InputV4 } from '@/components/ui/Inputs/GeneralInput/InputV4';
 import type { UserIdentity } from '@/types/users';
-
-type ClientDetailsProps = {
-  mode: boolean;
-};
 
 type ClientRootState = Parameters<typeof selectClient>[0];
 type UserRootState = Parameters<typeof selectUser>[0];
 
-export const ClientDetails = ({ mode }: ClientDetailsProps) => {
+const EMPTY_VALUE = 'No registrado';
+
+const toDisplayValue = (value: unknown): string => {
+  if (typeof value === 'string') return value.trim() || EMPTY_VALUE;
+  if (typeof value === 'number') return String(value);
+  return EMPTY_VALUE;
+};
+
+const hasDisplayValue = (value: unknown): boolean => {
+  if (typeof value === 'string') return value.trim().length > 0;
+  return typeof value === 'number';
+};
+
+const formatPhoneDisplayValue = (value: unknown): string => {
+  const displayValue = toDisplayValue(value);
+  if (displayValue === EMPTY_VALUE) return displayValue;
+
+  const digits = displayValue.replace(/\D/g, '');
+  if (digits.length === 10) {
+    return `+1 (${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+
+  if (digits.length === 11 && digits.startsWith('1')) {
+    return `+1 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+  }
+
+  return displayValue;
+};
+
+export const ClientDetails = () => {
   const dispatch = useDispatch();
   const client = useSelector<ClientRootState, ReturnType<typeof selectClient>>(
     selectClient,
   );
-  const isMenuVisible =
-    (client?.name && client?.name !== 'Generic Client') || mode;
-  // const [pendingBalance, setPendingBalance] = useState(0)
+  const isMenuVisible = client?.name && client?.name !== 'Generic Client';
   const user = useSelector<UserRootState, UserIdentity | null>(selectUser);
   const [isExpanded, setIsExpanded] = useState(false);
   const expandablePanelRef = useRef<HTMLDivElement | null>(null);
@@ -66,103 +91,68 @@ export const ClientDetails = ({ mode }: ClientDetailsProps) => {
     );
   };
 
-  const updateClient = (e: ChangeEvent<HTMLInputElement>) => {
-    dispatch(setClient(updateObject(client, e)));
-  };
-
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
   };
 
-  // Separamos los campos comunes de teléfono y dirección
-  const PhoneAndAddressFields = (
-    <>
-      <Row>
-        <Group>
-          <InputV4
-            size="small"
-            type="text"
-            name="tel"
-            label="Teléfono"
-            labelVariant="primary"
-            value={client.tel}
-            onChange={updateClient}
-            autoComplete="off"
-          />
-          <InputV4
-            type="text"
-            name="tel2"
-            label="Teléfono 2"
-            size="small"
-            labelVariant="primary"
-            value={client?.tel2}
-            onChange={updateClient}
-            autoComplete="off"
-          />
-        </Group>
-      </Row>
-      <AddressWrapper>
-        <InputV4
-          type="text"
-          name="address"
-          label="Dirección"
-          labelVariant="primary"
-          size="small"
-          value={client.address}
-          onChange={updateClient}
-          autoComplete="off"
+  const phoneAndAddressDetails = (
+    <DetailsGrid>
+      <ReadonlyField
+        label="Teléfono"
+        value={formatPhoneDisplayValue(client.tel)}
+        icon={<FontAwesomeIcon icon={faPhone} />}
+        hideLabel
+      />
+      {hasDisplayValue(client.tel2) ? (
+        <ReadonlyField
+          label="Teléfono 2"
+          value={formatPhoneDisplayValue(client.tel2)}
+          icon={<FontAwesomeIcon icon={faPhone} />}
+          hideLabel
         />
-      </AddressWrapper>
-    </>
+      ) : null}
+      <ReadonlyField
+        label="Dirección"
+        value={client.address}
+        icon={<FontAwesomeIcon icon={faMapMarkerAlt} />}
+        hideLabel
+        wide
+      />
+    </DetailsGrid>
   );
 
   return (
     isMenuVisible && (
       <Container>
-        <MainInfoRow>
-          <InputsGroup>
-            <ClientIdColumn>
-              <ClientId>{`#${client?.numberId}`}</ClientId>
-              {insuranceEnabled && (
-                <ExpandButton onClick={toggleExpand} isExpanded={isExpanded}>
-                  <ExpandIcon isExpanded={isExpanded}>▼</ExpandIcon>
-                </ExpandButton>
-              )}
-            </ClientIdColumn>
-            <InputV4
-              type="text"
-              name="personalID"
-              label="Cédula/RNC"
-              size="small"
-              labelVariant="primary"
-              value={client.personalID}
-              onChange={updateClient}
-              autoComplete="off"
-            />
-            <BalanceGroup>
-              <InputV4
-                type="text"
-                label="Bal general"
-                size="small"
-                labelVariant="primary"
-                value={`${formatPrice(pendingBalanceValue)}`}
-                autoComplete="off"
-                readOnly
-                buttons={[
-                  {
-                    name: 'Pagar',
-                    onClick: handlePayment,
-                    disabled: pendingBalanceValue === 0,
-                    color: 'primary',
-                  },
-                ]}
-              />
-            </BalanceGroup>
-          </InputsGroup>
-          <>{!insuranceEnabled && PhoneAndAddressFields}</>
-        </MainInfoRow>
+        <SummaryRow>
+          <ClientIdColumn>
+            <ClientId>{`#${toDisplayValue(client?.numberId)}`}</ClientId>
+            {insuranceEnabled && (
+              <ExpandButton onClick={toggleExpand} isExpanded={isExpanded}>
+                <ExpandIcon isExpanded={isExpanded}>▼</ExpandIcon>
+              </ExpandButton>
+            )}
+          </ClientIdColumn>
+          <ReadonlyField label="Cédula/RNC" value={client.personalID} />
+          <BalanceInputGroup fullWidth aria-label="Balance general del cliente">
+            <BalanceContent>
+              <FieldLabel>Bal general</FieldLabel>
+              <FieldValue>{formatPrice(pendingBalanceValue)}</FieldValue>
+            </BalanceContent>
+            <InputGroup.Suffix>
+              <BalancePayButton
+                size="sm"
+                variant="primary"
+                onPress={handlePayment}
+                isDisabled={pendingBalanceValue === 0}
+              >
+                Pagar
+              </BalancePayButton>
+            </InputGroup.Suffix>
+          </BalanceInputGroup>
+        </SummaryRow>
+        {!insuranceEnabled ? phoneAndAddressDetails : null}
 
-        {/* Si insuranceEnabled es true, se usan modal/expandible para los campos */}
         {insuranceEnabled ? (
           <LazyMotion features={domAnimation}>
             <AnimatePresence>
@@ -178,7 +168,7 @@ export const ClientDetails = ({ mode }: ClientDetailsProps) => {
                     <PanelTitle>Detalles del cliente</PanelTitle>
                     <CloseButton onClick={toggleExpand}>×</CloseButton>
                   </PanelHeader>
-                  {PhoneAndAddressFields}
+                  {phoneAndAddressDetails}
                 </ExpandablePanel>
               )}
             </AnimatePresence>
@@ -189,17 +179,47 @@ export const ClientDetails = ({ mode }: ClientDetailsProps) => {
   );
 };
 
+const ReadonlyField = ({
+  label,
+  value,
+  bordered = false,
+  wide = false,
+  icon,
+  hideLabel = false,
+}: {
+  label: string;
+  value: unknown;
+  bordered?: boolean;
+  wide?: boolean;
+  icon?: ReactNode;
+  hideLabel?: boolean;
+}) => (
+  <Field
+    aria-label={hideLabel ? label : undefined}
+    data-bordered={bordered ? 'true' : undefined}
+    data-has-icon={icon ? 'true' : undefined}
+    data-wide={wide ? 'true' : undefined}
+  >
+    {icon ? <FieldIcon aria-hidden="true">{icon}</FieldIcon> : null}
+    {!hideLabel ? <FieldLabel data-role="field-label">{label}</FieldLabel> : null}
+    <FieldValue data-role="field-value">{toDisplayValue(value)}</FieldValue>
+  </Field>
+);
+
 const Container = styled.div`
   position: relative;
-  gap: 0.6em;
-  padding: 0 0.4em;
-  border-bottom-right-radius: 6px;
-  border-bottom-left-radius: 6px;
+  display: grid;
+  gap: 2px;
+  padding: 0 var(--ds-space-2);
+  border-bottom-right-radius: var(--ds-radius-md);
+  border-bottom-left-radius: var(--ds-radius-md);
 `;
 
-const MainInfoRow = styled.div`
+const SummaryRow = styled.div`
   display: grid;
-  gap: 0.6em;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--ds-space-1);
+  align-items: center;
   width: 100%;
 `;
 
@@ -207,26 +227,112 @@ const ClientIdColumn = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-width: 28px;
 `;
 
 const ClientId = styled.div`
-  font-weight: 500;
+  font-weight: var(--ds-font-weight-semibold);
   line-height: 18px;
-  color: var(--gray-6);
+  color: var(--ds-color-text-secondary);
   white-space: nowrap;
 `;
 
-const InputsGroup = styled.div`
-  display: flex;
-  flex: 1;
-  gap: 0.4em;
-  align-items: center;
+const BalanceInputGroup = styled(InputGroup)`
+  --client-balance-radius: var(--radius, var(--ds-radius-xl));
+
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  min-height: 34px;
+  overflow: hidden;
+  border: 1px solid var(--ds-color-border-default);
+  border-radius: var(--client-balance-radius);
+  background: var(--ds-color-bg-surface);
+
+  [data-slot='input-group-suffix'],
+  .input-group__suffix {
+    height: 100%;
+    padding: 0;
+  }
 `;
 
-const BalanceGroup = styled.div`
-  display: flex;
-  gap: 0.2em;
+const DetailsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 var(--ds-space-2);
+  min-width: 0;
+`;
+
+const Field = styled.div`
+  display: grid;
+  min-width: 0;
+  min-height: 30px;
+  padding: 1px var(--ds-space-2);
+  border: 1px solid transparent;
+  border-radius: var(--ds-radius-sm);
+  background: transparent;
+
+  &[data-wide='true'] {
+    grid-column: 1 / -1;
+  }
+
+  &[data-bordered='true'] {
+    border-color: var(--ds-color-border-default);
+    background: var(--ds-color-bg-surface);
+  }
+
+  &[data-has-icon='true'] {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--ds-space-1);
+    align-items: center;
+    min-height: 20px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+`;
+
+const BalanceContent = styled.div`
+  display: grid;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 1px var(--ds-space-2);
+`;
+
+const FieldLabel = styled.span`
+  min-width: 0;
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-semibold);
+  line-height: 1.1;
+  color: var(--ds-color-text-tertiary);
+  white-space: nowrap;
+`;
+
+const FieldValue = styled.span`
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--ds-font-size-sm);
+  line-height: 1.15;
+  color: var(--ds-color-text-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const FieldIcon = styled.span`
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--ds-color-text-tertiary);
+`;
+
+const BalancePayButton = styled(VmButton)`
+  height: 100%;
+  min-height: 100%;
+  border-radius: 0 var(--client-balance-radius) var(--client-balance-radius) 0;
+  white-space: nowrap;
 `;
 
 const ExpandButton = styled.button<{ isExpanded?: boolean }>`
@@ -236,16 +342,17 @@ const ExpandButton = styled.button<{ isExpanded?: boolean }>`
   width: 18px;
   height: 18px;
   padding: 0;
+  color: var(--ds-color-text-secondary);
   cursor: pointer;
   outline: none;
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--ds-color-bg-surface);
+  border: 1px solid var(--ds-color-border-default);
   border-radius: 50%;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
   transition: all 0.2s;
 
   &:hover {
-    background: #f5f5f7;
+    color: var(--ds-color-text-primary);
+    background: var(--ds-color-bg-subtle);
   }
 
   &:active {
@@ -259,7 +366,6 @@ const ExpandIcon = styled.span<{ isExpanded: boolean }>`
   justify-content: center;
   margin-top: ${(props) => (props.isExpanded ? '-1px' : '1px')};
   font-size: 8px;
-  color: #666;
   transform: ${(props) => (props.isExpanded ? 'rotate(180deg)' : 'rotate(0)')};
   transition: transform 0.3s;
 `;
@@ -267,32 +373,31 @@ const ExpandIcon = styled.span<{ isExpanded: boolean }>`
 const ExpandablePanel = styled(m.div)`
   position: absolute;
   top: 100%;
-  right: 0;
-  left: 0;
+  right: var(--ds-space-2);
+  left: var(--ds-space-2);
   z-index: 5;
   display: grid;
-  gap: 0.6em;
-  padding: 0.6em;
-  background: white;
-  border: 1px solid #eee;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3);
+  background: var(--ds-color-bg-surface);
+  border: 1px solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-sm);
 `;
 
 const PanelHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 0.5em;
-  margin-bottom: 0.3em;
-  border-bottom: 1px solid #eee;
+  padding-bottom: var(--ds-space-2);
+  border-bottom: 1px solid var(--ds-color-border-default);
 `;
 
 const PanelTitle = styled.h3`
   margin: 0;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--gray-6);
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-semibold);
+  color: var(--ds-color-text-primary);
 `;
 
 const CloseButton = styled.button`
@@ -301,8 +406,8 @@ const CloseButton = styled.button`
   justify-content: center;
   width: 24px;
   height: 24px;
-  font-size: 1.2rem;
-  color: #999;
+  font-size: var(--ds-font-size-lg);
+  color: var(--ds-color-text-secondary);
   cursor: pointer;
   background: transparent;
   border: none;
@@ -310,29 +415,11 @@ const CloseButton = styled.button`
   transition: all 0.2s;
 
   &:hover {
-    color: #666;
-    background: #f5f5f7;
+    color: var(--ds-color-text-primary);
+    background: var(--ds-color-bg-subtle);
   }
 
   &:active {
     transform: scale(0.95);
   }
-`;
-
-const AddressWrapper = styled.div`
-  display: grid;
-  gap: 0.6em;
-`;
-
-const Row = styled.div`
-  display: flex;
-  gap: 0.6em;
-  width: 100%;
-`;
-
-const Group = styled.div`
-  display: flex;
-  gap: 0.4em;
-  align-items: center;
-  width: 100%;
 `;
