@@ -316,6 +316,16 @@ const GENERAL_CONFIG_SEARCH_INDEX: GeneralConfigSearchEntry[] = [
     extraTokens: ['cotizacion', 'propuesta', 'venta'],
   },
   {
+    key: 'billing-service-commissions',
+    label: 'Ventas · Comisiones de Servicios',
+    description: 'Activa colaborador por línea y tasa base de comisión.',
+    tab: 'billing',
+    route: TAB_ROUTES.billing,
+    sectionId: 'billing-service-commissions',
+    category: 'Sección',
+    extraTokens: ['comisiones', 'colaborador', 'vendedor', 'servicios'],
+  },
+  {
     key: 'taxReceipt',
     label: 'Comprobante Fiscal',
     description: 'Administra la emisión y secuencia de comprobantes fiscales.',

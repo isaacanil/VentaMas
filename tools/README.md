@@ -27,6 +27,34 @@ Todos los scripts deben ejecutarse con Node.js desde la raíz del proyecto o des
 
 ### Utilidades de Git y Flujo de Trabajo
 
+- **`project.js`** - Menu general de operaciones del proyecto. Desde ahi se puede entrar a sincronizacion o deploy sin recordar scripts especificos.
+  - Recomendado usar via npm:
+    ```powershell
+    npm run project
+    ```
+  - Ir directo a sincronizacion:
+    ```powershell
+    npm run project -- sync
+    ```
+
+- **`sync.js`** - App de consola para sincronizaciones entre proyectos Firebase y datos de negocio.
+  - Indices Firestore desde produccion hacia staging:
+    ```powershell
+    npm run sync -- indexes:prod-to-staging
+    ```
+  - Previsualizar sin escribir ni desplegar:
+    ```powershell
+    npm run sync -- indexes:prod-to-staging --dry-run
+    ```
+  - Indices con origen/destino custom:
+    ```powershell
+    npm run project -- sync indexes --from=ventamaxpos --to=ventamax-staging --deploy
+    ```
+  - Datos de negocio hacia staging usando el script existente:
+    ```powershell
+    npm run project -- sync business:prod-to-staging -- --dry-run
+    ```
+
 - **`deploy.js`** - App de consola para despliegues (`prod`, `staging`, `beta`, `vercel`) con menú interactivo y control de build.
   - Recomendado usar vía npm: `npm run deploy`
 

@@ -21,6 +21,7 @@ import {
 } from '../../../versions/v2/accounting/utils/accountingRollout.util.js';
 import { assertAccountingPeriodOpenInTransaction } from '../../../versions/v2/accounting/utils/periodClosure.util.js';
 import { DGII_608_REASON_CATALOG_VERSION } from '../../compliance/services/dgii608ReasonCatalog.service.js';
+import { voidServiceCommissionsTx } from '../../commissions/services/serviceCommissions.service.js';
 
 const LOCKED_INVOICE_STATUSES = new Set([
   'issued',
@@ -283,6 +284,10 @@ export const voidInvoiceFinancialDocument = onCall(
       .collection(`businesses/${businessId}/cashMovements`)
       .where('sourceId', '==', invoiceId)
       .limit(1);
+    const commissionsQuery = db
+      .collection(`businesses/${businessId}/serviceCommissions`)
+      .where('invoiceId', '==', invoiceId)
+      .limit(100);
 
     const accountingSettings =
       await getPilotAccountingSettingsForBusiness(businessId);
@@ -303,6 +308,7 @@ export const voidInvoiceFinancialDocument = onCall(
         voidEntrySnap,
         arSnap,
         cashMovementSnap,
+        commissionsSnap,
       ] = await Promise.all([
         transaction.get(invoiceRef),
         transaction.get(invoiceV2Ref),
@@ -312,6 +318,7 @@ export const voidInvoiceFinancialDocument = onCall(
         transaction.get(voidEntryRef),
         transaction.get(arQuery),
         transaction.get(cashMovementQuery),
+        transaction.get(commissionsQuery),
       ]);
 
       if (!invoiceSnap.exists) {
@@ -513,6 +520,13 @@ export const voidInvoiceFinancialDocument = onCall(
         );
       }
 
+      const voidedCommissionsCount = voidServiceCommissionsTx(transaction, {
+        authUid,
+        commissionSnap: commissionsSnap,
+        reasonLabel,
+        voidedAt: now,
+      });
+
       let reversalEntryId = null;
       if (committedEntrySnap.exists && !voidEntrySnap.exists) {
         const originalEntry = asRecord(committedEntrySnap.data());
@@ -633,6 +647,7 @@ export const voidInvoiceFinancialDocument = onCall(
         data: {
           reasonCode: paddedReasonCode,
           reasonLabel,
+          serviceCommissionsVoided: voidedCommissionsCount,
           accountingReversalCreated: Boolean(reversalEntryId),
         },
       });

@@ -3,6 +3,44 @@ import { resolveGisysDocumentType } from '../utils/gisysDocumentType.util.js';
 
 const DEFAULT_CURRENCY = 'DOP';
 const DEFAULT_BUYER_NAME = 'Consumidor Final';
+const GISYS_INVOICE_INTERNAL_ID_MAX_LENGTH = 20;
+const GISYS_INVOICE_INTERNAL_ID_HASH_PREFIX = 'VM';
+const DOMINICAN_PROVINCES = new Map(
+  [
+    'Azua',
+    'Bahoruco',
+    'Barahona',
+    'Dajabon',
+    'Distrito Nacional',
+    'Duarte',
+    'El Seibo',
+    'Elias Pina',
+    'Espaillat',
+    'Hato Mayor',
+    'Hermanas Mirabal',
+    'Independencia',
+    'La Altagracia',
+    'La Romana',
+    'La Vega',
+    'Maria Trinidad Sanchez',
+    'Monsenor Nouel',
+    'Monte Cristi',
+    'Monte Plata',
+    'Pedernales',
+    'Peravia',
+    'Puerto Plata',
+    'Samana',
+    'San Cristobal',
+    'San Jose de Ocoa',
+    'San Juan',
+    'San Pedro de Macoris',
+    'Sanchez Ramirez',
+    'Santiago',
+    'Santiago Rodriguez',
+    'Santo Domingo',
+    'Valverde',
+  ].map((province) => [province.toUpperCase(), province]),
+);
 
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -40,6 +78,59 @@ const pickNumber = (...values) => {
     if (normalized != null) return normalized;
   }
   return null;
+};
+
+const toAsciiUpperKey = (value) =>
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/Ñ/g, 'N')
+    .replace(/ñ/g, 'n')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toUpperCase();
+
+const normalizeProvince = (...values) => {
+  const raw = pickString(...values);
+  if (!raw) return null;
+  return DOMINICAN_PROVINCES.get(toAsciiUpperKey(raw)) || null;
+};
+
+const normalizePhone = (...values) => {
+  for (const value of values) {
+    const raw = toCleanString(value);
+    if (!raw) continue;
+
+    const candidates = raw.match(/\+?\d[\d\s().-]{7,}\d/g) || [raw];
+    for (const candidate of candidates) {
+      const normalized = normalizePhoneCandidate(candidate);
+      if (normalized) return normalized;
+    }
+  }
+
+  return null;
+};
+
+const normalizePhoneCandidate = (value) => {
+  const digits = String(value || '').replace(/\D/g, '');
+  const localDigits =
+    digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits;
+
+  if (localDigits.length !== 10) return null;
+  return `${localDigits.slice(0, 3)}-${localDigits.slice(3, 6)}-${localDigits.slice(6)}`;
+};
+
+const resolveGisysInvoiceInternalId = ({ businessId, invoiceId }) => {
+  const resolvedInvoiceId = toCleanString(invoiceId);
+  const digest = stableHash({ businessId, invoiceId: resolvedInvoiceId })
+    .slice(
+      0,
+      GISYS_INVOICE_INTERNAL_ID_MAX_LENGTH -
+        GISYS_INVOICE_INTERNAL_ID_HASH_PREFIX.length,
+    )
+    .toUpperCase();
+
+  return `${GISYS_INVOICE_INTERNAL_ID_HASH_PREFIX}${digest}`;
 };
 
 const normalizeDate = (value) => {
@@ -274,8 +365,8 @@ const buildBuyer = ({ client, documentType }) => {
     email: pickString(buyer.email),
     address: pickString(buyer.address, buyer.direccion),
     municipality: pickString(buyer.municipality, buyer.municipio),
-    province: pickString(buyer.province, buyer.provincia),
-    phone: pickString(buyer.phone, buyer.tel, buyer.mobile),
+    province: normalizeProvince(buyer.province, buyer.provincia),
+    phone: normalizePhone(buyer.phone, buyer.tel, buyer.mobile),
     internalCode: pickString(buyer.id),
   });
 };
@@ -283,6 +374,7 @@ const buildBuyer = ({ client, documentType }) => {
 const buildIssuer = ({ business }) => {
   const businessNode = asRecord(business?.business);
   const source = Object.keys(businessNode).length ? businessNode : asRecord(business);
+  const phone = normalizePhone(source.phone, source.tel);
 
   return pruneUndefined({
     legalName: pickString(source.legalName, source.name, source.businessName),
@@ -293,8 +385,8 @@ const buildIssuer = ({ business }) => {
     ),
     address: pickString(source.address, source.direccion),
     municipality: pickString(source.municipality, source.municipio),
-    province: pickString(source.province, source.provincia),
-    phones: [pickString(source.phone, source.tel)].filter(Boolean),
+    province: normalizeProvince(source.province, source.provincia),
+    phones: phone ? [phone] : undefined,
     email: pickString(source.email),
     economicActivity: pickString(source.economicActivity),
   });
@@ -327,13 +419,17 @@ export const buildGisysIssuePayload = ({
     normalizeDate(cart?.date) ||
     normalizeDate(invoice?.createdAt) ||
     new Date().toISOString();
+  const invoiceInternalId = resolveGisysInvoiceInternalId({
+    businessId,
+    invoiceId,
+  });
 
   return {
     payload: pruneUndefined({
       integrationInstanceCode: providerConfig.integrationInstanceCode,
       taxpayerCode: providerConfig.taxpayerCode,
       documentType,
-      invoiceInternalId: invoiceId,
+      invoiceInternalId,
       issuedAt,
       currency: resolveCurrency(cart),
       incomeType: taskPayload?.incomeType || '01',

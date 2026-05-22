@@ -2,6 +2,7 @@ const SALES_TERM = {
   SALES: '/sales',
   BILLS: '/bills',
   BILLS_ANALYTICS: '/bills/analytics',
+  SERVICE_COMMISSIONS: '/bills/service-commissions',
   PREORDERS: '/preorders',
 } as const;
 

@@ -19,6 +19,7 @@ import { VmDropdown } from '@/components/heroui';
 import { icons } from '@/constants/icons/icons';
 import {
   changeProductPrice,
+  SelectSettingCart,
   selectCartDocumentCurrency,
 } from '@/features/cart/cartSlice';
 import { openProductStockSimple } from '@/features/productStock/productStockSimpleSlice';
@@ -38,6 +39,11 @@ import { InsuranceCoverage } from './components/InsuranceCoverage/InsuranceCover
 import { PriceEditor } from './components/PriceEditor/PriceEditor';
 import { WeightInput } from './components/WeightInput/WeightInput';
 import { extraerPreciosConImpuesto } from './utils/priceUtils';
+import { ServiceCommissionControl } from './components/ServiceCommissionControl/ServiceCommissionControl';
+import {
+  isServiceCommissionEligible,
+  normalizeServiceCommissionSettings,
+} from '@/utils/commissions/serviceCommissions';
 
 import type {
   PricingTax,
@@ -49,7 +55,7 @@ import type {
 } from '@/types/products';
 import type { InvoiceProduct } from '@/types/invoice';
 import type { PriceOption } from './utils/priceUtils';
-import type { Product as CartProduct } from '@/features/cart/types';
+import type { CartSettings, Product as CartProduct } from '@/features/cart/types';
 
 interface DiscountInfo {
   value?: number;
@@ -182,9 +188,13 @@ export const ProductCardForCart = ({
   const dispatch = useDispatch();
   const insuranceEnabled = Boolean(useInsuranceEnabled());
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled) as boolean;
+  const cartSettings = useSelector(SelectSettingCart) as CartSettings;
   const documentCurrency = useSelector(
     selectCartDocumentCurrency,
   ) as SupportedDocumentCurrency;
+  const serviceCommissionSettings = normalizeServiceCommissionSettings(
+    cartSettings?.billing?.serviceCommissions,
+  );
   const [selectedUnit, setSelectedUnit] = useState<SaleUnitRecord | null>(null);
   const [precios, setPrecios] = useState<PriceOption[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
@@ -360,6 +370,9 @@ export const ProductCardForCart = ({
   const batchSummaryText = batchSummaryParts.join(' · ');
   const showBatchSummary = Boolean(
     hasBatchInfo && batchSummaryParts.length > 0,
+  );
+  const showServiceCommissionControl = Boolean(
+    serviceCommissionSettings.enabled && isServiceCommissionEligible(item),
   );
 
   const handleBatchInfoKeyDown = (event: KeyboardEvent<HTMLSpanElement>) => {
@@ -624,6 +637,13 @@ export const ProductCardForCart = ({
       </Row>
 
       {insuranceEnabled && <InsuranceCoverage item={insuranceItem} />}
+
+      {showServiceCommissionControl && (
+        <ServiceCommissionControl
+          item={item}
+          settings={serviceCommissionSettings}
+        />
+      )}
 
       <PriceAndSaleUnitsModal
         isVisible={isModalVisible}

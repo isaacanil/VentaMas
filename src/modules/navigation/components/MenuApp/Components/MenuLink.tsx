@@ -14,6 +14,7 @@ interface MenuLinkProps {
   item: MenuItem;
   onActionDone?: () => void;
   parentTitle?: string;
+  submenuPortalElement?: HTMLElement | null;
 }
 
 export const MenuLink = ({
@@ -21,6 +22,7 @@ export const MenuLink = ({
   onActionDone,
   isSidebarOpen = false,
   parentTitle,
+  submenuPortalElement,
 }: MenuLinkProps) => {
   const dispatch = useDispatch();
   const location = useLocation();
@@ -135,6 +137,7 @@ export const MenuLink = ({
           isOpen={isOpenSubMenu}
           item={item}
           parentTitle={parentTitle}
+          submenuPortalElement={submenuPortalElement}
         />
       )}
     </Fragment>
@@ -199,7 +202,7 @@ const MenuItemLink = styled(NavLink).attrs({ end: true })`
     }
 
     span {
-      color: currentColor;
+      color: currentcolor;
     }
   }
 
@@ -221,7 +224,7 @@ const MenuItemLink = styled(NavLink).attrs({ end: true })`
     }
 
     span {
-      color: currentColor;
+      color: currentcolor;
     }
   }
 `;
@@ -237,7 +240,7 @@ const Group = styled.div`
   min-width: 0;
 
   span {
-    color: currentColor;
+    color: currentcolor;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

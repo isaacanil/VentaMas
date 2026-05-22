@@ -32,6 +32,7 @@ import insuranceConfigModalReducer from '@/features/insurance/insuranceConfigMod
 import insuranceReducer from '@/features/insurance/insuranceSlice';
 import invoiceFormReducer from '@/features/invoice/invoiceFormSlice';
 import invoicePreviewReducer from '@/features/invoice/invoicePreviewSlice';
+import invoiceWorkspaceModalReducer from '@/features/invoice/invoiceWorkspaceModalSlice';
 import invoicesSlice from '@/features/invoice/invoicesSlice';
 import loaderReducer from '@/features/loader/loaderSlice';
 import modalReducer from '@/features/modals/modalSlice';
@@ -129,6 +130,7 @@ export const store = configureStore({
     invoiceForm: invoiceFormReducer,
     invoices: invoicesSlice,
     invoicePreview: invoicePreviewReducer,
+    invoiceWorkspaceModal: invoiceWorkspaceModalReducer,
     taxReceipt: taxReceiptReducer,
 
     // Warehouse & Inventory

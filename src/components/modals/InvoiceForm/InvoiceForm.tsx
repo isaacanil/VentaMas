@@ -2,6 +2,7 @@ import { ExclamationCircleOutlined } from '@/constants/icons/antd';
 import { Form, Button, Modal, Alert, message, Tabs } from 'antd';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
 import {
@@ -14,6 +15,7 @@ import { markAuthorizationUsed } from '@/firebase/authorizations/invoiceEditAuth
 import { fbUpdateInvoice } from '@/firebase/invoices/fbUpdateInvoice';
 import { useAccountingRolloutEnabled } from '@/hooks/useAccountingRolloutEnabled';
 import { useOpenAccountingEntry } from '@/modules/accounting/hooks/useOpenAccountingEntry';
+import { ElectronicTaxReceiptInfoCard } from '@/modules/invoice/components/InvoiceDetailCards/ElectronicTaxReceiptInfoCard';
 import { InvoiceDocumentHeader } from '@/modules/invoice/components/InvoiceDocumentHeader/InvoiceDocumentHeader';
 import { formatPrice } from '@/utils/format';
 import { convertInvoiceDateToMillis } from '@/utils/invoice';
@@ -294,6 +296,11 @@ export const InvoiceForm = () => {
           onOpenAccountingEntry={handleOpenAccountingEntry}
         />
       </HeaderBlock>
+      <EditableInvoiceElectronicTaxReceiptInfoCard
+        businessId={businessId}
+        invoiceId={invoice?.id}
+        invoiceData={invoice}
+      />
       <Form
         form={form}
         initialValues={invoice}
@@ -310,3 +317,9 @@ export const InvoiceForm = () => {
 const HeaderBlock = ({ children }: { children: React.ReactNode }) => (
   <div style={{ marginBottom: 16 }}>{children}</div>
 );
+
+const EditableInvoiceElectronicTaxReceiptInfoCard = styled(
+  ElectronicTaxReceiptInfoCard,
+)`
+  margin-bottom: 16px;
+`;

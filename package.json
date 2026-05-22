@@ -40,6 +40,8 @@
     "typecheck:all": "npm run typecheck:app && npm run typecheck:dev",
     "format": "prettier --check .",
     "format:check": "prettier --check .",
+    "project": "node tools/project.js",
+    "sync": "node tools/sync.js",
     "deploy": "node tools/deploy.js",
     "deploy:prod": "node tools/deploy.js prod",
     "deploy:prod:functions": "node tools/deploy.js prod:functions",

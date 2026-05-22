@@ -73,6 +73,10 @@ export const routePreloaders: Record<string, RoutePreloader> = {
     import('@/modules/invoice/pages/InvoicesPage/InvoicesPage'),
   [SALES_TERM.BILLS_ANALYTICS]: () =>
     import('@/modules/invoice/pages/InvoicesPage/SalesAnalyticsPage'),
+  [SALES_TERM.SERVICE_COMMISSIONS]: () =>
+    import(
+      '@/modules/invoice/pages/ServiceCommissionsReport/ServiceCommissionsReport'
+    ),
   [SALES_TERM.PREORDERS]: () =>
     import('@/modules/sales/pages/PreorderSale/PreorderSale'),
 

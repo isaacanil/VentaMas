@@ -27,6 +27,15 @@ export const DEFAULT_BILLING_SETTINGS: CartSettings['billing'] = {
   stockAlertEmail: '',
   subscriptionEmailNotifications: true,
   subscriptionPaymentReminder: true,
+  serviceCommissions: {
+    enabled: false,
+    appliesTo: 'services',
+    calculationBase: 'netSubtotalWithoutTax',
+    defaultType: 'percentage',
+    defaultRate: 0,
+    requireCollaboratorOnService: false,
+    showOnPrintedInvoice: false,
+  },
   isLoading: false,
   isError: null,
 };

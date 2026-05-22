@@ -6,6 +6,7 @@ import {
   resolveInvoiceDisplayedTotal,
   resolveInvoiceDisplayedUnitPrice,
 } from '@/utils/accounting/lineMonetary';
+import { getServiceCommissionCollaboratorLabel } from '@/utils/commissions/serviceCommissions';
 
 import { formatInvoicePrice } from '@/utils/invoice/documentCurrency';
 type ProductsProps = {
@@ -61,6 +62,24 @@ const ProductTable = ({ products, invoiceData = null }: ProductTableProps) => {
         return 'N/A';
       },
     },
+    ...(products.some((product) =>
+      Boolean(getServiceCommissionCollaboratorLabel(product.serviceCommission)),
+    )
+      ? [
+          {
+            title: 'Colaborador',
+            dataIndex: 'serviceCommission',
+            key: 'serviceCommission',
+            render: (
+              commission: InvoiceProduct['serviceCommission'],
+              record: InvoiceProduct,
+            ) =>
+              getServiceCommissionCollaboratorLabel(
+                commission ?? record.serviceCommission,
+              ) ?? 'N/A',
+          },
+        ]
+      : []),
     {
       title: 'Precio Unitario',
       dataIndex: ['pricing', 'price'],

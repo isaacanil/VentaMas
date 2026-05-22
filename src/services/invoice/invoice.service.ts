@@ -19,6 +19,7 @@ import {
 import { paymentMethodRequiresBankAccount } from '@/utils/payments/methods';
 import { resolveEffectiveBankAccountId } from '@/utils/payments/bankPaymentPolicy';
 
+import { isCanonicalInvoiceReadyForFrontend } from './utils/electronicInvoiceReadiness';
 import type {
   InvoiceCart,
   InvoiceCartProduct,
@@ -555,10 +556,10 @@ export const waitForInvoiceResult = async ({
 
   const startedAt = Date.now();
   let lastSnapshot: UnknownRecord | null = null;
-  const MAX_RETRIES = 10;
+  const maxRetries = Math.max(1, Math.ceil(timeoutMs / pollInterval));
   let retryCount = 0;
 
-  while (retryCount < MAX_RETRIES) {
+  while (retryCount < maxRetries) {
     if (signal?.aborted) {
       throw new DOMException(
         'La consulta de factura fue cancelada',
@@ -601,8 +602,18 @@ export const waitForInvoiceResult = async ({
           const canonicalData = canonicalSnap.data() as UnknownRecord & {
             data?: InvoiceData | null;
           };
+          const canonicalInvoice = canonicalData?.data ?? null;
+          if (
+            !isCanonicalInvoiceReadyForFrontend({
+              canonicalInvoice,
+              invoiceMeta: invoiceData,
+            })
+          ) {
+            await delay(pollInterval);
+            continue;
+          }
           return {
-            invoice: canonicalData?.data ?? null,
+            invoice: canonicalInvoice,
             canonical: canonicalData ?? null,
             invoiceMeta: invoiceData,
           };

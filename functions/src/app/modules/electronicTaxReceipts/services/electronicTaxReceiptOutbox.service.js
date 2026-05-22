@@ -35,6 +35,71 @@ const normalizeProviderMode = (mode) => {
     : 'pilot';
 };
 
+const normalizeStatus = (value) => toCleanString(value)?.toLowerCase() || null;
+
+const TERMINAL_DGII_STATUSES = new Set([
+  'accepted',
+  'accepted_conditional',
+  'rejected',
+]);
+
+const NON_LIFECYCLE_STATUSES = new Set(['not_checked', 'pending', 'queued']);
+
+export const resolveElectronicTaxReceiptLifecycleStatus = ({
+  currentStatus,
+  response,
+}) => {
+  const explicitStatus = normalizeStatus(response?.status);
+  if (explicitStatus && !NON_LIFECYCLE_STATUSES.has(explicitStatus)) {
+    return explicitStatus;
+  }
+
+  const dgiiValidationStatus = normalizeStatus(response?.dgiiValidationStatus);
+  if (TERMINAL_DGII_STATUSES.has(dgiiValidationStatus)) {
+    return dgiiValidationStatus;
+  }
+
+  const dgiiStatus = normalizeStatus(response?.dgiiStatus);
+  if (TERMINAL_DGII_STATUSES.has(dgiiStatus)) {
+    return dgiiStatus;
+  }
+
+  const current = normalizeStatus(currentStatus);
+  if (current && !NON_LIFECYCLE_STATUSES.has(current)) {
+    return current;
+  }
+
+  if (
+    response?.eNcf ||
+    normalizeStatus(response?.localStatus) === 'signed_local' ||
+    response?.links?.xml ||
+    response?.links?.signedXml ||
+    response?.links?.pdf
+  ) {
+    return 'issued';
+  }
+
+  const requestStatus = normalizeStatus(
+    response?.requestStatus || response?.dgiiSubmissionStatus,
+  );
+  if (requestStatus && !NON_LIFECYCLE_STATUSES.has(requestStatus)) {
+    return requestStatus;
+  }
+
+  return current || 'submitted';
+};
+
+const isPendingGisysDgiiResponseError = (error) => {
+  const details = error?.details || {};
+  const body = details?.body || {};
+  const message = String(body?.message || error?.message || '');
+  return (
+    Number(details?.status) === 404 &&
+    body?.code === 'NOT_FOUND' &&
+    message.includes('dgii-response.json')
+  );
+};
+
 const resolveEffectiveProviderConfig = ({ providerConfig, taskPayload }) => {
   const transportEnabled = taskPayload?.transportEnabled !== false;
   if (transportEnabled) {
@@ -399,23 +464,38 @@ export const refreshElectronicTaxReceiptStatus = async ({
     throw new Error(`gisys_config_invalid(${configIssues.join(',')})`);
   }
 
-  const response = refreshRemote
-    ? await refreshGisysFactDocumentStatus({
-        config: providerConfig,
-        submissionId,
-      })
-    : await getGisysFactDocumentStatus({
+  let response;
+  if (refreshRemote) {
+    try {
+      response = await refreshGisysFactDocumentStatus({
         config: providerConfig,
         submissionId,
       });
+    } catch (error) {
+      if (!isPendingGisysDgiiResponseError(error)) {
+        throw error;
+      }
+      response = await getGisysFactDocumentStatus({
+        config: providerConfig,
+        submissionId,
+      });
+    }
+  } else {
+    response = await getGisysFactDocumentStatus({
+      config: providerConfig,
+      submissionId,
+    });
+  }
 
-  const nextStatus =
-    response?.dgiiValidationStatus ||
-    response?.dgiiStatus ||
-    response?.requestStatus ||
-    response?.status ||
-    currentSnapshot.status ||
-    'submitted';
+  const nextStatus = resolveElectronicTaxReceiptLifecycleStatus({
+    currentStatus: currentSnapshot.status,
+    response: {
+      ...currentSnapshot,
+      ...response,
+      submissionId,
+      eNcf: response?.eNcf || currentSnapshot.eNcf || null,
+    },
+  });
   const electronicSnapshot = buildElectronicSnapshot({
     status: nextStatus,
     mode: currentSnapshot.mode || providerConfig.mode,
@@ -437,7 +517,7 @@ export const refreshElectronicTaxReceiptStatus = async ({
     const ncfSnapshot = {
       ...(currentInvoice?.snapshot?.ncf || {}),
       code: eNcf,
-      status: electronicSnapshot.status,
+      status: eNcf ? 'issued' : electronicSnapshot.status,
       documentFormat: 'electronic',
       provider: 'gisys_fact',
       submissionId,

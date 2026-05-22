@@ -9,6 +9,7 @@ export interface MenuConditionContext {
   billingMode?: string;
   businessType?: string | null;
   authorizationFlowEnabled?: boolean;
+  serviceCommissionsEnabled?: boolean;
   [key: string]: unknown;
 }
 

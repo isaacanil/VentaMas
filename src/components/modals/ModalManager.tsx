@@ -13,6 +13,7 @@ import { selectCreditNoteModal } from '@/features/creditNote/creditNoteModalSlic
 import { selectFileCenter } from '@/features/files/fileSlice';
 import { selectImageViewerShow } from '@/features/imageViewer/imageViewerSlice';
 import { selectInvoice } from '@/features/invoice/invoiceFormSlice';
+import { selectInvoiceWorkspaceModal } from '@/features/invoice/invoiceWorkspaceModalSlice';
 import {
   SelectAddClientModal,
   SelectUpdateProdModal,
@@ -171,6 +172,11 @@ const InvoicePreview = lazy(() =>
     (module) => ({ default: module.InvoicePreview }),
   ),
 );
+const InvoiceWorkspaceModal = lazy(() =>
+  import('@/modules/invoice/pages/InvoicesPage/InvoiceWorkspaceModal/InvoiceWorkspaceModal').then(
+    (module) => ({ default: module.InvoiceWorkspaceModal }),
+  ),
+);
 const EvidenceUploadDrawer = lazy(() =>
   import('@/modules/orderAndPurchase/pages/OrderAndPurchase/PurchaseManagement/components/EvidenceUploadDrawer/EvidenceUploadDrawer').then(
     (module) => ({ default: module.default }),
@@ -233,6 +239,9 @@ export const ModalManager = () => {
   );
   const { modal } = useSelector(selectInvoice); // Assumed 'isOpen' based on pattern
   const isInvoiceFormOpen = modal?.isOpen;
+  const { isOpen: isInvoiceWorkspaceModalOpen } = useSelector(
+    selectInvoiceWorkspaceModal,
+  );
   const { isOpen: isPaymentFormOpen } = useSelector(
     selectAccountsReceivablePayment,
   );
@@ -263,6 +272,10 @@ export const ModalManager = () => {
           )}
 
           <InvoicePreview key={'invoice-preview'} />
+
+          {isInvoiceWorkspaceModalOpen && (
+            <InvoiceWorkspaceModal key={'invoice-workspace'} />
+          )}
 
           {isSignUpModalOpen.isOpen && <SignUpModal key={'sign-up-modal'} />}
 

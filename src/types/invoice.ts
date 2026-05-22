@@ -1,5 +1,6 @@
 import type { ProductPricing } from '@/types/products';
 import type { PaymentMethodEntry, PaymentState } from '@/types/payments';
+import type { ServiceCommissionLineSnapshot } from '@/types/commissions';
 
 export type DiscountType = 'percentage' | 'fixed';
 
@@ -54,6 +55,7 @@ export interface InvoiceProduct {
   warranty?: { status?: boolean; quantity?: number; unit?: string };
   insurance?: { mode?: string; value?: number };
   discount?: { value?: number; type?: string };
+  serviceCommission?: ServiceCommissionLineSnapshot | null;
   comment?: string;
   category?: unknown;
   activeIngredients?: unknown;

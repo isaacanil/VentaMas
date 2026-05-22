@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { Button } from 'antd';
-import { FileTextOutlined, FileDoneOutlined } from '@ant-design/icons';
+import { FileDoneOutlined } from '@ant-design/icons';
 
 import { Modal } from '@/components/common/Modal/Modal';
+import { VmButton, VmModal } from '@/components/heroui';
+import { DollarOutlined, FileTextOutlined } from '@/constants/icons/antd';
 import { SelectSettingCart } from '@/features/cart/cartSlice';
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import { getInvoiceTemplateSummaryLabel } from '@/utils/invoice/template';
@@ -12,6 +14,7 @@ import SettingCard from './components/SettingCard';
 import BillingModeConfig from './components/BillingModeConfig';
 import InvoiceSettingsSection from './components/InvoiceSettingsSection';
 import QuoteSettingsSection from './components/QuoteSettingsSection';
+import ServiceCommissionSettingsSection from './components/ServiceCommissionSettingsSection/ServiceCommissionSettingsSection';
 
 const PageWrapper = styled.div`
   min-height: 100%;
@@ -27,7 +30,7 @@ const StyledContainer = styled.div`
   margin-right: auto;
 `;
 
-type BillingModalKey = 'invoice' | 'quote' | null;
+type BillingModalKey = 'invoice' | 'quote' | 'commissions' | null;
 
 const BillingConfig = () => {
   const { billing } = useSelector(SelectSettingCart);
@@ -35,6 +38,9 @@ const BillingConfig = () => {
   const [activeModal, setActiveModal] = useState<BillingModalKey>(null);
 
   const closeModal = () => setActiveModal(null);
+  const handleCommissionModalOpenChange = (open: boolean) => {
+    setActiveModal(open ? 'commissions' : null);
+  };
 
   // Resumen para Factura
   const invoiceMessage = business?.invoice?.invoiceMessage;
@@ -61,6 +67,24 @@ const BillingConfig = () => {
     },
     { label: 'Validez', value: `${billing?.quoteValidity || 15} días` },
   ];
+  const commissionSettings = billing?.serviceCommissions;
+  const commissionsSummary = [
+    {
+      label: 'Estado',
+      value: commissionSettings?.enabled ? 'Habilitado' : 'Deshabilitado',
+    },
+    {
+      label: 'Base',
+      value: 'Subtotal sin ITBIS',
+    },
+    {
+      label: 'Tasa',
+      value:
+        commissionSettings?.defaultType === 'fixed'
+          ? `RD$ ${commissionSettings?.defaultRate || 0}`
+          : `${commissionSettings?.defaultRate || 0}%`,
+    },
+  ];
 
   return (
     <PageWrapper>
@@ -85,6 +109,19 @@ const BillingConfig = () => {
           summary={quoteSummary}
           onConfigClick={() => setActiveModal('quote')}
         />
+
+        <div
+          id="billing-service-commissions"
+          data-config-section="billing-service-commissions"
+        >
+          <SettingCard
+            icon={<DollarOutlined />}
+            title="Comisiones de Servicios"
+            description="Activa el colaborador por línea de servicio y define la tasa predeterminada para reportes internos."
+            summary={commissionsSummary}
+            onConfigClick={() => setActiveModal('commissions')}
+          />
+        </div>
 
         {/* Modal Factura */}
         <Modal
@@ -126,6 +163,21 @@ const BillingConfig = () => {
         >
           <QuoteSettingsSection />
         </Modal>
+
+        <VmModal
+          title="Configuración de Comisiones"
+          ariaLabel="Configuración de Comisiones"
+          isOpen={activeModal === 'commissions'}
+          onOpenChange={handleCommissionModalOpenChange}
+          size="lg"
+          footer={
+            <VmButton variant="primary" onPress={closeModal}>
+              Listo
+            </VmButton>
+          }
+        >
+          <ServiceCommissionSettingsSection />
+        </VmModal>
       </StyledContainer>
     </PageWrapper>
   );

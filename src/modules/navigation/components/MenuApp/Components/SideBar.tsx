@@ -1,5 +1,11 @@
 import { m } from 'framer-motion';
-import React, { useMemo, useCallback, useEffect, useRef } from 'react';
+import React, {
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -61,6 +67,9 @@ interface CartSettings {
   billing?: {
     billingMode?: string;
     authorizationFlowEnabled?: boolean;
+    serviceCommissions?: {
+      enabled?: boolean;
+    };
   };
 }
 
@@ -87,6 +96,8 @@ const useMenuFiltering = () => {
   const settings = useSelector(SelectSettingCart) as CartSettings;
   const billingMode = settings.billing?.billingMode;
   const authorizationFlowEnabled = settings.billing?.authorizationFlowEnabled;
+  const serviceCommissionsEnabled =
+    settings.billing?.serviceCommissions?.enabled === true;
   const business = useSelector(selectBusinessData) as BusinessData | null;
   const businessType = business?.businessType || null;
   const links = useMenuData() as MenuItem[];
@@ -100,6 +111,7 @@ const useMenuFiltering = () => {
           billingMode,
           businessType,
           authorizationFlowEnabled,
+          serviceCommissionsEnabled,
         });
       }
 
@@ -110,7 +122,11 @@ const useMenuFiltering = () => {
       if (item.submenu) {
         const filteredSubmenu = item.submenu.filter((subItem) => {
           if (subItem.key && subItem.condition) {
-            return subItem.condition({ billingMode, authorizationFlowEnabled });
+            return subItem.condition({
+              billingMode,
+              authorizationFlowEnabled,
+              serviceCommissionsEnabled,
+            });
           }
           return true;
         });
@@ -147,6 +163,7 @@ const useMenuFiltering = () => {
     billingMode,
     businessType,
     authorizationFlowEnabled,
+    serviceCommissionsEnabled,
     canSeeDeveloperGroup,
   ]);
 };
@@ -155,6 +172,8 @@ export const SideBar = ({ isOpen, handleOpenMenu }: SideBarProps) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const didPrefetchRoutesRef = useRef(false);
+  const [submenuPortalElement, setSubmenuPortalElement] =
+    useState<HTMLDivElement | null>(null);
   const user = useSelector(selectUser) as UserIdentity | null;
   const groupedLinks = useMenuFiltering();
   const { abilities } = useUserAccess();
@@ -183,6 +202,13 @@ export const SideBar = ({ isOpen, handleOpenMenu }: SideBarProps) => {
     dispatch(openNotificationCenter());
     handleOpenMenu();
   }, [dispatch, handleOpenMenu]);
+
+  const handleSubmenuLayerRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      setSubmenuPortalElement(node);
+    },
+    [],
+  );
 
   useEffect(() => {
     const shouldPrefetchInDev =
@@ -283,6 +309,7 @@ export const SideBar = ({ isOpen, handleOpenMenu }: SideBarProps) => {
                       item={item}
                       key={`${getMenuItemRenderKey(item, group, index)}-${isOpen ? 'open' : 'closed'}`}
                       onActionDone={handleCloseSidebar}
+                      submenuPortalElement={submenuPortalElement}
                     />
                   ))}
                 </MenuContainer>
@@ -290,6 +317,7 @@ export const SideBar = ({ isOpen, handleOpenMenu }: SideBarProps) => {
             ))}
           </NavigationLinks>
         </NavigationBody>
+        <SubmenuLayer ref={handleSubmenuLayerRef} />
       </Wrapper>
     </Container>
   );
@@ -302,7 +330,8 @@ const Container = styled(m.div)`
   z-index: 9900;
   width: 100%;
   max-width: 400px;
-  height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
   overflow: hidden;
   background-color: white;
   border-right: 1px solid rgb(0 0 0 / 10%);
@@ -319,24 +348,40 @@ const ActionButtons = styled.div`
 `;
 
 const Wrapper = styled.div`
+  position: relative;
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto auto minmax(0, 1fr);
   width: 100%;
   height: 100%;
+  min-height: 0;
   overflow: hidden;
 
   @media (width <= 600px) {
     max-width: 500px;
   }
 `;
+
+const SubmenuLayer = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  overflow: hidden;
+  pointer-events: none;
+`;
+
 const NavigationBody = styled.div`
+  min-height: 0;
   padding: 0.6em 0.9em;
-  overflow: hidden auto;
+  overflow: hidden scroll;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   background-color: ${(props: any) => props.theme.bg.color2};
+  -webkit-overflow-scrolling: touch;
 `;
 
 const NavigationLinks = styled.div`
   display: grid;
+  align-content: start;
   grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
   gap: 0.4rem;
   padding: 0;

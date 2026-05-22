@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { isPreorderDocument } from '@/utils/invoice/documentIdentity';
+import {
+  isPreorderDocument,
+  resolveDocumentIdentity,
+} from '@/utils/invoice/documentIdentity';
 
 describe('isPreorderDocument', () => {
   it('treats corrupted boolean status as preorder when invoice is marked as preorder and has no NCF', () => {
@@ -25,5 +28,37 @@ describe('isPreorderDocument', () => {
       }),
     ).toBe(false);
   });
-});
 
+  it('resolves electronic fiscal document identity from e-NCF', () => {
+    expect(
+      resolveDocumentIdentity({
+        electronicTaxReceipt: {
+          eNcf: 'E320000000001',
+          documentType: 'E32',
+        },
+      }),
+    ).toMatchObject({
+      title: 'FACTURA DE CONSUMO ELECTRÓNICA',
+      label: 'e-NCF',
+      value: 'E320000000001',
+      type: 'fiscal-consumer',
+    });
+  });
+
+  it('does not fall back to payment receipt when e-CF is pending without e-NCF', () => {
+    expect(
+      resolveDocumentIdentity({
+        documentFormat: 'electronic',
+        electronicTaxReceipt: {
+          status: 'shadow_ready',
+          documentType: 'E31',
+        },
+      }),
+    ).toMatchObject({
+      title: 'FACTURA DE CRÉDITO FISCAL ELECTRÓNICA',
+      label: 'e-NCF',
+      value: null,
+      type: 'fiscal-credit',
+    });
+  });
+});

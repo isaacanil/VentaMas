@@ -2,7 +2,6 @@ import { Button, Modal, Tabs, notification } from 'antd';
 import type { TabsProps } from 'antd';
 import React, { useState } from 'react';
 import type {
-  ElectronicTaxReceiptSnapshot,
   InvoiceClient,
   InvoiceData,
   InvoicePaymentMethod,
@@ -25,6 +24,7 @@ import { useFbGetCreditNoteApplicationsByInvoice } from '@/hooks/creditNote/useF
 import { useAccountingRolloutEnabled } from '@/hooks/useAccountingRolloutEnabled';
 import { useOpenAccountingEntry } from '@/modules/accounting/hooks/useOpenAccountingEntry';
 import { CreditNotesInfoCard } from '@/modules/invoice/components/InvoiceDetailCards/CreditNotesInfoCard';
+import { ElectronicTaxReceiptInfoCard } from '@/modules/invoice/components/InvoiceDetailCards/ElectronicTaxReceiptInfoCard';
 import { PaymentMethodInfoCard } from '@/modules/invoice/components/InvoiceDetailCards/PaymentMethodInfoCard';
 import { ReceivablePaymentsInfoCard } from '@/modules/invoice/components/InvoiceDetailCards/ReceivablePaymentsInfoCard';
 import { InvoiceDocumentHeader } from '@/modules/invoice/components/InvoiceDocumentHeader/InvoiceDocumentHeader';
@@ -37,7 +37,6 @@ type InvoicePreviewState = {
 
 import { AccountReceivableInfoCard } from './components/AccountReceivableInfoCard';
 import { ClientInfoCard } from './components/ClientInfo';
-import { ElectronicTaxReceiptInfoCard } from './components/ElectronicTaxReceiptInfoCard';
 import Products from './components/Products';
 import SummaryInfoCard from './components/SummaryInfoCard';
 
@@ -51,27 +50,7 @@ export const InvoicePreview = () => {
   const isOpen = invoicePreviewSelected?.isOpen;
   const invoiceData = invoicePreviewSelected?.data || null;
   const [syncing, setSyncing] = useState(false);
-  const [refreshedElectronicSnapshot, setRefreshedElectronicSnapshot] =
-    useState<{
-      invoiceId?: string | null;
-      snapshot: ElectronicTaxReceiptSnapshot;
-    } | null>(null);
-  const activeRefreshedSnapshot =
-    refreshedElectronicSnapshot &&
-    invoiceData?.id &&
-    refreshedElectronicSnapshot.invoiceId === invoiceData.id
-      ? refreshedElectronicSnapshot.snapshot
-      : null;
-  const displayInvoiceData = activeRefreshedSnapshot && invoiceData
-    ? {
-        ...invoiceData,
-        electronicTaxReceipt: activeRefreshedSnapshot,
-        fiscal: {
-          ...(invoiceData.fiscal || {}),
-          electronic: activeRefreshedSnapshot,
-        },
-      }
-    : invoiceData;
+  const displayInvoiceData = invoiceData;
   const businessId =
     user?.businessID ?? user?.businessId ?? user?.activeBusinessId ?? null;
   const isAccountingRolloutEnabled = useAccountingRolloutEnabled(businessId);
@@ -109,7 +88,9 @@ export const InvoicePreview = () => {
   const hasGeneratedCreditNotes = generatedCreditNotes.length > 0;
   const hasAccountsReceivable = accountsReceivable.length > 0;
   const canOpenAccountingEntry =
-    isAccountingRolloutEnabled && typeof invoiceId === 'string' && invoiceId.length > 0;
+    isAccountingRolloutEnabled &&
+    typeof invoiceId === 'string' &&
+    invoiceId.length > 0;
 
   const handleOpenAccountingEntry = () => {
     if (!invoiceId) return;
@@ -200,20 +181,6 @@ export const InvoicePreview = () => {
       ),
     },
     {
-      key: 'electronicTaxReceipt',
-      label: 'e-CF',
-      children: (
-        <ElectronicTaxReceiptInfoCard
-          businessId={businessId}
-          invoiceId={invoiceId}
-          invoiceData={displayInvoiceData}
-          onRefreshed={(snapshot) =>
-            setRefreshedElectronicSnapshot({ invoiceId, snapshot })
-          }
-        />
-      ),
-    },
-    {
       key: 'accountsReceivable',
       label: 'Cuentas por cobrar',
       children: hasAccountsReceivable ? (
@@ -266,6 +233,11 @@ export const InvoicePreview = () => {
             invoice={displayInvoiceData}
             canOpenAccountingEntry={canOpenAccountingEntry}
             onOpenAccountingEntry={handleOpenAccountingEntry}
+          />
+          <ElectronicTaxReceiptInfoCard
+            businessId={businessId}
+            invoiceId={invoiceId}
+            invoiceData={displayInvoiceData}
           />
           <ClientInfoCard client={client as InvoiceClient} />
           <Products

@@ -38,6 +38,7 @@ emulator-data/
 
 # Local tooling and agent artifacts
 .agents/
+.antigravitycli/
 .github/
 .mcp_screenshot/
 .tools/

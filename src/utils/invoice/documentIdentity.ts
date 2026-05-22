@@ -84,6 +84,11 @@ const PREORDER_ACTIVE_STATUSES = new Set([
   'cancelled-preorder',
 ]);
 
+const toCleanUpperString = (value: unknown): string => {
+  if (typeof value !== 'string') return '';
+  return value.trim().toUpperCase();
+};
+
 export const isPreorderDocument = (
   invoice: InvoiceLike | null | undefined = {},
   { rawNcf }: PreorderCheckOptions = {},
@@ -119,14 +124,19 @@ export const isPreorderDocument = (
 export function resolveDocumentIdentity(
   invoice: InvoiceLike | null | undefined = {},
 ): DocumentIdentity {
+  const electronicSnapshot =
+    invoice?.electronicTaxReceipt ?? invoice?.fiscal?.electronic ?? null;
   const electronicNcf =
-    invoice?.electronicTaxReceipt?.eNcf ??
-    invoice?.fiscal?.electronic?.eNcf ??
+    electronicSnapshot?.eNcf ??
     invoice?.eNcf;
+  const electronicDocumentType = toCleanUpperString(
+    electronicSnapshot?.documentType,
+  );
   const rawNcf = (electronicNcf ?? invoice?.NCF ?? invoice?.comprobante ?? '')
     .toString()
     .trim();
-  const isPreorder = isPreorderDocument(invoice, { rawNcf });
+  const identityCode = rawNcf || electronicDocumentType;
+  const isPreorder = isPreorderDocument(invoice, { rawNcf: identityCode });
   const preorderNumber =
     invoice?.preorderDetails?.numberID ??
     invoice?.numberID ??
@@ -143,7 +153,7 @@ export function resolveDocumentIdentity(
     };
   }
 
-  if (!rawNcf) {
+  if (!identityCode) {
     return {
       title: 'RECIBO DE PAGO',
       label: 'Número de Recibo',
@@ -153,12 +163,12 @@ export function resolveDocumentIdentity(
     };
   }
 
-  const upperNcf = rawNcf.toUpperCase();
+  const upperNcf = identityCode.toUpperCase();
   const prefix = upperNcf.slice(0, 3);
   const match = RECEIPT_MAP[prefix] ?? RECEIPT_FALLBACK;
 
   return {
     ...match,
-    value: upperNcf,
+    value: rawNcf ? upperNcf : null,
   };
 }

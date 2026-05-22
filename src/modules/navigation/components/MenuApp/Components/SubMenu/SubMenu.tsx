@@ -1,6 +1,7 @@
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
+import { createPortal } from 'react-dom';
 import styled from 'styled-components';
 
 import type { MenuItem } from '@/types/menu';
@@ -13,6 +14,7 @@ interface SubMenuProps {
   onClose: () => void;
   onActionDone?: () => void;
   parentTitle?: string;
+  submenuPortalElement?: HTMLElement | null;
 }
 
 export const SubMenu = ({
@@ -21,6 +23,7 @@ export const SubMenu = ({
   onClose,
   onActionDone,
   parentTitle,
+  submenuPortalElement,
 }: SubMenuProps) => {
   const submenuItems = item.submenu || [];
   const handleSubmenuItemActionDone = () => {
@@ -37,8 +40,12 @@ export const SubMenu = ({
     {},
   );
 
-  return (
-    <Container $isOpen={isOpen} $isNested={!!parentTitle}>
+  const content = (
+    <Container
+      $isOpen={isOpen}
+      $isNested={!!parentTitle}
+      $isPortaled={Boolean(submenuPortalElement)}
+    >
       <Header>
         <Button
           startIcon={<FontAwesomeIcon icon={faArrowLeft} />}
@@ -61,6 +68,7 @@ export const SubMenu = ({
                       )}
                       onActionDone={handleSubmenuItemActionDone}
                       parentTitle={item.title}
+                      submenuPortalElement={submenuPortalElement}
                     />
                   ))}
                 </MenuLinkList>
@@ -70,12 +78,20 @@ export const SubMenu = ({
       </Body>
     </Container>
   );
+
+  if (submenuPortalElement) {
+    return createPortal(content, submenuPortalElement);
+  }
+
+  return content;
 };
 const Group = styled.div`
+  flex: 0 0 auto;
   overflow: hidden;
 `;
 
 const MenuLinkList = styled.div`
+  flex: 0 0 auto;
   padding: 0.25rem;
   overflow: hidden;
   background-color: ${(props) => props.theme.bg.shade};
@@ -83,24 +99,40 @@ const MenuLinkList = styled.div`
   border-radius: var(--border-radius, 8px);
 `;
 const Body = styled.div`
-  display: grid;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   gap: 0.6em;
-  align-content: start;
+  align-items: stretch;
+  min-height: 0;
   padding: 0.8em;
+  overflow: hidden scroll;
+  overscroll-behavior: contain;
   background-color: var(--color2);
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
 `;
 
-const Container = styled.div<{ $isOpen: boolean; $isNested?: boolean }>`
+const Container = styled.div<{
+  $isOpen: boolean;
+  $isNested?: boolean;
+  $isPortaled?: boolean;
+}>`
   background-color: rgb(255 255 255);
   width: 100%;
-  display: grid;
-  grid-template-rows: min-content 1fr;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   position: absolute;
   z-index: 1;
-  top: ${({ $isNested }) => ($isNested ? '0' : '2.75em')};
+  top: ${({ $isNested, $isPortaled }) =>
+    $isPortaled || !$isNested ? '2.75em' : '0'};
   left: 0;
   max-width: 500px;
-  height: ${({ $isNested }) => ($isNested ? '100%' : 'calc(100% - 2.75em)')};
+  height: ${({ $isNested, $isPortaled }) =>
+    $isPortaled || !$isNested ? 'calc(100% - 2.75em)' : '100%'};
+  pointer-events: auto;
   transform: translateX(-100%);
   transition: 200ms transform ease-in-out;
   color: rgb(80 80 80);

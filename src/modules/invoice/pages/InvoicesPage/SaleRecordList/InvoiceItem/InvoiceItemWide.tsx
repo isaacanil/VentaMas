@@ -14,7 +14,7 @@ import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
 
 import { addInvoice } from '@/features/invoice/invoiceFormSlice';
-import { openInvoicePreviewModal } from '@/features/invoice/invoicePreviewSlice';
+import { openInvoiceWorkspaceModal } from '@/features/invoice/invoiceWorkspaceModalSlice';
 import { formatPrice } from '@/utils/format';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
 import {
@@ -93,7 +93,7 @@ export const InvoiceItemWide = ({ data }: InvoiceItemWideProps) => {
     });
 
   const handleViewMore = () => {
-    dispatch(openInvoicePreviewModal(data));
+    dispatch(openInvoiceWorkspaceModal(data));
   };
 
   return (

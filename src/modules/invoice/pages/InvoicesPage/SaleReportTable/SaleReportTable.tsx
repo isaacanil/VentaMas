@@ -22,6 +22,7 @@ import { selectUser } from '@/features/auth/userSlice';
 import { SelectSettingCart } from '@/features/cart/cartSlice';
 import { addInvoice } from '@/features/invoice/invoiceFormSlice';
 import { openInvoicePreviewModal } from '@/features/invoice/invoicePreviewSlice';
+import { openInvoiceWorkspaceModal } from '@/features/invoice/invoiceWorkspaceModalSlice';
 import { useFbGetAccountReceivableByInvoice } from '@/firebase/accountsReceivable/useFbGetAccountReceivableByInvoice';
 import { fbRefreshElectronicTaxReceiptStatus } from '@/firebase/electronicTaxReceipts/fbRefreshElectronicTaxReceiptStatus';
 import { downloadInvoicePdf } from '@/firebase/quotation/downloadQuotationPDF';
@@ -56,7 +57,13 @@ type ActionsMenuProps = {
 };
 
 type ActionMenuItem = {
-  key: 'preview' | 'edit' | 'print' | 'payReceivable' | 'refreshElectronic';
+  key:
+    | 'workspace'
+    | 'preview'
+    | 'edit'
+    | 'print'
+    | 'payReceivable'
+    | 'refreshElectronic';
   label: string;
   icon: ReactNode;
   disabled: boolean;
@@ -189,6 +196,10 @@ const ActionsMenu = ({ value }: ActionsMenuProps) => {
     dispatch(openInvoicePreviewModal(data));
   };
 
+  const handleOpenWorkspace = () => {
+    dispatch(openInvoiceWorkspaceModal(data));
+  };
+
   const snapshotCart = (
     data?.snapshot as { cart?: { isAddedToReceivables?: boolean } } | null
   )?.cart;
@@ -304,6 +315,12 @@ const ActionsMenu = ({ value }: ActionsMenuProps) => {
   const menuItems = useMemo<ActionMenuItem[]>(() => {
     const items: ActionMenuItem[] = [
       {
+        key: 'workspace',
+        label: 'Ver / editar (nuevo)',
+        icon: icons.operationModes.more,
+        disabled: false,
+      },
+      {
         key: 'preview',
         label: 'Ver detalle',
         icon: icons.editingActions.show,
@@ -362,6 +379,9 @@ const ActionsMenu = ({ value }: ActionsMenuProps) => {
         break;
       case 'preview':
         handleViewMore();
+        break;
+      case 'workspace':
+        handleOpenWorkspace();
         break;
       case 'payReceivable':
         handlePayReceivable();

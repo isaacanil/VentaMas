@@ -9,7 +9,7 @@ import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
 import { addInvoice } from '@/features/invoice/invoiceFormSlice';
-import { openInvoicePreviewModal } from '@/features/invoice/invoicePreviewSlice';
+import { openInvoiceWorkspaceModal } from '@/features/invoice/invoiceWorkspaceModalSlice';
 import useViewportWidth from '@/hooks/windows/useViewportWidth';
 import { isInvoicePaidInFull } from '@/utils/invoice';
 import { prepareInvoiceForEdit } from '@/utils/invoice';
@@ -51,7 +51,7 @@ export const Footer = ({ data }: FooterProps) => {
       onAuthorized: proceedToEdit,
     });
   const handleViewMore = () => {
-    dispatch(openInvoicePreviewModal(data));
+    dispatch(openInvoiceWorkspaceModal(data));
   };
 
   return (

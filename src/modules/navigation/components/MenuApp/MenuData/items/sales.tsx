@@ -1,5 +1,5 @@
 import type { MenuItem } from '@/types/menu';
-import { faTicket } from '@fortawesome/free-solid-svg-icons';
+import { faCoins, faTicket } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { icons } from '@/constants/icons/icons';
@@ -7,7 +7,8 @@ import ROUTES_NAME from '@/router/routes/routesName';
 
 import creditNote from './creditNote';
 
-const { SALES, BILLS, PREORDERS } = ROUTES_NAME.SALES_TERM;
+const { SALES, BILLS, SERVICE_COMMISSIONS, PREORDERS } =
+  ROUTES_NAME.SALES_TERM;
 
 const sales: MenuItem[] = [
   {
@@ -33,6 +34,15 @@ const sales: MenuItem[] = [
     //     color: '#ff9900',
     //     text: 'Mantenimiento'G
     // }
+  },
+  {
+    title: 'Comisiones',
+    icon: <FontAwesomeIcon icon={faCoins} />,
+    route: SERVICE_COMMISSIONS,
+    group: 'sales',
+    key: 'service-commissions',
+    condition: ({ serviceCommissionsEnabled }) =>
+      serviceCommissionsEnabled === true,
   },
   ...creditNote.map((item) => ({ ...item, group: 'sales' })),
 ];

@@ -6,6 +6,10 @@ import type {
   MonetaryRateConfig,
   ProductMonetarySnapshot,
 } from '@/utils/accounting/lineMonetary';
+import type {
+  ServiceCommissionLineSnapshot,
+  ServiceCommissionsBillingSettings,
+} from '@/types/commissions';
 
 export type { SupportedDocumentCurrency };
 
@@ -70,6 +74,7 @@ export interface Product {
     type: 'percentage' | 'amount';
     value: number;
   };
+  serviceCommission?: ServiceCommissionLineSnapshot | null;
   [key: string]: any;
 }
 
@@ -199,6 +204,7 @@ export interface CartSettings {
     subscriptionEmailNotifications?: boolean;
     subscriptionPaymentReminder?: boolean;
     subscriptionCheckoutProvider?: string | null;
+    serviceCommissions?: ServiceCommissionsBillingSettings;
   };
   isPreOrderEnabled?: boolean;
 }

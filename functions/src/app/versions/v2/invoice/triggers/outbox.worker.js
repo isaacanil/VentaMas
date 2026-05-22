@@ -32,6 +32,7 @@ async function loadDeps() {
       import('../../../../modules/accountReceivable/services/insuranceAuth.js'),
       import('../services/audit.service.js'),
       import('../../../../modules/electronicTaxReceipts/services/electronicTaxReceiptOutbox.service.js'),
+      import('../../../../modules/commissions/services/serviceCommissions.service.js'),
     ]).then(
       ([
         inventoryQueries,
@@ -48,6 +49,7 @@ async function loadDeps() {
         insuranceAuthMod,
         auditService,
         electronicTaxReceiptOutbox,
+        serviceCommissionsService,
       ]) => {
         const cashCountHelpers = cashCountQueries?.default ?? cashCountQueries;
         return {
@@ -68,6 +70,8 @@ async function loadDeps() {
           auditSafe: auditService.auditSafe,
           processElectronicTaxReceiptOutboxTask:
             electronicTaxReceiptOutbox.processElectronicTaxReceiptOutboxTask,
+          syncServiceCommissionsTx:
+            serviceCommissionsService.syncServiceCommissionsTx,
         };
       },
     );
@@ -190,6 +194,7 @@ export const processInvoiceOutbox = onDocumentCreated(
       auditTx,
       auditSafe,
       processElectronicTaxReceiptOutboxTask,
+      syncServiceCommissionsTx,
     } = await loadDeps();
 
     if (type === 'issueElectronicTaxReceipt') {
@@ -345,9 +350,16 @@ export const processInvoiceOutbox = onDocumentCreated(
           const canonRef = db.doc(
             `businesses/${businessId}/invoices/${invoiceId}`,
           );
+          const billingSettingsRef = db.doc(
+            `businesses/${businessId}/settings/billing`,
+          );
           const canonSnap = await tx.get(canonRef);
+          const billingSettingsSnap = await tx.get(billingSettingsRef);
           const existingCanon = canonSnap.exists
             ? canonSnap.data()?.data || {}
+            : {};
+          const billingSettings = billingSettingsSnap.exists
+            ? billingSettingsSnap.data() || {}
             : {};
           const cart = payload.cart || {};
           const client = payload.client || invoice?.snapshot?.client || null;
@@ -603,6 +615,16 @@ export const processInvoiceOutbox = onDocumentCreated(
           );
 
           tx.set(canonRef, { data: sanitizedCanonicalData }, { merge: true });
+          syncServiceCommissionsTx(tx, {
+            businessId,
+            invoice: sanitizedCanonicalData,
+            invoiceId,
+            products: Array.isArray(sanitizedCanonicalData.products)
+              ? sanitizedCanonicalData.products
+              : [],
+            settings: billingSettings,
+            userId: payload.userId || user.uid,
+          });
 
           const timelineEntries = [
             { status: 'invoice_doc_done', at: Timestamp.now() },

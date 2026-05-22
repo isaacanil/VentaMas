@@ -18,6 +18,13 @@ const SalesAnalyticsPage = lazy(() =>
     }),
   ),
 );
+const ServiceCommissionsReport = lazy(() =>
+  import(
+    '@/modules/invoice/pages/ServiceCommissionsReport/ServiceCommissionsReport'
+  ).then((module) => ({
+    default: module.ServiceCommissionsReport,
+  })),
+);
 const Preorder = lazy(() =>
   import('@/modules/sales/pages/PreorderSale/PreorderSale').then((module) => ({
     default: module.Preorder,
@@ -29,7 +36,13 @@ const Sales = lazy(() =>
   })),
 );
 
-const { SALES, BILLS, BILLS_ANALYTICS, PREORDERS } = ROUTES_NAME.SALES_TERM;
+const {
+  SALES,
+  BILLS,
+  BILLS_ANALYTICS,
+  SERVICE_COMMISSIONS,
+  PREORDERS,
+} = ROUTES_NAME.SALES_TERM;
 
 const routes: AppRoute[] = [
   {
@@ -52,6 +65,13 @@ const routes: AppRoute[] = [
     title: 'Análisis de Ventas - Ventamax',
     metaDescription:
       'Explora tendencias, clientes, categorías y comportamiento de facturación en Ventamax POS.',
+  },
+  {
+    path: SERVICE_COMMISSIONS,
+    element: <ServiceCommissionsReport />,
+    title: 'Comisiones de Servicios - Ventamax',
+    metaDescription:
+      'Consulta comisiones generadas por colaborador y servicios facturados en Ventamax POS.',
   },
   {
     path: PREORDERS,
