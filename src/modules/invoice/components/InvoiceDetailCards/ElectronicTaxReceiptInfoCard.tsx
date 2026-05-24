@@ -12,7 +12,12 @@ import type { Key, ReactNode } from 'react';
 import { useState } from 'react';
 import styled from 'styled-components';
 
-import { VmButton, VmCard, VmChip, VmDropdown } from '@/components/heroui';
+import {
+  VmButton,
+  VmCard,
+  VmChip,
+  VmDropdown,
+} from '@/components/heroui';
 import { fbRefreshElectronicTaxReceiptStatus } from '@/firebase/electronicTaxReceipts/fbRefreshElectronicTaxReceiptStatus';
 import type {
   ElectronicTaxReceiptSnapshot,
@@ -64,7 +69,11 @@ const statusColor = (
   ).toLowerCase();
 
   if (statusKey.includes('accepted')) return 'success';
-  if (statusKey.includes('reject') || statusKey.includes('failed')) {
+  if (
+    statusKey.includes('reject') ||
+    statusKey.includes('failed') ||
+    statusKey.includes('error')
+  ) {
     return 'danger';
   }
   if (statusKey.includes('shadow')) return 'accent';
@@ -122,6 +131,10 @@ export const ElectronicTaxReceiptInfoCard = ({
 
   const statusLabel =
     resolveElectronicTaxReceiptStatusLabel(snapshot) || 'Pendiente';
+  const statusKey = String(
+    resolveElectronicTaxReceiptStatusKey(snapshot) || '',
+  ).toLowerCase();
+  const qrIsUsable = statusKey.includes('accepted');
   const eNcf = cleanString(snapshot.eNcf);
   const submissionId = cleanString(snapshot.submissionId);
   const trackId =
@@ -132,10 +145,15 @@ export const ElectronicTaxReceiptInfoCard = ({
   const xmlUrl = cleanString(snapshot.links?.xml);
   const signedXmlUrl = cleanString(snapshot.links?.signedXml);
   const pdfUrl = cleanString(snapshot.links?.pdf);
-  const providerLabel = cleanString(snapshot.provider)
-    ?.replace(/_/g, ' ')
-    .toUpperCase();
-  const documentType = cleanString(snapshot.documentType);
+  const diagnosticMessage =
+    cleanString(snapshot.lastError) ||
+    cleanString(snapshot.rfceLastErrorMessage) ||
+    cleanString(snapshot.rfceError) ||
+    cleanString(snapshot.dgiiMessage);
+  const shouldShowDiagnostic =
+    Boolean(diagnosticMessage) ||
+    statusColor(snapshot) === 'danger' ||
+    Boolean(snapshot.manualReviewRequired);
 
   const actions: MenuAction[] = [];
   const addCopyAction = (key: string, label: string, value?: string | null) => {
@@ -166,8 +184,10 @@ export const ElectronicTaxReceiptInfoCard = ({
   addCopyAction('copy-submission', 'ID de envío', submissionId);
   addCopyAction('copy-track', 'TrackId', trackId);
   addCopyAction('copy-security', 'código de seguridad', securityCode);
-  addCopyAction('copy-qr', 'URL QR', qrUrl);
-  addOpenAction('open-qr', 'Abrir consulta QR', qrUrl, <QrcodeOutlined />);
+  addCopyAction('copy-qr', qrIsUsable ? 'URL QR' : 'URL QR (evidencia)', qrUrl);
+  if (qrIsUsable) {
+    addOpenAction('open-qr', 'Abrir consulta QR', qrUrl, <QrcodeOutlined />);
+  }
   addOpenAction(
     'open-status',
     'Abrir estado proveedor',
@@ -224,44 +244,46 @@ export const ElectronicTaxReceiptInfoCard = ({
     }
   };
 
+  const currentStatusColor = statusColor(snapshot);
+
   return (
-    <Card className={className} aria-label="Información e-CF">
+    <Card
+      className={className}
+      aria-label="Información e-CF"
+      $isRejected={currentStatusColor === 'danger'}
+    >
       <VmCard.Header>
         <MainRow>
           <TitleBlock>
             <TitleLine>
-              <Title>e-CF</Title>
-              <VmChip color={statusColor(snapshot)} variant="soft">
+              <ECFTitle>e-CF</ECFTitle>
+              <VmChip color={currentStatusColor} variant="soft">
                 <VmChip.Label>{statusLabel}</VmChip.Label>
               </VmChip>
             </TitleLine>
-            <Subtitle>
-              {providerLabel
-                ? `Comprobante electrónico vía ${providerLabel}`
-                : 'Comprobante electrónico'}
-            </Subtitle>
           </TitleBlock>
 
           <Actions>
-            <VmButton
+            <RefreshButton
               size="sm"
               variant="secondary"
               onPress={handleRefresh}
               isPending={refreshing}
               isDisabled={!submissionId}
+              $isRejected={currentStatusColor === 'danger'}
             >
               <SyncOutlined />
               Consultar GISYS
-            </VmButton>
+            </RefreshButton>
             <VmDropdown>
-              <VmButton
+              <ActionsDropdownButton
                 size="sm"
-                variant="secondary"
                 isDisabled={actions.length === 0}
                 aria-label="Acciones de e-CF"
+                $isRejected={currentStatusColor === 'danger'}
               >
                 Acciones <DownOutlined />
-              </VmButton>
+              </ActionsDropdownButton>
               <ActionMenuPopover placement="bottom end">
                 <VmDropdown.Menu
                   aria-label="Acciones de e-CF"
@@ -289,34 +311,48 @@ export const ElectronicTaxReceiptInfoCard = ({
       </VmCard.Header>
 
       <VmCard.Content>
-        <MetaGrid>
-          <MetaItem>
-            <MetaLabel>e-NCF</MetaLabel>
-            <MetaValue $strong>{eNcf || 'Pendiente'}</MetaValue>
-          </MetaItem>
-          <MetaItem>
-            <MetaLabel>Tipo</MetaLabel>
-            <MetaValue>{documentType || 'N/D'}</MetaValue>
-          </MetaItem>
-          <MetaItem>
-            <MetaLabel>TrackId</MetaLabel>
-            <MetaValue>{trackId || 'DGII pendiente'}</MetaValue>
-          </MetaItem>
-          {securityCode ? (
-            <MetaItem>
-              <MetaLabel>Seguridad</MetaLabel>
-              <MetaValue>{securityCode}</MetaValue>
-            </MetaItem>
+        <DiagnosticBlock>
+          {shouldShowDiagnostic ? (
+            <DiagnosticCopy>
+              <DiagnosticTitle>
+                Diagnóstico GISYS · Submission no aceptada
+              </DiagnosticTitle>
+              <DiagnosticDescription>
+                GISYS marcó esta submission como no aceptada. El QR fue
+                generado pero no es válido fiscalmente hasta que RFCE/DGII
+                acepte el e-CF.
+              </DiagnosticDescription>
+            </DiagnosticCopy>
           ) : null}
-        </MetaGrid>
+          <EvidenceTags>
+            <EvidenceTag>
+              <EvidenceTagLabel>TrackID</EvidenceTagLabel>
+              <EvidenceTagValue>{trackId || 'DGII pendiente'}</EvidenceTagValue>
+            </EvidenceTag>
+            {securityCode ? (
+              <EvidenceTag>
+                <EvidenceTagLabel>Seguridad</EvidenceTagLabel>
+                <EvidenceTagValue>{securityCode}</EvidenceTagValue>
+              </EvidenceTag>
+            ) : null}
+          </EvidenceTags>
+        </DiagnosticBlock>
       </VmCard.Content>
     </Card>
   );
 };
 
-const Card = styled(VmCard)`
+const Card = styled(VmCard)<{ $isRejected?: boolean }>`
   gap: var(--ds-space-2);
   padding: var(--ds-space-3) var(--ds-space-4);
+  background: ${({ $isRejected }) =>
+    $isRejected
+      ? 'color-mix(in srgb, var(--ds-color-state-danger-subtle) 42%, var(--ds-color-bg-surface))'
+      : 'var(--ds-color-bg-surface)'};
+  border-color: ${({ $isRejected }) =>
+    $isRejected
+      ? 'var(--ds-color-state-danger)'
+      : 'var(--ds-color-border-default)'};
 `;
 
 const MainRow = styled.div`
@@ -343,7 +379,7 @@ const TitleLine = styled.div`
   align-items: center;
 `;
 
-const Title = styled.h3`
+const ECFTitle = styled(VmCard.Title)`
   margin: 0;
   color: var(--ds-color-text-primary);
   font-size: var(--ds-font-size-base);
@@ -351,17 +387,27 @@ const Title = styled.h3`
   line-height: var(--ds-line-height-tight);
 `;
 
-const Subtitle = styled.span`
-  color: var(--ds-color-text-secondary);
-  font-size: var(--ds-font-size-xs);
-  line-height: var(--ds-line-height-normal);
-`;
-
 const Actions = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: var(--ds-space-2);
   justify-content: flex-end;
+`;
+
+const actionSurfaceStyles = `
+  background: var(--ds-color-bg-surface);
+  border-color: var(--ds-color-border-default);
+  box-shadow: var(--ds-shadow-xs);
+`;
+
+const RefreshButton = styled(VmButton)<{ $isRejected?: boolean }>`
+  ${({ $isRejected }) => ($isRejected ? actionSurfaceStyles : '')}
+`;
+
+const ActionsDropdownButton = styled(VmDropdown.Button)<{
+  $isRejected?: boolean;
+}>`
+  ${({ $isRejected }) => ($isRejected ? actionSurfaceStyles : '')}
 `;
 
 const ActionMenuPopover = styled(VmDropdown.Popover)`
@@ -382,37 +428,65 @@ const ActionMenuItemIcon = styled.span`
   color: var(--ds-color-text-secondary);
 `;
 
-const MetaGrid = styled.div`
+const DiagnosticBlock = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: var(--ds-space-2);
 `;
 
-const MetaItem = styled.div`
+const DiagnosticCopy = styled.div`
   display: grid;
+  gap: var(--ds-space-1);
+`;
+
+const EvidenceTags = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  align-items: center;
   min-width: 0;
-  gap: 2px;
 `;
 
-const MetaLabel = styled.span`
-  color: var(--ds-color-text-muted);
+const EvidenceTag = styled.span`
+  display: inline-flex;
+  gap: var(--ds-space-1);
+  align-items: center;
+  max-width: 100%;
+  padding: var(--ds-space-1) var(--ds-space-2);
+  color: var(--ds-color-text-primary);
+  background: var(--ds-color-bg-surface);
+  border: 1px solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-full);
+  box-shadow: var(--ds-shadow-xs);
   font-size: var(--ds-font-size-xs);
-  font-weight: var(--ds-font-weight-medium);
   line-height: var(--ds-line-height-tight);
-  text-transform: uppercase;
 `;
 
-const MetaValue = styled.span<{ $strong?: boolean }>`
+const EvidenceTagLabel = styled.span`
+  flex-shrink: 0;
+  color: var(--ds-color-text-muted);
+  font-weight: var(--ds-font-weight-medium);
+`;
+
+const EvidenceTagValue = styled.span`
+  min-width: 0;
   overflow: hidden;
   color: var(--ds-color-text-primary);
-  font-family: ${({ $strong }) =>
-    $strong ? 'var(--ds-font-family-mono)' : 'inherit'};
-  font-size: var(--ds-font-size-sm);
-  font-weight: ${({ $strong }) =>
-    $strong
-      ? 'var(--ds-font-weight-semibold)'
-      : 'var(--ds-font-weight-medium)'};
-  line-height: var(--ds-line-height-tight);
+  font-weight: var(--ds-font-weight-semibold);
   text-overflow: ellipsis;
   white-space: nowrap;
+`;
+
+const DiagnosticTitle = styled.strong`
+  margin: 0;
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-semibold);
+  line-height: var(--ds-line-height-tight);
+`;
+
+const DiagnosticDescription = styled.p`
+  margin: 0;
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-xs);
+  line-height: var(--ds-line-height-normal);
 `;

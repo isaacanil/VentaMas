@@ -49,11 +49,6 @@ export const resolveElectronicTaxReceiptLifecycleStatus = ({
   currentStatus,
   response,
 }) => {
-  const explicitStatus = normalizeStatus(response?.status);
-  if (explicitStatus && !NON_LIFECYCLE_STATUSES.has(explicitStatus)) {
-    return explicitStatus;
-  }
-
   const dgiiValidationStatus = normalizeStatus(response?.dgiiValidationStatus);
   if (TERMINAL_DGII_STATUSES.has(dgiiValidationStatus)) {
     return dgiiValidationStatus;
@@ -62,6 +57,18 @@ export const resolveElectronicTaxReceiptLifecycleStatus = ({
   const dgiiStatus = normalizeStatus(response?.dgiiStatus);
   if (TERMINAL_DGII_STATUSES.has(dgiiStatus)) {
     return dgiiStatus;
+  }
+
+  const requestStatus = normalizeStatus(
+    response?.requestStatus || response?.dgiiSubmissionStatus,
+  );
+  if (requestStatus && !NON_LIFECYCLE_STATUSES.has(requestStatus)) {
+    return requestStatus;
+  }
+
+  const explicitStatus = normalizeStatus(response?.status);
+  if (explicitStatus && !NON_LIFECYCLE_STATUSES.has(explicitStatus)) {
+    return explicitStatus;
   }
 
   const current = normalizeStatus(currentStatus);
@@ -77,13 +84,6 @@ export const resolveElectronicTaxReceiptLifecycleStatus = ({
     response?.links?.pdf
   ) {
     return 'issued';
-  }
-
-  const requestStatus = normalizeStatus(
-    response?.requestStatus || response?.dgiiSubmissionStatus,
-  );
-  if (requestStatus && !NON_LIFECYCLE_STATUSES.has(requestStatus)) {
-    return requestStatus;
   }
 
   return current || 'submitted';
@@ -146,6 +146,33 @@ const buildElectronicSnapshot = ({
   dgiiSubmissionStatus: response?.dgiiSubmissionStatus || null,
   dgiiValidationStatus: response?.dgiiValidationStatus || null,
   dgiiStatus: response?.dgiiStatus || null,
+  dgiiEnvironment: response?.dgiiEnvironment || null,
+  dgiiCode: response?.dgiiCode || response?.dgiiStatusCode || null,
+  dgiiStatusCode: response?.dgiiStatusCode || null,
+  dgiiMessage: response?.dgiiMessage || null,
+  dgiiMessages: Array.isArray(response?.dgiiMessages)
+    ? response.dgiiMessages
+    : null,
+  dgiiSeverity: response?.dgiiSeverity || null,
+  dgiiCategory: response?.dgiiCategory || null,
+  resolutionAction: response?.resolutionAction || null,
+  resolutionStatus: response?.resolutionStatus || null,
+  manualReviewRequired:
+    typeof response?.manualReviewRequired === 'boolean'
+      ? response.manualReviewRequired
+      : null,
+  sameSubmissionRetryAllowed:
+    typeof response?.sameSubmissionRetryAllowed === 'boolean'
+      ? response.sameSubmissionRetryAllowed
+      : null,
+  requiresNewENcf:
+    typeof response?.requiresNewENcf === 'boolean'
+      ? response.requiresNewENcf
+      : null,
+  requiresDataCorrection:
+    typeof response?.requiresDataCorrection === 'boolean'
+      ? response.requiresDataCorrection
+      : null,
   trackId: response?.trackId || response?.dgiiTrackId || null,
   dgiiTrackId: response?.dgiiTrackId || response?.trackId || null,
   securityCode:
@@ -153,15 +180,53 @@ const buildElectronicSnapshot = ({
     resolveNested(response, 'security', 'codigoSeguridad') ||
     null,
   qr: response?.qr || null,
+  officialVerifyUrl: response?.officialVerifyUrl || null,
   printData: response?.printData || null,
+  printStatus: response?.printStatus || null,
+  routing: response?.routing || null,
+  rfceStatus: response?.rfceStatus || null,
+  rfceSubmissionStatus: response?.rfceSubmissionStatus || null,
+  rfceTrackId: response?.rfceTrackId || null,
+  rfceDgiiCode: response?.rfceDgiiCode || null,
+  rfceDgiiEstado: response?.rfceDgiiEstado || null,
+  rfceError: response?.rfceError || null,
+  rfceLastErrorCode: response?.rfceLastErrorCode || null,
+  rfceLastErrorMessage: response?.rfceLastErrorMessage || null,
+  rfceLastErrorHttpStatus: response?.rfceLastErrorHttpStatus || null,
+  artifacts: response?.artifacts || null,
   links: response?.links || null,
   xmlUrl: response?.links?.xml || null,
   signedXmlUrl: response?.links?.signedXml || null,
   pdfUrl: response?.links?.pdf || null,
   correlationId: response?.correlationId || null,
-  lastError: error ? toErrorMessage(error) : null,
+  lastError: error
+    ? toErrorMessage(error)
+    : response?.lastError ||
+      response?.rfceLastErrorMessage ||
+      response?.rfceError ||
+      response?.dgiiMessage ||
+      null,
   lastSyncAt: FieldValue.serverTimestamp(),
   updatedAt: FieldValue.serverTimestamp(),
+});
+
+const mergeGisysResponses = (baseResponse, nextResponse) => ({
+  ...(baseResponse || {}),
+  ...(nextResponse || {}),
+  submissionId:
+    nextResponse?.submissionId || baseResponse?.submissionId || null,
+  eNcf: nextResponse?.eNcf || baseResponse?.eNcf || null,
+  securityCode:
+    nextResponse?.securityCode ||
+    baseResponse?.securityCode ||
+    resolveNested(nextResponse, 'security', 'codigoSeguridad') ||
+    resolveNested(baseResponse, 'security', 'codigoSeguridad') ||
+    null,
+  qr: nextResponse?.qr || baseResponse?.qr || null,
+  links: nextResponse?.links || baseResponse?.links || null,
+  printData: nextResponse?.printData || baseResponse?.printData || null,
+  correlationId:
+    nextResponse?.correlationId || baseResponse?.correlationId || null,
 });
 
 const updateTaskDoneTx = ({
@@ -350,8 +415,12 @@ export const processElectronicTaxReceiptOutboxTask = async ({
         documentType,
       }),
     });
+    const nextStatus = resolveElectronicTaxReceiptLifecycleStatus({
+      currentStatus: null,
+      response,
+    });
     const electronicSnapshot = buildElectronicSnapshot({
-      status: response?.eNcf ? 'issued' : 'submitted',
+      status: nextStatus,
       mode,
       documentType,
       requestHash,
@@ -486,15 +555,18 @@ export const refreshElectronicTaxReceiptStatus = async ({
       submissionId,
     });
   }
+  const currentSnapshotFallback = { ...currentSnapshot };
+  delete currentSnapshotFallback.status;
+  delete currentSnapshotFallback.lastError;
+  const mergedResponse = mergeGisysResponses(currentSnapshotFallback, {
+    ...response,
+    submissionId,
+    eNcf: response?.eNcf || currentSnapshot.eNcf || null,
+  });
 
   const nextStatus = resolveElectronicTaxReceiptLifecycleStatus({
     currentStatus: currentSnapshot.status,
-    response: {
-      ...currentSnapshot,
-      ...response,
-      submissionId,
-      eNcf: response?.eNcf || currentSnapshot.eNcf || null,
-    },
+    response: mergedResponse,
   });
   const electronicSnapshot = buildElectronicSnapshot({
     status: nextStatus,
@@ -502,12 +574,7 @@ export const refreshElectronicTaxReceiptStatus = async ({
     documentType:
       response?.documentType || currentSnapshot.documentType || null,
     requestHash: currentSnapshot.requestHash || null,
-    response: {
-      ...currentSnapshot,
-      ...response,
-      submissionId,
-      eNcf: response?.eNcf || currentSnapshot.eNcf || null,
-    },
+    response: mergedResponse,
   });
 
   await db.runTransaction(async (tx) => {

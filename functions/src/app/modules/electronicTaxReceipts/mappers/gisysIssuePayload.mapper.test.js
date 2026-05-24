@@ -116,4 +116,34 @@ describe('gisysIssuePayload.mapper', () => {
 
     expect(payload.issuer.phones).toEqual(['849-650-3586']);
   });
+
+  it('keeps monetary amounts numeric for the GISYS issue API contract', () => {
+    const input = buildBaseInput('invoice-rfce-decimal-format');
+    input.invoice.snapshot.cart.products[0].price = 94.5;
+    input.invoice.snapshot.cart.totalPurchase = { value: 111.51 };
+    input.invoice.snapshot.cart.totalPurchaseWithoutTaxes = { value: 94.5 };
+    input.invoice.snapshot.cart.totalTaxes = { value: 17.01 };
+    input.invoice.snapshot.cart.payment = { value: 111.51 };
+
+    const payload = buildGisysIssuePayload(input).payload;
+
+    expect(payload.items[0]).toMatchObject({
+      quantity: 1,
+      unitPrice: 94.5,
+      taxRate: 18,
+      taxAmount: 17.01,
+      lineAmount: 94.5,
+    });
+    expect(payload.totals).toMatchObject({
+      netAmount: 94.5,
+      taxableAmountTotal: 94.5,
+      taxableAmount1: 94.5,
+      itbisRate1: 18,
+      taxAmount: 17.01,
+      totalItbis1: 17.01,
+      grandTotal: 111.51,
+      payableAmount: 111.51,
+    });
+    expect(payload.payments).toEqual([{ form: '1', amount: 111.51 }]);
+  });
 });

@@ -67,12 +67,14 @@ function parseArgs(argv) {
 function usage() {
   return [
     'Usage:',
-    '  node tools/deploy.js <prod|staging|prod:functions|staging:functions|beta|vercel> [--build|--no-build|--dry-run] [function names or firebase args]',
+    '  node tools/deploy.js',
+    '  node tools/deploy.js <prod|staging|staging:all|prod:functions|staging:functions|beta|vercel> [--build|--no-build|--dry-run] [function names or firebase args]',
     '',
     'Examples:',
     '  npm run deploy',
     '  npm run deploy -- --help',
     '  npm run deploy -- staging',
+    '  npm run deploy -- staging:all',
     '  npm run deploy -- staging:functions:all',
     '  npm run deploy -- staging:functions reserveCreditNoteNcf,createBusiness',
     '  npm run deploy -- prod:functions reserveCreditNoteNcf',
@@ -80,6 +82,17 @@ function usage() {
     '  npm run deploy -- prod --no-build',
   ].join('\n');
 }
+
+const DEPLOY_ENVIRONMENTS = {
+  staging: {
+    label: 'Staging (ventamax-staging)',
+    deploys: ['staging:all', 'staging', 'staging:functions', 'staging:functions:all'],
+  },
+  prod: {
+    label: 'Produccion (ventamaxpos / externos)',
+    deploys: ['prod', 'prod:functions', 'beta', 'vercel'],
+  },
+};
 
 const DEPLOYS = {
   staging: {
@@ -96,6 +109,23 @@ const DEPLOYS = {
       'staging',
       '--only',
       'hosting:staging',
+    ],
+    requiresDist: true,
+  },
+  'staging:all': {
+    label: 'Firebase staging hosting + todas las functions (ventamax-staging)',
+    environment: 'staging',
+    projectAlias: 'staging',
+    projectId: 'ventamax-staging',
+    buildScript: 'build:staging',
+    cmd: 'npx',
+    args: [
+      ...FIREBASE_CLI_ARGS,
+      'deploy',
+      '--project',
+      'staging',
+      '--only',
+      'hosting:staging,functions',
     ],
     requiresDist: true,
   },
@@ -200,21 +230,37 @@ async function input(message) {
   return await prompt.run();
 }
 
-async function promptDeploySelection() {
-  const choices = Object.entries(DEPLOYS).map(([env, cfg]) => ({
-    name: env,
-    message: cfg.label,
-  }));
+async function promptDeployEnvironment() {
+  const prompt = new Select({
+    name: 'deployEnvironment',
+    message: 'Selecciona ambiente de deploy',
+    choices: [
+      ...Object.entries(DEPLOY_ENVIRONMENTS).map(([env, cfg]) => ({
+        name: env,
+        message: cfg.label,
+      })),
+      { name: 'help', message: 'Ver ayuda / ejemplos' },
+      { name: 'exit', message: 'Salir' },
+    ],
+  });
 
-  choices.push(
-    { name: 'help', message: 'Ver ayuda / ejemplos' },
-    { name: 'exit', message: 'Salir' },
-  );
+  return await prompt.run();
+}
 
+async function promptDeploySelection(environment) {
+  const deployKeys = DEPLOY_ENVIRONMENTS[environment]?.deploys ?? [];
   const prompt = new Select({
     name: 'deploySelection',
-    message: 'Selecciona el despliegue',
-    choices,
+    message: `Selecciona accion para ${DEPLOY_ENVIRONMENTS[environment].label}`,
+    choices: [
+      ...deployKeys.map((env) => ({
+        name: env,
+        message: DEPLOYS[env].label,
+      })),
+      { name: 'help', message: 'Ver ayuda / ejemplos' },
+      { name: 'back', message: 'Volver a ambientes' },
+      { name: 'exit', message: 'Salir' },
+    ],
   });
 
   return await prompt.run();
@@ -344,20 +390,42 @@ async function main() {
     }
 
     while (!env) {
-      const selectedEnv = await promptDeploySelection();
-      if (selectedEnv === 'help') {
+      const selectedEnvironment = await promptDeployEnvironment();
+      if (selectedEnvironment === 'help') {
         process.stdout.write(`\n${usage()}\n\n`);
         continue;
       }
-      if (selectedEnv === 'exit') {
+      if (selectedEnvironment === 'exit') {
         process.exit(0);
       }
-      if (!selectedEnv || typeof selectedEnv !== 'string' || !DEPLOYS[selectedEnv]) {
+      if (
+        !selectedEnvironment ||
+        typeof selectedEnvironment !== 'string' ||
+        !DEPLOY_ENVIRONMENTS[selectedEnvironment]
+      ) {
         continue;
       }
 
-      let buildResolved = false;
-      while (!buildResolved) {
+      let selectedEnv = null;
+      while (!selectedEnv) {
+        const selectedAction = await promptDeploySelection(selectedEnvironment);
+        if (selectedAction === 'help') {
+          process.stdout.write(`\n${usage()}\n\n`);
+          continue;
+        }
+        if (selectedAction === 'exit') {
+          process.exit(0);
+        }
+        if (selectedAction === 'back') {
+          break;
+        }
+        if (!selectedAction || typeof selectedAction !== 'string' || !DEPLOYS[selectedAction]) {
+          continue;
+        }
+        selectedEnv = selectedAction;
+      }
+
+      while (selectedEnv) {
         const buildSelection = await promptBuildMode({
           buildScript: DEPLOYS[selectedEnv].buildScript,
         });
@@ -369,12 +437,13 @@ async function main() {
           process.exit(0);
         }
         if (buildSelection === 'back') {
+          selectedEnv = null;
           break;
         }
         if (buildSelection === 'build' || buildSelection === 'no-build') {
           env = selectedEnv;
           forceBuild = buildSelection === 'build';
-          buildResolved = true;
+          break;
         }
       }
     }

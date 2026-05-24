@@ -277,7 +277,7 @@ export const InvoiceWorkspaceProducts = ({
                     {isEditing ? (
                       <VmButton
                         size="sm"
-                        variant="secondary"
+                        variant="danger-soft"
                         onPress={() => handleRemoveProduct(productKey)}
                         isDisabled={!canEditDirectly || products.length <= 1}
                       >

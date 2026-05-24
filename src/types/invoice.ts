@@ -109,10 +109,45 @@ export interface ElectronicTaxReceiptSnapshot {
   dgiiSubmissionStatus?: string | null;
   dgiiValidationStatus?: string | null;
   dgiiStatus?: string | null;
+  dgiiEnvironment?: string | null;
+  dgiiCode?: string | null;
+  dgiiStatusCode?: string | null;
+  dgiiMessage?: string | null;
+  dgiiMessages?: Array<{
+    code?: string | null;
+    message?: string | null;
+  }> | null;
+  dgiiSeverity?: string | null;
+  dgiiCategory?: string | null;
+  resolutionAction?: string | null;
+  resolutionStatus?: string | null;
+  manualReviewRequired?: boolean | null;
+  sameSubmissionRetryAllowed?: boolean | null;
+  requiresNewENcf?: boolean | null;
+  requiresDataCorrection?: boolean | null;
   trackId?: string | null;
   dgiiTrackId?: string | null;
   securityCode?: string | null;
   qr?: { url?: string | null; profile?: string | null } | string | null;
+  officialVerifyUrl?: string | null;
+  printStatus?: string | null;
+  routing?: {
+    channel?: string | null;
+    reason?: string | null;
+    rfceToDgii?: boolean | null;
+    standardEcfToDgii?: boolean | null;
+    [key: string]: unknown;
+  } | null;
+  rfceStatus?: string | null;
+  rfceSubmissionStatus?: string | null;
+  rfceTrackId?: string | null;
+  rfceDgiiCode?: string | null;
+  rfceDgiiEstado?: string | null;
+  rfceError?: string | null;
+  rfceLastErrorCode?: string | null;
+  rfceLastErrorMessage?: string | null;
+  rfceLastErrorHttpStatus?: number | string | null;
+  artifacts?: Record<string, unknown> | null;
   links?: {
     status?: string | null;
     xml?: string | null;

@@ -36,4 +36,23 @@ describe('electronicTaxReceipt status helpers', () => {
     expect(resolveElectronicTaxReceiptStatusKey(snapshot)).toBe('accepted');
     expect(resolveElectronicTaxReceiptStatusLabel(snapshot)).toBe('Aceptado');
   });
+
+  it('keeps GISYS processing errors visible when DGII has not produced a track', () => {
+    const snapshot = {
+      status: 'error',
+      eNcf: 'E320000000001',
+      localStatus: 'signed_local',
+      requestStatus: 'error',
+      dgiiSubmissionStatus: 'not_applicable_standard_channel',
+      dgiiValidationStatus: 'not_checked',
+      dgiiStatus: 'pending',
+      rfceLastErrorMessage:
+        'XML_BUILD_CONTRACT_ERROR: RFCE.Encabezado.Totales.MontoGravadoTotal valor no cumple pattern del XSD',
+    };
+
+    expect(resolveElectronicTaxReceiptStatusKey(snapshot)).toBe('error');
+    expect(resolveElectronicTaxReceiptStatusLabel(snapshot)).toBe(
+      'Error GISYS',
+    );
+  });
 });

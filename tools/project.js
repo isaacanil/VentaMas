@@ -9,6 +9,85 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.join(__dirname, '..');
 
+const PROJECT_ENVIRONMENTS = {
+  staging: {
+    label: 'Staging (ventamax-staging)',
+    actions: [
+      {
+        name: 'deploy:staging:all',
+        message: 'Deploy staging: hosting + todas las functions',
+        command: 'deploy',
+        args: ['staging:all'],
+      },
+      {
+        name: 'deploy:staging',
+        message: 'Deploy staging: hosting',
+        command: 'deploy',
+        args: ['staging'],
+      },
+      {
+        name: 'deploy:staging:functions',
+        message: 'Deploy staging: functions especificas',
+        command: 'deploy',
+        args: ['staging:functions'],
+      },
+      {
+        name: 'deploy:staging:functions:all',
+        message: 'Deploy staging: todas las functions',
+        command: 'deploy',
+        args: ['staging:functions:all'],
+      },
+      {
+        name: 'sync:indexes:prod-to-staging',
+        message: 'Sync indices: prod -> staging',
+        command: 'sync',
+        args: ['indexes:prod-to-staging'],
+      },
+      {
+        name: 'sync:business:prod-to-staging',
+        message: 'Sync negocio: prod -> staging',
+        command: 'sync',
+        args: ['business:prod-to-staging'],
+      },
+    ],
+  },
+  prod: {
+    label: 'Produccion (ventamaxpos)',
+    actions: [
+      {
+        name: 'deploy:prod',
+        message: 'Deploy prod: hosting',
+        command: 'deploy',
+        args: ['prod'],
+      },
+      {
+        name: 'deploy:prod:functions',
+        message: 'Deploy prod: functions especificas',
+        command: 'deploy',
+        args: ['prod:functions'],
+      },
+      {
+        name: 'deploy:beta',
+        message: 'Deploy prod: hosting channel beta',
+        command: 'deploy',
+        args: ['beta'],
+      },
+      {
+        name: 'deploy:vercel',
+        message: 'Deploy externo: Vercel --prod',
+        command: 'deploy',
+        args: ['vercel'],
+      },
+      {
+        name: 'sync:indexes:staging-to-prod',
+        message: 'Sync indices: staging -> prod',
+        command: 'sync',
+        args: ['indexes:staging-to-prod'],
+      },
+    ],
+  },
+};
+
 function isInteractive() {
   return Boolean(process.stdin.isTTY && process.stdout.isTTY && !process.env.CI);
 }
@@ -25,28 +104,57 @@ function usage() {
     '  npm run project -- sync',
     '  npm run project -- sync indexes:prod-to-staging --dry-run',
     '  npm run project -- deploy staging',
+    '  npm run project -- deploy staging:all',
   ].join('\n');
 }
 
-async function promptProjectAction() {
+async function promptProjectEnvironment() {
   const prompt = new Select({
-    name: 'projectAction',
-    message: 'Selecciona una operacion del proyecto',
+    name: 'projectEnvironment',
+    message: 'Selecciona ambiente del proyecto',
     choices: [
-      {
-        name: 'sync',
-        message: 'Sincronizacion',
-      },
-      {
-        name: 'deploy',
-        message: 'Deploy',
-      },
+      ...Object.entries(PROJECT_ENVIRONMENTS).map(([environment, cfg]) => ({
+        name: environment,
+        message: cfg.label,
+      })),
       { name: 'help', message: 'Ver ayuda / ejemplos' },
       { name: 'exit', message: 'Salir' },
     ],
   });
 
   return await prompt.run();
+}
+
+async function promptProjectAction(environment) {
+  const prompt = new Select({
+    name: 'projectAction',
+    message: `Selecciona operacion para ${PROJECT_ENVIRONMENTS[environment].label}`,
+    choices: [
+      ...PROJECT_ENVIRONMENTS[environment].actions.map((action) => ({
+        name: action.name,
+        message: action.message,
+      })),
+      { name: 'help', message: 'Ver ayuda / ejemplos' },
+      { name: 'back', message: 'Volver a ambientes' },
+      { name: 'exit', message: 'Salir' },
+    ],
+  });
+
+  return await prompt.run();
+}
+
+function resolveProjectMenuAction(selection) {
+  for (const cfg of Object.values(PROJECT_ENVIRONMENTS)) {
+    const action = cfg.actions.find((item) => item.name === selection);
+    if (action) {
+      return {
+        action: action.command,
+        passthrough: action.args,
+      };
+    }
+  }
+
+  return null;
 }
 
 function runCommand(command, args) {
@@ -80,17 +188,37 @@ async function main() {
       process.exit(1);
     }
 
-    const selected = await promptProjectAction();
-    if (selected === 'help') {
+    const selectedEnvironment = await promptProjectEnvironment();
+    if (selectedEnvironment === 'help') {
       process.stdout.write(`\n${usage()}\n\n`);
       continue;
     }
-    if (selected === 'exit') {
+    if (selectedEnvironment === 'exit') {
       process.exit(0);
     }
+    if (!PROJECT_ENVIRONMENTS[selectedEnvironment]) {
+      continue;
+    }
 
-    action = selected;
-    passthrough = [];
+    while (!action) {
+      const selectedAction = await promptProjectAction(selectedEnvironment);
+      if (selectedAction === 'help') {
+        process.stdout.write(`\n${usage()}\n\n`);
+        continue;
+      }
+      if (selectedAction === 'exit') {
+        process.exit(0);
+      }
+      if (selectedAction === 'back') {
+        break;
+      }
+
+      const resolved = resolveProjectMenuAction(selectedAction);
+      if (resolved) {
+        action = resolved.action;
+        passthrough = resolved.passthrough;
+      }
+    }
   }
 
   if (action === 'sync') {

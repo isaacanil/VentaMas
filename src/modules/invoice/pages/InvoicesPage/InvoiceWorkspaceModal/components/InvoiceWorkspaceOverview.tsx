@@ -220,20 +220,51 @@ export const InvoiceWorkspaceOverview = ({
                 />
               </FieldBlock>
             ) : null}
-            <InfoGrid>
-              <InfoPair>
-                <span>RNC / Cédula</span>
+            <ClientInfoGrid>
+              <ClientInfoPair>
+                <span>RNC / Cédula:</span>
                 <strong>{client?.rnc || client?.personalID || 'N/D'}</strong>
-              </InfoPair>
-              <InfoPair>
-                <span>Teléfono</span>
+              </ClientInfoPair>
+              <ClientInfoPair>
+                <span>Teléfono:</span>
                 <strong>{client?.tel || client?.tel2 || 'N/D'}</strong>
-              </InfoPair>
-              <InfoPair>
-                <span>Dirección</span>
+              </ClientInfoPair>
+              <ClientInfoPair>
+                <span>Dirección:</span>
                 <strong>{client?.address || 'N/D'}</strong>
-              </InfoPair>
-            </InfoGrid>
+              </ClientInfoPair>
+            </ClientInfoGrid>
+          </VmCard.Content>
+        </SectionCard>
+
+        <SectionCard>
+          <VmCard.Header>
+            <VmCard.Title>Documento</VmCard.Title>
+            <VmCard.Description>
+              {formatWorkspaceDate(visibleInvoice)}
+            </VmCard.Description>
+          </VmCard.Header>
+          <VmCard.Content>
+            <DocumentInfoGrid>
+              <DocumentInfoPair>
+                <span>Origen</span>
+                <strong>{visibleInvoice.sourceOfPurchase || 'N/D'}</strong>
+              </DocumentInfoPair>
+              <DocumentInfoPair>
+                <span>Formato</span>
+                <strong>
+                  {visibleInvoice.documentFormat ||
+                    visibleInvoice.fiscalMode ||
+                    'N/D'}
+                </strong>
+              </DocumentInfoPair>
+              <DocumentInfoPair>
+                <span>e-CF</span>
+                <strong>
+                  {electronic ? electronic.eNcf || 'Pendiente' : 'No aplica'}
+                </strong>
+              </DocumentInfoPair>
+            </DocumentInfoGrid>
           </VmCard.Content>
         </SectionCard>
 
@@ -275,29 +306,29 @@ export const InvoiceWorkspaceOverview = ({
                 </FieldBlock>
               </DiscountGrid>
             ) : null}
-            <InfoGrid>
-              <InfoPair>
+            <TotalsInfoGrid>
+              <TotalsInfoPair>
                 <span>Subtotal</span>
                 <strong>
                   {formatWorkspaceAmount(subtotal, visibleInvoice)}
                 </strong>
-              </InfoPair>
-              <InfoPair>
+              </TotalsInfoPair>
+              <TotalsInfoPair>
                 <span>Descuento</span>
                 <strong>
                   {Number(visibleInvoice.discount?.value ?? 0)}
                   {visibleInvoice.discount?.type === 'fixed' ? '' : '%'}
                 </strong>
-              </InfoPair>
-              <InfoPair>
+              </TotalsInfoPair>
+              <TotalsInfoPair>
                 <span>ITBIS</span>
                 <strong>{formatWorkspaceAmount(taxes, visibleInvoice)}</strong>
-              </InfoPair>
-              <InfoPair>
+              </TotalsInfoPair>
+              <TotalsInfoPair>
                 <span>Total</span>
                 <strong>{formatWorkspaceAmount(total, visibleInvoice)}</strong>
-              </InfoPair>
-              <InfoPair>
+              </TotalsInfoPair>
+              <TotalsInfoPair>
                 <span>Pagado</span>
                 <strong>
                   {formatWorkspaceAmount(
@@ -305,8 +336,8 @@ export const InvoiceWorkspaceOverview = ({
                     visibleInvoice,
                   )}
                 </strong>
-              </InfoPair>
-              <InfoPair>
+              </TotalsInfoPair>
+              <TotalsInfoPair>
                 <span>Pendiente</span>
                 <strong>
                   {formatWorkspaceAmount(
@@ -314,43 +345,8 @@ export const InvoiceWorkspaceOverview = ({
                     visibleInvoice,
                   )}
                 </strong>
-              </InfoPair>
-            </InfoGrid>
-          </VmCard.Content>
-        </SectionCard>
-
-        <SectionCard>
-          <VmCard.Header>
-            <VmCard.Title>Documento</VmCard.Title>
-            <VmCard.Description>
-              {formatWorkspaceDate(visibleInvoice)}
-            </VmCard.Description>
-          </VmCard.Header>
-          <VmCard.Content>
-            <InfoGrid>
-              <InfoPair>
-                <span>Origen</span>
-                <strong>{visibleInvoice.sourceOfPurchase || 'N/D'}</strong>
-              </InfoPair>
-              <InfoPair>
-                <span>Formato</span>
-                <strong>
-                  {visibleInvoice.documentFormat ||
-                    visibleInvoice.fiscalMode ||
-                    'N/D'}
-                </strong>
-              </InfoPair>
-              <InfoPair>
-                <span>e-CF</span>
-                <strong>
-                  {electronic ? electronic.eNcf || 'Pendiente' : 'No aplica'}
-                </strong>
-              </InfoPair>
-              <InfoPair>
-                <span>Estado interno</span>
-                <strong>{visibleInvoice.status || 'N/D'}</strong>
-              </InfoPair>
-            </InfoGrid>
+              </TotalsInfoPair>
+            </TotalsInfoGrid>
           </VmCard.Content>
         </SectionCard>
       </OverviewGrid>
@@ -479,9 +475,20 @@ const DiscountGrid = styled.div`
   gap: var(--ds-space-3);
 `;
 
-const InfoGrid = styled.div`
+
+const ClientInfoGrid = styled.div`
   display: grid;
-  gap: var(--ds-space-3);
+  gap: var(--ds-space-2);
+`;
+
+const TotalsInfoGrid = styled.div`
+  display: grid;
+  gap: var(--ds-space-2);
+`;
+
+const DocumentInfoGrid = styled.div`
+  display: grid;
+  gap: var(--ds-space-2);
 `;
 
 const InfoPair = styled.div`
@@ -503,6 +510,35 @@ const InfoPair = styled.div`
     font-weight: var(--ds-font-weight-semibold);
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+`;
+
+const ClientInfoPair = styled(InfoPair)`
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: var(--ds-space-1);
+  align-items: baseline;
+
+  strong {
+    white-space: normal;
+  }
+`;
+
+const TotalsInfoPair = styled(InfoPair)`
+  display: flex;
+  gap: var(--ds-space-3);
+  align-items: baseline;
+  justify-content: space-between;
+
+  strong {
+    flex-shrink: 0;
+    text-align: right;
+  }
+`;
+
+const DocumentInfoPair = styled(TotalsInfoPair)`
+  strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 `;
 

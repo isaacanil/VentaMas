@@ -256,13 +256,16 @@ const buildItems = (cart) => {
 
     return pruneUndefined({
       lineNumber: index + 1,
-      codes: product.id ? [{ type: 'internal', value: String(product.id) }] : undefined,
+      codes: product.id
+        ? [{ type: 'internal', value: String(product.id) }]
+        : undefined,
       name: pickString(product.name, product.productName, product.description),
       description: pickString(product.description, product.comment),
       billingIndicator: taxRate > 0 ? '1' : '4',
       quantity: roundAmount(quantity),
       unitPrice: roundAmount(unitPrice),
-      discountAmount: discountAmount > 0 ? roundAmount(discountAmount) : undefined,
+      discountAmount:
+        discountAmount > 0 ? roundAmount(discountAmount) : undefined,
       taxRate: taxRate > 0 ? roundAmount(taxRate) : undefined,
       taxAmount: taxAmount > 0 ? roundAmount(taxAmount) : undefined,
       lineAmount: roundAmount(lineAmount),
@@ -306,7 +309,9 @@ const buildTotals = (cart, items) => {
 };
 
 const resolvePaymentForm = (method) => {
-  const raw = String(method || '').trim().toLowerCase();
+  const raw = String(method || '')
+    .trim()
+    .toLowerCase();
   if (!raw) return '1';
   if (raw.includes('tarjeta') || raw.includes('card')) return '3';
   if (raw.includes('cheque') || raw.includes('check')) return '2';
@@ -325,7 +330,9 @@ const buildPayments = (cart, grandTotal) => {
       const amount = pickNumber(method?.value, method?.amount);
       if (amount == null || amount <= 0) return null;
       return {
-        form: resolvePaymentForm(method?.method || method?.type || method?.name),
+        form: resolvePaymentForm(
+          method?.method || method?.type || method?.name,
+        ),
         amount: roundAmount(amount),
       };
     })
@@ -373,7 +380,9 @@ const buildBuyer = ({ client, documentType }) => {
 
 const buildIssuer = ({ business }) => {
   const businessNode = asRecord(business?.business);
-  const source = Object.keys(businessNode).length ? businessNode : asRecord(business);
+  const source = Object.keys(businessNode).length
+    ? businessNode
+    : asRecord(business);
   const phone = normalizePhone(source.phone, source.tel);
 
   return pruneUndefined({
@@ -402,10 +411,13 @@ export const buildGisysIssuePayload = ({
 }) => {
   const cart = asRecord(taskPayload?.cart || invoice?.snapshot?.cart);
   const ncf = asRecord(invoice?.snapshot?.ncf);
-  const ncfType = taskPayload?.ncfType || ncf.type || taskPayload?.taxReceiptName;
+  const ncfType =
+    taskPayload?.ncfType || ncf.type || taskPayload?.taxReceiptName;
   const documentType = resolveGisysDocumentType({ ncfType, ncf, cart });
   if (!documentType) {
-    throw new Error(`gisys_document_type_unresolved(ncfType=${ncfType || 'empty'})`);
+    throw new Error(
+      `gisys_document_type_unresolved(ncfType=${ncfType || 'empty'})`,
+    );
   }
 
   const items = buildItems(cart);
@@ -414,7 +426,8 @@ export const buildGisysIssuePayload = ({
   }
 
   const totals = buildTotals(cart, items);
-  const client = taskPayload?.client || invoice?.snapshot?.client || cart.client;
+  const client =
+    taskPayload?.client || invoice?.snapshot?.client || cart.client;
   const issuedAt =
     normalizeDate(cart?.date) ||
     normalizeDate(invoice?.createdAt) ||

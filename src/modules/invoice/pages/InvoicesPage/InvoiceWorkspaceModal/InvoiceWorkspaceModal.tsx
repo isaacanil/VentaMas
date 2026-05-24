@@ -1,5 +1,5 @@
 import { notification } from 'antd';
-import { useCallback, useEffect, useRef, useState, type Key } from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo, type Key } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
@@ -24,12 +24,21 @@ import type { UserIdentity } from '@/types/users';
 import { getInvoicePaymentInfo } from '@/utils/invoice';
 import { isProgrammaticLetterPdfTemplate } from '@/utils/invoice/template';
 import { InvoiceWorkspaceHeader } from './components/InvoiceWorkspaceHeader';
-import { InvoiceWorkspaceOperations } from './components/InvoiceWorkspaceOperations';
 import { InvoiceWorkspaceOverview } from './components/InvoiceWorkspaceOverview';
 import { InvoiceWorkspacePayments } from './components/InvoiceWorkspacePayments';
 import { InvoiceWorkspaceProducts } from './components/InvoiceWorkspaceProducts';
 import { InvoiceWorkspaceRelations } from './components/InvoiceWorkspaceRelations';
 import { resolveInvoiceWorkspaceEditState } from './utils/invoiceWorkspaceEdit';
+import { useFbGetAccountReceivableByInvoice } from '@/firebase/accountsReceivable/useFbGetAccountReceivableByInvoice';
+import { fbCancelInvoice } from '@/firebase/invoices/fbCancelInvoice';
+import { syncInvoicePaymentsFromAR } from '@/firebase/invoices/syncInvoicePaymentsFromAR';
+import {
+  DGII_608_REASON_OPTIONS,
+  getDgii608ReasonOption,
+} from '@/utils/fiscal/dgii608ReasonCatalog';
+import { formatWorkspaceAmount } from './utils/invoiceWorkspaceFormat';
+import { InvoiceWorkspaceSelect } from './components/InvoiceWorkspaceSelect';
+import { VmTextArea } from '@/components/heroui';
 
 const WORKSPACE_TAB_KEYS = new Set<InvoiceWorkspaceModalMode>([
   'overview',
@@ -43,6 +52,47 @@ const normalizeWorkspaceTab = (
 ): InvoiceWorkspaceModalMode => {
   const value = String(key) as InvoiceWorkspaceModalMode;
   return WORKSPACE_TAB_KEYS.has(value) ? value : 'overview';
+};
+
+const VOIDED_INVOICE_STATUSES = new Set(['voided', 'canceled', 'cancelled']);
+
+const toSafeNumber = (value: unknown) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const resolveInvoiceVoidState = (invoice: InvoiceData) => {
+  const status =
+    typeof invoice.status === 'string' ? invoice.status.toLowerCase() : '';
+  const paymentHistory = invoice.paymentHistory;
+  const hasPaymentHistory =
+    Array.isArray(paymentHistory) && paymentHistory.length > 0;
+  const hasAppliedPayment =
+    toSafeNumber(invoice.accumulatedPaid) > 0 || hasPaymentHistory;
+  const isAlreadyVoided =
+    VOIDED_INVOICE_STATUSES.has(status) || Boolean(invoice.voidedAt);
+
+  if (isAlreadyVoided) {
+    return {
+      canVoid: false,
+      label: 'Ya anulada',
+      reason: 'La factura ya está marcada como anulada.',
+    };
+  }
+
+  if (hasAppliedPayment) {
+    return {
+      canVoid: false,
+      label: 'Bloqueada por pagos',
+      reason: 'La factura tiene pagos aplicados o historial de cobros.',
+    };
+  }
+
+  return {
+    canVoid: true,
+    label: 'Disponible',
+    reason: 'Requiere motivo DGII 608 y confirmación.',
+  };
 };
 
 export const InvoiceWorkspaceModal = () => {
@@ -74,6 +124,134 @@ export const InvoiceWorkspaceModal = () => {
   const editState = resolveInvoiceWorkspaceEditState(invoice, now);
   const isEditLocked = !editState.canEditDirectly;
   const paymentInfo = getInvoicePaymentInfo(invoice);
+
+  const { accountsReceivable } = useFbGetAccountReceivableByInvoice(invoiceId);
+  const [isSyncingReceivables, setIsSyncingReceivables] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
+  const [reasonCode, setReasonCode] = useState(
+    DGII_608_REASON_OPTIONS[3]?.code ?? DGII_608_REASON_OPTIONS[0]?.code ?? '',
+  );
+  const [reasonNote, setReasonNote] = useState('');
+
+  const safeAccountsReceivable = useMemo(
+    () => (Array.isArray(accountsReceivable) ? accountsReceivable : []),
+    [accountsReceivable],
+  );
+  const hasAccountsReceivable = safeAccountsReceivable.length > 0;
+  const voidState = useMemo(
+    () => (invoice ? resolveInvoiceVoidState(invoice) : { canVoid: false, label: '', reason: '' }),
+    [invoice],
+  );
+
+  const handleSyncReceivablePayments = useCallback(async () => {
+    if (!invoiceId || !hasAccountsReceivable || !invoice) {
+      notification.warning({
+        message: 'No se puede sincronizar',
+        description: 'Esta factura no tiene cuentas por cobrar asociadas para sincronizar.',
+        duration: 4,
+      });
+      return;
+    }
+    if (!user?.businessID) {
+      notification.error({
+        message: 'Sesión expirada',
+        description: 'Inicia sesión nuevamente para actualizar la factura.',
+        duration: 4,
+      });
+      return;
+    }
+
+    setIsSyncingReceivables(true);
+    try {
+      const result = await syncInvoicePaymentsFromAR(user, invoiceId);
+      const nextInvoice: InvoiceData = {
+        ...invoice,
+        accumulatedPaid: result.accumulatedPaid,
+        balanceDue: result.balanceDue,
+        paymentStatus: result.paymentStatus,
+        preorderDetails: invoice.preorderDetails
+          ? {
+              ...invoice.preorderDetails,
+              accumulatedPaid: result.accumulatedPaid,
+              balanceDue: result.balanceDue,
+              paymentStatus: result.paymentStatus,
+            }
+          : invoice.preorderDetails,
+      };
+
+      dispatch(updateInvoiceWorkspaceModalData(nextInvoice));
+      notification.success({
+        message: 'Pagos CxC sincronizados',
+        description: `Sincronizados: ${formatWorkspaceAmount(
+          result.arPaid,
+          invoice,
+        )}. Balance: ${formatWorkspaceAmount(result.balanceDue, invoice)}.`,
+        duration: 4,
+      });
+    } catch (error: any) {
+      notification.error({
+        message: 'Error de sincronización',
+        description: error?.message || 'No se pudo sincronizar la factura.',
+        duration: 4,
+      });
+    } finally {
+      setIsSyncingReceivables(false);
+    }
+  }, [dispatch, hasAccountsReceivable, invoice, invoiceId, user]);
+
+  const handleCancelInvoice = useCallback(async () => {
+    if (!voidState.canVoid || !invoice) {
+      notification.warning({
+        message: 'No se puede anular',
+        description: voidState.reason,
+        duration: 4,
+      });
+      return;
+    }
+    if (!user) {
+      notification.error({
+        message: 'Error de usuario',
+        description: 'No se encontró un usuario válido para anular.',
+        duration: 4,
+      });
+      return;
+    }
+
+    const selectedReason = getDgii608ReasonOption(reasonCode);
+    if (!selectedReason) {
+      notification.error({
+        message: 'Motivo inválido',
+        description: 'Seleccione un motivo DGII válido.',
+        duration: 4,
+      });
+      return;
+    }
+
+    setIsCanceling(true);
+    try {
+      await fbCancelInvoice(user, invoice, {
+        reasonCode: selectedReason.code,
+        reasonLabel: selectedReason.label,
+        note: reasonNote.trim() || undefined,
+      });
+      notification.success({
+        message: 'Factura anulada',
+        description: 'La factura ha sido anulada correctamente.',
+        duration: 4,
+      });
+      setIsCancelModalOpen(false);
+      dispatch(closeInvoiceWorkspaceModal());
+    } catch (error: any) {
+      notification.error({
+        message: 'Error al anular',
+        description: error?.message || 'Ocurrió un error al anular la factura.',
+        duration: 4,
+      });
+    } finally {
+      setIsCanceling(false);
+    }
+  }, [dispatch, invoice, reasonCode, reasonNote, user, voidState.canVoid, voidState.reason]);
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -163,16 +341,6 @@ export const InvoiceWorkspaceModal = () => {
     [dispatch],
   );
 
-  const handleInvoiceUpdated = useCallback(
-    (updatedInvoice: InvoiceData) => {
-      dispatch(updateInvoiceWorkspaceModalData(updatedInvoice));
-    },
-    [dispatch],
-  );
-
-  const handleInvoiceVoided = useCallback(() => {
-    dispatch(closeInvoiceWorkspaceModal());
-  }, [dispatch]);
 
   const handleOpenAccountingEntry = useCallback(() => {
     if (!invoiceId) return;
@@ -187,6 +355,35 @@ export const InvoiceWorkspaceModal = () => {
       dispatch(closeInvoiceWorkspaceModal());
     }
   }, [dispatch, invoiceId, openAccountingEntry]);
+
+  const cancelReasonOptions = useMemo(
+    () =>
+      DGII_608_REASON_OPTIONS.map((reason) => ({
+        value: reason.code,
+        label: `${reason.code} - ${reason.label}`,
+      })),
+    [],
+  );
+
+  const cancelFooter = (
+    <>
+      <VmButton
+        variant="secondary"
+        onPress={() => setIsCancelModalOpen(false)}
+        isDisabled={isCanceling}
+      >
+        Cancelar
+      </VmButton>
+      <DangerButton
+        variant="primary"
+        onPress={handleCancelInvoice}
+        isDisabled={!voidState.canVoid || isCanceling}
+        isPending={isCanceling}
+      >
+        Anular factura
+      </DangerButton>
+    </>
+  );
 
   if (!isOpen || !invoice) return null;
 
@@ -205,6 +402,8 @@ export const InvoiceWorkspaceModal = () => {
         size="full"
         title="Factura"
         footer={footer}
+        containerClassName="md:p-6 min-[1300px]:p-8"
+        dialogClassName="md:w-[min(1120px,calc(100vw-72px))] md:max-w-[1120px] md:h-[calc(100vh-72px)] md:my-auto md:rounded-[28px] min-[1300px]:max-w-[1160px] min-[1300px]:h-[calc(100vh-64px)]"
       >
         <Workspace>
           <InvoiceWorkspaceHeader
@@ -219,12 +418,11 @@ export const InvoiceWorkspaceModal = () => {
             onPrint={handlePrintInvoice}
             canOpenAccountingEntry={canOpenAccountingEntry}
             onOpenAccountingEntry={handleOpenAccountingEntry}
-          />
-
-          <ElectronicTaxReceiptInfoCard
-            businessId={businessId}
-            invoiceId={invoiceId}
-            invoiceData={invoice}
+            hasAccountsReceivable={hasAccountsReceivable}
+            isSyncingReceivables={isSyncingReceivables}
+            onSyncReceivablePayments={handleSyncReceivablePayments}
+            voidState={voidState}
+            onOpenCancelModal={() => setIsCancelModalOpen(true)}
           />
 
           <WorkspaceTabs
@@ -267,11 +465,10 @@ export const InvoiceWorkspaceModal = () => {
                   onSaved={handleSavedInvoice}
                   user={user}
                 />
-                <InvoiceWorkspaceOperations
-                  invoice={invoice}
-                  onInvoiceUpdated={handleInvoiceUpdated}
-                  onInvoiceVoided={handleInvoiceVoided}
-                  user={user}
+                <ElectronicTaxReceiptInfoCard
+                  businessId={businessId}
+                  invoiceId={invoiceId}
+                  invoiceData={invoice}
                 />
               </PanelContent>
             </VmTabs.Panel>
@@ -327,9 +524,103 @@ export const InvoiceWorkspaceModal = () => {
           template={invoiceType || undefined}
         />
       </HiddenPrintArea>
+
+      <VmModal
+        ariaLabel="Anular factura"
+        isOpen={isCancelModalOpen}
+        onOpenChange={(open) => {
+          if (!open && !isCanceling) setIsCancelModalOpen(false);
+        }}
+        title="Anular factura"
+        footer={cancelFooter}
+        isDismissable={!isCanceling}
+        isKeyboardDismissDisabled={isCanceling}
+        size="md"
+      >
+        <CancelContent>
+          <WarningBox>
+            <strong>Esta acción es definitiva.</strong>
+            <span>
+              Los productos volverán al inventario y se guardará el motivo DGII
+              608 para auditoría.
+            </span>
+          </WarningBox>
+
+          <Field>
+            <InvoiceWorkspaceSelect
+              ariaLabel="Motivo DGII 608"
+              label="Motivo DGII 608"
+              name="invoice-workspace-cancel-reason"
+              options={cancelReasonOptions}
+              value={reasonCode}
+              isDisabled={isCanceling}
+              onChange={setReasonCode}
+            />
+          </Field>
+
+          <Field>
+            <Label htmlFor="invoice-workspace-cancel-note">
+              Nota o comentario (opcional)
+            </Label>
+            <VmTextArea
+              id="invoice-workspace-cancel-note"
+              name="invoice-workspace-cancel-note"
+              placeholder="Describa el motivo de la anulación"
+              value={reasonNote}
+              disabled={isCanceling}
+              onChange={(event) => setReasonNote(event.target.value)}
+            />
+          </Field>
+        </CancelContent>
+      </VmModal>
     </>
   );
 };
+
+const DangerButton = styled(VmButton)`
+  &[data-variant='primary'],
+  &[data-variant='secondary'] {
+    color: var(--ds-color-state-on-danger);
+    background: var(--ds-color-state-danger);
+    border-color: var(--ds-color-state-danger);
+  }
+
+  &:disabled {
+    color: var(--ds-color-text-disabled);
+    background: var(--ds-color-bg-subtle);
+    border-color: var(--ds-color-border-subtle);
+  }
+`;
+
+const CancelContent = styled.div`
+  display: grid;
+  gap: var(--ds-space-4);
+`;
+
+const WarningBox = styled.div`
+  display: grid;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-3);
+  color: var(--ds-color-state-warning-text);
+  background: var(--ds-color-state-warning-subtle);
+  border: 1px solid var(--ds-color-state-warning);
+  border-radius: var(--ds-radius-lg);
+
+  strong {
+    color: var(--ds-color-text-primary);
+  }
+`;
+
+const Field = styled.div`
+  display: grid;
+  gap: var(--ds-space-1);
+`;
+
+const Label = styled.label`
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-medium);
+  color: var(--ds-color-text-secondary);
+`;
 
 const Workspace = styled.div`
   display: grid;

@@ -13,6 +13,7 @@ const STATUS_LABELS: Record<string, string> = {
   queued: 'En cola',
   not_checked: 'DGII sin validar',
   issued: 'Emitido',
+  error: 'Error GISYS',
   shadow_ready: 'Shadow listo',
   local_failed: 'Error local',
 };

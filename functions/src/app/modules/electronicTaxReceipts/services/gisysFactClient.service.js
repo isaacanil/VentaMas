@@ -100,10 +100,13 @@ export const issueGisysFactDocument = async ({
 
     return {
       ...body,
-      links: buildGisysFactLinks({
-        config,
-        submissionId: body?.submissionId,
-      }) || body?.links || null,
+      links:
+        buildGisysFactLinks({
+          config,
+          submissionId: body?.submissionId,
+        }) ||
+        body?.links ||
+        null,
     };
   } catch (error) {
     if (error?.name === 'AbortError') {
