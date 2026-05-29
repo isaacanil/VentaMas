@@ -2,7 +2,16 @@
 
 Fecha: 2026-05-29
 Repo: `C:\Dev\VentaMas`
-Estado: diseno antes de implementacion
+Estado: implementacion incremental en curso
+
+## Estado de implementacion
+
+- P0 completado en `c95dbb6`: checkpoint, pruebas focalizadas, commit y push de
+  cambios previos antes de construir RRHH.
+- P1 completado en `6d11270`: base `businessParties`, `hrEmployees`, callable
+  `manageHrEmployee`, reglas, ruta y pantalla de colaboradores.
+- P2 completado en la implementacion actual: proyeccion de `serviceCommissions`
+  hacia `hrCommissionEntries`, recalculo manual y vista de comisiones RRHH.
 
 ## Resumen ejecutivo
 
@@ -654,4 +663,3 @@ Yo lo haria asi:
 6. Postear contabilidad solo desde `accountingEvents`.
 7. Dejar nomina dominicana legal completa para una segunda etapa con parametros
    versionados y validacion contable/legal.
-

@@ -16,6 +16,16 @@ export type HrCommissionType = 'percentage' | 'fixed';
 
 export type HrReadyToPayStatus = 'ready' | 'needs_review';
 
+export type HrCommissionEntryStatus =
+  | 'calculated'
+  | 'eligible'
+  | 'included_in_cut'
+  | 'approved'
+  | 'paid'
+  | 'reversed'
+  | 'cancelled'
+  | 'requires_adjustment';
+
 export interface HrEmployeeInput {
   id?: string | null;
   employeeId?: string | null;
@@ -68,4 +78,42 @@ export interface HrEmployeeRecord extends Record<string, unknown> {
   readyToPayStatus: HrReadyToPayStatus;
   readyToPayIssues: string[];
   notes?: string | null;
+}
+
+export interface HrCommissionEntryRecord extends Record<string, unknown> {
+  id: string;
+  businessId: string;
+  employeeId?: string | null;
+  employeeCode?: string | null;
+  employeeNameSnapshot?: string | null;
+  partyId?: string | null;
+  linkedUserId?: string | null;
+  invoiceId?: string | null;
+  invoiceNumber?: string | null;
+  invoiceItemId?: string | null;
+  sourceType: 'invoice_line' | 'invoice_payment' | 'manual_adjustment';
+  sourceCommissionId?: string | null;
+  customerId?: string | null;
+  customerNameSnapshot?: string | null;
+  serviceId?: string | null;
+  serviceName?: string | null;
+  commissionRuleId?: string | null;
+  commissionRuleNameSnapshot?: string | null;
+  calculationBase?: string | null;
+  baseAmount: number;
+  rateType: HrCommissionType;
+  rateValue: number;
+  commissionAmount: number;
+  currency: string;
+  status: HrCommissionEntryStatus;
+  sourceStatus?: string | null;
+  periodId?: string | null;
+  payrollRunId?: string | null;
+  employeePaymentId?: string | null;
+  accountingEventId?: string | null;
+  journalEntryId?: string | null;
+  dedupeKey?: string | null;
+  date?: unknown;
+  createdAt?: unknown;
+  updatedAt?: unknown;
 }

@@ -27,6 +27,8 @@ export interface ServiceCommissionCollaboratorInput {
   code?: string | null;
   name?: string | null;
   linkedUserId?: string | null;
+  hrEmployeeId?: string | null;
+  partyId?: string | null;
   defaultType?: ServiceCommissionType | null;
   defaultRate?: number | string | null;
   active?: boolean;
@@ -99,6 +101,8 @@ const normalizeCollaboratorRecord = (
     code,
     name,
     linkedUserId: toCleanString(data.linkedUserId),
+    hrEmployeeId: toCleanString(data.hrEmployeeId),
+    partyId: toCleanString(data.partyId),
     defaultType: normalizeType(data.defaultType),
     defaultRate,
     active: data.active !== false,
@@ -142,6 +146,8 @@ export const saveServiceCommissionCollaborator = async ({
       code,
       name,
       linkedUserId: toCleanString(collaborator.linkedUserId),
+      hrEmployeeId: toCleanString(collaborator.hrEmployeeId),
+      partyId: toCleanString(collaborator.partyId),
       defaultType,
       defaultRate,
       active: collaborator.active !== false,

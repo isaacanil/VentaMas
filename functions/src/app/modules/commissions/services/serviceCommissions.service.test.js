@@ -14,6 +14,7 @@ import {
   calculateServiceCommissionAmount,
   normalizeServiceCommissionSettings,
   resolveServiceCommissionBaseAmount,
+  syncServiceCommissionsTx,
   voidServiceCommissionsTx,
 } from './serviceCommissions.service.js';
 
@@ -68,6 +69,8 @@ describe('serviceCommissions.service', () => {
               id: 'user-1',
               code: '12',
               name: 'Ana',
+              hrEmployeeId: 'employee-1',
+              partyId: 'party-1',
             },
             rateValue: 20,
             type: 'percentage',
@@ -96,11 +99,75 @@ describe('serviceCommissions.service', () => {
       serviceName: 'Consulta',
       collaboratorCode: '12',
       collaboratorName: 'Ana',
+      hrEmployeeId: 'employee-1',
+      partyId: 'party-1',
       billedAmount: 500,
       amountFactured: 500,
       commissionAmount: 100,
       status: 'active',
     });
+  });
+
+  it('syncs service commission records and HR commission entries together', () => {
+    const transaction = { set: vi.fn() };
+    const records = syncServiceCommissionsTx(transaction, {
+      businessId: 'business-1',
+      invoiceId: 'invoice-1',
+      invoice: {
+        date: 1710000000000,
+        numberID: 'F-001',
+      },
+      settings: {
+        serviceCommissions: {
+          enabled: true,
+          defaultRate: 10,
+          defaultType: 'percentage',
+        },
+      },
+      products: [
+        {
+          id: 'service-1',
+          cid: 'line-1',
+          itemType: 'service',
+          name: 'Consulta',
+          pricing: { price: 500 },
+          amountToBuy: 1,
+          serviceCommission: {
+            collaborator: {
+              id: 'employee-1',
+              code: 'EMP-1',
+              name: 'Ana',
+              hrEmployeeId: 'employee-1',
+              partyId: 'party-1',
+            },
+            rateValue: 20,
+            type: 'percentage',
+          },
+        },
+      ],
+      userId: 'cashier-1',
+    });
+
+    expect(records).toHaveLength(1);
+    expect(transaction.set).toHaveBeenCalledWith(
+      { path: 'businesses/business-1/serviceCommissions/invoice-1_line-1' },
+      expect.objectContaining({
+        id: 'invoice-1_line-1',
+        hrEmployeeId: 'employee-1',
+      }),
+      { merge: true },
+    );
+    expect(transaction.set).toHaveBeenCalledWith(
+      {
+        path: 'businesses/business-1/hrCommissionEntries/service_invoice-1_line-1',
+      },
+      expect.objectContaining({
+        employeeId: 'employee-1',
+        partyId: 'party-1',
+        status: 'calculated',
+      }),
+      { merge: true },
+    );
   });
 
   it('marks existing commission records voided in the invoice transaction', () => {

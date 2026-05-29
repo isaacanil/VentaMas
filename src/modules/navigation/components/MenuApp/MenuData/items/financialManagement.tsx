@@ -19,7 +19,7 @@ const { PURCHASES } = ROUTES_NAME.PURCHASE_TERM;
 const { ORDERS } = ROUTES_NAME.ORDER_TERM;
 
 const { EXPENSES_LIST } = ROUTES_NAME.EXPENSES_TERM;
-const { HR_PAYROLL } = ROUTES_NAME.HR_PAYROLL_TERM;
+const { HR_PAYROLL, HR_COMMISSIONS } = ROUTES_NAME.HR_PAYROLL_TERM;
 const {
   ACCOUNTING_JOURNAL_BOOK,
   ACCOUNTING_GENERAL_LEDGER,
@@ -63,8 +63,23 @@ const financialManagement: MenuItem[] = [
   {
     title: 'RRHH y nomina',
     icon: <TeamOutlined />,
-    route: HR_PAYROLL,
     group: 'hrPayroll',
+    submenuIconOpen: ChevronLeft,
+    submenuIconClose: ChevronRight,
+    submenu: [
+      {
+        title: 'Colaboradores',
+        icon: <TeamOutlined />,
+        route: HR_PAYROLL,
+        group: 'hrPayroll',
+      },
+      {
+        title: 'Comisiones RRHH',
+        icon: <TeamOutlined />,
+        route: HR_COMMISSIONS,
+        group: 'hrPayroll',
+      },
+    ],
   },
   {
     title: 'Contabilidad',

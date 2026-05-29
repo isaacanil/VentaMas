@@ -65,7 +65,8 @@ const resolveInvoicePayload = (invoiceDoc) => {
 const resolveInvoiceStatus = (invoiceDoc) =>
   toCleanString(resolveInvoicePayload(invoiceDoc).status);
 
-const isDraftInvoice = (invoiceDoc) => resolveInvoiceStatus(invoiceDoc) === 'draft';
+const isDraftInvoice = (invoiceDoc) =>
+  resolveInvoiceStatus(invoiceDoc) === 'draft';
 
 const isLockedInvoice = (invoiceDoc) => {
   const payload = resolveInvoicePayload(invoiceDoc);
@@ -74,15 +75,16 @@ const isLockedInvoice = (invoiceDoc) => {
 
   return Boolean(
     toCleanString(payload.NCF) ||
-      toCleanString(payload.ncf) ||
-      toCleanString(payload.comprobante) ||
-      toCleanString(payload.numberID) ||
-      toCleanString(payload.cashCountId) ||
-      toCleanString(payload.voidedAt) ||
-      Object.keys(asRecord(payload.receivableState)).length ||
-      Array.isArray(payload.paymentHistory) && payload.paymentHistory.length > 0 ||
-      safeNumber(payload.accumulatedPaid) > 0 ||
-      safeNumber(payload.balanceDue) > 0,
+    toCleanString(payload.ncf) ||
+    toCleanString(payload.comprobante) ||
+    toCleanString(payload.numberID) ||
+    toCleanString(payload.cashCountId) ||
+    toCleanString(payload.voidedAt) ||
+    Object.keys(asRecord(payload.receivableState)).length ||
+    (Array.isArray(payload.paymentHistory) &&
+      payload.paymentHistory.length > 0) ||
+    safeNumber(payload.accumulatedPaid) > 0 ||
+    safeNumber(payload.balanceDue) > 0,
   );
 };
 
@@ -112,7 +114,8 @@ export const updateInvoiceFinancialDocument = onCall(
 
     const payload = asRecord(request?.data);
     const businessId = resolveBusinessId(payload);
-    const invoiceId = toCleanString(payload.invoiceId) || toCleanString(payload.id);
+    const invoiceId =
+      toCleanString(payload.invoiceId) || toCleanString(payload.id);
     const updates = asRecord(payload.invoice);
 
     if (!businessId || !invoiceId) {
@@ -154,7 +157,10 @@ export const updateInvoiceFinancialDocument = onCall(
         authUid,
       });
 
-      if (!isDraftInvoice({ data: nextInvoice }) || isLockedInvoice({ data: nextInvoice })) {
+      if (
+        !isDraftInvoice({ data: nextInvoice }) ||
+        isLockedInvoice({ data: nextInvoice })
+      ) {
         throw new HttpsError(
           'failed-precondition',
           'La edición directa solo está permitida para facturas draft sin huella fiscal/contable.',
@@ -189,7 +195,8 @@ export const deleteDraftInvoice = onCall(
 
     const payload = asRecord(request?.data);
     const businessId = resolveBusinessId(payload);
-    const invoiceId = toCleanString(payload.invoiceId) || toCleanString(payload.id);
+    const invoiceId =
+      toCleanString(payload.invoiceId) || toCleanString(payload.id);
 
     if (!businessId || !invoiceId) {
       throw new HttpsError(
@@ -235,7 +242,8 @@ export const voidInvoiceFinancialDocument = onCall(
 
     const payload = asRecord(request?.data);
     const businessId = resolveBusinessId(payload);
-    const invoiceId = toCleanString(payload.invoiceId) || toCleanString(payload.id);
+    const invoiceId =
+      toCleanString(payload.invoiceId) || toCleanString(payload.id);
     const cancellation = asRecord(payload.cancellation);
     const reasonCode = toCleanString(cancellation.reasonCode);
     const reasonLabel = toCleanString(cancellation.reasonLabel);
@@ -262,7 +270,9 @@ export const voidInvoiceFinancialDocument = onCall(
     });
 
     const invoiceRef = db.doc(`businesses/${businessId}/invoices/${invoiceId}`);
-    const invoiceV2Ref = db.doc(`businesses/${businessId}/invoicesV2/${invoiceId}`);
+    const invoiceV2Ref = db.doc(
+      `businesses/${businessId}/invoicesV2/${invoiceId}`,
+    );
     const settingsRef = db.doc(`businesses/${businessId}/settings/accounting`);
     const committedEventRef = db.doc(
       `businesses/${businessId}/accountingEvents/invoice.committed__${invoiceId}`,
@@ -346,7 +356,10 @@ export const voidInvoiceFinancialDocument = onCall(
         );
       }
 
-      if (Array.isArray(invoice.paymentHistory) && invoice.paymentHistory.length > 0) {
+      if (
+        Array.isArray(invoice.paymentHistory) &&
+        invoice.paymentHistory.length > 0
+      ) {
         throw new HttpsError(
           'failed-precondition',
           'La factura tiene historial de pagos. Anule primero los cobros desde el flujo de CxC.',
@@ -468,7 +481,9 @@ export const voidInvoiceFinancialDocument = onCall(
 
       arRecords.forEach((entry) => {
         const paymentState = asRecord(entry.data.paymentState);
-        const balance = safeNumber(paymentState.balance ?? entry.data.arBalance);
+        const balance = safeNumber(
+          paymentState.balance ?? entry.data.arBalance,
+        );
         transaction.set(
           entry.ref,
           {
@@ -522,6 +537,7 @@ export const voidInvoiceFinancialDocument = onCall(
 
       const voidedCommissionsCount = voidServiceCommissionsTx(transaction, {
         authUid,
+        businessId,
         commissionSnap: commissionsSnap,
         reasonLabel,
         voidedAt: now,

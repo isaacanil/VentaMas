@@ -12,6 +12,8 @@ export interface ServiceCommissionCollaboratorSnapshot {
   id?: string | null;
   code?: string | null;
   name?: string | null;
+  hrEmployeeId?: string | null;
+  partyId?: string | null;
   linkedUserId?: string | null;
   defaultType?: ServiceCommissionType | null;
   defaultRate?: number | null;
@@ -36,6 +38,8 @@ export interface ServiceCommissionLineSnapshot {
   collaboratorId?: string | null;
   collaboratorCode?: string | null;
   collaboratorName?: string | null;
+  hrEmployeeId?: string | null;
+  partyId?: string | null;
   type?: ServiceCommissionType;
   rateValue?: number | null;
   source?: ServiceCommissionSource;
@@ -66,6 +70,8 @@ export interface ServiceCommissionRecord {
   collaboratorId?: string | null;
   collaboratorCode?: string | null;
   collaboratorName?: string | null;
+  hrEmployeeId?: string | null;
+  partyId?: string | null;
   billedAmount: number;
   amountFactured?: number;
   commissionAmount: number;

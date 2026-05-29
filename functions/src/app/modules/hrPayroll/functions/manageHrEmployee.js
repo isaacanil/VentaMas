@@ -68,6 +68,9 @@ export const manageHrEmployee = onCall(async (request) => {
       const partyRef = db.doc(
         `businesses/${businessId}/businessParties/${employee.partyId}`,
       );
+      const serviceCommissionCollaboratorRef = db.doc(
+        `businesses/${businessId}/serviceCommissionCollaborators/${employee.employeeId}`,
+      );
       const duplicateCodeQuery = db
         .collection(`businesses/${businessId}/hrEmployees`)
         .where('code', '==', employee.code)
@@ -132,6 +135,33 @@ export const manageHrEmployee = onCall(async (request) => {
 
       transaction.set(partyRef, partyPayload, { merge: true });
       transaction.set(employeeRef, employeePayload, { merge: true });
+      if (
+        employee.commissionEnabled ||
+        existingEmployeeSnap.data()?.commissionEnabled === true
+      ) {
+        transaction.set(
+          serviceCommissionCollaboratorRef,
+          {
+            id: employee.employeeId,
+            businessId,
+            code: employee.code,
+            name: employee.fullName,
+            linkedUserId: employee.linkedUserId,
+            hrEmployeeId: employee.employeeId,
+            partyId: employee.partyId,
+            defaultType: employee.defaultCommissionType,
+            defaultRate: employee.defaultCommissionRate || 0,
+            active:
+              employee.commissionEnabled === true &&
+              employee.status === 'active',
+            source: 'hrEmployee',
+            updatedAt: timestamp,
+            updatedBy: authUid,
+            ...(isNew ? { createdAt: timestamp, createdBy: authUid } : {}),
+          },
+          { merge: true },
+        );
+      }
 
       if (memberRef && linkedUserRef) {
         transaction.set(

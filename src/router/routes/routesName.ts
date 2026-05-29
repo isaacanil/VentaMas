@@ -207,6 +207,7 @@ const ACCOUNTING_TERM = {
 const HR_PAYROLL_TERM = {
   HR_PAYROLL: '/hr',
   HR_EMPLOYEES: '/hr/employees',
+  HR_COMMISSIONS: '/hr/commissions',
 } as const;
 
 const ACCOUNT_RECEIVABLE_TERM = {

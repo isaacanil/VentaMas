@@ -18,7 +18,10 @@ import {
   selectCartDocumentCurrency,
   updateProductFields,
 } from '@/features/cart/cartSlice';
-import type { CartSettings, Product as CartProduct } from '@/features/cart/types';
+import type {
+  CartSettings,
+  Product as CartProduct,
+} from '@/features/cart/types';
 import { selectUser } from '@/features/auth/userSlice';
 import { useServiceCommissionCollaborators } from '@/firebase/commissions/useServiceCommissionCollaborators';
 import { useBusinessUsers } from '@/firebase/users/useBusinessUsers';
@@ -86,6 +89,9 @@ const buildCurrentCollaborator = (
     id: commission.collaboratorId ?? commission.collaborator?.id,
     code: commission.collaboratorCode ?? commission.collaborator?.code,
     name: commission.collaboratorName ?? commission.collaborator?.name,
+    hrEmployeeId:
+      commission.hrEmployeeId ?? commission.collaborator?.hrEmployeeId,
+    partyId: commission.partyId ?? commission.collaborator?.partyId,
     defaultRate: commission.rateValue,
     defaultType: commission.type,
   });
@@ -181,7 +187,8 @@ export const ServiceCommissionModal = ({
         type: commissionType,
       })
     : null;
-  const selectedLabel = getServiceCommissionCollaboratorLabel(currentCommission);
+  const selectedLabel =
+    getServiceCommissionCollaboratorLabel(currentCommission);
 
   const persistCommission = ({
     collaborator,
@@ -360,7 +367,9 @@ export const ServiceCommissionModal = ({
             >
               <RateGroup>
                 <RateInput />
-                <RateUnit>{commissionType === 'percentage' ? '%' : 'RD$'}</RateUnit>
+                <RateUnit>
+                  {commissionType === 'percentage' ? '%' : 'RD$'}
+                </RateUnit>
               </RateGroup>
             </RateField>
           </Field>
@@ -369,7 +378,9 @@ export const ServiceCommissionModal = ({
         <Summary>
           <SummaryItem>
             <span>Base</span>
-            <strong>{formatPriceByCurrency(baseAmount, documentCurrency)}</strong>
+            <strong>
+              {formatPriceByCurrency(baseAmount, documentCurrency)}
+            </strong>
           </SummaryItem>
           <SummaryItem>
             <span>Comision estimada</span>

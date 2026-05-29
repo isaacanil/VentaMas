@@ -1,4 +1,8 @@
 import { db, FieldValue } from '../../../core/config/firebase.js';
+import {
+  syncHrCommissionEntriesFromServiceCommissionRecordsTx,
+  voidHrCommissionEntriesForServiceCommissionDocsTx,
+} from '../../hrPayroll/services/hrCommissionEntries.service.js';
 
 const DEFAULT_SETTINGS = {
   enabled: false,
@@ -75,7 +79,10 @@ const getQuantity = (product) => {
     return safeNumber(amountToBuy, 1);
   }
   const amount = asRecord(amountToBuy);
-  const quantity = safeNumber(amount.total ?? amount.unit ?? product?.quantity, 1);
+  const quantity = safeNumber(
+    amount.total ?? amount.unit ?? product?.quantity,
+    1,
+  );
   return quantity > 0 ? quantity : 1;
 };
 
@@ -107,7 +114,8 @@ const getDiscountAmount = (product, subtotal) => {
     return subtotal * (value / 100);
   }
 
-  const exchangeRate = safeNumber(asRecord(product?.monetary).exchangeRate, 1) || 1;
+  const exchangeRate =
+    safeNumber(asRecord(product?.monetary).exchangeRate, 1) || 1;
   return value * exchangeRate;
 };
 
@@ -161,6 +169,15 @@ const getCollaboratorSnapshot = (commission) => {
     id: id || null,
     code: code || null,
     name: name || null,
+    hrEmployeeId:
+      toCleanString(collaborator.hrEmployeeId) ||
+      toCleanString(commission.hrEmployeeId) ||
+      toCleanString(collaborator.employeeId) ||
+      null,
+    partyId:
+      toCleanString(collaborator.partyId) ||
+      toCleanString(commission.partyId) ||
+      null,
     linkedUserId:
       toCleanString(collaborator.linkedUserId) ||
       toCleanString(commission.linkedUserId) ||
@@ -231,6 +248,8 @@ export const buildServiceCommissionRecords = ({
         collaboratorId: collaborator.id,
         collaboratorCode: collaborator.code,
         collaboratorName: collaborator.name,
+        hrEmployeeId: collaborator.hrEmployeeId,
+        partyId: collaborator.partyId,
         billedAmount: baseAmount,
         amountFactured: baseAmount,
         commissionAmount,
@@ -276,12 +295,18 @@ export const syncServiceCommissionsTx = (
     transaction.set(ref, record, { merge: true });
   });
 
+  syncHrCommissionEntriesFromServiceCommissionRecordsTx(transaction, {
+    businessId,
+    records,
+    userId,
+  });
+
   return records;
 };
 
 export const voidServiceCommissionsTx = (
   transaction,
-  { authUid, commissionSnap, reasonLabel, voidedAt },
+  { authUid, businessId = null, commissionSnap, reasonLabel, voidedAt },
 ) => {
   const docs = commissionSnap?.docs || [];
   docs.forEach((docSnapshot) => {
@@ -298,5 +323,14 @@ export const voidServiceCommissionsTx = (
       { merge: true },
     );
   });
+  if (businessId) {
+    voidHrCommissionEntriesForServiceCommissionDocsTx(transaction, {
+      authUid,
+      businessId,
+      commissionDocs: docs,
+      reasonLabel,
+      voidedAt,
+    });
+  }
   return docs.length;
 };

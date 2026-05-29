@@ -8,8 +8,12 @@ const HrPayrollWorkspace = lazy(
   () =>
     import('@/modules/hrPayroll/pages/HrPayrollWorkspace/HrPayrollWorkspace'),
 );
+const HrCommissionsPage = lazy(
+  () => import('@/modules/hrPayroll/pages/HrCommissionsPage/HrCommissionsPage'),
+);
 
-const { HR_PAYROLL, HR_EMPLOYEES } = ROUTES_NAME.HR_PAYROLL_TERM;
+const { HR_PAYROLL, HR_EMPLOYEES, HR_COMMISSIONS } =
+  ROUTES_NAME.HR_PAYROLL_TERM;
 
 const routes: AppRoute[] = [
   {
@@ -25,6 +29,13 @@ const routes: AppRoute[] = [
     title: 'Colaboradores - Ventamax',
     metaDescription:
       'Administra empleados, metodos de pago y comisiones base en Ventamax.',
+  },
+  {
+    path: HR_COMMISSIONS,
+    element: <HrCommissionsPage />,
+    title: 'Comisiones RRHH - Ventamax',
+    metaDescription:
+      'Revisa y recalcula comisiones de colaboradores para cortes y nomina en Ventamax.',
   },
   {
     path: '/recursos-humanos',

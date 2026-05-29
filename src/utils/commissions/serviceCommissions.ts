@@ -115,6 +115,11 @@ export const normalizeCommissionCollaborator = (
     id,
     code,
     name,
+    hrEmployeeId:
+      toCleanString(source.hrEmployeeId) ??
+      toCleanString(source.employeeId) ??
+      null,
+    partyId: toCleanString(source.partyId),
     linkedUserId: toCleanString(source.linkedUserId) ?? id,
     defaultType,
     defaultRate,
@@ -167,6 +172,8 @@ export const buildServiceCommissionLineSnapshot = ({
     collaboratorId: collaborator.id ?? null,
     collaboratorCode: collaborator.code ?? null,
     collaboratorName: collaborator.name ?? null,
+    hrEmployeeId: collaborator.hrEmployeeId ?? null,
+    partyId: collaborator.partyId ?? null,
     type: normalizedType,
     rateValue: normalizedRate,
     source:
