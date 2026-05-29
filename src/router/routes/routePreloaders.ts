@@ -22,6 +22,7 @@ const {
   SETTING_TERM,
   DEV_VIEW_TERM,
   ACCOUNTING_TERM,
+  HR_PAYROLL_TERM,
   LAB_TERM,
 } = ROUTES_NAME;
 
@@ -60,6 +61,9 @@ const {
 const preloadAccountingWorkspace = () =>
   import('@/modules/accounting/pages/AccountingWorkspace/AccountingWorkspace');
 
+const preloadHrPayrollWorkspace = () =>
+  import('@/modules/hrPayroll/pages/HrPayrollWorkspace/HrPayrollWorkspace');
+
 export const routePreloaders: Record<string, RoutePreloader> = {
   [BASIC_TERM.HOME]: () => import('@/modules/home/pages/Home/Home'),
   [BASIC_TERM.DEVELOPER_HUB]: () =>
@@ -74,9 +78,7 @@ export const routePreloaders: Record<string, RoutePreloader> = {
   [SALES_TERM.BILLS_ANALYTICS]: () =>
     import('@/modules/invoice/pages/InvoicesPage/SalesAnalyticsPage'),
   [SALES_TERM.SERVICE_COMMISSIONS]: () =>
-    import(
-      '@/modules/invoice/pages/ServiceCommissionsReport/ServiceCommissionsReport'
-    ),
+    import('@/modules/invoice/pages/ServiceCommissionsReport/ServiceCommissionsReport'),
   [SALES_TERM.PREORDERS]: () =>
     import('@/modules/sales/pages/PreorderSale/PreorderSale'),
 
@@ -104,6 +106,8 @@ export const routePreloaders: Record<string, RoutePreloader> = {
   [ACCOUNTING_REPORTS]: preloadAccountingWorkspace,
   [ACCOUNTING_FISCAL_COMPLIANCE]: preloadAccountingWorkspace,
   [ACCOUNTING_PERIOD_CLOSE]: preloadAccountingWorkspace,
+  [HR_PAYROLL_TERM.HR_PAYROLL]: preloadHrPayrollWorkspace,
+  [HR_PAYROLL_TERM.HR_EMPLOYEES]: preloadHrPayrollWorkspace,
 
   [INVENTORY_TERM.INVENTORY_ITEMS]: () =>
     import('@/modules/inventory/pages/Inventario/pages/ItemsManager/Inventario'),

@@ -503,6 +503,16 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    match /businesses/{businessId}/businessParties/{documentId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/hrEmployees/{documentId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
     match /businesses/{businessId}/cashMovements/{movementId} {
       allow read: if hasBusinessAccess(businessId);
       allow create, update, delete: if false;

@@ -8,6 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
+import { TeamOutlined } from '@/constants/icons/antd';
 import { icons } from '@/constants/icons/icons';
 import ROUTES_NAME from '@/router/routes/routesName';
 
@@ -18,6 +19,7 @@ const { PURCHASES } = ROUTES_NAME.PURCHASE_TERM;
 const { ORDERS } = ROUTES_NAME.ORDER_TERM;
 
 const { EXPENSES_LIST } = ROUTES_NAME.EXPENSES_TERM;
+const { HR_PAYROLL } = ROUTES_NAME.HR_PAYROLL_TERM;
 const {
   ACCOUNTING_JOURNAL_BOOK,
   ACCOUNTING_GENERAL_LEDGER,
@@ -57,6 +59,12 @@ const financialManagement: MenuItem[] = [
         group: 'purchases',
       },
     ],
+  },
+  {
+    title: 'RRHH y nomina',
+    icon: <TeamOutlined />,
+    route: HR_PAYROLL,
+    group: 'hrPayroll',
   },
   {
     title: 'Contabilidad',

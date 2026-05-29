@@ -204,6 +204,11 @@ const ACCOUNTING_TERM = {
   ACCOUNTING_PERIOD_CLOSE: '/accounting/period-close',
 } as const;
 
+const HR_PAYROLL_TERM = {
+  HR_PAYROLL: '/hr',
+  HR_EMPLOYEES: '/hr/employees',
+} as const;
+
 const ACCOUNT_RECEIVABLE_TERM = {
   ACCOUNT_RECEIVABLE_LIST: '/account-receivable/list',
   ACCOUNT_RECEIVABLE_INFO: '/account-receivable/info/:id',
@@ -248,6 +253,7 @@ export const ROUTES_PATH = {
   PURCHASE_TERM,
   ORDER_TERM,
   ACCOUNTING_TERM,
+  HR_PAYROLL_TERM,
   DEV_VIEW_TERM,
   CHANGELOG_TERM,
   CREDIT_NOTE_TERM,

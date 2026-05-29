@@ -12,6 +12,7 @@ import dev from '@/router/routes/paths/Dev'; // Contiene rutas sólo para desarr
 import expenses from '@/router/routes/paths/Expenses';
 import insurance from '@/router/routes/paths/Insurance';
 import inventory from '@/router/routes/paths/Inventory';
+import hrPayroll from '@/router/routes/paths/HrPayroll';
 import lab from '@/router/routes/paths/Lab';
 import orders from '@/router/routes/paths/Orders';
 import purchases from '@/router/routes/paths/Purchases';
@@ -224,6 +225,7 @@ const baseRawRoutes = [
   ...(treasury as AppRoute[]),
   ...(expenses as AppRoute[]),
   ...accounting,
+  ...hrPayroll,
   ...(dev as AppRoute[]), // devOnly marcadas dentro del archivo
   ...(changelogs as AppRoute[]),
   ...(utility as AppRoute[]),
