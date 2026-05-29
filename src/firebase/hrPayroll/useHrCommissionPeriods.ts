@@ -12,6 +12,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
 import { db, functions } from '@/firebase/firebaseconfig';
 import type {
+  HrEmployeePaymentRecord,
+  HrEmployeePaymentStatus,
+  HrPaymentMethod,
   HrCommissionPeriodRecord,
   HrCommissionPeriodStatus,
   HrPayrollEmployeeLineRecord,
@@ -19,6 +22,7 @@ import type {
 } from '@/types/hrPayroll';
 
 type ManageHrCommissionPeriodAction = 'create' | 'close' | 'approve';
+type ManageHrPayrollPaymentAction = 'record';
 
 interface UseHrCommissionPeriodsArgs {
   businessId?: string | null;
@@ -26,6 +30,11 @@ interface UseHrCommissionPeriodsArgs {
 }
 
 interface UseHrPayrollEmployeeLinesArgs {
+  businessId?: string | null;
+  periodId?: string | null;
+}
+
+interface UseHrEmployeePaymentsArgs {
   businessId?: string | null;
   periodId?: string | null;
 }
@@ -49,12 +58,33 @@ interface UseHrPayrollEmployeeLinesResult {
   rows: HrPayrollEmployeeLineRecord[];
 }
 
+interface UseHrEmployeePaymentsResult {
+  error: Error | null;
+  loading: boolean;
+  rows: HrEmployeePaymentRecord[];
+}
+
 interface ManageHrCommissionPeriodArgs {
   action: ManageHrCommissionPeriodAction;
   businessId: string;
   endDate?: Date | string | null;
   periodId?: string | null;
   startDate?: Date | string | null;
+}
+
+interface ManageHrPayrollPaymentArgs {
+  action?: ManageHrPayrollPaymentAction;
+  amount?: number | string | null;
+  bankAccountId?: string | null;
+  businessId: string;
+  cashAccountId?: string | null;
+  cashCountId?: string | null;
+  checkNumber?: string | null;
+  paymentDate?: Date | string | null;
+  paymentMethod?: HrPaymentMethod | null;
+  payrollLineId: string;
+  reference?: string | null;
+  transferReference?: string | null;
 }
 
 export interface ManageHrCommissionPeriodResponse {
@@ -70,10 +100,28 @@ export interface ManageHrCommissionPeriodResponse {
   totalCommissionAmount: number;
 }
 
+export interface ManageHrPayrollPaymentResponse {
+  ok: boolean;
+  reused?: boolean;
+  businessId: string;
+  paymentId: string;
+  periodId?: string | null;
+  payrollRunId?: string | null;
+  payrollLineId?: string | null;
+  employeeId?: string | null;
+  amount: number;
+  currency: string;
+  status: HrEmployeePaymentStatus;
+  accountingEventId?: string | null;
+  cashMovementIds: string[];
+}
+
 const PERIOD_STATUS_VALUES = new Set<HrCommissionPeriodStatus>([
   'draft',
   'closed',
   'approved',
+  'partially_paid',
+  'paid',
   'cancelled',
 ]);
 
@@ -81,9 +129,27 @@ const RUN_STATUS_VALUES = new Set<HrPayrollRunStatus>([
   'draft',
   'closed',
   'approved',
+  'partially_paid',
   'paid',
   'cancelled',
 ]);
+
+const PAYMENT_STATUS_VALUES = new Set<HrEmployeePaymentStatus>([
+  'confirmed',
+  'voided',
+]);
+
+const PAYMENT_METHOD_VALUES = new Set<HrPaymentMethod>([
+  'cash',
+  'bank_transfer',
+  'transfer',
+  'check',
+  'card',
+  'other',
+]);
+
+const isNonNullableString = (value: string | null): value is string =>
+  Boolean(value);
 
 const toCleanString = (value: unknown): string | null => {
   if (typeof value === 'number' && Number.isFinite(value)) return String(value);
@@ -113,6 +179,35 @@ const toCallableDate = (
   return toCleanString(value);
 };
 
+const normalizePaymentMethod = (value: unknown): HrPaymentMethod => {
+  const normalized = toCleanString(value)?.toLowerCase() as
+    | HrPaymentMethod
+    | undefined;
+  return normalized && PAYMENT_METHOD_VALUES.has(normalized)
+    ? normalized
+    : 'bank_transfer';
+};
+
+const normalizeCashMovementIds = (value: unknown): string[] =>
+  Array.isArray(value)
+    ? value.map(toCleanString).filter(isNonNullableString)
+    : [];
+
+const toMillis = (value: unknown): number => {
+  if (!value) return 0;
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === 'object' && 'toMillis' in value) {
+    const millis = (value as { toMillis: () => unknown }).toMillis();
+    return Number(millis) || 0;
+  }
+  if (typeof value === 'object' && 'toDate' in value) {
+    const date = (value as { toDate: () => unknown }).toDate();
+    return date instanceof Date ? date.getTime() : 0;
+  }
+  const parsed = new Date(String(value)).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
 const normalizePeriodRecord = (
   id: string,
   data: Record<string, unknown>,
@@ -133,6 +228,9 @@ const normalizePeriodRecord = (
     0,
     toFiniteNumber(data.totalCommissionAmount),
   ),
+  paidAmount: Math.max(0, toFiniteNumber(data.paidAmount)),
+  paidLinesCount: Math.max(0, toFiniteNumber(data.paidLinesCount)),
+  lastPaymentId: toCleanString(data.lastPaymentId),
   payrollRunId: toCleanString(data.payrollRunId),
   accountingEventId: toCleanString(data.accountingEventId),
   createdAt: data.createdAt,
@@ -160,10 +258,54 @@ const normalizePayrollEmployeeLineRecord = (
   netAmount: Math.max(0, toFiniteNumber(data.netAmount)),
   commissionAmount: Math.max(0, toFiniteNumber(data.commissionAmount)),
   commissionEntryIds: Array.isArray(data.commissionEntryIds)
-    ? data.commissionEntryIds.map(toCleanString).filter(Boolean)
+    ? data.commissionEntryIds.map(toCleanString).filter(isNonNullableString)
     : [],
   entriesCount: Math.max(0, toFiniteNumber(data.entriesCount)),
   accountingEventId: toCleanString(data.accountingEventId),
+  employeePaymentId: toCleanString(data.employeePaymentId),
+  paymentMethod: data.paymentMethod
+    ? normalizePaymentMethod(data.paymentMethod)
+    : null,
+  paymentAccountingEventId: toCleanString(data.paymentAccountingEventId),
+  cashMovementIds: normalizeCashMovementIds(data.cashMovementIds),
+  paidAt: data.paidAt,
+});
+
+const normalizeHrEmployeePaymentRecord = (
+  id: string,
+  data: Record<string, unknown>,
+): HrEmployeePaymentRecord => ({
+  ...data,
+  id,
+  businessId: toCleanString(data.businessId) ?? '',
+  periodId: toCleanString(data.periodId),
+  payrollRunId: toCleanString(data.payrollRunId),
+  payrollLineId: toCleanString(data.payrollLineId),
+  employeeId: toCleanString(data.employeeId),
+  employeeCode: toCleanString(data.employeeCode),
+  employeeNameSnapshot: toCleanString(data.employeeNameSnapshot),
+  partyId: toCleanString(data.partyId),
+  amount: Math.max(0, toFiniteNumber(data.amount)),
+  currency: toCleanString(data.currency)?.toUpperCase() ?? 'DOP',
+  status: normalizeEnum(data.status, PAYMENT_STATUS_VALUES, 'confirmed'),
+  paymentMethod: normalizePaymentMethod(data.paymentMethod),
+  paymentChannel:
+    data.paymentChannel === 'cash' ||
+    data.paymentChannel === 'bank' ||
+    data.paymentChannel === 'other'
+      ? data.paymentChannel
+      : null,
+  reference: toCleanString(data.reference),
+  transferReference: toCleanString(data.transferReference),
+  checkNumber: toCleanString(data.checkNumber),
+  cashAccountId: toCleanString(data.cashAccountId),
+  cashCountId: toCleanString(data.cashCountId),
+  bankAccountId: toCleanString(data.bankAccountId),
+  accountingEventId: toCleanString(data.accountingEventId),
+  cashMovementIds: normalizeCashMovementIds(data.cashMovementIds),
+  paymentDate: data.paymentDate,
+  createdAt: data.createdAt,
+  createdBy: toCleanString(data.createdBy),
 });
 
 export const manageHrCommissionPeriod = async ({
@@ -196,6 +338,63 @@ export const manageHrCommissionPeriod = async ({
     endDate: toCallableDate(endDate),
     periodId: toCleanString(periodId),
     startDate: toCallableDate(startDate),
+    ...(sessionToken ? { sessionToken } : {}),
+  });
+
+  return result.data;
+};
+
+export const recordHrPayrollPayment = async ({
+  action = 'record',
+  amount,
+  bankAccountId,
+  businessId,
+  cashAccountId,
+  cashCountId,
+  checkNumber,
+  paymentDate,
+  paymentMethod,
+  payrollLineId,
+  reference,
+  transferReference,
+}: ManageHrPayrollPaymentArgs): Promise<ManageHrPayrollPaymentResponse> => {
+  if (!businessId || !payrollLineId) {
+    throw new Error('Faltan datos para registrar el pago.');
+  }
+
+  const { sessionToken } = getStoredSession();
+  const callable = httpsCallable<
+    {
+      action: ManageHrPayrollPaymentAction;
+      amount?: number | string | null;
+      bankAccountId?: string | null;
+      businessId: string;
+      cashAccountId?: string | null;
+      cashCountId?: string | null;
+      checkNumber?: string | null;
+      paymentDate?: string | null;
+      paymentMethod?: HrPaymentMethod | null;
+      payrollLineId: string;
+      reference?: string | null;
+      sessionToken?: string;
+      transferReference?: string | null;
+    },
+    ManageHrPayrollPaymentResponse
+  >(functions, 'manageHrPayrollPayment');
+
+  const result = await callable({
+    action,
+    amount,
+    bankAccountId: toCleanString(bankAccountId),
+    businessId,
+    cashAccountId: toCleanString(cashAccountId),
+    cashCountId: toCleanString(cashCountId),
+    checkNumber: toCleanString(checkNumber),
+    paymentDate: toCallableDate(paymentDate),
+    paymentMethod: paymentMethod ? normalizePaymentMethod(paymentMethod) : null,
+    payrollLineId,
+    reference: toCleanString(reference),
+    transferReference: toCleanString(transferReference),
     ...(sessionToken ? { sessionToken } : {}),
   });
 
@@ -307,6 +506,81 @@ export const useHrPayrollEmployeeLines = ({
                 right.employeeId,
             ),
           );
+
+        setState({ key: reportKey, rows, loading: false, error: null });
+      },
+      (error) => {
+        setState({ key: reportKey, rows: [], loading: false, error });
+      },
+    );
+  }, [businessId, periodId, reportKey]);
+
+  if (!businessId || !periodId) {
+    return { rows: [], loading: false, error: null };
+  }
+  if (state.key !== reportKey) {
+    return { rows: [], loading: true, error: null };
+  }
+
+  return state;
+};
+
+export const useHrEmployeePayments = ({
+  businessId,
+  periodId,
+}: UseHrEmployeePaymentsArgs): UseHrEmployeePaymentsResult => {
+  const [state, setState] = useState<HookState<HrEmployeePaymentRecord>>({
+    key: '',
+    rows: [],
+    loading: false,
+    error: null,
+  });
+  const reportKey = useMemo(
+    () => [businessId ?? 'no-business', periodId ?? 'no-period'].join('|'),
+    [businessId, periodId],
+  );
+
+  useEffect(() => {
+    if (!businessId || !periodId) return undefined;
+
+    const paymentsRef = collection(
+      db,
+      'businesses',
+      businessId,
+      'hrEmployeePayments',
+    );
+    const paymentsQuery = query(
+      paymentsRef,
+      where('periodId', '==', periodId),
+      limit(80),
+    );
+
+    return onSnapshot(
+      paymentsQuery,
+      (snapshot) => {
+        const rows = snapshot.docs
+          .map((docSnapshot) =>
+            normalizeHrEmployeePaymentRecord(
+              docSnapshot.id,
+              docSnapshot.data() as Record<string, unknown>,
+            ),
+          )
+          .sort((left, right) => {
+            const byDate =
+              toMillis(right.paymentDate) - toMillis(left.paymentDate);
+            if (byDate !== 0) return byDate;
+            return (
+              left.employeeNameSnapshot ||
+              left.employeeCode ||
+              left.employeeId ||
+              left.id
+            ).localeCompare(
+              right.employeeNameSnapshot ||
+                right.employeeCode ||
+                right.employeeId ||
+                right.id,
+            );
+          });
 
         setState({ key: reportKey, rows, loading: false, error: null });
       },

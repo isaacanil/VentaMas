@@ -239,6 +239,13 @@ const resolvePreferredAccountingDocumentReference = ({
         toCleanString(snapshot.numberId) ??
         null
       );
+    case 'hr_payroll.payment.recorded':
+      return (
+        toCleanString(snapshot.reference) ??
+        toCleanString(snapshot.employeeCode) ??
+        toCleanString(snapshot.employeeNameSnapshot) ??
+        null
+      );
     case 'internal_transfer.posted':
       return (
         toCleanString(snapshot.reference) ??
@@ -324,8 +331,7 @@ const resolveSaleSettlementBreakdown = (event: AccountingEvent) => {
     toFiniteAmount(payload.functionalSettledAmount) ||
     toFiniteAmount(payload.functionalPaidAmount) ||
     (toFiniteAmount(payload.settledAmount) ||
-      toFiniteAmount(payload.paidAmount)) *
-      functionalRate;
+      toFiniteAmount(payload.paidAmount)) * functionalRate;
   const settledAmount = Math.max(
     explicitSettled || breakdown.cash + breakdown.bank + breakdown.other,
     0,
@@ -370,7 +376,9 @@ const assignStableEntryReferences = (
   return records.map((record) => {
     const entryReference = buildEntryAlias(
       record.entryDate,
-      record.journalEntry?.id ?? record.entryReference ?? record.internalReference,
+      record.journalEntry?.id ??
+        record.entryReference ??
+        record.internalReference,
     );
     return {
       ...record,
@@ -539,6 +547,9 @@ const resolveJournalTypeKey = (
       return 'collection';
     case 'expense.recorded':
       return 'expense';
+    case 'hr_commission.accrued':
+    case 'hr_payroll.payment.recorded':
+      return 'payroll';
     default:
       return 'adjustment';
   }
@@ -819,7 +830,10 @@ export const buildLedgerRecords = ({
         event.sourceDocumentType ??
         'Movimiento contable generado por la operacion.',
       reference:
-        resolvedDocumentReference ?? event.sourceDocumentId ?? event.sourceId ?? event.id,
+        resolvedDocumentReference ??
+        event.sourceDocumentId ??
+        event.sourceId ??
+        event.id,
       internalReference: rawEntryReference,
       entryReference: rawEntryReference,
       documentReference: resolvedDocumentReference,
@@ -1097,8 +1111,8 @@ export const buildGeneralLedgerSnapshot = ({
   const entries = scopedLines.map(({ line, record }) => {
     runningBalance += resolveLineBalanceDelta(account, line);
     const visibleReference = shouldCompactVisibleReference(record.reference)
-      ? record.documentReference ?? record.entryReference
-      : record.documentReference ?? record.reference;
+      ? (record.documentReference ?? record.entryReference)
+      : (record.documentReference ?? record.reference);
     const internalReference =
       visibleReference !== record.reference
         ? record.reference

@@ -69,6 +69,8 @@ const PAY_TYPE_LABELS: Record<HrEmployeePayType, string> = {
 const PAYMENT_METHOD_LABELS: Record<HrPaymentMethod, string> = {
   cash: 'Efectivo',
   bank_transfer: 'Transferencia',
+  transfer: 'Transferencia',
+  card: 'Tarjeta',
   check: 'Cheque',
   other: 'Otro',
 };

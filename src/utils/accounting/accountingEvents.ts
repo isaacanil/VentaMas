@@ -147,6 +147,13 @@ export const ACCOUNTING_EVENT_DEFINITIONS: AccountingEventDefinition[] = [
     description:
       'Corte de comisiones aprobado y pendiente de pago desde nomina.',
   },
+  {
+    eventType: 'hr_payroll.payment.recorded',
+    moduleKey: 'payroll',
+    label: 'Pago de nomina registrado',
+    description:
+      'Pago confirmado de una linea de nomina o comision a un colaborador.',
+  },
 ];
 
 export const ACCOUNTING_EVENT_TYPE_LABELS: Record<AccountingEventType, string> =

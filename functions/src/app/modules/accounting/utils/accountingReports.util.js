@@ -36,6 +36,7 @@ const ACCOUNTING_EVENT_TYPE_LABELS = {
   'manual.entry.recorded': 'Asiento manual registrado',
   'fx_settlement.recorded': 'Settlement FX registrado',
   'hr_commission.accrued': 'Comision RRHH devengada',
+  'hr_payroll.payment.recorded': 'Pago de nomina registrado',
 };
 
 const ACCOUNTING_MODULE_LABELS = {
@@ -71,6 +72,7 @@ const ACCOUNTING_EVENT_MODULES = {
   'manual.entry.recorded': 'general_ledger',
   'fx_settlement.recorded': 'fx',
   'hr_commission.accrued': 'payroll',
+  'hr_payroll.payment.recorded': 'payroll',
 };
 
 const monthFormatter = new Intl.DateTimeFormat('es-DO', {
@@ -138,6 +140,13 @@ const resolvePreferredAccountingDocumentReference = ({
         toCleanString(snapshot.invoiceNcf) ||
         toCleanString(snapshot.reference) ||
         toCleanString(snapshot.numberId) ||
+        null
+      );
+    case 'hr_payroll.payment.recorded':
+      return (
+        toCleanString(snapshot.reference) ||
+        toCleanString(snapshot.employeeCode) ||
+        toCleanString(snapshot.employeeNameSnapshot) ||
         null
       );
     case 'internal_transfer.posted':

@@ -10,7 +10,13 @@ export type HrEmployeePayType =
   | 'commission_only'
   | 'mixed';
 
-export type HrPaymentMethod = 'cash' | 'bank_transfer' | 'check' | 'other';
+export type HrPaymentMethod =
+  | 'cash'
+  | 'bank_transfer'
+  | 'transfer'
+  | 'check'
+  | 'card'
+  | 'other';
 
 export type HrCommissionType = 'percentage' | 'fixed';
 
@@ -20,14 +26,19 @@ export type HrCommissionPeriodStatus =
   | 'draft'
   | 'closed'
   | 'approved'
+  | 'partially_paid'
+  | 'paid'
   | 'cancelled';
 
 export type HrPayrollRunStatus =
   | 'draft'
   | 'closed'
   | 'approved'
+  | 'partially_paid'
   | 'paid'
   | 'cancelled';
+
+export type HrEmployeePaymentStatus = 'confirmed' | 'voided';
 
 export type HrCommissionEntryStatus =
   | 'calculated'
@@ -125,6 +136,7 @@ export interface HrCommissionEntryRecord extends Record<string, unknown> {
   payrollEmployeeLineId?: string | null;
   employeePaymentId?: string | null;
   accountingEventId?: string | null;
+  paymentAccountingEventId?: string | null;
   journalEntryId?: string | null;
   dedupeKey?: string | null;
   date?: unknown;
@@ -167,6 +179,9 @@ export interface HrPayrollRunRecord extends Record<string, unknown> {
   deductionsAmount: number;
   netAmount: number;
   accountingEventId?: string | null;
+  paidAmount?: number;
+  paidLinesCount?: number;
+  lastPaymentId?: string | null;
 }
 
 export interface HrPayrollEmployeeLineRecord extends Record<string, unknown> {
@@ -188,4 +203,37 @@ export interface HrPayrollEmployeeLineRecord extends Record<string, unknown> {
   commissionEntryIds: string[];
   entriesCount: number;
   accountingEventId?: string | null;
+  employeePaymentId?: string | null;
+  paymentMethod?: HrPaymentMethod | null;
+  paymentAccountingEventId?: string | null;
+  cashMovementIds?: string[];
+  paidAt?: unknown;
+}
+
+export interface HrEmployeePaymentRecord extends Record<string, unknown> {
+  id: string;
+  businessId: string;
+  periodId?: string | null;
+  payrollRunId?: string | null;
+  payrollLineId?: string | null;
+  employeeId?: string | null;
+  employeeCode?: string | null;
+  employeeNameSnapshot?: string | null;
+  partyId?: string | null;
+  amount: number;
+  currency: string;
+  status: HrEmployeePaymentStatus;
+  paymentMethod: HrPaymentMethod;
+  paymentChannel?: 'cash' | 'bank' | 'other' | null;
+  reference?: string | null;
+  transferReference?: string | null;
+  checkNumber?: string | null;
+  cashAccountId?: string | null;
+  cashCountId?: string | null;
+  bankAccountId?: string | null;
+  accountingEventId?: string | null;
+  cashMovementIds: string[];
+  paymentDate?: unknown;
+  createdAt?: unknown;
+  createdBy?: string | null;
 }

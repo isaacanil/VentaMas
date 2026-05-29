@@ -36,6 +36,7 @@ const ACCOUNTING_EVENT_MODULES = new Map([
   ['manual.entry.recorded', 'general_ledger'],
   ['fx_settlement.recorded', 'fx'],
   ['hr_commission.accrued', 'payroll'],
+  ['hr_payroll.payment.recorded', 'payroll'],
 ]);
 const AMOUNT_SOURCES = new Set([
   'document_total',

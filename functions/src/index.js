@@ -11,6 +11,7 @@ import { createClient } from './app/modules/client/functions/createClient.js';
 import { createProvider } from './app/modules/provider/functions/createProvider.js';
 import { manageHrCommissionPeriod } from './app/modules/hrPayroll/functions/manageHrCommissionPeriod.js';
 import { manageHrEmployee } from './app/modules/hrPayroll/functions/manageHrEmployee.js';
+import { manageHrPayrollPayment } from './app/modules/hrPayroll/functions/manageHrPayrollPayment.js';
 import { recalculateHrCommissionEntries } from './app/modules/hrPayroll/functions/recalculateHrCommissionEntries.js';
 import { reserveCreditNoteNcf } from './app/modules/taxReceipt/functions/reserveCreditNoteNcf.js';
 import { refreshElectronicTaxReceiptStatus } from './app/modules/electronicTaxReceipts/functions/refreshElectronicTaxReceiptStatus.js';
@@ -188,6 +189,7 @@ export {
   createProvider,
   manageHrCommissionPeriod,
   manageHrEmployee,
+  manageHrPayrollPayment,
   recalculateHrCommissionEntries,
   reserveCreditNoteNcf,
   refreshElectronicTaxReceiptStatus,

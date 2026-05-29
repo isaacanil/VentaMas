@@ -2,7 +2,11 @@ import {
   Alert,
   Button,
   DatePicker,
+  Form,
+  Input,
+  Modal,
   Popconfirm,
+  Select,
   Space,
   Table,
   Tag,
@@ -13,25 +17,32 @@ import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { PageShell } from '@/components/layout/PageShell';
 import {
   CheckCircleOutlined,
+  DollarOutlined,
   LockOutlined,
   PlusOutlined,
 } from '@/constants/icons/antd';
 import {
   manageHrCommissionPeriod,
+  recordHrPayrollPayment,
+  useHrEmployeePayments,
   useHrCommissionPeriods,
   useHrPayrollEmployeeLines,
 } from '@/firebase/hrPayroll/useHrCommissionPeriods';
 import { selectUser } from '@/features/auth/userSlice';
 import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 import type {
+  HrEmployeePaymentRecord,
+  HrPaymentMethod,
   HrCommissionPeriodRecord,
   HrCommissionPeriodStatus,
   HrPayrollEmployeeLineRecord,
+  HrPayrollRunStatus,
 } from '@/types/hrPayroll';
 
 const { RangePicker } = DatePicker;
@@ -40,6 +51,8 @@ const STATUS_LABELS: Record<HrCommissionPeriodStatus, string> = {
   draft: 'Borrador',
   closed: 'Cerrado',
   approved: 'Aprobado',
+  partially_paid: 'Pago parcial',
+  paid: 'Pagado',
   cancelled: 'Cancelado',
 };
 
@@ -47,7 +60,36 @@ const STATUS_COLORS: Record<HrCommissionPeriodStatus, string> = {
   draft: 'blue',
   closed: 'gold',
   approved: 'green',
+  partially_paid: 'purple',
+  paid: 'cyan',
   cancelled: 'default',
+};
+
+const LINE_STATUS_LABELS: Record<HrPayrollRunStatus, string> = {
+  draft: 'Borrador',
+  closed: 'Cerrado',
+  approved: 'Aprobado',
+  partially_paid: 'Pago parcial',
+  paid: 'Pagado',
+  cancelled: 'Cancelado',
+};
+
+const LINE_STATUS_COLORS: Record<HrPayrollRunStatus, string> = {
+  draft: 'blue',
+  closed: 'gold',
+  approved: 'green',
+  partially_paid: 'purple',
+  paid: 'cyan',
+  cancelled: 'default',
+};
+
+const PAYMENT_METHOD_LABELS: Record<HrPaymentMethod, string> = {
+  cash: 'Efectivo',
+  bank_transfer: 'Transferencia',
+  transfer: 'Transferencia',
+  card: 'Tarjeta',
+  check: 'Cheque',
+  other: 'Otro',
 };
 
 const Page = styled(PageShell)`
@@ -149,6 +191,12 @@ const SplitGrid = styled.div`
   }
 `;
 
+const SideStack = styled.div`
+  display: grid;
+  gap: var(--ds-space-4);
+  min-width: 0;
+`;
+
 const TableFrame = styled.div`
   min-width: 0;
   overflow: hidden;
@@ -181,6 +229,17 @@ const AmountText = styled.span`
   font-weight: var(--ds-font-weight-medium);
   text-align: right;
 `;
+
+interface PaymentFormValues {
+  bankAccountId?: string;
+  cashAccountId?: string;
+  cashCountId?: string;
+  checkNumber?: string;
+  paymentDate?: Dayjs;
+  paymentMethod: HrPaymentMethod;
+  reference?: string;
+  transferReference?: string;
+}
 
 const getErrorMessage = (error: unknown): string => {
   if (error instanceof Error) return error.message;
@@ -218,14 +277,21 @@ const formatMoney = (amount: number, currency = 'DOP') =>
 
 export default function HrCommissionPeriodsPage() {
   const currentUser = useSelector(selectUser);
+  const location = useLocation();
   const businessId = currentUser?.businessID ?? null;
   const [messageApi, contextHolder] = message.useMessage();
+  const [paymentForm] = Form.useForm<PaymentFormValues>();
   const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>(() => [
     dayjs().startOf('month'),
     dayjs().endOf('day'),
   ]);
   const [selectedPeriodId, setSelectedPeriodId] = useState<string | null>(null);
   const [actionKey, setActionKey] = useState<string | null>(null);
+  const [paymentLine, setPaymentLine] =
+    useState<HrPayrollEmployeeLineRecord | null>(null);
+  const [paymentActionKey, setPaymentActionKey] = useState<string | null>(null);
+  const isPaymentsRoute = location.pathname.includes('/hr/payments');
+  const watchedPaymentMethod = Form.useWatch('paymentMethod', paymentForm);
   const {
     rows: periods,
     loading,
@@ -245,6 +311,14 @@ export default function HrCommissionPeriodsPage() {
     businessId,
     periodId: selectedPeriod?.id,
   });
+  const {
+    rows: payments,
+    loading: paymentsLoading,
+    error: paymentsError,
+  } = useHrEmployeePayments({
+    businessId,
+    periodId: selectedPeriod?.id,
+  });
 
   const summary = useMemo(
     () => ({
@@ -254,7 +328,9 @@ export default function HrCommissionPeriodsPage() {
         0,
       ),
       approved: periods.filter((period) => period.status === 'approved').length,
-      pending: periods.filter((period) => period.status !== 'approved').length,
+      pending: periods.filter((period) =>
+        ['approved', 'partially_paid'].includes(period.status),
+      ).length,
     }),
     [periods],
   );
@@ -285,6 +361,55 @@ export default function HrCommissionPeriodsPage() {
       messageApi.error(getErrorMessage(actionError));
     } finally {
       setActionKey(null);
+    }
+  };
+
+  const handleOpenPayment = (line: HrPayrollEmployeeLineRecord) => {
+    paymentForm.setFieldsValue({
+      paymentDate: dayjs(),
+      paymentMethod:
+        line.paymentMethod && line.paymentMethod !== 'other'
+          ? line.paymentMethod === 'transfer'
+            ? 'bank_transfer'
+            : line.paymentMethod
+          : 'bank_transfer',
+      reference: '',
+      transferReference: '',
+      checkNumber: '',
+      bankAccountId: '',
+      cashAccountId: '',
+      cashCountId: '',
+    });
+    setPaymentLine(line);
+  };
+
+  const handleRecordPayment = async (values: PaymentFormValues) => {
+    if (!businessId || !paymentLine) return;
+    const key = `pay:${paymentLine.id}`;
+    setPaymentActionKey(key);
+    try {
+      const result = await recordHrPayrollPayment({
+        businessId,
+        payrollLineId: paymentLine.id,
+        amount: paymentLine.netAmount,
+        paymentDate: values.paymentDate?.toDate() ?? new Date(),
+        paymentMethod: values.paymentMethod,
+        reference: values.reference,
+        transferReference: values.transferReference,
+        checkNumber: values.checkNumber,
+        bankAccountId: values.bankAccountId,
+        cashAccountId: values.cashAccountId,
+        cashCountId: values.cashCountId,
+      });
+      messageApi.success(
+        result.reused ? 'Pago ya registrado.' : 'Pago de nomina registrado.',
+      );
+      setPaymentLine(null);
+      paymentForm.resetFields();
+    } catch (paymentError) {
+      messageApi.error(getErrorMessage(paymentError));
+    } finally {
+      setPaymentActionKey(null);
     }
   };
 
@@ -406,6 +531,17 @@ export default function HrCommissionPeriodsPage() {
           width: 100,
         },
         {
+          title: 'Estado',
+          dataIndex: 'status',
+          key: 'status',
+          width: 120,
+          render: (status: HrPayrollRunStatus) => (
+            <Tag color={LINE_STATUS_COLORS[status]}>
+              {LINE_STATUS_LABELS[status]}
+            </Tag>
+          ),
+        },
+        {
           title: 'Neto',
           dataIndex: 'netAmount',
           key: 'netAmount',
@@ -417,6 +553,74 @@ export default function HrCommissionPeriodsPage() {
             </AmountText>
           ),
         },
+        {
+          title: '',
+          key: 'payment',
+          align: 'right',
+          width: 120,
+          render: (_value, line) => (
+            <Button
+              size="small"
+              type={line.status === 'paid' ? 'default' : 'primary'}
+              icon={<DollarOutlined />}
+              disabled={line.status !== 'approved'}
+              loading={paymentActionKey === `pay:${line.id}`}
+              onClick={() => handleOpenPayment(line)}
+            >
+              {line.status === 'paid' ? 'Pagado' : 'Pagar'}
+            </Button>
+          ),
+        },
+      ],
+      [paymentActionKey],
+    );
+
+  const paymentColumns: TableProps<HrEmployeePaymentRecord>['columns'] =
+    useMemo(
+      () => [
+        {
+          title: 'Pago',
+          key: 'payment',
+          render: (_value, payment) => (
+            <CellStack>
+              <PrimaryText>
+                {payment.employeeNameSnapshot ||
+                  payment.employeeCode ||
+                  payment.employeeId}
+              </PrimaryText>
+              <MutedText>
+                {PAYMENT_METHOD_LABELS[payment.paymentMethod]} -{' '}
+                {formatDate(payment.paymentDate)}
+              </MutedText>
+            </CellStack>
+          ),
+        },
+        {
+          title: 'Referencia',
+          dataIndex: 'reference',
+          key: 'reference',
+          width: 160,
+          render: (_value, payment) => (
+            <MutedText>
+              {payment.reference ||
+                payment.transferReference ||
+                payment.checkNumber ||
+                '-'}
+            </MutedText>
+          ),
+        },
+        {
+          title: 'Monto',
+          dataIndex: 'amount',
+          key: 'amount',
+          align: 'right',
+          width: 130,
+          render: (_value, payment) => (
+            <AmountText>
+              {formatMoney(payment.amount, payment.currency)}
+            </AmountText>
+          ),
+        },
       ],
       [],
     );
@@ -424,14 +628,17 @@ export default function HrCommissionPeriodsPage() {
   return (
     <>
       {contextHolder}
-      <MenuApp sectionName="Cortes RRHH" />
+      <MenuApp sectionName={isPaymentsRoute ? 'Pagos RRHH' : 'Cortes RRHH'} />
       <Page>
         <Header>
           <TitleBlock>
-            <Title>Cortes de comisiones</Title>
+            <Title>
+              {isPaymentsRoute ? 'Pagos de comisiones' : 'Cortes de comisiones'}
+            </Title>
             <Description>
-              Agrupa comisiones calculadas por colaborador y aprueba la corrida
-              antes del pago.
+              {isPaymentsRoute
+                ? 'Confirma pagos de colaboradores y revisa la trazabilidad de caja, banco y contabilidad.'
+                : 'Agrupa comisiones calculadas por colaborador y aprueba la corrida antes del pago.'}
             </Description>
           </TitleBlock>
           <Toolbar>
@@ -480,6 +687,15 @@ export default function HrCommissionPeriodsPage() {
           />
         ) : null}
 
+        {paymentsError ? (
+          <Alert
+            type="error"
+            showIcon
+            message="No se pudieron cargar los pagos del corte."
+            description={paymentsError.message}
+          />
+        ) : null}
+
         <SummaryGrid>
           <SummaryItem>
             <SummaryLabel>Cortes</SummaryLabel>
@@ -494,7 +710,7 @@ export default function HrCommissionPeriodsPage() {
             <SummaryValue>{summary.approved}</SummaryValue>
           </SummaryItem>
           <SummaryItem>
-            <SummaryLabel>Pendientes</SummaryLabel>
+            <SummaryLabel>Por pagar</SummaryLabel>
             <SummaryValue>{summary.pending}</SummaryValue>
           </SummaryItem>
         </SummaryGrid>
@@ -520,25 +736,138 @@ export default function HrCommissionPeriodsPage() {
             />
           </TableFrame>
 
-          <TableFrame>
-            <Table<HrPayrollEmployeeLineRecord>
-              columns={lineColumns}
-              dataSource={employeeLines}
-              loading={linesLoading}
-              rowKey="id"
-              locale={{
-                emptyText: selectedPeriod
-                  ? 'Sin lineas para este corte'
-                  : 'Selecciona un corte',
-              }}
-              pagination={{
-                pageSize: 8,
-                showSizeChanger: false,
-              }}
-            />
-          </TableFrame>
+          <SideStack>
+            <TableFrame>
+              <Table<HrPayrollEmployeeLineRecord>
+                columns={lineColumns}
+                dataSource={employeeLines}
+                loading={linesLoading}
+                rowKey="id"
+                scroll={{ x: 620 }}
+                title={() => 'Lineas por colaborador'}
+                locale={{
+                  emptyText: selectedPeriod
+                    ? 'Sin lineas para este corte'
+                    : 'Selecciona un corte',
+                }}
+                pagination={{
+                  pageSize: 8,
+                  showSizeChanger: false,
+                }}
+              />
+            </TableFrame>
+
+            <TableFrame>
+              <Table<HrEmployeePaymentRecord>
+                columns={paymentColumns}
+                dataSource={payments}
+                loading={paymentsLoading}
+                rowKey="id"
+                scroll={{ x: 520 }}
+                title={() => 'Pagos registrados'}
+                locale={{
+                  emptyText: selectedPeriod
+                    ? 'Sin pagos para este corte'
+                    : 'Selecciona un corte',
+                }}
+                pagination={{
+                  pageSize: 5,
+                  showSizeChanger: false,
+                }}
+              />
+            </TableFrame>
+          </SideStack>
         </SplitGrid>
       </Page>
+
+      <Modal
+        title="Registrar pago"
+        open={Boolean(paymentLine)}
+        okText="Registrar"
+        cancelText="Cancelar"
+        confirmLoading={Boolean(
+          paymentLine && paymentActionKey === `pay:${paymentLine.id}`,
+        )}
+        destroyOnHidden
+        onCancel={() => {
+          setPaymentLine(null);
+          paymentForm.resetFields();
+        }}
+        onOk={() => paymentForm.submit()}
+      >
+        {paymentLine ? (
+          <CellStack>
+            <PrimaryText>
+              {paymentLine.employeeNameSnapshot ||
+                paymentLine.employeeCode ||
+                paymentLine.employeeId}
+            </PrimaryText>
+            <MutedText>
+              {formatMoney(paymentLine.netAmount, paymentLine.currency)}
+            </MutedText>
+          </CellStack>
+        ) : null}
+
+        <Form<PaymentFormValues>
+          form={paymentForm}
+          layout="vertical"
+          onFinish={handleRecordPayment}
+          style={{ marginTop: 16 }}
+        >
+          <Form.Item
+            name="paymentDate"
+            label="Fecha de pago"
+            rules={[{ required: true, message: 'Selecciona la fecha.' }]}
+          >
+            <DatePicker style={{ width: '100%' }} />
+          </Form.Item>
+
+          <Form.Item
+            name="paymentMethod"
+            label="Metodo"
+            rules={[{ required: true, message: 'Selecciona el metodo.' }]}
+          >
+            <Select
+              options={[
+                { value: 'cash', label: 'Efectivo' },
+                { value: 'bank_transfer', label: 'Transferencia' },
+                { value: 'check', label: 'Cheque' },
+                { value: 'other', label: 'Otro' },
+              ]}
+            />
+          </Form.Item>
+
+          {watchedPaymentMethod === 'cash' ? (
+            <>
+              <Form.Item name="cashAccountId" label="Caja">
+                <Input placeholder="ID de caja" />
+              </Form.Item>
+              <Form.Item name="cashCountId" label="Cuadre">
+                <Input placeholder="ID de cuadre" />
+              </Form.Item>
+            </>
+          ) : null}
+
+          {watchedPaymentMethod && watchedPaymentMethod !== 'cash' ? (
+            <Form.Item name="bankAccountId" label="Cuenta bancaria">
+              <Input placeholder="ID de cuenta" />
+            </Form.Item>
+          ) : null}
+
+          {watchedPaymentMethod === 'check' ? (
+            <Form.Item name="checkNumber" label="Cheque">
+              <Input placeholder="Numero de cheque" />
+            </Form.Item>
+          ) : null}
+
+          <Form.Item name="transferReference" label="Referencia bancaria">
+            <Input placeholder="Referencia" />
+          </Form.Item>
+          <Form.Item name="reference" label="Referencia interna">
+            <Input placeholder="Referencia" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </>
   );
 }

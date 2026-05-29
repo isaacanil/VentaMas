@@ -10,8 +10,13 @@ Estado: implementacion incremental en curso
   cambios previos antes de construir RRHH.
 - P1 completado en `6d11270`: base `businessParties`, `hrEmployees`, callable
   `manageHrEmployee`, reglas, ruta y pantalla de colaboradores.
-- P2 completado en la implementacion actual: proyeccion de `serviceCommissions`
+- P2 completado en `efc7641`: proyeccion de `serviceCommissions`
   hacia `hrCommissionEntries`, recalculo manual y vista de comisiones RRHH.
+- P3 completado en `e93d3e6`: cortes, cierre, aprobacion, `hrPayrollRun`,
+  lineas por colaborador y evento `hr_commission.accrued`.
+- P4 en la implementacion actual: pago completo por linea aprobada,
+  `hrEmployeePayments`, salida de caja/banco, evento
+  `hr_payroll.payment.recorded` y trazabilidad en cortes/pagos.
 
 ## Resumen ejecutivo
 

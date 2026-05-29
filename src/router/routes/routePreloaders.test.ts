@@ -11,4 +11,12 @@ describe('routePreloaders', () => {
       expect(routePreloaders[route]).toEqual(expect.any(Function));
     });
   });
+
+  it('registers HR payroll routes for menu prefetching', () => {
+    const hrRoutes = Object.values(ROUTES_NAME.HR_PAYROLL_TERM);
+
+    hrRoutes.forEach((route) => {
+      expect(routePreloaders[route]).toEqual(expect.any(Function));
+    });
+  });
 });

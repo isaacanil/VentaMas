@@ -23,6 +23,7 @@ export type LiquidityEntrySourceType =
   | 'supplier_payment_void'
   | 'expense'
   | 'credit_note_application'
+  | 'hr_payroll_payment'
   | 'cash_adjustment';
 export type InternalTransferStatus = 'posted' | 'void';
 export type BankReconciliationStatus = 'balanced' | 'variance';
@@ -69,7 +70,8 @@ export type AccountingEventType =
   | 'internal_transfer.posted'
   | 'manual.entry.recorded'
   | 'fx_settlement.recorded'
-  | 'hr_commission.accrued';
+  | 'hr_commission.accrued'
+  | 'hr_payroll.payment.recorded';
 export type AccountingEventStatus = 'recorded' | 'projected' | 'voided';
 export type AccountingProjectionStatus =
   | 'pending'

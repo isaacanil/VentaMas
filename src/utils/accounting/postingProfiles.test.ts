@@ -184,6 +184,12 @@ describe('postingProfiles', () => {
       result.some((profile) => profile.name === 'Comisiones RRHH devengadas'),
     ).toBe(true);
     expect(
+      result.some((profile) => profile.name === 'Pago de nomina por caja'),
+    ).toBe(true);
+    expect(
+      result.some((profile) => profile.name === 'Pago de nomina por banco'),
+    ).toBe(true);
+    expect(
       result.some((profile) => profile.name === 'Diferencia de cuadre de caja'),
     ).toBe(true);
     expect(

@@ -949,6 +949,53 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
     ],
   },
   {
+    seedKey: 'hr_payroll_payment_cash',
+    name: 'Pago de nomina por caja',
+    description: 'Cancela la obligacion de nomina o comisiones usando caja.',
+    eventType: 'hr_payroll.payment.recorded',
+    moduleKey: 'payroll',
+    priority: 72,
+    conditions: {
+      settlementKind: 'cash',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'accounts_payable',
+        amountSource: 'document_total',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'cash',
+        amountSource: 'document_total',
+      },
+    ],
+  },
+  {
+    seedKey: 'hr_payroll_payment_bank',
+    name: 'Pago de nomina por banco',
+    description:
+      'Cancela la obligacion de nomina o comisiones usando banco o transferencia.',
+    eventType: 'hr_payroll.payment.recorded',
+    moduleKey: 'payroll',
+    priority: 74,
+    conditions: {
+      settlementKind: 'bank',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'accounts_payable',
+        amountSource: 'document_total',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'bank',
+        amountSource: 'document_total',
+      },
+    ],
+  },
+  {
     seedKey: 'cash_over_short',
     name: 'Diferencia de cuadre de caja',
     description:

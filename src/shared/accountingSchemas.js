@@ -19,6 +19,7 @@ export const ACCOUNTING_EVENT_TYPE_VALUES = [
   'manual.entry.recorded',
   'fx_settlement.recorded',
   'hr_commission.accrued',
+  'hr_payroll.payment.recorded',
 ];
 
 export const ACCOUNTING_EVENT_STATUS_VALUES = [

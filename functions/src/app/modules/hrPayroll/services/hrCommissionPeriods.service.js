@@ -2,7 +2,14 @@ import { db, FieldValue, Timestamp } from '../../../core/config/firebase.js';
 import { buildAccountingEvent } from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
 
 const ELIGIBLE_ENTRY_STATUSES = new Set(['calculated', 'eligible']);
-const PERIOD_STATUSES = new Set(['draft', 'closed', 'approved', 'cancelled']);
+const PERIOD_STATUSES = new Set([
+  'draft',
+  'closed',
+  'approved',
+  'partially_paid',
+  'paid',
+  'cancelled',
+]);
 
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};

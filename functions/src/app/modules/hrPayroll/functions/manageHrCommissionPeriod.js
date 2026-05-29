@@ -171,7 +171,7 @@ const closeHrCommissionPeriod = async ({ authUid, businessId, periodId }) =>
     );
     const status = normalizeHrCommissionPeriodStatus(period.status);
 
-    if (status === 'approved') {
+    if (['approved', 'partially_paid', 'paid'].includes(status)) {
       return toPeriodResult({ period, reused: true });
     }
     if (status === 'cancelled') {
@@ -221,7 +221,7 @@ const approveHrCommissionPeriod = async ({ authUid, businessId, periodId }) =>
     );
     const status = normalizeHrCommissionPeriodStatus(period.status);
 
-    if (status === 'approved') {
+    if (['approved', 'partially_paid', 'paid'].includes(status)) {
       return toPeriodResult({ period, reused: true });
     }
     if (status !== 'closed') {

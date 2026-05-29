@@ -538,6 +538,11 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    match /businesses/{businessId}/hrEmployeePayments/{documentId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
     match /businesses/{businessId}/cashMovements/{movementId} {
       allow read: if hasBusinessAccess(businessId);
       allow create, update, delete: if false;

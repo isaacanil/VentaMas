@@ -114,6 +114,7 @@ export const routePreloaders: Record<string, RoutePreloader> = {
   [HR_PAYROLL_TERM.HR_EMPLOYEES]: preloadHrPayrollWorkspace,
   [HR_PAYROLL_TERM.HR_COMMISSIONS]: preloadHrCommissionsPage,
   [HR_PAYROLL_TERM.HR_COMMISSION_PERIODS]: preloadHrCommissionPeriodsPage,
+  [HR_PAYROLL_TERM.HR_PAYROLL_PAYMENTS]: preloadHrCommissionPeriodsPage,
 
   [INVENTORY_TERM.INVENTORY_ITEMS]: () =>
     import('@/modules/inventory/pages/Inventario/pages/ItemsManager/Inventario'),
