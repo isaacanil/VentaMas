@@ -11,8 +11,12 @@ const HrPayrollWorkspace = lazy(
 const HrCommissionsPage = lazy(
   () => import('@/modules/hrPayroll/pages/HrCommissionsPage/HrCommissionsPage'),
 );
+const HrCommissionPeriodsPage = lazy(
+  () =>
+    import('@/modules/hrPayroll/pages/HrCommissionPeriodsPage/HrCommissionPeriodsPage'),
+);
 
-const { HR_PAYROLL, HR_EMPLOYEES, HR_COMMISSIONS } =
+const { HR_PAYROLL, HR_EMPLOYEES, HR_COMMISSIONS, HR_COMMISSION_PERIODS } =
   ROUTES_NAME.HR_PAYROLL_TERM;
 
 const routes: AppRoute[] = [
@@ -36,6 +40,13 @@ const routes: AppRoute[] = [
     title: 'Comisiones RRHH - Ventamax',
     metaDescription:
       'Revisa y recalcula comisiones de colaboradores para cortes y nomina en Ventamax.',
+  },
+  {
+    path: HR_COMMISSION_PERIODS,
+    element: <HrCommissionPeriodsPage />,
+    title: 'Cortes RRHH - Ventamax',
+    metaDescription:
+      'Crea y aprueba cortes de comisiones para corridas de nomina en Ventamax.',
   },
   {
     path: '/recursos-humanos',

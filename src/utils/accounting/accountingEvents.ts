@@ -94,7 +94,8 @@ export const ACCOUNTING_EVENT_DEFINITIONS: AccountingEventDefinition[] = [
     eventType: 'supplier_credit_note.issued',
     moduleKey: 'accounts_payable',
     label: 'Saldo a favor de suplidor emitido',
-    description: 'Documento o saldo a favor disponible para aplicar a compras futuras.',
+    description:
+      'Documento o saldo a favor disponible para aplicar a compras futuras.',
   },
   {
     eventType: 'supplier_credit_note.applied',
@@ -139,6 +140,13 @@ export const ACCOUNTING_EVENT_DEFINITIONS: AccountingEventDefinition[] = [
     label: 'Settlement FX registrado',
     description: 'Cierre de diferencia cambiaria o liquidacion monetaria.',
   },
+  {
+    eventType: 'hr_commission.accrued',
+    moduleKey: 'payroll',
+    label: 'Comision RRHH devengada',
+    description:
+      'Corte de comisiones aprobado y pendiente de pago desde nomina.',
+  },
 ];
 
 export const ACCOUNTING_EVENT_TYPE_LABELS: Record<AccountingEventType, string> =
@@ -159,6 +167,7 @@ export const ACCOUNTING_MODULE_LABELS: Record<AccountingModuleKey, string> = {
   banking: 'Bancos y transferencias',
   fx: 'Tasa de cambio',
   general_ledger: 'Libro diario',
+  payroll: 'Nomina',
   tax: 'Impuestos',
 };
 
@@ -208,17 +217,21 @@ export const normalizeAccountingModuleKey = (
 export const normalizeAccountingEventStatus = (
   value: unknown,
 ): AccountingEventStatus => {
-  return (ACCOUNTING_EVENT_STATUS_VALUES.find((status) => status === value) as
-    | AccountingEventStatus
-    | undefined) ?? 'recorded';
+  return (
+    (ACCOUNTING_EVENT_STATUS_VALUES.find((status) => status === value) as
+      | AccountingEventStatus
+      | undefined) ?? 'recorded'
+  );
 };
 
 export const normalizeAccountingProjectionStatus = (
   value: unknown,
 ): AccountingProjectionStatus => {
-  return (ACCOUNTING_PROJECTION_STATUS_VALUES.find(
-    (status) => status === value,
-  ) as AccountingProjectionStatus | undefined) ?? 'pending';
+  return (
+    (ACCOUNTING_PROJECTION_STATUS_VALUES.find((status) => status === value) as
+      | AccountingProjectionStatus
+      | undefined) ?? 'pending'
+  );
 };
 
 export const resolveAccountingSourceDocumentType = ({
@@ -236,8 +249,7 @@ export const resolveAccountingSourceDocumentId = ({
 }: {
   sourceDocumentId?: unknown;
   sourceId?: unknown;
-}): string | null =>
-  toCleanString(sourceDocumentId) || toCleanString(sourceId);
+}): string | null => toCleanString(sourceDocumentId) || toCleanString(sourceId);
 
 export const resolveAccountingEventDedupeKey = ({
   businessId,

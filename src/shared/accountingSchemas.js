@@ -18,6 +18,7 @@ export const ACCOUNTING_EVENT_TYPE_VALUES = [
   'internal_transfer.posted',
   'manual.entry.recorded',
   'fx_settlement.recorded',
+  'hr_commission.accrued',
 ];
 
 export const ACCOUNTING_EVENT_STATUS_VALUES = [
@@ -68,8 +69,8 @@ const nullableTrimmedStringSchema = z.preprocess(
 
 const timestampLikeSchema = z.any().nullable().optional();
 
-const monetaryAmountSchema = z
-  .coerce.number({
+const monetaryAmountSchema = z.coerce
+  .number({
     invalid_type_error: 'Los montos deben ser numéricos.',
   })
   .finite('Los montos deben ser numéricos.');
@@ -138,10 +139,7 @@ export const AccountingEventTreasurySnapshotSchema = z
     cashCountId: nullableTrimmedStringSchema.optional().default(null),
     bankAccountId: nullableTrimmedStringSchema.optional().default(null),
     paymentChannel: z
-      .union([
-        z.enum(ACCOUNTING_TREASURY_PAYMENT_CHANNEL_VALUES),
-        z.null(),
-      ])
+      .union([z.enum(ACCOUNTING_TREASURY_PAYMENT_CHANNEL_VALUES), z.null()])
       .optional()
       .default(null),
   })
@@ -189,7 +187,10 @@ export const CreateManualJournalEntryInputSchema = z.object({
   description: trimmedStringSchema,
   entryDate: z
     .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'La fecha del asiento debe tener formato YYYY-MM-DD.'),
+    .regex(
+      /^\d{4}-\d{2}-\d{2}$/,
+      'La fecha del asiento debe tener formato YYYY-MM-DD.',
+    ),
   lines: z
     .array(callableLedgerLineSchema)
     .min(2, 'El asiento manual requiere al menos dos líneas válidas.'),
@@ -211,7 +212,10 @@ export const ReverseJournalEntryInputSchema = z.object({
     .union([
       z
         .string()
-        .regex(/^\d{4}-\d{2}-\d{2}$/, 'La fecha del reverso debe tener formato YYYY-MM-DD.'),
+        .regex(
+          /^\d{4}-\d{2}-\d{2}$/,
+          'La fecha del reverso debe tener formato YYYY-MM-DD.',
+        ),
       z.null(),
     ])
     .optional()
@@ -245,8 +249,8 @@ export const GetAccountingReportsInputSchema = z.object({
   includeGeneralLedger: z.boolean().optional().default(true),
   ledgerAccountId: nullableTrimmedStringSchema.optional().default(null),
   ledgerPage: z.coerce.number().int().positive().optional().default(1),
-  ledgerPageSize: z
-    .coerce.number()
+  ledgerPageSize: z.coerce
+    .number()
     .int()
     .positive()
     .optional()

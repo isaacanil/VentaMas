@@ -9,6 +9,7 @@ import { syncProductNameOnUpdate } from './app/modules/Inventory/functions/syncP
 import { createProduct } from './app/modules/products/functions/createProduct.js';
 import { createClient } from './app/modules/client/functions/createClient.js';
 import { createProvider } from './app/modules/provider/functions/createProvider.js';
+import { manageHrCommissionPeriod } from './app/modules/hrPayroll/functions/manageHrCommissionPeriod.js';
 import { manageHrEmployee } from './app/modules/hrPayroll/functions/manageHrEmployee.js';
 import { recalculateHrCommissionEntries } from './app/modules/hrPayroll/functions/recalculateHrCommissionEntries.js';
 import { reserveCreditNoteNcf } from './app/modules/taxReceipt/functions/reserveCreditNoteNcf.js';
@@ -185,6 +186,7 @@ export {
   createProduct,
   createClient,
   createProvider,
+  manageHrCommissionPeriod,
   manageHrEmployee,
   recalculateHrCommissionEntries,
   reserveCreditNoteNcf,

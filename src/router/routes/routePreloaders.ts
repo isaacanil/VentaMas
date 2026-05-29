@@ -65,6 +65,8 @@ const preloadHrPayrollWorkspace = () =>
   import('@/modules/hrPayroll/pages/HrPayrollWorkspace/HrPayrollWorkspace');
 const preloadHrCommissionsPage = () =>
   import('@/modules/hrPayroll/pages/HrCommissionsPage/HrCommissionsPage');
+const preloadHrCommissionPeriodsPage = () =>
+  import('@/modules/hrPayroll/pages/HrCommissionPeriodsPage/HrCommissionPeriodsPage');
 
 export const routePreloaders: Record<string, RoutePreloader> = {
   [BASIC_TERM.HOME]: () => import('@/modules/home/pages/Home/Home'),
@@ -111,6 +113,7 @@ export const routePreloaders: Record<string, RoutePreloader> = {
   [HR_PAYROLL_TERM.HR_PAYROLL]: preloadHrPayrollWorkspace,
   [HR_PAYROLL_TERM.HR_EMPLOYEES]: preloadHrPayrollWorkspace,
   [HR_PAYROLL_TERM.HR_COMMISSIONS]: preloadHrCommissionsPage,
+  [HR_PAYROLL_TERM.HR_COMMISSION_PERIODS]: preloadHrCommissionPeriodsPage,
 
   [INVENTORY_TERM.INVENTORY_ITEMS]: () =>
     import('@/modules/inventory/pages/Inventario/pages/ItemsManager/Inventario'),

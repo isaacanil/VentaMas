@@ -30,10 +30,12 @@ const ACCOUNTING_EVENT_TYPE_LABELS = {
   'supplier_credit_note.applied': 'Saldo a favor de suplidor aplicado',
   'expense.recorded': 'Gasto registrado',
   'cash_over_short.recorded': 'Diferencia de cuadre registrada',
-  'bank_statement_adjustment.recorded': 'Ajuste de extracto bancario registrado',
+  'bank_statement_adjustment.recorded':
+    'Ajuste de extracto bancario registrado',
   'internal_transfer.posted': 'Transferencia interna posteada',
   'manual.entry.recorded': 'Asiento manual registrado',
   'fx_settlement.recorded': 'Settlement FX registrado',
+  'hr_commission.accrued': 'Comision RRHH devengada',
 };
 
 const ACCOUNTING_MODULE_LABELS = {
@@ -46,6 +48,7 @@ const ACCOUNTING_MODULE_LABELS = {
   banking: 'Bancos y transferencias',
   fx: 'Tasa de cambio',
   general_ledger: 'Libro diario',
+  payroll: 'Nomina',
   tax: 'Impuestos',
 };
 
@@ -67,6 +70,7 @@ const ACCOUNTING_EVENT_MODULES = {
   'internal_transfer.posted': 'banking',
   'manual.entry.recorded': 'general_ledger',
   'fx_settlement.recorded': 'fx',
+  'hr_commission.accrued': 'payroll',
 };
 
 const monthFormatter = new Intl.DateTimeFormat('es-DO', {
@@ -170,7 +174,10 @@ const buildEntryAlias = (entryDate, entryId) => {
 
 const assignStableEntryReferences = (records) =>
   [...records].map((record) => {
-    const entryReference = buildEntryAlias(record.entryDate, record.journalEntry?.id);
+    const entryReference = buildEntryAlias(
+      record.entryDate,
+      record.journalEntry?.id,
+    );
     return {
       ...record,
       entryReference,
@@ -303,8 +310,10 @@ export const normalizeJournalEntryRecord = (id, businessId, value) => {
     ? record.lines.map((line, index) => normalizeJournalEntryLine(line, index))
     : [];
   const totals = computeJournalEntryTotals(lines);
-  const eventType =
-    normalizeAccountingEventType(record.eventType, 'manual.entry.recorded');
+  const eventType = normalizeAccountingEventType(
+    record.eventType,
+    'manual.entry.recorded',
+  );
   const entryDate = record.entryDate ?? null;
 
   return {
@@ -322,7 +331,8 @@ export const normalizeJournalEntryRecord = (id, businessId, value) => {
     eventVersion: Number(record.eventVersion) || 1,
     status: normalizeJournalEntryStatus(record.status),
     entryDate,
-    periodKey: toCleanString(record.periodKey) || resolveJournalPeriodKey(entryDate),
+    periodKey:
+      toCleanString(record.periodKey) || resolveJournalPeriodKey(entryDate),
     description: toCleanString(record.description),
     currency: toCleanString(record.currency),
     functionalCurrency: toCleanString(record.functionalCurrency),
@@ -366,7 +376,8 @@ const buildLedgerMovementSearchIndex = (entry) =>
 
 const resolveManualEntryReference = (entry) => {
   const userReference =
-    toCleanString(asRecord(entry.metadata).note) || findFirstLineReference(entry.lines);
+    toCleanString(asRecord(entry.metadata).note) ||
+    findFirstLineReference(entry.lines);
   const internalReference = toCleanString(entry.sourceId) || entry.id;
 
   return {
@@ -389,11 +400,14 @@ export const buildPostedLedgerRecords = ({
 } = {}) =>
   assignStableEntryReferences(
     (Array.isArray(journalEntries) ? journalEntries : []).map((entry) => {
-      const effectiveDate = toDateOrNull(entry.entryDate) || toDateOrNull(entry.createdAt);
+      const effectiveDate =
+        toDateOrNull(entry.entryDate) || toDateOrNull(entry.createdAt);
       const periodKey =
         toCleanString(entry.periodKey) ||
         (effectiveDate ? resolveJournalPeriodKey(effectiveDate) : null);
-      const event = entry.eventId ? eventsById.get(entry.eventId) || null : null;
+      const event = entry.eventId
+        ? eventsById.get(entry.eventId) || null
+        : null;
       const title =
         entry.eventType === 'manual.entry.recorded'
           ? 'Asiento manual'
@@ -415,7 +429,8 @@ export const buildPostedLedgerRecords = ({
         toCleanString(event?.sourceDocumentId) ||
         toCleanString(event?.sourceId) ||
         null;
-      const internalReference = manualReference?.internalReference || rawEntryReference;
+      const internalReference =
+        manualReference?.internalReference || rawEntryReference;
 
       return {
         id: `entry:${entry.id}`,
@@ -424,7 +439,9 @@ export const buildPostedLedgerRecords = ({
         sourceKind:
           entry.eventType === 'manual.entry.recorded' ? 'manual' : 'automatic',
         sourceLabel:
-          entry.eventType === 'manual.entry.recorded' ? 'Manual' : 'Automatizado',
+          entry.eventType === 'manual.entry.recorded'
+            ? 'Manual'
+            : 'Automatizado',
         detailMode: 'posted',
         eventType: entry.eventType,
         moduleKey,
@@ -434,7 +451,8 @@ export const buildPostedLedgerRecords = ({
           ],
         title,
         description:
-          entry.description || 'Asiento posteado directamente en el libro diario.',
+          entry.description ||
+          'Asiento posteado directamente en el libro diario.',
         reference:
           manualReference?.reference ||
           eventReference ||
@@ -470,12 +488,7 @@ export const buildPostedLedgerRecords = ({
     }),
   );
 
-const buildAccountBalances = ({
-  accounts,
-  periodKey,
-  records,
-  mode,
-}) => {
+const buildAccountBalances = ({ accounts, periodKey, records, mode }) => {
   const balances = new Map();
 
   accounts.forEach((account) => {
@@ -511,10 +524,7 @@ const buildAccountBalances = ({
   return Array.from(balances.values());
 };
 
-export const buildGeneralLedgerAccountOptions = ({
-  accounts,
-  records,
-}) => {
+export const buildGeneralLedgerAccountOptions = ({ accounts, records }) => {
   const movementCounts = new Map();
 
   records.forEach((record) => {
@@ -547,19 +557,21 @@ export const buildGeneralLedgerSnapshot = ({
   pageSize = 50,
   searchQuery = null,
 }) => {
-  const accountLines = (Array.isArray(records) ? records : []).flatMap((record) =>
-    (Array.isArray(record.lines) ? record.lines : [])
-      .filter((line) => line.accountId === account.id)
-      .map((line) => ({
-        line,
-        record,
-      })),
+  const accountLines = (Array.isArray(records) ? records : []).flatMap(
+    (record) =>
+      (Array.isArray(record.lines) ? record.lines : [])
+        .filter((line) => line.accountId === account.id)
+        .map((line) => ({
+          line,
+          record,
+        })),
   );
 
   const openingBalance = periodKey
     ? accountLines
         .filter(
-          ({ record }) => record.periodKey !== null && record.periodKey < periodKey,
+          ({ record }) =>
+            record.periodKey !== null && record.periodKey < periodKey,
         )
         .reduce(
           (total, { line }) => total + resolveLineBalanceDelta(account, line),
@@ -588,7 +600,10 @@ export const buildGeneralLedgerSnapshot = ({
         return recordCompare;
       }
 
-      return toFiniteNumber(left.line.lineNumber) - toFiniteNumber(right.line.lineNumber);
+      return (
+        toFiniteNumber(left.line.lineNumber) -
+        toFiniteNumber(right.line.lineNumber)
+      );
     });
 
   let runningBalance = openingBalance;
@@ -673,11 +688,7 @@ export const buildGeneralLedgerSnapshot = ({
   };
 };
 
-export const buildFinancialReports = ({
-  accounts,
-  periodKey,
-  records,
-}) => {
+export const buildFinancialReports = ({ accounts, periodKey, records }) => {
   const cumulativeBalances = buildAccountBalances({
     accounts,
     periodKey,
@@ -740,8 +751,7 @@ export const buildFinancialReports = ({
       income:
         totals.income + (row.kind === 'income' ? Math.max(row.amount, 0) : 0),
       expense:
-        totals.expense +
-        (row.kind === 'expense' ? Math.max(row.amount, 0) : 0),
+        totals.expense + (row.kind === 'expense' ? Math.max(row.amount, 0) : 0),
       netIncome: 0,
     }),
     { income: 0, expense: 0, netIncome: 0 },
@@ -795,7 +805,9 @@ export const buildAvailablePeriods = (records) => {
 
   periodKeys.add(resolveJournalPeriodKey(new Date()));
 
-  return Array.from(periodKeys).sort((left, right) => right.localeCompare(left));
+  return Array.from(periodKeys).sort((left, right) =>
+    right.localeCompare(left),
+  );
 };
 
 export const buildPeriodOptions = (periods, records) =>

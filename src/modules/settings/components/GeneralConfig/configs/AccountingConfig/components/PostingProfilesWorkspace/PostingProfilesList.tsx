@@ -57,6 +57,7 @@ const MODULE_ORDER: AccountingModuleKey[] = [
   'accounts_receivable',
   'accounts_payable',
   'expenses',
+  'payroll',
   'banking',
   'cash',
   'fx',

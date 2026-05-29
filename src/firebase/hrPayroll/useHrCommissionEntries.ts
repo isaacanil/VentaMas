@@ -137,6 +137,7 @@ const normalizeHrCommissionEntryRecord = (
   sourceStatus: toCleanString(data.sourceStatus),
   periodId: toCleanString(data.periodId),
   payrollRunId: toCleanString(data.payrollRunId),
+  payrollEmployeeLineId: toCleanString(data.payrollEmployeeLineId),
   employeePaymentId: toCleanString(data.employeePaymentId),
   accountingEventId: toCleanString(data.accountingEventId),
   journalEntryId: toCleanString(data.journalEntryId),

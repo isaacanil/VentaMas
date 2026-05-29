@@ -19,7 +19,8 @@ const { PURCHASES } = ROUTES_NAME.PURCHASE_TERM;
 const { ORDERS } = ROUTES_NAME.ORDER_TERM;
 
 const { EXPENSES_LIST } = ROUTES_NAME.EXPENSES_TERM;
-const { HR_PAYROLL, HR_COMMISSIONS } = ROUTES_NAME.HR_PAYROLL_TERM;
+const { HR_PAYROLL, HR_COMMISSIONS, HR_COMMISSION_PERIODS } =
+  ROUTES_NAME.HR_PAYROLL_TERM;
 const {
   ACCOUNTING_JOURNAL_BOOK,
   ACCOUNTING_GENERAL_LEDGER,
@@ -77,6 +78,12 @@ const financialManagement: MenuItem[] = [
         title: 'Comisiones RRHH',
         icon: <TeamOutlined />,
         route: HR_COMMISSIONS,
+        group: 'hrPayroll',
+      },
+      {
+        title: 'Cortes',
+        icon: <TeamOutlined />,
+        route: HR_COMMISSION_PERIODS,
         group: 'hrPayroll',
       },
     ],

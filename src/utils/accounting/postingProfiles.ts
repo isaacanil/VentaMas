@@ -163,7 +163,8 @@ export const ACCOUNTING_POSTING_AMOUNT_SOURCE_LABELS: Record<
 
 export const normalizeAccountingPostingProfileStatus = (
   value: unknown,
-): AccountingPostingProfileStatus => (value === 'inactive' ? 'inactive' : 'active');
+): AccountingPostingProfileStatus =>
+  value === 'inactive' ? 'inactive' : 'active';
 
 export const normalizeAccountingPostingPaymentTerm = (
   value: unknown,
@@ -284,7 +285,7 @@ export const normalizeAccountingPostingLineDraft = (
 ): AccountingPostingLineTemplate => {
   const record = asRecord(value);
   const accountId = toCleanString(record.accountId);
-  const account = accountId ? accountsById.get(accountId) ?? null : null;
+  const account = accountId ? (accountsById.get(accountId) ?? null) : null;
 
   return {
     id: toCleanString(record.id) ?? createPostingProfileLineId(),
@@ -306,7 +307,9 @@ export const normalizeAccountingPostingProfileDraft = (
   accounts: ChartOfAccount[] = [],
 ): AccountingPostingProfileDraft => {
   const record = asRecord(value);
-  const accountsById = new Map(accounts.map((account) => [account.id, account]));
+  const accountsById = new Map(
+    accounts.map((account) => [account.id, account]),
+  );
   const eventType = normalizeAccountingEventType(record.eventType);
   const eventDefinition = getAccountingEventDefinition(eventType);
   const lines = Array.isArray(record.linesTemplate)
@@ -366,8 +369,10 @@ export const normalizeAccountingPostingProfileRecord = (
     priority: draft.priority,
     conditions: draft.conditions,
     linesTemplate: draft.linesTemplate as AccountingPostingLineTemplate[],
-    createdAt: (record.createdAt as AccountingPostingProfile['createdAt']) ?? null,
-    updatedAt: (record.updatedAt as AccountingPostingProfile['updatedAt']) ?? null,
+    createdAt:
+      (record.createdAt as AccountingPostingProfile['createdAt']) ?? null,
+    updatedAt:
+      (record.updatedAt as AccountingPostingProfile['updatedAt']) ?? null,
     createdBy: toCleanString(record.createdBy),
     updatedBy: toCleanString(record.updatedBy),
     lastChangeId: toCleanString(record.lastChangeId),
@@ -687,7 +692,8 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
   {
     seedKey: 'purchase_committed_expense',
     name: 'Compra de gasto a crédito',
-    description: 'Compra confirmada que se reconoce como gasto contra cuentas por pagar.',
+    description:
+      'Compra confirmada que se reconoce como gasto contra cuentas por pagar.',
     eventType: 'purchase.committed',
     moduleKey: 'purchases',
     priority: 45,
@@ -914,6 +920,31 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
         side: 'credit',
         accountSystemKey: 'accounts_payable',
         amountSource: 'expense_total',
+      },
+    ],
+  },
+  {
+    seedKey: 'hr_commission_accrued',
+    name: 'Comisiones RRHH devengadas',
+    description:
+      'Reconoce comisiones aprobadas de colaboradores como gasto pendiente de pago.',
+    eventType: 'hr_commission.accrued',
+    moduleKey: 'payroll',
+    priority: 70,
+    conditions: {
+      documentNature: 'expense',
+      settlementTiming: 'deferred',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'operating_expenses',
+        amountSource: 'document_total',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'accounts_payable',
+        amountSource: 'document_total',
       },
     ],
   },

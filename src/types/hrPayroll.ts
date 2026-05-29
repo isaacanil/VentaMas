@@ -16,6 +16,19 @@ export type HrCommissionType = 'percentage' | 'fixed';
 
 export type HrReadyToPayStatus = 'ready' | 'needs_review';
 
+export type HrCommissionPeriodStatus =
+  | 'draft'
+  | 'closed'
+  | 'approved'
+  | 'cancelled';
+
+export type HrPayrollRunStatus =
+  | 'draft'
+  | 'closed'
+  | 'approved'
+  | 'paid'
+  | 'cancelled';
+
 export type HrCommissionEntryStatus =
   | 'calculated'
   | 'eligible'
@@ -109,6 +122,7 @@ export interface HrCommissionEntryRecord extends Record<string, unknown> {
   sourceStatus?: string | null;
   periodId?: string | null;
   payrollRunId?: string | null;
+  payrollEmployeeLineId?: string | null;
   employeePaymentId?: string | null;
   accountingEventId?: string | null;
   journalEntryId?: string | null;
@@ -116,4 +130,62 @@ export interface HrCommissionEntryRecord extends Record<string, unknown> {
   date?: unknown;
   createdAt?: unknown;
   updatedAt?: unknown;
+}
+
+export interface HrCommissionPeriodRecord extends Record<string, unknown> {
+  id: string;
+  businessId: string;
+  type: 'commission';
+  periodKey?: string | null;
+  label?: string | null;
+  status: HrCommissionPeriodStatus;
+  startDate?: unknown;
+  endDate?: unknown;
+  currency: string;
+  entriesCount: number;
+  employeesCount: number;
+  totalCommissionAmount: number;
+  payrollRunId?: string | null;
+  accountingEventId?: string | null;
+  createdAt?: unknown;
+  updatedAt?: unknown;
+}
+
+export interface HrPayrollRunRecord extends Record<string, unknown> {
+  id: string;
+  businessId: string;
+  type: 'commission' | 'salary' | 'mixed';
+  sourcePeriodId?: string | null;
+  status: HrPayrollRunStatus;
+  periodKey?: string | null;
+  startDate?: unknown;
+  endDate?: unknown;
+  currency: string;
+  employeeCount: number;
+  lineCount: number;
+  grossAmount: number;
+  deductionsAmount: number;
+  netAmount: number;
+  accountingEventId?: string | null;
+}
+
+export interface HrPayrollEmployeeLineRecord extends Record<string, unknown> {
+  id: string;
+  businessId: string;
+  periodId: string;
+  payrollRunId: string;
+  employeeId: string;
+  employeeCode?: string | null;
+  employeeNameSnapshot?: string | null;
+  partyId?: string | null;
+  type: 'commission' | 'salary' | 'mixed';
+  status: HrPayrollRunStatus;
+  currency: string;
+  grossAmount: number;
+  deductionsAmount: number;
+  netAmount: number;
+  commissionAmount: number;
+  commissionEntryIds: string[];
+  entriesCount: number;
+  accountingEventId?: string | null;
 }

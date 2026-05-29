@@ -49,6 +49,7 @@ export type AccountingModuleKey =
   | 'banking'
   | 'fx'
   | 'general_ledger'
+  | 'payroll'
   | 'tax';
 export type AccountingEventType =
   | 'invoice.committed'
@@ -67,7 +68,8 @@ export type AccountingEventType =
   | 'bank_statement_adjustment.recorded'
   | 'internal_transfer.posted'
   | 'manual.entry.recorded'
-  | 'fx_settlement.recorded';
+  | 'fx_settlement.recorded'
+  | 'hr_commission.accrued';
 export type AccountingEventStatus = 'recorded' | 'projected' | 'voided';
 export type AccountingProjectionStatus =
   | 'pending'

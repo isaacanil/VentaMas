@@ -15,10 +15,7 @@ const CHART_ACCOUNT_TYPES = new Set([
   'expense',
 ]);
 const NORMAL_SIDES = new Set(['debit', 'credit']);
-const CURRENCY_MODES = new Set([
-  'functional_only',
-  'multi_currency_reference',
-]);
+const CURRENCY_MODES = new Set(['functional_only', 'multi_currency_reference']);
 const PROFILE_STATUSES = new Set(['active', 'inactive']);
 const ACCOUNTING_EVENT_MODULES = new Map([
   ['invoice.committed', 'sales'],
@@ -38,6 +35,7 @@ const ACCOUNTING_EVENT_MODULES = new Map([
   ['internal_transfer.posted', 'cash'],
   ['manual.entry.recorded', 'general_ledger'],
   ['fx_settlement.recorded', 'fx'],
+  ['hr_commission.accrued', 'payroll'],
 ]);
 const AMOUNT_SOURCES = new Set([
   'document_total',
@@ -113,7 +111,9 @@ const normalizeConditions = (value) => {
     )
       ? record.documentNature
       : 'any',
-    settlementTiming: ['immediate', 'deferred'].includes(record.settlementTiming)
+    settlementTiming: ['immediate', 'deferred'].includes(
+      record.settlementTiming,
+    )
       ? record.settlementTiming
       : 'any',
   };
@@ -146,12 +146,15 @@ const normalizePostingLine = (value, accountsById) => {
   const account = accountId ? accountsById.get(accountId) : null;
 
   return {
-    id: toCleanString(record.id) || `line_${Math.random().toString(36).slice(2, 10)}`,
+    id:
+      toCleanString(record.id) ||
+      `line_${Math.random().toString(36).slice(2, 10)}`,
     side: record.side === 'credit' ? 'credit' : 'debit',
     accountId,
     accountCode: account?.code || toCleanString(record.accountCode),
     accountName: account?.name || toCleanString(record.accountName),
-    accountSystemKey: account?.systemKey || toCleanString(record.accountSystemKey),
+    accountSystemKey:
+      account?.systemKey || toCleanString(record.accountSystemKey),
     amountSource: AMOUNT_SOURCES.has(record.amountSource)
       ? record.amountSource
       : 'document_total',
@@ -166,7 +169,9 @@ const normalizePostingProfileDraft = (value, accountsById, current = {}) => {
   const eventType = toCleanString(record.eventType);
   const moduleKey = ACCOUNTING_EVENT_MODULES.get(eventType);
   const lines = Array.isArray(record.linesTemplate)
-    ? record.linesTemplate.map((line) => normalizePostingLine(line, accountsById))
+    ? record.linesTemplate.map((line) =>
+        normalizePostingLine(line, accountsById),
+      )
     : [];
 
   return {
@@ -234,7 +239,10 @@ const assertAccountDraft = (draft) => {
     );
   }
   if (!CHART_ACCOUNT_TYPES.has(draft.type)) {
-    throw new HttpsError('invalid-argument', 'Tipo de cuenta contable inválido.');
+    throw new HttpsError(
+      'invalid-argument',
+      'Tipo de cuenta contable inválido.',
+    );
   }
 };
 
@@ -325,7 +333,11 @@ const findAccountUsageInProfiles = ({ profiles, accountId }) =>
     ),
   );
 
-const findJournalEntryUsage = async ({ transaction, businessId, accountId }) => {
+const findJournalEntryUsage = async ({
+  transaction,
+  businessId,
+  accountId,
+}) => {
   const query = db
     .collection(`businesses/${businessId}/journalEntries`)
     .where('accountIds', 'array-contains', accountId)
@@ -425,7 +437,12 @@ const assertAccountCanDisable = async ({
   }
 };
 
-const assertPostingProfileDraft = ({ draft, accountsById, profiles, profileId }) => {
+const assertPostingProfileDraft = ({
+  draft,
+  accountsById,
+  profiles,
+  profileId,
+}) => {
   if (!draft.name) {
     throw new HttpsError(
       'invalid-argument',
@@ -500,7 +517,13 @@ const assertPostingProfileDraft = ({ draft, accountsById, profiles, profileId })
   }
 };
 
-const buildAccountRecord = ({ businessId, accountId, draft, now, authUid }) => ({
+const buildAccountRecord = ({
+  businessId,
+  accountId,
+  draft,
+  now,
+  authUid,
+}) => ({
   id: accountId,
   businessId,
   code: draft.code,
@@ -548,7 +571,8 @@ export const createChartOfAccount = onCall(
   { cors: true, invoker: 'public' },
   async (request) => {
     const authUid = await resolveCallableAuthUid(request);
-    if (!authUid) throw new HttpsError('unauthenticated', 'Usuario no autenticado');
+    if (!authUid)
+      throw new HttpsError('unauthenticated', 'Usuario no autenticado');
 
     const payload = asRecord(request?.data);
     const businessId = resolveBusinessId(payload);
@@ -565,7 +589,10 @@ export const createChartOfAccount = onCall(
     const now = Timestamp.now();
 
     await db.runTransaction(async (transaction) => {
-      const { accounts, accountsById } = await loadAccounts(transaction, businessId);
+      const { accounts, accountsById } = await loadAccounts(
+        transaction,
+        businessId,
+      );
       assertUniqueAccountCode({
         accounts,
         accountId: accountRef.id,
@@ -596,12 +623,14 @@ export const updateChartOfAccount = onCall(
   { cors: true, invoker: 'public' },
   async (request) => {
     const authUid = await resolveCallableAuthUid(request);
-    if (!authUid) throw new HttpsError('unauthenticated', 'Usuario no autenticado');
+    if (!authUid)
+      throw new HttpsError('unauthenticated', 'Usuario no autenticado');
 
     const payload = asRecord(request?.data);
     const businessId = resolveBusinessId(payload);
     const accountId =
-      toCleanString(payload.accountId) || toCleanString(payload.chartOfAccountId);
+      toCleanString(payload.accountId) ||
+      toCleanString(payload.chartOfAccountId);
     if (!businessId || !accountId) {
       throw new HttpsError(
         'invalid-argument',
@@ -677,12 +706,14 @@ export const disableChartOfAccount = onCall(
   { cors: true, invoker: 'public' },
   async (request) => {
     const authUid = await resolveCallableAuthUid(request);
-    if (!authUid) throw new HttpsError('unauthenticated', 'Usuario no autenticado');
+    if (!authUid)
+      throw new HttpsError('unauthenticated', 'Usuario no autenticado');
 
     const payload = asRecord(request?.data);
     const businessId = resolveBusinessId(payload);
     const accountId =
-      toCleanString(payload.accountId) || toCleanString(payload.chartOfAccountId);
+      toCleanString(payload.accountId) ||
+      toCleanString(payload.chartOfAccountId);
     const reason = toCleanString(payload.reason);
     if (!businessId || !accountId) {
       throw new HttpsError(
@@ -741,7 +772,8 @@ export const createAccountingPostingProfile = onCall(
   { cors: true, invoker: 'public' },
   async (request) => {
     const authUid = await resolveCallableAuthUid(request);
-    if (!authUid) throw new HttpsError('unauthenticated', 'Usuario no autenticado');
+    if (!authUid)
+      throw new HttpsError('unauthenticated', 'Usuario no autenticado');
 
     const payload = asRecord(request?.data);
     const businessId = resolveBusinessId(payload);
@@ -790,12 +822,14 @@ export const updateAccountingPostingProfile = onCall(
   { cors: true, invoker: 'public' },
   async (request) => {
     const authUid = await resolveCallableAuthUid(request);
-    if (!authUid) throw new HttpsError('unauthenticated', 'Usuario no autenticado');
+    if (!authUid)
+      throw new HttpsError('unauthenticated', 'Usuario no autenticado');
 
     const payload = asRecord(request?.data);
     const businessId = resolveBusinessId(payload);
     const profileId =
-      toCleanString(payload.profileId) || toCleanString(payload.postingProfileId);
+      toCleanString(payload.profileId) ||
+      toCleanString(payload.postingProfileId);
     if (!businessId || !profileId) {
       throw new HttpsError(
         'invalid-argument',
@@ -917,12 +951,14 @@ export const disableAccountingPostingProfile = onCall(
   { cors: true, invoker: 'public' },
   async (request) => {
     const authUid = await resolveCallableAuthUid(request);
-    if (!authUid) throw new HttpsError('unauthenticated', 'Usuario no autenticado');
+    if (!authUid)
+      throw new HttpsError('unauthenticated', 'Usuario no autenticado');
 
     const payload = asRecord(request?.data);
     const businessId = resolveBusinessId(payload);
     const profileId =
-      toCleanString(payload.profileId) || toCleanString(payload.postingProfileId);
+      toCleanString(payload.profileId) ||
+      toCleanString(payload.postingProfileId);
     const reason = toCleanString(payload.reason);
     if (!businessId || !profileId) {
       throw new HttpsError(

@@ -57,12 +57,16 @@ describe('postingProfiles', () => {
       type: 'income',
       systemKey: 'cash_over_short_income',
     }),
-    normalizeChartOfAccountRecord('bank-reconciliation-income-id', 'business-1', {
-      code: '4160',
-      name: 'Ingresos por conciliación bancaria',
-      type: 'income',
-      systemKey: 'bank_reconciliation_income',
-    }),
+    normalizeChartOfAccountRecord(
+      'bank-reconciliation-income-id',
+      'business-1',
+      {
+        code: '4160',
+        name: 'Ingresos por conciliación bancaria',
+        type: 'income',
+        systemKey: 'bank_reconciliation_income',
+      },
+    ),
     normalizeChartOfAccountRecord('sales-id', 'business-1', {
       code: '4100',
       name: 'Ventas',
@@ -81,12 +85,16 @@ describe('postingProfiles', () => {
       type: 'expense',
       systemKey: 'cash_over_short_expense',
     }),
-    normalizeChartOfAccountRecord('bank-reconciliation-expense-id', 'business-1', {
-      code: '5260',
-      name: 'Gastos por conciliación bancaria',
-      type: 'expense',
-      systemKey: 'bank_reconciliation_expense',
-    }),
+    normalizeChartOfAccountRecord(
+      'bank-reconciliation-expense-id',
+      'business-1',
+      {
+        code: '5260',
+        name: 'Gastos por conciliación bancaria',
+        type: 'expense',
+        systemKey: 'bank_reconciliation_expense',
+      },
+    ),
   ];
 
   it('normaliza drafts con defaults minimos', () => {
@@ -120,7 +128,8 @@ describe('postingProfiles', () => {
   });
 
   it('construye templates base cuando existen las cuentas canonicas', () => {
-    const result = buildDefaultAccountingPostingProfileTemplates(chartOfAccounts);
+    const result =
+      buildDefaultAccountingPostingProfileTemplates(chartOfAccounts);
 
     expect(result.some((profile) => profile.name === 'Venta al contado')).toBe(
       true,
@@ -143,14 +152,10 @@ describe('postingProfiles', () => {
       result.some((profile) => profile.name === 'Pago a suplidor por caja'),
     ).toBe(true);
     expect(
-      result.some(
-        (profile) => profile.name === 'Anulación de cobro en caja',
-      ),
+      result.some((profile) => profile.name === 'Anulación de cobro en caja'),
     ).toBe(true);
     expect(
-      result.some(
-        (profile) => profile.name === 'Anulación de cobro por banco',
-      ),
+      result.some((profile) => profile.name === 'Anulación de cobro por banco'),
     ).toBe(true);
     expect(
       result.some(
@@ -175,6 +180,9 @@ describe('postingProfiles', () => {
     expect(result.some((profile) => profile.name === 'Gasto por banco')).toBe(
       true,
     );
+    expect(
+      result.some((profile) => profile.name === 'Comisiones RRHH devengadas'),
+    ).toBe(true);
     expect(
       result.some((profile) => profile.name === 'Diferencia de cuadre de caja'),
     ).toBe(true);
