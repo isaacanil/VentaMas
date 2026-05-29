@@ -13,6 +13,22 @@ export interface ServiceCommissionCollaboratorSnapshot {
   code?: string | null;
   name?: string | null;
   linkedUserId?: string | null;
+  defaultType?: ServiceCommissionType | null;
+  defaultRate?: number | null;
+  active?: boolean;
+}
+
+export interface ServiceCommissionCollaboratorRecord extends ServiceCommissionCollaboratorSnapshot {
+  id: string;
+  businessId: string;
+  code: string;
+  name: string;
+  linkedUserId?: string | null;
+  notes?: string | null;
+  createdAt?: unknown;
+  createdBy?: string | null;
+  updatedAt?: unknown;
+  updatedBy?: string | null;
 }
 
 export interface ServiceCommissionLineSnapshot {

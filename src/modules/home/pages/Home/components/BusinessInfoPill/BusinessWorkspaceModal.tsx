@@ -1,7 +1,8 @@
 import { Button, Chip, ListBox, Modal, Select, Tooltip } from '@heroui/react';
-import type { JSX } from 'react';
+import { useState, type JSX } from 'react';
 import styled from 'styled-components';
 
+import { ClaimOwnershipModal } from '@/modules/auth/components/ClaimOwnershipModal';
 import {
   useBusinessWorkspaceModalController,
   type InviteFeedback,
@@ -21,6 +22,7 @@ export const BusinessWorkspaceModal = ({
   onClose,
   ownershipIssueCount = 0,
 }: BusinessWorkspaceModalProps): JSX.Element => {
+  const [claimOwnershipOpen, setClaimOwnershipOpen] = useState(false);
   const {
     activeBusinessesCount,
     businessFilter,
@@ -44,6 +46,10 @@ export const BusinessWorkspaceModal = ({
   } = useBusinessWorkspaceModalController({
     onClose,
   });
+  const handleClaimOwnershipOpen = (): void => {
+    onClose();
+    setClaimOwnershipOpen(true);
+  };
 
   return (
     <>
@@ -63,14 +69,20 @@ export const BusinessWorkspaceModal = ({
                 {ownershipIssueCount > 0 ? (
                   <OwnershipIssue>
                     <OwnershipIssueText>
-                      <OwnershipIssueTitle>Sin propietario</OwnershipIssueTitle>
+                      <OwnershipIssueTitle>
+                        Propiedad pendiente
+                      </OwnershipIssueTitle>
                       <OwnershipIssueDescription>
-                        Negocio activo sin owner asignado.
+                        Este negocio todavia no tiene owner registrado.
                       </OwnershipIssueDescription>
                     </OwnershipIssueText>
-                    <OwnershipIssueCount>
-                      {ownershipIssueCount}
-                    </OwnershipIssueCount>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onPress={handleClaimOwnershipOpen}
+                    >
+                      Reclamar
+                    </Button>
                   </OwnershipIssue>
                 ) : null}
 
@@ -259,6 +271,12 @@ export const BusinessWorkspaceModal = ({
           </Modal.Container>
         </Modal.Backdrop>
       ) : null}
+      {claimOwnershipOpen ? (
+        <ClaimOwnershipModal
+          isOpen
+          onClose={() => setClaimOwnershipOpen(false)}
+        />
+      ) : null}
     </>
   );
 };
@@ -283,6 +301,7 @@ const OwnershipIssue = styled.div`
   gap: 0.85rem;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   padding: 0.85rem 1rem;
   color: var(--ds-color-state-danger-text);
   background: var(--ds-color-state-danger-subtle);
@@ -310,22 +329,6 @@ const OwnershipIssueDescription = styled.span`
   font-weight: 500;
   line-height: 1.3;
   color: var(--ds-color-text-primary);
-`;
-
-const OwnershipIssueCount = styled.span`
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.65rem;
-  height: 1.65rem;
-  padding: 0 0.4rem;
-  font-size: 0.78rem;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--ds-color-state-on-danger);
-  background: var(--ds-color-state-danger);
-  border-radius: 999px;
 `;
 
 const ToolbarSpacer = styled.div`

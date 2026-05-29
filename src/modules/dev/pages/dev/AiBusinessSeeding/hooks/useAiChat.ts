@@ -56,6 +56,41 @@ export function useAiChat() {
   };
 
   const getErrorMessage = (error: unknown): string => {
+    if (error && typeof error === 'object') {
+      const details = (error as { details?: unknown }).details;
+      const diagnostic =
+        details && typeof details === 'object'
+          ? (details as { diagnostic?: unknown }).diagnostic
+          : null;
+
+      if (diagnostic && typeof diagnostic === 'object') {
+        const diagnosticData = diagnostic as {
+          category?: unknown;
+          message?: unknown;
+          model?: unknown;
+          location?: unknown;
+        };
+        const message =
+          typeof diagnosticData.message === 'string'
+            ? diagnosticData.message
+            : '';
+        const category =
+          typeof diagnosticData.category === 'string'
+            ? diagnosticData.category
+            : 'AI_DIAGNOSTIC';
+        const model =
+          typeof diagnosticData.model === 'string' ? diagnosticData.model : '';
+        const location =
+          typeof diagnosticData.location === 'string'
+            ? diagnosticData.location
+            : '';
+        const runtime =
+          model || location ? ` (${[model, location].filter(Boolean).join(' @ ')})` : '';
+
+        return `${category}${runtime}: ${message || 'Error diagnosticado por la function'}`;
+      }
+    }
+
     if (error instanceof Error) return error.message;
     if (typeof error === 'string') return error;
     return 'Error inesperado';

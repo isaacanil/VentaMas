@@ -20,6 +20,7 @@ import Typography from '@/components/ui/Typografy/Typografy';
 
 import { BatchInfoModal } from './components/BatchInfoModal/BatchInfoModal';
 import { CommentModal } from './components/CommentModal/CommentModal';
+import { ServiceCommissionModal } from './components/ServiceCommissionModal/ServiceCommissionModal';
 
 const VirtuosoList = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ style, children, ...props }, ref) => (
@@ -47,6 +48,7 @@ interface ProductsListState {
   deleteModalOpen: boolean;
   discountModalOpen: boolean;
   batchInfoModalOpen: boolean;
+  serviceCommissionModalOpen: boolean;
   selectedProduct: CartProduct | null;
   comment: string;
 }
@@ -60,6 +62,8 @@ type ProductsListAction =
   | { type: 'closeDiscount' }
   | { type: 'openBatchInfo'; product: CartProduct }
   | { type: 'closeBatchInfo' }
+  | { type: 'openServiceCommission'; product: CartProduct }
+  | { type: 'closeServiceCommission' }
   | { type: 'setComment'; value: string };
 
 const initialProductsListState: ProductsListState = {
@@ -67,6 +71,7 @@ const initialProductsListState: ProductsListState = {
   deleteModalOpen: false,
   discountModalOpen: false,
   batchInfoModalOpen: false,
+  serviceCommissionModalOpen: false,
   selectedProduct: null,
   comment: '',
 };
@@ -121,6 +126,17 @@ const productsListReducer = (
         ...state,
         batchInfoModalOpen: false,
       };
+    case 'openServiceCommission':
+      return {
+        ...state,
+        selectedProduct: action.product,
+        serviceCommissionModalOpen: true,
+      };
+    case 'closeServiceCommission':
+      return {
+        ...state,
+        serviceCommissionModalOpen: false,
+      };
     case 'setComment':
       return {
         ...state,
@@ -147,10 +163,19 @@ export const ProductsList = () => {
     discountModalOpen,
     selectedProduct,
     batchInfoModalOpen,
+    serviceCommissionModalOpen,
     comment,
   } = state;
   const selectedProductLineId =
     selectedProduct?.cid ?? selectedProduct?.id ?? null;
+  const selectedLiveProduct =
+    selectedProductLineId == null
+      ? null
+      : (ProductSelected.find(
+          (product) =>
+            product.cid === selectedProductLineId ||
+            product.id === selectedProductLineId,
+        ) ?? selectedProduct);
 
   const handleOpenCommentModal = useCallback((product: CartProduct) => {
     dispatchState({ type: 'openComment', product });
@@ -169,6 +194,13 @@ export const ProductsList = () => {
       if (product) {
         dispatchState({ type: 'openBatchInfo', product });
       }
+    },
+    [],
+  );
+
+  const handleOpenServiceCommissionModal = useCallback(
+    (product: CartProduct) => {
+      dispatchState({ type: 'openServiceCommission', product });
     },
     [],
   );
@@ -200,6 +232,7 @@ export const ProductsList = () => {
         onOpenDeleteModal={handleOpenDeleteModal}
         onOpenDiscountModal={handleOpenDiscountModal}
         onOpenBatchInfoModal={handleOpenBatchInfoModal}
+        onOpenServiceCommissionModal={handleOpenServiceCommissionModal}
       />
     ),
     [
@@ -207,6 +240,7 @@ export const ProductsList = () => {
       handleOpenDeleteModal,
       handleOpenDiscountModal,
       handleOpenBatchInfoModal,
+      handleOpenServiceCommissionModal,
     ],
   );
 
@@ -272,6 +306,12 @@ export const ProductsList = () => {
           visible={discountModalOpen}
           onClose={() => dispatchState({ type: 'closeDiscount' })}
           product={selectedProduct}
+        />
+
+        <ServiceCommissionModal
+          isOpen={serviceCommissionModalOpen}
+          onClose={() => dispatchState({ type: 'closeServiceCommission' })}
+          product={selectedLiveProduct}
         />
 
         <Modal

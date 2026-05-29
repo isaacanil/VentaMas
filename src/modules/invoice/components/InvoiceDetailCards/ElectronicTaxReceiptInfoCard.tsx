@@ -24,6 +24,7 @@ import type {
   InvoiceData,
 } from '@/types/invoice';
 import {
+  isRfceElectronicTaxReceipt,
   resolveElectronicTaxReceiptSnapshot,
   resolveElectronicTaxReceiptStatusKey,
   resolveElectronicTaxReceiptStatusLabel,
@@ -139,6 +140,16 @@ export const ElectronicTaxReceiptInfoCard = ({
   const submissionId = cleanString(snapshot.submissionId);
   const trackId =
     cleanString(snapshot.dgiiTrackId) || cleanString(snapshot.trackId);
+  const rfceReference =
+    cleanString(snapshot.rfceTrackId) ||
+    (snapshot.rfceDgiiCode
+      ? `Codigo ${snapshot.rfceDgiiCode}${
+          cleanString(snapshot.rfceDgiiEstado)
+            ? ` - ${cleanString(snapshot.rfceDgiiEstado)}`
+            : ''
+        }`
+      : null);
+  const isRfceFlow = isRfceElectronicTaxReceipt(snapshot);
   const securityCode = cleanString(snapshot.securityCode);
   const qrUrl = resolveQrUrl(snapshot);
   const statusUrl = cleanString(snapshot.links?.status);
@@ -326,8 +337,14 @@ export const ElectronicTaxReceiptInfoCard = ({
           ) : null}
           <EvidenceTags>
             <EvidenceTag>
-              <EvidenceTagLabel>TrackID</EvidenceTagLabel>
-              <EvidenceTagValue>{trackId || 'DGII pendiente'}</EvidenceTagValue>
+              <EvidenceTagLabel>
+                {trackId ? 'TrackID' : isRfceFlow ? 'RFCE' : 'TrackID'}
+              </EvidenceTagLabel>
+              <EvidenceTagValue>
+                {trackId ||
+                  rfceReference ||
+                  (isRfceFlow ? 'RFCE pendiente' : 'DGII pendiente')}
+              </EvidenceTagValue>
             </EvidenceTag>
             {securityCode ? (
               <EvidenceTag>

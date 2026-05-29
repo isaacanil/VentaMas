@@ -9,8 +9,10 @@ const projectId =
   readEnvString(process.env.FIREBASE_PROJECT_ID) ||
   readEnvString(process.env.PROJECT_ID);
 
+const DEFAULT_VERTEX_MODEL = 'gemini-2.5-flash';
+
 const vertexModelName =
-  readEnvString(process.env.GENKIT_VERTEX_MODEL) || 'gemini-3-flash-preview';
+  readEnvString(process.env.GENKIT_VERTEX_MODEL) || DEFAULT_VERTEX_MODEL;
 
 const configuredVertexLocation =
   readEnvString(process.env.GENKIT_VERTEX_LOCATION) ||
@@ -29,4 +31,6 @@ export const ai = genkit({
   plugins: [vertexAI(vertexPluginOptions)],
 });
 
+export const businessCreatorModelName = vertexModelName;
+export const businessCreatorVertexLocation = vertexLocation;
 export const businessCreatorModel = vertexAI.model(vertexModelName);

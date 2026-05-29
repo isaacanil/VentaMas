@@ -5,7 +5,7 @@ import {
   faCircleNotch,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button } from 'antd';
+import { Button, Modal } from 'antd';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -13,12 +13,18 @@ import styled from 'styled-components';
 import { useAiChat } from './hooks/useAiChat';
 import ChatInput from './components/ChatInput';
 import EmptyState from './components/EmptyState';
+import {
+  AI_BUSINESS_SEEDING_ENVIRONMENTS,
+  getAiBusinessSeedingEnvironmentUrl,
+  getCurrentAiBusinessSeedingEnvironment,
+} from './utils/environment';
 
 import type {
   ActionDefinition,
   ConversationTurn,
   LogEntry,
 } from './types';
+import type { AiBusinessSeedingEnvironmentId } from './utils/environment';
 
 const AppContainer = styled.div`
   height: 100vh;
@@ -51,6 +57,22 @@ const HeaderTitle = styled.div`
   font-weight: 700;
   font-size: 18px;
   color: #333;
+`;
+
+const EnvironmentBadge = styled.div<{ $tone: 'warning' | 'danger' }>`
+  justify-self: end;
+  min-width: 112px;
+  border: 1px solid
+    ${({ $tone }) => ($tone === 'danger' ? '#ffa39e' : '#ffe58f')};
+  border-radius: 999px;
+  background: ${({ $tone }) =>
+    $tone === 'danger' ? '#fff1f0' : '#fffbe6'};
+  color: ${({ $tone }) => ($tone === 'danger' ? '#a8071a' : '#ad6800')};
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 7px 11px;
+  text-align: center;
 `;
 
 const Workspace = styled.div`
@@ -297,6 +319,7 @@ const CollapsibleFlowLogs: React.FC<{
 
 const AiBusinessSeeding: React.FC = () => {
   const navigate = useNavigate();
+  const currentEnvironment = getCurrentAiBusinessSeedingEnvironment();
   const {
     actions,
     prompt,
@@ -320,6 +343,38 @@ const AiBusinessSeeding: React.FC = () => {
     handleAnalyze,
     handleExecute,
   } = useAiChat();
+
+  const handleSelectEnvironment = (
+    environmentId: AiBusinessSeedingEnvironmentId,
+  ) => {
+    const targetEnvironment = AI_BUSINESS_SEEDING_ENVIRONMENTS.find(
+      (environment) => environment.id === environmentId,
+    );
+
+    if (!targetEnvironment || targetEnvironment.id === currentEnvironment.id) {
+      return;
+    }
+
+    const targetUrl = getAiBusinessSeedingEnvironmentUrl({
+      environment: targetEnvironment,
+      search: window.location.search,
+    });
+
+    Modal.confirm({
+      title: `Abrir ${targetEnvironment.label}`,
+      content:
+        targetEnvironment.id === 'production'
+          ? 'Vas a salir de este ambiente y abrir la herramienta en produccion. Cualquier negocio ejecutado alla se creara en produccion.'
+          : 'Vas a salir de este ambiente y abrir la herramienta en staging.',
+      okText: `Ir a ${targetEnvironment.label}`,
+      cancelText: 'Cancelar',
+      okButtonProps:
+        targetEnvironment.id === 'production' ? { danger: true } : undefined,
+      onOk: () => {
+        window.location.assign(targetUrl);
+      },
+    });
+  };
 
   const renderTurnContent = ({
     actionId,
@@ -492,7 +547,9 @@ const AiBusinessSeeding: React.FC = () => {
         <HeaderTitle>
           <span style={{ color: 'var(--color-primary)' }}>Ventamax</span>
         </HeaderTitle>
-        <div />
+        <EnvironmentBadge $tone={currentEnvironment.tone}>
+          {currentEnvironment.label}
+        </EnvironmentBadge>
       </Header>
 
       <Workspace>
@@ -523,6 +580,9 @@ const AiBusinessSeeding: React.FC = () => {
             onToggleAction={handleToggleAction}
             onAnalyze={handleAnalyze}
             onClear={handleClear}
+            currentEnvironment={currentEnvironment}
+            environmentOptions={AI_BUSINESS_SEEDING_ENVIRONMENTS}
+            onSelectEnvironment={handleSelectEnvironment}
             canClear={hasConversation || Boolean(prompt.trim())}
           />
         </ChatColumn>

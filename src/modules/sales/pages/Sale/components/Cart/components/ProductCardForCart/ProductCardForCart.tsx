@@ -109,6 +109,7 @@ interface ProductCardForCartProps {
   onOpenDeleteModal: (item: CartItem) => void;
   onOpenDiscountModal: (item: CartItem) => void;
   onOpenBatchInfoModal: (item: CartItem) => void;
+  onOpenServiceCommissionModal: (item: CartProduct) => void;
 }
 
 const ensureNumber = (
@@ -184,6 +185,7 @@ export const ProductCardForCart = ({
   onOpenDeleteModal,
   onOpenDiscountModal,
   onOpenBatchInfoModal,
+  onOpenServiceCommissionModal,
 }: ProductCardForCartProps) => {
   const dispatch = useDispatch();
   const insuranceEnabled = Boolean(useInsuranceEnabled());
@@ -640,7 +642,9 @@ export const ProductCardForCart = ({
 
       {showServiceCommissionControl && (
         <ServiceCommissionControl
+          documentCurrency={documentCurrency}
           item={item}
+          onOpen={onOpenServiceCommissionModal}
           settings={serviceCommissionSettings}
         />
       )}

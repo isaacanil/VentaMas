@@ -217,6 +217,73 @@ describe('validateInvoiceSubmissionGuards', () => {
     if (result.ok) {
       throw new Error('Se esperaba una falla de selección física');
     }
-    expect(result.description).toContain('no tiene existencias físicas disponibles');
+    expect(result.description).toContain(
+      'no tiene existencias físicas disponibles',
+    );
+  });
+
+  it('bloquea el submit cuando las comisiones exigen colaborador en servicios', async () => {
+    vi.mocked(checkOpenCashReconciliation).mockResolvedValue({
+      state: 'open',
+      cashCount: {} as never,
+    });
+
+    const result = await validateInvoiceSubmissionGuards({
+      cart: {
+        products: [
+          {
+            id: 'service-1',
+            name: 'Consulta',
+            amountToBuy: 1,
+            itemType: 'service',
+          },
+        ],
+      },
+      serviceCommissions: {
+        enabled: true,
+        requireCollaboratorOnService: true,
+      },
+      user: user as never,
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: false,
+        code: 'service-commission-collaborator',
+        message: 'Asigna un colaborador al servicio',
+      }),
+    );
+    expect(getProductStockByProductId).not.toHaveBeenCalled();
+  });
+
+  it('permite el submit cuando el servicio requerido tiene colaborador de comision', async () => {
+    vi.mocked(checkOpenCashReconciliation).mockResolvedValue({
+      state: 'open',
+      cashCount: {} as never,
+    });
+
+    const result = await validateInvoiceSubmissionGuards({
+      cart: {
+        products: [
+          {
+            id: 'service-2',
+            name: 'Consulta',
+            amountToBuy: 1,
+            itemType: 'service',
+            serviceCommission: {
+              collaboratorCode: 'C-001',
+              collaboratorName: 'Ana',
+            },
+          },
+        ],
+      },
+      serviceCommissions: {
+        enabled: true,
+        requireCollaboratorOnService: true,
+      },
+      user: user as never,
+    });
+
+    expect(result).toEqual({ ok: true });
   });
 });

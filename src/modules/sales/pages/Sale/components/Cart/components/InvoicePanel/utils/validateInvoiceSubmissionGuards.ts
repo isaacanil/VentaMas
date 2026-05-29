@@ -1,9 +1,18 @@
 import type { Product } from '@/features/cart/types';
 import { checkOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
+import type { ServiceCommissionsBillingSettings } from '@/types/commissions';
 import type { ProductRecord } from '@/types/products';
 import type { UserIdentity } from '@/types/users';
 import type { CashCountState } from '@/utils/cashCount/types';
-import type { InventoryStockItem, InventoryUser } from '@/utils/inventory/types';
+import {
+  getServiceCommissionCollaboratorLabel,
+  isServiceCommissionEligible,
+  normalizeServiceCommissionSettings,
+} from '@/utils/commissions/serviceCommissions';
+import type {
+  InventoryStockItem,
+  InventoryUser,
+} from '@/utils/inventory/types';
 import {
   analyzeAvailableProductStocks,
   buildMissingPhysicalSelectionMessage,
@@ -24,6 +33,13 @@ type GuardFailure =
       message: string;
       ok: false;
       product: ProductRecord;
+    }
+  | {
+      code: 'service-commission-collaborator';
+      description: string;
+      message: string;
+      ok: false;
+      product: Product;
     };
 
 type GuardSuccess = {
@@ -36,13 +52,25 @@ type InvoiceSubmissionGuardsArgs = {
   cart: {
     products?: Product[] | null;
   } | null;
+  serviceCommissions?: ServiceCommissionsBillingSettings | null;
   user: UserIdentity | null;
 };
 
-const isProductMissingPhysicalSelection = (product: Product | null | undefined) =>
+const isProductMissingPhysicalSelection = (
+  product: Product | null | undefined,
+) =>
   Boolean(
     product?.restrictSaleWithoutStock &&
-      (!product?.productStockId || !product?.batchId),
+    (!product?.productStockId || !product?.batchId),
+  );
+
+const isServiceMissingCommissionCollaborator = (
+  product: Product | null | undefined,
+): boolean =>
+  Boolean(
+    product &&
+    isServiceCommissionEligible(product) &&
+    !getServiceCommissionCollaboratorLabel(product.serviceCommission),
   );
 
 const resolveCashCountDescription = (
@@ -61,6 +89,7 @@ const resolveCashCountDescription = (
 
 export const validateInvoiceSubmissionGuards = async ({
   cart,
+  serviceCommissions,
   user,
 }: InvoiceSubmissionGuardsArgs): Promise<InvoiceSubmissionGuardsResult> => {
   if (!user?.businessID || !user?.uid) {
@@ -85,11 +114,33 @@ export const validateInvoiceSubmissionGuards = async ({
     };
   }
 
-  const invalidProduct = (Array.isArray(cart?.products) ? cart.products : []).find(
-    isProductMissingPhysicalSelection,
-  );
+  const invalidProduct = (
+    Array.isArray(cart?.products) ? cart.products : []
+  ).find(isProductMissingPhysicalSelection);
 
   if (!invalidProduct) {
+    const commissionSettings =
+      normalizeServiceCommissionSettings(serviceCommissions);
+    if (
+      commissionSettings.enabled &&
+      commissionSettings.requireCollaboratorOnService
+    ) {
+      const serviceWithoutCollaborator = (
+        Array.isArray(cart?.products) ? cart.products : []
+      ).find(isServiceMissingCommissionCollaborator);
+
+      if (serviceWithoutCollaborator) {
+        return {
+          ok: false,
+          code: 'service-commission-collaborator',
+          message: 'Asigna un colaborador al servicio',
+          description:
+            'La configuracion de comisiones exige un colaborador en cada servicio antes de facturar.',
+          product: serviceWithoutCollaborator,
+        };
+      }
+    }
+
     return { ok: true };
   }
 

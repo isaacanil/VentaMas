@@ -1,13 +1,18 @@
 import {
+  faCheck,
   faEllipsisV,
   faPaperPlane,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, Dropdown, Input, Switch, Typography } from 'antd';
+import { Button, Dropdown, Input, Switch, Tag, Typography } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
 import type { ActionDefinition } from '../types';
+import type {
+  AiBusinessSeedingEnvironment,
+  AiBusinessSeedingEnvironmentId,
+} from '../utils/environment';
 import type { MenuProps } from 'antd';
 
 const { TextArea } = Input;
@@ -76,6 +81,25 @@ const StyledTextArea = styled(TextArea)`
   }
 `;
 
+const MenuRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 190px;
+`;
+
+const MenuRowLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const CurrentCheck = styled(FontAwesomeIcon)`
+  color: #1677ff;
+  font-size: 11px;
+`;
+
 interface ChatInputProps {
   prompt: string;
   setPrompt: (value: string) => void;
@@ -87,6 +111,9 @@ interface ChatInputProps {
   onToggleAction: (actionId: string) => void;
   onAnalyze: () => void;
   onClear: () => void;
+  currentEnvironment: AiBusinessSeedingEnvironment;
+  environmentOptions: AiBusinessSeedingEnvironment[];
+  onSelectEnvironment: (environmentId: AiBusinessSeedingEnvironmentId) => void;
   canClear?: boolean;
 }
 
@@ -101,6 +128,9 @@ const ChatInput: React.FC<ChatInputProps> = ({
   onToggleAction,
   onAnalyze,
   onClear,
+  currentEnvironment,
+  environmentOptions,
+  onSelectEnvironment,
   canClear = false,
 }) => {
   const handleMenuClick: MenuProps['onClick'] = ({ key, domEvent }) => {
@@ -117,12 +147,50 @@ const ChatInput: React.FC<ChatInputProps> = ({
       return;
     }
 
+    if (key.startsWith('environment-')) {
+      onSelectEnvironment(
+        key.replace(
+          'environment-',
+          '',
+        ) as AiBusinessSeedingEnvironmentId,
+      );
+      return;
+    }
+
     if (key.startsWith('action-')) {
       onToggleAction(key.replace('action-', ''));
     }
   };
 
   const menuItems: MenuProps['items'] = [
+    {
+      key: 'header-environment',
+      label: (
+        <Text type="secondary" style={{ fontSize: 10, fontWeight: 'bold' }}>
+          AMBIENTE
+        </Text>
+      ),
+      disabled: true,
+    },
+    ...environmentOptions.map((environment) => ({
+      key: `environment-${environment.id}`,
+      label: (
+        <MenuRow>
+          <MenuRowLeft>
+            <Text style={{ fontSize: 12 }}>{environment.label}</Text>
+            {environment.id === currentEnvironment.id ? (
+              <Tag color="blue" style={{ marginInlineEnd: 0 }}>
+                Actual
+              </Tag>
+            ) : null}
+          </MenuRowLeft>
+          {environment.id === currentEnvironment.id ? (
+            <CurrentCheck icon={faCheck} />
+          ) : null}
+        </MenuRow>
+      ),
+    })),
+    { type: 'divider' },
     {
       key: 'test-mode',
       label: (

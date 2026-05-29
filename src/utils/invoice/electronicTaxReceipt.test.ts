@@ -37,6 +37,51 @@ describe('electronicTaxReceipt status helpers', () => {
     expect(resolveElectronicTaxReceiptStatusLabel(snapshot)).toBe('Aceptado');
   });
 
+  it('treats accepted RFCE as accepted without a standard DGII track', () => {
+    const snapshot = {
+      status: 'issued',
+      eNcf: 'E320000000007',
+      requestStatus: 'accepted',
+      dgiiSubmissionStatus: 'not_applicable_standard_channel',
+      dgiiValidationStatus: 'not_checked',
+      dgiiStatus: 'pending',
+      routing: {
+        channel: 'recepcion_fc',
+        rfceToDgii: true,
+      },
+      rfceStatus: 'accepted',
+      rfceSubmissionStatus: 'accepted',
+      rfceDgiiCode: 1,
+      rfceDgiiEstado: 'Aceptado',
+    };
+
+    expect(resolveElectronicTaxReceiptStatusKey(snapshot)).toBe('accepted');
+    expect(resolveElectronicTaxReceiptStatusLabel(snapshot)).toBe(
+      'Aceptado RFCE',
+    );
+  });
+
+  it('shows queued RFCE distinctly from a standard DGII pending state', () => {
+    const snapshot = {
+      status: 'issued',
+      eNcf: 'E320000000008',
+      localStatus: 'signed_local',
+      requestStatus: 'queued',
+      dgiiSubmissionStatus: 'queued',
+      dgiiValidationStatus: 'not_checked',
+      dgiiStatus: 'pending',
+      routing: {
+        channel: 'recepcion_fc',
+        rfceToDgii: true,
+      },
+    };
+
+    expect(resolveElectronicTaxReceiptStatusKey(snapshot)).toBe('issued');
+    expect(resolveElectronicTaxReceiptStatusLabel(snapshot)).toBe(
+      'En cola RFCE',
+    );
+  });
+
   it('keeps GISYS processing errors visible when DGII has not produced a track', () => {
     const snapshot = {
       status: 'error',

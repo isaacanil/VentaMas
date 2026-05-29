@@ -45,6 +45,11 @@ type ClaimOwnershipAction =
       claimExpiresAt: number | null;
     };
 
+interface ClaimOwnershipModalProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
 const claimOwnershipReducer = (
   state: ClaimOwnershipState,
   action: ClaimOwnershipAction,
@@ -77,7 +82,10 @@ const claimOwnershipReducer = (
   }
 };
 
-export const ClaimOwnershipModal = () => {
+export const ClaimOwnershipModal = ({
+  isOpen,
+  onClose,
+}: ClaimOwnershipModalProps = {}) => {
   const canClaimBusinessOwnership = isFrontendFeatureEnabled('businessCreation');
   const user = useSelector(selectUser) as {
     role?: string;
@@ -115,11 +123,18 @@ export const ClaimOwnershipModal = () => {
       activeRole !== 'owner',
   );
 
-  const open = canClaimBusinessOwnership && shouldPrompt && !dismissed;
+  const isControlled = typeof isOpen === 'boolean';
+  const open =
+    canClaimBusinessOwnership &&
+    shouldPrompt &&
+    (isControlled ? Boolean(isOpen) : !dismissed);
 
   const handleDismiss = () => {
-    setDismissed();
-    dispatchState({ type: 'dismiss' });
+    if (!isControlled) {
+      setDismissed();
+      dispatchState({ type: 'dismiss' });
+    }
+    onClose?.();
   };
 
   const handleCopyLink = () => {
@@ -191,9 +206,8 @@ export const ClaimOwnershipModal = () => {
     <Modal
       centered
       open={open}
-      title="Actualizacion de Seguridad: Reclamar Propiedad"
+      title="Propiedad del negocio"
       onCancel={handleDismiss}
-      mask={{ closable: false }}
       footer={[
         claimUrl ? (
           <Button
@@ -206,7 +220,7 @@ export const ClaimOwnershipModal = () => {
           </Button>
         ) : (
           <Button key="employee" onClick={handleDismiss}>
-            Soy un Empleado
+            Cerrar
           </Button>
         ),
         claimUrl ? (
@@ -231,15 +245,14 @@ export const ClaimOwnershipModal = () => {
               void handleGenerateClaimLink();
             }}
           >
-            Generar enlace de reclamo
+            Generar enlace
           </Button>
         ),
       ]}
     >
       <p>
-        Este negocio no tiene un propietario registrado. Para proteger la
-        cuenta debes generar un enlace de reclamo de un solo uso y completar el
-        proceso desde esa URL.
+        Este negocio no tiene un propietario registrado. Puedes generar un
+        enlace de reclamo de un solo uso cuando vayas a asignarlo.
       </p>
 
       {claimUrl ? (

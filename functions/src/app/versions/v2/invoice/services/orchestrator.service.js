@@ -299,13 +299,10 @@ export async function createPendingInvoice({
       gisysPlatformConfig,
     );
     const electronicTaxReceiptModelEnabled =
-      ncfEnabled &&
-      (rawElectronicProviderConfig.electronicModelEnabled === true ||
-        fiscalRollout.electronicModelEnabled === true);
+      ncfEnabled && fiscalRollout.electronicModelEnabled === true;
     const electronicTaxReceiptTransportEnabled =
       electronicTaxReceiptModelEnabled &&
-      (rawElectronicProviderConfig.electronicTransportEnabled === true ||
-        fiscalRollout.electronicTransportEnabled === true);
+      fiscalRollout.electronicTransportEnabled === true;
 
     if (businessRequiresFiscalReceipt && !ncfEnabled) {
       throw new https.HttpsError(

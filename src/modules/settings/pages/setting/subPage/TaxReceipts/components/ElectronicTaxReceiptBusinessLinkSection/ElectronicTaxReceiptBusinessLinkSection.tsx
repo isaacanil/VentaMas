@@ -9,6 +9,7 @@ import {
   VmDrawer,
   VmInput,
   VmModal,
+  VmSwitch,
 } from '@/components/heroui';
 import { fbUpdateElectronicTaxReceiptConfig } from '@/firebase/electronicTaxReceipts/fbUpdateElectronicTaxReceiptConfig';
 import useViewportWidth from '@/hooks/windows/useViewportWidth';
@@ -27,6 +28,7 @@ type Props = {
 };
 
 type TaxpayerFormValues = {
+  electronicModelEnabled: boolean;
   taxpayerCode: string;
 };
 
@@ -47,7 +49,9 @@ export const ElectronicTaxReceiptBusinessLinkSection = ({
     [business],
   );
   const taxpayerConfigured = Boolean(currentValues.taxpayerCode);
+  const electronicModelEnabled = currentValues.electronicModelEnabled;
   const statusMeta = getBusinessLinkStatus({
+    electronicModelEnabled,
     taxReceiptEnabled: Boolean(taxReceiptEnabled),
     taxpayerConfigured,
   });
@@ -55,7 +59,7 @@ export const ElectronicTaxReceiptBusinessLinkSection = ({
   const modalOpen = controlledModalOpen ?? internalModalOpen;
   const formKey = `${businessId || 'no-business'}:${
     currentValues.taxpayerCode || 'empty'
-  }`;
+  }:${electronicModelEnabled ? 'ecf-on' : 'ecf-off'}`;
 
   const handleModalOpenChange = (nextOpen: boolean) => {
     if (onModalOpenChange) {
@@ -71,15 +75,24 @@ export const ElectronicTaxReceiptBusinessLinkSection = ({
       message.error('No se encontro el negocio activo.');
       return;
     }
+    if (values.electronicModelEnabled && !taxReceiptEnabled) {
+      message.error('Habilita los comprobantes fiscales antes de activar e-CF.');
+      return;
+    }
 
     setSaving(true);
     try {
       await fbUpdateElectronicTaxReceiptConfig({
         scope: 'business-taxpayer',
         businessId,
+        electronicModelEnabled: Boolean(values.electronicModelEnabled),
         taxpayerCode: values.taxpayerCode,
       });
-      message.success('Contribuyente GISYS guardado.');
+      message.success(
+        values.electronicModelEnabled
+          ? 'Contribuyente GISYS y e-CF activados.'
+          : 'Contribuyente GISYS guardado.',
+      );
     } catch (error: any) {
       const details = error?.details?.issues?.join(', ');
       message.error(
@@ -98,6 +111,7 @@ export const ElectronicTaxReceiptBusinessLinkSection = ({
         type={taxReceiptEnabled ? 'info' : 'warning'}
         showIcon
         message={getBusinessLinkGuidance({
+          electronicModelEnabled,
           taxReceiptEnabled: Boolean(taxReceiptEnabled),
           taxpayerConfigured,
         })}
@@ -113,9 +127,28 @@ export const ElectronicTaxReceiptBusinessLinkSection = ({
           key={formKey}
           form={form}
           layout="vertical"
-          initialValues={{ taxpayerCode: currentValues.taxpayerCode }}
+          initialValues={{
+            electronicModelEnabled,
+            taxpayerCode: currentValues.taxpayerCode,
+          }}
           onFinish={handleSaveTaxpayer}
         >
+          <ElectronicActivationRow>
+            <ElectronicActivationCopy>
+              <ReadOnlyLabel>Activar e-CF</ReadOnlyLabel>
+            </ElectronicActivationCopy>
+            <Form.Item
+              name="electronicModelEnabled"
+              valuePropName="isSelected"
+              noStyle
+            >
+              <ElectronicSwitch
+                aria-label="Activar e-CF para este negocio"
+                isDisabled={!taxReceiptEnabled}
+              />
+            </Form.Item>
+          </ElectronicActivationRow>
+
           <Form.Item
             name="taxpayerCode"
             label="Contribuyente GISYS"
@@ -202,9 +235,11 @@ export const ElectronicTaxReceiptBusinessLinkSection = ({
 };
 
 const getBusinessLinkStatus = ({
+  electronicModelEnabled,
   taxReceiptEnabled,
   taxpayerConfigured,
 }: {
+  electronicModelEnabled: boolean;
   taxReceiptEnabled: boolean;
   taxpayerConfigured: boolean;
 }) => {
@@ -217,17 +252,26 @@ const getBusinessLinkStatus = ({
       tone: 'warning',
     };
   }
+  if (!electronicModelEnabled) {
+    return {
+      label: 'e-CF pendiente',
+      color: 'default',
+      tone: 'warning',
+    };
+  }
   return {
-    label: 'Contribuyente registrado',
+    label: 'e-CF activo',
     color: 'green',
     tone: 'success',
   };
 };
 
 const getBusinessLinkGuidance = ({
+  electronicModelEnabled,
   taxReceiptEnabled,
   taxpayerConfigured,
 }: {
+  electronicModelEnabled: boolean;
   taxReceiptEnabled: boolean;
   taxpayerConfigured: boolean;
 }) => {
@@ -237,7 +281,10 @@ const getBusinessLinkGuidance = ({
   if (!taxpayerConfigured) {
     return 'Registra el contribuyente que GISYS usara para identificar fiscalmente este negocio.';
   }
-  return 'El contribuyente esta registrado.';
+  if (electronicModelEnabled) {
+    return 'El contribuyente esta registrado y e-CF esta activo para este negocio.';
+  }
+  return 'El contribuyente esta registrado. Activa e-CF para que el selector de ventas muestre los comprobantes electronicos.';
 };
 
 const ModalLayoutStyles = createGlobalStyle`
@@ -412,6 +459,36 @@ const SectionTitle = styled.h3`
 const ProviderPanel = styled.div`
   display: grid;
   gap: var(--ds-space-3);
+`;
+
+const ElectronicActivationRow = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--ds-space-3);
+  align-items: center;
+  min-width: 0;
+  padding: var(--ds-space-3);
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-color-bg-subtle);
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const ElectronicActivationCopy = styled.div`
+  display: grid;
+  gap: var(--ds-space-1);
+  min-width: 0;
+`;
+
+const ElectronicSwitch = styled(VmSwitch)`
+  justify-self: end;
+
+  @media (max-width: 480px) {
+    justify-self: start;
+  }
 `;
 
 const ProviderItem = styled.div`

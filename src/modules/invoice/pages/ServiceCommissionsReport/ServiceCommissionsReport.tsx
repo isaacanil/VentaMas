@@ -10,16 +10,20 @@ import styled from 'styled-components';
 import { PageLayout, PageShell } from '@/components/layout/PageShell';
 import {
   VmAlert,
+  VmButton,
   VmCard,
   VmDateField,
   VmDateRangePicker,
   VmLabel,
+  VmModal,
   VmPagination,
   VmRangeCalendar,
   VmSelect,
   VmSpinner,
   VmTable,
 } from '@/components/heroui';
+import { TeamOutlined } from '@/constants/icons/antd';
+import { useServiceCommissionCollaborators } from '@/firebase/commissions/useServiceCommissionCollaborators';
 import { useServiceCommissionsReport } from '@/firebase/commissions/useServiceCommissionsReport';
 import { useBusinessUsers } from '@/firebase/users/useBusinessUsers';
 import { selectUser } from '@/features/auth/userSlice';
@@ -27,7 +31,10 @@ import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 import ROUTES_NAME from '@/router/routes/routesName';
 import type { ServiceCommissionRecord } from '@/types/commissions';
 import type { UserIdentity } from '@/types/users';
+import { buildServiceCommissionCollaboratorOptions } from '@/utils/commissions/collaboratorOptions';
 import { formatPriceByCurrency } from '@/utils/format';
+
+import CollaboratorsManager from './components/CollaboratorsManager/CollaboratorsManager';
 
 const PAGE_SIZE = 20;
 const ALL_COLLABORATORS_KEY = '__all__';
@@ -60,6 +67,25 @@ const Header = styled.header`
 
   @media (max-width: 860px) {
     flex-direction: column;
+  }
+`;
+
+const HeaderTools = styled.div`
+  display: grid;
+  gap: var(--ds-space-3);
+  justify-items: end;
+
+  @media (max-width: 860px) {
+    justify-items: stretch;
+    width: 100%;
+  }
+`;
+
+const ManageCollaboratorsButton = styled(VmButton)`
+  justify-self: end;
+
+  @media (max-width: 860px) {
+    justify-self: stretch;
   }
 `;
 
@@ -401,17 +427,21 @@ export const ServiceCommissionsReport = () => {
   const navigate = useNavigate();
   const user = useSelector(selectUser) as UserIdentity | null;
   const businessId = getBusinessId(user);
+  const userId = toCleanString(user?.uid) ?? toCleanString(user?.id);
   const [range, setRange] = useState<[Date, Date]>(() => {
     const end = dayjs().endOf('day').toDate();
     const start = dayjs().subtract(30, 'day').startOf('day').toDate();
     return [start, end];
   });
   const [collaboratorId, setCollaboratorId] = useState<string | null>(null);
+  const [collaboratorsOpen, setCollaboratorsOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const { users, loading: usersLoading } = useBusinessUsers() as {
     users: BusinessUser[];
     loading: boolean;
   };
+  const { rows: collaborators, loading: collaboratorsLoading } =
+    useServiceCommissionCollaborators(businessId);
   const { rows, loading, error } = useServiceCommissionsReport({
     businessId,
     collaboratorId,
@@ -419,10 +449,25 @@ export const ServiceCommissionsReport = () => {
     endDate: range[1],
   });
 
-  const collaboratorOptions = useMemo(
-    () => users.map(getUserOption).filter(Boolean) as CollaboratorOption[],
-    [users],
-  );
+  const collaboratorOptions = useMemo(() => {
+    const options = new Map<string, CollaboratorOption>();
+    buildServiceCommissionCollaboratorOptions({
+      collaborators,
+      users,
+    })
+      .map(({ label, value }) => ({ label, value }))
+      .forEach((option) => {
+        options.set(option.value, option);
+      });
+    users
+      .map(getUserOption)
+      .filter((option): option is CollaboratorOption => Boolean(option))
+      .forEach((option) => {
+        if (!options.has(option.value)) options.set(option.value, option);
+      });
+    return Array.from(options.values());
+  }, [collaborators, users]);
+  const collaboratorFilterLoading = usersLoading || collaboratorsLoading;
 
   const summary = useMemo(
     () =>
@@ -479,111 +524,121 @@ export const ServiceCommissionsReport = () => {
             </Description>
           </TitleBlock>
 
-          <Filters>
-            <FilterField>
-              <FilterLabel>Rango de fecha</FilterLabel>
-              <DateRangeControl
-                value={{
-                  start: parseDate(toDateKey(range[0])),
-                  end: parseDate(toDateKey(range[1])),
-                }}
-                onChange={(value) => {
-                  if (!value?.start || !value?.end) return;
-                  setCurrentPage(1);
-                  setRange([
-                    fromDateKey(value.start.toString(), 'start'),
-                    fromDateKey(value.end.toString(), 'end'),
-                  ]);
-                }}
-              >
-                <DateGroup fullWidth>
-                  <DateInputContainer>
-                    <VmDateField.Input slot="start">
-                      {(segment) => <VmDateField.Segment segment={segment} />}
-                    </VmDateField.Input>
-                    <VmDateRangePicker.RangeSeparator />
-                    <VmDateField.Input slot="end">
-                      {(segment) => <VmDateField.Segment segment={segment} />}
-                    </VmDateField.Input>
-                  </DateInputContainer>
-                  <VmDateField.Suffix>
-                    <VmDateRangePicker.Trigger>
-                      <VmDateRangePicker.TriggerIndicator />
-                    </VmDateRangePicker.Trigger>
-                  </VmDateField.Suffix>
-                </DateGroup>
-                <VmDateRangePicker.Popover>
-                  <VmRangeCalendar aria-label="Rango de comisiones">
-                    <VmRangeCalendar.Header>
-                      <VmRangeCalendar.YearPickerTrigger>
-                        <VmRangeCalendar.YearPickerTriggerHeading />
-                        <VmRangeCalendar.YearPickerTriggerIndicator />
-                      </VmRangeCalendar.YearPickerTrigger>
-                      <VmRangeCalendar.NavButton slot="previous" />
-                      <VmRangeCalendar.NavButton slot="next" />
-                    </VmRangeCalendar.Header>
-                    <VmRangeCalendar.Grid>
-                      <VmRangeCalendar.GridHeader>
-                        {(day) => (
-                          <VmRangeCalendar.HeaderCell>
-                            {day}
-                          </VmRangeCalendar.HeaderCell>
-                        )}
-                      </VmRangeCalendar.GridHeader>
-                      <VmRangeCalendar.GridBody>
-                        {(date) => <VmRangeCalendar.Cell date={date} />}
-                      </VmRangeCalendar.GridBody>
-                    </VmRangeCalendar.Grid>
-                    <VmRangeCalendar.YearPickerGrid>
-                      <VmRangeCalendar.YearPickerGridBody>
-                        {({ year }) => (
-                          <VmRangeCalendar.YearPickerCell year={year} />
-                        )}
-                      </VmRangeCalendar.YearPickerGridBody>
-                    </VmRangeCalendar.YearPickerGrid>
-                  </VmRangeCalendar>
-                </VmDateRangePicker.Popover>
-              </DateRangeControl>
-            </FilterField>
+          <HeaderTools>
+            <ManageCollaboratorsButton
+              variant="secondary"
+              onPress={() => setCollaboratorsOpen(true)}
+            >
+              <TeamOutlined />
+              Crear colaborador
+            </ManageCollaboratorsButton>
 
-            <FilterField>
-              <FilterLabel>Colaborador</FilterLabel>
-              <CollaboratorSelect
-                aria-label="Filtrar por colaborador"
-                fullWidth
-                isDisabled={usersLoading}
-                selectedKey={collaboratorId ?? ALL_COLLABORATORS_KEY}
-                onSelectionChange={handleCollaboratorChange}
-              >
-                <VmSelect.Trigger>
-                  <VmSelect.Value />
-                  <VmSelect.Indicator />
-                </VmSelect.Trigger>
-                <VmSelect.Popover>
-                  <CollaboratorListBox aria-label="Colaboradores">
-                    <ListBoxItem
-                      key={ALL_COLLABORATORS_KEY}
-                      id={ALL_COLLABORATORS_KEY}
-                      textValue="Todos los colaboradores"
-                    >
-                      Todos los colaboradores
-                      <ListBoxItem.Indicator />
-                    </ListBoxItem>
-                    {collaboratorOptions.map((option) => (
+            <Filters>
+              <FilterField>
+                <FilterLabel>Rango de fecha</FilterLabel>
+                <DateRangeControl
+                  value={{
+                    start: parseDate(toDateKey(range[0])),
+                    end: parseDate(toDateKey(range[1])),
+                  }}
+                  onChange={(value) => {
+                    if (!value?.start || !value?.end) return;
+                    setCurrentPage(1);
+                    setRange([
+                      fromDateKey(value.start.toString(), 'start'),
+                      fromDateKey(value.end.toString(), 'end'),
+                    ]);
+                  }}
+                >
+                  <DateGroup fullWidth>
+                    <DateInputContainer>
+                      <VmDateField.Input slot="start">
+                        {(segment) => <VmDateField.Segment segment={segment} />}
+                      </VmDateField.Input>
+                      <VmDateRangePicker.RangeSeparator />
+                      <VmDateField.Input slot="end">
+                        {(segment) => <VmDateField.Segment segment={segment} />}
+                      </VmDateField.Input>
+                    </DateInputContainer>
+                    <VmDateField.Suffix>
+                      <VmDateRangePicker.Trigger>
+                        <VmDateRangePicker.TriggerIndicator />
+                      </VmDateRangePicker.Trigger>
+                    </VmDateField.Suffix>
+                  </DateGroup>
+                  <VmDateRangePicker.Popover>
+                    <VmRangeCalendar aria-label="Rango de comisiones">
+                      <VmRangeCalendar.Header>
+                        <VmRangeCalendar.YearPickerTrigger>
+                          <VmRangeCalendar.YearPickerTriggerHeading />
+                          <VmRangeCalendar.YearPickerTriggerIndicator />
+                        </VmRangeCalendar.YearPickerTrigger>
+                        <VmRangeCalendar.NavButton slot="previous" />
+                        <VmRangeCalendar.NavButton slot="next" />
+                      </VmRangeCalendar.Header>
+                      <VmRangeCalendar.Grid>
+                        <VmRangeCalendar.GridHeader>
+                          {(day) => (
+                            <VmRangeCalendar.HeaderCell>
+                              {day}
+                            </VmRangeCalendar.HeaderCell>
+                          )}
+                        </VmRangeCalendar.GridHeader>
+                        <VmRangeCalendar.GridBody>
+                          {(date) => <VmRangeCalendar.Cell date={date} />}
+                        </VmRangeCalendar.GridBody>
+                      </VmRangeCalendar.Grid>
+                      <VmRangeCalendar.YearPickerGrid>
+                        <VmRangeCalendar.YearPickerGridBody>
+                          {({ year }) => (
+                            <VmRangeCalendar.YearPickerCell year={year} />
+                          )}
+                        </VmRangeCalendar.YearPickerGridBody>
+                      </VmRangeCalendar.YearPickerGrid>
+                    </VmRangeCalendar>
+                  </VmDateRangePicker.Popover>
+                </DateRangeControl>
+              </FilterField>
+
+              <FilterField>
+                <FilterLabel>Colaborador</FilterLabel>
+                <CollaboratorSelect
+                  aria-label="Filtrar por colaborador"
+                  fullWidth
+                  isDisabled={collaboratorFilterLoading}
+                  selectedKey={collaboratorId ?? ALL_COLLABORATORS_KEY}
+                  onSelectionChange={handleCollaboratorChange}
+                >
+                  <VmSelect.Trigger>
+                    <VmSelect.Value />
+                    <VmSelect.Indicator />
+                  </VmSelect.Trigger>
+                  <VmSelect.Popover>
+                    <CollaboratorListBox aria-label="Colaboradores">
                       <ListBoxItem
-                        key={option.value}
-                        id={option.value}
-                        textValue={option.label}
+                        key={ALL_COLLABORATORS_KEY}
+                        id={ALL_COLLABORATORS_KEY}
+                        textValue="Todos los colaboradores"
                       >
-                        {option.label}
+                        Todos los colaboradores
                         <ListBoxItem.Indicator />
                       </ListBoxItem>
-                    ))}
-                  </CollaboratorListBox>
-                </VmSelect.Popover>
-              </CollaboratorSelect>
-            </FilterField>
-          </Filters>
+                      {collaboratorOptions.map((option) => (
+                        <ListBoxItem
+                          key={option.value}
+                          id={option.value}
+                          textValue={option.label}
+                        >
+                          {option.label}
+                          <ListBoxItem.Indicator />
+                        </ListBoxItem>
+                      ))}
+                    </CollaboratorListBox>
+                  </VmSelect.Popover>
+                </CollaboratorSelect>
+              </FilterField>
+            </Filters>
+          </HeaderTools>
         </Header>
 
         {error ? (
@@ -694,6 +749,23 @@ export const ServiceCommissionsReport = () => {
           </ReportTable>
         </ReportTableFrame>
       </Page>
+      <VmModal
+        title="Crear colaborador"
+        ariaLabel="Crear colaborador de comisiones"
+        isOpen={collaboratorsOpen}
+        onOpenChange={setCollaboratorsOpen}
+        size="lg"
+        footer={
+          <VmButton
+            variant="primary"
+            onPress={() => setCollaboratorsOpen(false)}
+          >
+            Listo
+          </VmButton>
+        }
+      >
+        <CollaboratorsManager businessId={businessId} userId={userId} />
+      </VmModal>
     </PageLayout>
   );
 };

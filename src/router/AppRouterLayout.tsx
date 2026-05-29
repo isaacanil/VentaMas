@@ -32,11 +32,6 @@ const NotificationCenter = lazy(
   () =>
     import('@/modules/notification/components/NotificationCenter/NotificationCenter'),
 );
-const ClaimOwnershipModal = lazy(() =>
-  import('@/modules/auth/components/ClaimOwnershipModal').then((module) => ({
-    default: module.ClaimOwnershipModal,
-  })),
-);
 
 const RoutePendingBar = styled.div`
   position: fixed;
@@ -140,12 +135,9 @@ export const RootElement = () => {
   const isChecking = bootStatus === 'checking';
   const isPublicRoute =
     location.pathname === '/' || location.pathname === '/login';
-  const isClaimBusinessRoute = location.pathname === '/claim-business';
   const shouldRedirectToHome =
     !isChecking && bootStatus === 'ready' && user && isPublicRoute;
   const shouldAttachListeners = !isChecking && user;
-  const shouldShowClaimOwnershipModal =
-    shouldAttachListeners && !isClaimBusinessRoute;
   const defaultHomePath = resolveDefaultHomeRoute(user);
 
   // Bloquear contenido hasta que la verificación de auth termine (authReady)
@@ -174,11 +166,6 @@ export const RootElement = () => {
       {shouldAttachListeners ? (
         <Suspense fallback={null}>
           <GlobalListeners user={user} />
-        </Suspense>
-      ) : null}
-      {shouldShowClaimOwnershipModal ? (
-        <Suspense fallback={null}>
-          <ClaimOwnershipModal />
         </Suspense>
       ) : null}
       <AppLayout blockContent={blockContent} />

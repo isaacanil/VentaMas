@@ -434,6 +434,116 @@ describe('orchestrator.service', () => {
     );
   });
 
+  it('uses legacy NCF when only the global GISYS runtime is enabled', async () => {
+    reserveNcfMock.mockResolvedValue({
+      ncfCode: 'B0200000001',
+      usageId: 'usage-1',
+    });
+
+    tx.get.mockImplementation(async (ref) => {
+      if (ref.path === 'idempotency:business-1:idem-1') {
+        return { exists: false };
+      }
+      if (ref.path === 'businesses/business-1') {
+        return {
+          exists: true,
+          data: () => ({
+            features: {
+              fiscal: {
+                gisysFact: {
+                  enabled: true,
+                  taxpayerCode: '132619201',
+                },
+              },
+            },
+            subscription: {
+              status: 'active',
+              planId: 'plus',
+              limits: { monthlyInvoices: 10 },
+            },
+          }),
+        };
+      }
+      if (ref.path === 'businesses/business-1/usage/current') {
+        return { exists: true, data: () => ({ monthlyInvoices: 2 }) };
+      }
+      if (ref.path.startsWith('businesses/business-1/usage/monthly/entries/')) {
+        return { exists: true, data: () => ({ monthlyInvoices: 3 }) };
+      }
+      if (ref.path === 'businesses/business-1/settings/accounting') {
+        return { exists: false, data: () => ({}) };
+      }
+      if (ref.path === 'businesses/business-1/settings/taxReceipt') {
+        return { exists: true, data: () => ({ taxReceiptEnabled: true }) };
+      }
+      if (
+        ref.path.startsWith('businesses/business-1/accountingPeriodClosures/')
+      ) {
+        return { exists: false, data: () => ({}) };
+      }
+      if (ref.path === 'platformConfig/gisysFact') {
+        return {
+          exists: true,
+          data: () => ({
+            enabled: true,
+            baseUrl: 'https://platform.gisys.example/api/v1',
+            integrationInstanceCode: 'platform-instance',
+            electronicModelEnabled: true,
+            mode: 'required',
+          }),
+        };
+      }
+      throw new Error(`Unexpected tx.get path: ${ref.path}`);
+    });
+
+    await expect(
+      createPendingInvoice({
+        businessId: 'business-1',
+        userId: 'user-1',
+        idempotencyKey: 'idem-1',
+        payload: {
+          cart: {
+            id: 'cart-legacy-ncf',
+            products: [{ id: 'p1', name: 'Producto A', amountToBuy: 1 }],
+            payment: { value: 118 },
+            totalPurchaseWithoutTaxes: { value: 100 },
+            totalTaxes: { value: 18 },
+            totalPurchase: { value: 118 },
+          },
+          taxReceiptEnabled: true,
+          ncf: {
+            enabled: true,
+            type: 'fiscal-consumer',
+          },
+        },
+      }),
+    ).resolves.toMatchObject({
+      invoiceId: 'cart-legacy-ncf',
+      status: 'pending',
+    });
+
+    expect(reserveNcfMock).toHaveBeenCalledWith(tx, {
+      businessId: 'business-1',
+      userId: 'user-1',
+      ncfType: 'fiscal-consumer',
+    });
+
+    const invoiceWrite = tx.set.mock.calls.find(
+      ([ref]) =>
+        ref.path === 'businesses/business-1/invoicesV2/cart-legacy-ncf',
+    );
+    expect(invoiceWrite[1].snapshot).toEqual(
+      expect.objectContaining({
+        ncf: expect.objectContaining({
+          code: 'B0200000001',
+          status: 'reserved',
+          usageId: 'usage-1',
+        }),
+      }),
+    );
+    expect(invoiceWrite[1].snapshot.electronicTaxReceipt).toBeUndefined();
+  });
+
   it('blocks invoices without NCF when fiscal receipts are enabled for the business', async () => {
     tx.get.mockImplementation(async (ref) => {
       if (ref.path === 'idempotency:business-1:idem-1') {

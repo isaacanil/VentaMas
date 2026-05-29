@@ -17,9 +17,7 @@ import { SelectSettingCart } from '@/features/cart/cartSlice';
 import type { CartSettings } from '@/features/cart/types';
 import { selectUser } from '@/features/auth/userSlice';
 import { setBillingSettings } from '@/firebase/billing/billingSetting';
-import {
-  normalizeServiceCommissionSettings,
-} from '@/utils/commissions/serviceCommissions';
+import { normalizeServiceCommissionSettings } from '@/utils/commissions/serviceCommissions';
 import type {
   ServiceCommissionsBillingSettings,
   ServiceCommissionType,
@@ -173,7 +171,6 @@ const ServiceCommissionSettingsSection = () => {
           ...patch,
           appliesTo: 'services',
           calculationBase: 'netSubtotalWithoutTax',
-          requireCollaboratorOnService: false,
           showOnPrintedInvoice: false,
         },
       });
@@ -217,6 +214,24 @@ const ServiceCommissionSettingsSection = () => {
           isDisabled={saving}
           onChange={(enabled) => {
             void persist({ enabled });
+          }}
+        />
+      </ConfigRow>
+
+      <ConfigRow>
+        <div>
+          <Title>Colaborador requerido</Title>
+          <Description>
+            Bloquea la facturacion si una linea de servicio no tiene colaborador
+            asignado.
+          </Description>
+        </div>
+        <VmSwitch
+          aria-label="Exigir colaborador en servicios"
+          isSelected={serviceCommissions.requireCollaboratorOnService}
+          isDisabled={interactionDisabled}
+          onChange={(requireCollaboratorOnService) => {
+            void persist({ requireCollaboratorOnService });
           }}
         />
       </ConfigRow>

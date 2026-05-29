@@ -141,7 +141,7 @@ export interface ElectronicTaxReceiptSnapshot {
   rfceStatus?: string | null;
   rfceSubmissionStatus?: string | null;
   rfceTrackId?: string | null;
-  rfceDgiiCode?: string | null;
+  rfceDgiiCode?: string | number | null;
   rfceDgiiEstado?: string | null;
   rfceError?: string | null;
   rfceLastErrorCode?: string | null;

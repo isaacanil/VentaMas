@@ -108,6 +108,29 @@ describe('electronicTaxReceiptOutbox.service', () => {
     ).toBe('accepted');
   });
 
+  it('promotes accepted RFCE over a pending standard DGII status', () => {
+    expect(
+      resolveElectronicTaxReceiptLifecycleStatus({
+        currentStatus: 'issued',
+        response: {
+          eNcf: 'E320000000007',
+          requestStatus: 'accepted',
+          dgiiSubmissionStatus: 'not_applicable_standard_channel',
+          dgiiStatus: 'pending',
+          dgiiValidationStatus: 'not_checked',
+          routing: {
+            channel: 'recepcion_fc',
+            rfceToDgii: true,
+          },
+          rfceStatus: 'accepted',
+          rfceSubmissionStatus: 'accepted',
+          rfceDgiiCode: 1,
+          rfceDgiiEstado: 'Aceptado',
+        },
+      }),
+    ).toBe('accepted');
+  });
+
   it('promotes GISYS processing errors over a previously issued lifecycle status', () => {
     expect(
       resolveElectronicTaxReceiptLifecycleStatus({

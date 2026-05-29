@@ -68,41 +68,61 @@ describe('gisysIssuePayload.mapper', () => {
     input.business = {
       name: 'VentaMas Test',
       province: 'prueba',
+      municipality: 'municipio inventado',
       phone: '12345678901234567890',
     };
     input.invoice.snapshot.client = {
       name: 'Cliente Prueba',
       province: 'inventada',
+      municipality: 'Santo Domingo de Guzman',
       tel: 'telefono-no-valido',
     };
 
     const payload = buildGisysIssuePayload(input).payload;
 
     expect(payload.issuer.province).toBeUndefined();
+    expect(payload.issuer.municipality).toBeUndefined();
     expect(payload.issuer.phones).toBeUndefined();
     expect(payload.buyer.province).toBeUndefined();
+    expect(payload.buyer.municipality).toBeUndefined();
     expect(payload.buyer.phone).toBeUndefined();
   });
 
-  it('normalizes valid Dominican province names and phone values', () => {
+  it('normalizes valid Dominican province names to DGII codes and phone values', () => {
     const input = buildBaseInput('invoice-valid-contact');
     input.business = {
       name: 'VentaMas Test',
       province: 'Santo Domingo',
+      municipality: '320100',
       phone: '(809) 555-1234',
     };
     input.invoice.snapshot.client = {
       name: 'Cliente Prueba',
-      province: 'San Cristóbal',
+      province: 'Distrito Nacional',
+      municipality: '010100',
       tel: '+1 (829) 555-6677',
     };
 
     const payload = buildGisysIssuePayload(input).payload;
 
-    expect(payload.issuer.province).toBe('Santo Domingo');
+    expect(payload.issuer.province).toBe('320000');
+    expect(payload.issuer.municipality).toBe('320100');
     expect(payload.issuer.phones).toEqual(['809-555-1234']);
-    expect(payload.buyer.province).toBe('San Cristobal');
+    expect(payload.buyer.province).toBe('010000');
+    expect(payload.buyer.municipality).toBe('010100');
     expect(payload.buyer.phone).toBe('829-555-6677');
+  });
+
+  it('accepts province aliases that are stored as user-facing text', () => {
+    const input = buildBaseInput('invoice-province-alias');
+    input.invoice.snapshot.client = {
+      name: 'Cliente Prueba',
+      province: 'San Cristobal',
+    };
+
+    const payload = buildGisysIssuePayload(input).payload;
+
+    expect(payload.buyer.province).toBe('210000');
   });
 
   it('uses the first valid phone from business values with multiple numbers', () => {
@@ -115,6 +135,99 @@ describe('gisysIssuePayload.mapper', () => {
     const payload = buildGisysIssuePayload(input).payload;
 
     expect(payload.issuer.phones).toEqual(['849-650-3586']);
+  });
+
+  it('maps the product tax rate to the DGII billing indicator', () => {
+    const input = buildBaseInput('invoice-tax-rate-indicators');
+    input.invoice.snapshot.cart.products = [
+      {
+        id: 'product-itbis-1',
+        name: 'Producto ITBIS 18',
+        pricing: { price: 100, tax: 18 },
+        amountToBuy: 1,
+      },
+      {
+        id: 'product-itbis-2',
+        name: 'Producto ITBIS 16',
+        pricing: { price: 100, tax: 16 },
+        amountToBuy: 1,
+      },
+      {
+        id: 'product-exempt',
+        name: 'Producto exento',
+        pricing: { price: 100, tax: 0 },
+        amountToBuy: 1,
+      },
+    ];
+
+    const payload = buildGisysIssuePayload(input).payload;
+
+    expect(payload.items.map((item) => item.billingIndicator)).toEqual([
+      '1',
+      '2',
+      '4',
+    ]);
+    expect(payload.items[0]).toMatchObject({ taxRate: 18, taxAmount: 18 });
+    expect(payload.items[1]).toMatchObject({ taxRate: 16, taxAmount: 16 });
+    expect(payload.items[2].taxRate).toBeUndefined();
+    expect(payload.items[2].taxAmount).toBeUndefined();
+    expect(payload.totals).toMatchObject({
+      netAmount: 300,
+      taxableAmountTotal: 200,
+      taxableAmount1: 100,
+      taxableAmount2: 100,
+      exemptAmount: 100,
+      itbisRate1: 18,
+      itbisRate2: 16,
+      taxAmount: 34,
+      totalItbis1: 18,
+      totalItbis2: 16,
+      grandTotal: 334,
+      payableAmount: 334,
+    });
+    expect(payload.totals.taxableAmount3).toBeUndefined();
+  });
+
+  it('uses explicit DGII tax type values before falling back to tax rate', () => {
+    const input = buildBaseInput('invoice-explicit-tax-type-indicators');
+    input.invoice.snapshot.cart.products = [
+      {
+        id: 'product-itbis-3',
+        name: 'Producto gravado tasa cero',
+        pricing: { price: 100, tax: { ref: 'ITBIS 3', value: 0 } },
+        amountToBuy: 1,
+      },
+      {
+        id: 'product-not-billable',
+        name: 'Producto no facturable',
+        pricing: { price: 100, tax: 18 },
+        billingIndicator: '0',
+        amountToBuy: 1,
+      },
+    ];
+
+    const payload = buildGisysIssuePayload(input).payload;
+
+    expect(payload.items[0]).toMatchObject({
+      billingIndicator: '3',
+      taxRate: 0,
+    });
+    expect(payload.items[0].taxAmount).toBeUndefined();
+    expect(payload.items[1].billingIndicator).toBe('0');
+    expect(payload.items[1].taxRate).toBeUndefined();
+    expect(payload.items[1].taxAmount).toBeUndefined();
+    expect(payload.totals).toMatchObject({
+      netAmount: 100,
+      taxableAmountTotal: 100,
+      taxableAmount3: 100,
+      itbisRate3: 0,
+      taxAmount: 0,
+      totalItbis3: 0,
+      grandTotal: 100,
+      payableAmount: 100,
+      nonBillableAmount: 100,
+      periodAmount: 200,
+    });
   });
 
   it('keeps monetary amounts numeric for the GISYS issue API contract', () => {

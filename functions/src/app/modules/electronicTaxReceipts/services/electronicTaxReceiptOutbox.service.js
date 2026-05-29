@@ -44,6 +44,36 @@ const TERMINAL_DGII_STATUSES = new Set([
 ]);
 
 const NON_LIFECYCLE_STATUSES = new Set(['not_checked', 'pending', 'queued']);
+const RFCE_ACCEPTED_STATUSES = new Set(['accepted', 'accepted_conditional']);
+const RFCE_ERROR_STATUSES = new Set(['error', 'failed', 'rejected']);
+
+const normalizeCode = (value) => {
+  if (typeof value !== 'string' && typeof value !== 'number') return null;
+  const normalized = String(value).trim();
+  return normalized.length ? normalized : null;
+};
+
+const resolveRfceLifecycleStatus = (response) => {
+  const rfceStatus = normalizeStatus(response?.rfceStatus);
+  const rfceSubmissionStatus = normalizeStatus(response?.rfceSubmissionStatus);
+  const status = rfceStatus || rfceSubmissionStatus;
+
+  if (RFCE_ACCEPTED_STATUSES.has(status)) return status;
+  if (RFCE_ERROR_STATUSES.has(status)) {
+    return status === 'rejected' ? 'rejected' : 'error';
+  }
+
+  const rfceCode = normalizeCode(response?.rfceDgiiCode);
+  const rfceEstado = normalizeStatus(response?.rfceDgiiEstado);
+  if (
+    (rfceCode === '1' || rfceCode === '01') &&
+    rfceEstado?.includes('acept')
+  ) {
+    return 'accepted';
+  }
+
+  return null;
+};
 
 export const resolveElectronicTaxReceiptLifecycleStatus = ({
   currentStatus,
@@ -58,6 +88,9 @@ export const resolveElectronicTaxReceiptLifecycleStatus = ({
   if (TERMINAL_DGII_STATUSES.has(dgiiStatus)) {
     return dgiiStatus;
   }
+
+  const rfceStatus = resolveRfceLifecycleStatus(response);
+  if (rfceStatus) return rfceStatus;
 
   const requestStatus = normalizeStatus(
     response?.requestStatus || response?.dgiiSubmissionStatus,

@@ -155,6 +155,54 @@ describe('updateElectronicTaxReceiptConfig', () => {
     ).toBe(false);
   });
 
+  it('lets business finance users explicitly activate e-CF for their business', async () => {
+    documentSnapshots.set('businesses/business-1', {
+      features: {
+        fiscal: {
+          gisysFact: {
+            provider: 'gisys',
+            enabled: true,
+            taxpayerCode: 'old-taxpayer',
+          },
+        },
+      },
+    });
+    documentSnapshots.set('platformConfig/gisysFact', {
+      enabled: true,
+      baseUrl: 'https://platform.gisys.example/api/v1',
+      integrationInstanceCode: 'ventamax-0001-test',
+      electronicModelEnabled: true,
+      mode: 'required',
+    });
+
+    const result = await updateElectronicTaxReceiptConfig({
+      data: {
+        scope: 'business-taxpayer',
+        businessId: 'business-1',
+        electronicModelEnabled: true,
+        taxpayerCode: 'rncTest00201441797',
+      },
+    });
+
+    const updatePayload = updates.get('businesses/business-1');
+    expect(result).toMatchObject({
+      electronicModelEnabled: true,
+      electronicTransportEnabled: true,
+      providerConfig: {
+        mode: 'required',
+        taxpayerCode: 'rncTest00201441797',
+      },
+    });
+    expect(updatePayload).toMatchObject({
+      'features.fiscal.electronicModelEnabled': true,
+      'features.fiscal.electronicTransportEnabled': true,
+      'features.fiscal.gisysFact.mode': 'required',
+      'features.fiscal.gisysFact.provider': 'gisys',
+      'features.fiscal.gisysFact.enabled': true,
+      'features.fiscal.gisysFact.taxpayerCode': 'rncTest00201441797',
+    });
+  });
+
   it('blocks full provisioning changes for non-developers', async () => {
     getUserAccessProfileMock.mockResolvedValue({
       userSnap: { exists: true },

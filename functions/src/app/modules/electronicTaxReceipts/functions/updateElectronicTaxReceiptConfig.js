@@ -8,6 +8,7 @@ import {
   MEMBERSHIP_ROLE_GROUPS,
 } from '../../../versions/v2/invoice/services/repairTasks.service.js';
 import { getGisysFactPlatformConfig } from '../config/gisysFactPlatform.config.js';
+import { getGisysFactConfigIssues } from '../config/gisysFact.config.js';
 import { assertElectronicTaxReceiptDeveloperAccess } from '../utils/electronicTaxReceiptAccess.util.js';
 import {
   buildBusinessSafeGisysFactProviderConfig,
@@ -20,6 +21,14 @@ const CONFIG_SCOPE = Object.freeze({
   BUSINESS_TAXPAYER: 'business-taxpayer',
   DEVELOPER_PROVISIONING: 'developer-provisioning',
 });
+
+const hasOwn = (value, key) =>
+  Object.prototype.hasOwnProperty.call(value || {}, key);
+
+const normalizeBusinessElectronicToggle = (data) => {
+  if (!hasOwn(data, 'electronicModelEnabled')) return null;
+  return data.electronicModelEnabled === true;
+};
 
 export const updateElectronicTaxReceiptConfig = onCall(
   { cors: true, invoker: 'public' },
@@ -67,28 +76,71 @@ export const updateElectronicTaxReceiptConfig = onCall(
         businessSnap.data() || {},
         platformConfig,
       );
+      const requestedElectronicModelEnabled =
+        normalizeBusinessElectronicToggle(data);
       const providerConfig = {
         ...currentSummary.providerConfig,
         taxpayerCode,
       };
+      const nextElectronicModelEnabled =
+        requestedElectronicModelEnabled ??
+        currentSummary.electronicModelEnabled;
+      const nextElectronicTransportEnabled =
+        nextElectronicModelEnabled &&
+        currentSummary.electronicTransportEnabled === true;
+      const nextMode = nextElectronicTransportEnabled
+        ? providerConfig.mode
+        : 'shadow';
+
+      if (requestedElectronicModelEnabled === true) {
+        const configIssues = getGisysFactConfigIssues(
+          {
+            ...providerConfig,
+            mode: nextMode,
+          },
+          {
+            requireTransport: nextElectronicTransportEnabled,
+          },
+        );
+        if (configIssues.length > 0) {
+          throw new HttpsError(
+            'failed-precondition',
+            'GISYS FACT no esta configurado para activar e-CF en este negocio.',
+            { issues: configIssues },
+          );
+        }
+      }
+
+      const updatePayload = {
+        'features.fiscal.gisysFact.provider': 'gisys',
+        'features.fiscal.gisysFact.enabled': providerConfig.enabled,
+        'features.fiscal.gisysFact.taxpayerCode': taxpayerCode,
+        'features.fiscal.gisysFact.updatedAt': FieldValue.serverTimestamp(),
+        'features.fiscal.gisysFact.updatedBy': authUid,
+        updatedAt: FieldValue.serverTimestamp(),
+      };
+
+      if (requestedElectronicModelEnabled !== null) {
+        updatePayload['features.fiscal.electronicModelEnabled'] =
+          nextElectronicModelEnabled;
+        updatePayload['features.fiscal.electronicTransportEnabled'] =
+          nextElectronicTransportEnabled;
+        updatePayload['features.fiscal.gisysFact.mode'] = nextMode;
+      }
 
       try {
-        await businessRef.update({
-          'features.fiscal.gisysFact.provider': 'gisys',
-          'features.fiscal.gisysFact.enabled': providerConfig.enabled,
-          'features.fiscal.gisysFact.taxpayerCode': taxpayerCode,
-          'features.fiscal.gisysFact.updatedAt': FieldValue.serverTimestamp(),
-          'features.fiscal.gisysFact.updatedBy': authUid,
-          updatedAt: FieldValue.serverTimestamp(),
-        });
+        await businessRef.update(updatePayload);
 
         return {
           ok: true,
           businessId,
-          electronicModelEnabled: currentSummary.electronicModelEnabled,
-          electronicTransportEnabled: currentSummary.electronicTransportEnabled,
+          electronicModelEnabled: nextElectronicModelEnabled,
+          electronicTransportEnabled: nextElectronicTransportEnabled,
           providerConfig:
-            buildBusinessSafeGisysFactProviderConfig(providerConfig),
+            buildBusinessSafeGisysFactProviderConfig({
+              ...providerConfig,
+              mode: nextMode,
+            }),
         };
       } catch (error) {
         logger.error('[updateElectronicTaxReceiptConfig] taxpayer failed', {

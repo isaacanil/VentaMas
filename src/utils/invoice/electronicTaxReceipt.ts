@@ -25,11 +25,64 @@ const TERMINAL_DGII_STATUSES = new Set([
 ]);
 
 const PENDING_STATUSES = new Set(['not_checked', 'pending', 'queued']);
+const RFCE_ACCEPTED_STATUSES = new Set(['accepted', 'accepted_conditional']);
+const RFCE_ERROR_STATUSES = new Set(['error', 'failed', 'rejected']);
 
 const normalizeStatus = (value: unknown): string | null => {
   if (typeof value !== 'string') return null;
   const normalized = value.trim().toLowerCase();
   return normalized || null;
+};
+
+const normalizeCode = (value: unknown): string | null => {
+  if (typeof value !== 'string' && typeof value !== 'number') return null;
+  const normalized = String(value).trim();
+  return normalized || null;
+};
+
+export const isRfceElectronicTaxReceipt = (
+  snapshot?: ElectronicTaxReceiptSnapshot | null,
+): boolean => {
+  if (!snapshot) return false;
+  return (
+    snapshot.routing?.rfceToDgii === true ||
+    snapshot.routing?.channel === 'recepcion_fc' ||
+    Boolean(snapshot.rfceStatus) ||
+    Boolean(snapshot.rfceSubmissionStatus) ||
+    Boolean(snapshot.rfceDgiiCode) ||
+    Boolean(snapshot.rfceDgiiEstado)
+  );
+};
+
+const resolveRfceTerminalStatusKey = (
+  snapshot?: ElectronicTaxReceiptSnapshot | null,
+): string | null => {
+  const rfceStatus = normalizeStatus(snapshot?.rfceStatus);
+  const rfceSubmissionStatus = normalizeStatus(snapshot?.rfceSubmissionStatus);
+  const status = rfceStatus || rfceSubmissionStatus;
+
+  if (status && RFCE_ACCEPTED_STATUSES.has(status)) return status;
+  if (status && RFCE_ERROR_STATUSES.has(status)) {
+    return status === 'rejected' ? 'rejected' : 'error';
+  }
+
+  const rfceCode = normalizeCode(snapshot?.rfceDgiiCode);
+  const rfceEstado = normalizeStatus(snapshot?.rfceDgiiEstado);
+  if ((rfceCode === '1' || rfceCode === '01') && rfceEstado?.includes('acept')) {
+    return 'accepted';
+  }
+
+  return null;
+};
+
+const isRfceQueued = (snapshot?: ElectronicTaxReceiptSnapshot | null) => {
+  if (!isRfceElectronicTaxReceipt(snapshot)) return false;
+  if (resolveRfceTerminalStatusKey(snapshot)) return false;
+  return (
+    normalizeStatus(snapshot?.requestStatus) === 'queued' ||
+    normalizeStatus(snapshot?.dgiiSubmissionStatus) === 'queued' ||
+    normalizeStatus(snapshot?.rfceSubmissionStatus) === 'queued'
+  );
 };
 
 export const resolveElectronicTaxReceiptSnapshot = (
@@ -76,6 +129,9 @@ export const resolveElectronicTaxReceiptStatusKey = (
     return dgiiStatus;
   }
 
+  const rfceStatus = resolveRfceTerminalStatusKey(snapshot);
+  if (rfceStatus) return rfceStatus;
+
   const lifecycleStatus = normalizeStatus(snapshot?.status);
   if (lifecycleStatus && !PENDING_STATUSES.has(lifecycleStatus)) {
     return lifecycleStatus;
@@ -103,6 +159,12 @@ export const resolveElectronicTaxReceiptStatusLabel = (
 ): string | null => {
   const statusKey = resolveElectronicTaxReceiptStatusKey(snapshot);
   if (!statusKey) return null;
+
+  if (isRfceElectronicTaxReceipt(snapshot)) {
+    if (statusKey === 'accepted') return 'Aceptado RFCE';
+    if (statusKey === 'accepted_conditional') return 'Aceptado cond. RFCE';
+    if (isRfceQueued(snapshot)) return 'En cola RFCE';
+  }
 
   const hasPendingDgiiStatus =
     normalizeStatus(snapshot?.dgiiValidationStatus) === 'not_checked' ||

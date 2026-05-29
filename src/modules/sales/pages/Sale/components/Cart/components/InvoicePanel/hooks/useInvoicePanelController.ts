@@ -1,9 +1,4 @@
-import {
-  Form,
-  Modal as AntdModal,
-  message,
-  notification,
-} from 'antd';
+import { Form, Modal as AntdModal, message, notification } from 'antd';
 import type { FormInstance } from 'antd';
 import { nanoid } from 'nanoid';
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
@@ -369,6 +364,7 @@ export const useInvoicePanelController = () => {
       setSubmitted: setPanelSubmitted,
       setTaxReceiptModalOpen: setPanelTaxReceiptModalOpen,
       shouldPrintInvoice,
+      serviceCommissions: billing?.serviceCommissions,
       taxReceiptData: taxReceiptOptions,
       taxReceiptEnabled,
       user,

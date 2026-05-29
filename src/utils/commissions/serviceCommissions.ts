@@ -11,15 +11,16 @@ import {
   getFunctionalProductSubtotal,
 } from '@/utils/accounting/lineMonetary';
 
-const DEFAULT_SERVICE_COMMISSION_SETTINGS: Required<ServiceCommissionsBillingSettings> = {
-  enabled: false,
-  appliesTo: 'services',
-  calculationBase: 'netSubtotalWithoutTax',
-  defaultType: 'percentage',
-  defaultRate: 0,
-  requireCollaboratorOnService: false,
-  showOnPrintedInvoice: false,
-};
+const DEFAULT_SERVICE_COMMISSION_SETTINGS: Required<ServiceCommissionsBillingSettings> =
+  {
+    enabled: false,
+    appliesTo: 'services',
+    calculationBase: 'netSubtotalWithoutTax',
+    defaultType: 'percentage',
+    defaultRate: 0,
+    requireCollaboratorOnService: false,
+    showOnPrintedInvoice: false,
+  };
 
 const toFiniteNumber = (value: unknown, fallback = 0): number => {
   const parsed = Number(value);
@@ -85,6 +86,14 @@ export const normalizeCommissionCollaborator = (
   collaborator: Record<string, unknown> | ServiceCommissionCollaboratorSnapshot,
 ): ServiceCommissionCollaboratorSnapshot => {
   const source = collaborator as Record<string, unknown>;
+  const defaultType =
+    source.defaultType === 'fixed' || source.defaultType === 'percentage'
+      ? source.defaultType
+      : null;
+  const defaultRate =
+    source.defaultRate == null
+      ? null
+      : Math.max(0, toFiniteNumber(source.defaultRate));
   const id =
     toCleanString(source.id) ??
     toCleanString(source.uid) ??
@@ -107,6 +116,9 @@ export const normalizeCommissionCollaborator = (
     code,
     name,
     linkedUserId: toCleanString(source.linkedUserId) ?? id,
+    defaultType,
+    defaultRate,
+    active: source.active === false ? false : undefined,
   };
 };
 
@@ -130,10 +142,18 @@ export const buildServiceCommissionLineSnapshot = ({
   const normalizedType =
     type === 'fixed' || type === 'percentage'
       ? type
-      : current?.type ?? defaultType ?? 'percentage';
+      : (current?.type ??
+        collaborator.defaultType ??
+        defaultType ??
+        'percentage');
   const normalizedRate = Math.max(
     0,
-    toFiniteNumber(rateValue ?? current?.rateValue ?? defaultRate),
+    toFiniteNumber(
+      rateValue ??
+        current?.rateValue ??
+        collaborator.defaultRate ??
+        defaultRate,
+    ),
   );
   const estimatedBaseAmount = resolveServiceCommissionBaseAmount(product);
   const estimatedCommissionAmount = calculateServiceCommissionAmount({
@@ -149,7 +169,9 @@ export const buildServiceCommissionLineSnapshot = ({
     collaboratorName: collaborator.name ?? null,
     type: normalizedType,
     rateValue: normalizedRate,
-    source: current?.source ?? 'manual',
+    source:
+      current?.source ??
+      (collaborator.defaultRate != null ? 'collaborator' : 'manual'),
     calculationBase: 'netSubtotalWithoutTax',
     estimatedBaseAmount,
     estimatedCommissionAmount,

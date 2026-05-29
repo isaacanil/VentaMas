@@ -5,41 +5,62 @@ const DEFAULT_CURRENCY = 'DOP';
 const DEFAULT_BUYER_NAME = 'Consumidor Final';
 const GISYS_INVOICE_INTERNAL_ID_MAX_LENGTH = 20;
 const GISYS_INVOICE_INTERNAL_ID_HASH_PREFIX = 'VM';
-const DOMINICAN_PROVINCES = new Map(
+const PROVINCE_MUNICIPALITY_CODE_PATTERN = /^\d{6}$/;
+const BILLING_INDICATOR = Object.freeze({
+  NOT_BILLABLE: '0',
+  ITBIS_18: '1',
+  ITBIS_16: '2',
+  ITBIS_0: '3',
+  EXEMPT: '4',
+});
+const BILLING_INDICATOR_TAX_RATE = Object.freeze({
+  [BILLING_INDICATOR.ITBIS_18]: 18,
+  [BILLING_INDICATOR.ITBIS_16]: 16,
+  [BILLING_INDICATOR.ITBIS_0]: 0,
+  [BILLING_INDICATOR.EXEMPT]: 0,
+  [BILLING_INDICATOR.NOT_BILLABLE]: 0,
+});
+const TAXABLE_BILLING_INDICATORS = new Set([
+  BILLING_INDICATOR.ITBIS_18,
+  BILLING_INDICATOR.ITBIS_16,
+  BILLING_INDICATOR.ITBIS_0,
+]);
+const DOMINICAN_PROVINCE_CODES = new Map(
   [
-    'Azua',
-    'Bahoruco',
-    'Barahona',
-    'Dajabon',
-    'Distrito Nacional',
-    'Duarte',
-    'El Seibo',
-    'Elias Pina',
-    'Espaillat',
-    'Hato Mayor',
-    'Hermanas Mirabal',
-    'Independencia',
-    'La Altagracia',
-    'La Romana',
-    'La Vega',
-    'Maria Trinidad Sanchez',
-    'Monsenor Nouel',
-    'Monte Cristi',
-    'Monte Plata',
-    'Pedernales',
-    'Peravia',
-    'Puerto Plata',
-    'Samana',
-    'San Cristobal',
-    'San Jose de Ocoa',
-    'San Juan',
-    'San Pedro de Macoris',
-    'Sanchez Ramirez',
-    'Santiago',
-    'Santiago Rodriguez',
-    'Santo Domingo',
-    'Valverde',
-  ].map((province) => [province.toUpperCase(), province]),
+    ['Distrito Nacional', '010000'],
+    ['Azua', '020000'],
+    ['Bahoruco', '030000'],
+    ['Baoruco', '030000'],
+    ['Barahona', '040000'],
+    ['Dajabon', '050000'],
+    ['Duarte', '060000'],
+    ['Elias Pina', '070000'],
+    ['El Seibo', '080000'],
+    ['Espaillat', '090000'],
+    ['Independencia', '100000'],
+    ['La Altagracia', '110000'],
+    ['La Romana', '120000'],
+    ['La Vega', '130000'],
+    ['Maria Trinidad Sanchez', '140000'],
+    ['Monte Cristi', '150000'],
+    ['Pedernales', '160000'],
+    ['Peravia', '170000'],
+    ['Puerto Plata', '180000'],
+    ['Hermanas Mirabal', '190000'],
+    ['Samana', '200000'],
+    ['San Cristobal', '210000'],
+    ['San Juan', '220000'],
+    ['San Pedro de Macoris', '230000'],
+    ['Sanchez Ramirez', '240000'],
+    ['Santiago', '250000'],
+    ['Santiago Rodriguez', '260000'],
+    ['Valverde', '270000'],
+    ['Monsenor Nouel', '280000'],
+    ['Monte Plata', '290000'],
+    ['Hato Mayor', '300000'],
+    ['San Jose de Ocoa', '310000'],
+    ['Santo Domingo', '320000'],
+  ].map(([province, code]) => [province.toUpperCase(), code]),
 );
 
 const asRecord = (value) =>
@@ -90,10 +111,134 @@ const toAsciiUpperKey = (value) =>
     .trim()
     .toUpperCase();
 
-const normalizeProvince = (...values) => {
+const isNearTaxRate = (value, expected) =>
+  Math.abs(Number(value) - expected) < 0.01;
+
+const normalizeTaxRate = (value) => {
+  if (value === null || value === undefined || value === '') return null;
+  const numeric = toFiniteNumber(value, null);
+  if (numeric == null) return null;
+  if (numeric === 0) return 0;
+  const scaled = Math.abs(numeric) < 1 ? numeric * 100 : numeric;
+  return roundAmount(scaled);
+};
+
+const normalizeBillingIndicatorCode = (value) => {
+  if (typeof value !== 'string' && typeof value !== 'number') return null;
+  const raw = String(value).trim();
+  if (!raw) return null;
+  if (/^[0-4]$/.test(raw)) return raw;
+
+  const normalized = toAsciiUpperKey(raw).replace(/[_-]+/g, ' ');
+  if (normalized === 'E' || normalized.includes('EXENTO')) {
+    return BILLING_INDICATOR.EXEMPT;
+  }
+  if (normalized.includes('NO FACTURABLE')) {
+    return BILLING_INDICATOR.NOT_BILLABLE;
+  }
+  if (/ITBIS\s*1|TASA\s*1|18\s*%/.test(normalized)) {
+    return BILLING_INDICATOR.ITBIS_18;
+  }
+  if (/ITBIS\s*2|TASA\s*2|16\s*%/.test(normalized)) {
+    return BILLING_INDICATOR.ITBIS_16;
+  }
+  if (
+    /ITBIS\s*3|TASA\s*3|0\s*%/.test(normalized) ||
+    (normalized.includes('GRAVAD') && normalized.includes('0'))
+  ) {
+    return BILLING_INDICATOR.ITBIS_0;
+  }
+
+  return null;
+};
+
+const normalizeBillingIndicator = (value) => {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return normalizeBillingIndicator(
+      value.billingIndicator ??
+        value.indicadorFacturacion ??
+        value.indicator ??
+        value.type ??
+        value.ref ??
+        value.label ??
+        value.name,
+    );
+  }
+
+  return normalizeBillingIndicatorCode(value);
+};
+
+const resolveExplicitBillingIndicator = (product) =>
+  normalizeBillingIndicator(
+    product?.billingIndicator ??
+      product?.indicadorFacturacion ??
+      product?.taxBillingIndicator ??
+      product?.selectedSaleUnit?.pricing?.billingIndicator ??
+      product?.pricing?.billingIndicator ??
+      product?.selectedSaleUnit?.pricing?.tax?.billingIndicator ??
+      product?.pricing?.tax?.billingIndicator ??
+      product?.tax?.billingIndicator,
+  );
+
+const resolveTaxTypeBillingIndicator = (product) =>
+  normalizeBillingIndicator(
+    product?.taxType ??
+      product?.tipoImpuesto ??
+      product?.taxCategory ??
+      product?.selectedSaleUnit?.pricing?.taxType ??
+      product?.pricing?.taxType ??
+      product?.selectedSaleUnit?.pricing?.tax?.type ??
+      product?.selectedSaleUnit?.pricing?.tax?.ref ??
+      product?.selectedSaleUnit?.pricing?.tax?.label ??
+      product?.pricing?.tax?.type ??
+      product?.pricing?.tax?.ref ??
+      product?.pricing?.tax?.label ??
+      product?.tax?.type ??
+      product?.tax?.ref ??
+      product?.tax?.label,
+  );
+
+const resolveBillingIndicatorFromTaxRate = (taxRate) => {
+  if (taxRate == null) return BILLING_INDICATOR.ITBIS_18;
+  if (isNearTaxRate(taxRate, 18)) return BILLING_INDICATOR.ITBIS_18;
+  if (isNearTaxRate(taxRate, 16)) return BILLING_INDICATOR.ITBIS_16;
+  if (isNearTaxRate(taxRate, 0)) return BILLING_INDICATOR.EXEMPT;
+  return taxRate > 0 ? BILLING_INDICATOR.ITBIS_18 : BILLING_INDICATOR.EXEMPT;
+};
+
+const resolveBillingIndicator = (product, taxRate) => {
+  const explicit = resolveExplicitBillingIndicator(product);
+  if (explicit) return explicit;
+
+  const taxType = resolveTaxTypeBillingIndicator(product);
+  if (taxType) return taxType;
+
+  if (product?.isVisible === false || product?.billable === false) {
+    return BILLING_INDICATOR.NOT_BILLABLE;
+  }
+
+  return resolveBillingIndicatorFromTaxRate(taxRate);
+};
+
+const resolveEffectiveTaxRate = (billingIndicator, taxRate) => {
+  if (BILLING_INDICATOR_TAX_RATE[billingIndicator] != null) {
+    return BILLING_INDICATOR_TAX_RATE[billingIndicator];
+  }
+  return taxRate ?? 18;
+};
+
+const normalizeLocationCode = (...values) => {
   const raw = pickString(...values);
   if (!raw) return null;
-  return DOMINICAN_PROVINCES.get(toAsciiUpperKey(raw)) || null;
+  return PROVINCE_MUNICIPALITY_CODE_PATTERN.test(raw) ? raw : null;
+};
+
+const normalizeProvinceCode = (...values) => {
+  const raw = pickString(...values);
+  if (!raw) return null;
+  if (PROVINCE_MUNICIPALITY_CODE_PATTERN.test(raw)) return raw;
+  const normalizedKey = toAsciiUpperKey(raw).replace(/^PROVINCIA\s+/, '');
+  return DOMINICAN_PROVINCE_CODES.get(normalizedKey) || null;
 };
 
 const normalizePhone = (...values) => {
@@ -190,13 +335,19 @@ const resolveCurrency = (cart) =>
   ) || DEFAULT_CURRENCY;
 
 const resolveTaxRate = (product) =>
-  pickNumber(
-    product?.pricing?.tax?.tax,
-    product?.selectedSaleUnit?.pricing?.tax?.tax,
-    product?.taxRate,
-    product?.taxPercentage,
-    product?.itbisRate,
-  ) ?? 18;
+  normalizeTaxRate(
+    pickNumber(
+      product?.selectedSaleUnit?.pricing?.tax?.tax,
+      product?.selectedSaleUnit?.pricing?.tax,
+      product?.pricing?.tax?.tax,
+      product?.pricing?.tax,
+      product?.tax?.tax,
+      product?.tax?.value,
+      product?.taxRate,
+      product?.taxPercentage,
+      product?.itbisRate,
+    ),
+  );
 
 const resolveUnitPrice = (product) =>
   pickNumber(
@@ -237,6 +388,17 @@ const resolveLineDiscount = (product, grossAmount) => {
   return 0;
 };
 
+const sumItemAmounts = (items, billingIndicator, amountKey) =>
+  roundAmount(
+    items
+      .filter((item) => item.billingIndicator === billingIndicator)
+      .reduce((total, item) => total + (Number(item[amountKey]) || 0), 0),
+  );
+
+const whenPositive = (value) => (value > 0 ? roundAmount(value) : undefined);
+const whenPresent = (condition, value) =>
+  condition ? roundAmount(value) : undefined;
+
 const buildItems = (cart) => {
   const products = Array.isArray(cart?.products) ? cart.products : [];
   return products.map((rawProduct, index) => {
@@ -246,13 +408,17 @@ const buildItems = (cart) => {
     const grossAmount = unitPrice * quantity;
     const discountAmount = resolveLineDiscount(product, grossAmount);
     const lineAmount = Math.max(grossAmount - discountAmount, 0);
-    const taxRate = resolveTaxRate(product);
-    const taxAmount =
+    const declaredTaxRate = resolveTaxRate(product);
+    const billingIndicator = resolveBillingIndicator(product, declaredTaxRate);
+    const taxRate = resolveEffectiveTaxRate(billingIndicator, declaredTaxRate);
+    const declaredTaxAmount =
       pickNumber(
         product?.monetary?.functionalTax,
         product?.taxAmount,
         product?.itbis,
       ) ?? lineAmount * (taxRate / 100);
+    const isTaxableLine = TAXABLE_BILLING_INDICATORS.has(billingIndicator);
+    const taxAmount = isTaxableLine && taxRate > 0 ? declaredTaxAmount : 0;
 
     return pruneUndefined({
       lineNumber: index + 1,
@@ -261,12 +427,12 @@ const buildItems = (cart) => {
         : undefined,
       name: pickString(product.name, product.productName, product.description),
       description: pickString(product.description, product.comment),
-      billingIndicator: taxRate > 0 ? '1' : '4',
+      billingIndicator,
       quantity: roundAmount(quantity),
       unitPrice: roundAmount(unitPrice),
       discountAmount:
         discountAmount > 0 ? roundAmount(discountAmount) : undefined,
-      taxRate: taxRate > 0 ? roundAmount(taxRate) : undefined,
+      taxRate: isTaxableLine ? roundAmount(taxRate) : undefined,
       taxAmount: taxAmount > 0 ? roundAmount(taxAmount) : undefined,
       lineAmount: roundAmount(lineAmount),
     });
@@ -274,37 +440,71 @@ const buildItems = (cart) => {
 };
 
 const buildTotals = (cart, items) => {
-  const itemNetAmount = roundAmount(
-    items.reduce((total, item) => total + (Number(item.lineAmount) || 0), 0),
+  const taxableAmount1 = sumItemAmounts(
+    items,
+    BILLING_INDICATOR.ITBIS_18,
+    'lineAmount',
   );
-  const itemTaxAmount = roundAmount(
-    items.reduce((total, item) => total + (Number(item.taxAmount) || 0), 0),
+  const taxableAmount2 = sumItemAmounts(
+    items,
+    BILLING_INDICATOR.ITBIS_16,
+    'lineAmount',
   );
-  const netAmount =
-    pickNumber(
-      cart?.totalPurchaseWithoutTaxes?.value,
-      cart?.subtotal,
-      cart?.taxableAmountTotal,
-    ) ?? itemNetAmount;
-  const taxAmount =
-    pickNumber(cart?.totalTaxes?.value, cart?.taxAmount, cart?.itbis) ??
-    itemTaxAmount;
-  const grandTotal =
-    pickNumber(
-      cart?.totalPurchase?.value,
-      cart?.totalAmount,
-      cart?.grandTotal,
-    ) ?? netAmount + taxAmount;
+  const taxableAmount3 = sumItemAmounts(
+    items,
+    BILLING_INDICATOR.ITBIS_0,
+    'lineAmount',
+  );
+  const exemptAmount = sumItemAmounts(
+    items,
+    BILLING_INDICATOR.EXEMPT,
+    'lineAmount',
+  );
+  const nonBillableAmount = sumItemAmounts(
+    items,
+    BILLING_INDICATOR.NOT_BILLABLE,
+    'lineAmount',
+  );
+  const hasTaxableAmount1 = taxableAmount1 > 0;
+  const hasTaxableAmount2 = taxableAmount2 > 0;
+  const hasTaxableAmount3 = taxableAmount3 > 0;
+  const hasAnyTaxableAmount =
+    hasTaxableAmount1 || hasTaxableAmount2 || hasTaxableAmount3;
+  const taxableAmountTotal = roundAmount(
+    taxableAmount1 + taxableAmount2 + taxableAmount3,
+  );
+  const totalItbis1 = hasTaxableAmount1
+    ? roundAmount(taxableAmount1 * 0.18)
+    : undefined;
+  const totalItbis2 = hasTaxableAmount2
+    ? roundAmount(taxableAmount2 * 0.16)
+    : undefined;
+  const totalItbis3 = hasTaxableAmount3 ? 0 : undefined;
+  const taxAmount = hasAnyTaxableAmount
+    ? roundAmount((totalItbis1 || 0) + (totalItbis2 || 0) + (totalItbis3 || 0))
+    : undefined;
+  const netAmount = roundAmount(taxableAmountTotal + exemptAmount);
+  const grandTotal = roundAmount(netAmount + (taxAmount || 0));
+  const periodAmount = roundAmount(grandTotal + nonBillableAmount);
 
   return pruneUndefined({
-    netAmount: roundAmount(netAmount),
-    taxableAmountTotal: roundAmount(netAmount),
-    taxableAmount1: roundAmount(netAmount),
-    itbisRate1: taxAmount > 0 ? 18 : undefined,
-    taxAmount: roundAmount(taxAmount),
-    totalItbis1: roundAmount(taxAmount),
-    grandTotal: roundAmount(grandTotal),
-    payableAmount: roundAmount(grandTotal),
+    netAmount,
+    taxableAmountTotal: whenPresent(hasAnyTaxableAmount, taxableAmountTotal),
+    taxableAmount1: whenPositive(taxableAmount1),
+    taxableAmount2: whenPositive(taxableAmount2),
+    taxableAmount3: whenPositive(taxableAmount3),
+    exemptAmount: whenPositive(exemptAmount),
+    itbisRate1: hasTaxableAmount1 ? 18 : undefined,
+    itbisRate2: hasTaxableAmount2 ? 16 : undefined,
+    itbisRate3: hasTaxableAmount3 ? 0 : undefined,
+    taxAmount: whenPresent(hasAnyTaxableAmount, taxAmount),
+    totalItbis1,
+    totalItbis2,
+    totalItbis3,
+    grandTotal,
+    payableAmount: grandTotal,
+    nonBillableAmount: whenPositive(nonBillableAmount),
+    periodAmount: whenPresent(nonBillableAmount > 0, periodAmount),
   });
 };
 
@@ -371,8 +571,8 @@ const buildBuyer = ({ client, documentType }) => {
     contactName: pickString(buyer.contactName),
     email: pickString(buyer.email),
     address: pickString(buyer.address, buyer.direccion),
-    municipality: pickString(buyer.municipality, buyer.municipio),
-    province: normalizeProvince(buyer.province, buyer.provincia),
+    municipality: normalizeLocationCode(buyer.municipality, buyer.municipio),
+    province: normalizeProvinceCode(buyer.province, buyer.provincia),
     phone: normalizePhone(buyer.phone, buyer.tel, buyer.mobile),
     internalCode: pickString(buyer.id),
   });
@@ -393,8 +593,8 @@ const buildIssuer = ({ business }) => {
       source.name,
     ),
     address: pickString(source.address, source.direccion),
-    municipality: pickString(source.municipality, source.municipio),
-    province: normalizeProvince(source.province, source.provincia),
+    municipality: normalizeLocationCode(source.municipality, source.municipio),
+    province: normalizeProvinceCode(source.province, source.provincia),
     phones: phone ? [phone] : undefined,
     email: pickString(source.email),
     economicActivity: pickString(source.economicActivity),

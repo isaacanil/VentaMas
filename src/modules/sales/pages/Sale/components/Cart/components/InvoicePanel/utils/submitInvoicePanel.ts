@@ -13,6 +13,7 @@ import type {
   InvoiceProcessParams,
   InvoiceServiceError,
 } from '@/services/invoice/types';
+import type { ServiceCommissionsBillingSettings } from '@/types/commissions';
 import type { InvoiceData } from '@/types/invoice';
 import type { TaxReceiptItem } from '@/types/taxReceipt';
 import type { UserIdentity } from '@/types/users';
@@ -84,6 +85,7 @@ interface SubmitInvoicePanelArgs {
   setSubmitted: (value: boolean) => void;
   setTaxReceiptModalOpen: (value: boolean) => void;
   shouldPrintInvoice: boolean;
+  serviceCommissions?: ServiceCommissionsBillingSettings | null;
   taxReceiptData: TaxReceiptItem[] | null | undefined;
   taxReceiptEnabled: boolean;
   user: UserIdentity | null;
@@ -115,6 +117,7 @@ export const submitInvoicePanel = async ({
   setSubmitted,
   setTaxReceiptModalOpen,
   shouldPrintInvoice,
+  serviceCommissions,
   taxReceiptData,
   taxReceiptEnabled,
   user,
@@ -123,8 +126,7 @@ export const submitInvoicePanel = async ({
     const effectiveTaxReceiptEnabled = taxReceiptEnabled;
     const electronicTaxReceiptModelEnabled =
       resolveBusinessFiscalRollout(business).electronicModelEnabled;
-    const selectedNcfType =
-      typeof ncfType === 'string' ? ncfType.trim() : '';
+    const selectedNcfType = typeof ncfType === 'string' ? ncfType.trim() : '';
 
     if (effectiveTaxReceiptEnabled) {
       if (!selectedNcfType) {
@@ -167,6 +169,7 @@ export const submitInvoicePanel = async ({
 
     const guardResult = await validateInvoiceSubmissionGuards({
       cart: monetaryContext ? { ...cart, ...monetaryContext } : cart,
+      serviceCommissions,
       user,
     });
 
@@ -175,7 +178,9 @@ export const submitInvoicePanel = async ({
 
       if (guardResult.code === 'cash-count') {
         getCashCountStrategy(
-          guardResult.cashCountState as Parameters<typeof getCashCountStrategy>[0],
+          guardResult.cashCountState as Parameters<
+            typeof getCashCountStrategy
+          >[0],
           dispatch as Parameters<typeof getCashCountStrategy>[1],
         ).handleConfirm();
         return;
@@ -186,7 +191,9 @@ export const submitInvoicePanel = async ({
         description: guardResult.description,
         duration: 6,
       });
-      dispatch(openProductStockSimple(guardResult.product));
+      if (guardResult.code === 'physical-selection') {
+        dispatch(openProductStockSimple(guardResult.product));
+      }
       return;
     }
 
@@ -205,7 +212,9 @@ export const submitInvoicePanel = async ({
     }
 
     // Merge monetary context into cart so resolveRequestedMonetaryContext picks it up
-    const effectiveCart = monetaryContext ? { ...cart, ...monetaryContext } : cart;
+    const effectiveCart = monetaryContext
+      ? { ...cart, ...monetaryContext }
+      : cart;
 
     console.info('[InvoicePanel] processInvoice -> started', {
       cartId: cart?.id ?? cart?.cartId ?? cart?.cartIdRef ?? null,
@@ -237,7 +246,8 @@ export const submitInvoicePanel = async ({
         idempotencyKey,
       }),
     )) as InvoiceAttemptResult;
-    const createdInvoice = (invoiceResult?.invoice ?? null) as InvoiceData | null;
+    const createdInvoice = (invoiceResult?.invoice ??
+      null) as InvoiceData | null;
     if (!createdInvoice) {
       throw new Error(
         'No se pudo recuperar la factura generada desde el backend.',
@@ -283,8 +293,7 @@ export const submitInvoicePanel = async ({
       notification.info({
         message: info?.message ?? 'Estado de factura',
         description:
-          info?.description ??
-          `La factura quedó en estado "${invoiceStatus}".`,
+          info?.description ?? `La factura quedó en estado "${invoiceStatus}".`,
         duration: 6,
       });
     }
@@ -330,8 +339,8 @@ export const submitInvoicePanel = async ({
         invoiceId:
           typedError?.invoiceId ??
           (typedError?.invoice &&
-            typeof typedError.invoice === 'object' &&
-            'id' in typedError.invoice
+          typeof typedError.invoice === 'object' &&
+          'id' in typedError.invoice
             ? (typedError.invoice as { id?: string }).id
             : null),
         idempotencyKey: typedError?.idempotencyKey ?? null,
