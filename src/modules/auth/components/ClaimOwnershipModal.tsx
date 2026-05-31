@@ -13,80 +13,23 @@ import {
   copyClaimLinkToClipboard,
   generateOwnershipClaimLink,
 } from './ClaimOwnershipModal.utils';
-
-const DISMISS_KEY = 'claimOwnershipDismissed';
-
-const getDismissed = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  return window.sessionStorage.getItem(DISMISS_KEY) === '1';
-};
-
-const setDismissed = (): void => {
-  if (typeof window === 'undefined') return;
-  window.sessionStorage.setItem(DISMISS_KEY, '1');
-};
-
-type ClaimOwnershipState = {
-  dismissed: boolean;
-  submitting: boolean;
-  claimUrl: string | null;
-  claimCode: string | null;
-  claimExpiresAt: number | null;
-};
-
-type ClaimOwnershipAction =
-  | { type: 'dismiss' }
-  | { type: 'startSubmitting' }
-  | { type: 'finishSubmitting' }
-  | {
-      type: 'setGeneratedClaim';
-      claimUrl: string | null;
-      claimCode: string | null;
-      claimExpiresAt: number | null;
-    };
+import {
+  claimOwnershipReducer,
+  createInitialClaimOwnershipState,
+  setClaimOwnershipDismissed,
+} from './ClaimOwnershipModal.state';
 
 interface ClaimOwnershipModalProps {
   isOpen?: boolean;
   onClose?: () => void;
 }
 
-const claimOwnershipReducer = (
-  state: ClaimOwnershipState,
-  action: ClaimOwnershipAction,
-): ClaimOwnershipState => {
-  switch (action.type) {
-    case 'dismiss':
-      return {
-        ...state,
-        dismissed: true,
-      };
-    case 'startSubmitting':
-      return {
-        ...state,
-        submitting: true,
-      };
-    case 'finishSubmitting':
-      return {
-        ...state,
-        submitting: false,
-      };
-    case 'setGeneratedClaim':
-      return {
-        ...state,
-        claimUrl: action.claimUrl,
-        claimCode: action.claimCode,
-        claimExpiresAt: action.claimExpiresAt,
-      };
-    default:
-      return state;
-  }
-};
-
 export const ClaimOwnershipModal = ({
   isOpen,
   onClose,
 }: ClaimOwnershipModalProps = {}) => {
-  const canClaimBusinessOwnership = isFrontendFeatureEnabled('businessCreation');
+  const canClaimBusinessOwnership =
+    isFrontendFeatureEnabled('businessCreation');
   const user = useSelector(selectUser) as {
     role?: string;
     activeRole?: string;
@@ -99,13 +42,11 @@ export const ClaimOwnershipModal = ({
     availableBusinesses?: unknown;
   } | null;
 
-  const [state, dispatchState] = useReducer(claimOwnershipReducer, {
-    dismissed: getDismissed(),
-    submitting: false,
-    claimUrl: null,
-    claimCode: null,
-    claimExpiresAt: null,
-  });
+  const [state, dispatchState] = useReducer(
+    claimOwnershipReducer,
+    undefined,
+    createInitialClaimOwnershipState,
+  );
   const { dismissed, submitting, claimUrl, claimCode, claimExpiresAt } = state;
 
   const canManageOwnershipClaim = user
@@ -118,9 +59,9 @@ export const ClaimOwnershipModal = ({
 
   const shouldPrompt = Boolean(
     user &&
-      canManageOwnershipClaim &&
-      user.businessHasOwners === false &&
-      activeRole !== 'owner',
+    canManageOwnershipClaim &&
+    user.businessHasOwners === false &&
+    activeRole !== 'owner',
   );
 
   const isControlled = typeof isOpen === 'boolean';
@@ -131,7 +72,7 @@ export const ClaimOwnershipModal = ({
 
   const handleDismiss = () => {
     if (!isControlled) {
-      setDismissed();
+      setClaimOwnershipDismissed();
       dispatchState({ type: 'dismiss' });
     }
     onClose?.();
@@ -143,7 +84,8 @@ export const ClaimOwnershipModal = ({
       if (copiedToClipboard) {
         notification.success({
           title: 'Enlace copiado',
-          description: 'Comparte este enlace con quien deba reclamar el negocio.',
+          description:
+            'Comparte este enlace con quien deba reclamar el negocio.',
         });
         return;
       }

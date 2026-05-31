@@ -1,9 +1,6 @@
-import { getDownloadURL, listAll, ref } from 'firebase/storage';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { storage } from '@/firebase/firebaseconfig';
-
-const LOGIN_IMAGE_PATH = 'app-config/login-image';
+import { fetchAuthBackgroundImageUrl } from '../repositories/authBackgroundImage.repository';
 
 type ImageLoadState = 'loading' | 'loaded' | 'idle';
 
@@ -23,25 +20,22 @@ export const useAuthBackgroundImage = () => {
 
   useEffect(() => {
     let cancelled = false;
-    const loginImageRef = ref(storage, LOGIN_IMAGE_PATH);
 
-    listAll(loginImageRef)
-      .then((files) => {
-        if (cancelled) return undefined;
-        if (!files.items.length) {
+    fetchAuthBackgroundImageUrl()
+      .then((imageUrl) => {
+        if (cancelled) return;
+
+        if (!imageUrl) {
           setState({
             imageUrl: null,
             imageLoadState: 'idle',
           });
-          return undefined;
+          return;
         }
 
-        return getDownloadURL(files.items[0]).then((imageUrl) => {
-          if (cancelled) return;
-          setState({
-            imageUrl,
-            imageLoadState: 'loading',
-          });
+        setState({
+          imageUrl,
+          imageLoadState: 'loading',
         });
       })
       .catch((error) => {

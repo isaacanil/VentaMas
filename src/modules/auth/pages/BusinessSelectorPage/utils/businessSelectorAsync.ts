@@ -1,25 +1,15 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { fbSelectActiveBusiness } from '@/firebase/Auth/fbAuthV2/fbSelectActiveBusiness';
-import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { functions } from '@/firebase/firebaseconfig';
 import type { AvailableBusinessContext } from '@/utils/auth-adapter';
+
+import { redeemBusinessInvite } from '../repositories/businessInvite.repository';
+import { selectActiveBusiness } from '../repositories/businessSelection.repository';
+import {
+  isAlreadyMemberInviteResponse,
+  normalizeRedeemedBusinessInvite,
+  type RedeemedBusinessInvite,
+} from './businessInvite';
 
 type BusinessMetadataLike = {
   ownerUid?: string | null;
-};
-
-type RedeemBusinessInviteRequest = {
-  code: string;
-  sessionToken?: string;
-};
-
-type RedeemBusinessInviteResponse = {
-  businessId?: string;
-  businessName?: string | null;
-  ok?: boolean;
-  reason?: string;
-  role?: string;
 };
 
 export type BusinessSelectionSuccess = {
@@ -30,11 +20,7 @@ export type BusinessSelectionSuccess = {
   selectedRole: string;
 };
 
-export type RedeemedBusinessInvite = {
-  businessId: string | null;
-  businessName: string | null;
-  role: string;
-};
+export type { RedeemedBusinessInvite };
 
 type RunBusinessSelectionParams = {
   business: AvailableBusinessContext;
@@ -54,17 +40,6 @@ type RunRedeemBusinessInviteParams = {
   onSuccess: (result: RedeemedBusinessInvite) => void;
 };
 
-const redeemBusinessInviteCallable = httpsCallable<
-  RedeemBusinessInviteRequest,
-  RedeemBusinessInviteResponse
->(functions, 'redeemBusinessInvite');
-
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
-
 export async function runBusinessSelection({
   business,
   businessMetadataMap,
@@ -75,7 +50,7 @@ export async function runBusinessSelection({
   sortedBusinesses,
 }: RunBusinessSelectionParams) {
   try {
-    const selected = await fbSelectActiveBusiness(business.businessId);
+    const selected = await selectActiveBusiness(business.businessId);
     const selectedBusinessId = selected.businessId;
     const selectedRole = selected.role || business.role;
     const selectedBusinessMetadata =
@@ -113,19 +88,10 @@ export async function runRedeemBusinessInvite({
   onSuccess,
 }: RunRedeemBusinessInviteParams) {
   try {
-    const { sessionToken } = getStoredSession();
-    const response = await redeemBusinessInviteCallable({
-      code,
-      ...(sessionToken ? { sessionToken } : {}),
-    });
-    const payload = (response.data || {}) as RedeemBusinessInviteResponse;
-    const result = {
-      businessId: toCleanString(payload.businessId),
-      businessName: toCleanString(payload.businessName),
-      role: toCleanString(payload.role) || 'cashier',
-    };
+    const payload = await redeemBusinessInvite(code);
+    const result = normalizeRedeemedBusinessInvite(payload);
 
-    if (payload.ok === false && payload.reason === 'already-member') {
+    if (isAlreadyMemberInviteResponse(payload)) {
       onAlreadyMember(result);
       return;
     }

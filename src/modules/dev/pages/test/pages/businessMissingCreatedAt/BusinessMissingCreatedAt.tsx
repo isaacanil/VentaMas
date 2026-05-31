@@ -1,20 +1,4 @@
-import {
-  collection,
-  doc,
-  getDocs,
-  serverTimestamp,
-  updateDoc,
-  writeBatch,
-} from 'firebase/firestore';
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-} from 'react';
-
-import { db } from '@/firebase/firebaseconfig';
+import { useCallback, useMemo, useReducer, useRef } from 'react';
 
 import {
   BodyCell,
@@ -24,9 +8,6 @@ import {
   HeaderCell,
   MissingRow,
   Page,
-  ProgressFill,
-  ProgressHeader,
-  ProgressTrack,
   ProgressWrapper,
   ResultsSection,
   ResultsTable,
@@ -35,20 +16,17 @@ import {
   TableFrame,
   Toolbar,
 } from './BusinessMissingCreatedAt.styles';
-
-interface MissingBusiness {
-  id: string;
-  name: string;
-  createdAt: unknown;
-  raw: Record<string, unknown>;
-  hasCreatedAtNested: boolean;
-  hasCreatedAtRoot: boolean;
-}
-
-interface ScanProgress {
-  scanned: number;
-  total: number;
-}
+import { ProgressBar } from './components/ProgressBar';
+import {
+  fixBusinessCreatedAt,
+  fixMissingBusinessesCreatedAt,
+  scanBusinessesMissingCreatedAt,
+} from './services/businessMissingCreatedAt.service';
+import type { MissingBusiness, ScanProgress } from './types';
+import {
+  buildMissingBusinessesCsv,
+  createMissingBusinessesCsvFilename,
+} from './utils/businessMissingCreatedAtCsv';
 
 interface BusinessMissingCreatedAtState {
   loading: boolean;
@@ -62,7 +40,7 @@ type BusinessMissingCreatedAtAction =
   | { type: 'startScan' }
   | { type: 'setProgress'; progress: ScanProgress }
   | { type: 'finishScan'; missing: MissingBusiness[]; progress: ScanProgress }
-  | { type: 'finishScanWithError' }
+  | { type: 'finishScanFailed' }
   | { type: 'setFixing'; value: boolean }
   | { type: 'removeBusiness'; businessId: string }
   | { type: 'clearMissing' }
@@ -103,7 +81,7 @@ const businessMissingCreatedAtReducer = (
         missing: action.missing,
         progress: action.progress,
       };
-    case 'finishScanWithError':
+    case 'finishScanFailed':
       return {
         ...state,
         loading: false,
@@ -148,7 +126,6 @@ export default function BusinessMissingCreatedAt() {
     initialBusinessMissingCreatedAtState,
   );
   const { loading, missing, progress, fixing, useFixedDate } = state;
-  const FIXED_ISO = '2024-01-01T00:00:00.000Z';
   const abortRef = useRef<{ aborted: boolean }>({ aborted: false });
 
   const totalMissing = missing.length;
@@ -156,101 +133,47 @@ export default function BusinessMissingCreatedAt() {
   const scan = useCallback(async () => {
     dispatch({ type: 'startScan' });
     abortRef.current.aborted = false;
-    const colRef = collection(db, 'businesses');
 
-    getDocs(colRef)
-      .then((snap) => {
-        const total = snap.size;
-        dispatch({
-          type: 'setProgress',
-          progress: { scanned: 0, total },
-        });
-        const miss: MissingBusiness[] = [];
-        let scanned = 0;
-        snap.forEach((d) => {
-          if (abortRef.current.aborted) return;
-          const data = (d.data() || {}) as Record<string, unknown>;
-          console.log('Escaneando negocio:', d.id, data.business);
-          const businessObj =
-            typeof data.business === 'object' && data.business !== null
-              ? (data.business as Record<string, unknown>)
-              : {};
-          const createdAtNested = businessObj.createdAt ?? null;
-          const createdAtRoot = data.createdAt ?? null;
-          const effectiveCreatedAt = createdAtNested || createdAtRoot;
-          const hasCreated = !!createdAtNested;
-          const name =
-            typeof businessObj.name === 'string'
-              ? businessObj.name
-              : '(sin nombre)';
-          const item: MissingBusiness = {
-            id: d.id,
-            name,
-            createdAt: effectiveCreatedAt,
-            raw: data,
-            hasCreatedAtNested: !!createdAtNested,
-            hasCreatedAtRoot: !!createdAtRoot,
-          };
-          if (!hasCreated) miss.push(item);
-          scanned += 1;
-          if (scanned % 50 === 0) {
-            dispatch({
-              type: 'setProgress',
-              progress: { scanned, total },
-            });
-          }
-        });
-        dispatch({
-          type: 'finishScan',
-          missing: miss,
-          progress: { scanned: total, total },
-        });
-      })
-      .catch((err) => {
-        console.error('Error escaneando negocios:', err);
-        alert(
-          'Error escaneando negocios: ' +
-            (err instanceof Error ? err.message : String(err)),
-        );
-      })
-      .finally(() => {
-        dispatch({ type: 'finishScanWithError' });
+    try {
+      const result = await scanBusinessesMissingCreatedAt({
+        onProgress: (nextProgress) => {
+          dispatch({
+            type: 'setProgress',
+            progress: nextProgress,
+          });
+        },
+        shouldAbort: () => abortRef.current.aborted,
       });
+
+      dispatch({
+        type: 'finishScan',
+        missing: result.missing,
+        progress: result.progress,
+      });
+    } catch (error) {
+      console.error('Error escaneando negocios:', error);
+      alert(formatErrorMessage('Error escaneando negocios', error));
+      dispatch({ type: 'finishScanFailed' });
+    }
   }, []);
 
   const cancelScan = () => {
     abortRef.current.aborted = true;
   };
 
-  const getCreatedAtValue = (biz: MissingBusiness): unknown => {
-    if (biz?.hasCreatedAtRoot && biz?.raw?.createdAt) {
-      return biz.raw.createdAt;
-    }
-    if (useFixedDate) {
-      return new Date(FIXED_ISO);
-    }
-    return serverTimestamp();
-  };
-
   const fixOne = async (biz: MissingBusiness) => {
     if (fixing) return;
     dispatch({ type: 'setFixing', value: true });
-    updateDoc(doc(db, 'businesses', biz.id), {
-      'business.createdAt': getCreatedAtValue(biz),
-    })
-      .then(() => {
-        dispatch({ type: 'removeBusiness', businessId: biz.id });
-      })
-      .catch((err) => {
-        console.error('Error fijando createdAt:', err);
-        alert(
-          'Error fijando createdAt: ' +
-            (err instanceof Error ? err.message : String(err)),
-        );
-      })
-      .finally(() => {
-        dispatch({ type: 'setFixing', value: false });
-      });
+
+    try {
+      await fixBusinessCreatedAt(biz, { useFixedDate });
+      dispatch({ type: 'removeBusiness', businessId: biz.id });
+    } catch (error) {
+      console.error('Error fijando createdAt:', error);
+      alert(formatErrorMessage('Error fijando createdAt', error));
+    } finally {
+      dispatch({ type: 'setFixing', value: false });
+    }
   };
 
   const fixAll = async () => {
@@ -258,59 +181,32 @@ export default function BusinessMissingCreatedAt() {
     if (!window.confirm(`Fijar createdAt en ${missing.length} negocio(s)?`))
       return;
     dispatch({ type: 'setFixing', value: true });
-    Promise.resolve()
-      .then(async () => {
-        const batchSize = 400;
-        let remaining = [...missing];
-        while (remaining.length) {
-          const slice = remaining.slice(0, batchSize);
-          remaining = remaining.slice(batchSize);
-          const batch = writeBatch(db);
-          slice.forEach((biz) => {
-            const ref = doc(db, 'businesses', biz.id);
-            batch.update(ref, { 'business.createdAt': getCreatedAtValue(biz) });
-          });
-          await batch.commit();
-        }
-      })
-      .then(() => {
-        dispatch({ type: 'clearMissing' });
-        alert(
-          'CreatedAt fijado para todos los negocios faltantes. Vuelve a escanear para verificar.',
-        );
-      })
-      .catch((err) => {
-        console.error('Error en fixAll:', err);
-        alert(
-          'Error en fixAll: ' +
-            (err instanceof Error ? err.message : String(err)),
-        );
-      })
-      .finally(() => {
-        dispatch({ type: 'setFixing', value: false });
-      });
+
+    try {
+      await fixMissingBusinessesCreatedAt(missing, { useFixedDate });
+      dispatch({ type: 'clearMissing' });
+      alert(
+        'CreatedAt fijado para todos los negocios faltantes. Vuelve a escanear para verificar.',
+      );
+    } catch (error) {
+      console.error('Error en fixAll:', error);
+      alert(formatErrorMessage('Error en fixAll', error));
+    } finally {
+      dispatch({ type: 'setFixing', value: false });
+    }
   };
 
   const exportCsv = () => {
     if (missing.length === 0) return;
-    const headers = ['id', 'name'];
-    const rows = missing.map((b) => [b.id, sanitizeCsv(b.name)]);
-    const csv = [
-      headers.join(','),
-      ...rows.map((r) => r.map(escapeCsv).join(',')),
-    ].join('\n');
+    const csv = buildMissingBusinessesCsv(missing);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `businesses-missing-createdAt-${new Date().toISOString().replace(/[:.]/g, '-')}.csv`;
+    a.download = createMissingBusinessesCsvFilename();
     a.click();
     URL.revokeObjectURL(url);
   };
-
-  useEffect(() => {
-    // Escaneo manual para evitar carga involuntaria.
-  }, []);
 
   const pctMissing = useMemo(() => {
     if (!progress.total) return 0;
@@ -404,35 +300,6 @@ export default function BusinessMissingCreatedAt() {
   );
 }
 
-function ProgressBar({ progress }: { progress: ScanProgress }) {
-  const pct = progress.total
-    ? Math.min(100, Math.floor((progress.scanned / progress.total) * 100))
-    : 0;
-  return (
-    <div>
-      <ProgressHeader>
-        <span>Escaneando negocios...</span>
-        <span>{pct}%</span>
-      </ProgressHeader>
-      <ProgressTrack>
-        <ProgressFill $pct={pct} />
-      </ProgressTrack>
-    </div>
-  );
-}
-
-function sanitizeCsv(text: unknown) {
-  if (!text) return '';
-  return String(text)
-    .replace(/[\n\r]+/g, ' ')
-    .trim();
-}
-
-function escapeCsv(value: unknown) {
-  if (value == null) return '';
-  const str = String(value);
-  if (/[",\n]/.test(str)) {
-    return '"' + str.replace(/"/g, '""') + '"';
-  }
-  return str;
+function formatErrorMessage(prefix: string, error: unknown) {
+  return `${prefix}: ${error instanceof Error ? error.message : String(error)}`;
 }

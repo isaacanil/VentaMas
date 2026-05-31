@@ -2,14 +2,7 @@ import styled from 'styled-components';
 
 import { PageLayout } from '@/components/layout/PageShell';
 
-export type SubscriptionTone =
-  | 'success'
-  | 'info'
-  | 'warning'
-  | 'danger'
-  | 'neutral';
-
-export type InviteFeedbackType = 'success' | 'error' | 'info';
+import type { InviteFeedbackType, SubscriptionTone } from './types';
 
 export const Page = styled(PageLayout)`
   background: linear-gradient(180deg, #f7fafc 0%, #eef2f7 100%);

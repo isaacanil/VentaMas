@@ -1,30 +1,21 @@
-import { Divider, notification } from 'antd';
+import { notification } from 'antd';
 import { useState, type FC } from 'react';
 import { useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
-import styled, { keyframes } from 'styled-components';
 
-import {
-  updateAppState,
-} from '@/firebase/Auth/fbAuthV2/fbSignIn/fbSignIn';
+import { applyAuthenticatedUserState } from '@/modules/auth/repositories/authState.repository';
 import { resolveDefaultHomeRoute } from '@/modules/auth/utils/defaultHomeRoute';
 
-import { resolvePublicAuthVisibility } from './socialLogin.utils';
 import { AppleIcon, GoogleIcon, MicrosoftIcon } from './AuthIcons';
+import {
+  ButtonGroup,
+  Container,
+  LoadingSpinner,
+  SocialButton,
+  SocialDivider,
+} from './SocialLogin.styles';
+import { resolvePublicAuthVisibility } from './socialLogin.utils';
 import { runGoogleProviderLogin } from './utils/socialProviderLogin';
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  width: 100%;
-`;
 
 type SocialLoginProps = {
   setLoading?: (value: boolean) => void;
@@ -48,15 +39,14 @@ export const SocialLogin: FC<SocialLoginProps> = ({
 
     void runGoogleProviderLogin().then((result) => {
       if (result.status === 'success') {
-        updateAppState(dispatch, {
-          ...result.user,
+        applyAuthenticatedUserState(dispatch, result.user, {
           businessHasOwners: result.businessHasOwners,
         });
         navigate(resolveDefaultHomeRoute(result.user), { replace: true });
 
         notification.success({
-          title: 'Inicio de sesión exitoso',
-          description: '¡Bienvenido!',
+          title: 'Inicio de sesion exitoso',
+          description: 'Bienvenido!',
         });
       } else {
         notification.error({
@@ -91,9 +81,9 @@ export const SocialLogin: FC<SocialLoginProps> = ({
       icon: <MicrosoftIcon />,
       action: () => {
         notification.info({
-          title: 'Próximamente',
+          title: 'Proximamente',
           description:
-            'El inicio de sesión con Microsoft estará disponible pronto.',
+            'El inicio de sesion con Microsoft estara disponible pronto.',
         });
       },
       isLoading: false,
@@ -105,9 +95,9 @@ export const SocialLogin: FC<SocialLoginProps> = ({
       icon: <AppleIcon />,
       action: () => {
         notification.info({
-          title: 'Próximamente',
+          title: 'Proximamente',
           description:
-            'El inicio de sesión con Apple estará disponible pronto.',
+            'El inicio de sesion con Apple estara disponible pronto.',
         });
       },
       isLoading: false,
@@ -115,13 +105,13 @@ export const SocialLogin: FC<SocialLoginProps> = ({
     },
   ];
 
-  const visibleProviders = loginProviders.filter((p) => p.visible);
+  const visibleProviders = loginProviders.filter(
+    (provider) => provider.visible,
+  );
 
   return (
     <Container>
-      <SocialDivider plain>
-        O continúa con
-      </SocialDivider>
+      <SocialDivider plain>O continua con</SocialDivider>
       <ButtonGroup>
         {visibleProviders.map((provider) => (
           <SocialButton
@@ -133,7 +123,7 @@ export const SocialLogin: FC<SocialLoginProps> = ({
             {provider.isLoading ? (
               <>
                 <LoadingSpinner />
-                Cargando…
+                Cargando...
               </>
             ) : (
               <>
@@ -149,68 +139,3 @@ export const SocialLogin: FC<SocialLoginProps> = ({
 };
 
 export default SocialLogin;
-
-const spin = keyframes`
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-`;
-
-const LoadingSpinner = styled.span`
-  display: inline-block;
-  width: 1.1em;
-  height: 1.1em;
-  border: 2px solid rgb(255 255 255 / 20%);
-  border-top-color: currentcolor;
-  border-radius: 50%;
-  animation: ${spin} 0.6s linear infinite;
-  vertical-align: middle;
-  flex-shrink: 0;
-`;
-
-const SocialDivider = styled(Divider)`
-  margin: 1.25rem 0 0.5rem;
-  color: rgb(255 255 255 / 40%);
-  font-size: 0.85rem;
-  font-weight: 500;
-  border-color: rgb(255 255 255 / 12%);
-`;
-
-const SocialButton = styled.button`
-  display: inline-flex;
-  gap: 0.75rem;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 48px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #fff;
-  letter-spacing: 0.01em;
-  cursor: pointer;
-  background: transparent;
-  border: 1px solid rgb(255 255 255 / 15%);
-  border-radius: 999px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &:hover {
-    background-color: rgb(255 255 255 / 5%);
-    border-color: rgb(255 255 255 / 30%);
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    background-color: rgb(255 255 255 / 8%);
-    transform: translateY(0);
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-    transform: none;
-    box-shadow: none;
-  }
-
-  svg {
-    flex-shrink: 0;
-  }
-`;

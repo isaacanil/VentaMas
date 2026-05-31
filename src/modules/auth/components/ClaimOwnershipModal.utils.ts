@@ -1,26 +1,5 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { functions } from '@/firebase/firebaseconfig';
-import ROUTES_PATH from '@/router/routes/routesName';
-
-type CreateOwnershipClaimTokenResponse = {
-  ok?: boolean;
-  code?: string;
-  claimUrl?: string | null;
-  expiresAt?: number;
-};
-
-type CreateOwnershipClaimTokenRequest = {
-  businessId: string;
-  sessionToken?: string;
-  baseUrl?: string;
-};
-
-const createBusinessOwnershipClaimTokenCallable = httpsCallable<
-  CreateOwnershipClaimTokenRequest,
-  CreateOwnershipClaimTokenResponse
->(functions, 'createBusinessOwnershipClaimToken');
+import { createBusinessOwnershipClaimToken } from '../repositories/businessOwnershipClaims.repository';
+import { buildOwnershipClaimUrl } from '../utils/businessOwnershipClaim';
 
 type GenerateClaimLinkSuccess = {
   claimCode: string | null;
@@ -56,37 +35,29 @@ export const generateOwnershipClaimLink = async (
   activeBusinessId: string,
 ): Promise<GenerateClaimLinkResult> => {
   try {
-    const { sessionToken } = getStoredSession();
-    if (!sessionToken) {
-      throw new Error('Sesion no valida. Vuelve a iniciar sesion.');
-    }
-
     const baseUrl =
       typeof window !== 'undefined' ? window.location.origin : undefined;
-    const response = await createBusinessOwnershipClaimTokenCallable({
-      sessionToken,
+    const payload = await createBusinessOwnershipClaimToken({
       businessId: activeBusinessId,
       baseUrl,
     });
 
-    const payload = response?.data || {};
     if (!payload.ok) {
-      throw new Error('No se pudo generar el enlace de reclamo para este negocio.');
+      throw new Error(
+        'No se pudo generar el enlace de reclamo para este negocio.',
+      );
     }
 
-    const claimUrl =
-      payload.claimUrl ||
-      (baseUrl && payload.code
-        ? `${baseUrl}${ROUTES_PATH.AUTH_TERM.CLAIM_BUSINESS}?token=${encodeURIComponent(payload.code)}`
-        : null);
+    const claimUrl = buildOwnershipClaimUrl({ baseUrl, payload });
 
     return {
       claimCode: payload.code || null,
       claimExpiresAt:
         typeof payload.expiresAt === 'number' ? payload.expiresAt : null,
       claimUrl,
-      copiedToClipboard:
-        claimUrl ? await copyClaimLinkToClipboard(claimUrl) : false,
+      copiedToClipboard: claimUrl
+        ? await copyClaimLinkToClipboard(claimUrl)
+        : false,
       status: 'success',
     };
   } catch (error: unknown) {

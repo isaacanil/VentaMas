@@ -1,8 +1,9 @@
-import { fbPublicSignUp } from '@/firebase/Auth/fbAuthV2/fbPublicSignUp';
+import {
+  createPublicAccount,
+  type PublicSignUpUser,
+} from '@/modules/auth/repositories/passwordAuth.repository';
 
-export type PublicSignUpUser = Awaited<
-  ReturnType<typeof fbPublicSignUp>
->['user'];
+export type { PublicSignUpUser };
 
 type RunSignUpSubmissionParams = {
   email: string;
@@ -20,9 +21,7 @@ export async function runSignUpSubmission({
   password,
 }: RunSignUpSubmissionParams) {
   try {
-    const result = await fbPublicSignUp({
-      name: email,
-      realName: null,
+    const result = await createPublicAccount({
       email,
       password,
     });
