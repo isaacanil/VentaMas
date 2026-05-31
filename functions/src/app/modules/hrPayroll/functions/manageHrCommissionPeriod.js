@@ -66,7 +66,7 @@ const readPeriodSnapshot = async (transaction, businessId, periodId) => {
 
   return {
     periodRef,
-    period: { id: periodSnap.id, ...(periodSnap.data() || {}) },
+    period: { id: periodSnap.id, ...periodSnap.data() },
   };
 };
 
@@ -105,7 +105,7 @@ const createHrCommissionPeriod = async ({ authUid, businessId, payload }) => {
       return toPeriodResult({
         period: {
           id: existingPeriodSnap.id,
-          ...(existingPeriodSnap.data() || {}),
+          ...existingPeriodSnap.data(),
         },
         reused: true,
       });
@@ -116,7 +116,7 @@ const createHrCommissionPeriod = async ({ authUid, businessId, payload }) => {
     );
     const entries = entrySnaps
       .filter((entrySnap) => entrySnap.exists)
-      .map((entrySnap) => ({ id: entrySnap.id, ...(entrySnap.data() || {}) }));
+      .map((entrySnap) => ({ id: entrySnap.id, ...entrySnap.data() }));
     const documents = buildHrCommissionCutDocuments({
       businessId,
       entries,
@@ -241,7 +241,7 @@ const approveHrCommissionPeriod = async ({ authUid, businessId, periodId }) =>
     );
     const employeeLines = linesSnap.docs.map((lineSnap) => ({
       id: lineSnap.id,
-      ...(lineSnap.data() || {}),
+      ...lineSnap.data(),
     }));
     const accountingEvent = buildHrCommissionAccrualAccountingEvent({
       businessId,

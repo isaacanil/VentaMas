@@ -1,14 +1,17 @@
 import { Modal } from 'antd';
-import styled from 'styled-components';
 
 import { DeveloperPaymentHistoryModal } from './DeveloperPaymentHistoryModal';
 import { DeveloperPlanDefinitionModal } from './DeveloperPlanDefinitionModal';
 import { DeveloperPlanVersioningModal } from './DeveloperPlanVersioningModal';
 import { DeveloperSubscriptionAssignmentModal } from './DeveloperSubscriptionAssignmentModal';
+import { ModalPad } from './DeveloperSubscriptionMaintenanceModals.styles';
 import MockSubscriptionFlowCard from './MockSubscriptionFlowCard';
 import { SimulatedPlanSelectionCard } from './SimulatedPlanSelectionCard';
 import type { MockScenarioPayload } from './MockSubscriptionFlowCard';
-import type { SimulatedBillingResult, SimulatedPlanOption } from './SimulatedPlanSelectionCard';
+import type {
+  SimulatedBillingResult,
+  SimulatedPlanOption,
+} from './SimulatedPlanSelectionCard';
 import type { SubscriptionFieldCatalog } from '../subscriptionFieldCatalog';
 import type { DeveloperSubscriptionMaintenanceToolState } from '../useDeveloperSubscriptionMaintenancePage';
 
@@ -215,7 +218,7 @@ export const DeveloperSubscriptionMaintenanceModals = ({
         open={activeDevModal === 'sandbox-flow'}
         onCancel={closeDevModal}
         footer={null}
-        title="Escenarios mock de suscripción"
+        title="Escenarios mock de suscripcion"
         width={460}
       >
         <ModalPad>
@@ -245,8 +248,3 @@ export const DeveloperSubscriptionMaintenanceModals = ({
     </>
   );
 };
-
-const ModalPad = styled.div`
-  padding-top: 4px;
-`;
-

@@ -448,5 +448,5 @@ export const fetchHrCommissionPeriod = async ({ businessId, periodId }) => {
       `businesses/${normalizedBusinessId}/hrCommissionPeriods/${normalizedPeriodId}`,
     )
     .get();
-  return snap.exists ? { id: snap.id, ...(snap.data() || {}) } : null;
+  return snap.exists ? { id: snap.id, ...snap.data() } : null;
 };

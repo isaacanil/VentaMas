@@ -1,27 +1,14 @@
 import { Modal, Spin, Button, Input, Form } from 'antd';
 import { useState } from 'react';
-import styled from 'styled-components';
 
 import { fbValidateUser } from '@/firebase/Auth/fbAuthV2/fbSignIn/fbVerifyUser';
 
 import { Header } from './components/Header/Header';
-
-const ErrorMessage = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 2em;
-  padding: 8px 12px;
-  margin: 0;
-  margin-top: 1em;
-  font-size: 1em;
-  font-weight: 500;
-  color: #d32f2f;
-  background-color: #ffebee;
-  border: 1px solid #ef5350;
-  border-radius: 4px;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
-`;
+import {
+  ErrorMessage,
+  LoadingContainer,
+  PEER_REVIEW_MODAL_STYLES,
+} from './PeerReviewAuthorization.styles';
 
 interface PeerReviewFormValues {
   name: string;
@@ -121,15 +108,7 @@ export const PeerReviewAuthorization = ({
       centered
       width={450}
       destroyOnHidden
-      styles={{
-        body: {
-          padding: '0px',
-          minHeight: 300,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '1.2em',
-        },
-      }}
+      styles={PEER_REVIEW_MODAL_STYLES}
       footer={[
         <Button key="cancel" onClick={handleCancel} disabled={loading}>
           Cancelar
@@ -147,16 +126,9 @@ export const PeerReviewAuthorization = ({
       <Header description={description} />
       <Form form={form} layout="vertical" autoComplete="off">
         {loading ? (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              minHeight: 100,
-            }}
-          >
+          <LoadingContainer>
             <Spin size="large" />
-          </div>
+          </LoadingContainer>
         ) : (
           <>
             <Form.Item

@@ -1,7 +1,7 @@
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
 
 import ROUTES_NAME from '@/router/routes/routesName';
-import type { AppRoute } from '@/router/routes/routes';
+import type { AppRoute } from '@/router/types/routeTypes';
 
 const AccountsPayable = lazy(() =>
   import('@/modules/accountsPayable/pages/AccountsPayable/AccountsPayable').then(

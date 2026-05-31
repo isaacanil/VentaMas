@@ -4,49 +4,32 @@ import {
   UserOutlined,
 } from '@/constants/icons/antd';
 import {
-  Alert,
   Button,
-  Divider,
   Form,
   Input,
   Spin,
-  Typography,
   type FormInstance,
   type InputRef,
 } from 'antd';
 import type { RefObject } from 'react';
-import styled from 'styled-components';
 
+import {
+  AuthorizationIcon,
+  ContentGrid,
+  DescriptionParagraph,
+  ErrorMessage,
+  IconHeader,
+  LoadingRow,
+  ModeAlert,
+  ModeDivider,
+  ModeSeparatorText,
+  ModeToggle,
+  PinLabel,
+  ReasonItem,
+  ReasonList,
+} from './PinAuthorizationContent.styles';
 import { CustomPinInput } from './CustomPinInput';
 import type { PasswordFormValues } from '../types';
-
-const { Paragraph, Text } = Typography;
-
-const ErrorMessage = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 2em;
-  padding: 8px 12px;
-  margin-top: 0.8em;
-  font-size: 0.95em;
-  font-weight: 500;
-  color: #d32f2f;
-  background-color: #ffebee;
-  border: 1px solid #ef5350;
-  border-radius: 4px;
-`;
-
-const ModeToggle = styled.div`
-  margin-top: 16px;
-  text-align: center;
-
-  button {
-    height: auto;
-    padding: 0;
-    font-size: 0.9em;
-  }
-`;
 
 interface PinAuthorizationContentProps {
   allowPasswordFallback: boolean;
@@ -79,43 +62,36 @@ export const PinAuthorizationContent = ({
   usePassword,
   usernameInputRef,
 }: PinAuthorizationContentProps) => {
+  const authorizationMode = usePassword ? 'password' : 'pin';
+
   return (
-    <div style={{ display: 'grid', gap: 12 }}>
-      <div style={{ textAlign: 'center', marginBottom: 8 }}>
-        {usePassword ? (
-          <LockOutlined style={{ fontSize: 48, color: '#1890ff' }} />
-        ) : (
-          <KeyOutlined style={{ fontSize: 48, color: '#52c41a' }} />
-        )}
-      </div>
+    <ContentGrid>
+      <IconHeader>
+        <AuthorizationIcon $mode={authorizationMode}>
+          {usePassword ? <LockOutlined /> : <KeyOutlined />}
+        </AuthorizationIcon>
+      </IconHeader>
 
       <div>
-        <Paragraph style={{ marginBottom: 8, textAlign: 'center' }}>
-          {description}
-        </Paragraph>
+        <DescriptionParagraph>{description}</DescriptionParagraph>
         {reasonList.length > 0 && (
-          <ul style={{ margin: 0, paddingLeft: 18 }}>
+          <ReasonList>
             {reasonList
               .map((reason, index) => ({
                 key: `${reason}-${index + 1}`,
                 value: reason,
               }))
               .map((reasonItem) => (
-                <li key={reasonItem.key} style={{ fontSize: 13 }}>
-                  {reasonItem.value}
-                </li>
+                <ReasonItem key={reasonItem.key}>{reasonItem.value}</ReasonItem>
               ))}
-          </ul>
+          </ReasonList>
         )}
       </div>
 
-      <Alert
-        message={
-          usePassword ? 'Modo: Contraseña Completa' : 'Modo: PIN Rápido'
-        }
+      <ModeAlert
+        message={usePassword ? 'Modo: Contrasena completa' : 'Modo: PIN rapido'}
         type={usePassword ? 'info' : 'success'}
         showIcon
-        style={{ marginTop: 8 }}
       />
 
       <Form form={form} layout="vertical" autoComplete="off">
@@ -145,13 +121,13 @@ export const PinAuthorizationContent = ({
         {usePassword ? (
           <Form.Item
             name="password"
-            label="Contraseña"
-            rules={[{ required: true, message: 'Ingrese la contraseña' }]}
+            label="Contrasena"
+            rules={[{ required: true, message: 'Ingrese la contrasena' }]}
           >
             <Input.Password
               ref={passwordInputRef}
               prefix={<LockOutlined />}
-              placeholder="Contraseña"
+              placeholder="Contrasena"
               disabled={loading}
               autoComplete="new-password"
               size="large"
@@ -165,9 +141,7 @@ export const PinAuthorizationContent = ({
 
         {!usePassword && (
           <div>
-            <Text strong style={{ display: 'block', marginBottom: 8 }}>
-              PIN de Autorizacion (6 digitos)
-            </Text>
+            <PinLabel strong>PIN de autorizacion (6 digitos)</PinLabel>
             <CustomPinInput
               value={pinValue}
               onChange={setPinValue}
@@ -179,9 +153,9 @@ export const PinAuthorizationContent = ({
               maxLength={6}
             />
             {loading && (
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <Spin size="small" style={{ marginTop: 8 }} />
-              </div>
+              <LoadingRow>
+                <Spin size="small" />
+              </LoadingRow>
             )}
           </div>
         )}
@@ -190,19 +164,17 @@ export const PinAuthorizationContent = ({
 
         {allowPasswordFallback && (
           <ModeToggle>
-            <Divider plain style={{ margin: '12px 0' }}>
-              <Text type="secondary" style={{ fontSize: '0.85em' }}>
-                o
-              </Text>
-            </Divider>
+            <ModeDivider plain>
+              <ModeSeparatorText type="secondary">o</ModeSeparatorText>
+            </ModeDivider>
             <Button type="link" onClick={toggleMode} disabled={loading}>
               {usePassword
-                ? '← Usar PIN de 6 digitos'
-                : '¿No tienes PIN? Usa tu contraseña →'}
+                ? 'Usar PIN de 6 digitos'
+                : 'No tienes PIN? Usa tu contrasena'}
             </Button>
           </ModeToggle>
         )}
       </Form>
-    </div>
+    </ContentGrid>
   );
 };

@@ -87,13 +87,13 @@ export const recalculateHrCommissionEntries = onCall(async (request) => {
     const employeeIndex = buildHrEmployeeLookupIndex(
       employeesSnap.docs.map((docSnap) => ({
         id: docSnap.id,
-        ...(docSnap.data() || {}),
+        ...docSnap.data(),
       })),
     );
     const serviceCommissions = commissionsSnap.docs
       .map((docSnap) => ({
         id: docSnap.id,
-        ...(docSnap.data() || {}),
+        ...docSnap.data(),
       }))
       .filter((record) => isInsideRange(record, { endMs, startMs }));
 

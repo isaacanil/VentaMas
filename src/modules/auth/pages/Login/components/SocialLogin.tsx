@@ -119,18 +119,9 @@ export const SocialLogin: FC<SocialLoginProps> = ({
 
   return (
     <Container>
-      <Divider
-        plain
-        style={{
-          borderColor: 'rgb(255 255 255 / 12%)',
-          color: 'rgb(255 255 255 / 40%)',
-          margin: '1.25rem 0 0.5rem',
-          fontSize: '0.85rem',
-          fontWeight: 500,
-        }}
-      >
+      <SocialDivider plain>
         O continúa con
-      </Divider>
+      </SocialDivider>
       <ButtonGroup>
         {visibleProviders.map((provider) => (
           <SocialButton
@@ -174,6 +165,14 @@ const LoadingSpinner = styled.span`
   animation: ${spin} 0.6s linear infinite;
   vertical-align: middle;
   flex-shrink: 0;
+`;
+
+const SocialDivider = styled(Divider)`
+  margin: 1.25rem 0 0.5rem;
+  color: rgb(255 255 255 / 40%);
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-color: rgb(255 255 255 / 12%);
 `;
 
 const SocialButton = styled.button`

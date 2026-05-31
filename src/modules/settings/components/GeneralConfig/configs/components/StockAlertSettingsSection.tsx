@@ -1,13 +1,20 @@
-import { Form, Checkbox, InputNumber, Input, message } from 'antd';
+import { Checkbox, Form, message } from 'antd';
 import { useEffect } from 'react';
 import type { FocusEvent } from 'react';
 import { useSelector } from 'react-redux';
-import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { SelectSettingCart } from '@/features/cart/cartSlice';
-import { setBillingSettings } from '@/firebase/billing/billingSetting';
 import type { CartSettings } from '@/features/cart/types';
+import { setBillingSettings } from '@/firebase/billing/billingSetting';
+
+import {
+  ConfigItem,
+  EmailInput,
+  SectionLabel,
+  ThresholdInput,
+  TwoColumns,
+} from './StockAlertSettingsSection.styles';
 
 interface StockAlertFormValues {
   stockAlertsEnabled?: boolean;
@@ -17,34 +24,6 @@ interface StockAlertFormValues {
 }
 
 type StockThresholdField = 'stockLowThreshold' | 'stockCriticalThreshold';
-
-const ConfigItem = styled.div<{ $level?: number }>`
-  padding-left: ${({ $level }) => ($level || 0) * 16}px;
-  margin-bottom: 8px;
-`;
-
-const TwoColumns = styled.div`
-  display: grid;
-  grid-template-columns: min-content min-content;
-  gap: 16px;
-
-  @media (width <= 768px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const ThresholdInput = styled(InputNumber)`
-  width: 140px;
-
-  @media (width <= 768px) {
-    width: 100%;
-  }
-`;
-
-const EmailInput = styled(Input)`
-  width: 100%;
-  max-width: 480px;
-`;
 
 const StockAlertSettingsSection = () => {
   const [form] = Form.useForm<StockAlertFormValues>();
@@ -81,9 +60,9 @@ const StockAlertSettingsSection = () => {
   const saveSetting = async (data: Partial<CartSettings['billing']>) => {
     try {
       await setBillingSettings(user, data);
-      message.success('Configuración guardada');
+      message.success('Configuracion guardada');
     } catch {
-      message.error('No se pudo guardar la configuración');
+      message.error('No se pudo guardar la configuracion');
     }
   };
 
@@ -97,36 +76,36 @@ const StockAlertSettingsSection = () => {
   ) => {
     const value = Number(rawValue);
     if (!Number.isFinite(value) || value < 0) {
-      message.error('Ingrese un número válido');
+      message.error('Ingrese un numero valido');
       return;
     }
-    // Ajuste: crítico no puede ser mayor que bajo
+
     const currentValues = form.getFieldsValue();
     if (
       field === 'stockCriticalThreshold' &&
       value > (currentValues.stockLowThreshold ?? 0)
     ) {
-      message.info('El umbral crítico no puede ser mayor que el umbral bajo');
-      form.setFieldValue(
-        'stockCriticalThreshold',
-        Math.max(0, currentValues.stockLowThreshold ?? 0),
+      const nextCriticalThreshold = Math.max(
+        0,
+        currentValues.stockLowThreshold ?? 0,
       );
+
+      message.info('El umbral critico no puede ser mayor que el umbral bajo');
+      form.setFieldValue('stockCriticalThreshold', nextCriticalThreshold);
       await saveSetting({
-        stockCriticalThreshold: Math.max(
-          0,
-          currentValues.stockLowThreshold ?? 0,
-        ),
+        stockCriticalThreshold: nextCriticalThreshold,
       });
       return;
     }
+
     await saveSetting({ [field]: value });
   };
 
-  const onBlurEmail = async (e: FocusEvent<HTMLInputElement>) => {
-    const raw = e?.target?.value || '';
+  const onBlurEmail = async (event: FocusEvent<HTMLInputElement>) => {
+    const raw = event.target.value || '';
     const parts = raw
       .split(',')
-      .map((p) => p.trim())
+      .map((part) => part.trim())
       .filter(Boolean);
 
     if (parts.length === 0) {
@@ -135,28 +114,27 @@ const StockAlertSettingsSection = () => {
     }
 
     const invalidFormat = parts.filter(
-      (p) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p),
+      (email) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
     );
     if (invalidFormat.length > 0) {
-      message.error(`Correos inválidos: ${invalidFormat.join(', ')}`);
+      message.error(`Correos invalidos: ${invalidFormat.join(', ')}`);
       return;
     }
 
-    // Validación de dominios permitidos (frontend) usando variable de entorno VITE_STOCK_ALERT_ALLOWED_RECIPIENT_DOMAINS
     const allowedDomainsEnv =
       import.meta.env.VITE_STOCK_ALERT_ALLOWED_RECIPIENT_DOMAINS || '';
     const allowedDomains = allowedDomainsEnv
       .split(',')
-      .map((d) => d.trim().toLowerCase())
+      .map((domain) => domain.trim().toLowerCase())
       .filter(Boolean);
 
-    // Si incluye '*', no restringimos
     const unrestricted = allowedDomains.includes('*');
     if (!unrestricted && allowedDomains.length > 0) {
       const invalidDomainEmails = parts.filter((email) => {
-        const domain = email.split('@').pop().toLowerCase();
+        const domain = email.split('@').pop()?.toLowerCase() ?? '';
         return !allowedDomains.includes(domain);
       });
+
       if (invalidDomainEmails.length > 0) {
         message.error(
           `Dominios no permitidos: ${invalidDomainEmails.join(', ')}`,
@@ -165,9 +143,7 @@ const StockAlertSettingsSection = () => {
       }
     }
 
-    // Elimina duplicados preservando orden
-    const unique = [...new Set(parts)];
-    const normalized = unique.join(', ');
+    const normalized = [...new Set(parts)].join(', ');
     form.setFieldValue('stockAlertEmail', normalized);
     await saveSetting({ stockAlertEmail: normalized });
   };
@@ -178,7 +154,7 @@ const StockAlertSettingsSection = () => {
     <Form layout="vertical" form={form}>
       <ConfigItem $level={0}>
         <Form.Item name="stockAlertsEnabled" valuePropName="checked">
-          <Checkbox onChange={(e) => onToggleAlerts(e.target.checked)}>
+          <Checkbox onChange={(event) => onToggleAlerts(event.target.checked)}>
             Habilitar alertas de stock
           </Checkbox>
         </Form.Item>
@@ -186,21 +162,20 @@ const StockAlertSettingsSection = () => {
 
       {alertsEnabled && (
         <>
-          {/* Título de sección para agrupar los umbrales y evitar repetir la palabra "Umbral" en cada label */}
-          <ConfigItem $level={1} style={{ marginTop: 8 }}>
-            <strong>Umbrales</strong>
+          <ConfigItem $level={1} $spaced>
+            <SectionLabel>Umbrales</SectionLabel>
           </ConfigItem>
           <TwoColumns>
             <ConfigItem $level={1}>
               <Form.Item
                 label="Stock bajo"
                 name="stockLowThreshold"
-                tooltip="Cuando la cantidad sea menor o igual a este valor, se mostrará alerta de stock bajo"
+                tooltip="Cuando la cantidad sea menor o igual a este valor, se mostrara alerta de stock bajo"
               >
                 <ThresholdInput
                   min={0}
-                  onBlur={(e) =>
-                    onBlurThreshold('stockLowThreshold', e.target.value)
+                  onBlur={(event) =>
+                    onBlurThreshold('stockLowThreshold', event.target.value)
                   }
                 />
               </Form.Item>
@@ -208,14 +183,17 @@ const StockAlertSettingsSection = () => {
 
             <ConfigItem $level={1}>
               <Form.Item
-                label="Stock crítico"
+                label="Stock critico"
                 name="stockCriticalThreshold"
-                tooltip="Cuando la cantidad sea menor o igual a este valor, se mostrará alerta crítica"
+                tooltip="Cuando la cantidad sea menor o igual a este valor, se mostrara alerta critica"
               >
                 <ThresholdInput
                   min={0}
-                  onBlur={(e) =>
-                    onBlurThreshold('stockCriticalThreshold', e.target.value)
+                  onBlur={(event) =>
+                    onBlurThreshold(
+                      'stockCriticalThreshold',
+                      event.target.value,
+                    )
                   }
                 />
               </Form.Item>
@@ -224,7 +202,7 @@ const StockAlertSettingsSection = () => {
 
           <ConfigItem $level={1}>
             <Form.Item
-              label="Correos de notificación"
+              label="Correos de notificacion"
               name="stockAlertEmail"
               tooltip="Uno o varios correos separados por coma. Ej: a@dominio.com, b@dominio.com"
             >
@@ -234,7 +212,6 @@ const StockAlertSettingsSection = () => {
               />
             </Form.Item>
           </ConfigItem>
-          {/* Campo de remitente removido: el remitente se gestiona únicamente en backend */}
         </>
       )}
     </Form>

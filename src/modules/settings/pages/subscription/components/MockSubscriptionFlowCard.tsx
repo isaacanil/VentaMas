@@ -1,6 +1,12 @@
 import { Alert, Button, InputNumber, Select, Switch } from 'antd';
 import { useReducer } from 'react';
-import styled from 'styled-components';
+import {
+  Stack,
+  Field,
+  FieldLabel,
+  PaymentRow,
+  SwitchLabel,
+} from './MockSubscriptionFlowCard.styles';
 
 export type ScenarioStatus =
   | 'none'
@@ -75,7 +81,10 @@ const STATUS_OPTIONS: Array<{ value: ScenarioStatus; label: string }> = [
 const createInitialState = ({
   defaultAmount,
   defaultPlanCode,
-}: Pick<MockSubscriptionFlowCardProps, 'defaultAmount' | 'defaultPlanCode'>): MockSubscriptionFlowState => ({
+}: Pick<
+  MockSubscriptionFlowCardProps,
+  'defaultAmount' | 'defaultPlanCode'
+>): MockSubscriptionFlowState => ({
   nextStatus: 'active',
   planCode: defaultPlanCode || '',
   paymentAmount: defaultAmount || 0,
@@ -87,11 +96,16 @@ const reducer = (
   action: MockSubscriptionFlowAction,
 ): MockSubscriptionFlowState => {
   switch (action.type) {
-    case 'setNextStatus': return { ...state, nextStatus: action.value };
-    case 'setPlanCode': return { ...state, planCode: action.value };
-    case 'setPaymentAmount': return { ...state, paymentAmount: action.value };
-    case 'setRecordPayment': return { ...state, recordPayment: action.value };
-    default: return state;
+    case 'setNextStatus':
+      return { ...state, nextStatus: action.value };
+    case 'setPlanCode':
+      return { ...state, planCode: action.value };
+    case 'setPaymentAmount':
+      return { ...state, paymentAmount: action.value };
+    case 'setRecordPayment':
+      return { ...state, recordPayment: action.value };
+    default:
+      return state;
   }
 };
 
@@ -115,13 +129,15 @@ export const MockSubscriptionFlowCard = ({
   const safePlanCode = (() => {
     if (!planOptions.length) return '';
     if (planOptions.some((o) => o.value === planCode)) return planCode;
-    if (defaultPlanCode && planOptions.some((o) => o.value === defaultPlanCode)) return defaultPlanCode;
+    if (defaultPlanCode && planOptions.some((o) => o.value === defaultPlanCode))
+      return defaultPlanCode;
     return planOptions[0]?.value || '';
   })();
 
   if (!enabled) return null;
 
-  const disabled = busy || !businessId || !canManagePayments || !planOptions.length;
+  const disabled =
+    busy || !businessId || !canManagePayments || !planOptions.length;
 
   return (
     <Stack>
@@ -148,7 +164,9 @@ export const MockSubscriptionFlowCard = ({
         <Select
           value={nextStatus}
           options={STATUS_OPTIONS}
-          onChange={(v) => dispatchState({ type: 'setNextStatus', value: v as ScenarioStatus })}
+          onChange={(v) =>
+            dispatchState({ type: 'setNextStatus', value: v as ScenarioStatus })
+          }
           style={{ width: '100%' }}
         />
       </Field>
@@ -168,7 +186,9 @@ export const MockSubscriptionFlowCard = ({
           <Switch
             size="small"
             checked={recordPayment}
-            onChange={(v) => dispatchState({ type: 'setRecordPayment', value: v })}
+            onChange={(v) =>
+              dispatchState({ type: 'setRecordPayment', value: v })
+            }
           />
           <span>Registrar pago</span>
         </SwitchLabel>
@@ -176,7 +196,9 @@ export const MockSubscriptionFlowCard = ({
           <InputNumber
             min={0}
             value={paymentAmount}
-            onChange={(v) => dispatchState({ type: 'setPaymentAmount', value: Number(v || 0) })}
+            onChange={(v) =>
+              dispatchState({ type: 'setPaymentAmount', value: Number(v || 0) })
+            }
             style={{ width: 140 }}
             prefix="RD$"
           />
@@ -213,37 +235,3 @@ export const MockSubscriptionFlowCard = ({
 };
 
 export default MockSubscriptionFlowCard;
-
-const Stack = styled.div`
-  display: grid;
-  gap: 16px;
-`;
-
-const Field = styled.div`
-  display: grid;
-  gap: 6px;
-`;
-
-const FieldLabel = styled.span`
-  color: #64748b;
-  font-size: 0.83rem;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-`;
-
-const PaymentRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-`;
-
-const SwitchLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  color: #334155;
-  font-size: 0.9rem;
-`;

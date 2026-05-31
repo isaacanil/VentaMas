@@ -3,7 +3,7 @@ import InvoiceTemplates from '@/modules/invoice/components/Invoice/components/In
 import { SectionHeader, SectionWrapper } from '../styles';
 
 export const VisualStyleSection = () => (
-  <SectionWrapper style={{ marginBottom: '24px' }}>
+  <SectionWrapper $withBottomSpace>
     <SectionHeader>
       <h3>Estilo Visual</h3>
       <p>Selecciona el formato que mejor se adapte a tu impresora.</p>

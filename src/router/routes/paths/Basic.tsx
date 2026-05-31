@@ -4,12 +4,14 @@ import ROUTES_NAME from '@/router/routes/routesName';
 import { redirectAuthenticatedToDefaultLoader } from '@/router/routes/loaders/accessLoaders';
 import { DeveloperHub } from '@/modules/home/pages/DeveloperHub/DeveloperHub';
 import { Home } from '@/modules/home/pages/Home/Home';
-import type { AppRoute } from '@/router/routes/routes';
+import type { AppRoute } from '@/router/types/routeTypes';
 
 const CheckoutRedirect = lazy(() =>
-  import('@/modules/checkout/pages/CheckoutRedirect/CheckoutRedirect').then((module) => ({
-    default: module.default,
-  })),
+  import('@/modules/checkout/pages/CheckoutRedirect/CheckoutRedirect').then(
+    (module) => ({
+      default: module.default,
+    }),
+  ),
 );
 
 const Welcome = lazy(() =>

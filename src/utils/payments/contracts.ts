@@ -47,13 +47,7 @@ export const CANONICAL_PAYMENT_METHOD_CODES = [
 ] as const satisfies readonly CanonicalPaymentMethodCode[];
 
 export const CANONICAL_PAYMENT_METHOD_CODE_SET =
-  new Set<CanonicalPaymentMethodCode>([
-    'cash',
-    'card',
-    'transfer',
-    'creditNote',
-    'supplierCreditNote',
-  ]);
+  new Set<CanonicalPaymentMethodCode>(CANONICAL_PAYMENT_METHOD_CODES);
 
 export const normalizePaymentMethodCode = (
   value: unknown,

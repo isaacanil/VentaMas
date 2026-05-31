@@ -1,19 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { App as AntApp } from 'antd';
+import { nanoid } from 'nanoid';
 
 import { ACTIONS } from '../aiActions';
 import { fbAiBusinessSeedingAgentAnalyze } from '../api/fbAiBusinessSeedingAgentAnalyze';
 import { fbAiBusinessSeedingAgentExecute } from '../api/fbAiBusinessSeedingAgentExecute';
+import { fbAiBusinessSeedingAgentStatus } from '../api/fbAiBusinessSeedingAgentStatus';
+import { buildAgentConversationContext } from '../utils/conversationContext';
+import { formatRuntime, formatStatusDetails } from '../utils/runtimeMetadata';
 
 import type {
   ActionDefinition,
-  AgentConversationContext,
   AgentRecoverableError,
   ConversationTurn,
   LogEntry,
   LogType,
 } from '../types';
+import type { AiBusinessSeedingEnvironmentId } from '../utils/environment';
 
 type AgentPhase =
   | 'idle'
@@ -22,6 +26,12 @@ type AgentPhase =
   | 'executing'
   | 'completed'
   | 'error';
+
+interface ExecuteOptions {
+  targetEnvironmentId?: AiBusinessSeedingEnvironmentId;
+  targetLabel?: string;
+  sessionToken?: string | null;
+}
 
 export function useAiChat() {
   const { message: messageApi } = AntApp.useApp();
@@ -47,12 +57,15 @@ export function useAiChat() {
 
   const contentEndRef = useRef<HTMLDivElement | null>(null);
   const turnSequenceRef = useRef(0);
+  const executeRequestIdRef = useRef<string | null>(null);
+
+  const buildLogEntry = (msg: string, type: LogType = 'info'): LogEntry => ({
+    msg: `[${new Date().toLocaleTimeString()}] ${msg}`,
+    type,
+  });
 
   const addLog = (msg: string, type: LogType = 'info') => {
-    setLogs((prev) => [
-      ...prev,
-      { msg: `[${new Date().toLocaleTimeString()}] ${msg}`, type },
-    ]);
+    setLogs((prev) => [...prev, buildLogEntry(msg, type)]);
   };
 
   const getErrorMessage = (error: unknown): string => {
@@ -85,7 +98,9 @@ export function useAiChat() {
             ? diagnosticData.location
             : '';
         const runtime =
-          model || location ? ` (${[model, location].filter(Boolean).join(' @ ')})` : '';
+          model || location
+            ? ` (${[model, location].filter(Boolean).join(' @ ')})`
+            : '';
 
         return `${category}${runtime}: ${message || 'Error diagnosticado por la function'}`;
       }
@@ -101,9 +116,7 @@ export function useAiChat() {
 
     const candidate = error as { code?: unknown; message?: unknown };
     const code =
-      typeof candidate.code === 'string'
-        ? candidate.code.toLowerCase()
-        : '';
+      typeof candidate.code === 'string' ? candidate.code.toLowerCase() : '';
     const messageText =
       typeof candidate.message === 'string'
         ? candidate.message.toLowerCase()
@@ -115,7 +128,7 @@ export function useAiChat() {
     );
   };
 
-  const cloneJsonLike = <T,>(value: T): T => {
+  const cloneJsonLike = <T>(value: T): T => {
     try {
       return JSON.parse(JSON.stringify(value)) as T;
     } catch {
@@ -124,9 +137,10 @@ export function useAiChat() {
   };
 
   const parseRecoverableField = (field?: string) => {
-    const match = typeof field === 'string'
-      ? field.match(/^users\[(\d+)\]\.(name|email)$/)
-      : null;
+    const match =
+      typeof field === 'string'
+        ? field.match(/^users\[(\d+)\]\.(name|email)$/)
+        : null;
     if (!match) return null;
 
     const index = Number(match[1]);
@@ -136,80 +150,13 @@ export function useAiChat() {
     return { index, key };
   };
 
-  const sanitizeContextValue = (value: unknown, depth = 0): unknown => {
-    if (depth > 5) return '[truncated]';
-    if (
-      value == null ||
-      typeof value === 'string' ||
-      typeof value === 'number' ||
-      typeof value === 'boolean'
-    ) {
-      return value;
-    }
-    if (Array.isArray(value)) {
-      return value.slice(0, 20).map((item) => sanitizeContextValue(item, depth + 1));
-    }
-    if (typeof value === 'object') {
-      const obj = value as Record<string, unknown>;
-      const next: Record<string, unknown> = {};
-      for (const [key, raw] of Object.entries(obj)) {
-        const normalizedKey = key.toLowerCase();
-        if (normalizedKey.includes('password') || normalizedKey.includes('sessiontoken')) {
-          next[key] = '[redacted]';
-          continue;
-        }
-        next[key] = sanitizeContextValue(raw, depth + 1);
-      }
-      return next;
-    }
-    return String(value);
-  };
-
-  const buildConversationContext = (): AgentConversationContext | undefined => {
-    const currentDraft =
-      activeAction && actionData !== null
-        ? {
-            actionId: activeAction,
-            actionData: sanitizeContextValue(actionData),
-          }
-        : null;
-
-    const summarizedTurns = historyTurns
-      .slice(-3)
-      .map((turn) => ({
-        userMessage: turn.userMessage,
-        actionId: turn.actionId,
-        executionSuccess: turn.executionSuccess,
-      }));
-
-    const currentTurnSummary =
-      lastUserMessage || activeAction
-        ? {
-            userMessage: lastUserMessage,
-            actionId: activeAction,
-            executionSuccess,
-          }
-        : null;
-
-    const recentTurns = currentTurnSummary
-      ? [...summarizedTurns, currentTurnSummary].slice(-4)
-      : summarizedTurns;
-
-    if (!currentDraft && !lastRecoverableError && recentTurns.length === 0) {
-      return undefined;
-    }
-
-    return {
-      currentDraft,
-      lastRecoverableError: lastRecoverableError
-        ? (sanitizeContextValue(lastRecoverableError) as AgentRecoverableError)
-        : null,
-      recentTurns,
-    };
-  };
-
   useEffect(() => {
-    if (activeAction || executionSuccess || logs.length > 0 || historyTurns.length > 0) {
+    if (
+      activeAction ||
+      executionSuccess ||
+      logs.length > 0 ||
+      historyTurns.length > 0
+    ) {
       contentEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [activeAction, executionSuccess, logs.length, historyTurns.length]);
@@ -235,6 +182,22 @@ export function useAiChat() {
     setHistoryTurns((prev) => [...prev, nextTurn]);
   };
 
+  const appendSystemLogTurn = (entries: LogEntry[]) => {
+    turnSequenceRef.current += 1;
+    const nextTurn: ConversationTurn = {
+      id: `system-${turnSequenceRef.current}`,
+      userMessage: '',
+      logs: entries,
+      actionId: null,
+      actionData: null,
+      executionSuccess: false,
+      isTestMode,
+      recoverableError: null,
+    };
+
+    setHistoryTurns((prev) => [...prev, nextTurn]);
+  };
+
   const handleToggleAction = (actionId: string) => {
     setEnabledActions((prev) =>
       prev.includes(actionId)
@@ -244,6 +207,7 @@ export function useAiChat() {
   };
 
   const handleClear = () => {
+    executeRequestIdRef.current = null;
     setPrompt('');
     setActiveAction(null);
     setActionData(null);
@@ -253,6 +217,44 @@ export function useAiChat() {
     setHistoryTurns([]);
     setAgentPhase('idle');
     setLastRecoverableError(null);
+  };
+
+  const handleCheckStatus = async () => {
+    if (loading) return;
+
+    setLoading(true);
+    const diagnosticLogs = [
+      buildLogEntry('Verificando diagnostico del asistente...', 'info'),
+    ];
+
+    try {
+      const statusResponse = await fbAiBusinessSeedingAgentStatus();
+      const metadata = statusResponse.metadata;
+      if (!statusResponse.ok || !metadata) {
+        throw new Error('Diagnostico del asistente no disponible.');
+      }
+
+      const details = formatStatusDetails(metadata);
+
+      diagnosticLogs.push(
+        buildLogEntry(
+          `Diagnostico del asistente OK${details ? ` (${details})` : ''}.`,
+          'success',
+        ),
+      );
+    } catch (error: unknown) {
+      console.error(error);
+      diagnosticLogs.push(
+        buildLogEntry(
+          `Diagnostico fallido: ${getErrorMessage(error)}`,
+          'error',
+        ),
+      );
+      messageApi.error('No se pudo verificar el asistente');
+    } finally {
+      appendSystemLogTurn(diagnosticLogs);
+      setLoading(false);
+    }
   };
 
   const handleApplyRecoverableSuggestion = (suggestion: string) => {
@@ -269,7 +271,9 @@ export function useAiChat() {
 
     const parsedField = parseRecoverableField(recoverable.field);
     if (!parsedField) {
-      messageApi.info('Esta corrección requiere IA. Usa "Corregir con IA y reintentar".');
+      messageApi.info(
+        'Esta corrección requiere IA. Usa "Corregir con IA y reintentar".',
+      );
       return false;
     }
 
@@ -285,7 +289,12 @@ export function useAiChat() {
     const nextData = cloned as Record<string, unknown>;
     const users = Array.isArray(nextData.users) ? nextData.users : null;
     const targetUser = users?.[parsedField.index];
-    if (!users || !targetUser || typeof targetUser !== 'object' || Array.isArray(targetUser)) {
+    if (
+      !users ||
+      !targetUser ||
+      typeof targetUser !== 'object' ||
+      Array.isArray(targetUser)
+    ) {
       messageApi.error('No se encontró el usuario a corregir en el borrador.');
       return false;
     }
@@ -297,6 +306,7 @@ export function useAiChat() {
 
     nextData.users = users;
 
+    executeRequestIdRef.current = activeAction === 'chat' ? null : nanoid(21);
     setActionData(nextData);
     setExecutionSuccess(false);
     setAgentPhase('ready');
@@ -319,12 +329,20 @@ export function useAiChat() {
       return;
     }
 
-    const conversationContext = buildConversationContext();
+    const conversationContext = buildAgentConversationContext({
+      activeAction,
+      actionData,
+      executionSuccess,
+      historyTurns,
+      lastRecoverableError,
+      lastUserMessage,
+    });
     archiveCurrentTurn();
     setLoading(true);
     setAgentPhase('analyzing');
     setLastRecoverableError(null);
     setExecutionSuccess(false);
+    executeRequestIdRef.current = null;
     setActiveAction(null);
     setActionData(null);
     setLogs([]);
@@ -346,6 +364,24 @@ export function useAiChat() {
         return;
       }
 
+      if (analyzeResponse.metadata?.structuredOutput) {
+        const details = formatRuntime(analyzeResponse.metadata);
+        const outputMode = analyzeResponse.metadata.constrainedOutput
+          ? 'salida estructurada schema-constrained'
+          : 'salida estructurada activa';
+        addLog(
+          `Asistente 2.0: ${outputMode}${details ? ` (${details})` : ''}.`,
+          'info',
+        );
+      }
+
+      if (analyzeResponse.metadata?.requestMetrics?.contextTruncated) {
+        addLog(
+          'El contexto de conversacion fue truncado antes de enviarse al modelo.',
+          'warning',
+        );
+      }
+
       try {
         const actionId =
           typeof analyzeResponse.action === 'string'
@@ -354,6 +390,7 @@ export function useAiChat() {
         const data = analyzeResponse.data ?? null;
 
         if (actionId && actions[actionId]) {
+          executeRequestIdRef.current = actionId === 'chat' ? null : nanoid(21);
           setActiveAction(actionId);
           setActionData(data);
           setPrompt('');
@@ -364,10 +401,7 @@ export function useAiChat() {
           addLog(`Acción detectada: ${actions[actionId].name}`, 'success');
         } else {
           setAgentPhase('error');
-          addLog(
-            `Acción desconocida: ${actionId ?? 'sin acción'}`,
-            'warning',
-          );
+          addLog(`Acción desconocida: ${actionId ?? 'sin acción'}`, 'warning');
         }
       } catch (e) {
         console.error(e);
@@ -382,7 +416,9 @@ export function useAiChat() {
           'La IA tardó demasiado en responder. Intenta de nuevo con una solicitud más corta o vuelve a intentar en unos segundos.',
           'warning',
         );
-        messageApi.warning('La IA tardó demasiado en responder. Intenta nuevamente.');
+        messageApi.warning(
+          'La IA tardó demasiado en responder. Intenta nuevamente.',
+        );
         return;
       }
       const msg = getErrorMessage(error).replace(/^Error:\s*/i, '');
@@ -393,7 +429,7 @@ export function useAiChat() {
     }
   };
 
-  const handleExecute = async () => {
+  const handleExecute = async (options: ExecuteOptions = {}) => {
     if (!activeAction || !actionData) return;
 
     const action = actions[activeAction];
@@ -405,6 +441,17 @@ export function useAiChat() {
     setLoading(true);
     setAgentPhase('executing');
     setLastRecoverableError(null);
+    if (activeAction !== 'chat' && !executeRequestIdRef.current) {
+      executeRequestIdRef.current = nanoid(21);
+    }
+    if (options.targetLabel && activeAction !== 'chat') {
+      addLog(
+        `Destino de creacion: ${options.targetLabel}${
+          isTestMode ? ' (modo prueba)' : ''
+        }`,
+        options.targetEnvironmentId === 'production' ? 'warning' : 'info',
+      );
+    }
     addLog(`Ejecutando: ${action.name}`, 'info');
 
     try {
@@ -412,6 +459,9 @@ export function useAiChat() {
         actionId: activeAction,
         actionData,
         isTestMode,
+        executeRequestId: executeRequestIdRef.current,
+        targetEnvironmentId: options.targetEnvironmentId,
+        sessionToken: options.sessionToken,
       });
 
       if (Array.isArray(executionResponse.logs)) {
@@ -424,7 +474,9 @@ export function useAiChat() {
       if (executionResponse?.ok === false && executionResponse.error) {
         const recoverable = executionResponse.error;
         setActionData(
-          executionResponse.data !== undefined ? executionResponse.data : actionData,
+          executionResponse.data !== undefined
+            ? executionResponse.data
+            : actionData,
         );
         setLastRecoverableError(recoverable);
         setAgentPhase('error');
@@ -433,7 +485,9 @@ export function useAiChat() {
         }
 
         messageApi.warning(
-          recoverable.clarificationQuestion || recoverable.message || 'Necesito una aclaración para continuar.',
+          recoverable.clarificationQuestion ||
+            recoverable.message ||
+            'Necesito una aclaración para continuar.',
         );
         return;
       }
@@ -443,7 +497,9 @@ export function useAiChat() {
       }
 
       setActionData(
-        executionResponse.data !== undefined ? executionResponse.data : actionData,
+        executionResponse.data !== undefined
+          ? executionResponse.data
+          : actionData,
       );
       setExecutionSuccess(true);
       setAgentPhase('completed');
@@ -463,7 +519,10 @@ export function useAiChat() {
         );
         return;
       }
-      addLog(`Error: ${getErrorMessage(error).replace(/^Error:\s*/i, '')}`, 'error');
+      addLog(
+        `Error: ${getErrorMessage(error).replace(/^Error:\s*/i, '')}`,
+        'error',
+      );
       messageApi.error('Falló la ejecución');
     } finally {
       setLoading(false);
@@ -489,6 +548,7 @@ export function useAiChat() {
     showCanvas,
     contentEndRef,
     handleToggleAction,
+    handleCheckStatus,
     handleClear,
     handleApplyRecoverableSuggestion,
     handleAnalyze,

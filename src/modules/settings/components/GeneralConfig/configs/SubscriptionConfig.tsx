@@ -2,13 +2,14 @@ import { Alert, Button } from 'antd';
 import { useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
 
 import UpgradeModal from '@/components/paywall/UpgradeModal/UpgradeModal';
 import { selectUser } from '@/features/auth/userSlice';
 import { withBusinessManagerQuery } from '@/modules/auth/utils/businessManagerRoute';
 import { resolveDefaultHomeRoute } from '@/modules/auth/utils/defaultHomeRoute';
 import ROUTES_NAME from '@/router/routes/routesName';
+
+import { Actions, Container } from './SubscriptionConfig.styles';
 
 const SubscriptionConfig = () => {
   const navigate = useNavigate();
@@ -61,15 +62,3 @@ const SubscriptionConfig = () => {
 };
 
 export default SubscriptionConfig;
-
-const Container = styled.div`
-  display: grid;
-  gap: 12px;
-  max-width: 1000px;
-`;
-
-const Actions = styled.div`
-  display: inline-flex;
-  gap: 8px;
-  flex-wrap: wrap;
-`;

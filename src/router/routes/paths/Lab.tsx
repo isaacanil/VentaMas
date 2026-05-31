@@ -1,17 +1,16 @@
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
-import type { AppRoute } from '@/router/routes/routes';
+import type { AppRoute } from '@/router/types/routeTypes';
 
 const Lab = lazy(() =>
   import('@/Lab').then((module) => ({ default: module.Lab })),
 );
 const HeroUiPlayground = lazy(
-  () => import('@/modules/dev/pages/DevTools/HeroUiPlayground/HeroUiPlayground'),
+  () =>
+    import('@/modules/dev/pages/DevTools/HeroUiPlayground/HeroUiPlayground'),
 );
 const CustomHeroUiPlayground = lazy(
   () =>
-    import(
-      '@/modules/dev/pages/DevTools/CustomHeroUiPlayground/CustomHeroUiPlayground'
-    ),
+    import('@/modules/dev/pages/DevTools/CustomHeroUiPlayground/CustomHeroUiPlayground'),
 );
 
 const Routes: AppRoute[] = [

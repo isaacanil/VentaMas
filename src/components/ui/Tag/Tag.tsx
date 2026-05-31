@@ -1,13 +1,7 @@
-import { Tag as AntdTag } from 'antd';
+import type { TagProps } from 'antd';
 
-export const Tag = ({ color = '#d9d9d9', children }) => {
-  return (
-    <AntdTag
-      style={{ fontSize: '16px', padding: '5px' }}
-      color={color}
-      title="Hola"
-    >
-      {children}
-    </AntdTag>
-  );
+import { StyledTag } from './Tag.styles';
+
+export const Tag = ({ color = '#d9d9d9', ...props }: TagProps) => {
+  return <StyledTag color={color} {...props} />;
 };

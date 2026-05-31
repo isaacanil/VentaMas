@@ -2,13 +2,19 @@ import { logger } from 'firebase-functions';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 
 import {
+  buildAiAgentCallableOptions,
+  getAiAgentAppCheckMode,
+} from '../config/aiCallableOptions.js';
+import {
   businessCreatorModelName,
+  businessCreatorThinkingLevel,
+  businessCreatorThoughtSummariesEnabled,
   businessCreatorVertexLocation,
 } from '../config/genkit.js';
 import { aiBusinessSeedingAnalyzeFlow } from '../flows/aiBusinessSeedingAnalyze.flow.js';
+import { AI_BUSINESS_SEEDING_CONSTRAINED_OUTPUT } from '../utils/aiBusinessSeedingStructuredOutput.js';
 import { assertAiBusinessSeedingDeveloperAccess } from './aiBusinessSeedingAccess.js';
 
-const AI_AGENT_REGION = 'us-central1';
 const DEBUG_ERROR_PROJECTS = new Set(['ventamax-staging']);
 
 const readObject = (value) =>
@@ -46,7 +52,10 @@ const getErrorStatus = (error) => {
 
 const classifyAiError = (message) => {
   const lower = message.toLowerCase();
-  if (lower.includes('aiplatform.googleapis.com') && lower.includes('disabled')) {
+  if (
+    lower.includes('aiplatform.googleapis.com') &&
+    lower.includes('disabled')
+  ) {
     return 'VERTEX_AI_API_DISABLED';
   }
   if (lower.includes('[403 forbidden]') || lower.includes('permission')) {
@@ -66,37 +75,64 @@ const buildAiDiagnostic = (error) => {
     status: getErrorStatus(error),
     model: businessCreatorModelName,
     location: businessCreatorVertexLocation,
+    thinkingLevel: businessCreatorThinkingLevel,
+    thoughtSummariesEnabled: businessCreatorThoughtSummariesEnabled,
+    appCheckMode: getAiAgentAppCheckMode(),
   };
 };
 
+const buildAnalyzeMetadata = (flowResult, requestSignals) => ({
+  model: businessCreatorModelName,
+  location: businessCreatorVertexLocation,
+  thinkingLevel: businessCreatorThinkingLevel,
+  thoughtSummariesEnabled: businessCreatorThoughtSummariesEnabled,
+  schemaVersion: flowResult?.schemaVersion,
+  structuredOutput: flowResult?.structuredOutput === true,
+  constrainedOutput:
+    flowResult?.constrainedOutput === AI_BUSINESS_SEEDING_CONSTRAINED_OUTPUT,
+  appCheckMode: getAiAgentAppCheckMode(),
+  appCheckTokenPresent: requestSignals.appCheckTokenPresent,
+  authPresent: requestSignals.authPresent,
+  durationMs: requestSignals.durationMs,
+  modelConfigSource: 'functions-env',
+  usage: flowResult?.usage,
+  requestMetrics: flowResult?.requestMetrics,
+});
+
 const readEnabledActions = (value) =>
   Array.isArray(value)
-    ? value.filter((item) => typeof item === 'string' && item.trim()).slice(0, 10)
+    ? value
+        .filter((item) => typeof item === 'string' && item.trim())
+        .slice(0, 10)
     : [];
 
 const readConversationContext = (value) => {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+  if (!value || typeof value !== 'object' || Array.isArray(value))
+    return undefined;
   return value;
 };
 
 export const aiBusinessSeedingAgentAnalyze = onCall(
-  {
-    region: AI_AGENT_REGION,
+  buildAiAgentCallableOptions({
     timeoutSeconds: 180,
     memory: '512MiB',
-    enforceAppCheck: false,
-  },
+  }),
   async (request) => {
     await assertAiBusinessSeedingDeveloperAccess(request);
 
     const payload = readObject(request.data);
-    const prompt = typeof payload.prompt === 'string' ? payload.prompt.trim() : '';
+    const prompt =
+      typeof payload.prompt === 'string' ? payload.prompt.trim() : '';
     const enabledActions = readEnabledActions(payload.enabledActions);
-    const conversationContext = readConversationContext(payload.conversationContext);
+    const conversationContext = readConversationContext(
+      payload.conversationContext,
+    );
 
     if (!prompt) {
       throw new HttpsError('invalid-argument', 'prompt es requerido.');
     }
+
+    const startedAt = Date.now();
 
     try {
       const result = await aiBusinessSeedingAnalyzeFlow.run(
@@ -108,27 +144,46 @@ export const aiBusinessSeedingAgentAnalyze = onCall(
           },
         },
       );
-      const rawJson = result?.result?.rawJson || '';
-      let parsed;
-      try {
-        parsed = JSON.parse(rawJson);
-      } catch (parseError) {
-        logger.error('[aiBusinessSeedingAgentAnalyze] invalid JSON from model', {
-          rawJson,
-          parseError,
-        });
-        throw new HttpsError('internal', 'La IA devolvió un formato inválido.');
-      }
+      const flowResult = result?.result || {};
+      const durationMs = Date.now() - startedAt;
+
+      logger.info('[aiBusinessSeedingAgentAnalyze] flow completed', {
+        action: flowResult?.action || null,
+        durationMs,
+        model: businessCreatorModelName,
+        location: businessCreatorVertexLocation,
+        schemaVersion: flowResult?.schemaVersion,
+        structuredOutput: flowResult?.structuredOutput === true,
+        constrainedOutput:
+          flowResult?.constrainedOutput ===
+          AI_BUSINESS_SEEDING_CONSTRAINED_OUTPUT,
+        usage: flowResult?.usage || null,
+        requestMetrics: flowResult?.requestMetrics || null,
+        appCheckMode: getAiAgentAppCheckMode(),
+        appCheckTokenPresent: Boolean(request.app),
+        authPresent: Boolean(request.auth),
+      });
 
       return {
         ok: true,
-        action: typeof parsed?.action === 'string' ? parsed.action : null,
-        data: parsed?.data ?? null,
-        rawJson,
+        action:
+          typeof flowResult?.action === 'string' ? flowResult.action : null,
+        data: flowResult?.data ?? null,
+        rawJson: flowResult?.rawJson || '',
+        metadata: buildAnalyzeMetadata(flowResult, {
+          appCheckTokenPresent: Boolean(request.app),
+          authPresent: Boolean(request.auth),
+          durationMs,
+        }),
       };
     } catch (error) {
       if (error instanceof HttpsError) throw error;
-      const diagnostic = buildAiDiagnostic(error);
+      const diagnostic = {
+        ...buildAiDiagnostic(error),
+        appCheckTokenPresent: Boolean(request.app),
+        authPresent: Boolean(request.auth),
+        durationMs: Date.now() - startedAt,
+      };
       logger.error('[aiBusinessSeedingAgentAnalyze] flow failed', {
         error,
         ...diagnostic,

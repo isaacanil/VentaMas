@@ -15,7 +15,6 @@ import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/Advanced
 import type { TableRow } from '@/components/ui/AdvancedTable/types/ColumnTypes';
 
 const { TabPane } = Tabs;
-const COLUMN_ORDER_STORAGE_KEY = 'columnOrder:v1';
 
 type ColumnMenuProps = {
   isOpen?: boolean;
@@ -44,10 +43,6 @@ export const ColumnMenu = ({
       return () => clearTimeout(timerId);
     }
   }, [highlightedItems]);
-
-  useEffect(() => {
-    localStorage.setItem(COLUMN_ORDER_STORAGE_KEY, JSON.stringify(columnOrder));
-  }, [columnOrder]);
 
   const removeColumn = (accessor: string) => {
     const updatedColumns = columnOrder.map((col) =>

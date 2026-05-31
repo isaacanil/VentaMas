@@ -29,7 +29,7 @@ export const parseTimestamp = (value: unknown): DateTime | null => {
   return null;
 };
 
-export const formatDateTime = (value: unknown, fallback = 'ƒ?"') => {
+export const formatDateTime = (value: unknown, fallback = '\u2014') => {
   const parsed = parseTimestamp(value);
   return parsed ? parsed.toFormat('dd/MM/yyyy HH:mm:ss') : fallback;
 };

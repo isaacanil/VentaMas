@@ -1,29 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { createGlobalStyle } from 'styled-components';
 
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 import { Nav } from '@/components/ui/Nav/Nav';
+import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import ROUTES_NAME from '@/router/routes/routesName';
+
 import {
   GeneralConfigSearch,
   GeneralConfigSearchTrigger,
 } from './components/Search/GeneralConfigSearch';
-import ROUTES_NAME from '@/router/routes/routesName';
+import { SearchHighlightStyles } from './GeneralConfig.styles';
 import { useGeneralConfigController } from './hooks/useGeneralConfigController';
-
-const SearchHighlightStyles = createGlobalStyle`
-  [data-config-section] {
-    scroll-margin-top: 120px;
-  }
-
-  .config-search-highlight {
-    outline: 2px solid var(--ds-color-border-focus);
-    outline-offset: 0;
-    border-radius: 12px;
-    box-shadow: var(--ds-shadow-focus);
-    transition: box-shadow 0.25s ease;
-  }
-`;
 
 export default function GeneralConfig() {
   const {
@@ -44,10 +31,10 @@ export default function GeneralConfig() {
   const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        setSearchOpen((prev) => !prev);
+    const handleKey = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+        event.preventDefault();
+        setSearchOpen((current) => !current);
       }
     };
     document.addEventListener('keydown', handleKey);
@@ -57,7 +44,7 @@ export default function GeneralConfig() {
   const headerContent = (
     <MenuApp
       onBackClick={handleBackClick}
-      sectionName="Configuración General"
+      sectionName="Configuracion General"
     />
   );
 

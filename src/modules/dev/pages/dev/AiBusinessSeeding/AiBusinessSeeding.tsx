@@ -5,26 +5,36 @@ import {
   faCircleNotch,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, Modal } from 'antd';
+import { App as AntApp, Input, Modal, Typography } from 'antd';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
+import { VmButton, VmSurface } from '@/components/heroui';
+
 import { useAiChat } from './hooks/useAiChat';
+import AssistantSettingsModal from './components/AssistantSettingsModal';
 import ChatInput from './components/ChatInput';
 import EmptyState from './components/EmptyState';
 import {
-  AI_BUSINESS_SEEDING_ENVIRONMENTS,
-  getAiBusinessSeedingEnvironmentUrl,
+  getAiBusinessSeedingExecutionSessionToken,
+  getAiBusinessSeedingTargetSession,
+  hasActiveAiBusinessSeedingTargetAuthSession,
+  loginAiBusinessSeedingTarget,
+} from './api/aiBusinessSeedingTargetSession';
+import {
+  getAiBusinessSeedingEnvironmentById,
   getCurrentAiBusinessSeedingEnvironment,
 } from './utils/environment';
+import {
+  getStoredAiBusinessSeedingTargetEnvironmentId,
+  storeAiBusinessSeedingTargetEnvironmentId,
+} from './utils/targetEnvironmentPreference';
 
-import type {
-  ActionDefinition,
-  ConversationTurn,
-  LogEntry,
-} from './types';
+import type { ActionDefinition, ConversationTurn, LogEntry } from './types';
 import type { AiBusinessSeedingEnvironmentId } from './utils/environment';
+
+const { Text } = Typography;
 
 const AppContainer = styled.div`
   height: 100vh;
@@ -65,14 +75,32 @@ const EnvironmentBadge = styled.div<{ $tone: 'warning' | 'danger' }>`
   border: 1px solid
     ${({ $tone }) => ($tone === 'danger' ? '#ffa39e' : '#ffe58f')};
   border-radius: 999px;
-  background: ${({ $tone }) =>
-    $tone === 'danger' ? '#fff1f0' : '#fffbe6'};
+  background: ${({ $tone }) => ($tone === 'danger' ? '#fff1f0' : '#fffbe6')};
   color: ${({ $tone }) => ($tone === 'danger' ? '#a8071a' : '#ad6800')};
   font-size: 12px;
   font-weight: 700;
   line-height: 1;
   padding: 7px 11px;
   text-align: center;
+`;
+
+const HeaderBadges = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+`;
+
+const BadgeText = styled.span`
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  opacity: 0.75;
+  margin-bottom: 3px;
+`;
+
+const HeaderHomeButton = styled(VmButton)`
+  min-width: 36px;
+  color: #4b5563;
 `;
 
 const Workspace = styled.div`
@@ -130,7 +158,7 @@ const MessageRow = styled.div<{ $align?: 'left' | 'right' }>`
   width: 100%;
 `;
 
-const MessageBubble = styled.div<{
+const MessageBubble = styled(VmSurface)<{
   $variant?: 'user' | 'assistant' | 'system';
 }>`
   max-width: min(100%, 680px);
@@ -139,9 +167,8 @@ const MessageBubble = styled.div<{
   border-radius: 18px;
   border: 1px solid
     ${({ $variant }) =>
-    $variant === 'user' ? 'rgb(42 120 255 / 30%)' : '#e8ecf3'};
-  background:
-    ${({ $variant }) =>
+      $variant === 'user' ? 'rgb(42 120 255 / 30%)' : '#e8ecf3'};
+  background: ${({ $variant }) =>
     $variant === 'user'
       ? 'linear-gradient(135deg, #2a78ff 0%, #1d5fda 100%)'
       : '#fff'};
@@ -169,20 +196,50 @@ const MessageText = styled.pre`
 const AssistantBody = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.9rem;
 `;
 
 const SuggestionList = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.6rem;
 `;
 
-const SuggestionButton = styled(Button)`
+const SuggestionButton = styled(VmButton)`
   && {
+    min-height: 36px;
     border-radius: 999px;
     height: auto;
-    padding: 0.35rem 0.7rem;
+    max-width: min(100%, 320px);
+    padding: 0.45rem 0.8rem;
+    background: #fff;
+    border: 1px solid #d9e2f2;
+    color: #253044;
+    font-weight: 600;
+    line-height: 1.2;
+    justify-content: flex-start;
+    white-space: normal;
+    text-align: left;
+    box-shadow: 0 4px 12px rgb(15 23 42 / 5%);
+
+    &:hover,
+    &:focus {
+      border-color: #1f6feb;
+      color: #0f5fd3;
+      background: #f7fbff;
+    }
+  }
+`;
+
+const RetryWithAiButton = styled(VmButton)`
+  && {
+    width: fit-content;
+    min-height: 38px;
+    height: auto;
+    border-radius: 999px;
+    padding: 0.5rem 0.85rem;
+    font-weight: 700;
+    box-shadow: 0 8px 18px rgb(31 111 235 / 18%);
   }
 `;
 
@@ -282,12 +339,22 @@ const CollapsibleFlowLogs: React.FC<{
                 $type={entry.type}
               >
                 <LogDot $type={entry.type} />
-                <LogText style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+                <LogText
+                  style={{
+                    display: 'flex',
+                    width: '100%',
+                    alignItems: 'center',
+                  }}
+                >
                   <span style={{ flex: 1 }}>{entry.msg}</span>
                   {isLastActive && (
                     <SpinningIcon
                       icon={faCircleNotch}
-                      style={{ marginLeft: '8px', color: '#1890ff', fontSize: '12px' }}
+                      style={{
+                        marginLeft: '8px',
+                        color: '#1890ff',
+                        fontSize: '12px',
+                      }}
                     />
                   )}
                 </LogText>
@@ -301,12 +368,18 @@ const CollapsibleFlowLogs: React.FC<{
             style={{ position: 'relative' }}
           >
             <LogDot $type={lastLog.type} />
-            <LogText style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+            <LogText
+              style={{ display: 'flex', width: '100%', alignItems: 'center' }}
+            >
               <span style={{ flex: 1 }}>{lastLog.msg}</span>
               {isActive && (
                 <SpinningIcon
                   icon={faCircleNotch}
-                  style={{ marginLeft: '8px', color: '#1890ff', fontSize: '12px' }}
+                  style={{
+                    marginLeft: '8px',
+                    color: '#1890ff',
+                    fontSize: '12px',
+                  }}
                 />
               )}
             </LogText>
@@ -319,7 +392,31 @@ const CollapsibleFlowLogs: React.FC<{
 
 const AiBusinessSeeding: React.FC = () => {
   const navigate = useNavigate();
+  const { message: messageApi } = AntApp.useApp();
   const currentEnvironment = getCurrentAiBusinessSeedingEnvironment();
+  const [targetEnvironmentId, setTargetEnvironmentId] =
+    useState<AiBusinessSeedingEnvironmentId>(() =>
+      getStoredAiBusinessSeedingTargetEnvironmentId(currentEnvironment.id),
+    );
+  const targetEnvironment =
+    getAiBusinessSeedingEnvironmentById(targetEnvironmentId);
+  const [, setTargetSessionVersion] = useState(0);
+  const [targetLoginOpen, setTargetLoginOpen] = useState(false);
+  const [targetLoginEnvironmentId, setTargetLoginEnvironmentId] =
+    useState<AiBusinessSeedingEnvironmentId>('production');
+  const [targetLoginUsername, setTargetLoginUsername] = useState('');
+  const [targetLoginPassword, setTargetLoginPassword] = useState('');
+  const [targetLoginLoading, setTargetLoginLoading] = useState(false);
+  const [productionConfirmOpen, setProductionConfirmOpen] = useState(false);
+  const [productionConfirmText, setProductionConfirmText] = useState('');
+  const [assistantSettingsOpen, setAssistantSettingsOpen] = useState(false);
+
+  const productionTargetSession =
+    getAiBusinessSeedingTargetSession('production');
+  const isProductionTargetConnected = Boolean(productionTargetSession);
+  const productionTargetLabel =
+    productionTargetSession?.displayName || productionTargetSession?.username;
+
   const {
     actions,
     prompt,
@@ -338,42 +435,164 @@ const AiBusinessSeeding: React.FC = () => {
     agentPhase,
     contentEndRef,
     handleToggleAction,
+    handleCheckStatus,
     handleClear,
     handleApplyRecoverableSuggestion,
     handleAnalyze,
     handleExecute,
   } = useAiChat();
 
-  const handleSelectEnvironment = (
+  const handleOpenTargetLogin = (
     environmentId: AiBusinessSeedingEnvironmentId,
   ) => {
-    const targetEnvironment = AI_BUSINESS_SEEDING_ENVIRONMENTS.find(
-      (environment) => environment.id === environmentId,
-    );
-
-    if (!targetEnvironment || targetEnvironment.id === currentEnvironment.id) {
+    if (environmentId === currentEnvironment.id) {
+      messageApi.info(`${currentEnvironment.label} ya usa la sesion actual.`);
       return;
     }
 
-    const targetUrl = getAiBusinessSeedingEnvironmentUrl({
-      environment: targetEnvironment,
-      search: window.location.search,
-    });
+    setTargetLoginEnvironmentId(environmentId);
+    setTargetLoginPassword('');
+    setTargetLoginOpen(true);
+  };
 
-    Modal.confirm({
-      title: `Abrir ${targetEnvironment.label}`,
-      content:
-        targetEnvironment.id === 'production'
-          ? 'Vas a salir de este ambiente y abrir la herramienta en produccion. Cualquier negocio ejecutado alla se creara en produccion.'
-          : 'Vas a salir de este ambiente y abrir la herramienta en staging.',
-      okText: `Ir a ${targetEnvironment.label}`,
-      cancelText: 'Cancelar',
-      okButtonProps:
-        targetEnvironment.id === 'production' ? { danger: true } : undefined,
-      onOk: () => {
-        window.location.assign(targetUrl);
-      },
+  const setPersistentTargetEnvironmentId = (
+    environmentId: AiBusinessSeedingEnvironmentId,
+  ) => {
+    setTargetEnvironmentId(environmentId);
+    storeAiBusinessSeedingTargetEnvironmentId(environmentId);
+  };
+
+  const handleSubmitTargetLogin = async () => {
+    const username = targetLoginUsername.trim();
+    if (!username || !targetLoginPassword) {
+      messageApi.warning('Usuario y contrasena requeridos.');
+      return;
+    }
+
+    setTargetLoginLoading(true);
+    try {
+      const session = await loginAiBusinessSeedingTarget({
+        environmentId: targetLoginEnvironmentId,
+        username,
+        password: targetLoginPassword,
+      });
+      setTargetSessionVersion((version) => version + 1);
+      setPersistentTargetEnvironmentId(targetLoginEnvironmentId);
+      setTargetLoginOpen(false);
+      setTargetLoginPassword('');
+      messageApi.success(
+        `Conectado a ${
+          getAiBusinessSeedingEnvironmentById(targetLoginEnvironmentId).label
+        } como ${session.displayName || session.username || username}.`,
+      );
+    } catch (error) {
+      console.error(error);
+      messageApi.error(
+        error instanceof Error
+          ? error.message
+          : 'No se pudo conectar el destino.',
+      );
+    } finally {
+      setTargetLoginLoading(false);
+    }
+  };
+
+  const executeAgainstSelectedTarget = async () => {
+    const sessionToken = getAiBusinessSeedingExecutionSessionToken(
+      targetEnvironment.id,
+    );
+
+    await handleExecute({
+      targetEnvironmentId: targetEnvironment.id,
+      targetLabel: targetEnvironment.label,
+      sessionToken,
     });
+  };
+
+  const handleExecuteWithTarget = async () => {
+    if (targetEnvironment.id === 'production') {
+      const session = getAiBusinessSeedingTargetSession(targetEnvironment.id);
+      const hasTargetSession =
+        await hasActiveAiBusinessSeedingTargetAuthSession(
+          targetEnvironment.id,
+          session,
+        );
+
+      if (!hasTargetSession) {
+        messageApi.warning(
+          'Conecta una sesion de produccion antes de ejecutar en produccion.',
+        );
+        handleOpenTargetLogin(targetEnvironment.id);
+        return;
+      }
+
+      if (!isTestMode) {
+        setProductionConfirmText('');
+        setProductionConfirmOpen(true);
+        return;
+      }
+    }
+
+    await executeAgainstSelectedTarget();
+  };
+
+  const handleConfirmProductionExecute = async () => {
+    if (productionConfirmText.trim() !== 'PRODUCCION') return;
+    setProductionConfirmOpen(false);
+    setProductionConfirmText('');
+    await executeAgainstSelectedTarget();
+  };
+
+  const handleSelectTargetEnvironment = (
+    environmentId: AiBusinessSeedingEnvironmentId,
+  ) => {
+    if (environmentId === targetEnvironment.id) return;
+
+    const nextEnvironment = getAiBusinessSeedingEnvironmentById(environmentId);
+    if (nextEnvironment.id === 'production') {
+      Modal.confirm({
+        title: 'Usar produccion como destino',
+        content:
+          'La pantalla seguira en staging, pero la ejecucion de creacion llamara las Cloud Functions de produccion. Manten modo prueba hasta validar el borrador.',
+        okText: 'Usar produccion',
+        cancelText: 'Cancelar',
+        okButtonProps: { danger: true },
+        onOk: () => {
+          setPersistentTargetEnvironmentId(nextEnvironment.id);
+          setIsTestMode(true);
+          if (!getAiBusinessSeedingTargetSession(nextEnvironment.id)) {
+            handleOpenTargetLogin(nextEnvironment.id);
+          }
+        },
+      });
+      return;
+    }
+
+    setPersistentTargetEnvironmentId(nextEnvironment.id);
+  };
+
+  const handleToggleProductionTargetFromSettings = (isEnabled: boolean) => {
+    const nextEnvironmentId: AiBusinessSeedingEnvironmentId = isEnabled
+      ? 'production'
+      : currentEnvironment.id;
+
+    if (nextEnvironmentId === targetEnvironment.id) return;
+
+    if (isEnabled) {
+      setAssistantSettingsOpen(false);
+    }
+
+    handleSelectTargetEnvironment(nextEnvironmentId);
+  };
+
+  const handleConnectProductionFromSettings = () => {
+    setAssistantSettingsOpen(false);
+    handleOpenTargetLogin('production');
+  };
+
+  const handleCheckStatusFromSettings = () => {
+    setAssistantSettingsOpen(false);
+    handleCheckStatus();
   };
 
   const renderTurnContent = ({
@@ -397,11 +616,7 @@ const AiBusinessSeeding: React.FC = () => {
 
     if (succeeded && Result) {
       return (
-        <Result
-          data={data}
-          onReset={handleClear}
-          readonly={!isCurrentTurn}
-        />
+        <Result data={data} onReset={handleClear} readonly={!isCurrentTurn} />
       );
     }
 
@@ -409,7 +624,7 @@ const AiBusinessSeeding: React.FC = () => {
       return (
         <Preview
           data={data}
-          onExecute={isCurrentTurn ? handleExecute : undefined}
+          onExecute={isCurrentTurn ? handleExecuteWithTarget : undefined}
           loading={isCurrentTurn ? loading : false}
           isTestMode={turnIsTestMode}
           readonly={!isCurrentTurn}
@@ -447,7 +662,10 @@ const AiBusinessSeeding: React.FC = () => {
             <CollapsibleFlowLogs
               logs={turn.logs}
               turnId={turn.id}
-              isActive={isCurrentTurn && (agentPhase === 'analyzing' || agentPhase === 'executing')}
+              isActive={
+                isCurrentTurn &&
+                (agentPhase === 'analyzing' || agentPhase === 'executing')
+              }
             />
           </MessageRow>
         ) : null}
@@ -478,33 +696,38 @@ const AiBusinessSeeding: React.FC = () => {
                 {Array.isArray(turn.recoverableError.suggestions) &&
                 turn.recoverableError.suggestions.length > 0 ? (
                   <SuggestionList>
-                    {turn.recoverableError.suggestions.slice(0, 4).map((suggestion) => (
-                      <SuggestionButton
-                        key={`${turn.id}-suggestion-${suggestion}`}
-                        size="small"
-                        disabled={!isCurrentTurn || loading}
-                        onClick={() => {
-                          handleApplyRecoverableSuggestion(suggestion);
-                        }}
-                      >
-                        Aplicar {suggestion}
-                      </SuggestionButton>
-                    ))}
+                    {turn.recoverableError.suggestions
+                      .slice(0, 4)
+                      .map((suggestion) => (
+                        <SuggestionButton
+                          key={`${turn.id}-suggestion-${suggestion}`}
+                          size="sm"
+                          variant="outline"
+                          isDisabled={!isCurrentTurn || loading}
+                          onPress={() => {
+                            handleApplyRecoverableSuggestion(suggestion);
+                          }}
+                        >
+                          Aplicar {suggestion}
+                        </SuggestionButton>
+                      ))}
                   </SuggestionList>
                 ) : null}
 
                 {isCurrentTurn && turn.recoverableError.suggestedUserPrompt ? (
                   <div>
-                    <Button
-                      type="primary"
-                      size="small"
-                      loading={loading && agentPhase === 'analyzing'}
-                      onClick={() =>
-                        void handleAnalyze(turn.recoverableError?.suggestedUserPrompt)
+                    <RetryWithAiButton
+                      size="sm"
+                      variant="primary"
+                      isPending={loading && agentPhase === 'analyzing'}
+                      onPress={() =>
+                        void handleAnalyze(
+                          turn.recoverableError?.suggestedUserPrompt,
+                        )
                       }
                     >
                       Corregir con IA y reintentar
-                    </Button>
+                    </RetryWithAiButton>
                   </div>
                 ) : null}
               </AssistantBody>
@@ -524,32 +747,40 @@ const AiBusinessSeeding: React.FC = () => {
   const currentTurn: ConversationTurn | null =
     Boolean(lastUserMessage) || logs.length > 0 || Boolean(activeAction)
       ? {
-        id: 'current-turn',
-        userMessage: lastUserMessage,
-        logs,
-        actionId: activeAction,
-        actionData,
-        executionSuccess,
-        isTestMode,
-        recoverableError: lastRecoverableError,
-      }
+          id: 'current-turn',
+          userMessage: lastUserMessage,
+          logs,
+          actionId: activeAction,
+          actionData,
+          executionSuccess,
+          isTestMode,
+          recoverableError: lastRecoverableError,
+        }
       : null;
 
   return (
     <AppContainer>
       <Header>
         <div style={{ justifySelf: 'start' }}>
-          <Button
-            onClick={() => navigate('/home')}
-            icon={<FontAwesomeIcon icon={faHome} />}
-          />
+          <HeaderHomeButton
+            aria-label="Volver a inicio"
+            isIconOnly
+            size="sm"
+            variant="tertiary"
+            onPress={() => navigate('/home')}
+          >
+            <FontAwesomeIcon icon={faHome} />
+          </HeaderHomeButton>
         </div>
         <HeaderTitle>
           <span style={{ color: 'var(--color-primary)' }}>Ventamax</span>
         </HeaderTitle>
-        <EnvironmentBadge $tone={currentEnvironment.tone}>
-          {currentEnvironment.label}
-        </EnvironmentBadge>
+        <HeaderBadges>
+          <EnvironmentBadge $tone={targetEnvironment.tone}>
+            <BadgeText>Destino</BadgeText>
+            {targetEnvironment.label}
+          </EnvironmentBadge>
+        </HeaderBadges>
       </Header>
 
       <Workspace>
@@ -561,7 +792,10 @@ const AiBusinessSeeding: React.FC = () => {
               {hasConversation && (
                 <>
                   {historyTurns.map((turn) => renderConversationTurn(turn))}
-                  {currentTurn && renderConversationTurn(currentTurn, { isCurrentTurn: true })}
+                  {currentTurn &&
+                    renderConversationTurn(currentTurn, {
+                      isCurrentTurn: true,
+                    })}
                 </>
               )}
 
@@ -579,14 +813,91 @@ const AiBusinessSeeding: React.FC = () => {
             enabledActions={enabledActions}
             onToggleAction={handleToggleAction}
             onAnalyze={handleAnalyze}
+            onOpenSettings={() => setAssistantSettingsOpen(true)}
             onClear={handleClear}
-            currentEnvironment={currentEnvironment}
-            environmentOptions={AI_BUSINESS_SEEDING_ENVIRONMENTS}
-            onSelectEnvironment={handleSelectEnvironment}
+            targetEnvironment={targetEnvironment}
             canClear={hasConversation || Boolean(prompt.trim())}
           />
         </ChatColumn>
       </Workspace>
+
+      <AssistantSettingsModal
+        isOpen={assistantSettingsOpen}
+        isProductionTargetEnabled={targetEnvironment.id === 'production'}
+        isProductionTargetConnected={isProductionTargetConnected}
+        loading={loading}
+        productionTargetLabel={productionTargetLabel}
+        onCheckStatus={handleCheckStatusFromSettings}
+        onConnectProduction={handleConnectProductionFromSettings}
+        onOpenChange={setAssistantSettingsOpen}
+        onToggleProductionTarget={handleToggleProductionTargetFromSettings}
+      />
+
+      <Modal
+        title={`Conectar ${
+          getAiBusinessSeedingEnvironmentById(targetLoginEnvironmentId).label
+        }`}
+        open={targetLoginOpen}
+        okText="Conectar"
+        cancelText="Cancelar"
+        confirmLoading={targetLoginLoading}
+        onOk={() => void handleSubmitTargetLogin()}
+        onCancel={() => {
+          if (!targetLoginLoading) {
+            setTargetLoginOpen(false);
+            setTargetLoginPassword('');
+          }
+        }}
+      >
+        <div style={{ display: 'grid', gap: 12, paddingTop: 8 }}>
+          <Text type="secondary">
+            Esta sesion se guarda aparte para el asistente y no reemplaza tu
+            sesion principal de staging.
+          </Text>
+          <Input
+            autoFocus
+            placeholder="Usuario de produccion"
+            value={targetLoginUsername}
+            onChange={(event) => setTargetLoginUsername(event.target.value)}
+            onPressEnter={() => void handleSubmitTargetLogin()}
+          />
+          <Input.Password
+            placeholder="Contrasena"
+            value={targetLoginPassword}
+            onChange={(event) => setTargetLoginPassword(event.target.value)}
+            onPressEnter={() => void handleSubmitTargetLogin()}
+          />
+        </div>
+      </Modal>
+
+      <Modal
+        title="Confirmar ejecucion en produccion"
+        open={productionConfirmOpen}
+        okText="Crear en produccion"
+        cancelText="Cancelar"
+        okButtonProps={{
+          danger: true,
+          disabled: productionConfirmText.trim() !== 'PRODUCCION',
+        }}
+        onOk={() => void handleConfirmProductionExecute()}
+        onCancel={() => {
+          setProductionConfirmOpen(false);
+          setProductionConfirmText('');
+        }}
+      >
+        <div style={{ display: 'grid', gap: 12, paddingTop: 8 }}>
+          <Text type="danger">
+            Esta accion creara datos reales en produccion. Verifica el preview,
+            el usuario owner y los correos antes de continuar.
+          </Text>
+          <Text type="secondary">Escribe PRODUCCION para confirmar.</Text>
+          <Input
+            value={productionConfirmText}
+            onChange={(event) => setProductionConfirmText(event.target.value)}
+            onPressEnter={() => void handleConfirmProductionExecute()}
+          />
+        </div>
+      </Modal>
     </AppContainer>
   );
 };

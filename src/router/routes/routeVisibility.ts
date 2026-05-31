@@ -2,7 +2,7 @@ import { matchRoutes } from 'react-router';
 import { ROUTE_STATUS } from './routeMeta';
 import { getResolvedRouteMeta } from './routeHandle';
 
-import type { AppRoute } from './routes';
+import type { AppRoute } from '@/router/types/routeTypes';
 
 interface MenuItemMeta {
   hideInMenu?: boolean;
@@ -40,7 +40,9 @@ export const registerRoutes = (routesArray: AppRoute[]): void => {
   }
 };
 
-const resolveRegisteredRouteMatch = (pathname: string): AppRoute | undefined => {
+const resolveRegisteredRouteMatch = (
+  pathname: string,
+): AppRoute | undefined => {
   if (!registeredRoutes.length) return undefined;
   const matches = matchRoutes(
     registeredRoutes as Parameters<typeof matchRoutes>[0],

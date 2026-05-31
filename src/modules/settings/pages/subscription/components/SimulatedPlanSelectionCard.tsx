@@ -1,6 +1,13 @@
 import { Alert, Button, Segmented } from 'antd';
 import { useState } from 'react';
-import styled from 'styled-components';
+import {
+  Field,
+  FieldLabel,
+  PlanLabel,
+  PlanLabelCode,
+  PlanLabelName,
+  Stack,
+} from './SimulatedPlanSelectionCard.styles';
 
 export type SimulatedBillingResult = 'success' | 'failed' | 'canceled';
 
@@ -22,11 +29,12 @@ interface SimulatedPlanSelectionCardProps {
   hasActiveBusiness: boolean;
 }
 
-const RESULT_OPTIONS: Array<{ label: string; value: SimulatedBillingResult }> = [
-  { label: 'Éxito', value: 'success' },
-  { label: 'Cancelación', value: 'canceled' },
-  { label: 'Fallo', value: 'failed' },
-];
+const RESULT_OPTIONS: Array<{ label: string; value: SimulatedBillingResult }> =
+  [
+    { label: 'Exito', value: 'success' },
+    { label: 'Cancelacion', value: 'canceled' },
+    { label: 'Fallo', value: 'failed' },
+  ];
 
 export const SimulatedPlanSelectionCard = ({
   plans,
@@ -38,7 +46,8 @@ export const SimulatedPlanSelectionCard = ({
   hasActiveBusiness,
 }: SimulatedPlanSelectionCardProps) => {
   const [result, setResult] = useState<SimulatedBillingResult>('success');
-  const canRun = canManagePayments && hasActiveBusiness && !busy && plans.length > 0;
+  const canRun =
+    canManagePayments && hasActiveBusiness && !busy && plans.length > 0;
 
   return (
     <Stack>
@@ -46,7 +55,7 @@ export const SimulatedPlanSelectionCard = ({
         <Alert
           type="warning"
           showIcon
-          message="Catálogo no disponible"
+          message="Catalogo no disponible"
           description="No hay planes cargados desde Firestore para ejecutar simulaciones."
         />
       ) : null}
@@ -72,17 +81,19 @@ export const SimulatedPlanSelectionCard = ({
       <Field>
         <FieldLabel>Plan</FieldLabel>
         <Segmented
-          options={plans.map((p) => ({
+          options={plans.map((plan) => ({
             label: (
               <PlanLabel>
-                <PlanLabelName>{p.displayName.replace(`(${p.planCode})`, '').trim()}</PlanLabelName>
-                <PlanLabelCode>{p.planCode}</PlanLabelCode>
+                <PlanLabelName>
+                  {plan.displayName.replace(`(${plan.planCode})`, '').trim()}
+                </PlanLabelName>
+                <PlanLabelCode>{plan.planCode}</PlanLabelCode>
               </PlanLabel>
             ),
-            value: p.planCode,
+            value: plan.planCode,
           }))}
           value={selectedPlanCode}
-          onChange={(v) => onSelectPlan(v as string)}
+          onChange={(value) => onSelectPlan(value as string)}
           disabled={busy || plans.length === 0}
           block
         />
@@ -93,7 +104,7 @@ export const SimulatedPlanSelectionCard = ({
         <Segmented
           options={RESULT_OPTIONS}
           value={result}
-          onChange={(v) => setResult(v as SimulatedBillingResult)}
+          onChange={(value) => setResult(value as SimulatedBillingResult)}
           disabled={busy}
           block
         />
@@ -103,7 +114,9 @@ export const SimulatedPlanSelectionCard = ({
         type="primary"
         loading={busy}
         disabled={!canRun}
-        onClick={() => { void onSimulateResult(result); }}
+        onClick={() => {
+          void onSimulateResult(result);
+        }}
         block
       >
         Simular
@@ -113,44 +126,3 @@ export const SimulatedPlanSelectionCard = ({
 };
 
 export default SimulatedPlanSelectionCard;
-
-const Stack = styled.div`
-  display: grid;
-  gap: 16px;
-`;
-
-const Field = styled.div`
-  display: grid;
-  gap: 6px;
-`;
-
-const FieldLabel = styled.span`
-  color: #64748b;
-  font-size: 0.83rem;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-`;
-
-const PlanLabel = styled.span`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  padding: 2px 0;
-`;
-
-const PlanLabelName = styled.span`
-  font-weight: 600;
-  font-size: 0.88rem;
-  color: inherit;
-`;
-
-const PlanLabelCode = styled.span`
-  font-size: 0.72rem;
-  font-family: monospace;
-  color: #94a3b8;
-  font-weight: 400;
-`;
-
-

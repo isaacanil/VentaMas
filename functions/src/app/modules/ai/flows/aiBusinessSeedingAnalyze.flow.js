@@ -1,6 +1,17 @@
 import { z } from 'genkit';
 
-import { ai, businessCreatorModel } from '../config/genkit.js';
+import {
+  ai,
+  businessCreatorModel,
+  businessCreatorThinkingConfig,
+} from '../config/genkit.js';
+import { buildAiBusinessSeedingConversationContext } from '../utils/aiBusinessSeedingConversationContext.js';
+import {
+  aiBusinessSeedingAnalyzeFlowOutputSchema,
+  aiBusinessSeedingModelOutputOptions,
+  normalizeAiBusinessSeedingUsage,
+  normalizeAiBusinessSeedingModelOutput,
+} from '../utils/aiBusinessSeedingStructuredOutput.js';
 import { buildAiBusinessSeedingSystemPrompt } from '../utils/aiBusinessSeedingSystemPrompt.js';
 
 const aiBusinessSeedingAnalyzeInputSchema = z.object({
@@ -9,85 +20,45 @@ const aiBusinessSeedingAnalyzeInputSchema = z.object({
   conversationContext: z.any().optional(),
 });
 
-const aiBusinessSeedingAnalyzeOutputSchema = z.object({
-  rawJson: z.string(),
-});
-
 export const aiBusinessSeedingAnalyzeFlow = ai.defineFlow(
   {
     name: 'aiBusinessSeedingAnalyzeFlow',
     inputSchema: aiBusinessSeedingAnalyzeInputSchema,
-    outputSchema: aiBusinessSeedingAnalyzeOutputSchema,
+    outputSchema: aiBusinessSeedingAnalyzeFlowOutputSchema,
   },
   async (input) => {
-    const contextBlock = buildConversationContextBlock(input.conversationContext);
+    const { text: contextBlock, metrics: contextMetrics } =
+      buildAiBusinessSeedingConversationContext(input.conversationContext);
     const promptWithContext = contextBlock
       ? `${input.prompt}\n\n${contextBlock}`
       : input.prompt;
 
-    const { text } = await ai.generate({
+    const response = await ai.generate({
       model: businessCreatorModel,
       system: buildAiBusinessSeedingSystemPrompt(input.enabledActions),
       prompt: promptWithContext,
       config: {
         temperature: 0.2,
+        ...(businessCreatorThinkingConfig
+          ? { thinkingConfig: businessCreatorThinkingConfig }
+          : {}),
       },
+      output: aiBusinessSeedingModelOutputOptions,
     });
+    const { output } = response;
 
-    const rawText = typeof text === 'string' ? text.trim() : '';
-    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-    const rawJson = jsonMatch?.[0]?.trim() || '';
-
-    if (!rawJson) {
-      throw new Error('No se detectó JSON válido en la respuesta del modelo.');
+    if (!output) {
+      throw new Error('El modelo no devolvio una accion estructurada.');
     }
 
-    return { rawJson };
+    return {
+      ...normalizeAiBusinessSeedingModelOutput(output, input.enabledActions),
+      usage: normalizeAiBusinessSeedingUsage(response.usage),
+      requestMetrics: {
+        ...contextMetrics,
+        promptCharacters: input.prompt.length,
+        promptWithContextCharacters: promptWithContext.length,
+      },
+    };
   },
 );
-
-function buildConversationContextBlock(conversationContext) {
-  if (
-    !conversationContext ||
-    typeof conversationContext !== 'object' ||
-    Array.isArray(conversationContext)
-  ) {
-    return '';
-  }
-
-  const seen = new WeakSet();
-  const safeJson = JSON.stringify(
-    conversationContext,
-    (key, value) => {
-      if (typeof key === 'string') {
-        const normalized = key.toLowerCase();
-        if (normalized.includes('password') || normalized.includes('sessiontoken')) {
-          return '[redacted]';
-        }
-      }
-
-      if (typeof value === 'string' && value.length > 500) {
-        return `${value.slice(0, 500)}...[truncated]`;
-      }
-
-      if (value && typeof value === 'object') {
-        if (seen.has(value)) return '[circular]';
-        seen.add(value);
-      }
-
-      return value;
-    },
-    2,
-  );
-
-  if (!safeJson || safeJson === '{}') return '';
-
-  const clippedJson =
-    safeJson.length > 8000 ? `${safeJson.slice(0, 8000)}\n...[truncated]` : safeJson;
-
-  return [
-    'CONTEXTO_DE_CONVERSACION_JSON (usar para memoria de trabajo y correcciones):',
-    clippedJson,
-    'FIN_CONTEXTO_DE_CONVERSACION_JSON',
-  ].join('\n');
-}

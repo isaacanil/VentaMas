@@ -1,6 +1,12 @@
 import { Spin } from 'antd';
 import { DateTime } from 'luxon';
-import styled from 'styled-components';
+
+import {
+  LoadingOverlay,
+  LoadingSpacer,
+  Panel,
+  PanelRoot,
+} from './RncPanel.styles';
 
 type RncInfo = {
   rnc_number?: string;
@@ -15,19 +21,15 @@ type RncPanelProps = {
   loading: boolean;
 };
 
-type PanelStyleProps = {
-  $dimmed?: boolean;
-};
-
 export const RncPanel = ({ rncInfo, loading }: RncPanelProps) => {
   if (!rncInfo && !loading) return null;
 
   return (
-    <div style={{ position: 'relative' }}>
+    <PanelRoot>
       {loading && (
         <LoadingOverlay>
           <Spin tip="Consultando RNC...">
-            <div style={{ width: 140, height: 96 }} />
+            <LoadingSpacer />
           </Spin>
         </LoadingOverlay>
       )}
@@ -54,24 +56,6 @@ export const RncPanel = ({ rncInfo, loading }: RncPanelProps) => {
           </p>
         </Panel>
       )}
-    </div>
+    </PanelRoot>
   );
 };
-
-const LoadingOverlay = styled.div`
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgb(255 255 255 / 80%);
-`;
-
-const Panel = styled.div<PanelStyleProps>`
-  padding: 1em;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
-  opacity: ${(props) => (props.$dimmed ? 0.6 : 1)};
-`;

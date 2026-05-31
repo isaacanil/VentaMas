@@ -1,7 +1,7 @@
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
 
 import RoutesName from '@/router/routes/routesName';
-import type { AppRoute } from '@/router/routes/routes';
+import type { AppRoute } from '@/router/types/routeTypes';
 
 const ChangelogList = lazy(() =>
   import('@/modules/controlPanel/ChangeLogControl/ChangelogList/ChangelogList').then(

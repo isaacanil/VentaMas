@@ -1,119 +1,29 @@
+import { Form, Input, Space, message } from 'antd';
 import {
-  Form,
-  Input,
-  InputNumber,
-  Checkbox,
-  message,
-  Typography,
-  Space,
-} from 'antd';
+  ClockCircleOutlined,
+  EditOutlined,
+  FileDoneOutlined,
+} from '@ant-design/icons';
 import { useEffect } from 'react';
 import type { FocusEvent } from 'react';
 import { useSelector } from 'react-redux';
-import styled from 'styled-components';
-import {
-  FileDoneOutlined,
-  ClockCircleOutlined,
-  EditOutlined,
-} from '@ant-design/icons';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { SelectSettingCart } from '@/features/cart/cartSlice';
 import { setBillingSettings } from '@/firebase/billing/billingSetting';
 
-const { Text } = Typography;
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-`;
-
-const StyledForm = styled(Form)`
-  .ant-form-item-label > label {
-    font-weight: 600;
-    color: #262626;
-  }
-
-  .ant-input-number,
-  .ant-input-textarea {
-    border-radius: 12px;
-    padding: 8px 12px;
-    background: #fdfdfd;
-    border: 1px solid #d9d9d9;
-    transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
-
-    &:hover {
-      border-color: #1890ff;
-    }
-
-    &:focus {
-      border-color: #1890ff;
-      background: #fff;
-      box-shadow: 0 0 0 4px rgb(24 144 255 / 10%);
-    }
-  }
-`;
-
-const ToggleCard = styled.div<{ $active: boolean }>`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  background: ${({ $active }) => ($active ? '#fff' : '#f8f9fa')};
-  border-radius: 16px;
-  border: 1px solid ${({ $active }) => ($active ? '#1890ff' : '#e9ecef')};
-  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-  cursor: pointer;
-
-  &:hover {
-    border-color: #1890ff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgb(24 144 255 / 8%);
-  }
-
-  .label-group {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: ${({ $active }) => ($active ? '#e6f7ff' : '#ffffff')};
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: ${({ $active }) => ($active ? '#1890ff' : '#8c8c8c')};
-    font-size: 20px;
-    border: 1px solid ${({ $active }) => ($active ? '#91d5ff' : '#d9d9d9')};
-  }
-`;
-
-const SettingsGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-  padding: 24px;
-  background: #fff;
-  border-radius: 20px;
-  border: 1px solid #f0f0f0;
-  animation: fade-in 0.4s ease-out;
-
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-`;
+import {
+  Container,
+  SettingsGrid,
+  StyledCheckbox,
+  StyledForm,
+  ToggleCard,
+  ToggleDescription,
+  ToggleIcon,
+  ToggleLabelGroup,
+  ToggleTitle,
+  ValidityInput,
+} from './QuoteSettingsSection.styles';
 
 interface QuoteSettingsFormValues {
   quoteEnabled?: boolean;
@@ -140,11 +50,11 @@ const QuoteSettingsSection = () => {
     void setBillingSettings(user, { quoteEnabled: checked }).then(
       () => {
         message.success(
-          checked ? 'Módulo de cotizaciones activado' : 'Módulo desactivado',
+          checked ? 'Modulo de cotizaciones activado' : 'Modulo desactivado',
         );
       },
       () => {
-        message.error('Error al guardar la configuración');
+        message.error('Error al guardar la configuracion');
       },
     );
   };
@@ -156,7 +66,7 @@ const QuoteSettingsSection = () => {
     void setBillingSettings(user, { quoteValidity: validValue }).then(
       () => {
         if (numValue > 90) {
-          message.info('Máximo permitido: 90 días');
+          message.info('Maximo permitido: 90 dias');
           form.setFieldValue('quoteValidity', 90);
         }
       },
@@ -166,13 +76,12 @@ const QuoteSettingsSection = () => {
     );
   };
 
-  const handleNoteBlur = (e: FocusEvent<HTMLTextAreaElement>) => {
-    void setBillingSettings(user, { quoteDefaultNote: e.target.value }).then(
-      undefined,
-      () => {
-        message.error('Error al guardar');
-      },
-    );
+  const handleNoteBlur = (event: FocusEvent<HTMLTextAreaElement>) => {
+    void setBillingSettings(user, {
+      quoteDefaultNote: event.target.value,
+    }).then(undefined, () => {
+      message.error('Error al guardar');
+    });
   };
 
   const quoteEnabledValue = Form.useWatch('quoteEnabled', form) ?? false;
@@ -189,26 +98,20 @@ const QuoteSettingsSection = () => {
               handleQuoteEnabled(newValue);
             }}
           >
-            <div className="label-group">
-              <div className="icon">
+            <ToggleLabelGroup>
+              <ToggleIcon $active={quoteEnabledValue}>
                 <FileDoneOutlined />
-              </div>
+              </ToggleIcon>
               <div>
-                <Text strong style={{ fontSize: '15px' }}>
+                <ToggleTitle strong>
                   Habilitar cotizaciones comerciales
-                </Text>
-                <Text
-                  type="secondary"
-                  style={{ display: 'block', fontSize: '13px' }}
-                >
+                </ToggleTitle>
+                <ToggleDescription type="secondary">
                   Permite crear presupuestos formales para tus clientes
-                </Text>
+                </ToggleDescription>
               </div>
-            </div>
-            <Checkbox
-              checked={quoteEnabledValue}
-              style={{ transform: 'scale(1.2)' }}
-            />
+            </ToggleLabelGroup>
+            <StyledCheckbox checked={quoteEnabledValue} />
           </ToggleCard>
         </Form.Item>
 
@@ -218,17 +121,18 @@ const QuoteSettingsSection = () => {
               label={
                 <Space>
                   <ClockCircleOutlined />
-                  <span>Validez por defecto (días)</span>
+                  <span>Validez por defecto (dias)</span>
                 </Space>
               }
               name="quoteValidity"
-              tooltip="Tiempo máximo que la oferta comercial será válida"
+              tooltip="Tiempo maximo que la oferta comercial sera valida"
             >
-              <InputNumber
+              <ValidityInput
                 min={1}
                 max={90}
-                style={{ width: '120px' }}
-                onBlur={(e) => handleValidityBlur(e.currentTarget.value)}
+                onBlur={(event) =>
+                  handleValidityBlur(event.currentTarget.value)
+                }
               />
             </Form.Item>
 
@@ -240,12 +144,12 @@ const QuoteSettingsSection = () => {
                 </Space>
               }
               name="quoteDefaultNote"
-              tooltip="Este texto se incluirá al final de todas tus cotizaciones"
+              tooltip="Este texto se incluira al final de todas tus cotizaciones"
             >
               <Input.TextArea
                 rows={4}
                 onBlur={handleNoteBlur}
-                placeholder="Ej: 'Esta cotización está sujeta a disponibilidad de inventario...'"
+                placeholder="Ej: Esta cotizacion esta sujeta a disponibilidad de inventario..."
               />
             </Form.Item>
           </SettingsGrid>

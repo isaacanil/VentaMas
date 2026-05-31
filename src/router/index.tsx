@@ -7,7 +7,8 @@ import { protectedRouteLoader } from '@/router/routes/loaders/accessLoaders';
 import DashboardLayout from '@/layouts/DashboardLayout';
 
 import { RootElement } from './AppRouterLayout';
-import { routes, type AppRoute } from './routes/routes';
+import { routes } from './routes/routes';
+import type { AppRoute } from './types/routeTypes';
 
 export const router = createBrowserRouter([
   {

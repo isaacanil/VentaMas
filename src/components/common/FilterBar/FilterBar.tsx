@@ -16,13 +16,25 @@ import {
   Switch,
   Tooltip,
 } from 'antd';
-import { DateTime } from 'luxon';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import { DatePicker } from '@/components/common/DatePicker/DatePicker';
 import { useOverflowCollapse } from '@/hooks/useOverflowCollapse';
 import useViewportWidth from '@/hooks/windows/useViewportWidth';
 
+import {
+  getDateRangeValue,
+  getNumberRange,
+  handleDateRangeChange,
+  isItemActive,
+} from './FilterBar.utils';
+import type {
+  DateRangeInputValue,
+  DateRangeMillisValue,
+  DateRangeValue,
+  NumberRangeValue,
+  NumberRangeValueObject,
+} from './FilterBar.utils';
 import {
   Bar,
   DesktopForm,
@@ -52,36 +64,6 @@ type FilterBarSelectOption = {
   label: React.ReactNode;
   value: string | number;
   disabled?: boolean;
-};
-
-type NumberRangeValueObject = {
-  min?: number | null;
-  max?: number | null;
-  minAmount?: number | null;
-  maxAmount?: number | null;
-  from?: number | null;
-  to?: number | null;
-  start?: number | null;
-  end?: number | null;
-  startValue?: number | null;
-  endValue?: number | null;
-};
-
-type NumberRangeValue =
-  | [number | null, number | null]
-  | NumberRangeValueObject
-  | null;
-
-type DateRangeInputValue =
-  | [unknown, unknown]
-  | { startDate?: unknown; endDate?: unknown }
-  | null;
-
-type DateRangeValue = [DateTime | null, DateTime | null] | null;
-
-type DateRangeMillisValue = {
-  startDate: number | null;
-  endDate: number | null;
 };
 
 type FilterBarItemBase = {
@@ -204,110 +186,6 @@ const normalizeItems = (
     ...item,
   }));
 
-const isItemActive = (item: FilterBarItem) => {
-  if (typeof item.isActive === 'function') {
-    return item.isActive(item.value);
-  }
-  if (item.isActive != null) return Boolean(item.isActive);
-  if (Array.isArray(item.value)) return item.value.some(Boolean);
-  if (item.value && typeof item.value === 'object') {
-    return Object.values(item.value).some(Boolean);
-  }
-  return Boolean(item.value);
-};
-
-const resolveNumberValue = (...values: Array<unknown>): number | null => {
-  for (const value of values) {
-    if (typeof value === 'number' && Number.isFinite(value)) {
-      return value;
-    }
-  }
-  return null;
-};
-
-const getNumberRange = (value?: NumberRangeValue) => {
-  if (Array.isArray(value)) return { min: value[0], max: value[1] };
-  if (value && typeof value === 'object') {
-    const rangeValue = value as NumberRangeValueObject;
-    return {
-      min: resolveNumberValue(
-        rangeValue.min,
-        rangeValue.minAmount,
-        rangeValue.from,
-        rangeValue.start,
-        rangeValue.startValue,
-      ),
-      max: resolveNumberValue(
-        rangeValue.max,
-        rangeValue.maxAmount,
-        rangeValue.to,
-        rangeValue.end,
-        rangeValue.endValue,
-      ),
-    };
-  }
-  return { min: null, max: null };
-};
-
-const isDateRangeObject = (
-  value: unknown,
-): value is { startDate?: unknown; endDate?: unknown } =>
-  Boolean(value) &&
-  typeof value === 'object' &&
-  ('startDate' in value || 'endDate' in value);
-
-const getDateRangeValue = (item: FilterBarDateRangeItem): DateRangeValue => {
-  if (!item.value) return null;
-  const toDateTime = (value: unknown): DateTime | null => {
-    if (!value) return null;
-    if (DateTime.isDateTime(value)) return value;
-    if (value instanceof Date) return DateTime.fromJSDate(value);
-    if (
-      value &&
-      typeof value === 'object' &&
-      'toDate' in value &&
-      typeof (value as { toDate?: () => Date }).toDate === 'function'
-    ) {
-      return DateTime.fromJSDate((value as { toDate: () => Date }).toDate());
-    }
-    if (typeof value === 'number') return DateTime.fromMillis(value);
-    if (typeof value === 'string') {
-      const parsed = DateTime.fromISO(value);
-      return parsed.isValid ? parsed : null;
-    }
-    return null;
-  };
-  if (Array.isArray(item.value)) {
-    const [start, end] = item.value;
-    return [toDateTime(start), toDateTime(end)];
-  }
-  if (isDateRangeObject(item.value)) {
-    return [
-      item.value.startDate ? toDateTime(item.value.startDate) : null,
-      item.value.endDate ? toDateTime(item.value.endDate) : null,
-    ];
-  }
-  return null;
-};
-
-const handleDateChange = (
-  item: FilterBarDateRangeItem,
-  range: DateRangeValue,
-) => {
-  if (!item.onChange) return;
-  if (item.valueFormat === 'luxon') {
-    item.onChange(range);
-    return;
-  }
-  const start = range?.[0] ? range[0].startOf('day').toMillis() : null;
-  const end = range?.[1] ? range[1].endOf('day').toMillis() : null;
-  if (item.valueAsArray) {
-    item.onChange([start, end]);
-  } else {
-    item.onChange({ startDate: start, endDate: end });
-  }
-};
-
 const renderControl = (item: FilterBarItem) => {
   if (item.render) return item.render(item);
   if (item.component) return item.component;
@@ -377,8 +255,15 @@ const renderControl = (item: FilterBarItem) => {
         <DatePicker
           mode="range"
           {...item.props}
-          value={getDateRangeValue(item)}
-          onChange={(range: DateRangeValue) => handleDateChange(item, range)}
+          value={getDateRangeValue(item.value)}
+          onChange={(range: DateRangeValue) =>
+            handleDateRangeChange({
+              range,
+              valueFormat: item.valueFormat,
+              valueAsArray: item.valueAsArray,
+              onChange: item.onChange,
+            })
+          }
           allowClear={item.allowClear !== false}
           aria-label={item.ariaLabel}
         />

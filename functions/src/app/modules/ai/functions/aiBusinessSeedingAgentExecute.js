@@ -1,12 +1,29 @@
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 
-import { db } from '../../../core/config/firebase.js';
+import { db, FieldValue, Timestamp } from '../../../core/config/firebase.js';
 import { clientSeedBusinessWithUsers } from '../../../versions/v2/auth/controllers/clientAuth.controller.js';
+import { buildAiAgentCallableOptions } from '../config/aiCallableOptions.js';
+import {
+  chunkAvailabilityValues,
+  findFirstMatchingAvailabilityValue,
+  normalizeAvailabilityValues,
+} from '../utils/aiBusinessSeedingAvailability.js';
+import {
+  buildAiBusinessSeedingExecutionRequestHash,
+  normalizeAiBusinessSeedingExecuteRequestId,
+} from '../utils/aiBusinessSeedingExecutionIdempotency.js';
+import { buildAiBusinessSeedingUsernameSuggestions } from '../utils/aiBusinessSeedingUsernameSuggestions.js';
 import { assertAiBusinessSeedingDeveloperAccess } from './aiBusinessSeedingAccess.js';
 
-const AI_AGENT_REGION = 'us-central1';
-const ALLOWED_ROLES = new Set(['admin', 'owner', 'manager', 'cashier', 'buyer']);
+const ALLOWED_ROLES = new Set([
+  'admin',
+  'owner',
+  'manager',
+  'cashier',
+  'buyer',
+]);
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+const IDEMPOTENCY_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 const readObject = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -16,14 +33,17 @@ const readString = (value) =>
 
 const readUsersArray = (value) =>
   Array.isArray(value)
-    ? value.filter((entry) => entry && typeof entry === 'object' && !Array.isArray(entry))
+    ? value.filter(
+        (entry) => entry && typeof entry === 'object' && !Array.isArray(entry),
+      )
     : [];
 
 const addLog = (logs, msg, type = 'info') => {
   logs.push({ msg, type });
 };
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms) =>
+  new Promise((resolve) => globalThis.setTimeout(resolve, ms));
 
 const attachRecoverableError = (error, payload) => {
   error.agentRecoverable = {
@@ -36,41 +56,6 @@ const attachRecoverableError = (error, payload) => {
 const makeRecoverableHttpsError = (code, message, payload) =>
   attachRecoverableError(new HttpsError(code, message), payload);
 
-const normalizeUsernameSegment = (value) => {
-  const text = readString(value)
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9.-]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^\.+|\.+$/g, '')
-    .replace(/^-+|-+$/g, '');
-
-  return text.slice(0, 24);
-};
-
-const uniqueNonEmpty = (values) => [...new Set(values.filter(Boolean))];
-
-const buildUsernameSuggestions = ({ username, businessName, realName }) => {
-  const baseUser = normalizeUsernameSegment(username) || 'usuario';
-  const businessSlug = normalizeUsernameSegment(businessName);
-  const realNameSlug = normalizeUsernameSegment(realName);
-
-  const candidates = uniqueNonEmpty([
-    businessSlug ? `${businessSlug}.${baseUser}` : '',
-    businessSlug ? `${baseUser}-${businessSlug}` : '',
-    businessSlug ? `${businessSlug}-${baseUser}` : '',
-    realNameSlug && businessSlug ? `${realNameSlug}-${businessSlug}` : '',
-    realNameSlug ? realNameSlug : '',
-    `${baseUser}-1`,
-    `${baseUser}-2`,
-  ])
-    .filter((candidate) => candidate !== baseUser)
-    .map((candidate) => candidate.slice(0, 32));
-
-  return candidates.slice(0, 5);
-};
-
 const buildRecoverableExecuteResponse = ({
   logs,
   error,
@@ -81,11 +66,18 @@ const buildRecoverableExecuteResponse = ({
   const recoverable = error?.agentRecoverable;
   if (!recoverable) return null;
 
-  addLog(logs, recoverable.message || 'Se requiere una corrección para continuar.', 'warning');
+  addLog(
+    logs,
+    recoverable.message || 'Se requiere una corrección para continuar.',
+    'warning',
+  );
   if (recoverable.clarificationQuestion) {
     addLog(logs, `🤖 ${recoverable.clarificationQuestion}`, 'info');
   }
-  if (Array.isArray(recoverable.suggestions) && recoverable.suggestions.length > 0) {
+  if (
+    Array.isArray(recoverable.suggestions) &&
+    recoverable.suggestions.length > 0
+  ) {
     addLog(logs, `Sugerencias: ${recoverable.suggestions.join(', ')}`, 'info');
   }
 
@@ -105,79 +97,252 @@ const buildRecoverableExecuteResponse = ({
 const maybeExtractRecoverableErrorResponse = (params) =>
   buildRecoverableExecuteResponse(params);
 
-const ensureAgentUsernamesAvailable = async ({ users, business }) => {
-  for (let index = 0; index < users.length; index += 1) {
-    const user = users[index];
-    const username = readString(user?.name).toLowerCase();
-    if (!username) continue;
-
-    const existingSnap = await db
-      .collection('users')
-      .where('name', '==', username)
-      .limit(1)
-      .get();
-
-    if (!existingSnap.empty) {
-      const suggestions = buildUsernameSuggestions({
-        username,
-        businessName: business?.name,
-        realName: user?.realName,
-      });
-
-      throw makeRecoverableHttpsError(
-        'already-exists',
-        `El nombre de usuario "${username}" ya existe.`,
+const buildCreateBusinessSuccessResponse = ({
+  logs,
+  rawActionData,
+  business,
+  users,
+  businessId,
+  reusedExecution = false,
+}) => ({
+  ok: true,
+  action: 'create_business',
+  logs: reusedExecution
+    ? [
         {
-          code: 'USERNAME_ALREADY_EXISTS',
-          message: `El nombre de usuario "${username}" ya existe.`,
-          field: `users[${index}].name`,
-          value: username,
-          suggestions,
-          clarificationQuestion:
-            suggestions.length > 0
-              ? `El usuario "${username}" ya existe. ¿Cuál prefieres? ${suggestions
-                  .slice(0, 3)
-                  .join(', ')}`
-              : `El usuario "${username}" ya existe. Indícame otro nombre de usuario para ${user?.realName || username}.`,
-          suggestedUserPrompt:
-            suggestions[0]
-              ? `Usa "${suggestions[0]}" para ${user?.realName || username} y conserva el resto igual.`
-              : `Cambia el username "${username}" por uno disponible y conserva el resto igual.`,
+          msg: `Resultado reutilizado por idempotencia: ${businessId}`,
+          type: 'info',
         },
+        ...logs,
+      ]
+    : logs,
+  data: {
+    ...rawActionData,
+    business,
+    users,
+    createdBusinessId: businessId,
+  },
+  metadata: reusedExecution ? { reusedExecution: true } : undefined,
+});
+
+const getExecutionIdempotencyRef = ({ actorUid, executeRequestId }) =>
+  db
+    .collection('aiBusinessSeedingExecutionRequestActors')
+    .doc(actorUid)
+    .collection('aiBusinessSeedingExecutionRequestItems')
+    .doc(executeRequestId);
+
+const getIdempotencyExpiresAt = () =>
+  Timestamp.fromMillis(Date.now() + IDEMPOTENCY_TTL_MS);
+
+const reserveExecutionIdempotency = async ({
+  actorUid,
+  executeRequestId,
+  requestHash,
+  actionId,
+}) => {
+  const requestId =
+    normalizeAiBusinessSeedingExecuteRequestId(executeRequestId);
+
+  if (!actorUid || !requestId) {
+    return { ref: null, reused: null, requestId: '' };
+  }
+
+  const ref = getExecutionIdempotencyRef({
+    actorUid,
+    executeRequestId: requestId,
+  });
+
+  const result = await db.runTransaction(async (transaction) => {
+    const snap = await transaction.get(ref);
+
+    if (!snap.exists) {
+      transaction.set(ref, {
+        id: requestId,
+        actorUid,
+        actionId,
+        requestHash,
+        status: 'pending',
+        attempts: 1,
+        createdAt: FieldValue.serverTimestamp(),
+        expiresAt: getIdempotencyExpiresAt(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+      return { reused: null };
+    }
+
+    const existing = readObject(snap.data());
+    const storedHash = readString(existing.requestHash);
+    if (storedHash && storedHash !== requestHash) {
+      throw new HttpsError(
+        'already-exists',
+        'La llave de idempotencia ya fue utilizada con otro payload.',
       );
     }
+
+    const status = readString(existing.status).toLowerCase();
+    if (status === 'completed') {
+      const createdBusinessId = readString(existing.createdBusinessId);
+      if (createdBusinessId) {
+        return { reused: { createdBusinessId } };
+      }
+      throw new HttpsError(
+        'failed-precondition',
+        'La ejecucion ya fue completada, pero no tiene businessId registrado.',
+      );
+    }
+
+    if (status === 'failed') {
+      transaction.set(
+        ref,
+        {
+          status: 'pending',
+          attempts: FieldValue.increment(1),
+          expiresAt: getIdempotencyExpiresAt(),
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+      return { reused: null };
+    }
+
+    throw new HttpsError(
+      'failed-precondition',
+      'Esta ejecucion del asistente ya esta en proceso. Espera unos segundos antes de reintentar.',
+    );
+  });
+
+  return { ref, requestId, reused: result.reused };
+};
+
+const completeExecutionIdempotency = async ({ ref, createdBusinessId }) => {
+  if (!ref || !createdBusinessId) return;
+
+  await ref.set(
+    {
+      status: 'completed',
+      createdBusinessId,
+      completedAt: FieldValue.serverTimestamp(),
+      expiresAt: getIdempotencyExpiresAt(),
+      updatedAt: FieldValue.serverTimestamp(),
+    },
+    { merge: true },
+  );
+};
+
+const failExecutionIdempotency = async ({ ref, error }) => {
+  if (!ref) return;
+
+  const errorCode = readString(error?.code) || 'unknown';
+  const errorMessage =
+    readString(error?.message).slice(0, 500) ||
+    'Error desconocido durante la ejecucion.';
+
+  await ref.set(
+    {
+      status: 'failed',
+      errorCode,
+      errorMessage,
+      expiresAt: getIdempotencyExpiresAt(),
+      failedAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    },
+    { merge: true },
+  );
+};
+
+const safelyFailExecutionIdempotency = async ({ ref, error }) => {
+  try {
+    await failExecutionIdempotency({ ref, error });
+  } catch {
+    // Preserve the original execution error; idempotency failure is diagnostic.
   }
 };
 
-const ensureAgentEmailsAvailable = async ({ users }) => {
-  for (let index = 0; index < users.length; index += 1) {
-    const user = users[index];
-    const email = readString(user?.email).toLowerCase();
-    if (!email) continue;
+const findExistingUserValues = async (field, values) => {
+  const normalizedValues = normalizeAvailabilityValues(values);
+  if (normalizedValues.length === 0) return new Set();
 
-    const existingSnap = await db
-      .collection('users')
-      .where('email', '==', email)
-      .limit(1)
-      .get();
+  const snapshots = await Promise.all(
+    chunkAvailabilityValues(normalizedValues).map((chunk) =>
+      db.collection('users').where(field, 'in', chunk).get(),
+    ),
+  );
 
-    if (!existingSnap.empty) {
-      throw makeRecoverableHttpsError(
-        'already-exists',
-        `Ya existe un usuario con el correo ${email}.`,
-        {
-          code: 'EMAIL_ALREADY_EXISTS',
-          message: `El correo ${email} ya está registrado.`,
-          field: `users[${index}].email`,
-          value: email,
-          clarificationQuestion:
-            `El correo ${email} ya existe. ¿Quieres cambiar ese correo o dejar el usuario sin correo?`,
-          suggestedUserPrompt:
-            `Cambia el correo ${email} por uno disponible o elimínalo de ese usuario. Conserva el resto igual.`,
-        },
-      );
+  const matches = new Set();
+  for (const snap of snapshots) {
+    for (const doc of snap.docs) {
+      const value = readString(doc.get(field)).toLowerCase();
+      if (value) matches.add(value);
     }
   }
+
+  return matches;
+};
+
+const ensureAgentUsernamesAvailable = async ({ users, business }) => {
+  const proposedNames = users.map((user) => user?.name);
+  const existingNames = await findExistingUserValues('name', proposedNames);
+  const duplicate = findFirstMatchingAvailabilityValue(
+    proposedNames,
+    existingNames,
+  );
+
+  if (!duplicate) return;
+
+  const user = users[duplicate.index];
+  const username = duplicate.value;
+  const suggestions = buildAiBusinessSeedingUsernameSuggestions({
+    username,
+    businessName: business?.name,
+    realName: user?.realName,
+  });
+
+  throw makeRecoverableHttpsError(
+    'already-exists',
+    `El nombre de usuario "${username}" ya existe.`,
+    {
+      code: 'USERNAME_ALREADY_EXISTS',
+      message: `El nombre de usuario "${username}" ya existe.`,
+      field: `users[${duplicate.index}].name`,
+      value: username,
+      suggestions,
+      clarificationQuestion:
+        suggestions.length > 0
+          ? `El usuario "${username}" ya existe. ¿Cuál prefieres? ${suggestions
+              .slice(0, 3)
+              .join(', ')}`
+          : `El usuario "${username}" ya existe. Indícame otro nombre de usuario para ${user?.realName || username}.`,
+      suggestedUserPrompt: suggestions[0]
+        ? `Usa "${suggestions[0]}" para ${user?.realName || username} y conserva el resto igual.`
+        : `Cambia el username "${username}" por uno disponible y conserva el resto igual.`,
+    },
+  );
+};
+
+const ensureAgentEmailsAvailable = async ({ users }) => {
+  const proposedEmails = users.map((user) => user?.email);
+  const existingEmails = await findExistingUserValues('email', proposedEmails);
+  const duplicate = findFirstMatchingAvailabilityValue(
+    proposedEmails,
+    existingEmails,
+  );
+
+  if (!duplicate) return;
+
+  const email = duplicate.value;
+  throw makeRecoverableHttpsError(
+    'already-exists',
+    `Ya existe un usuario con el correo ${email}.`,
+    {
+      code: 'EMAIL_ALREADY_EXISTS',
+      message: `El correo ${email} ya está registrado.`,
+      field: `users[${duplicate.index}].email`,
+      value: email,
+      clarificationQuestion: `El correo ${email} ya existe. ¿Quieres cambiar ese correo o dejar el usuario sin correo?`,
+      suggestedUserPrompt: `Cambia el correo ${email} por uno disponible o elimínalo de ese usuario. Conserva el resto igual.`,
+    },
+  );
 };
 
 const makeCompliantPassword = (user) => {
@@ -218,15 +383,20 @@ const normalizeCreateBusinessPayload = (actionData, logs) => {
   const invalidNameUser = normalizedUsers.find((user) => !user.name);
   if (invalidNameUser) {
     const invalidIndex = normalizedUsers.findIndex((user) => !user.name);
-    throw makeRecoverableHttpsError('invalid-argument', 'Todos los usuarios requieren name.', {
-      code: 'USERNAME_REQUIRED',
-      message: 'Falta el nombre de usuario (username) de uno de los usuarios.',
-      field: invalidIndex >= 0 ? `users[${invalidIndex}].name` : 'users',
-      clarificationQuestion:
-        'Falta un nombre de usuario. Indícame el username o el nombre real del usuario faltante para generarlo.',
-      suggestedUserPrompt:
-        'Completa el username faltante y conserva el resto igual.',
-    });
+    throw makeRecoverableHttpsError(
+      'invalid-argument',
+      'Todos los usuarios requieren name.',
+      {
+        code: 'USERNAME_REQUIRED',
+        message:
+          'Falta el nombre de usuario (username) de uno de los usuarios.',
+        field: invalidIndex >= 0 ? `users[${invalidIndex}].name` : 'users',
+        clarificationQuestion:
+          'Falta un nombre de usuario. Indícame el username o el nombre real del usuario faltante para generarlo.',
+        suggestedUserPrompt:
+          'Completa el username faltante y conserva el resto igual.',
+      },
+    );
   }
 
   const ownerUsers = normalizedUsers.filter((user) => user.role === 'owner');
@@ -281,6 +451,8 @@ const normalizeCreateBusinessPayload = (actionData, logs) => {
 
 const runCreateBusinessExecution = async ({
   request,
+  actorUid,
+  executeRequestId,
   actionData,
   isTestMode,
 }) => {
@@ -288,6 +460,8 @@ const runCreateBusinessExecution = async ({
   let business = {};
   let users = [];
   let rawActionData = readObject(actionData);
+  let idempotency = { ref: null, reused: null };
+  let businessId = '';
 
   try {
     const normalized = normalizeCreateBusinessPayload(actionData, logs);
@@ -295,21 +469,53 @@ const runCreateBusinessExecution = async ({
     users = normalized.users;
     rawActionData = normalized.rawActionData;
 
-    addLog(logs, `🔍 Iniciando registro de "${business.name || ''}"...`, 'info');
+    addLog(
+      logs,
+      `🔍 Iniciando registro de "${business.name || ''}"...`,
+      'info',
+    );
 
     // Mantener modo prueba lo más parecido posible al modo real:
     // validamos conflictos comunes (usernames/correos existentes) antes de simular.
     await ensureAgentUsernamesAvailable({ users, business });
     await ensureAgentEmailsAvailable({ users });
 
-    let businessId = '';
+    const requestHash = buildAiBusinessSeedingExecutionRequestHash({
+      action: 'create_business',
+      isTestMode,
+      business,
+      users,
+    });
+
+    idempotency = await reserveExecutionIdempotency({
+      actorUid,
+      executeRequestId,
+      requestHash,
+      actionId: 'create_business',
+    });
+
+    if (idempotency.reused?.createdBusinessId) {
+      return buildCreateBusinessSuccessResponse({
+        logs,
+        rawActionData,
+        business,
+        users,
+        businessId: idempotency.reused.createdBusinessId,
+        reusedExecution: true,
+      });
+    }
+
     if (isTestMode) {
       await sleep(800);
       businessId = `simulated_id_${Math.random().toString(36).slice(2, 6)}`;
       addLog(logs, `✅ Negocio simulado ID: ${businessId}`, 'success');
       for (const user of users) {
         await sleep(400);
-        addLog(logs, `✅ Usuario simulado: ${user.name || ''} (${user.role})`, 'success');
+        addLog(
+          logs,
+          `✅ Usuario simulado: ${user.name || ''} (${user.role})`,
+          'success',
+        );
       }
     } else {
       const sessionToken = readString(readObject(request.data).sessionToken);
@@ -319,7 +525,11 @@ const runCreateBusinessExecution = async ({
           'sessionToken requerido para ejecutar create_business en el agente.',
         );
       }
-      addLog(logs, '🧩 Ejecutando creación atómica (negocio + usuarios)...', 'info');
+      addLog(
+        logs,
+        '🧩 Ejecutando creación atómica (negocio + usuarios)...',
+        'info',
+      );
 
       if (typeof clientSeedBusinessWithUsers.run !== 'function') {
         throw new HttpsError(
@@ -349,32 +559,50 @@ const runCreateBusinessExecution = async ({
 
       businessId = readString(seedResponse?.id);
       if (!businessId) {
-        throw new HttpsError('internal', 'Respuesta inválida: no se recibió businessId.');
+        throw new HttpsError(
+          'internal',
+          'Respuesta inválida: no se recibió businessId.',
+        );
       }
       addLog(logs, `✅ Negocio creado ID: ${businessId}`, 'success');
       users.forEach((user) => {
-        addLog(logs, `✅ Usuario creado: ${user.name || ''} (${user.role})`, 'success');
+        addLog(
+          logs,
+          `✅ Usuario creado: ${user.name || ''} (${user.role})`,
+          'success',
+        );
       });
     }
 
-    return {
-      ok: true,
-      action: 'create_business',
-      logs,
-      data: {
-        ...rawActionData,
-        business,
-        users,
+    try {
+      await completeExecutionIdempotency({
+        ref: idempotency.ref,
         createdBusinessId: businessId,
-      },
-    };
+      });
+    } catch {
+      addLog(
+        logs,
+        'No se pudo registrar la idempotencia final; conserva el businessId antes de reintentar.',
+        'warning',
+      );
+    }
+
+    return buildCreateBusinessSuccessResponse({
+      logs,
+      rawActionData,
+      business,
+      users,
+      businessId,
+    });
   } catch (error) {
     let handledError = error;
 
     if (error instanceof HttpsError) {
       const duplicateEmailMatch =
         typeof error.message === 'string'
-          ? error.message.match(/Ya existe un usuario con el correo\s+(.+?)\.?$/i)
+          ? error.message.match(
+              /Ya existe un usuario con el correo\s+(.+?)\.?$/i,
+            )
           : null;
       const duplicateUsernameGeneric =
         typeof error.message === 'string' &&
@@ -386,12 +614,14 @@ const runCreateBusinessExecution = async ({
           message: `El correo ${duplicateEmailMatch[1]} ya está registrado.`,
           field: 'users.email',
           value: duplicateEmailMatch[1],
-          clarificationQuestion:
-            `El correo ${duplicateEmailMatch[1]} ya existe. ¿Quieres cambiar ese correo o dejar el usuario sin correo?`,
-          suggestedUserPrompt:
-            `Cambia el correo ${duplicateEmailMatch[1]} por uno disponible o elimínalo de ese usuario. Conserva el resto igual.`,
+          clarificationQuestion: `El correo ${duplicateEmailMatch[1]} ya existe. ¿Quieres cambiar ese correo o dejar el usuario sin correo?`,
+          suggestedUserPrompt: `Cambia el correo ${duplicateEmailMatch[1]} por uno disponible o elimínalo de ese usuario. Conserva el resto igual.`,
         });
-      } else if (duplicateUsernameGeneric && Array.isArray(users) && users.length > 0) {
+      } else if (
+        duplicateUsernameGeneric &&
+        Array.isArray(users) &&
+        users.length > 0
+      ) {
         const user = users[0];
         const username = readString(user?.name).toLowerCase();
         handledError = attachRecoverableError(error, {
@@ -401,7 +631,7 @@ const runCreateBusinessExecution = async ({
             : 'Un nombre de usuario ya existe o se ocupó durante el proceso.',
           field: username ? 'users[0].name' : 'users',
           value: username || undefined,
-          suggestions: buildUsernameSuggestions({
+          suggestions: buildAiBusinessSeedingUsernameSuggestions({
             username,
             businessName: business?.name,
             realName: user?.realName,
@@ -424,27 +654,36 @@ const runCreateBusinessExecution = async ({
       users,
     });
     if (recoverableResponse) {
+      await safelyFailExecutionIdempotency({
+        ref: businessId ? null : idempotency.ref,
+        error: handledError,
+      });
       return recoverableResponse;
     }
+
+    await safelyFailExecutionIdempotency({
+      ref: businessId ? null : idempotency.ref,
+      error: handledError,
+    });
 
     throw handledError;
   }
 };
 
 export const aiBusinessSeedingAgentExecute = onCall(
-  {
-    region: AI_AGENT_REGION,
+  buildAiAgentCallableOptions({
     timeoutSeconds: 180,
     memory: '512MiB',
-    enforceAppCheck: false,
-  },
+  }),
   async (request) => {
-    await assertAiBusinessSeedingDeveloperAccess(request);
+    const { uid: actorUid } =
+      await assertAiBusinessSeedingDeveloperAccess(request);
 
     const payload = readObject(request.data);
     const actionId = readString(payload.actionId);
     const actionData = payload.actionData;
     const isTestMode = payload.isTestMode === true;
+    const executeRequestId = readString(payload.executeRequestId);
 
     if (!actionId) {
       throw new HttpsError('invalid-argument', 'actionId es requerido.');
@@ -462,11 +701,16 @@ export const aiBusinessSeedingAgentExecute = onCall(
     if (actionId === 'create_business') {
       return runCreateBusinessExecution({
         request,
+        actorUid,
+        executeRequestId,
         actionData,
         isTestMode,
       });
     }
 
-    throw new HttpsError('invalid-argument', `Acción no soportada: ${actionId}`);
+    throw new HttpsError(
+      'invalid-argument',
+      `Acción no soportada: ${actionId}`,
+    );
   },
 );

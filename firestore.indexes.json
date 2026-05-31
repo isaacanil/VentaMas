@@ -1427,6 +1427,12 @@
   ],
   "fieldOverrides": [
     {
+      "collectionGroup": "aiBusinessSeedingExecutionRequestItems",
+      "fieldPath": "expiresAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
       "collectionGroup": "sessionTokens",
       "fieldPath": "expiresAt",
       "ttl": true,

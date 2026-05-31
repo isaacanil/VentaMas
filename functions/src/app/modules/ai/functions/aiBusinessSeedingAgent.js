@@ -1,38 +1,45 @@
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 
+import { buildAiAgentCallableOptions } from '../config/aiCallableOptions.js';
+import {
+  AI_BUSINESS_SEEDING_OPERATIONS,
+  readAiBusinessSeedingOperation,
+  resolveAiBusinessSeedingOperationTarget,
+} from '../utils/aiBusinessSeedingOperations.js';
 import { aiBusinessSeedingAgentAnalyze } from './aiBusinessSeedingAgentAnalyze.js';
 import { aiBusinessSeedingAgentExecute } from './aiBusinessSeedingAgentExecute.js';
-
-const AI_AGENT_REGION = 'us-central1';
+import { aiBusinessSeedingAgentStatus } from './aiBusinessSeedingAgentStatus.js';
 
 const readObject = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 
-const readString = (value) =>
-  typeof value === 'string' && value.trim() ? value.trim() : '';
-
 export const aiBusinessSeedingAgent = onCall(
-  {
+  buildAiAgentCallableOptions({
     cors: true,
     invoker: 'public',
-    region: AI_AGENT_REGION,
     timeoutSeconds: 180,
     memory: '512MiB',
-    enforceAppCheck: false,
-  },
+  }),
   async (request) => {
     const payload = readObject(request.data);
-    const operation =
-      readString(payload.operation) || readString(payload.op) || 'analyze';
+    const operation = readAiBusinessSeedingOperation(payload);
+    const target = resolveAiBusinessSeedingOperationTarget(operation);
 
-    if (operation === 'analyze') {
+    if (target === AI_BUSINESS_SEEDING_OPERATIONS.STATUS) {
+      if (typeof aiBusinessSeedingAgentStatus.run !== 'function') {
+        throw new HttpsError('internal', 'Dispatcher status unavailable.');
+      }
+      return aiBusinessSeedingAgentStatus.run(request);
+    }
+
+    if (target === AI_BUSINESS_SEEDING_OPERATIONS.ANALYZE) {
       if (typeof aiBusinessSeedingAgentAnalyze.run !== 'function') {
         throw new HttpsError('internal', 'Dispatcher analyze unavailable.');
       }
       return aiBusinessSeedingAgentAnalyze.run(request);
     }
 
-    if (operation === 'execute') {
+    if (target === AI_BUSINESS_SEEDING_OPERATIONS.EXECUTE) {
       if (typeof aiBusinessSeedingAgentExecute.run !== 'function') {
         throw new HttpsError('internal', 'Dispatcher execute unavailable.');
       }

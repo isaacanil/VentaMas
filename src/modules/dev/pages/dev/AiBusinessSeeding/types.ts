@@ -2,6 +2,15 @@ import type React from 'react';
 
 export type LogType = 'info' | 'success' | 'warning' | 'error';
 
+export const AI_BUSINESS_SEEDING_OPERATIONS = {
+  ANALYZE: 'analyze',
+  EXECUTE: 'execute',
+  STATUS: 'status',
+} as const;
+
+export type AiBusinessSeedingOperation =
+  (typeof AI_BUSINESS_SEEDING_OPERATIONS)[keyof typeof AI_BUSINESS_SEEDING_OPERATIONS];
+
 export interface LogEntry {
   msg: string;
   type: LogType;
@@ -29,6 +38,43 @@ export interface AgentConversationContext {
     actionId: string | null;
     executionSuccess: boolean;
   }>;
+}
+
+export interface AgentRuntimeMetadata {
+  appCheckMode?: string;
+  appCheckTokenPresent?: boolean;
+  authPresent?: boolean;
+  availableActions?: string[];
+  durationMs?: number;
+  generatedAt?: string;
+  location?: string;
+  model?: string;
+  modelConfigSource?: string;
+  thinkingLevel?: string | null;
+  thoughtSummariesEnabled?: boolean;
+  schemaVersion?: string;
+  structuredOutput?: boolean;
+  constrainedOutput?: boolean;
+  usage?: AgentUsageMetadata;
+  requestMetrics?: AgentRequestMetrics;
+}
+
+export interface AgentUsageMetadata {
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
+  inputCharacters?: number;
+  outputCharacters?: number;
+  thoughtsTokens?: number;
+  cachedContentTokens?: number;
+}
+
+export interface AgentRequestMetrics {
+  contextCharacters?: number;
+  contextOriginalCharacters?: number;
+  contextTruncated?: boolean;
+  promptCharacters?: number;
+  promptWithContextCharacters?: number;
 }
 
 export interface ConversationTurn {

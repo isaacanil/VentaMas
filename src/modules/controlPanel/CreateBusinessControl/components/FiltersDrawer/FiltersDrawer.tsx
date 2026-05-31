@@ -1,18 +1,28 @@
 import {
-  faFilter,
-  faMapMarkerAlt,
-  faGlobe,
-  faStoreAlt,
   faCalendarAlt,
+  faFileInvoiceDollar,
+  faFilter,
+  faGlobe,
+  faMapMarkerAlt,
   faSortAmountDown,
   faSortAmountUp,
+  faStoreAlt,
   faUserShield,
-  faFileInvoiceDollar,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, Drawer, Select, Space, Typography } from 'antd';
+import { Button, Drawer, Select, Typography } from 'antd';
 import React from 'react';
-import styled from 'styled-components';
+
+import {
+  DrawerFooter,
+  DrawerTitle,
+  FilterControl,
+  FilterLabel,
+  FiltersSpace,
+  LabelIcon,
+  SortOption,
+  TitleIcon,
+} from './FiltersDrawer.styles';
 
 type SortBy = 'newest' | 'oldest';
 type OwnerStateFilter = 'all' | 'with_owner' | 'without_owner';
@@ -56,14 +66,6 @@ const getSubscriptionStatusLabel = (status: string): string => {
   return SUBSCRIPTION_LABELS[status] || status;
 };
 
-const FilterLabel = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-  font-size: 14px;
-  color: #595959;
-`;
-
 const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
   visible,
   onClose,
@@ -79,60 +81,52 @@ const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
   return (
     <Drawer
       title={
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <FontAwesomeIcon icon={faFilter} style={{ color: '#1890ff' }} />
+        <DrawerTitle>
+          <TitleIcon icon={faFilter} />
           <span>Filtros y Ordenamiento</span>
-        </div>
+        </DrawerTitle>
       }
       placement="right"
       onClose={onClose}
       open={visible}
       width={360}
       footer={
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
+        <DrawerFooter>
           <Typography.Text>
             {resultsCount}{' '}
             {resultsCount === 1 ? 'negocio encontrado' : 'negocios encontrados'}
           </Typography.Text>
           <Button onClick={resetFilters}>Limpiar Filtros</Button>
-        </div>
+        </DrawerFooter>
       }
     >
-      <Space orientation="vertical" style={{ width: '100%' }} size="large">
-        <div>
+      <FiltersSpace orientation="vertical" size="large">
+        <FilterControl>
           <FilterLabel>
-            <FontAwesomeIcon
-              icon={faMapMarkerAlt}
-              style={{ marginRight: '8px' }}
-            />
+            <LabelIcon icon={faMapMarkerAlt} />
             Provincia
           </FilterLabel>
           <Select
-            style={{ width: '100%' }}
             placeholder="Seleccionar provincia"
             value={filters.province}
             onChange={(value: string | undefined) =>
               handleFilterChange('province', value ?? '')
             }
             allowClear
-            options={availableProvinces.map((province) => ({ value: province, label: province }))}
+            options={availableProvinces.map((province) => ({
+              value: province,
+              label: province,
+            }))}
           />
-        </div>
+        </FilterControl>
 
-        <div>
+        <FilterControl>
           <FilterLabel>
-            <FontAwesomeIcon icon={faGlobe} style={{ marginRight: '8px' }} />
-            País
+            <LabelIcon icon={faGlobe} />
+            Pais
           </FilterLabel>
           <Select
-            style={{ width: '100%' }}
-            placeholder="Seleccionar país"
+            placeholder="Seleccionar pais"
             value={filters.country}
             onChange={(value: string | undefined) =>
               handleFilterChange('country', value ?? '')
@@ -142,7 +136,7 @@ const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
               value: country,
               label:
                 country === 'do'
-                  ? 'República Dominicana'
+                  ? 'Republica Dominicana'
                   : country === 'co'
                     ? 'Colombia'
                     : country === 'us'
@@ -150,15 +144,14 @@ const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
                       : country,
             }))}
           />
-        </div>
+        </FilterControl>
 
-        <div>
+        <FilterControl>
           <FilterLabel>
-            <FontAwesomeIcon icon={faStoreAlt} style={{ marginRight: '8px' }} />
+            <LabelIcon icon={faStoreAlt} />
             Tipo de Negocio
           </FilterLabel>
           <Select
-            style={{ width: '100%' }}
             placeholder="Seleccionar tipo"
             value={filters.businessType}
             onChange={(value: string | undefined) =>
@@ -177,40 +170,32 @@ const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
                       : type,
             }))}
           />
-        </div>
+        </FilterControl>
 
-        <div>
+        <FilterControl>
           <FilterLabel>
-            <FontAwesomeIcon
-              icon={faUserShield}
-              style={{ marginRight: '8px' }}
-            />
+            <LabelIcon icon={faUserShield} />
             Propietario
           </FilterLabel>
           <Select
-            style={{ width: '100%' }}
             value={filters.ownerState}
             onChange={(value: OwnerStateFilter) =>
               handleFilterChange('ownerState', value)
             }
             options={[
               { value: 'all', label: 'Todos' },
-              { value: 'with_owner', label: 'Con dueño' },
-              { value: 'without_owner', label: 'Sin dueño' },
+              { value: 'with_owner', label: 'Con dueno' },
+              { value: 'without_owner', label: 'Sin dueno' },
             ]}
           />
-        </div>
+        </FilterControl>
 
-        <div>
+        <FilterControl>
           <FilterLabel>
-            <FontAwesomeIcon
-              icon={faFileInvoiceDollar}
-              style={{ marginRight: '8px' }}
-            />
-            Estado de Suscripción
+            <LabelIcon icon={faFileInvoiceDollar} />
+            Estado de Suscripcion
           </FilterLabel>
           <Select
-            style={{ width: '100%' }}
             placeholder="Todos los estados"
             value={filters.subscriptionStatus || undefined}
             onChange={(value: string | undefined) =>
@@ -222,47 +207,39 @@ const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
               label: getSubscriptionStatusLabel(status),
             }))}
           />
-        </div>
+        </FilterControl>
 
-        <div>
+        <FilterControl>
           <FilterLabel>
-            <FontAwesomeIcon
-              icon={faCalendarAlt}
-              style={{ marginRight: '8px' }}
-            />
-            Ordenar por Fecha de Creación
+            <LabelIcon icon={faCalendarAlt} />
+            Ordenar por Fecha de Creacion
           </FilterLabel>
           <Select
-            style={{ width: '100%' }}
             value={filters.sortBy}
             onChange={(value: SortBy) => handleFilterChange('sortBy', value)}
             options={[
               {
                 value: 'newest',
                 label: (
-                  <div
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-                  >
+                  <SortOption>
                     <FontAwesomeIcon icon={faSortAmountDown} />
-                    <span>Más recientes primero</span>
-                  </div>
+                    <span>Mas recientes primero</span>
+                  </SortOption>
                 ),
               },
               {
                 value: 'oldest',
                 label: (
-                  <div
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-                  >
+                  <SortOption>
                     <FontAwesomeIcon icon={faSortAmountUp} />
-                    <span>Más antiguos primero</span>
-                  </div>
+                    <span>Mas antiguos primero</span>
+                  </SortOption>
                 ),
               },
             ]}
           />
-        </div>
-      </Space>
+        </FilterControl>
+      </FiltersSpace>
     </Drawer>
   );
 };

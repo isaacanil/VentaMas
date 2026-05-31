@@ -58,9 +58,9 @@ export default [
       ...reactHooks.configs.recommended.rules,
       'react-hooks/set-state-in-effect': 'error',
 
-      // === Limpieza automática ===
+      // Unused vars are handled by the fast lint toolchain during cleanup.
       'no-unused-vars': 'off',
-      // === Reglas de tu JSON portadas (puedes pegar todas aquí) ===
+      // Core correctness rules kept explicit for JS files.
       'constructor-super': 2,
       'for-direction': 2,
       'getter-return': [2, { allowImplicit: false }],
@@ -71,7 +71,7 @@ export default [
       'no-cond-assign': [2, 'except-parens'],
       'no-const-assign': 2,
       'no-constant-binary-expression': 2,
-      // ⚠ Ajuste recomendado:
+      // Keep constant loop checks active.
       'no-constant-condition': [2, { checkLoops: true }],
 
       // React Refresh
@@ -81,8 +81,6 @@ export default [
       ],
       'prefer-const': 'error',
 
-      // Pega aquí el resto de tus reglas del JSON…
-      // "no-dupe-args": 2, etc.
     },
   },
 
@@ -117,7 +115,7 @@ export default [
       ...reactHooks.configs.recommended.rules,
       'react-hooks/set-state-in-effect': 'error',
 
-      // === Limpieza automática ===
+      // Unused vars are handled by the fast lint toolchain during cleanup.
       'no-unused-vars': 'off',
       // React Refresh
       'react-refresh/only-export-components': [

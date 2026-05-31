@@ -107,11 +107,11 @@ const recordHrPayrollPayment = async ({
       throw new HttpsError('not-found', 'La linea de nomina no existe.');
     }
 
-    const line = { id: lineSnap.id, ...(lineSnap.data() || {}) };
+    const line = { id: lineSnap.id, ...lineSnap.data() };
     if (existingPaymentSnap.exists) {
       const existingPayment = {
         id: existingPaymentSnap.id,
-        ...(existingPaymentSnap.data() || {}),
+        ...existingPaymentSnap.data(),
       };
       if (existingPayment.status === 'confirmed' || line.status === 'paid') {
         return toPaymentResult({ payment: existingPayment, reused: true });
@@ -139,7 +139,7 @@ const recordHrPayrollPayment = async ({
     const employeeLines = linesSnap
       ? linesSnap.docs.map((docSnap) => ({
           id: docSnap.id,
-          ...(docSnap.data() || {}),
+          ...docSnap.data(),
         }))
       : [line];
     const documents = buildHrPayrollPaymentDocuments({

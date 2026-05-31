@@ -1,5 +1,9 @@
 # Plan largo de reorganización de componentes (toda la noche)
 
+> Nota actual: `src/views` ya no existe en el arbol actual. Este plan queda como
+> referencia historica; la estructura vigente se organiza alrededor de
+> `src/modules`, `src/components` y `src/router`.
+
 Objetivo: centralizar componentes compartidos, mover componentes de dominio a módulos,
 consolidar en `src/modules/*` y `src/components/*` y dejar una estructura moderna y consistente.
 

@@ -3,7 +3,7 @@ import FrontendFeatureRouteGate from '@/components/availability/FrontendFeatureR
 import { redirectAuthenticatedToDefaultLoader } from '@/router/routes/loaders/accessLoaders';
 import { Login } from '@/modules/auth/pages/Login/Login';
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
-import type { AppRoute } from '@/router/routes/routes';
+import type { AppRoute } from '@/router/types/routeTypes';
 
 const ClaimBusinessPage = lazy(() =>
   import('@/modules/auth/pages/ClaimBusinessPage/ClaimBusinessPage').then(

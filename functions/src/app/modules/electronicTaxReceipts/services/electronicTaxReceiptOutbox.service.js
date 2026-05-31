@@ -244,8 +244,8 @@ const buildElectronicSnapshot = ({
 });
 
 const mergeGisysResponses = (baseResponse, nextResponse) => ({
-  ...(baseResponse || {}),
-  ...(nextResponse || {}),
+  ...baseResponse,
+  ...nextResponse,
   submissionId:
     nextResponse?.submissionId || baseResponse?.submissionId || null,
   eNcf: nextResponse?.eNcf || baseResponse?.eNcf || null,
@@ -274,7 +274,7 @@ const updateTaskDoneTx = ({
 }) => {
   const eNcf = response?.eNcf || null;
   const ncfSnapshot = {
-    ...(invoice?.snapshot?.ncf || {}),
+    ...invoice?.snapshot?.ncf,
     code: eNcf || invoice?.snapshot?.ncf?.code || null,
     status: eNcf ? 'issued' : electronicSnapshot.status,
     documentFormat: 'electronic',
@@ -355,7 +355,7 @@ const updateTaskFailedTx = ({
   tx.update(invoiceRef, {
     'snapshot.electronicTaxReceipt': electronicSnapshot,
     'snapshot.ncf': {
-      ...(invoice?.snapshot?.ncf || {}),
+      ...invoice?.snapshot?.ncf,
       status: 'failed',
       documentFormat: 'electronic',
       provider: 'gisys_fact',
@@ -615,7 +615,7 @@ export const refreshElectronicTaxReceiptStatus = async ({
     const eNcf =
       electronicSnapshot.eNcf || currentInvoice?.snapshot?.ncf?.code || null;
     const ncfSnapshot = {
-      ...(currentInvoice?.snapshot?.ncf || {}),
+      ...currentInvoice?.snapshot?.ncf,
       code: eNcf,
       status: eNcf ? 'issued' : electronicSnapshot.status,
       documentFormat: 'electronic',

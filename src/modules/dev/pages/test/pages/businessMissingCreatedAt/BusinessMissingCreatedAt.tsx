@@ -2,19 +2,39 @@ import {
   collection,
   doc,
   getDocs,
+  serverTimestamp,
   updateDoc,
   writeBatch,
-  serverTimestamp,
 } from 'firebase/firestore';
 import React, {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useReducer,
+  useRef,
 } from 'react';
 
 import { db } from '@/firebase/firebaseconfig';
+
+import {
+  BodyCell,
+  Description,
+  EmptyName,
+  FixedDateToggle,
+  HeaderCell,
+  MissingRow,
+  Page,
+  ProgressFill,
+  ProgressHeader,
+  ProgressTrack,
+  ProgressWrapper,
+  ResultsSection,
+  ResultsTable,
+  ScanSummary,
+  SuccessNotice,
+  TableFrame,
+  Toolbar,
+} from './BusinessMissingCreatedAt.styles';
 
 interface MissingBusiness {
   id: string;
@@ -96,7 +116,9 @@ const businessMissingCreatedAtReducer = (
     case 'removeBusiness':
       return {
         ...state,
-        missing: state.missing.filter((business) => business.id !== action.businessId),
+        missing: state.missing.filter(
+          (business) => business.id !== action.businessId,
+        ),
       };
     case 'clearMissing':
       return {
@@ -114,11 +136,11 @@ const businessMissingCreatedAtReducer = (
 };
 
 /**
- * Auditoría de negocios sin campo createdAt.
+ * Auditoria de negocios sin campo createdAt.
  * Permite:
- *  - Listar todos los negocios que NO tienen createdAt (o es falsy).
+ *  - Listar todos los negocios que no tienen createdAt o es falsy.
  *  - Fijar createdAt = serverTimestamp() de forma individual o masiva.
- *  - Exportar a CSV (descarga en el navegador) la lista filtrada.
+ *  - Exportar a CSV la lista filtrada.
  */
 export default function BusinessMissingCreatedAt() {
   const [state, dispatch] = useReducer(
@@ -126,7 +148,6 @@ export default function BusinessMissingCreatedAt() {
     initialBusinessMissingCreatedAtState,
   );
   const { loading, missing, progress, fixing, useFixedDate } = state;
-  // Fecha fija solicitada: 1 de enero 2024 00:00:00 UTC
   const FIXED_ISO = '2024-01-01T00:00:00.000Z';
   const abortRef = useRef<{ aborted: boolean }>({ aborted: false });
 
@@ -150,16 +171,14 @@ export default function BusinessMissingCreatedAt() {
           if (abortRef.current.aborted) return;
           const data = (d.data() || {}) as Record<string, unknown>;
           console.log('Escaneando negocio:', d.id, data.business);
-          // NUEVO: el esquema real usa objeto anidado 'business'
           const businessObj =
             typeof data.business === 'object' && data.business !== null
               ? (data.business as Record<string, unknown>)
               : {};
-          // createdAt puede estar (incorrectamente) en root por algún hotfix anterior; damos fallback pero criterio de ausencia es el anidado
           const createdAtNested = businessObj.createdAt ?? null;
           const createdAtRoot = data.createdAt ?? null;
-          const effectiveCreatedAt = createdAtNested || createdAtRoot; // para mostrar
-          const hasCreated = !!createdAtNested; // Solo consideramos válido si está en la ruta correcta business.createdAt
+          const effectiveCreatedAt = createdAtNested || createdAtRoot;
+          const hasCreated = !!createdAtNested;
           const name =
             typeof businessObj.name === 'string'
               ? businessObj.name
@@ -204,15 +223,12 @@ export default function BusinessMissingCreatedAt() {
   };
 
   const getCreatedAtValue = (biz: MissingBusiness): unknown => {
-    // Si el documento tiene un createdAt legacy en la raíz, conservarlo.
     if (biz?.hasCreatedAtRoot && biz?.raw?.createdAt) {
-      return biz.raw.createdAt; // Puede ser Timestamp Firestore o string ISO; se persiste tal cual.
+      return biz.raw.createdAt;
     }
-    // Si se activó la fecha fija, usar esa.
     if (useFixedDate) {
-      return new Date(FIXED_ISO); // Firestore lo convertirá a Timestamp
+      return new Date(FIXED_ISO);
     }
-    // Caso default: serverTimestamp() actual.
     return serverTimestamp();
   };
 
@@ -220,8 +236,8 @@ export default function BusinessMissingCreatedAt() {
     if (fixing) return;
     dispatch({ type: 'setFixing', value: true });
     updateDoc(doc(db, 'businesses', biz.id), {
-        'business.createdAt': getCreatedAtValue(biz),
-      })
+      'business.createdAt': getCreatedAtValue(biz),
+    })
       .then(() => {
         dispatch({ type: 'removeBusiness', businessId: biz.id });
       })
@@ -244,7 +260,7 @@ export default function BusinessMissingCreatedAt() {
     dispatch({ type: 'setFixing', value: true });
     Promise.resolve()
       .then(async () => {
-        const batchSize = 400; // margen bajo el límite de 500
+        const batchSize = 400;
         let remaining = [...missing];
         while (remaining.length) {
           const slice = remaining.slice(0, batchSize);
@@ -293,7 +309,7 @@ export default function BusinessMissingCreatedAt() {
   };
 
   useEffect(() => {
-    // Escaneo manual; no automático para evitar carga involuntaria.
+    // Escaneo manual para evitar carga involuntaria.
   }, []);
 
   const pctMissing = useMemo(() => {
@@ -302,15 +318,15 @@ export default function BusinessMissingCreatedAt() {
   }, [missing.length, progress.total]);
 
   return (
-    <div style={{ padding: 16 }}>
+    <Page>
       <h2>Negocios sin createdAt</h2>
-      <p style={{ color: '#555', marginTop: 4 }}>
+      <Description>
         Escanea todos los documentos de <code>businesses</code> y muestra los
         que no tienen el campo <code>createdAt</code>.
-      </p>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
+      </Description>
+      <Toolbar>
         <button onClick={scan} disabled={loading || fixing}>
-          {loading ? 'Escaneando…' : 'Escanear'}
+          {loading ? 'Escaneando...' : 'Escanear'}
         </button>
         <button onClick={cancelScan} disabled={!loading}>
           Cancelar
@@ -319,103 +335,72 @@ export default function BusinessMissingCreatedAt() {
           onClick={fixAll}
           disabled={fixing || loading || missing.length === 0}
         >
-          {fixing ? 'Aplicando…' : `Fijar todos (${missing.length})`}
+          {fixing ? 'Aplicando...' : `Fijar todos (${missing.length})`}
         </button>
         <button onClick={exportCsv} disabled={missing.length === 0 || loading}>
           Exportar CSV ({missing.length})
         </button>
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            fontSize: 12,
-            background: '#f6f6f6',
-            padding: '4px 8px',
-            borderRadius: 4,
-          }}
-        >
+        <FixedDateToggle>
           <input
             type="checkbox"
             checked={useFixedDate}
             onChange={(e) =>
               dispatch({ type: 'setUseFixedDate', value: e.target.checked })
             }
-            style={{ margin: 0 }}
           />
           <span>Usar fecha fija 1 Ene 2024 00:00 UTC</span>
-        </label>
-        <span style={{ alignSelf: 'center', fontSize: 13, color: '#555' }}>
-          Escaneado: {progress.scanned} / {progress.total} · Faltantes:{' '}
+        </FixedDateToggle>
+        <ScanSummary>
+          Escaneado: {progress.scanned} / {progress.total} - Faltantes:{' '}
           {totalMissing} ({pctMissing.toFixed(2)}%)
-        </span>
-      </div>
+        </ScanSummary>
+      </Toolbar>
       {loading && (
-        <div style={{ marginTop: 12 }}>
+        <ProgressWrapper>
           <ProgressBar progress={progress} />
-        </div>
+        </ProgressWrapper>
       )}
       {missing.length > 0 && (
-        <div style={{ marginTop: 16 }}>
-          <div
-            style={{
-              overflow: 'auto',
-              maxHeight: '60vh',
-              border: '1px solid #eee',
-              borderRadius: 6,
-            }}
-          >
-            <table
-              style={{
-                width: '100%',
-                borderCollapse: 'collapse',
-                minWidth: 600,
-              }}
-            >
+        <ResultsSection>
+          <TableFrame>
+            <ResultsTable>
               <thead>
                 <tr>
-                  <th style={th}>ID</th>
-                  <th style={th}>Nombre</th>
-                  <th style={th}>Acción</th>
+                  <HeaderCell>ID</HeaderCell>
+                  <HeaderCell>Nombre</HeaderCell>
+                  <HeaderCell>Accion</HeaderCell>
                 </tr>
               </thead>
               <tbody>
-                {missing.map((b) => (
-                  <tr key={b.id} style={{ background: '#fff8e1' }}>
-                    <td style={td}>{b.id}</td>
-                    <td style={td}>
-                      {b.name ? (
-                        b.name
+                {missing.map((business) => (
+                  <MissingRow key={business.id}>
+                    <BodyCell>{business.id}</BodyCell>
+                    <BodyCell>
+                      {business.name ? (
+                        business.name
                       ) : (
-                        <em style={{ color: '#999' }}>(sin nombre)</em>
+                        <EmptyName>(sin nombre)</EmptyName>
                       )}
-                    </td>
-                    <td style={{ ...td }}>
-                      <button onClick={() => fixOne(b)} disabled={fixing}>
+                    </BodyCell>
+                    <BodyCell>
+                      <button
+                        onClick={() => fixOne(business)}
+                        disabled={fixing}
+                      >
                         Fijar createdAt
                       </button>
-                    </td>
-                  </tr>
+                    </BodyCell>
+                  </MissingRow>
                 ))}
               </tbody>
-            </table>
-          </div>
-        </div>
+            </ResultsTable>
+          </TableFrame>
+        </ResultsSection>
       )}
       {!loading && progress.total > 0 && missing.length === 0 && (
-        <div
-          style={{
-            marginTop: 16,
-            color: '#0f7a3e',
-            background: '#eafaf1',
-            padding: '8px 12px',
-            borderRadius: 6,
-          }}
-        >
-          Todos los negocios tienen createdAt ✔
-        </div>
+        <SuccessNotice>Todos los negocios tienen createdAt OK</SuccessNotice>
       )}
-    </div>
+    </Page>
   );
 }
 
@@ -425,63 +410,25 @@ function ProgressBar({ progress }: { progress: ScanProgress }) {
     : 0;
   return (
     <div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          fontSize: 12,
-          color: '#555',
-        }}
-      >
-        <span>Escaneando negocios…</span>
+      <ProgressHeader>
+        <span>Escaneando negocios...</span>
         <span>{pct}%</span>
-      </div>
-      <div
-        style={{
-          height: 8,
-          background: '#eee',
-          borderRadius: 6,
-          overflow: 'hidden',
-          marginTop: 4,
-        }}
-      >
-        <div
-          style={{
-            width: pct + '%',
-            background: '#1677ff',
-            height: '100%',
-            transition: 'width 200ms linear',
-          }}
-        />
-      </div>
+      </ProgressHeader>
+      <ProgressTrack>
+        <ProgressFill $pct={pct} />
+      </ProgressTrack>
     </div>
   );
 }
 
-const th = {
-  textAlign: 'left',
-  padding: '8px 10px',
-  borderBottom: '1px solid #eee',
-  position: 'sticky',
-  top: 0,
-  background: 'white',
-  zIndex: 1,
-} as const;
-
-const td = {
-  padding: '6px 10px',
-  borderBottom: '1px solid #f2f2f2',
-  fontSize: 13,
-} as const;
-
-function sanitizeCsv(text) {
+function sanitizeCsv(text: unknown) {
   if (!text) return '';
   return String(text)
     .replace(/[\n\r]+/g, ' ')
     .trim();
 }
 
-function escapeCsv(value) {
+function escapeCsv(value: unknown) {
   if (value == null) return '';
   const str = String(value);
   if (/[",\n]/.test(str)) {

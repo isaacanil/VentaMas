@@ -1,11 +1,12 @@
 import { faCalendarXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DateTime } from 'luxon';
-import React, { useEffect } from 'react';
-import styled from 'styled-components';
+import { useEffect } from 'react';
 
 import AntDatePicker from '@/components/DatePicker';
 import { Button } from '@/components/ui/Button/Button';
+
+import { Col, Container, RANGE_PICKER_STYLE } from './DatePicker.styles';
 
 const { RangePicker } = AntDatePicker;
 const DATE_LOCALE = 'es';
@@ -76,7 +77,7 @@ export const DatePicker = ({
           }
           format="DD/MM/YY"
           onChange={handleRangeChange}
-          style={{ width: '200px' }}
+          style={RANGE_PICKER_STYLE}
         />
       </Col>
       {datesDefault === 'empty' && (
@@ -91,18 +92,3 @@ export const DatePicker = ({
     </Container>
   );
 };
-
-// Estilos adaptados
-const Container = styled.div`
-  display: grid;
-  grid-template-columns: max-content;
-  gap: 0.4em;
-  width: 100%;
-`;
-
-const Col = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.2em;
-  justify-content: end;
-`;

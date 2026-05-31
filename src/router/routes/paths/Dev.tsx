@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 
 import { ROUTE_STATUS } from '@/router/routes/routeMeta';
 import RoutesName from '@/router/routes/routesName';
-import type { AppRoute } from '@/router/routes/routes';
+import type { AppRoute } from '@/router/types/routeTypes';
 
 const AllUsersControl = lazy(() =>
   import('@/modules/controlPanel/AllUsersControl/AllUsersControl').then(

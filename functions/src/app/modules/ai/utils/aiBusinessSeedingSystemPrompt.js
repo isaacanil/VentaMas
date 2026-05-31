@@ -68,18 +68,19 @@ const ACTION_PROMPTS = {
   create_business: CREATE_BUSINESS_ACTION_INSTRUCTION,
 };
 
-export const buildAiBusinessSeedingSystemPrompt = (allowedActionIds = []) => {
+export const buildAiBusinessSeedingSystemPrompt = (allowedActionIds) => {
+  const hasExplicitActionList = Array.isArray(allowedActionIds);
   const normalizedAllowed = Array.isArray(allowedActionIds)
-    ? allowedActionIds.filter((id) => typeof id === 'string' && id in ACTION_PROMPTS)
+    ? allowedActionIds.filter(
+        (id) => typeof id === 'string' && id in ACTION_PROMPTS,
+      )
     : [];
 
-  const selectedIds = normalizedAllowed.length
-    ? normalizedAllowed
+  const selectedIds = hasExplicitActionList
+    ? [...new Set(['chat', ...normalizedAllowed.filter((id) => id !== 'chat')])]
     : Object.keys(ACTION_PROMPTS);
 
-  const instructions = selectedIds
-    .map((id) => ACTION_PROMPTS[id])
-    .join('\n\n');
+  const instructions = selectedIds.map((id) => ACTION_PROMPTS[id]).join('\n\n');
 
   return `
 Eres un asistente inteligente para Ventamax (plataforma de gestión de negocios).

@@ -4,10 +4,8 @@ import { saveAs } from 'file-saver';
 import { AnimatePresence } from 'framer-motion';
 import { useMemo, useReducer } from 'react';
 import { useSelector } from 'react-redux';
-import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
-import { PageShell } from '@/components/layout/PageShell';
 import {
   useEnrichedBackOrders,
   updateBackOrder,
@@ -20,6 +18,11 @@ import type { UserIdentity } from '@/types/users';
 import FulfillModal from './components/FulfillModal';
 import Header from './components/Header';
 import ProductGroup from './components/ProductGroup';
+import {
+  PageContainer,
+  PageContent,
+  PageProductGroupsContainer,
+} from './styles';
 import type {
   BackOrderItem,
   BackorderGroup,
@@ -28,24 +31,6 @@ import type {
   BackorderStatusFilter,
   DateRangeValue,
 } from './types';
-
-const Container = styled(PageShell)`
-  display: flex;
-  flex-direction: column;
-`;
-
-const Content = styled.div`
-  flex: 1;
-  padding: 24px;
-  overflow-y: auto;
-  background: #fff;
-`;
-
-const ProductGroupsContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
-  gap: 12px;
-`;
 
 interface BackOrdersState {
   searchText: string;
@@ -359,21 +344,19 @@ const BackOrders = () => {
   }, [backorders, searchText, dateRange, sortBy, statusFilter]);
 
   return (
-    <Container>
+    <PageContainer>
       <MenuApp
         data={[]}
         sectionName="BackOrders"
-        sectionNameIcon="ðŸ“¦"
+        sectionNameIcon={'\uD83D\uDCE6'}
         onBackClick={() => undefined}
       />
       <InventoryMenu />
-      <Content>
+      <PageContent>
         <Header
           stats={stats}
           searchText={searchText}
-          setSearchText={(value) =>
-            dispatch({ type: 'setSearchText', value })
-          }
+          setSearchText={(value) => dispatch({ type: 'setSearchText', value })}
           setDateRange={(value) => dispatch({ type: 'setDateRange', value })}
           sortBy={sortBy}
           setSortBy={(value) => dispatch({ type: 'setSortBy', value })}
@@ -399,7 +382,7 @@ const BackOrders = () => {
           <Empty description="Sin backorders para mostrar" />
         ) : (
           <AnimatePresence>
-            <ProductGroupsContainer>
+            <PageProductGroupsContainer>
               {groupedBackorders.map((group) => (
                 <ProductGroup
                   key={group.productId}
@@ -412,10 +395,10 @@ const BackOrders = () => {
                   }
                 />
               ))}
-            </ProductGroupsContainer>
+            </PageProductGroupsContainer>
           </AnimatePresence>
         )}
-      </Content>
+      </PageContent>
 
       <FulfillModal
         open={fulfillOpen}
@@ -451,10 +434,14 @@ const BackOrders = () => {
               const alloc = Math.min(remaining, it.pendingQuantity || 0);
               if (alloc <= 0) continue;
               const newPending = Math.max(0, (it.pendingQuantity || 0) - alloc);
-              const currentError = await updateBackOrder(user.businessID, it.id, {
-                pendingQuantity: newPending,
-                status: newPending === 0 ? 'completed' : it.status,
-              })
+              const currentError = await updateBackOrder(
+                user.businessID,
+                it.id,
+                {
+                  pendingQuantity: newPending,
+                  status: newPending === 0 ? 'completed' : it.status,
+                },
+              )
                 .then(() => null)
                 .catch((error) => error);
               if (currentError) return currentError;
@@ -498,25 +485,25 @@ const BackOrders = () => {
             dispatch({
               type: 'setSelectedGroup',
               value: ((prev: BackorderGroup | null) => {
-              if (!prev) return prev;
-              const total = prev.totalQuantity || 0;
-              const newProgress =
-                total > 0
-                  ? Math.round(((total - newPendingLocal) / total) * 100)
-                  : 0;
-              return {
-                ...prev,
-                pendingQuantity: newPendingLocal,
-                directPendingQuantity: newDirectPendingLocal,
-                progress: newProgress,
-              };
+                if (!prev) return prev;
+                const total = prev.totalQuantity || 0;
+                const newProgress =
+                  total > 0
+                    ? Math.round(((total - newPendingLocal) / total) * 100)
+                    : 0;
+                return {
+                  ...prev,
+                  pendingQuantity: newPendingLocal,
+                  directPendingQuantity: newDirectPendingLocal,
+                  progress: newProgress,
+                };
               })(selectedGroup),
             });
           }
           dispatch({ type: 'setSubmitting', value: false });
         }}
       />
-    </Container>
+    </PageContainer>
   );
 };
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import styled, { keyframes } from 'styled-components';
 
 import { Logo } from '@/assets/logo/Logo';
@@ -22,22 +21,13 @@ export const LogoContainer = ({
         </BrandBadge>
       </Branding>
       {!hideWelcomeCopy ? (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 'clamp(0.4rem, 1vw, 0.6rem)',
-            maxWidth: '460px',
-          }}
-        >
+        <WelcomeCopy>
           <Headline>Bienvenido</Headline>
           <Description>
             Impulsa tu facturación con una plataforma en la nube ágil, segura y
             lista para usar desde el primer día.
           </Description>
-        </div>
+        </WelcomeCopy>
       ) : null}
     </Container>
   );
@@ -104,6 +94,15 @@ const Branding = styled.div`
   align-items: center;
   justify-content: center;
   width: 100%;
+`;
+
+const WelcomeCopy = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.4rem, 1vw, 0.6rem);
+  align-items: center;
+  justify-content: center;
+  max-width: 460px;
 `;
 
 const BrandBadge = styled.div`

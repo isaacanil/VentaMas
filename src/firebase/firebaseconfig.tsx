@@ -1,5 +1,10 @@
 // Import the functions you need from the SDKs you need
 import { getApp, getApps, initializeApp } from 'firebase/app';
+import {
+  initializeAppCheck,
+  ReCaptchaEnterpriseProvider,
+  type AppCheck,
+} from 'firebase/app-check';
 //TODO ***AUTH**************************************
 import { connectAuthEmulator, getAuth } from 'firebase/auth';
 //TODO ***FIRESTORE***********************************
@@ -22,7 +27,7 @@ import {
 import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
 //TODO ***STORAGE***********************************
 import { getStorage } from 'firebase/storage';
-import type { GenerativeModel } from 'firebase/vertexai';
+import type { GenerativeModel } from 'firebase/ai';
 
 import {
   getAuthEmulatorPort,
@@ -32,9 +37,18 @@ import {
   getFunctionsEmulatorPort,
   shouldUseFirebaseEmulators,
 } from './emulatorConfig';
+import {
+  DEFAULT_FIREBASE_AI_LOCATION,
+  DEFAULT_FIREBASE_AI_MODEL,
+  readPositiveInteger,
+  resolveFirebaseAiRuntimeConfigValues,
+} from './firebaseAiRuntimeConfig';
 
 const databaseURL = import.meta.env.VITE_FIREBASE_DATABASE_URL;
 const hasRealtimeDatabase = Boolean(databaseURL);
+const appCheckSiteKey = import.meta.env.VITE_FIREBASE_APPCHECK_SITE_KEY || '';
+const appCheckDebugToken =
+  import.meta.env.VITE_FIREBASE_APPCHECK_DEBUG_TOKEN || '';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -51,6 +65,39 @@ const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 const useFirebaseEmulators = shouldUseFirebaseEmulators();
 const useMemoryFirestoreCache = import.meta.env.DEV || useFirebaseEmulators;
+const canInitializeAppCheck = Boolean(appCheckSiteKey) && !useFirebaseEmulators;
+
+const configureAppCheckDebugToken = () => {
+  if (!import.meta.env.DEV || !appCheckDebugToken) return;
+
+  const globalScope = globalThis as typeof globalThis & {
+    FIREBASE_APPCHECK_DEBUG_TOKEN?: boolean | string;
+  };
+  globalScope.FIREBASE_APPCHECK_DEBUG_TOKEN =
+    appCheckDebugToken === 'true' ? true : appCheckDebugToken;
+};
+
+configureAppCheckDebugToken();
+
+const initializeAppCheckOnce = (): AppCheck | null => {
+  if (!canInitializeAppCheck) return null;
+
+  const globalScope = globalThis as typeof globalThis & {
+    __VENTAMAS_APP_CHECK__?: AppCheck;
+  };
+  if (globalScope.__VENTAMAS_APP_CHECK__) {
+    return globalScope.__VENTAMAS_APP_CHECK__;
+  }
+
+  const appCheckInstance = initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider(appCheckSiteKey),
+    isTokenAutoRefreshEnabled: true,
+  });
+  globalScope.__VENTAMAS_APP_CHECK__ = appCheckInstance;
+  return appCheckInstance;
+};
+
+export const appCheck = initializeAppCheckOnce();
 
 export const db = initializeFirestore(app, {
   // Evita cache persistente en desarrollo para no mezclar sesiones,
@@ -70,13 +117,9 @@ export const functions = getFunctions(app);
 if (useFirebaseEmulators) {
   const emulatorHost = getFirebaseEmulatorHost();
 
-  connectAuthEmulator(
-    auth,
-    `http://${emulatorHost}:${getAuthEmulatorPort()}`,
-    {
-      disableWarnings: true,
-    },
-  );
+  connectAuthEmulator(auth, `http://${emulatorHost}:${getAuthEmulatorPort()}`, {
+    disableWarnings: true,
+  });
   connectFirestoreEmulator(db, emulatorHost, getFirestoreEmulatorPort());
   connectFunctionsEmulator(functions, emulatorHost, getFunctionsEmulatorPort());
 
@@ -92,14 +135,79 @@ export const realtimeDB: Database | null = hasRealtimeDatabase
   : null;
 
 let _generativeModelInstance: GenerativeModel | null = null;
+const firebaseAiModel =
+  import.meta.env.VITE_FIREBASE_AI_MODEL || DEFAULT_FIREBASE_AI_MODEL;
+const firebaseAiLocation =
+  import.meta.env.VITE_FIREBASE_AI_LOCATION || DEFAULT_FIREBASE_AI_LOCATION;
+const firebaseAiRemoteConfigEnabled =
+  import.meta.env.VITE_FIREBASE_AI_REMOTE_CONFIG !== 'false' &&
+  !useFirebaseEmulators;
+const firebaseAiRemoteModelKey =
+  import.meta.env.VITE_FIREBASE_AI_REMOTE_MODEL_KEY || 'firebase_ai_model';
+const firebaseAiRemoteLocationKey =
+  import.meta.env.VITE_FIREBASE_AI_REMOTE_LOCATION_KEY ||
+  'firebase_ai_location';
+const firebaseAiRemoteConfigMinFetchMs = readPositiveInteger(
+  import.meta.env.VITE_FIREBASE_AI_REMOTE_CONFIG_MIN_FETCH_MS,
+  import.meta.env.DEV ? 60_000 : 3_600_000,
+);
+const firebaseAiRemoteConfigFetchTimeoutMs = readPositiveInteger(
+  import.meta.env.VITE_FIREBASE_AI_REMOTE_CONFIG_FETCH_TIMEOUT_MS,
+  10_000,
+);
+
+const resolveFirebaseAiRuntimeConfig = async (): Promise<
+  ReturnType<typeof resolveFirebaseAiRuntimeConfigValues>
+> => {
+  const fallbackConfig = resolveFirebaseAiRuntimeConfigValues({
+    envLocation: firebaseAiLocation,
+    envModel: firebaseAiModel,
+  });
+
+  if (!firebaseAiRemoteConfigEnabled) return fallbackConfig;
+
+  try {
+    const { fetchAndActivate, getRemoteConfig, getString, isSupported } =
+      await import('firebase/remote-config');
+
+    if (!(await isSupported())) return fallbackConfig;
+
+    const remoteConfig = getRemoteConfig(app);
+    remoteConfig.defaultConfig = {
+      [firebaseAiRemoteLocationKey]: fallbackConfig.location,
+      [firebaseAiRemoteModelKey]: fallbackConfig.model,
+    };
+    remoteConfig.settings.minimumFetchIntervalMillis =
+      firebaseAiRemoteConfigMinFetchMs;
+    remoteConfig.settings.fetchTimeoutMillis =
+      firebaseAiRemoteConfigFetchTimeoutMs;
+
+    await fetchAndActivate(remoteConfig);
+
+    return resolveFirebaseAiRuntimeConfigValues({
+      envLocation: fallbackConfig.location,
+      envModel: fallbackConfig.model,
+      remoteLocation: getString(remoteConfig, firebaseAiRemoteLocationKey),
+      remoteModel: getString(remoteConfig, firebaseAiRemoteModelKey),
+    });
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.warn('[Firebase AI] Remote Config no disponible.', error);
+    }
+    return fallbackConfig;
+  }
+};
 
 export const getLazyGenerativeModel = async (): Promise<GenerativeModel> => {
   if (!_generativeModelInstance) {
-    const { getVertexAI, getGenerativeModel } =
-      await import('firebase/vertexai');
-    const vertexAI = getVertexAI(app);
-    _generativeModelInstance = getGenerativeModel(vertexAI, {
-      model: 'gemini-2.5-flash',
+    const { getAI, getGenerativeModel, VertexAIBackend } =
+      await import('firebase/ai');
+    const runtimeConfig = await resolveFirebaseAiRuntimeConfig();
+    const ai = getAI(app, {
+      backend: new VertexAIBackend(runtimeConfig.location),
+    });
+    _generativeModelInstance = getGenerativeModel(ai, {
+      model: runtimeConfig.model,
     });
   }
   return _generativeModelInstance;

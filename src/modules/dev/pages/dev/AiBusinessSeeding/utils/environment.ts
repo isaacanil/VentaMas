@@ -10,25 +10,25 @@ export interface AiBusinessSeedingEnvironment {
   tone: 'warning' | 'danger';
 }
 
-const AI_BUSINESS_SEEDING_ROUTE =
-  ROUTES_NAME.DEV_VIEW_TERM.AI_BUSINESS_SEEDING;
+const AI_BUSINESS_SEEDING_ROUTE = ROUTES_NAME.DEV_VIEW_TERM.AI_BUSINESS_SEEDING;
 
-export const AI_BUSINESS_SEEDING_ENVIRONMENTS: AiBusinessSeedingEnvironment[] = [
-  {
-    id: 'staging',
-    label: 'Staging',
-    projectId: 'ventamax-staging',
-    origin: 'https://ventamax-staging.web.app',
-    tone: 'warning',
-  },
-  {
-    id: 'production',
-    label: 'Produccion',
-    projectId: 'ventamaxpos',
-    origin: 'https://ventamaxpos.web.app',
-    tone: 'danger',
-  },
-];
+export const AI_BUSINESS_SEEDING_ENVIRONMENTS: AiBusinessSeedingEnvironment[] =
+  [
+    {
+      id: 'staging',
+      label: 'Staging',
+      projectId: 'ventamax-staging',
+      origin: 'https://ventamax-staging.web.app',
+      tone: 'warning',
+    },
+    {
+      id: 'production',
+      label: 'Produccion',
+      projectId: 'ventamaxpos',
+      origin: 'https://ventamaxpos.web.app',
+      tone: 'danger',
+    },
+  ];
 
 const fallbackEnvironment = AI_BUSINESS_SEEDING_ENVIRONMENTS[0];
 
@@ -44,6 +44,13 @@ export const resolveAiBusinessSeedingEnvironment = (
     ) || fallbackEnvironment
   );
 };
+
+export const getAiBusinessSeedingEnvironmentById = (
+  environmentId?: AiBusinessSeedingEnvironmentId | null,
+) =>
+  AI_BUSINESS_SEEDING_ENVIRONMENTS.find(
+    (environment) => environment.id === environmentId,
+  ) || fallbackEnvironment;
 
 export const getCurrentAiBusinessSeedingEnvironment = () =>
   resolveAiBusinessSeedingEnvironment(import.meta.env.VITE_FIREBASE_PROJECT_ID);

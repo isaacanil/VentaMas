@@ -22,27 +22,32 @@ const DEFAULT_SERVICE_COMMISSION_SETTINGS: Required<ServiceCommissionsBillingSet
     showOnPrintedInvoice: false,
   };
 
-const toFiniteNumber = (value: unknown, fallback = 0): number => {
+export const toFiniteCommissionNumber = (
+  value: unknown,
+  fallback = 0,
+): number => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
 const roundMoney = (value: number): number => Number(value.toFixed(2));
 
-const toCleanString = (value: unknown): string | null => {
+export const cleanCommissionString = (value: unknown): string | null => {
   if (typeof value === 'number' && Number.isFinite(value)) return String(value);
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
   return trimmed.length ? trimmed : null;
 };
 
+const toCleanString = cleanCommissionString;
+
 export const normalizeServiceCommissionSettings = (
   settings?: ServiceCommissionsBillingSettings | null,
 ): Required<ServiceCommissionsBillingSettings> => ({
   ...DEFAULT_SERVICE_COMMISSION_SETTINGS,
-  ...(settings ?? {}),
+  ...settings,
   enabled: settings?.enabled === true,
-  defaultRate: Math.max(0, toFiniteNumber(settings?.defaultRate)),
+  defaultRate: Math.max(0, toFiniteCommissionNumber(settings?.defaultRate)),
   defaultType:
     settings?.defaultType === 'fixed' || settings?.defaultType === 'percentage'
       ? settings.defaultType
@@ -93,7 +98,7 @@ export const normalizeCommissionCollaborator = (
   const defaultRate =
     source.defaultRate == null
       ? null
-      : Math.max(0, toFiniteNumber(source.defaultRate));
+      : Math.max(0, toFiniteCommissionNumber(source.defaultRate));
   const id =
     toCleanString(source.id) ??
     toCleanString(source.uid) ??
@@ -153,7 +158,7 @@ export const buildServiceCommissionLineSnapshot = ({
         'percentage');
   const normalizedRate = Math.max(
     0,
-    toFiniteNumber(
+    toFiniteCommissionNumber(
       rateValue ??
         current?.rateValue ??
         collaborator.defaultRate ??

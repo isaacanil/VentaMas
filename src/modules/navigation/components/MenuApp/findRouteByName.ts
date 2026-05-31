@@ -1,5 +1,5 @@
 import { routes } from '@/router/routes/routes';
-import type { AppRoute } from '@/router/routes/routes';
+import type { AppRoute } from '@/router/types/routeTypes';
 
 const findRoute = (routesList: AppRoute[], name: string): AppRoute | null => {
   for (const route of routesList) {

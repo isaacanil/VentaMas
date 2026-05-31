@@ -1,7 +1,4 @@
-import {
-  faArrowDown,
-  faArrowUp,
-} from '@fortawesome/free-solid-svg-icons';
+import { faArrowDown, faArrowUp } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Button,
@@ -13,7 +10,20 @@ import {
   notification,
 } from 'antd';
 import { useCallback, useState } from 'react';
-import styled from 'styled-components';
+import {
+  ModalDescription,
+  SectionWrapper,
+  FieldList,
+  FieldRow,
+  FieldOrderControls,
+  OrderBtn,
+  FieldBody,
+  FieldHeader,
+  FieldKey,
+  TypeBadge,
+  FieldControls,
+  ControlLabel,
+} from './DeveloperFieldCatalogModal.styles';
 
 import type { JSX } from 'react';
 import {
@@ -241,7 +251,11 @@ export const DeveloperFieldCatalogModal = ({
       footer={
         <Space>
           <Button onClick={onClose}>Cancelar</Button>
-          <Button type="primary" loading={saving} onClick={() => void handleSave()}>
+          <Button
+            type="primary"
+            loading={saving}
+            onClick={() => void handleSave()}
+          >
             Guardar catalogo
           </Button>
         </Space>
@@ -249,7 +263,9 @@ export const DeveloperFieldCatalogModal = ({
       destroyOnHidden
       afterOpenChange={(isOpen) => {
         if (!isOpen) return;
-        setDraft(catalogToDraft(buildEditableSubscriptionFieldCatalog(fieldCatalog)));
+        setDraft(
+          catalogToDraft(buildEditableSubscriptionFieldCatalog(fieldCatalog)),
+        );
       }}
     >
       <ModalDescription>
@@ -263,98 +279,3 @@ export const DeveloperFieldCatalogModal = ({
 };
 
 export default DeveloperFieldCatalogModal;
-
-const ModalDescription = styled.p`
-  margin: 0 0 16px;
-  font-size: 0.85rem;
-  color: #64748b;
-`;
-
-const SectionWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-top: 4px;
-`;
-
-const FieldList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const FieldRow = styled.div`
-  display: flex;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-`;
-
-const FieldOrderControls = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  flex-shrink: 0;
-  padding-top: 2px;
-`;
-
-const OrderBtn = styled(Button)`
-  width: 20px !important;
-  height: 18px !important;
-  min-width: 20px !important;
-  padding: 0 !important;
-  font-size: 9px !important;
-  color: #94a3b8;
-
-  &:not(:disabled):hover {
-    color: #0f172a !important;
-  }
-`;
-
-const FieldBody = styled.div`
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0;
-`;
-
-const FieldHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  justify-content: space-between;
-  flex-wrap: wrap;
-`;
-
-const FieldKey = styled.span`
-  font-family: monospace;
-  font-size: 0.72rem;
-  color: #64748b;
-`;
-
-const TypeBadge = styled.span<{ $type: 'number' | 'boolean' }>`
-  flex-shrink: 0;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 0.68rem;
-  font-weight: 600;
-  background: ${(p) =>
-    p.$type === 'number'
-      ? 'rgb(59 130 246 / 10%)'
-      : 'rgb(13 148 136 / 10%)'};
-  color: ${(p) => (p.$type === 'number' ? '#1d4ed8' : '#0f766e')};
-`;
-
-const FieldControls = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-`;
-
-const ControlLabel = styled.span`
-  font-size: 0.78rem;
-`;

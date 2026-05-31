@@ -1,21 +1,18 @@
 import { logger } from 'firebase-functions';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 
+import { buildAiAgentCallableOptions } from '../config/aiCallableOptions.js';
 import { createBusinessWithAiFlow } from '../flows/businessCreator.flow.js';
 import { buildSuggestedBusinessDraft } from '../utils/businessDraft.util.js';
-
-const AI_AGENT_REGION = 'us-central1';
 
 const readObject = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 
 export const aiCreateBusinessAgent = onCall(
-  {
-    region: AI_AGENT_REGION,
+  buildAiAgentCallableOptions({
     timeoutSeconds: 180,
     memory: '512MiB',
-    enforceAppCheck: false,
-  },
+  }),
   async (request) => {
     const payload = readObject(request.data);
     const draftInput = readObject(payload.draftInput);

@@ -5,7 +5,11 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import {
+  InlineNotice,
+  InlineNoticeText,
+  PageContent,
+} from './DeveloperSubscriptionMaintenancePage.styles';
 
 import ROUTES_NAME from '@/router/routes/routesName';
 
@@ -50,7 +54,7 @@ const DeveloperSubscriptionMaintenanceOverviewPage = () => {
         <InlineNotice>
           <InlineNoticeText>
             Selecciona un negocio para ver limites, historial y estado real de
-            la suscripción.
+            la suscripcion.
           </InlineNoticeText>
           <Button
             size="small"
@@ -71,28 +75,3 @@ const DeveloperSubscriptionMaintenanceOverviewPage = () => {
 };
 
 export default DeveloperSubscriptionMaintenanceOverviewPage;
-
-const PageContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
-
-const InlineNotice = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding: 14px 18px;
-  border-radius: 12px;
-  border: 1px solid rgb(148 163 184 / 20%);
-  background: #ffffff;
-`;
-
-const InlineNoticeText = styled.p`
-  margin: 0;
-  color: #475569;
-  font-size: 0.9rem;
-  line-height: 1.5;
-`;

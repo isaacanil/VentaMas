@@ -177,32 +177,32 @@ export const recalculateWorkspaceInvoiceDraft = (
     products,
     paymentMethod,
     discount: {
-      ...(invoice.discount || {}),
+      ...invoice.discount,
       type: discountType,
       value: discountValue,
     },
     totalPurchase: {
-      ...(invoice.totalPurchase || {}),
+      ...invoice.totalPurchase,
       value: totalPurchase,
     },
     totalTaxes: {
-      ...(invoice.totalTaxes || {}),
+      ...invoice.totalTaxes,
       value: roundToTwoDecimals(getProductsTax(products)),
     },
     totalPurchaseWithoutTaxes: {
-      ...(invoice.totalPurchaseWithoutTaxes || {}),
+      ...invoice.totalPurchaseWithoutTaxes,
       value: roundToTwoDecimals(getProductsPrice(products)),
     },
     totalShoppingItems: {
-      ...(invoice.totalShoppingItems || {}),
+      ...invoice.totalShoppingItems,
       value: getTotalItems(products),
     },
     payment: {
-      ...(invoice.payment || {}),
+      ...invoice.payment,
       value: totalPayment,
     },
     change: {
-      ...(invoice.change || {}),
+      ...invoice.change,
       value: calculateChange(totalPurchase, totalPayment),
     },
   };
@@ -240,7 +240,7 @@ export const updateWorkspaceDraftDiscount = (
   recalculateWorkspaceInvoiceDraft({
     ...invoice,
     discount: {
-      ...(invoice.discount || {}),
+      ...invoice.discount,
       type,
       value,
     },
@@ -275,12 +275,12 @@ export const updateWorkspaceDraftProductUnitPrice = (
 
     const quantity = getWorkspaceEditProductQuantity(current);
     const nextPrice = {
-      ...(current.price || {}),
+      ...current.price,
       unit: nextUnitPrice,
       total: roundToTwoDecimals(nextUnitPrice * quantity),
     };
     const nextPricing = {
-      ...(current.pricing || {}),
+      ...current.pricing,
       price: nextUnitPrice,
     };
     const nextSelectedSaleUnit = current.selectedSaleUnit

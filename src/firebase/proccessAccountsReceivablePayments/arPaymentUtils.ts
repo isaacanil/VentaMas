@@ -1140,10 +1140,10 @@ export const createFullPaymentReceipt = ({
   );
   if (undefinedFields.length > 0) {
     console.error(
-      'âŒ Undefined fields found in payment receipt:',
+      '[error] Undefined fields found in payment receipt:',
       undefinedFields,
     );
-    console.error('âŒ Full receipt data:', receiptData);
+    console.error('[error] Full receipt data:', receiptData);
     throw new Error(
       `Payment receipt has undefined fields: ${undefinedFields.map(([key]) => key).join(', ')}`,
     );
@@ -1462,10 +1462,10 @@ export const validateFirestoreData = <T>(data: T, context = 'data'): T => {
   const undefinedPath = hasUndefined(cleanedData);
   if (undefinedPath) {
     console.error(
-      `âŒ Undefined field found in ${context} at path: ${undefinedPath}`,
+      `[error] Undefined field found in ${context} at path: ${undefinedPath}`,
     );
-    console.error(`âŒ Original data:`, data);
-    console.error(`âŒ Cleaned data:`, cleanedData);
+    console.error('[error] Original data:', data);
+    console.error('[error] Cleaned data:', cleanedData);
     throw new Error(
       `Cannot save ${context} to Firestore: undefined field at ${undefinedPath}`,
     );

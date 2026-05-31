@@ -1,11 +1,18 @@
-import { InfoCircleOutlined } from '@/constants/icons/antd';
-import { Checkbox, InputNumber, Tooltip } from 'antd';
+import { Checkbox } from 'antd';
 import { useMemo } from 'react';
 
 import { getTotalPrice, getTax } from '@/utils/pricing';
 import type { ColumnsType } from 'antd/es/table';
 import type { InvoiceProduct, InvoiceProductAmount } from '@/types/invoice';
 import type { NumberInput } from '@/utils/number/number';
+import {
+  QuantityAvailabilityDisplay,
+  QuantityAvailabilityHint,
+} from '../components/QuantityAvailabilityHint';
+import {
+  QuantityEditor,
+  QuantityInput,
+} from '../components/QuantityAvailabilityHint.styles';
 
 type CreditNoteProduct = InvoiceProduct & { maxAvailableQty?: number };
 type FormatPrice = (value: NumberInput) => string;
@@ -96,10 +103,10 @@ export const useCreditNoteColumns = ({
             1;
 
           const qtyDisplay = (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <span style={{ fontWeight: '500' }}>{value}</span>
-              <span style={{ fontSize: '11px', color: '#999' }}>/{maxQty}</span>
-            </div>
+            <QuantityAvailabilityDisplay
+              quantity={value}
+              displayQuantity={maxQty}
+            />
           );
 
           if (effectiveIsView || !selected) {
@@ -107,8 +114,8 @@ export const useCreditNoteColumns = ({
           }
 
           return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <InputNumber
+            <QuantityEditor>
+              <QuantityInput
                 min={1}
                 max={maxQty}
                 value={value}
@@ -119,49 +126,14 @@ export const useCreditNoteColumns = ({
                   )
                 }
                 size="small"
-                style={{ width: '60px' }}
               />
-              <Tooltip
-                title={
-                  <div>
-                    <div>
-                      <strong>Cálculo de Cantidad Máxima</strong>
-                    </div>
-                    <div style={{ marginBottom: '4px' }}>
-                      - Factura Original: {originalQty}
-                    </div>
-                    <div style={{ marginBottom: '4px' }}>
-                      - Acreditado en otras NC: {creditedByOthers}
-                    </div>
-                    <div
-                      style={{
-                        borderTop: '1px solid #ddd',
-                        paddingTop: '4px',
-                        marginTop: '4px',
-                      }}
-                    >
-                      <strong>Máximo disponible: {maxQty}</strong>
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '11px',
-                        color: '#999',
-                        marginTop: '4px',
-                      }}
-                    >
-                      Fórmula: {originalQty} - {creditedByOthers} = {maxQty}
-                    </div>
-                  </div>
-                }
-                placement="topLeft"
-              >
-                <span
-                  style={{ fontSize: '11px', color: '#999', cursor: 'help' }}
-                >
-                  /{maxQty} <InfoCircleOutlined />
-                </span>
-              </Tooltip>
-            </div>
+              <QuantityAvailabilityHint
+                displayQuantity={maxQty}
+                originalQuantity={originalQty}
+                creditedByOthers={creditedByOthers}
+                maxQuantity={maxQty}
+              />
+            </QuantityEditor>
           );
         },
       },

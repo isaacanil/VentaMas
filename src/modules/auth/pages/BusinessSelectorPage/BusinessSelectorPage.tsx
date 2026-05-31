@@ -8,11 +8,9 @@ import {
 } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
 import { Modal, Tooltip, message } from 'antd';
 
 import { getRoleLabelById } from '@/abilities/roles';
-import { PageLayout } from '@/components/layout/PageShell';
 import UpgradeModal from '@/components/paywall/UpgradeModal/UpgradeModal';
 import { addUserData, selectUser } from '@/features/auth/userSlice';
 import {
@@ -39,6 +37,53 @@ import {
   runBusinessSelection,
   runRedeemBusinessInvite,
 } from './utils/businessSelectorAsync';
+import {
+  BusinessActionPrimary,
+  BusinessActionsLeft,
+  BusinessActionsRight,
+  BusinessActionsText,
+  BusinessActionsTitle,
+  BusinessActionsWidget,
+  BusinessActionSecondary,
+  BusinessActionTooltipAnchor,
+  BusinessCard,
+  BusinessGrid,
+  BusinessId,
+  BusinessName,
+  BusinessTitle,
+  CardHeader,
+  Content,
+  CurrentBadge,
+  EmptyState,
+  EmptyText,
+  EmptyTitle,
+  Header,
+  HubToolbar,
+  HubToolbarTitle,
+  JoinByCodeButton,
+  JoinByCodeFeedback,
+  JoinByCodeInput,
+  JoinByCodeModalForm,
+  JoinByCodeRow,
+  MetaLabel,
+  MetaRow,
+  MetaValue,
+  Page,
+  StatusPill,
+  SubscriptionHint,
+  SubscriptionHintButton,
+  SubscriptionInfoIcon,
+  SubscriptionPill,
+  SubscriptionWidget,
+  SubscriptionWidgetBtn,
+  SubscriptionWidgetLeft,
+  SubscriptionWidgetPlan,
+  SubscriptionWidgetRight,
+  SubscriptionWidgetTitle,
+  Subtitle,
+  type InviteFeedbackType,
+  type SubscriptionTone,
+} from './BusinessSelectorPage.styles';
 
 const STATUS_LABELS: Record<string, string> = {
   active: 'Activo',
@@ -86,8 +131,6 @@ const BLOCKED_SUBSCRIPTION_STATUSES = new Set([
   'deprecated',
 ]);
 
-type SubscriptionTone = 'success' | 'info' | 'warning' | 'danger' | 'neutral';
-
 const getSubscriptionStatusLabel = (status: string | null): string => {
   if (!status) return 'Sin estado';
   return SUBSCRIPTION_LABELS[status] || status;
@@ -120,8 +163,6 @@ const sortBusinesses = (
     return a.name.localeCompare(b.name);
   });
 };
-
-type InviteFeedbackType = 'success' | 'error' | 'info';
 
 interface InviteFeedback {
   type: InviteFeedbackType;
@@ -331,7 +372,8 @@ const useBusinessSelectorPageViewModel = () => {
   const canManageSubscriptions = isFrontendFeatureEnabled(
     'subscriptionManagement',
   );
-  const canAccessBusinessCreation = isFrontendFeatureEnabled('businessCreation');
+  const canAccessBusinessCreation =
+    isFrontendFeatureEnabled('businessCreation');
   const canCreateBusiness = hasBusinessCreateUnderAccountQuotaAccess({
     user,
     hasBusinesses,
@@ -420,7 +462,10 @@ const useBusinessSelectorPageViewModel = () => {
         hasMultipleBusinesses,
         onError: (error) => {
           if (isDeveloperUser) {
-            console.error('[BusinessSelectorPage] select business failed', error);
+            console.error(
+              '[BusinessSelectorPage] select business failed',
+              error,
+            );
           }
           message.error(resolveBusinessSelectionErrorMessage(error));
         },
@@ -585,7 +630,8 @@ const useBusinessSelectorPageViewModel = () => {
             type: 'setInviteFeedback',
             value: {
               type: 'info',
-              message: 'Ya perteneces a este negocio. Lo agregamos al selector.',
+              message:
+                'Ya perteneces a este negocio. Lo agregamos al selector.',
             },
           });
           dispatchUi({ type: 'setInviteCode', value: '' });
@@ -962,459 +1008,3 @@ export const BusinessSelectorPage = (): JSX.Element => {
 };
 
 export default BusinessSelectorPage;
-
-const Page = styled(PageLayout)`
-  background: linear-gradient(180deg, #f7fafc 0%, #eef2f7 100%);
-`;
-
-const HubToolbar = styled.header`
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0.75rem;
-  padding: 0.65rem 1rem;
-  background: #fff;
-  border-bottom: 1px solid #e4e7ec;
-  flex-wrap: wrap;
-`;
-
-const HubToolbarTitle = styled.h1`
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #101828;
-  white-space: nowrap;
-`;
-
-const Content = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  width: min(960px, 100%);
-  margin: 0 auto;
-  padding: 1.5rem 1rem 2rem;
-  overflow: auto;
-`;
-
-const Header = styled.div`
-  display: grid;
-  gap: 0.35rem;
-`;
-
-const Subtitle = styled.p`
-  margin: 0;
-  font-size: 0.95rem;
-  color: #475467;
-`;
-
-const SubscriptionWidget = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.6rem 0.85rem;
-  border-radius: 10px;
-  border: 1px solid #d0d5dd;
-  background: #fff;
-  flex-wrap: wrap;
-`;
-
-const SubscriptionWidgetLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-`;
-
-const SubscriptionWidgetTitle = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: #101828;
-`;
-
-const SubscriptionInfoIcon = styled.span`
-  display: inline-grid;
-  place-items: center;
-  width: 1.1rem;
-  height: 1.1rem;
-  border-radius: 999px;
-  background: #f2f4f7;
-  color: #667085;
-  font-size: 0.65rem;
-  font-weight: 700;
-  cursor: help;
-`;
-
-const SubscriptionWidgetPlan = styled.span`
-  font-size: 0.8rem;
-  color: #475467;
-`;
-
-const SubscriptionWidgetRight = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-`;
-
-const SubscriptionWidgetBtn = styled.button`
-  min-height: 1.85rem;
-  padding: 0.3rem 0.7rem;
-  border: 1px solid #d0d5dd;
-  border-radius: 8px;
-  background: #fff;
-  color: #344054;
-  font-size: 0.78rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease;
-
-  &:hover {
-    background: #f2f4f7;
-    border-color: #98a2b3;
-  }
-`;
-
-const SubscriptionHint = styled.div<{ $tone?: 'warning' | 'danger' | 'info' }>`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.65rem;
-  flex-wrap: wrap;
-  padding: 0.7rem 0.85rem;
-  border-radius: 10px;
-  border: 1px solid
-    ${({ $tone }) => {
-      if ($tone === 'danger') return '#fecaca';
-      if ($tone === 'info') return '#bfdbfe';
-      return '#fde68a';
-    }};
-  background: ${({ $tone }) => {
-    if ($tone === 'danger') return '#fef2f2';
-    if ($tone === 'info') return '#eff6ff';
-    return '#fffbeb';
-  }};
-  font-size: 0.8rem;
-  color: ${({ $tone }) => ($tone === 'danger' ? '#7f1d1d' : '#475467')};
-`;
-
-const SubscriptionHintButton = styled.button`
-  min-height: 1.95rem;
-  padding: 0.35rem 0.7rem;
-  border: 1px solid #98a2b3;
-  border-radius: 8px;
-  background: #fff;
-  color: #344054;
-  font-size: 0.78rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease;
-
-  &:hover {
-    background: #f8fafc;
-    border-color: #667085;
-  }
-`;
-
-const BusinessActionsWidget = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.75rem 0.9rem;
-  border-radius: 10px;
-  border: 1px solid #d0d5dd;
-  background: #fff;
-  flex-wrap: wrap;
-`;
-
-const BusinessActionsLeft = styled.div`
-  display: grid;
-  gap: 0.2rem;
-`;
-
-const BusinessActionsTitle = styled.h2`
-  margin: 0;
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: #101828;
-`;
-
-const BusinessActionsText = styled.p`
-  margin: 0;
-  font-size: 0.8rem;
-  color: #475467;
-`;
-
-const BusinessActionsRight = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-`;
-
-const BusinessActionPrimary = styled.button`
-  min-height: 2rem;
-  padding: 0.4rem 0.75rem;
-  border: 1px solid #5ca3d8;
-  border-radius: 8px;
-  background: #5ca3d8;
-  color: #fff;
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: filter 0.2s ease;
-
-  &:hover {
-    filter: brightness(0.95);
-  }
-`;
-
-const BusinessActionSecondary = styled.button`
-  min-height: 2rem;
-  padding: 0.4rem 0.75rem;
-  border: 1px solid #d0d5dd;
-  border-radius: 8px;
-  background: #fff;
-  color: #344054;
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease;
-
-  &:hover {
-    background: #f2f4f7;
-    border-color: #98a2b3;
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.65;
-  }
-`;
-
-const BusinessActionTooltipAnchor = styled.span`
-  display: inline-flex;
-`;
-
-const BusinessGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 0.9rem;
-`;
-
-const BusinessCard = styled.button<{ $active: boolean; $disabled: boolean }>`
-  display: grid;
-  gap: 0.75rem;
-  padding: 1rem;
-  text-align: left;
-  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
-  background: #fff;
-  border: 1px solid
-    ${({ $active }) => ($active ? 'rgba(16, 24, 40, 0.28)' : '#d0d5dd')};
-  border-radius: 12px;
-  box-shadow: ${({ $active }) =>
-    $active ? '0 6px 16px rgba(16, 24, 40, 0.08)' : 'none'};
-  opacity: ${({ $disabled }) => ($disabled ? 0.65 : 1)};
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
-
-  &:hover {
-    border-color: ${({ $disabled }) => ($disabled ? '#d0d5dd' : '#98a2b3')};
-    transform: ${({ $disabled }) => ($disabled ? 'none' : 'translateY(-1px)')};
-    box-shadow: ${({ $disabled }) =>
-      $disabled ? 'none' : '0 10px 24px rgba(16, 24, 40, 0.08)'};
-  }
-`;
-
-const CardHeader = styled.div`
-  display: flex;
-  gap: 0.6rem;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const BusinessName = styled.h2`
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
-  color: #101828;
-`;
-
-const BusinessTitle = styled.div`
-  display: grid;
-  gap: 0.1rem;
-`;
-
-const BusinessId = styled.span`
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: #667085;
-`;
-
-const CurrentBadge = styled.span`
-  padding: 0.2rem 0.5rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #0b4a6f;
-  background: #e0f2fe;
-  border: 1px solid #bae6fd;
-  border-radius: 999px;
-`;
-
-const MetaRow = styled.div`
-  display: flex;
-  gap: 0.4rem;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const MetaLabel = styled.span`
-  font-size: 0.83rem;
-  color: #667085;
-`;
-
-const MetaValue = styled.span`
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: #344054;
-`;
-
-const StatusPill = styled.span<{ $active: boolean }>`
-  padding: 0.15rem 0.5rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: ${({ $active }) => ($active ? '#085d3a' : '#912018')};
-  background: ${({ $active }) => ($active ? '#dcfae6' : '#fee4e2')};
-  border: 1px solid ${({ $active }) => ($active ? '#abefc6' : '#fecdca')};
-  border-radius: 999px;
-`;
-
-const SubscriptionPill = styled.span<{ $tone: SubscriptionTone }>`
-  padding: 0.15rem 0.5rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: ${({ $tone }) => {
-    if ($tone === 'danger') return '#991b1b';
-    if ($tone === 'warning') return '#92400e';
-    if ($tone === 'info') return '#0c4a6e';
-    if ($tone === 'success') return '#14532d';
-    return '#344054';
-  }};
-  background: ${({ $tone }) => {
-    if ($tone === 'danger') return '#fee2e2';
-    if ($tone === 'warning') return '#fef3c7';
-    if ($tone === 'info') return '#e0f2fe';
-    if ($tone === 'success') return '#dcfce7';
-    return '#f2f4f7';
-  }};
-  border: 1px solid
-    ${({ $tone }) => {
-      if ($tone === 'danger') return '#fecaca';
-      if ($tone === 'warning') return '#fde68a';
-      if ($tone === 'info') return '#bae6fd';
-      if ($tone === 'success') return '#bbf7d0';
-      return '#d0d5dd';
-    }};
-  border-radius: 999px;
-`;
-
-const JoinByCodeModalForm = styled.form`
-  display: grid;
-  gap: 0.7rem;
-`;
-
-const JoinByCodeRow = styled.div`
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.55rem;
-  align-items: center;
-
-  @media (width <= 420px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const JoinByCodeInput = styled.input`
-  width: 100%;
-  min-height: 2.25rem;
-  padding: 0.5rem 0.65rem;
-  font-size: 0.86rem;
-  border: 1px solid #d0d5dd;
-  border-radius: 9px;
-  background: #fff;
-  color: #101828;
-
-  &:focus {
-    outline: none;
-    border-color: #5ca3d8;
-    box-shadow: 0 0 0 3px rgb(92 163 216 / 20%);
-  }
-`;
-
-const JoinByCodeButton = styled.button`
-  min-height: 2.25rem;
-  padding: 0.5rem 0.85rem;
-  border: 1px solid #5ca3d8;
-  border-radius: 9px;
-  background: #5ca3d8;
-  color: #fff;
-  font-size: 0.83rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: filter 0.2s ease;
-
-  &:hover {
-    filter: brightness(0.95);
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.65;
-  }
-`;
-
-const JoinByCodeFeedback = styled.p<{ $type: InviteFeedbackType }>`
-  margin: 0;
-  font-size: 0.8rem;
-  color: ${({ $type }) => {
-    if ($type === 'success') return '#085d3a';
-    if ($type === 'info') return '#0b4a6f';
-    return '#912018';
-  }};
-`;
-
-const EmptyState = styled.div`
-  display: grid;
-  gap: 0.4rem;
-  padding: 1.2rem;
-  background: #fff;
-  border: 1px dashed #d0d5dd;
-  border-radius: 12px;
-`;
-
-const EmptyTitle = styled.h2`
-  margin: 0;
-  font-size: 1rem;
-  color: #101828;
-`;
-
-const EmptyText = styled.p`
-  margin: 0;
-  font-size: 0.9rem;
-  color: #667085;
-`;

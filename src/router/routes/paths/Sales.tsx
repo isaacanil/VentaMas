@@ -1,7 +1,7 @@
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
 
 import ROUTES_NAME from '@/router/routes/routesName';
-import type { AppRoute } from '@/router/routes/routes';
+import type { AppRoute } from '@/router/types/routeTypes';
 
 // Lazy load components
 const InvoicesPage = lazy(() =>
@@ -19,11 +19,11 @@ const SalesAnalyticsPage = lazy(() =>
   ),
 );
 const ServiceCommissionsReport = lazy(() =>
-  import(
-    '@/modules/invoice/pages/ServiceCommissionsReport/ServiceCommissionsReport'
-  ).then((module) => ({
-    default: module.ServiceCommissionsReport,
-  })),
+  import('@/modules/invoice/pages/ServiceCommissionsReport/ServiceCommissionsReport').then(
+    (module) => ({
+      default: module.ServiceCommissionsReport,
+    }),
+  ),
 );
 const Preorder = lazy(() =>
   import('@/modules/sales/pages/PreorderSale/PreorderSale').then((module) => ({
@@ -36,13 +36,8 @@ const Sales = lazy(() =>
   })),
 );
 
-const {
-  SALES,
-  BILLS,
-  BILLS_ANALYTICS,
-  SERVICE_COMMISSIONS,
-  PREORDERS,
-} = ROUTES_NAME.SALES_TERM;
+const { SALES, BILLS, BILLS_ANALYTICS, SERVICE_COMMISSIONS, PREORDERS } =
+  ROUTES_NAME.SALES_TERM;
 
 const routes: AppRoute[] = [
   {

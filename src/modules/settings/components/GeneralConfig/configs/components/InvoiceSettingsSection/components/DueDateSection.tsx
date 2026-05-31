@@ -7,9 +7,9 @@ interface DueDateSectionProps {
 }
 
 export const DueDateSection = ({ children }: DueDateSectionProps) => (
-  <SectionWrapper style={{ marginBottom: '24px' }}>
+  <SectionWrapper $withBottomSpace>
     <SectionHeader>
-      <h3>Términos y Plazos</h3>
+      <h3>Terminos y Plazos</h3>
       <p>Configura las reglas de vencimiento para tus clientes.</p>
     </SectionHeader>
     {children}

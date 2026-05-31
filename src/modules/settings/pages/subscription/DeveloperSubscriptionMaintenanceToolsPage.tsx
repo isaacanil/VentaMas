@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import { PageContent } from './DeveloperSubscriptionMaintenancePage.styles';
 
 import DeveloperMaintenanceHub from './components/DeveloperMaintenanceHub';
 import { useDeveloperSubscriptionMaintenanceContext } from './useDeveloperSubscriptionMaintenanceContext';
@@ -14,9 +14,3 @@ const DeveloperSubscriptionMaintenanceToolsPage = () => {
 };
 
 export default DeveloperSubscriptionMaintenanceToolsPage;
-
-const PageContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;

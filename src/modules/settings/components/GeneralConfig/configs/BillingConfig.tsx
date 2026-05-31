@@ -1,36 +1,28 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import styled from 'styled-components';
 import { Button } from 'antd';
 import { FileDoneOutlined } from '@ant-design/icons';
 
 import { Modal } from '@/components/common/Modal/Modal';
 import { VmButton, VmModal } from '@/components/heroui';
 import { DollarOutlined, FileTextOutlined } from '@/constants/icons/antd';
-import { SelectSettingCart } from '@/features/cart/cartSlice';
 import { selectBusinessData } from '@/features/auth/businessSlice';
-import { getInvoiceTemplateSummaryLabel } from '@/utils/invoice/template';
-import SettingCard from './components/SettingCard';
+import { SelectSettingCart } from '@/features/cart/cartSlice';
+
 import BillingModeConfig from './components/BillingModeConfig';
 import InvoiceSettingsSection from './components/InvoiceSettingsSection';
 import QuoteSettingsSection from './components/QuoteSettingsSection';
 import ServiceCommissionSettingsSection from './components/ServiceCommissionSettingsSection/ServiceCommissionSettingsSection';
-
-const PageWrapper = styled.div`
-  min-height: 100%;
-  padding: 40px 20px;
-  background: #fbfcfd;
-  background-image: radial-gradient(#e5e7eb 0.5px, transparent 0.5px);
-  background-size: 24px 24px;
-`;
-
-const StyledContainer = styled.div`
-  max-width: 850px;
-  margin-left: auto;
-  margin-right: auto;
-`;
-
-type BillingModalKey = 'invoice' | 'quote' | 'commissions' | null;
+import SettingCard from './components/SettingCard';
+import {
+  getCommissionsSummary,
+  getInvoiceSummary,
+  getQuoteSummary,
+  INVOICE_MODAL_BODY_STYLES,
+  QUOTE_MODAL_BODY_STYLES,
+  type BillingModalKey,
+} from './BillingConfig.helpers';
+import { PageWrapper, StyledContainer } from './BillingConfig.styles';
 
 const BillingConfig = () => {
   const { billing } = useSelector(SelectSettingCart);
@@ -42,70 +34,27 @@ const BillingConfig = () => {
     setActiveModal(open ? 'commissions' : null);
   };
 
-  // Resumen para Factura
-  const invoiceMessage = business?.invoice?.invoiceMessage;
-  const invoiceSummary = [
-    {
-      label: 'Plazo Vencimiento',
-      value: billing?.hasDueDate ? 'Habilitado' : 'A la fecha',
-    },
-    {
-      label: 'Nota Legal',
-      value: invoiceMessage ? 'Configurada' : 'Por defecto',
-    },
-    {
-      label: 'Plantilla',
-      value: getInvoiceTemplateSummaryLabel(billing?.invoiceType),
-    },
-  ];
-
-  // Resumen para Cotización
-  const quoteSummary = [
-    {
-      label: 'Servicio',
-      value: billing?.quoteEnabled !== false ? 'Habilitado' : 'Deshabilitado',
-    },
-    { label: 'Validez', value: `${billing?.quoteValidity || 15} días` },
-  ];
-  const commissionSettings = billing?.serviceCommissions;
-  const commissionsSummary = [
-    {
-      label: 'Estado',
-      value: commissionSettings?.enabled ? 'Habilitado' : 'Deshabilitado',
-    },
-    {
-      label: 'Base',
-      value: 'Subtotal sin ITBIS',
-    },
-    {
-      label: 'Tasa',
-      value:
-        commissionSettings?.defaultType === 'fixed'
-          ? `RD$ ${commissionSettings?.defaultRate || 0}`
-          : `${commissionSettings?.defaultRate || 0}%`,
-    },
-  ];
+  const invoiceSummary = getInvoiceSummary(billing, business);
+  const quoteSummary = getQuoteSummary(billing);
+  const commissionsSummary = getCommissionsSummary(billing);
 
   return (
     <PageWrapper>
       <StyledContainer>
-        {/* 1. MODO DE VENTA (VENTA vs PREVENTA) */}
         <BillingModeConfig billingSettings={billing} />
 
-        {/* 2. CONFIGURACIÓN DE FACTURA */}
         <SettingCard
           icon={<FileTextOutlined />}
           title="Formatos y Detalles de Factura"
-          description="Establece el diseño visual, mensajes personalizados y términos de pago para tus facturas y proformas."
+          description="Establece el diseno visual, mensajes personalizados y terminos de pago para tus facturas y proformas."
           summary={invoiceSummary}
           onConfigClick={() => setActiveModal('invoice')}
         />
 
-        {/* 3. COTIZACIONES */}
         <SettingCard
           icon={<FileDoneOutlined />}
-          title="Módulo de Cotizaciones"
-          description="Configura la validez predeterminada y las notas legales que aparecerán en tus cotizaciones comerciales."
+          title="Modulo de Cotizaciones"
+          description="Configura la validez predeterminada y las notas legales que apareceran en tus cotizaciones comerciales."
           summary={quoteSummary}
           onConfigClick={() => setActiveModal('quote')}
         />
@@ -117,43 +66,30 @@ const BillingConfig = () => {
           <SettingCard
             icon={<DollarOutlined />}
             title="Comisiones de Servicios"
-            description="Activa el colaborador por línea de servicio y define la tasa predeterminada para reportes internos."
+            description="Activa el colaborador por linea de servicio y define la tasa predeterminada para reportes internos."
             summary={commissionsSummary}
             onConfigClick={() => setActiveModal('commissions')}
           />
         </div>
 
-        {/* Modal Factura */}
         <Modal
-          title="Configuración de Factura"
+          title="Configuracion de Factura"
           open={activeModal === 'invoice'}
           onCancel={closeModal}
           centered
-          styles={{
-            body: {
-              padding: 0,
-              height:
-                'calc(100dvh - var(--modal-viewport-offset) - var(--modal-header-height) - var(--modal-footer-extra-offset))',
-              overflow: 'hidden',
-            },
-          }}
+          styles={{ body: INVOICE_MODAL_BODY_STYLES }}
           footer={[]}
           width={1200}
         >
           <InvoiceSettingsSection />
         </Modal>
 
-        {/* Modal Cotización */}
         <Modal
-          title="Configuración de Cotización"
+          title="Configuracion de Cotizacion"
           open={activeModal === 'quote'}
           onCancel={closeModal}
           centered
-          styles={{
-            body: {
-              padding: '24px',
-            },
-          }}
+          styles={{ body: QUOTE_MODAL_BODY_STYLES }}
           footer={[
             <Button key="close" type="primary" onClick={closeModal}>
               Listo
@@ -165,8 +101,8 @@ const BillingConfig = () => {
         </Modal>
 
         <VmModal
-          title="Configuración de Comisiones"
-          ariaLabel="Configuración de Comisiones"
+          title="Configuracion de Comisiones"
+          ariaLabel="Configuracion de Comisiones"
           isOpen={activeModal === 'commissions'}
           onOpenChange={handleCommissionModalOpenChange}
           size="lg"

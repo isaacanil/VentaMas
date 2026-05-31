@@ -1,10 +1,9 @@
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { AnimatePresence, m } from 'framer-motion';
-import { useEffect, useRef, useCallback } from 'react';
+import { AnimatePresence } from 'framer-motion';
+import { useCallback, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'; // <-- Importa aquí
-import styled from 'styled-components';
+import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 
 import {
   selectImageViewerShow,
@@ -16,11 +15,19 @@ import { Button } from '@/components/ui/Button/Button';
 import { CenteredText } from '@/components/ui/CentredText';
 import Typography from '@/components/ui/Typografy/Typografy';
 
+import {
+  FULL_SIZE_TRANSFORM_STYLE,
+  Header,
+  ImageContainer,
+  Overlay,
+  ViewerImage,
+} from './ImageViewer.styles';
+
 const ImageViewer = () => {
   const dispatch = useDispatch();
   const show = useSelector(selectImageViewerShow);
   const url = useSelector(selectImageViewerURL);
-  const imgRef = useRef(null);
+  const imgRef = useRef<HTMLDivElement>(null);
 
   const onClose = useCallback(() => {
     dispatch(toggleImageViewer({ show: false, url: '' }));
@@ -29,7 +36,7 @@ const ImageViewer = () => {
   useClickOutSide(imgRef, show, onClose);
 
   useEffect(() => {
-    const handleEscape = (event) => {
+    const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', handleEscape);
@@ -60,14 +67,10 @@ const ImageViewer = () => {
             <ImageContainer ref={imgRef}>
               <TransformWrapper minScale={1} maxScale={2} wheel={{ step: 50 }}>
                 <TransformComponent
-                  contentStyle={{ width: '100%', height: '100%' }}
-                  wrapperStyle={{ width: '100%', height: '100%' }}
+                  contentStyle={FULL_SIZE_TRANSFORM_STYLE}
+                  wrapperStyle={FULL_SIZE_TRANSFORM_STYLE}
                 >
-                  <img
-                    src={url}
-                    alt="Visualización de imagen"
-                    style={{ width: '100%', objectFit: 'contain' }}
-                  />
+                  <ViewerImage src={url} alt="Visualizacion de imagen" />
                 </TransformComponent>
               </TransformWrapper>
             </ImageContainer>
@@ -76,7 +79,7 @@ const ImageViewer = () => {
             <CenteredText
               textVariant="h2"
               containerVariant="contained"
-              text={'No se proporciono una imagen para visualizar'}
+              text="No se proporciono una imagen para visualizar"
             />
           )}
         </Overlay>
@@ -85,48 +88,4 @@ const ImageViewer = () => {
   );
 };
 
-const Overlay = styled(m.div)`
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 9999;
-  display: grid;
-  gap: 0.5em;
-  align-items: start;
-  width: 100vw;
-  height: 100%;
-  padding: 0.3em;
-  background-color: rgb(0 0 0 / 80%);
-`;
-
-const ImageContainer = styled.div`
-  width: calc(100%);
-  height: calc(88vh);
-  overflow: hidden;
-  object-fit: contain;
-  background-color: #000;
-  border-radius: 10px;
-
-  /* .content-style {
-    width: 100%;
-    height: 100%;
-} */
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-`;
-
-const Header = styled.div`
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 0.5em 1em;
-  background-color: #2e2e2e;
-  border-radius: 10px;
-`;
 export default ImageViewer;

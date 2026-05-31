@@ -1,37 +1,31 @@
-import { Typography } from 'antd';
-import React from 'react';
-
 import { Logo } from '@/assets/logo/Logo';
 
-const { Title, Text } = Typography;
+import {
+  HeaderContainer,
+  HeaderDescription,
+  HeaderRow,
+  HeaderTitle,
+  TitleContainer,
+} from './Header.styles';
 
 interface HeaderProps {
   description?: string;
 }
 
 export const Header = ({
-  description = 'Permite a un segundo usuario autorizar la apertura de la caja después de una revisión.',
+  description = 'Permite a un segundo usuario autorizar la apertura de la caja despues de una revision.',
 }: HeaderProps) => {
   return (
-    <div style={{ display: 'grid', gap: '1em', rowGap: '1.4em' }}>
-      <div
-        style={{
-          gridTemplateColumns: 'min-content 1fr',
-          display: 'grid',
-          gap: '1.2em',
-          paddingRight: '0.5em',
-        }}
-      >
+    <HeaderContainer>
+      <HeaderRow>
         <Logo size="small" />
-        <div style={{ width: 'calc(100% - 2.5em)' }}>
-          <Title level={4} style={{ margin: 0, fontWeight: 500 }}>
-            Confirmación de Usuario autorizado
-          </Title>
-        </div>
-      </div>
-      <Text type="secondary" style={{ fontSize: '0.9rem', lineHeight: '1.5' }}>
+        <TitleContainer>
+          <HeaderTitle level={4}>Confirmacion de Usuario autorizado</HeaderTitle>
+        </TitleContainer>
+      </HeaderRow>
+      <HeaderDescription type="secondary">
         {description}
-      </Text>
-    </div>
+      </HeaderDescription>
+    </HeaderContainer>
   );
 };

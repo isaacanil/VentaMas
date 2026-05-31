@@ -1,8 +1,15 @@
-import { Button } from '@heroui/react';
-import { Badge, Tooltip } from 'antd';
-import React from 'react';
-import styled, { css } from 'styled-components';
+import { Badge, Tooltip, type TooltipProps } from 'antd';
+
 import type { ButtonIconMenuProps } from '@/types/ui';
+
+import { Container, INDICATOR_BADGE_STYLE } from './ButtonIconMenu.styles';
+
+const tooltipPlacementMap = {
+  'bottom-end': 'bottomRight',
+  'bottom-start': 'bottomLeft',
+  'top-end': 'topRight',
+  'top-start': 'topLeft',
+} as const;
 
 export const ButtonIconMenu = ({
   icon,
@@ -15,20 +22,17 @@ export const ButtonIconMenu = ({
   ...rest
 }: ButtonIconMenuProps) => {
   const label = tooltip || tooltipDescription;
-  const placementMap = {
-    'bottom-end': 'bottomRight',
-    'bottom-start': 'bottomLeft',
-    'top-end': 'topRight',
-    'top-start': 'topLeft',
-  };
-  const antdPlacement = placementMap[tooltipPlacement] || tooltipPlacement;
+  const antdPlacement: TooltipProps['placement'] =
+    tooltipPlacement in tooltipPlacementMap
+      ? tooltipPlacementMap[tooltipPlacement as keyof typeof tooltipPlacementMap]
+      : (tooltipPlacement as TooltipProps['placement']);
   const hasBadge = typeof indicatorCount === 'number' && indicatorCount > 0;
   const showDotIndicator = Boolean(indicator) && !hasBadge;
   const handlePress = () => {
     onClick?.({} as never);
   };
 
-  const Btn = (
+  const button = (
     <Container
       isIconOnly
       size="sm"
@@ -41,87 +45,25 @@ export const ButtonIconMenu = ({
       {icon}
     </Container>
   );
-  const ButtonWithBadge = hasBadge ? (
+  const buttonWithBadge = hasBadge ? (
     <Badge
       count={indicatorCount}
       overflowCount={9}
       size="small"
-      style={{
-        top: 8,
-        right: 2,
-      }}
+      style={INDICATOR_BADGE_STYLE}
       offset={[6, -4]}
     >
-      {Btn}
+      {button}
     </Badge>
   ) : (
-    Btn
+    button
   );
 
   return label ? (
     <Tooltip title={label} placement={antdPlacement}>
-      {ButtonWithBadge}
+      {buttonWithBadge}
     </Tooltip>
   ) : (
-    ButtonWithBadge
+    buttonWithBadge
   );
 };
-type IndicatorProps = {
-  $indicator?: boolean;
-};
-
-const Container = styled(Button)<IndicatorProps>`
-  place-items: center center;
-  background-color: rgb(0 0 0 / 20%);
-  border-radius: var(--border-radius);
-  color: white;
-  display: grid;
-  height: 2em;
-  justify-content: center;
-  min-width: 2em;
-  padding: 0;
-  position: relative;
-  width: 2em;
-
-  &[data-hovered='true'],
-  &:hover {
-    background-color: rgb(0 0 0 / 28%);
-    color: white;
-  }
-
-  /* Adaptación responsive para móviles */
-  @media (width <= 768px) {
-    height: 2.3em;
-    min-width: 2.3em;
-    width: 2.3em;
-  }
-
-  ${(props) =>
-    props.$indicator &&
-    css`
-      &::after {
-        content: '';
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #f6573bff;
-        box-shadow: 0 0 0 2px rgb(255 255 255 / 90%);
-      }
-    `}
-
-  svg {
-    font-size: 1.2em;
-    width: 1.2em;
-    height: 1.2em;
-
-    /* Iconos más grandes en móviles */
-    @media (width <= 768px) {
-      font-size: 1.4em;
-      width: 1.4em;
-      height: 1.4em;
-    }
-  }
-`;

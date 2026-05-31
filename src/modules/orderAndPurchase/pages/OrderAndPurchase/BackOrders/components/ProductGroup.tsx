@@ -1,25 +1,21 @@
 import { Button } from 'antd';
-import { LazyMotion, domAnimation, m } from 'framer-motion';
-import React from 'react';
-import styled from 'styled-components';
-// Removed per-item BackorderCard view in favor of compact summaries
+import { LazyMotion, domAnimation } from 'framer-motion';
 
 import type { BackorderGroup } from '../types';
-
-const ProductGroupContainer = styled(m.div)`
-  overflow: hidden;
-  background: white;
-  border: 1px solid #e6e6e6;
-  border-radius: 8px;
-
-  /* Single-row compact card */
-`;
-
-const GroupHeader = styled.div`
-  background: white;
-`;
-
-// Removed per-date and per-item content to keep only product totals
+import {
+  GroupHeader,
+  GroupHeaderRow,
+  ProductGroupContainer,
+  ProductIdentity,
+  ProductName,
+  ProgressFill,
+  ProgressTrack,
+  QuantityLabel,
+  QuantitySummary,
+  QuantityValue,
+  ReservedValue,
+  SummaryActions,
+} from './ProductGroup.styles';
 
 interface ProductGroupProps {
   group: BackorderGroup;
@@ -27,6 +23,8 @@ interface ProductGroupProps {
 }
 
 const ProductGroup = ({ group, onFulfill }: ProductGroupProps) => {
+  const progress = group.progress || 0;
+
   return (
     <LazyMotion features={domAnimation}>
       <ProductGroupContainer
@@ -35,57 +33,28 @@ const ProductGroup = ({ group, onFulfill }: ProductGroupProps) => {
         exit={{ opacity: 0, y: -20 }}
       >
         <GroupHeader>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              width: '100%',
-              padding: '8px 16px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '14px', fontWeight: '500' }}>
-                {group.productName}
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-end',
-                  gap: '4px',
-                  lineHeight: 1.1,
-                }}
-              >
-                <span style={{ fontSize: 12, color: '#8c8c8c' }}>Pendiente</span>
-                <span style={{ fontSize: 13, fontWeight: 500, color: '#262626' }}>
+          <GroupHeaderRow>
+            <ProductIdentity>
+              <ProductName>{group.productName}</ProductName>
+            </ProductIdentity>
+
+            <SummaryActions>
+              <QuantitySummary>
+                <QuantityLabel>Pendiente</QuantityLabel>
+                <QuantityValue>
                   {group.pendingQuantity}/{group.totalQuantity}
-                </span>
+                </QuantityValue>
                 {Boolean(group.reservedPendingQuantity) && (
-                  <span style={{ fontSize: 12, color: '#096dd9' }}>
+                  <ReservedValue>
                     Reservado {group.reservedPendingQuantity}
-                  </span>
+                  </ReservedValue>
                 )}
-              </div>
-              <div
-                style={{
-                  width: 140,
-                  height: 6,
-                  background: '#f0f0f0',
-                  borderRadius: 999,
-                  overflow: 'hidden',
-                }}
-              >
-                <div
-                  style={{
-                    width: `${group.progress || 0}%`,
-                    height: '100%',
-                    background: '#1890ff',
-                  }}
-                />
-              </div>
+              </QuantitySummary>
+
+              <ProgressTrack>
+                <ProgressFill $progress={progress} />
+              </ProgressTrack>
+
               <Button
                 type="primary"
                 size="small"
@@ -94,8 +63,8 @@ const ProductGroup = ({ group, onFulfill }: ProductGroupProps) => {
               >
                 Cubrir
               </Button>
-            </div>
-          </div>
+            </SummaryActions>
+          </GroupHeaderRow>
         </GroupHeader>
       </ProductGroupContainer>
     </LazyMotion>

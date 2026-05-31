@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import { PageContent } from './DeveloperSubscriptionMaintenancePage.styles';
 
 import MockSubscriptionFlowCard from './components/MockSubscriptionFlowCard';
 import { SimulatedPlanSelectionCard } from './components/SimulatedPlanSelectionCard';
@@ -37,7 +37,9 @@ const DeveloperSubscriptionMaintenanceSandboxPage = () => {
         businessId={activeBusinessId}
         canManagePayments={canManagePayments}
         defaultPlanCode={
-          selectedSimulatedPlan?.planCode || subscription.planId || selectedPlanCode
+          selectedSimulatedPlan?.planCode ||
+          subscription.planId ||
+          selectedPlanCode
         }
         defaultAmount={subscription.priceMonthly || 0}
         planOptions={
@@ -55,9 +57,3 @@ const DeveloperSubscriptionMaintenanceSandboxPage = () => {
 };
 
 export default DeveloperSubscriptionMaintenanceSandboxPage;
-
-const PageContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;

@@ -1,5 +1,9 @@
 # Avance de migración a TypeScript (TS/TSX)
 
+> Nota actual: este documento conserva rutas historicas de la migracion. La
+> estructura vigente del frontend vive en `src/modules`, `src/components` y
+> `src/router`; `src/views` ya no existe en el arbol actual.
+
 ## Resumen
 
 - Migración de frontend a TS/TSX con typecheck y lint en verde.

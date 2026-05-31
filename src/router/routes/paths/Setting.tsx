@@ -4,8 +4,12 @@ import { Navigate } from 'react-router-dom';
 
 import FrontendFeatureRouteGate from '@/components/availability/FrontendFeatureRouteGate';
 import { getRelativePath } from '@/router/routes/getConfigRoute';
+import {
+  accountSubscriptionRedirectRoutes,
+  generalConfigRedirectRoutes,
+} from '@/router/routes/paths/Setting/redirectRoutes';
 import ROUTES_NAME from '@/router/routes/routesName';
-import type { AppRoute } from '@/router/routes/routes';
+import type { AppRoute } from '@/router/types/routeTypes';
 import type { JSX } from 'react';
 
 const AuthorizationFlowConfig = lazy(
@@ -116,23 +120,15 @@ const {
   GENERAL_CONFIG_BUSINESS,
   GENERAL_CONFIG_ACCOUNTING,
   GENERAL_CONFIG_EXCHANGE_RATES,
-  GENERAL_CONFIG_ACCOUNTING_CHART_OF_ACCOUNTS,
   GENERAL_CONFIG_ACCOUNTING_EXCHANGE_RATES,
-  GENERAL_CONFIG_ACCOUNTING_POSTING_PROFILES,
   GENERAL_CONFIG_INVENTORY,
   GENERAL_CONFIG_SUBSCRIPTION,
   GENERAL_CONFIG_SUBSCRIPTION_PLANS,
   GENERAL_CONFIG_SUBSCRIPTION_BILLING,
   GENERAL_CONFIG_SUBSCRIPTION_BLOCKED,
-  ACCOUNT_SUBSCRIPTION,
   ACCOUNT_SUBSCRIPTION_MANAGE,
   ACCOUNT_SUBSCRIPTION_SUCCESS,
-  ACCOUNT_SUBSCRIPTION_PLANS,
-  ACCOUNT_SUBSCRIPTION_BILLING,
-  ACCOUNT_SUBSCRIPTION_PAYMENT_METHODS,
-  ACCOUNT_SUBSCRIPTION_SETTINGS,
   GENERAL_CONFIG_TAX_RECEIPT,
-  GENERAL_CONFIG_USERS,
   GENERAL_CONFIG_AUTHORIZATION,
 } = ROUTES_NAME.SETTING_TERM;
 
@@ -200,7 +196,10 @@ const Routes: AppRoute[] = [
         element: withAccountingSettingsGate(<AccountingConfig />),
       },
       {
-        path: getRelativePath(GENERAL_CONFIG_ACCOUNTING_EXCHANGE_RATES, SETTING),
+        path: getRelativePath(
+          GENERAL_CONFIG_ACCOUNTING_EXCHANGE_RATES,
+          SETTING,
+        ),
         element: <Navigate to={GENERAL_CONFIG_EXCHANGE_RATES} replace />,
       },
       {
@@ -257,330 +256,7 @@ const Routes: AppRoute[] = [
       },
     ],
   },
-  {
-    path: '/settings/general-config',
-    element: <Navigate to={GENERAL_CONFIG_BILLING} replace />,
-  },
-  {
-    path: '/settings/general-config/',
-    element: <Navigate to={GENERAL_CONFIG_BILLING} replace />,
-  },
-  {
-    path: '/settings/general-config/modules',
-    element: <Navigate to={GENERAL_CONFIG_MODULES} replace />,
-  },
-  {
-    path: '/settings/general-config/billing',
-    element: <Navigate to={GENERAL_CONFIG_BILLING} replace />,
-  },
-  {
-    path: '/settings/modules',
-    element: <Navigate to={GENERAL_CONFIG_MODULES} replace />,
-  },
-  {
-    path: '/settings/general-config/accounting',
-    element: <Navigate to={GENERAL_CONFIG_ACCOUNTING} replace />,
-  },
-  {
-    path: '/settings/contabilidad',
-    element: <Navigate to={GENERAL_CONFIG_ACCOUNTING} replace />,
-  },
-  {
-    path: '/settings/contabilidad/tasa-cambio',
-    element: <Navigate to={GENERAL_CONFIG_EXCHANGE_RATES} replace />,
-  },
-  {
-    path: '/settings/tasa-cambio',
-    element: <Navigate to={GENERAL_CONFIG_EXCHANGE_RATES} replace />,
-  },
-  {
-    path: '/settings/accounting/tasa-cambio',
-    element: <Navigate to={GENERAL_CONFIG_EXCHANGE_RATES} replace />,
-  },
-  {
-    path: '/settings/general-config/tasa-cambio',
-    element: <Navigate to={GENERAL_CONFIG_EXCHANGE_RATES} replace />,
-  },
-  {
-    path: '/settings/general-config-tasa-cambio',
-    element: <Navigate to={GENERAL_CONFIG_EXCHANGE_RATES} replace />,
-  },
-  {
-    path: '/settings/general-config/exchange-rates',
-    element: <Navigate to={GENERAL_CONFIG_EXCHANGE_RATES} replace />,
-  },
-  {
-    path: '/settings/general-config-exchange-rates',
-    element: <Navigate to={GENERAL_CONFIG_EXCHANGE_RATES} replace />,
-  },
-  {
-    path: '/settings/contabilidad/catalogo',
-    element: <Navigate to={GENERAL_CONFIG_ACCOUNTING_CHART_OF_ACCOUNTS} replace />,
-  },
-  {
-    path: '/settings/accounting/catalogo',
-    element: <Navigate to={GENERAL_CONFIG_ACCOUNTING_CHART_OF_ACCOUNTS} replace />,
-  },
-  {
-    path: '/settings/contabilidad/perfiles-contables',
-    element: <Navigate to={GENERAL_CONFIG_ACCOUNTING_POSTING_PROFILES} replace />,
-  },
-  {
-    path: '/settings/accounting/perfiles-contables',
-    element: <Navigate to={GENERAL_CONFIG_ACCOUNTING_POSTING_PROFILES} replace />,
-  },
-  {
-    path: '/settings/general-config/contabilidad',
-    element: <Navigate to={GENERAL_CONFIG_ACCOUNTING} replace />,
-  },
-  {
-    path: '/settings/general-config/business',
-    element: <Navigate to={GENERAL_CONFIG_BUSINESS} replace />,
-  },
-  {
-    path: '/settings/general-config/inventory',
-    element: <Navigate to={GENERAL_CONFIG_INVENTORY} replace />,
-  },
-  {
-    path: '/settings/general-config/tax-receipt',
-    element: <Navigate to={GENERAL_CONFIG_TAX_RECEIPT} replace />,
-  },
-  {
-    path: '/settings/general-config/authorization',
-    element: <Navigate to={GENERAL_CONFIG_AUTHORIZATION} replace />,
-  },
-  {
-    path: '/settings/general-config/app-info',
-    element: <Navigate to={GENERAL_CONFIG_APP_INFO} replace />,
-  },
-  {
-    path: '/settings/general-config/users',
-    element: <Navigate to={`${USERS}/${USERS_LIST}`} replace />,
-  },
-  {
-    path: GENERAL_CONFIG_USERS,
-    element: <Navigate to={`${USERS}/${USERS_LIST}`} replace />,
-  },
-  {
-    path: `${GENERAL_CONFIG_USERS}/*`,
-    element: <Navigate to={`${USERS}/${USERS_LIST}`} replace />,
-  },
-  {
-    path: '/settings/general-config/subscription',
-    element: <Navigate to={GENERAL_CONFIG_SUBSCRIPTION} replace />,
-  },
-  {
-    path: '/settings/general-config/subscription/plans',
-    element: <Navigate to={GENERAL_CONFIG_SUBSCRIPTION_PLANS} replace />,
-  },
-  {
-    path: '/settings/general-config/subscription/billing',
-    element: <Navigate to={GENERAL_CONFIG_SUBSCRIPTION_BILLING} replace />,
-  },
-  {
-    path: '/settings/general-config/subscription/blocked-preview',
-    element: <Navigate to={GENERAL_CONFIG_SUBSCRIPTION} replace />,
-  },
-  {
-    path: '/settings/general-config-billing',
-    element: <Navigate to={GENERAL_CONFIG_BILLING} replace />,
-  },
-  {
-    path: '/settings/general-config-accounting',
-    element: <Navigate to={GENERAL_CONFIG_ACCOUNTING} replace />,
-  },
-  {
-    path: '/settings/general-config-contabilidad',
-    element: <Navigate to={GENERAL_CONFIG_ACCOUNTING} replace />,
-  },
-  {
-    path: '/settings/general-config-business',
-    element: <Navigate to={GENERAL_CONFIG_BUSINESS} replace />,
-  },
-  {
-    path: '/settings/general-config-inventory',
-    element: <Navigate to={GENERAL_CONFIG_INVENTORY} replace />,
-  },
-  {
-    path: '/settings/general-config-tax-receipt',
-    element: <Navigate to={GENERAL_CONFIG_TAX_RECEIPT} replace />,
-  },
-  {
-    path: '/settings/general-config-authorization',
-    element: <Navigate to={GENERAL_CONFIG_AUTHORIZATION} replace />,
-  },
-  {
-    path: '/settings/general-config-app-info',
-    element: <Navigate to={GENERAL_CONFIG_APP_INFO} replace />,
-  },
-  {
-    path: '/settings/general-config-users',
-    element: <Navigate to={`${USERS}/${USERS_LIST}`} replace />,
-  },
-  {
-    path: '/settings/general-config-subscription',
-    element: <Navigate to={GENERAL_CONFIG_SUBSCRIPTION} replace />,
-  },
-  {
-    path: '/settings/general-config-subscription-plans',
-    element: <Navigate to={GENERAL_CONFIG_SUBSCRIPTION_PLANS} replace />,
-  },
-  {
-    path: '/settings/general-config-subscription-billing',
-    element: <Navigate to={GENERAL_CONFIG_SUBSCRIPTION_BILLING} replace />,
-  },
-  {
-    path: '/settings/general-config-subscription-blocked-preview',
-    element: <Navigate to={GENERAL_CONFIG_SUBSCRIPTION} replace />,
-  },
-  {
-    path: '/general-config',
-    element: <Navigate to={GENERAL_CONFIG_BILLING} replace />,
-  },
-  {
-    path: '/general-config/',
-    element: <Navigate to={GENERAL_CONFIG_BILLING} replace />,
-  },
-  {
-    path: '/general-config/modules',
-    element: <Navigate to={GENERAL_CONFIG_MODULES} replace />,
-  },
-  {
-    path: '/general-config/billing',
-    element: <Navigate to={GENERAL_CONFIG_BILLING} replace />,
-  },
-  {
-    path: '/general-config/accounting',
-    element: <Navigate to={GENERAL_CONFIG_ACCOUNTING} replace />,
-  },
-  {
-    path: '/general-config/contabilidad',
-    element: <Navigate to={GENERAL_CONFIG_ACCOUNTING} replace />,
-  },
-  {
-    path: '/general-config/business',
-    element: <Navigate to={GENERAL_CONFIG_BUSINESS} replace />,
-  },
-  {
-    path: '/general-config/inventory',
-    element: <Navigate to={GENERAL_CONFIG_INVENTORY} replace />,
-  },
-  {
-    path: '/general-config/tax-receipt',
-    element: <Navigate to={GENERAL_CONFIG_TAX_RECEIPT} replace />,
-  },
-  {
-    path: '/general-config/tasa-cambio',
-    element: <Navigate to={GENERAL_CONFIG_EXCHANGE_RATES} replace />,
-  },
-  {
-    path: '/general-config/exchange-rates',
-    element: <Navigate to={GENERAL_CONFIG_EXCHANGE_RATES} replace />,
-  },
-  {
-    path: '/general-config/authorization',
-    element: <Navigate to={GENERAL_CONFIG_AUTHORIZATION} replace />,
-  },
-  {
-    path: '/general-config/app-info',
-    element: <Navigate to={GENERAL_CONFIG_APP_INFO} replace />,
-  },
-  {
-    path: '/general-config/users',
-    element: <Navigate to={`${USERS}/${USERS_LIST}`} replace />,
-  },
-  {
-    path: '/general-config/subscription',
-    element: <Navigate to={GENERAL_CONFIG_SUBSCRIPTION} replace />,
-  },
-  {
-    path: '/general-config/subscription/plans',
-    element: <Navigate to={GENERAL_CONFIG_SUBSCRIPTION_PLANS} replace />,
-  },
-  {
-    path: '/general-config/subscription/billing',
-    element: <Navigate to={GENERAL_CONFIG_SUBSCRIPTION_BILLING} replace />,
-  },
-  {
-    path: '/general-config/subscription/blocked-preview',
-    element: <Navigate to={GENERAL_CONFIG_SUBSCRIPTION} replace />,
-  },
-  {
-    path: '/general-config-modules',
-    element: <Navigate to={GENERAL_CONFIG_MODULES} replace />,
-  },
-  {
-    path: '/general-config-billing',
-    element: <Navigate to={GENERAL_CONFIG_BILLING} replace />,
-  },
-  {
-    path: '/general-config-accounting',
-    element: <Navigate to={GENERAL_CONFIG_ACCOUNTING} replace />,
-  },
-  {
-    path: '/general-config-contabilidad',
-    element: <Navigate to={GENERAL_CONFIG_ACCOUNTING} replace />,
-  },
-  {
-    path: '/general-config-business',
-    element: <Navigate to={GENERAL_CONFIG_BUSINESS} replace />,
-  },
-  {
-    path: '/general-config-inventory',
-    element: <Navigate to={GENERAL_CONFIG_INVENTORY} replace />,
-  },
-  {
-    path: '/general-config-tax-receipt',
-    element: <Navigate to={GENERAL_CONFIG_TAX_RECEIPT} replace />,
-  },
-  {
-    path: '/general-config-tasa-cambio',
-    element: <Navigate to={GENERAL_CONFIG_EXCHANGE_RATES} replace />,
-  },
-  {
-    path: '/general-config-exchange-rates',
-    element: <Navigate to={GENERAL_CONFIG_EXCHANGE_RATES} replace />,
-  },
-  {
-    path: '/general-config-authorization',
-    element: <Navigate to={GENERAL_CONFIG_AUTHORIZATION} replace />,
-  },
-  {
-    path: '/general-config-app-info',
-    element: <Navigate to={GENERAL_CONFIG_APP_INFO} replace />,
-  },
-  {
-    path: '/general-config-users',
-    element: <Navigate to={`${USERS}/${USERS_LIST}`} replace />,
-  },
-  {
-    path: '/general-config-subscription',
-    element: <Navigate to={GENERAL_CONFIG_SUBSCRIPTION} replace />,
-  },
-  {
-    path: '/general-config-subscription-plans',
-    element: <Navigate to={GENERAL_CONFIG_SUBSCRIPTION_PLANS} replace />,
-  },
-  {
-    path: '/general-config-subscription-billing',
-    element: <Navigate to={GENERAL_CONFIG_SUBSCRIPTION_BILLING} replace />,
-  },
-  {
-    path: '/general-config-subscription-blocked-preview',
-    element: <Navigate to={GENERAL_CONFIG_SUBSCRIPTION} replace />,
-  },
-  {
-    path: ACCOUNT_SUBSCRIPTION,
-    element: <Navigate to={ACCOUNT_SUBSCRIPTION_MANAGE} replace />,
-  },
-  {
-    path: '/settings/subscription/manage',
-    element: <Navigate to={ACCOUNT_SUBSCRIPTION_MANAGE} replace />,
-  },
-  {
-    path: '/settings/subscription/success',
-    element: <Navigate to={ACCOUNT_SUBSCRIPTION_SUCCESS} replace />,
-  },
+  ...generalConfigRedirectRoutes,
   {
     // Layout with shared header for all /account/subscription/* pages.
     // Exception: success page renders standalone (no nav).
@@ -625,42 +301,7 @@ const Routes: AppRoute[] = [
       </FrontendFeatureRouteGate>
     ),
   },
-  {
-    path: '/settings/account/subscription',
-    element: <Navigate to={ACCOUNT_SUBSCRIPTION} replace />,
-  },
-  {
-    path: '/settings/account/subscription/plans',
-    element: <Navigate to={ACCOUNT_SUBSCRIPTION_PLANS} replace />,
-  },
-  {
-    path: '/settings/account/subscription/billing',
-    element: <Navigate to={ACCOUNT_SUBSCRIPTION_BILLING} replace />,
-  },
-  {
-    path: '/settings/account/subscription/payment-methods',
-    element: <Navigate to={ACCOUNT_SUBSCRIPTION_PAYMENT_METHODS} replace />,
-  },
-  {
-    path: '/settings/account/subscription/settings',
-    element: <Navigate to={ACCOUNT_SUBSCRIPTION_SETTINGS} replace />,
-  },
-  {
-    path: '/settings/account/subscription/blocked-preview',
-    element: <Navigate to={ACCOUNT_SUBSCRIPTION_MANAGE} replace />,
-  },
-  {
-    path: '/account/subscription/manage',
-    element: <Navigate to={ACCOUNT_SUBSCRIPTION_MANAGE} replace />,
-  },
-  {
-    path: '/settings/account/subscription/manage',
-    element: <Navigate to={ACCOUNT_SUBSCRIPTION_MANAGE} replace />,
-  },
-  {
-    path: '/settings/account/subscription/success',
-    element: <Navigate to={ACCOUNT_SUBSCRIPTION_SUCCESS} replace />,
-  },
+  ...accountSubscriptionRedirectRoutes,
   {
     path: `${CREATE_BUSINESS}`,
     element: (

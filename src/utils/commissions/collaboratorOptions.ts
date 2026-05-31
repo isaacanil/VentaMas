@@ -3,7 +3,10 @@ import type {
   ServiceCommissionCollaboratorSnapshot,
 } from '@/types/commissions';
 
-import { normalizeCommissionCollaborator } from './serviceCommissions';
+import {
+  cleanCommissionString as toCleanString,
+  normalizeCommissionCollaborator,
+} from './serviceCommissions';
 
 export type ServiceCommissionCollaboratorOption = {
   collaborator: ServiceCommissionCollaboratorSnapshot;
@@ -22,13 +25,6 @@ interface BuildServiceCommissionCollaboratorOptionsArgs {
   collaborators?: ServiceCommissionCollaboratorRecord[] | null;
   users?: BusinessUser[] | null;
 }
-
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
 
 export const getServiceCommissionCollaboratorOptionValue = (
   collaborator?: ServiceCommissionCollaboratorSnapshot | null,

@@ -1,6 +1,6 @@
-import { Form, Input } from 'antd';
+import { Input } from 'antd';
 
-import { SectionHeader, SectionWrapper } from '../styles';
+import { CompactFormItem, SectionHeader, SectionWrapper } from '../styles';
 
 interface AdditionalInfoSectionProps {
   isSaving: boolean;
@@ -13,22 +13,21 @@ export const AdditionalInfoSection = ({
 }: AdditionalInfoSectionProps) => (
   <SectionWrapper>
     <SectionHeader>
-      <h3>Información Adicional</h3>
-      <p>Personaliza el pie de página de tus documentos.</p>
+      <h3>Informacion Adicional</h3>
+      <p>Personaliza el pie de pagina de tus documentos.</p>
     </SectionHeader>
-    <Form.Item
+    <CompactFormItem
       name="invoiceMessage"
       label="Mensaje en la factura"
-      tooltip="Este mensaje aparecerá en el pie de las facturas y cotizaciones."
-      style={{ marginBottom: 0 }}
+      tooltip="Este mensaje aparecera en el pie de las facturas y cotizaciones."
     >
       <Input.TextArea
         rows={4}
         maxLength={300}
         onBlur={onBlur}
         disabled={isSaving}
-        placeholder="Ej: 'Gracias por su preferencia y confianza...'"
+        placeholder="Ej: Gracias por su preferencia y confianza..."
       />
-    </Form.Item>
+    </CompactFormItem>
   </SectionWrapper>
 );
