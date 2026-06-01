@@ -13,7 +13,7 @@ import {
   setOrden,
   type FilterRootState,
 } from '@/features/filterProduct/filterProductsSlice';
-import { opcionesCriterio } from '@/modules/inventory/pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSortMetadata';
+import { opcionesCriterio } from '@/modules/inventory/pages/Inventario/pages/ItemsManager/components/InventoryFilterAndSort/InventoryFilterAndSortMetadata';
 
 type SortPanelProps = {
   contextKey?: string;

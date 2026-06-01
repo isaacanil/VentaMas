@@ -30,8 +30,8 @@ import { ButtonIconMenu } from '@/components/ui/Button/ButtonIconMenu';
 import { GoBackButton } from '@/components/ui/Button/GoBackButton';
 import { OpenMenuButton } from '@/components/ui/Button/OpenMenuButton';
 
-import { NotificationButton } from './Components/NotificationButton/NotificationButton';
-import { SideBar } from './Components/SideBar';
+import { NotificationButton } from './components/NotificationButton/NotificationButton';
+import { SideBar } from './components/SideBar';
 import { GlobalMenu } from './GlobalMenu/GlobalMenu';
 import type { ToolbarComponentProps } from './GlobalMenu/types';
 

@@ -1,6 +1,6 @@
 import DateUtils from './date/dateUtils';
 import { roundDecimals } from './pricing';
-import { isReference } from './refereceUtils';
+import { isReference } from './referenceUtils';
 import type { InvoiceData, InvoicePaymentMethod } from '@/types/invoice';
 import { buildPaymentState } from '@/utils/payments/paymentState';
 import type { TimestampLike } from '@/utils/date/types';

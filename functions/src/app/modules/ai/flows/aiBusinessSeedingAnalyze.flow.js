@@ -6,6 +6,7 @@ import {
   businessCreatorThinkingConfig,
 } from '../config/genkit.js';
 import { buildAiBusinessSeedingConversationContext } from '../utils/aiBusinessSeedingConversationContext.js';
+import { buildAiBusinessSeedingFormDraft } from '../utils/aiBusinessSeedingFormDraft.js';
 import {
   aiBusinessSeedingAnalyzeFlowOutputSchema,
   aiBusinessSeedingModelOutputOptions,
@@ -32,6 +33,22 @@ export const aiBusinessSeedingAnalyzeFlow = ai.defineFlow(
     const promptWithContext = contextBlock
       ? `${input.prompt}\n\n${contextBlock}`
       : input.prompt;
+    const requestMetrics = {
+      ...contextMetrics,
+      promptCharacters: input.prompt.length,
+      promptWithContextCharacters: promptWithContext.length,
+    };
+    const formDraft = buildAiBusinessSeedingFormDraft(input.prompt);
+
+    if (formDraft) {
+      return {
+        ...normalizeAiBusinessSeedingModelOutput(
+          formDraft,
+          input.enabledActions,
+        ),
+        requestMetrics,
+      };
+    }
 
     const response = await ai.generate({
       model: businessCreatorModel,
@@ -54,11 +71,7 @@ export const aiBusinessSeedingAnalyzeFlow = ai.defineFlow(
     return {
       ...normalizeAiBusinessSeedingModelOutput(output, input.enabledActions),
       usage: normalizeAiBusinessSeedingUsage(response.usage),
-      requestMetrics: {
-        ...contextMetrics,
-        promptCharacters: input.prompt.length,
-        promptWithContextCharacters: promptWithContext.length,
-      },
+      requestMetrics,
     };
   },
 );

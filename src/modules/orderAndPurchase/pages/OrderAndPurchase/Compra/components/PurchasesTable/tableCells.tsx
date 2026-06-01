@@ -29,7 +29,7 @@ import {
   canEditPurchase,
   resolvePurchaseWorkflowStatus,
 } from '@/utils/purchase/workflow';
-import TextCell from '@/components/ui/AdvancedTable/components/Cells/Text/TextCerll';
+import TextCell from '@/components/ui/AdvancedTable/components/Cells/Text/TextCell';
 import { Badge } from '@/components/common/Badge/Badge';
 import { formatPrice } from '@/utils/format/formatPrice';
 

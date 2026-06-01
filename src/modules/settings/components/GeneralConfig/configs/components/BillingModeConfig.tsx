@@ -1,6 +1,6 @@
 import { ShoppingOutlined } from '@ant-design/icons';
 import { Divider, Select, Switch, message } from 'antd';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
@@ -31,45 +31,28 @@ interface BillingModeConfigProps {
   billingSettings?: BillingSettings;
 }
 
-const BillingModeConfig = ({ billingSettings }: BillingModeConfigProps) => {
-  const user = useSelector(selectUser);
-  const billingMode = (billingSettings?.billingMode || 'direct') as BillingMode;
-  const [localMode, setLocalMode] = useState<BillingMode>(billingMode);
-  const [allowCxC, setAllowCxC] = useState(
-    normalizeTiming(billingSettings?.invoiceGenerationTiming) ===
-      'full-payment',
-  );
+interface BillingModeConfigContentProps {
+  initialMode: BillingMode;
+  initialAllowCxC: boolean;
+  onSaveSettings: (nextMode: BillingMode, nextAllowCxC: boolean) => void;
+}
 
-  useEffect(() => {
-    setLocalMode((billingSettings?.billingMode || 'direct') as BillingMode);
-    setAllowCxC(
-      normalizeTiming(billingSettings?.invoiceGenerationTiming) ===
-        'full-payment',
-    );
-  }, [billingSettings]);
-
-  const saveSettings = (nextMode: BillingMode, nextAllowCxC: boolean) => {
-    void setBillingSettings(user, {
-      billingMode: nextMode,
-      invoiceGenerationTiming: nextAllowCxC ? 'full-payment' : 'first-payment',
-    }).then(
-      () => {
-        message.success('Configuracion actualizada correctamente');
-      },
-      () => {
-        message.error('Error al guardar la configuracion');
-      },
-    );
-  };
+const BillingModeConfigContent = ({
+  initialMode,
+  initialAllowCxC,
+  onSaveSettings,
+}: BillingModeConfigContentProps) => {
+  const [localMode, setLocalMode] = useState<BillingMode>(initialMode);
+  const [allowCxC, setAllowCxC] = useState(initialAllowCxC);
 
   const handleModeChange = (value: BillingMode) => {
     setLocalMode(value);
-    saveSettings(value, allowCxC);
+    onSaveSettings(value, allowCxC);
   };
 
   const handleCxCChange = (checked: boolean) => {
     setAllowCxC(checked);
-    saveSettings(localMode, checked);
+    onSaveSettings(localMode, checked);
   };
 
   return (
@@ -129,6 +112,37 @@ const BillingModeConfig = ({ billingSettings }: BillingModeConfigProps) => {
         </>
       )}
     </SettingCard>
+  );
+};
+
+const BillingModeConfig = ({ billingSettings }: BillingModeConfigProps) => {
+  const user = useSelector(selectUser);
+  const billingMode = (billingSettings?.billingMode || 'direct') as BillingMode;
+  const allowCxC =
+    normalizeTiming(billingSettings?.invoiceGenerationTiming) ===
+    'full-payment';
+
+  const saveSettings = (nextMode: BillingMode, nextAllowCxC: boolean) => {
+    void setBillingSettings(user, {
+      billingMode: nextMode,
+      invoiceGenerationTiming: nextAllowCxC ? 'full-payment' : 'first-payment',
+    }).then(
+      () => {
+        message.success('Configuracion actualizada correctamente');
+      },
+      () => {
+        message.error('Error al guardar la configuracion');
+      },
+    );
+  };
+
+  return (
+    <BillingModeConfigContent
+      key={`${billingMode}:${allowCxC ? 'cxc' : 'first-payment'}`}
+      initialMode={billingMode}
+      initialAllowCxC={allowCxC}
+      onSaveSettings={saveSettings}
+    />
   );
 };
 

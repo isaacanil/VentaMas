@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 
+// Shared state helper for filter bars that keep filters and sort direction together.
 export type FilterBarState<TFilters extends Record<string, unknown>> = {
   filters: TFilters;
   isAscending: boolean;

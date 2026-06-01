@@ -6,7 +6,7 @@ import type {
   Unsubscribe,
 } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseconfig';
-import { createReference, getDocFromRef } from '@/utils/refereceUtils';
+import { createReference, getDocFromRef } from '@/utils/referenceUtils';
 import { enrichPurchaseWorkflow } from '@/utils/purchase/workflow';
 
 export const convertFirestoreTimestamps = (

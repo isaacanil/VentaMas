@@ -149,7 +149,7 @@ vi.mock('@/components/DatePicker', () => ({
   }) => <input data-testid="date-picker" {...props} />,
 }));
 
-vi.mock('../PaymentDatesOverview/PaymentDatesOverbiew', () => ({
+vi.mock('../PaymentDatesOverview/PaymentDatesOverview', () => ({
   default: () => <div data-testid="payment-dates-overview" />,
 }));
 

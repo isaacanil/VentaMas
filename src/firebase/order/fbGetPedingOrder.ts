@@ -13,7 +13,7 @@ import { useSelector } from 'react-redux';
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
 import { normalizeOrderRecord, resolveOrderStatus } from '@/utils/order/status';
-import { createReference, getDocFromRef } from '@/utils/refereceUtils';
+import { createReference, getDocFromRef } from '@/utils/referenceUtils';
 
 type TimestampLike =
   | {

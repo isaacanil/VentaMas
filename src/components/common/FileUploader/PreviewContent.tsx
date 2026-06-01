@@ -1,21 +1,13 @@
 import type { Dispatch, SetStateAction } from 'react';
 
 import SharedPreviewContent from '../fileUploadShared/components/PreviewContent';
-
-type PreviewFile = {
-  id?: string;
-  name?: string;
-  type?: string;
-  url?: string;
-  preview?: string | null;
-  file?: File;
-};
+import type { PreviewableFile } from '../fileUploadShared/types';
 
 type PreviewContentProps = {
-  previewFile: PreviewFile | null;
+  previewFile: PreviewableFile | null;
   previewVisible: boolean;
   setPreviewVisible: (visible: boolean) => void;
-  setPreviewFile: Dispatch<SetStateAction<PreviewFile | null>>;
+  setPreviewFile: Dispatch<SetStateAction<PreviewableFile | null>>;
 };
 
 const PreviewContent = ({

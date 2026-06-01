@@ -19,7 +19,7 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../features/auth/userSlice';
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 import type { InventoryUser, RowShelfRecord } from '@/utils/inventory/types';
 
 // Obtener referencia de la colección de filas de un estante

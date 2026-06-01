@@ -16,12 +16,66 @@ import { AI_BUSINESS_SEEDING_CONSTRAINED_OUTPUT } from '../utils/aiBusinessSeedi
 import { assertAiBusinessSeedingDeveloperAccess } from './aiBusinessSeedingAccess.js';
 
 const DEBUG_ERROR_PROJECTS = new Set(['ventamax-staging']);
+const DEFAULT_ANALYZE_RESPONSE_DEADLINE_MS = 150_000;
+const MIN_ANALYZE_RESPONSE_DEADLINE_MS = 10_000;
+const AI_ANALYZE_DEADLINE_CATEGORY = 'AI_ANALYZE_DEADLINE_EXCEEDED';
+const AI_STRUCTURED_OUTPUT_EMPTY_CATEGORY = 'AI_STRUCTURED_OUTPUT_EMPTY';
 
 const readObject = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 
 const readEnvString = (value) =>
   typeof value === 'string' && value.trim() ? value.trim() : '';
+
+const readPositiveIntegerEnv = (value, fallback) => {
+  const numeric = Number(readEnvString(value));
+  if (
+    Number.isFinite(numeric) &&
+    numeric >= MIN_ANALYZE_RESPONSE_DEADLINE_MS
+  ) {
+    return Math.trunc(numeric);
+  }
+  return fallback;
+};
+
+const analyzeResponseDeadlineMs = readPositiveIntegerEnv(
+  process.env.AI_BUSINESS_SEEDING_ANALYZE_DEADLINE_MS,
+  DEFAULT_ANALYZE_RESPONSE_DEADLINE_MS,
+);
+
+const makeAnalyzeDeadlineError = (timeoutMs) =>
+  Object.assign(
+    new Error(
+      `La IA tardo mas de ${Math.round(timeoutMs / 1000)} segundos en responder.`,
+    ),
+    {
+      category: AI_ANALYZE_DEADLINE_CATEGORY,
+      code: 'deadline-exceeded',
+      status: 'DEADLINE_EXCEEDED',
+    },
+  );
+
+const isAnalyzeDeadlineError = (error) =>
+  error && typeof error === 'object'
+    ? error.category === AI_ANALYZE_DEADLINE_CATEGORY
+    : false;
+
+const withAnalyzeResponseDeadline = async (workPromise) => {
+  let timeoutId;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = globalThis.setTimeout(() => {
+      reject(makeAnalyzeDeadlineError(analyzeResponseDeadlineMs));
+    }, analyzeResponseDeadlineMs);
+  });
+
+  try {
+    return await Promise.race([workPromise, timeoutPromise]);
+  } finally {
+    if (timeoutId) {
+      globalThis.clearTimeout(timeoutId);
+    }
+  }
+};
 
 const shouldExposeDiagnosticErrors = () => {
   const explicit = readEnvString(process.env.AI_BUSINESS_SEEDING_DEBUG_ERRORS);
@@ -50,7 +104,11 @@ const getErrorStatus = (error) => {
   return status || undefined;
 };
 
-const classifyAiError = (message) => {
+const classifyAiError = (message, error) => {
+  if (isAnalyzeDeadlineError(error)) {
+    return AI_ANALYZE_DEADLINE_CATEGORY;
+  }
+
   const lower = message.toLowerCase();
   if (
     lower.includes('aiplatform.googleapis.com') &&
@@ -64,13 +122,41 @@ const classifyAiError = (message) => {
   if (lower.includes('model') && lower.includes('not found')) {
     return 'VERTEX_AI_MODEL_NOT_FOUND';
   }
+  if (
+    (lower.includes('schema validation failed') &&
+      lower.includes('provided data') &&
+      lower.includes('null')) ||
+    lower.includes('no devolvio una accion estructurada')
+  ) {
+    return AI_STRUCTURED_OUTPUT_EMPTY_CATEGORY;
+  }
   return 'AI_ANALYZE_FAILED';
+};
+
+const getAiAnalyzeHttpsCode = (category) => {
+  if (category === AI_ANALYZE_DEADLINE_CATEGORY) return 'deadline-exceeded';
+  if (category === AI_STRUCTURED_OUTPUT_EMPTY_CATEGORY) return 'unavailable';
+  if (category === 'VERTEX_AI_API_DISABLED') return 'failed-precondition';
+  if (category === 'VERTEX_AI_PERMISSION_DENIED') return 'permission-denied';
+  if (category === 'VERTEX_AI_MODEL_NOT_FOUND') return 'failed-precondition';
+  return 'internal';
+};
+
+const getAiAnalyzeClientMessage = (category) => {
+  if (category === AI_ANALYZE_DEADLINE_CATEGORY) {
+    return 'La IA tardo demasiado en analizar la solicitud. Intenta nuevamente.';
+  }
+  if (category === AI_STRUCTURED_OUTPUT_EMPTY_CATEGORY) {
+    return 'La IA no devolvio una respuesta estructurada valida. Intenta nuevamente.';
+  }
+  return 'No se pudo analizar la solicitud con IA.';
 };
 
 const buildAiDiagnostic = (error) => {
   const message = getErrorMessage(error);
+  const category = classifyAiError(message, error);
   return {
-    category: classifyAiError(message),
+    category,
     message,
     status: getErrorStatus(error),
     model: businessCreatorModelName,
@@ -78,6 +164,7 @@ const buildAiDiagnostic = (error) => {
     thinkingLevel: businessCreatorThinkingLevel,
     thoughtSummariesEnabled: businessCreatorThoughtSummariesEnabled,
     appCheckMode: getAiAgentAppCheckMode(),
+    responseDeadlineMs: analyzeResponseDeadlineMs,
   };
 };
 
@@ -135,14 +222,16 @@ export const aiBusinessSeedingAgentAnalyze = onCall(
     const startedAt = Date.now();
 
     try {
-      const result = await aiBusinessSeedingAnalyzeFlow.run(
-        { prompt, enabledActions, conversationContext },
-        {
-          context: {
-            auth: request.auth || null,
-            app: request.app || null,
+      const result = await withAnalyzeResponseDeadline(
+        aiBusinessSeedingAnalyzeFlow.run(
+          { prompt, enabledActions, conversationContext },
+          {
+            context: {
+              auth: request.auth || null,
+              app: request.app || null,
+            },
           },
-        },
+        ),
       );
       const flowResult = result?.result || {};
       const durationMs = Date.now() - startedAt;
@@ -189,8 +278,8 @@ export const aiBusinessSeedingAgentAnalyze = onCall(
         ...diagnostic,
       });
       throw new HttpsError(
-        'internal',
-        'No se pudo analizar la solicitud con IA.',
+        getAiAnalyzeHttpsCode(diagnostic.category),
+        getAiAnalyzeClientMessage(diagnostic.category),
         shouldExposeDiagnosticErrors() ? { diagnostic } : undefined,
       );
     }

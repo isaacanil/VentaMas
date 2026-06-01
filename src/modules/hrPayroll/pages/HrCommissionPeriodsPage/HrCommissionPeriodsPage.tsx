@@ -1,7 +1,7 @@
 import { Alert, Button, DatePicker, Form, Table, message } from 'antd';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
@@ -113,36 +113,39 @@ export default function HrCommissionPeriodsPage() {
     [periods],
   );
 
-  const handleAction = async (
-    action: 'create' | 'close' | 'approve',
-    period?: HrCommissionPeriodRecord,
-  ) => {
-    if (!businessId) return;
-    const key =
-      action === 'create' ? 'create' : `${action}:${period?.id ?? 'none'}`;
-    setActionKey(key);
-    try {
-      const result = await manageHrCommissionPeriod({
-        action,
-        businessId,
-        periodId: period?.id,
-        startDate: dateRange[0].toDate(),
-        endDate: dateRange[1].toDate(),
-      });
-      setSelectedPeriodId(result.periodId);
-      messageApi.success(
-        action === 'create'
-          ? `Corte listo: ${result.entriesCount} comisiones.`
-          : `Corte ${STATUS_LABELS[result.status].toLowerCase()}.`,
-      );
-    } catch (actionError) {
-      messageApi.error(getErrorMessage(actionError));
-    } finally {
-      setActionKey(null);
-    }
-  };
+  const handleAction = useCallback(
+    async (
+      action: 'create' | 'close' | 'approve',
+      period?: HrCommissionPeriodRecord,
+    ) => {
+      if (!businessId) return;
+      const key =
+        action === 'create' ? 'create' : `${action}:${period?.id ?? 'none'}`;
+      setActionKey(key);
+      try {
+        const result = await manageHrCommissionPeriod({
+          action,
+          businessId,
+          periodId: period?.id,
+          startDate: dateRange[0].toDate(),
+          endDate: dateRange[1].toDate(),
+        });
+        setSelectedPeriodId(result.periodId);
+        messageApi.success(
+          action === 'create'
+            ? `Corte listo: ${result.entriesCount} comisiones.`
+            : `Corte ${STATUS_LABELS[result.status].toLowerCase()}.`,
+        );
+      } catch (actionError) {
+        messageApi.error(getErrorMessage(actionError));
+      } finally {
+        setActionKey(null);
+      }
+    },
+    [businessId, dateRange, messageApi],
+  );
 
-  const handleOpenPayment = (line: HrPayrollEmployeeLineRecord) => {
+  const handleOpenPayment = useCallback((line: HrPayrollEmployeeLineRecord) => {
     paymentForm.setFieldsValue({
       paymentDate: dayjs(),
       paymentMethod:
@@ -159,7 +162,7 @@ export default function HrCommissionPeriodsPage() {
       cashCountId: '',
     });
     setPaymentLine(line);
-  };
+  }, [paymentForm]);
 
   const handleRecordPayment = async (values: PaymentFormValues) => {
     if (!businessId || !paymentLine) return;
@@ -197,7 +200,7 @@ export default function HrCommissionPeriodsPage() {
         actionKey,
         onAction: handleAction,
       }),
-    [actionKey],
+    [actionKey, handleAction],
   );
 
   const lineColumns = useMemo(
@@ -206,7 +209,7 @@ export default function HrCommissionPeriodsPage() {
         paymentActionKey,
         onOpenPayment: handleOpenPayment,
       }),
-    [paymentActionKey],
+    [handleOpenPayment, paymentActionKey],
   );
   return (
     <>

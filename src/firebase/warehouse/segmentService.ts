@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../features/auth/userSlice';
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 import type { Segment } from '@/models/Warehouse/Segment';
 import type { InventoryUser } from '@/utils/inventory/types';
 

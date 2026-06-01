@@ -10,18 +10,14 @@ import { connectAuthEmulator, getAuth } from 'firebase/auth';
 //TODO ***FIRESTORE***********************************
 import { getDatabase, type Database } from 'firebase/database';
 import {
-  arrayRemove,
-  arrayUnion,
   collection,
   connectFirestoreEmulator,
-  doc,
   getDocs,
   initializeFirestore,
   memoryLocalCache,
   persistentLocalCache,
   persistentMultipleTabManager,
   query,
-  updateDoc,
   where,
 } from 'firebase/firestore';
 import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
@@ -264,36 +260,3 @@ export const listFirst5UserNames = async (): Promise<string[]> => {
 //   if (taxesArray.length === 0) return;
 //   if (taxesArray.length > 0) return setTaxes(taxesArray)
 // }
-
-export interface IngredientInput {
-  id?: string | number;
-  name?: string;
-  cost?: number | string;
-  [key: string]: unknown;
-}
-
-export const addIngredientTypePizza = async (
-  ingredient: IngredientInput,
-): Promise<void> => {
-  const IngredientRef = doc(db, 'products', '6dssod');
-  // Atomically add a new region to the "regions" array field.
-  try {
-    await updateDoc(IngredientRef, {
-      ingredientList: arrayUnion(ingredient),
-    });
-  } catch (error) {
-    console.error('Error adding ingredient:', error);
-  }
-};
-export const deleteIngredientTypePizza = async (
-  ingredient: IngredientInput,
-): Promise<void> => {
-  const IngredientRef = doc(db, 'products', '6dssod');
-  try {
-    await updateDoc(IngredientRef, {
-      ingredientList: arrayRemove(ingredient),
-    });
-  } catch (error) {
-    console.error('Error deleting ingredient:', error);
-  }
-};

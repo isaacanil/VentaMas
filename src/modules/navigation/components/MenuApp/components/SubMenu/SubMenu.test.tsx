@@ -26,7 +26,7 @@ vi.mock('@/components/ui/Button/Button', () => ({
   ),
 }));
 
-vi.mock('@/modules/navigation/components/MenuApp/Components/MenuLink', () => ({
+vi.mock('@/modules/navigation/components/MenuApp/components/MenuLink', () => ({
   MenuLink: ({
     item,
     onActionDone,

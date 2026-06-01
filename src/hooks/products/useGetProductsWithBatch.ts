@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../features/auth/userSlice';
-import { db } from '../../firebase/firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 import type { ProductRecord } from '@/types/products';
 import type { UserIdentity } from '@/types/users';
 

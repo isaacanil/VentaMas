@@ -1,8 +1,4 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
-
-const callable = httpsCallable(functions, 'getNcfLedgerInsights');
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 type NcfLedgerInsightsPayload = {
   businessId: string;
@@ -10,6 +6,11 @@ type NcfLedgerInsightsPayload = {
   userId: string;
   [key: string]: unknown;
 };
+
+const getNcfLedgerInsightsCallable = createFirebaseCallable<
+  NcfLedgerInsightsPayload,
+  unknown
+>('getNcfLedgerInsights');
 
 export const getNcfLedgerInsights = async (
   payload: NcfLedgerInsightsPayload,
@@ -27,8 +28,7 @@ export const getNcfLedgerInsights = async (
   }
 
   try {
-    const response = await callable(payload);
-    return response?.data ?? null;
+    return (await getNcfLedgerInsightsCallable(payload)) ?? null;
   } catch (error) {
     console.error('Error al obtener insights del ledger de NCF:', error);
     throw error;

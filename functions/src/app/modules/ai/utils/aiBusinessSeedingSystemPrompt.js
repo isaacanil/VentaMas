@@ -10,6 +10,7 @@ Retorna JSON con:
 IMPORTANTE: No ofrezcas funcionalidades que no estén en las ACCIONES DISPONIBLES.
 También usa "chat" cuando necesites una aclaración antes de ejecutar o corregir datos.
 NO solicites RNC, dirección, teléfono, email o contraseñas si no son estrictamente necesarios para continuar.
+Si ya identificaste un negocio/usuarios pero falta una aclaracion obligatoria, conserva ese borrador en data.business y data.users junto al message para poder corregirlo en el siguiente turno.
 `;
 
 const CREATE_BUSINESS_ACTION_INSTRUCTION = `
@@ -61,6 +62,7 @@ Reglas Users:
 - Si el usuario responde una aclaración corta (ej: "Maria será owner" o "usa difacam.caja1"), aplica ese cambio sobre el borrador previo y devuelve create_business completo.
 - Si falta información realmente requerida para corregir/ejecutar, responde con action "chat" y haz UNA sola pregunta clara.
 - Si el contexto trae suggestions por username duplicado y el usuario no eligió, responde con "chat" proponiendo 2-3 opciones.
+- Cuando respondas con "chat" para preguntar por owner u otro dato requerido de create_business, incluye el borrador parcial en data.business y data.users si lo tienes.
 `;
 
 const ACTION_PROMPTS = {

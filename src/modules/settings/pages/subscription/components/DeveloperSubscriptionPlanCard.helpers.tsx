@@ -1,6 +1,5 @@
 import {
   faBox,
-  faCheck,
   faFileInvoice,
   faInfinity,
   faStore,
@@ -9,20 +8,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { ReactNode } from 'react';
 
-import {
-  Muted,
-  TooltipContent,
-  TooltipDivider,
-  TooltipModuleItem,
-  TooltipModuleList,
-  TooltipRow,
-  TooltipRowIcon,
-  TooltipRowLabel,
-  TooltipRows,
-  TooltipRowValue,
-  TooltipSectionTitle,
-} from './DeveloperSubscriptionPlanCard.styles';
-import { ENTITLEMENT_LABELS } from '../subscriptionEntitlements';
+import { Muted } from './DeveloperSubscriptionPlanCard.styles';
 import { toFiniteNumber } from '../subscription.utils';
 import type { UnknownRecord } from '../subscription.types';
 
@@ -86,38 +72,3 @@ export const truncateVersionId = (id: string): string => {
   if (id.length <= 12) return id;
   return `${id.slice(0, 6)}...${id.slice(-4)}`;
 };
-
-export const PlanTooltipContent = ({
-  limits,
-  allEntitlements,
-}: {
-  limits: UnknownRecord;
-  allEntitlements: [string, unknown][];
-}) => (
-  <TooltipContent>
-    <TooltipSectionTitle>Limites</TooltipSectionTitle>
-    <TooltipRows>
-      {PREVIEW_LIMIT_KEYS.map(({ key, label, icon }) => (
-        <TooltipRow key={key}>
-          <TooltipRowIcon>{icon}</TooltipRowIcon>
-          <TooltipRowLabel>{label}</TooltipRowLabel>
-          <TooltipRowValue>{formatLimitValue(limits[key])}</TooltipRowValue>
-        </TooltipRow>
-      ))}
-    </TooltipRows>
-    {allEntitlements.length > 0 && (
-      <>
-        <TooltipDivider />
-        <TooltipSectionTitle>Modulos habilitados</TooltipSectionTitle>
-        <TooltipModuleList>
-          {allEntitlements.map(([key]) => (
-            <TooltipModuleItem key={key}>
-              <FontAwesomeIcon icon={faCheck} />
-              {ENTITLEMENT_LABELS[key] ?? key}
-            </TooltipModuleItem>
-          ))}
-        </TooltipModuleList>
-      </>
-    )}
-  </TooltipContent>
-);

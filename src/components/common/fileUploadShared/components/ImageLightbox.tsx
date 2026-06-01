@@ -13,7 +13,7 @@ type ImageLightboxProps = {
   setLightboxOpen: (open: boolean) => void;
   lightboxIndex: number;
   setLightboxIndex?: (index: number) => void;
-  getImageFiles: () => LightboxSlide[];
+  slides: LightboxSlide[];
 };
 
 const ImageLightbox = ({
@@ -21,13 +21,13 @@ const ImageLightbox = ({
   setLightboxOpen,
   lightboxIndex,
   setLightboxIndex: _setLightboxIndex,
-  getImageFiles,
+  slides,
 }: ImageLightboxProps) => (
   <Lightbox
     open={lightboxOpen}
     close={() => setLightboxOpen(false)}
     index={lightboxIndex}
-    slides={getImageFiles()}
+    slides={slides}
     plugins={[Zoom, Thumbnails, Captions]}
     carousel={{
       spacing: 0,

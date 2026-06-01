@@ -33,13 +33,13 @@ export const getDocFromRef = async <T = DocumentData>(
   try {
     const snapshot = await getDoc(ref);
     if (snapshot.exists()) {
-      return snapshot.data(); // Devuelve los datos del documento
+      return snapshot.data();
     } else {
       console.warn('El documento no existe:', ref.path);
-      return null; // Documento no encontrado
+      return null;
     }
   } catch (error) {
     console.error('Error al obtener el documento:', error);
-    return null; // Manejo de errores
+    return null;
   }
 };

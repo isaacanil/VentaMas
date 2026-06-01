@@ -28,7 +28,7 @@ import { toMillis } from '@/utils/date/dateUtils';
 import { calculateInvoiceChange } from '@/utils/invoice';
 import { setNumPrecision } from '@/utils/pricing';
 import { flowTrace } from '@/utils/flowTrace';
-import PaymentDatesOverview from '../PaymentDatesOverview/PaymentDatesOverbiew';
+import PaymentDatesOverview from '../PaymentDatesOverview/PaymentDatesOverview';
 
 import usePaymentDates from './usePaymentDates';
 

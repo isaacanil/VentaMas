@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import styled from 'styled-components';
 
 import type { MenuItem } from '@/types/menu';
-import { MenuLink } from '@/modules/navigation/components/MenuApp/Components/MenuLink';
+import { MenuLink } from '@/modules/navigation/components/MenuApp/components/MenuLink';
 import { Button } from '@/components/ui/Button/Button';
 
 interface SubMenuProps {

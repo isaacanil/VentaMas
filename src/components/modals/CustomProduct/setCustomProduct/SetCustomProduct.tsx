@@ -11,8 +11,8 @@ import { AddCustomProductModal } from '@/components/modals/AddCustomProductModal
 import { Modal } from '@/components/modals/Modal';
 import type { Product } from '@/features/cart/types';
 
-import { Header } from './Components/Header';
-import { IngredientList } from './Components/IngredientList';
+import { Header } from './components/Header';
+import { IngredientList } from './components/IngredientList';
 
 interface CustomProductPricing {
   price: number;

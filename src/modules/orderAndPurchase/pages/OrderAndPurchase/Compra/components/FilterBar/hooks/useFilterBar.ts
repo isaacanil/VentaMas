@@ -1,4 +1,4 @@
-import { useFilterBar as useSharedFilterBar } from '@/components/common/FilterBarLegacy/hooks/useFilterBar';
+import { useFilterBar as useSharedFilterBar } from '@/components/common/FilterBar/hooks/useFilterBar';
 import type { FilterState } from '../types';
 
 export const useFilterBar = (

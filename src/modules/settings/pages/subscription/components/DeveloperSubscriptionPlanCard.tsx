@@ -44,9 +44,9 @@ import {
   formatPlanPrice,
   getBadgeLabel,
   getEnabledEntitlements,
-  PlanTooltipContent,
   truncateVersionId,
 } from './DeveloperSubscriptionPlanCard.helpers';
+import { PlanTooltipContent } from './DeveloperSubscriptionPlanCardTooltip';
 import {
   PlanDetailModal,
   VersionHistoryModal,

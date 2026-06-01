@@ -45,7 +45,6 @@ const WEB_LINT_GROUPS = [
     'src/design-system',
     'src/dev',
     'src/domain',
-    'src/helper',
     'src/i18n',
     'src/layouts',
     'src/models',

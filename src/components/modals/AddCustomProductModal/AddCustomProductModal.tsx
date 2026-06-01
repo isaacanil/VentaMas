@@ -10,7 +10,7 @@ import { selectUser } from '@/features/auth/userSlice';
 import {
   addIngredientTypePizza,
   type IngredientInput,
-} from '@/firebase/firebaseconfig';
+} from '@/firebase/products/customProduct/ingredientTypePizzaService';
 import { fbGetCustomProduct } from '@/firebase/products/customProduct/fbGetCustomProductTypePizza';
 import { Button } from '@/components/ui/Button/Button';
 import { PlusIconButton } from '@/components/ui/Button/PlusIconButton';

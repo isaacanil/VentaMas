@@ -128,12 +128,95 @@ const buildNormalizedOutput = ({ action, data }) => {
   };
 };
 
+const readString = (value) =>
+  typeof value === 'string' && value.trim() ? value.trim() : '';
+
+const normalizeText = (value) =>
+  readString(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const normalizeBusinessType = (value) => {
+  const normalized = normalizeText(value);
+  return normalized.includes('farmacia') || normalized.includes('pharmacy')
+    ? 'pharmacy'
+    : 'general';
+};
+
+const looksLikeAddress = (value) => {
+  const normalized = normalizeText(value);
+  return (
+    normalized.startsWith('c/') ||
+    normalized.startsWith('calle ') ||
+    normalized.startsWith('av ') ||
+    normalized.startsWith('ave ') ||
+    normalized.startsWith('avenida ') ||
+    normalized.includes(' pantoja') ||
+    normalized.includes(' sto.') ||
+    normalized.includes(' santo domingo')
+  );
+};
+
+const splitPhoneAndAddress = (tel, address) => {
+  const cleanTel = readString(tel);
+  const cleanAddress = readString(address);
+  if (!cleanTel || cleanAddress) {
+    return { tel: cleanTel || undefined, address: cleanAddress || undefined };
+  }
+
+  const parts = cleanTel
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (parts.length < 2) {
+    return { tel: cleanTel || undefined, address: undefined };
+  }
+
+  const firstAddressIndex = parts.findIndex(looksLikeAddress);
+  if (firstAddressIndex < 1) {
+    return { tel: cleanTel || undefined, address: undefined };
+  }
+
+  return {
+    tel: parts.slice(0, firstAddressIndex).join(', '),
+    address: parts.slice(firstAddressIndex).join(', '),
+  };
+};
+
+const normalizeBusinessData = (business) => {
+  if (!business || typeof business !== 'object' || Array.isArray(business)) {
+    return business;
+  }
+
+  const { tel, address } = splitPhoneAndAddress(business.tel, business.address);
+
+  return {
+    ...business,
+    ...(tel ? { tel } : {}),
+    ...(address ? { address } : {}),
+    businessType: normalizeBusinessType(business.businessType),
+  };
+};
+
 const normalizeChatData = (data) => {
   const message = typeof data?.message === 'string' ? data.message.trim() : '';
   if (!message) {
     throw new Error('La accion chat requiere data.message.');
   }
-  return { message };
+
+  return {
+    message,
+    ...(data?.business
+      ? { business: normalizeBusinessData(data.business) }
+      : {}),
+    ...(Array.isArray(data?.users) && data.users.length
+      ? { users: data.users }
+      : {}),
+  };
 };
 
 const normalizeCreateBusinessData = (data) => {
@@ -153,7 +236,7 @@ const normalizeCreateBusinessData = (data) => {
     throw new Error('La accion create_business requiere exactamente 1 owner.');
   }
 
-  return { business, users };
+  return { business: normalizeBusinessData(business), users };
 };
 
 export const normalizeAiBusinessSeedingModelOutput = (

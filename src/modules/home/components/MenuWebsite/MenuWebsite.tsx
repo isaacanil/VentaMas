@@ -1,7 +1,7 @@
 import styled, { css } from 'styled-components';
 
 import PersonalizedGreeting from '@/modules/home/pages/Home/components/PersonalizedGreeting/PersonalizedGreeting';
-import { NotificationButton } from '@/modules/navigation/components/MenuApp/Components/NotificationButton/NotificationButton';
+import { NotificationButton } from '@/modules/navigation/components/MenuApp/components/NotificationButton/NotificationButton';
 import { BusinessInfoPill } from '@/modules/home/pages/Home/components/BusinessInfoPill/BusinessInfoPill';
 
 import { ShortcutSearch } from './components/ShortcutSearch';

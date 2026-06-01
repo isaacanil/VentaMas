@@ -20,7 +20,7 @@ const PaymentDatesOverview = ({
   installments,
 }: PaymentDatesOverviewProps) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [viewMode, setViewMode] = useState('list'); // 'list' or 'calendar'
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
   const showModal = () => {
     setIsModalVisible(true);

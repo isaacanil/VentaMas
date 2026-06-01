@@ -16,7 +16,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { MovementReason, MovementType } from '@/models/Warehouse/Movement';
 import { normalizeLocationKey } from '@/utils/inventory/locations';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 import { getLocationName } from './locationService';
 

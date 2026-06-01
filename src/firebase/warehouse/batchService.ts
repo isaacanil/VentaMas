@@ -26,7 +26,7 @@ import {
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../features/auth/userSlice';
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 import { deleteAllProductStocksByBatch } from './productStockService';
 import { MovementReason } from '@/models/Warehouse/Movement';
 import type { Batch } from '@/models/Warehouse/Batch';

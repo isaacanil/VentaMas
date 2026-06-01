@@ -31,11 +31,11 @@ import {
 } from '@/features/filterProduct/filterProductsSlice';
 import { getWarehousesStockAggregates } from '@/firebase/warehouse/productStockService';
 import { useListenWarehouses } from '@/firebase/warehouse/warehouseService';
-import { LabelWithStatus } from '@/modules/inventory/pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/components/Body/components/SortPanel/SortPanel';
+import { LabelWithStatus } from '@/modules/inventory/pages/Inventario/pages/ItemsManager/components/InventoryFilterAndSort/components/Body/components/SortPanel/SortPanel';
 import {
   opcionesInventariable,
   opcionesItbis,
-} from '@/modules/inventory/pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSortMetadata';
+} from '@/modules/inventory/pages/Inventario/pages/ItemsManager/components/InventoryFilterAndSort/InventoryFilterAndSortMetadata';
 
 import {
   InventoryLocationSelector,

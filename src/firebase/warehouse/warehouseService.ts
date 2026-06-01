@@ -19,7 +19,7 @@ import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../features/auth/userSlice';
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { db, functions } from '../firebaseconfig';
+import { db, functions } from '@/firebase/firebaseconfig';
 import type { Warehouse } from '@/models/Warehouse/Warehouse';
 import type { InventoryUser } from '@/utils/inventory/types';
 

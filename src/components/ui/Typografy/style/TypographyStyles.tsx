@@ -1,9 +1,8 @@
 import styled, { css } from 'styled-components';
 
-import { getFontSize } from '@/helper/styleHelper';
-
 import { colors } from './colors';
 import { fontSize } from './fontSize';
+import { getFontSize } from './getFontSize';
 import { variants } from './variants';
 
 type VariantKey = keyof typeof variants;

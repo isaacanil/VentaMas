@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { deleteIngredientTypePizza } from '@/firebase/firebaseconfig';
+import { deleteIngredientTypePizza } from '@/firebase/products/customProduct/ingredientTypePizzaService';
 import { ButtonGroup } from '@/components/ui/Button/ButtonGroup';
 import { DeleteButton } from '@/components/ui/Button/DeleteButton';
 import { EditButton } from '@/components/ui/Button/EditButton';

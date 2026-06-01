@@ -9,7 +9,7 @@ import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 import { Transition } from '@/components/ui/Transition';
 import Typography from '@/components/ui/Typografy/Typografy';
 
-import { Card } from './Components/Card';
+import { Card } from './components/Card';
 import { getSettingData } from './SettingData';
 import type { SettingItem } from './SettingData';
 

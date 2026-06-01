@@ -1,9 +1,5 @@
-import { httpsCallable, type HttpsCallableResult } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 import type { UserIdentity } from '@/types/users';
-
-const callable = httpsCallable(functions, 'recalculateProductStockTotals');
 
 interface RecalculatePayload {
   user: {
@@ -11,6 +7,11 @@ interface RecalculatePayload {
     businessID: string;
   };
 }
+
+const recalculateProductStockTotalsCallable = createFirebaseCallable<
+  RecalculatePayload,
+  unknown
+>('recalculateProductStockTotals');
 
 export const fbRecalculateProductStockTotals = async (
   user: UserIdentity | null | undefined,
@@ -26,8 +27,7 @@ export const fbRecalculateProductStockTotals = async (
     },
   };
 
-  const { data } = (await callable(payload)) as HttpsCallableResult<unknown>;
-  return data;
+  return recalculateProductStockTotalsCallable(payload);
 };
 
 export default fbRecalculateProductStockTotals;

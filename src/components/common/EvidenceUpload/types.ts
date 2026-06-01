@@ -1,12 +1,17 @@
 import type { PurchaseAttachment } from '@/utils/purchase/types';
 
+import type {
+  LightboxSlide,
+  PreviewableFile,
+} from '../fileUploadShared/types';
+
 export type EvidenceFileCategory =
   | 'receipts'
   | 'invoices'
   | 'others'
   | (string & {});
 
-export interface EvidenceFile extends PurchaseAttachment {
+export interface EvidenceFile extends PurchaseAttachment, PreviewableFile {
   id?: string;
   name?: string;
   type?: EvidenceFileCategory;
@@ -16,11 +21,7 @@ export interface EvidenceFile extends PurchaseAttachment {
   preview?: string | null;
 }
 
-export interface EvidenceImageSlide {
-  src: string;
-  title?: string;
-  description?: string;
-}
+export type EvidenceImageSlide = LightboxSlide;
 
 export type EvidenceFileInput = Required<Pick<EvidenceFile, 'id' | 'name'>> &
   EvidenceFile;

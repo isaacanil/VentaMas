@@ -4,10 +4,10 @@ import styled from 'styled-components';
 
 import useTruncate from '@/hooks/useTruncate';
 
-interface TextCellProps {
+type TextCellProps = {
   value: string | null | undefined;
   useTooltip?: boolean;
-}
+};
 
 const Container = styled.div`
   display: inline-block;

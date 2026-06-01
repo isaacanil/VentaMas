@@ -38,6 +38,35 @@ describe('normalizeAiBusinessSeedingModelOutput', () => {
     });
   });
 
+  it('preserves a partial create_business draft when chat asks a clarification', () => {
+    const result = normalizeAiBusinessSeedingModelOutput({
+      action: 'chat',
+      data: {
+        message: 'Quien sera el owner?',
+        business: {
+          name: 'ESPALCA GLOBAL',
+          businessType: 'general',
+        },
+        users: [
+          {
+            realName: 'Ronald de Jesus',
+            name: 'ronald.dejesus',
+            role: 'admin',
+          },
+        ],
+      },
+    });
+
+    expect(result).toMatchObject({
+      action: 'chat',
+      data: {
+        message: 'Quien sera el owner?',
+        business: { name: 'ESPALCA GLOBAL' },
+        users: [{ name: 'ronald.dejesus', role: 'admin' }],
+      },
+    });
+  });
+
   it('normalizes create_business output when it has exactly one owner', () => {
     const result = normalizeAiBusinessSeedingModelOutput({
       action: 'create_business',
@@ -73,6 +102,66 @@ describe('normalizeAiBusinessSeedingModelOutput', () => {
       schemaVersion: AI_BUSINESS_SEEDING_SCHEMA_VERSION,
       structuredOutput: true,
       constrainedOutput: AI_BUSINESS_SEEDING_CONSTRAINED_OUTPUT,
+    });
+  });
+
+  it('defaults businessType to general and moves an address out of tel', () => {
+    const result = normalizeAiBusinessSeedingModelOutput({
+      action: 'create_business',
+      data: {
+        business: {
+          name: 'ESPALCA GLOBAL',
+          rnc: '133693021',
+          tel:
+            '8294490529 / 8099148619, C/Paseo de la reforma #10, Pantoja, Sto. Dgo. Oeste',
+        },
+        users: [
+          {
+            realName: 'Ronald Espinal',
+            name: 'ronald.espinal',
+            role: 'owner',
+          },
+        ],
+      },
+    });
+
+    expect(result).toMatchObject({
+      action: 'create_business',
+      data: {
+        business: {
+          name: 'ESPALCA GLOBAL',
+          businessType: 'general',
+          tel: '8294490529 / 8099148619',
+          address: 'C/Paseo de la reforma #10, Pantoja, Sto. Dgo. Oeste',
+        },
+      },
+    });
+  });
+
+  it('maps pharmacy business type labels to the internal enum', () => {
+    const result = normalizeAiBusinessSeedingModelOutput({
+      action: 'create_business',
+      data: {
+        business: {
+          name: 'Farmacia Central',
+          businessType: 'Farmacia',
+        },
+        users: [
+          {
+            realName: 'Maria Perez',
+            name: 'maria.perez',
+            role: 'owner',
+          },
+        ],
+      },
+    });
+
+    expect(result).toMatchObject({
+      data: {
+        business: {
+          businessType: 'pharmacy',
+        },
+      },
     });
   });
 

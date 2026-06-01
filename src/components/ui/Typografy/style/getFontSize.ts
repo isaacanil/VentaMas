@@ -26,7 +26,5 @@ export const getFontSize = ({
   generalSize,
   variantToSizeMap,
 }: GetFontSizeParams): string | number => {
-  const fontSize =
-    variantToSizeMap[context]?.[variant]?.[size] || generalSize[size];
-  return fontSize;
+  return variantToSizeMap[context]?.[variant]?.[size] || generalSize[size];
 };

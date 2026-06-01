@@ -1,25 +1,4 @@
-import {
-  FileOutlined,
-  DeleteOutlined,
-  EyeOutlined,
-  FileImageOutlined,
-  FilePdfOutlined,
-} from '@/constants/icons/antd';
-import { Empty, Tooltip } from 'antd';
-import { useMemo } from 'react';
-
-import {
-  DeleteButton,
-  FileGroup,
-  FileIcon,
-  FileInfo,
-  FileItem,
-  FileListContainer,
-  GroupTitle,
-  PreviewButton,
-  TypeTag,
-} from '@/components/common/FileList/FileList.styles';
-import { isImageFile, isPDFFile } from '@/utils/fileUtils';
+import SharedFileList from '../fileUploadShared/components/FileList';
 import type { EvidenceFile } from './types';
 
 interface FileListProps {
@@ -29,94 +8,34 @@ interface FileListProps {
 }
 
 const EMPTY_EVIDENCE_FILES: EvidenceFile[] = [];
+const EVIDENCE_FILE_TYPE_LABELS: Record<string, string> = {
+  receipts: 'Recibos',
+  invoices: 'Facturas',
+  others: 'Otros Documentos',
+};
+const EVIDENCE_FILE_GROUPS = new Set(['receipts', 'invoices', 'others']);
+
+const getEvidenceGroupType = (file: EvidenceFile) => {
+  const type = file.type?.toLowerCase() ?? '';
+  return EVIDENCE_FILE_GROUPS.has(type) ? type : 'others';
+};
+
+const getEvidenceRemoveFileId = (file: EvidenceFile) =>
+  file.id ?? file.url ?? file.name;
 
 const FileList = ({
   files = EMPTY_EVIDENCE_FILES,
   removeFile,
   handlePreview,
-}: FileListProps) => {
-  const getTagColor = (type?: string) => {
-    const colors = {
-      receipts: 'green',
-      invoices: 'blue',
-      others: 'orange',
-    };
-    return colors[type?.toLowerCase() ?? ''] || 'default';
-  };
-
-  const groupedFiles = useMemo(() => {
-    const groups: Record<string, { title: string; files: EvidenceFile[] }> = {
-      receipts: { title: 'Recibos', files: [] },
-      invoices: { title: 'Facturas', files: [] },
-      others: { title: 'Otros Documentos', files: [] },
-    };
-
-    files?.forEach((file) => {
-      const type = typeof file.type === 'string' ? file.type.toLowerCase() : '';
-      const targetGroup = groups[type] || groups.others;
-      targetGroup.files.push(file);
-    });
-
-    return Object.entries(groups).filter(
-      ([_, group]) => group.files.length > 0,
-    );
-  }, [files]);
-
-  const renderFileItem = (file: EvidenceFile) => {
-    const fileKey = file.id ?? file.url ?? file.name ?? '';
-    const fileName = file.name ?? '';
-    const canPreview = isImageFile(fileName) || isPDFFile(fileName);
-
-    return (
-      <FileItem key={fileKey}>
-        <FileIcon>
-          {isImageFile(fileName) ? (
-            <FileImageOutlined style={{ color: '#52c41a' }} />
-          ) : isPDFFile(fileName) ? (
-            <FilePdfOutlined style={{ color: '#ff4d4f' }} />
-          ) : (
-            <FileOutlined />
-          )}
-        </FileIcon>
-        <FileInfo>
-          <Tooltip title={fileName}>{fileName || 'Archivo sin nombre'}</Tooltip>
-          <TypeTag color={getTagColor(file.type)}>
-            {file.type || 'Otros'}
-          </TypeTag>
-          <TypeTag color={file.url ? 'purple' : 'blue'}>
-            {file.url ? 'Remoto' : 'Local'}
-          </TypeTag>
-        </FileInfo>
-        <div>
-          {canPreview && handlePreview && (
-            <PreviewButton onClick={() => handlePreview(file)}>
-              <EyeOutlined />
-            </PreviewButton>
-          )}
-          {removeFile && fileKey && (
-            <DeleteButton onClick={() => removeFile(fileKey)}>
-              <DeleteOutlined />
-            </DeleteButton>
-          )}
-        </div>
-      </FileItem>
-    );
-  };
-
-  if (!files?.length) {
-    return <Empty description="No hay archivos adjuntos" />;
-  }
-
-  return (
-    <FileListContainer>
-      {groupedFiles.map(([type, group]) => (
-        <FileGroup key={type}>
-          <GroupTitle>{group.title}</GroupTitle>
-          {group.files.map(renderFileItem)}
-        </FileGroup>
-      ))}
-    </FileListContainer>
-  );
-};
+}: FileListProps) => (
+  <SharedFileList<EvidenceFile>
+    files={files}
+    removeFile={removeFile}
+    handlePreview={handlePreview}
+    fileTypeLabels={EVIDENCE_FILE_TYPE_LABELS}
+    getGroupType={getEvidenceGroupType}
+    getRemoveFileId={getEvidenceRemoveFileId}
+  />
+);
 
 export default FileList;

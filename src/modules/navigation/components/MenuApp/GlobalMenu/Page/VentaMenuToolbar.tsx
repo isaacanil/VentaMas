@@ -12,7 +12,7 @@ import {
 } from '@/features/setting/settingSlice';
 import { useAppNavigation } from '@/hooks/useAppNavigation';
 import ROUTES_NAME from '@/router/routes/routesName';
-import { InventoryFilterAndSort } from '@/modules/inventory/pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort';
+import { InventoryFilterAndSort } from '@/modules/inventory/pages/Inventario/pages/ItemsManager/components/InventoryFilterAndSort/InventoryFilterAndSort';
 import { ButtonIconMenu } from '@/components/ui/Button/ButtonIconMenu';
 import type { ToolbarComponentProps } from '@/modules/navigation/components/MenuApp/GlobalMenu/types';
 import type { UserIdentity } from '@/types/users';

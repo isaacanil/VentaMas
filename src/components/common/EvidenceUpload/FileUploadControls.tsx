@@ -1,17 +1,18 @@
-import { Select, Form } from 'antd';
-import type { SelectProps } from 'antd';
 import type { ChangeEvent } from 'react';
 
-import UploadButton from './UploadButton';
+import SharedFileUploadControls from '../fileUploadShared/components/FileUploadControls';
 import type { EvidenceFileCategory } from './types';
 
-const { Option } = Select;
-
-const fileTypeOptions: Array<{ value: EvidenceFileCategory; label: string }> = [
-  { value: 'receipts', label: 'Recibos' },
-  { value: 'invoices', label: 'Facturas' },
-  { value: 'others', label: 'Otros' },
+const EVIDENCE_FILE_TYPES: EvidenceFileCategory[] = [
+  'receipts',
+  'invoices',
+  'others',
 ];
+const EVIDENCE_FILE_TYPE_LABELS: Record<string, string> = {
+  receipts: 'Recibos',
+  invoices: 'Facturas',
+  others: 'Otros',
+};
 
 interface FileUploadControlsProps {
   fileType: EvidenceFileCategory;
@@ -24,31 +25,16 @@ const FileUploadControls = ({
   setFileType,
   handleFileInput,
 }: FileUploadControlsProps) => {
-  if (!handleFileInput) {
-    return null;
-  }
-
   return (
-    <div style={{ display: 'flex', gap: '10px' }}>
-      <Form.Item label="Tipo">
-        <Select
-          value={fileType}
-          style={{ width: '120px' }}
-          onChange={(value: SelectProps['value']) =>
-            setFileType(value as EvidenceFileCategory)
-          }
-        >
-          {fileTypeOptions.map((option) => (
-            <Option key={option.value} value={option.value}>
-              {option.label}
-            </Option>
-          ))}
-        </Select>
-      </Form.Item>
-      <Form.Item label="Adjuntar Evidencia">
-        <UploadButton onFileInput={handleFileInput} />
-      </Form.Item>
-    </div>
+    <SharedFileUploadControls
+      fileType={fileType}
+      setFileType={(value) => setFileType(value as EvidenceFileCategory)}
+      handleFileInput={handleFileInput}
+      fileTypes={EVIDENCE_FILE_TYPES}
+      fileTypeLabels={EVIDENCE_FILE_TYPE_LABELS}
+      title="Adjuntar Evidencia"
+      typeSelectorLabel="Tipo"
+    />
   );
 };
 

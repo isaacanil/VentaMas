@@ -20,7 +20,7 @@ import ROUTES_NAME from '@/router/routes/routesName';
 import { getProducts } from '@/utils/pricing';
 import ImportModal from '@/components/modals/ImportModal/ImportModal';
 import ImportProgressModal from '@/components/modals/ImportProgressModal/ImportProgressModal';
-import { InventoryFilterAndSort } from '@/modules/inventory/pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort';
+import { InventoryFilterAndSort } from '@/modules/inventory/pages/Inventario/pages/ItemsManager/components/InventoryFilterAndSort/InventoryFilterAndSort';
 import { AddProductButton } from '@/components/ui/Button/AddProductButton';
 import { ButtonGroup } from '@/components/ui/Button/Button';
 import { DropdownMenu } from '@/components/ui/DropdownMenu/DropdowMenu';

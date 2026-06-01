@@ -11,6 +11,7 @@ import {
 } from '@/utils/fileUtils';
 
 import useGlobalFileDragOverlay from '../fileUploadShared/hooks/useGlobalFileDragOverlay';
+import type { LightboxSlide, PreviewableFile } from '../fileUploadShared/types';
 import DragOverlay from './DragOverlay';
 import FileList from './FileList';
 import FileListDrawer from './FileListDrawer';
@@ -44,16 +45,13 @@ type FileUploaderLocalFile = {
   isLocal: true;
 };
 
-type FileUploaderRemoteFile = {
-  id: string;
+type FileUploaderListItem = PreviewableFile & {
+  id?: string;
   name: string;
   type: FileTypeKey;
-  url: string;
-  isLocal: false;
-};
-
-type FileUploaderListItem = (FileUploaderLocalFile | FileUploaderRemoteFile) & {
-  preview?: string | null;
+  file?: File;
+  url?: string;
+  isLocal: boolean;
 };
 
 type FileUploaderProps = {
@@ -156,8 +154,8 @@ const fileUploaderUiReducer = (
 
 const isRemoteFile = (
   value: FileUploaderListItem,
-): value is FileUploaderRemoteFile & { preview?: string | null } =>
-  value.isLocal === false;
+): value is FileUploaderListItem & { isLocal: false; url: string } =>
+  value.isLocal === false && typeof value.url === 'string';
 
 const resolveFileName = (file: FileUploaderLocalFileInput): string => {
   if (file.name) return file.name;
@@ -294,40 +292,7 @@ const FileUploader = ({
     }
   };
 
-  const getImageFiles = useCallback(() => {
-    const imageFiles = [];
-
-    // Archivos locales
-    files.forEach((file) => {
-      const fileName = resolveFileName(file);
-      if (isImageFile(fileName)) {
-        if (!isBrowserFile(file.file)) return;
-        imageFiles.push({
-          src: getLocalURL(file.file),
-          title: fileName,
-          description: `Tipo: ${file.type}`,
-        });
-      }
-    });
-
-    // Solo archivos remotos de Firebase
-    attachmentUrls
-      .filter((file) => file.url?.includes('firebasestorage.googleapis.com'))
-      .forEach((file) => {
-        const fileName = file.name ?? 'Archivo sin nombre';
-        if (isImageFile(fileName)) {
-          imageFiles.push({
-            src: file.url ?? '',
-            title: fileName,
-            description: `Tipo: ${file.type}`,
-          });
-        }
-      });
-
-    return imageFiles;
-  }, [files, attachmentUrls]);
-
-  const allFiles = useMemo(() => {
+  const allFiles = useMemo<FileUploaderListItem[]>(() => {
     // Solo mapeamos los archivos locales con su vista previa
     const localFiles = (files || []).map((file) => {
       const resolvedName = resolveFileName(file);
@@ -335,6 +300,7 @@ const FileUploader = ({
       return {
         ...file,
         name: resolvedName,
+        type: file.type || defaultFileType,
         isLocal: true,
         preview,
         file: isBrowserFile(file.file) ? file.file : undefined,
@@ -353,13 +319,25 @@ const FileUploader = ({
           `${attachment.name || 'attachment'}-${index}`,
         name: attachment.name || 'Archivo sin nombre',
         type: attachment.type || getFileTypeFromUrl(attachment.url || ''),
-        url: attachment.url,
+        url: attachment.url ?? '',
         isLocal: false,
         preview: null,
       }));
 
     return [...localFiles, ...remoteFiles];
-  }, [files, attachmentUrls]);
+  }, [files, attachmentUrls, defaultFileType]);
+
+  const imageSlides = useMemo<LightboxSlide[]>(
+    () =>
+      allFiles
+        .filter((file) => isImageFile(file.name) && (file.preview || file.url))
+        .map((file) => ({
+          src: file.preview || file.url || '',
+          title: file.name,
+          description: `Tipo: ${file.type}`,
+        })),
+    [allFiles],
+  );
 
   useEffect(() => {
     // Cleanup URLs when component unmounts
@@ -381,15 +359,10 @@ const FileUploader = ({
       const isPDF = isPDFFile(fileName);
 
       if (isImage) {
-        const images = getImageFiles();
-        const localUrl = file.isLocal ? getLocalURL(file.file) : null;
-        let resolvedUrl = '';
-        if (isRemoteFile(file)) {
-          resolvedUrl = file.url || '';
-        } else {
-          resolvedUrl = localUrl || '';
-        }
-        const index = images.findIndex(
+        const resolvedUrl = isRemoteFile(file)
+          ? file.url
+          : file.preview || '';
+        const index = imageSlides.findIndex(
           (img) => img.title === fileName && img.src === resolvedUrl,
         );
         dispatchUi({ type: 'openLightbox', index: Math.max(0, index) });
@@ -397,7 +370,7 @@ const FileUploader = ({
         dispatchUi({ type: 'openPreview', file });
       }
     },
-    [getImageFiles],
+    [imageSlides],
   );
 
   const handleOpenDrawer = useCallback(() => {
@@ -504,7 +477,7 @@ const FileUploader = ({
         setLightboxOpen={setLightboxOpenState}
         lightboxIndex={lightboxIndex}
         setLightboxIndex={setLightboxIndexState}
-        getImageFiles={getImageFiles}
+        slides={imageSlides}
       />
 
       <DragOverlay

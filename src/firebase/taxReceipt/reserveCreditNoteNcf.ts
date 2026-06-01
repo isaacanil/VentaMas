@@ -1,8 +1,4 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
-
-const callable = httpsCallable(functions, 'reserveCreditNoteNcf');
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 type ReserveCreditNoteNcfPayload = {
   businessId: string;
@@ -15,6 +11,11 @@ type ReserveCreditNoteNcfResult = {
   engine: string;
 };
 
+const reserveCreditNoteNcfCallable = createFirebaseCallable<
+  ReserveCreditNoteNcfPayload,
+  ReserveCreditNoteNcfResult
+>('reserveCreditNoteNcf');
+
 export const reserveCreditNoteNcf = async ({
   businessId,
 }: ReserveCreditNoteNcfPayload): Promise<ReserveCreditNoteNcfResult> => {
@@ -24,6 +25,5 @@ export const reserveCreditNoteNcf = async ({
     );
   }
 
-  const response = await callable({ businessId: businessId.trim() });
-  return response.data as ReserveCreditNoteNcfResult;
+  return reserveCreditNoteNcfCallable({ businessId: businessId.trim() });
 };

@@ -352,7 +352,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
                   isIconOnly
                   onPress={() => setIsMenuOpen(!isMenuOpen)}
                   size="sm"
-                  title="Mas opciones"
                   variant="tertiary"
                 >
                   <FontAwesomeIcon icon={faEllipsisV} />

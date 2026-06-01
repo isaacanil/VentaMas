@@ -16,7 +16,7 @@ import {
 } from 'firebase/firestore';
 import type { UpdateData } from '@firebase/firestore-types';
 
-import { db } from './firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 // Funcion para leer datos de Firestore
 export async function fbGetDocs<T = DocumentData>(

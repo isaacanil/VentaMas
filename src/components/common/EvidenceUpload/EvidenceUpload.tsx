@@ -20,8 +20,8 @@ import type {
   EvidenceFile,
   EvidenceFileCategory,
   EvidenceFileInput,
-  EvidenceImageSlide,
 } from './types';
+import type { LightboxSlide } from '../fileUploadShared/types';
 
 interface EvidenceUploadProps {
   files?: EvidenceFile[];
@@ -148,36 +148,6 @@ const EvidenceUpload = ({
     onRemoveFiles?.(fileId);
   };
 
-  const getImageFiles = useCallback((): EvidenceImageSlide[] => {
-    const imageFiles: EvidenceImageSlide[] = [];
-
-    // Archivos locales
-    files.forEach((file) => {
-      if (isImageFile(file.name) && file.file) {
-        imageFiles.push({
-          src: getLocalURL(file.file),
-          title: file.name,
-          description: `Tipo: ${file.type}`,
-        });
-      }
-    });
-
-    // Solo archivos remotos de Firebase
-    attachmentUrls
-      .filter((file) => file.url?.includes('firebasestorage.googleapis.com'))
-      .forEach((file) => {
-        if (isImageFile(file.name) && file.url) {
-          imageFiles.push({
-            src: file.url,
-            title: file.name,
-            description: `Tipo: ${file.type}`,
-          });
-        }
-      });
-
-    return imageFiles;
-  }, [files, attachmentUrls]);
-
   const allFiles = useMemo(() => {
     // Solo mapeamos los archivos locales con su vista previa
     const localFiles: EvidenceFile[] = (files || []).map((file) => ({
@@ -206,6 +176,18 @@ const EvidenceUpload = ({
     return [...localFiles, ...remoteFiles];
   }, [files, attachmentUrls]);
 
+  const imageSlides = useMemo<LightboxSlide[]>(
+    () =>
+      allFiles
+        .filter((file) => isImageFile(file.name) && (file.preview || file.url))
+        .map((file) => ({
+          src: file.preview || file.url || '',
+          title: file.name,
+          description: `Tipo: ${file.type}`,
+        })),
+    [allFiles],
+  );
+
   useEffect(() => {
     // Cleanup URLs when component unmounts
     return () => {
@@ -225,19 +207,16 @@ const EvidenceUpload = ({
       const isPDF = isPDFFile(file.name);
 
       if (isImage) {
-        const images = getImageFiles();
-        const index = images.findIndex(
-          (img) =>
-            img.title === file.name &&
-            img.src ===
-              (file.url || (file.file ? getLocalURL(file.file) : undefined)),
+        const resolvedUrl = file.url || file.preview || '';
+        const index = imageSlides.findIndex(
+          (img) => img.title === file.name && img.src === resolvedUrl,
         );
         dispatchUi({ type: 'openLightbox', index: Math.max(0, index) });
       } else if (isPDF) {
         dispatchUi({ type: 'openPreview', file });
       }
     },
-    [getImageFiles],
+    [imageSlides],
   );
 
   const setPreviewVisibleState = useCallback((value: boolean) => {
@@ -288,7 +267,7 @@ const EvidenceUpload = ({
         setLightboxOpen={setLightboxOpenState}
         lightboxIndex={lightboxIndex}
         setLightboxIndex={setLightboxIndexState}
-        getImageFiles={getImageFiles}
+        slides={imageSlides}
       />
 
       <DragOverlay

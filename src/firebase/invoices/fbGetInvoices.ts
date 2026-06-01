@@ -11,7 +11,7 @@ import { useSelector } from 'react-redux';
 import { selectUser } from '../../features/auth/userSlice';
 import { hasManageAllAccess } from '../../utils/access/manageAllAccess';
 import { validateUser } from '../../utils/userValidation';
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 import type { InvoiceDoc } from './types';
 
 type UserRootState = Parameters<typeof selectUser>[0];

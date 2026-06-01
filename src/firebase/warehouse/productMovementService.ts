@@ -22,7 +22,7 @@ import type {
   InventoryStockItem,
   InventoryUser,
 } from '@/utils/inventory/types';
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 import { getLocationName } from './locationService';
 import {
   createProductStock,

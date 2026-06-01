@@ -81,7 +81,13 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - `PeerReviewAuthorization` separo estilos del modal/header a archivos locales, elimino subcomponentes `Body/Footer` sin uso y dejo el flujo de validacion intacto.
 - `ColumnMenu` dejo de persistir `columnOrder:v1`; la persistencia queda centralizada en `useColumnOrder` por tabla/usuario.
 - Se eliminaron duplicados accidentales: `useLoadingStatus.tsx\``, `utils/data/products/category` sin extension y la version vieja `useCheckAccountReceivable.tsx`.
-- `FilterBarLegacy` conserva solo el hook compartido que aun se importa; se eliminaron el componente legacy y `StatusSelector` sin usos externos.
+- `FilterBarLegacy` fue retirado: el hook compartido vive en `src/components/common/FilterBar/hooks/useFilterBar.ts`.
+- `FileUploader` y `EvidenceUpload` reutilizan `fileUploadShared` para lista, controles y boton de carga, dejando wrappers solo para contratos especificos.
+- Se normalizaron rutas con typos o estructura legacy: `referenceUtils`, `TextCell`, `PaymentDatesOverview`, `InventoryFilterAndSort` y carpetas locales `components`.
+- Los imports a `firebaseconfig` quedaron estandarizados con alias `@/firebase/firebaseconfig`, eliminando variantes relativas activas.
+- La logica de ingredientes de pizza salio de `firebaseconfig` y vive en `src/firebase/products/customProduct/ingredientTypePizzaService.ts`, dejando la configuracion Firebase enfocada en inicializacion.
+- Los wrappers simples de Cloud Functions reutilizan `src/firebase/functions/callable.ts`, evitando repetir `httpsCallable` y extraccion manual de `data`.
+- Los renames de carpetas `Components` a `components` quedaron registrados como cambios de casing en Git para evitar fallos en filesystems case-sensitive.
 - `FileUploader/FileList` ahora usa `isImageFile`/`isPDFFile` de `utils/fileUtils`, y `FileUploader` + `EvidenceUpload` comparten los styled-components de lista en `components/common/FileList/FileList.styles.ts`.
 - `FilterBar` movio normalizadores de rango numerico, rango de fecha y estado activo a `FilterBar.utils.ts`, dejando el componente principal mas enfocado en layout/render.
 - `CreditNoteModal` comparte `QuantityAvailabilityDisplay`/`QuantityAvailabilityHint` entre tabla y tarjeta de productos, quitando tooltips/estilos inline duplicados sin tocar los calculos.

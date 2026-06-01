@@ -1,14 +1,15 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
-
-const callable = httpsCallable(functions, 'rebuildNcfLedger');
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 type RebuildNcfLedgerPayload = {
   businessId: string;
   userId: string;
   [key: string]: unknown;
 };
+
+const rebuildNcfLedgerCallable = createFirebaseCallable<
+  RebuildNcfLedgerPayload,
+  unknown
+>('rebuildNcfLedger');
 
 export const rebuildNcfLedger = async ({
   businessId,
@@ -31,8 +32,7 @@ export const rebuildNcfLedger = async ({
       ...options,
     };
 
-    const response = await callable(payload);
-    return response?.data ?? null;
+    return (await rebuildNcfLedgerCallable(payload)) ?? null;
   } catch (error) {
     console.error('Error al invocar rebuildNcfLedger:', error);
     throw error;
