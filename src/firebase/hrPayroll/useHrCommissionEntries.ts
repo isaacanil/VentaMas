@@ -6,11 +6,11 @@ import {
   query,
   where,
 } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
 import { useEffect, useMemo, useState } from 'react';
 
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { db, functions } from '@/firebase/firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 import type {
   HrCommissionEntryRecord,
   HrCommissionEntryStatus,
@@ -50,6 +50,18 @@ interface RecalculateHrCommissionEntriesResponse {
   writtenEntries: number;
   unresolvedCount: number;
 }
+
+type RecalculateHrCommissionEntriesPayload = {
+  businessId: string;
+  endDate?: string | null;
+  sessionToken?: string;
+  startDate?: string | null;
+};
+
+const recalculateHrCommissionEntriesCallable = createFirebaseCallable<
+  RecalculateHrCommissionEntriesPayload,
+  RecalculateHrCommissionEntriesResponse
+>('recalculateHrCommissionEntries');
 
 const STATUS_VALUES = new Set<HrCommissionEntryStatus>([
   'calculated',
@@ -158,17 +170,7 @@ export const recalculateHrCommissionEntries = async ({
   }
 
   const { sessionToken } = getStoredSession();
-  const callable = httpsCallable<
-    {
-      businessId: string;
-      endDate?: string | null;
-      sessionToken?: string;
-      startDate?: string | null;
-    },
-    RecalculateHrCommissionEntriesResponse
-  >(functions, 'recalculateHrCommissionEntries');
-
-  const result = await callable({
+  return recalculateHrCommissionEntriesCallable({
     businessId,
     endDate:
       endDate instanceof Date ? endDate.toISOString() : toCleanString(endDate),
@@ -178,8 +180,6 @@ export const recalculateHrCommissionEntries = async ({
         : toCleanString(startDate),
     ...(sessionToken ? { sessionToken } : {}),
   });
-
-  return result.data;
 };
 
 export const useHrCommissionEntries = ({

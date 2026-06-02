@@ -18,7 +18,7 @@ Configurar en el env del frontend cuando se quiera activar App Check o mover el 
 ```powershell
 VITE_FIREBASE_APPCHECK_SITE_KEY="recaptcha-enterprise-site-key"
 VITE_FIREBASE_APPCHECK_DEBUG_TOKEN="true"
-VITE_FIREBASE_AI_MODEL="gemini-2.5-flash"
+VITE_FIREBASE_AI_MODEL="gemini-3-flash-preview"
 VITE_FIREBASE_AI_LOCATION="us-central1"
 VITE_FIREBASE_AI_REMOTE_CONFIG="true"
 VITE_FIREBASE_AI_REMOTE_MODEL_KEY="firebase_ai_model"
@@ -38,7 +38,7 @@ Notas:
 Configurar en el entorno de Functions:
 
 ```powershell
-GENKIT_VERTEX_MODEL="gemini-2.5-flash"
+GENKIT_VERTEX_MODEL="gemini-3-flash-preview"
 GENKIT_VERTEX_LOCATION="us-central1"
 AI_BUSINESS_SEEDING_DEBUG_ERRORS="true"
 AI_AGENT_ENFORCE_APP_CHECK="false"

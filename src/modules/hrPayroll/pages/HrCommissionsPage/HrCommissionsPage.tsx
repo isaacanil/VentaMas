@@ -1,9 +1,13 @@
-import { Alert, Button, DatePicker, Input, Select, Table, message } from 'antd';
-import dayjs from 'dayjs';
-import type { Dayjs } from 'dayjs';
 import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
+import {
+  VmAlert,
+  VmButton,
+  VmListBox,
+  VmSearchField,
+  VmSelect,
+} from '@/components/heroui';
 import { ReloadOutlined, TeamOutlined } from '@/constants/icons/antd';
 import {
   recalculateHrCommissionEntries,
@@ -12,13 +16,15 @@ import {
 import { selectUser } from '@/features/auth/userSlice';
 import {
   HrDescription as Description,
+  HrDataTable,
+  HrDateRangeField,
+  HrNotice as Notice,
   HrPage as Page,
   HrPageHeader as Header,
   HrSummaryGrid as SummaryGrid,
   HrSummaryItem as SummaryItem,
   HrSummaryLabel as SummaryLabel,
   HrSummaryValue as SummaryValue,
-  HrTableFrame as TableFrame,
   HrTitle as Title,
   HrTitleBlock as TitleBlock,
 } from '@/modules/hrPayroll/components/HrPayrollPagePrimitives';
@@ -38,23 +44,32 @@ import {
 } from './HrCommissionsPage.helpers';
 import { CommissionsToolbar } from './HrCommissionsPage.styles';
 
-const { RangePicker } = DatePicker;
+type NoticeState = {
+  description?: string;
+  status: 'success' | 'danger';
+  title: string;
+};
+
+const getDefaultDateRange = (): [Date, Date] => {
+  const now = new Date();
+  return [
+    new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0),
+    new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999),
+  ];
+};
 
 export default function HrCommissionsPage() {
   const currentUser = useSelector(selectUser);
   const businessId = currentUser?.businessID ?? null;
-  const [messageApi, contextHolder] = message.useMessage();
+  const [notice, setNotice] = useState<NoticeState | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [status, setStatus] = useState<HrCommissionEntryStatus | 'all'>('all');
-  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>(() => [
-    dayjs().startOf('month'),
-    dayjs().endOf('day'),
-  ]);
+  const [dateRange, setDateRange] = useState<[Date, Date]>(getDefaultDateRange);
   const [recalculating, setRecalculating] = useState(false);
   const { rows, loading, error } = useHrCommissionEntries({
     businessId,
-    startDate: dateRange[0].toDate(),
-    endDate: dateRange[1].toDate(),
+    startDate: dateRange[0],
+    endDate: dateRange[1],
     status,
   });
 
@@ -81,14 +96,20 @@ export default function HrCommissionsPage() {
     try {
       const result = await recalculateHrCommissionEntries({
         businessId,
-        startDate: dateRange[0].toDate(),
-        endDate: dateRange[1].toDate(),
+        startDate: dateRange[0],
+        endDate: dateRange[1],
       });
-      messageApi.success(
-        `Entradas actualizadas: ${result.writtenEntries}. Revisar: ${result.unresolvedCount}.`,
-      );
+      setNotice({
+        status: 'success',
+        title: `Entradas actualizadas: ${result.writtenEntries}.`,
+        description: `Revisar: ${result.unresolvedCount}.`,
+      });
     } catch (recalculateError) {
-      messageApi.error(getErrorMessage(recalculateError));
+      setNotice({
+        status: 'danger',
+        title: 'No se pudieron recalcular las comisiones.',
+        description: getErrorMessage(recalculateError),
+      });
     } finally {
       setRecalculating(false);
     }
@@ -96,7 +117,6 @@ export default function HrCommissionsPage() {
 
   return (
     <>
-      {contextHolder}
       <MenuApp sectionName="Comisiones RRHH" />
       <Page>
         <Header>
@@ -107,31 +127,40 @@ export default function HrCommissionsPage() {
               preparar cortes y nomina sin duplicar el flujo de ventas.
             </Description>
           </TitleBlock>
-          <Button
-            type="primary"
-            icon={<ReloadOutlined />}
-            loading={recalculating}
-            onClick={handleRecalculate}
+          <VmButton
+            variant="primary"
+            isDisabled={recalculating}
+            onPress={handleRecalculate}
           >
-            Recalcular
-          </Button>
+            <ReloadOutlined />
+            {recalculating ? 'Recalculando...' : 'Recalcular'}
+          </VmButton>
         </Header>
 
+        {notice ? (
+          <Notice status={notice.status}>
+            <VmAlert.Content>
+              <strong>{notice.title}</strong>
+              {notice.description ? <div>{notice.description}</div> : null}
+            </VmAlert.Content>
+          </Notice>
+        ) : null}
+
         {!businessId ? (
-          <Alert
-            type="warning"
-            showIcon
-            message="Selecciona un negocio para revisar comisiones RRHH."
-          />
+          <Notice status="warning">
+            <VmAlert.Content>
+              Selecciona un negocio para revisar comisiones RRHH.
+            </VmAlert.Content>
+          </Notice>
         ) : null}
 
         {error ? (
-          <Alert
-            type="error"
-            showIcon
-            message="No se pudieron cargar las comisiones RRHH."
-            description={error.message}
-          />
+          <Notice status="danger">
+            <VmAlert.Content>
+              <strong>No se pudieron cargar las comisiones RRHH.</strong>
+              <div>{error.message}</div>
+            </VmAlert.Content>
+          </Notice>
         ) : null}
 
         <SummaryGrid>
@@ -154,49 +183,66 @@ export default function HrCommissionsPage() {
         </SummaryGrid>
 
         <CommissionsToolbar>
-          <Input.Search
-            allowClear
-            placeholder="Buscar empleado, factura o servicio"
+          <VmSearchField
+            aria-label="Buscar comisiones"
             value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-          />
-          <RangePicker
+            onChange={setSearchTerm}
+          >
+            <VmSearchField.Group>
+              <VmSearchField.SearchIcon />
+              <VmSearchField.Input placeholder="Buscar empleado, factura o servicio" />
+              <VmSearchField.ClearButton />
+            </VmSearchField.Group>
+          </VmSearchField>
+          <HrDateRangeField
+            ariaLabel="Rango de comisiones RRHH"
             value={dateRange}
-            onChange={(range) => {
-              if (!range?.[0] || !range?.[1]) return;
-              setDateRange([range[0], range[1]]);
-            }}
-            style={{ width: '100%' }}
+            onChange={setDateRange}
           />
-          <Select
-            value={status}
-            onChange={setStatus}
-            options={[
-              { value: 'all', label: 'Todos los estados' },
-              ...Object.entries(STATUS_LABELS).map(([value, label]) => ({
-                value,
-                label,
-              })),
-            ]}
-          />
-          <Button icon={<TeamOutlined />} onClick={handleRecalculate}>
+          <VmSelect
+            aria-label="Estado de comision"
+            selectedKey={status}
+            onSelectionChange={(key) =>
+              setStatus(String(key) as HrCommissionEntryStatus | 'all')
+            }
+          >
+            <VmSelect.Trigger>
+              <VmSelect.Value />
+              <VmSelect.Indicator />
+            </VmSelect.Trigger>
+            <VmSelect.Popover>
+              <VmListBox aria-label="Estados de comision">
+                <VmListBox.Item id="all" textValue="Todos los estados">
+                  Todos los estados
+                  <VmListBox.ItemIndicator />
+                </VmListBox.Item>
+                {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                  <VmListBox.Item key={value} id={value} textValue={label}>
+                    {label}
+                    <VmListBox.ItemIndicator />
+                  </VmListBox.Item>
+                ))}
+              </VmListBox>
+            </VmSelect.Popover>
+          </VmSelect>
+          <VmButton
+            variant="secondary"
+            isDisabled={recalculating}
+            onPress={handleRecalculate}
+          >
+            <TeamOutlined />
             Sincronizar
-          </Button>
+          </VmButton>
         </CommissionsToolbar>
 
-        <TableFrame>
-          <Table<HrCommissionEntryRecord>
-            columns={commissionEntryColumns}
-            dataSource={filteredRows}
-            loading={loading}
-            rowKey="id"
-            scroll={{ x: 1080 }}
-            pagination={{
-              pageSize: 12,
-              showSizeChanger: false,
-            }}
-          />
-        </TableFrame>
+        <HrDataTable<HrCommissionEntryRecord>
+          ariaLabel="Comisiones de colaboradores"
+          columns={commissionEntryColumns}
+          emptyText="No hay comisiones para los filtros actuales."
+          rows={filteredRows}
+          loading={loading}
+          pageSize={12}
+        />
       </Page>
     </>
   );

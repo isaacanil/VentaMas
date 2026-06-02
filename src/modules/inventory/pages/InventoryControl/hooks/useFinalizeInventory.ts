@@ -1,8 +1,7 @@
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
 import { useState } from 'react';
 
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 import type {
   CountsMap,
@@ -28,10 +27,23 @@ interface FinalizePayload {
   countsMeta: CountsMetaMap;
 }
 
+type FinalizeInventoryCallablePayload = FinalizePayload & {
+  sessionId: string;
+  user: {
+    businessID: string;
+    uid: string | undefined;
+  };
+};
+
 interface UseFinalizeInventoryResult {
   finalizing: boolean;
   finalize: (payload: FinalizePayload) => Promise<unknown | null>;
 }
+
+const finalizeInventorySessionCallable = createFirebaseCallable<
+  FinalizeInventoryCallablePayload,
+  unknown
+>('finalizeInventorySession');
 
 /**
  * Encapsula la lógica de finalización de una sesión de inventario.
@@ -70,11 +82,7 @@ export function useFinalizeInventory({
 
       // 2) Invocar función en backend para finalizar (aplica ajustes y cierra)
       try {
-        const callFinalize = httpsCallable(
-          functions,
-          'finalizeInventorySession',
-        );
-        const { data } = await callFinalize({
+        const data = await finalizeInventorySessionCallable({
           user: { uid: user.uid || user.id, businessID: user.businessID },
           sessionId,
           groups,

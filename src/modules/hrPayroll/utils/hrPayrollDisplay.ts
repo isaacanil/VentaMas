@@ -2,6 +2,8 @@ import type {
   HrCommissionEntryStatus,
   HrCommissionPeriodStatus,
   HrCommissionType,
+  HrEmployeeDocumentType,
+  HrEmployeeGender,
   HrEmployeePayType,
   HrEmployeeStatus,
   HrPaymentMethod,
@@ -20,6 +22,22 @@ export const HR_EMPLOYEE_PAY_TYPE_LABELS: Record<HrEmployeePayType, string> = {
   hourly: 'Por hora',
   commission_only: 'Solo comision',
   mixed: 'Mixto',
+};
+
+export const HR_EMPLOYEE_DOCUMENT_TYPE_LABELS: Record<
+  HrEmployeeDocumentType,
+  string
+> = {
+  cedula: 'Cedula',
+  passport: 'Pasaporte',
+  rnc: 'RNC',
+  other: 'Otro',
+};
+
+export const HR_EMPLOYEE_GENDER_LABELS: Record<HrEmployeeGender, string> = {
+  male: 'Masculino',
+  female: 'Femenino',
+  other: 'Otro',
 };
 
 export const HR_PAYMENT_METHOD_LABELS: Record<HrPaymentMethod, string> = {

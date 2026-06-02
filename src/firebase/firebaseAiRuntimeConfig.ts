@@ -1,4 +1,4 @@
-export const DEFAULT_FIREBASE_AI_MODEL = 'gemini-2.5-flash';
+export const DEFAULT_FIREBASE_AI_MODEL = 'gemini-3-flash-preview';
 export const DEFAULT_FIREBASE_AI_LOCATION = 'us-central1';
 
 export interface FirebaseAiRuntimeConfig {

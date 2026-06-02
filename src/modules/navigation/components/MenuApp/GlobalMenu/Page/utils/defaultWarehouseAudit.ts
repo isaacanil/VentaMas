@@ -1,6 +1,4 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 export type AuditSummary = {
   scanned: number;
@@ -18,21 +16,26 @@ type WarehouseAuditResult = {
   summary: AuditSummary | null;
 };
 
-const ensureDefaultWarehousesCallable = httpsCallable(
-  functions,
-  'ensureDefaultWarehousesForBusinesses',
-);
+type DefaultWarehouseAuditPayload = {
+  dryRun: boolean;
+  limit: number;
+};
+
+const ensureDefaultWarehousesCallable = createFirebaseCallable<
+  DefaultWarehouseAuditPayload,
+  AuditSummary
+>('ensureDefaultWarehousesForBusinesses');
 
 export const fetchDefaultWarehouseAuditSummary =
   async (): Promise<WarehouseAuditResult> => {
     try {
-      const response = await ensureDefaultWarehousesCallable({
+      const summary = await ensureDefaultWarehousesCallable({
         dryRun: true,
         limit: 500,
       });
 
       return {
-        summary: response.data as AuditSummary,
+        summary,
       };
     } catch (error) {
       console.error('Error revisando negocios sin almacen por defecto:', error);
@@ -46,14 +49,14 @@ export const fetchDefaultWarehouseAuditSummary =
 export const ensureDefaultWarehouses =
   async (): Promise<WarehouseAuditResult> => {
     try {
-      const response = await ensureDefaultWarehousesCallable({
+      const summary = await ensureDefaultWarehousesCallable({
         dryRun: false,
         limit: 500,
       });
 
       return {
         successMessage: 'Operacion completada.',
-        summary: response.data as AuditSummary,
+        summary,
       };
     } catch (error) {
       console.error('Error creando almacenes por defecto:', error);

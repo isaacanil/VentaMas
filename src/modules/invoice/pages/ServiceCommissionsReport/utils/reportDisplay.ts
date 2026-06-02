@@ -5,12 +5,6 @@ import type { UserIdentity } from '@/types/users';
 import { cleanCommissionString } from '@/utils/commissions/serviceCommissions';
 import { formatPriceByCurrency } from '@/utils/format';
 
-export type BusinessUser = Record<string, unknown> & {
-  id?: string;
-  uid?: string;
-  number?: number;
-};
-
 export type CollaboratorOption = {
   label: string;
   value: string;
@@ -61,29 +55,6 @@ export const getBusinessId = (user: UserIdentity | null): string | null =>
   cleanString(user?.businessID) ??
   cleanString(user?.businessId) ??
   cleanString(user?.activeBusinessId);
-
-export const getUserOption = (
-  user: BusinessUser,
-): CollaboratorOption | null => {
-  const id =
-    cleanString(user.id) ?? cleanString(user.uid) ?? cleanString(user.number);
-  const code =
-    cleanString(user.number) ??
-    cleanString(user.code) ??
-    cleanString(user.employeeCode) ??
-    id;
-  const name =
-    cleanString(user.name) ??
-    cleanString(user.displayName) ??
-    cleanString(user.fullName) ??
-    cleanString(user.email) ??
-    code;
-  if (!id && !code) return null;
-  return {
-    value: id ?? code,
-    label: name && code && name !== code ? `${code} - ${name}` : (code ?? name),
-  };
-};
 
 export const getInvoiceLabel = (row: ServiceCommissionRecord): string =>
   cleanString(row.invoiceNumber) ?? cleanString(row.invoiceId) ?? 'Factura';

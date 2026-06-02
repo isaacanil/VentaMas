@@ -20,6 +20,10 @@ export type HrPaymentMethod =
 
 export type HrCommissionType = 'percentage' | 'fixed';
 
+export type HrEmployeeDocumentType = 'cedula' | 'passport' | 'rnc' | 'other';
+
+export type HrEmployeeGender = 'male' | 'female' | 'other';
+
 export type HrReadyToPayStatus = 'ready' | 'needs_review';
 
 export type HrCommissionPeriodStatus =
@@ -57,7 +61,9 @@ export interface HrEmployeeInput {
   code?: string | null;
   fullName?: string | null;
   legalName?: string | null;
+  documentType?: HrEmployeeDocumentType | null;
   documentId?: string | null;
+  gender?: HrEmployeeGender | null;
   email?: string | null;
   phone?: string | null;
   address?: string | null;
@@ -84,7 +90,9 @@ export interface HrEmployeeRecord extends Record<string, unknown> {
   fullName: string;
   legalName?: string | null;
   displayName?: string | null;
+  documentType?: HrEmployeeDocumentType | null;
   documentId?: string | null;
+  gender?: HrEmployeeGender | null;
   email?: string | null;
   phone?: string | null;
   address?: string | null;

@@ -1,15 +1,14 @@
-import { Tag, Tooltip } from 'antd';
-import type { TableProps } from 'antd';
-
+import { VmTooltip } from '@/components/heroui';
 import {
   HrAmountText as AmountText,
   HrCellStack as CellStack,
   HrMutedText as MutedText,
   HrPrimaryText as PrimaryText,
+  HrStatusTag as StatusTag,
+  type HrTableColumn,
 } from '@/modules/hrPayroll/components/HrPayrollPagePrimitives';
 import {
   formatHrMoney as formatMoney,
-  HR_COMMISSION_ENTRY_STATUS_COLORS as STATUS_COLORS,
   HR_COMMISSION_ENTRY_STATUS_LABELS as STATUS_LABELS,
 } from '@/modules/hrPayroll/utils/hrPayrollDisplay';
 import type {
@@ -17,14 +16,27 @@ import type {
   HrCommissionEntryStatus,
 } from '@/types/hrPayroll';
 
-export const commissionEntryColumns: TableProps<HrCommissionEntryRecord>['columns'] =
-  [
+const STATUS_TONES: Record<
+  HrCommissionEntryStatus,
+  'default' | 'info' | 'success' | 'warning' | 'danger' | 'accent'
+> = {
+  calculated: 'info',
+  eligible: 'info',
+  included_in_cut: 'accent',
+  approved: 'success',
+  paid: 'success',
+  reversed: 'danger',
+  cancelled: 'default',
+  requires_adjustment: 'warning',
+};
+
+export const commissionEntryColumns: HrTableColumn<HrCommissionEntryRecord>[] = [
     {
       title: 'Colaborador',
-      dataIndex: 'employeeNameSnapshot',
       key: 'employee',
       width: 260,
-      render: (_value, entry) => (
+      isRowHeader: true,
+      render: (entry) => (
         <CellStack>
           <PrimaryText>
             {entry.employeeNameSnapshot ||
@@ -41,7 +53,7 @@ export const commissionEntryColumns: TableProps<HrCommissionEntryRecord>['column
       title: 'Factura / servicio',
       key: 'source',
       width: 280,
-      render: (_value, entry) => (
+      render: (entry) => (
         <CellStack>
           <PrimaryText>{entry.invoiceNumber || entry.invoiceId}</PrimaryText>
           <MutedText>{entry.serviceName || entry.invoiceItemId}</MutedText>
@@ -50,11 +62,10 @@ export const commissionEntryColumns: TableProps<HrCommissionEntryRecord>['column
     },
     {
       title: 'Base',
-      dataIndex: 'baseAmount',
       key: 'baseAmount',
       align: 'right',
       width: 140,
-      render: (_value, entry) => (
+      render: (entry) => (
         <AmountText>{formatMoney(entry.baseAmount, entry.currency)}</AmountText>
       ),
     },
@@ -62,7 +73,7 @@ export const commissionEntryColumns: TableProps<HrCommissionEntryRecord>['column
       title: 'Tasa',
       key: 'rate',
       width: 120,
-      render: (_value, entry) => (
+      render: (entry) => (
         <MutedText>
           {entry.rateType === 'percentage'
             ? `${entry.rateValue}%`
@@ -72,11 +83,10 @@ export const commissionEntryColumns: TableProps<HrCommissionEntryRecord>['column
     },
     {
       title: 'Comision',
-      dataIndex: 'commissionAmount',
       key: 'commissionAmount',
       align: 'right',
       width: 140,
-      render: (_value, entry) => (
+      render: (entry) => (
         <AmountText>
           {formatMoney(entry.commissionAmount, entry.currency)}
         </AmountText>
@@ -84,20 +94,23 @@ export const commissionEntryColumns: TableProps<HrCommissionEntryRecord>['column
     },
     {
       title: 'Estado',
-      dataIndex: 'status',
       key: 'status',
       width: 140,
-      render: (entryStatus: HrCommissionEntryStatus) => {
+      render: (entry) => {
+        const entryStatus = entry.status;
         const tag = (
-          <Tag color={STATUS_COLORS[entryStatus]}>
+          <StatusTag $tone={STATUS_TONES[entryStatus]}>
             {STATUS_LABELS[entryStatus]}
-          </Tag>
+          </StatusTag>
         );
         if (entryStatus !== 'requires_adjustment') return tag;
         return (
-          <Tooltip title="Vincula el colaborador a un empleado de RRHH y recalcula.">
-            {tag}
-          </Tooltip>
+          <VmTooltip>
+            <VmTooltip.Trigger>{tag}</VmTooltip.Trigger>
+            <VmTooltip.Content>
+              Vincula el colaborador a un empleado de RRHH y recalcula.
+            </VmTooltip.Content>
+          </VmTooltip>
         );
       },
     },

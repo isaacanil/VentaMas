@@ -1,10 +1,10 @@
 import { signInWithCustomToken } from 'firebase/auth';
-import { httpsCallable } from 'firebase/functions';
 
 import {
   buildSessionInfo,
   getStoredSession,
 } from '@/firebase/Auth/fbAuthV2/sessionClient';
+import { createFirebaseCallableFor } from '@/firebase/functions/callable';
 
 import {
   getAiBusinessSeedingTargetAuth,
@@ -195,7 +195,10 @@ export const loginAiBusinessSeedingTarget = async ({
 }): Promise<AiBusinessSeedingTargetSession> => {
   const targetFunctions = getAiBusinessSeedingTargetFunctions(environmentId);
   const targetAuth = getAiBusinessSeedingTargetAuth(environmentId);
-  const clientLogin = httpsCallable<ClientLoginRequest, ClientLoginResponse>(
+  const clientLogin = createFirebaseCallableFor<
+    ClientLoginRequest,
+    ClientLoginResponse
+  >(
     targetFunctions,
     'clientLogin',
   );
@@ -210,7 +213,7 @@ export const loginAiBusinessSeedingTarget = async ({
     }),
   });
 
-  const payload = response?.data || {};
+  const payload = response || {};
   const sessionToken = readString(payload.sessionToken);
   const firebaseCustomToken = readString(payload.firebaseCustomToken);
   const userId = readString(payload.userId || payload.user?.id);

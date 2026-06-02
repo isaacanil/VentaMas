@@ -8,10 +8,18 @@ export type ServiceCommissionSource =
 
 export type ServiceCommissionCalculationBase = 'netSubtotalWithoutTax';
 
+export type ServiceCommissionCollaboratorDocumentType =
+  | 'cedula'
+  | 'passport'
+  | 'rnc'
+  | 'other';
+
 export interface ServiceCommissionCollaboratorSnapshot {
   id?: string | null;
   code?: string | null;
   name?: string | null;
+  documentType?: ServiceCommissionCollaboratorDocumentType | null;
+  documentId?: string | null;
   hrEmployeeId?: string | null;
   partyId?: string | null;
   linkedUserId?: string | null;

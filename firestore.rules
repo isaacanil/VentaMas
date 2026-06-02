@@ -499,8 +499,7 @@ service cloud.firestore {
 
     match /businesses/{businessId}/serviceCommissionCollaborators/{documentId} {
       allow read: if hasBusinessAccess(businessId);
-      allow create, update: if hasBusinessAccess(businessId);
-      allow delete: if false;
+      allow create, update, delete: if false;
     }
 
     match /businesses/{businessId}/businessParties/{documentId} {

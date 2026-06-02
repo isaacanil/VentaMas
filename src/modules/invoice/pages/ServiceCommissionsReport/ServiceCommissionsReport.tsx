@@ -9,10 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageShell';
 import {
   VmAlert,
-  VmButton,
   VmDateField,
   VmDateRangePicker,
-  VmModal,
   VmRangeCalendar,
   VmSelect,
   VmSpinner,
@@ -21,14 +19,12 @@ import {
 import { TeamOutlined } from '@/constants/icons/antd';
 import { useServiceCommissionCollaborators } from '@/firebase/commissions/useServiceCommissionCollaborators';
 import { useServiceCommissionsReport } from '@/firebase/commissions/useServiceCommissionsReport';
-import { useBusinessUsers } from '@/firebase/users/useBusinessUsers';
 import { selectUser } from '@/features/auth/userSlice';
 import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 import ROUTES_NAME from '@/router/routes/routesName';
 import type { UserIdentity } from '@/types/users';
 import { buildServiceCommissionCollaboratorOptions } from '@/utils/commissions/collaboratorOptions';
 
-import CollaboratorsManager from './components/CollaboratorsManager/CollaboratorsManager';
 import { ReportPagination } from './components/ReportPagination';
 import {
   AmountCell,
@@ -67,8 +63,6 @@ import {
   TitleBlock,
 } from './ServiceCommissionsReport.styles';
 import {
-  cleanString as toCleanString,
-  type BusinessUser,
   type CollaboratorOption,
   formatReportDate as formatDate,
   formatReportMoney as formatMoney,
@@ -77,7 +71,6 @@ import {
   getCollaboratorLabel,
   getInvoiceLabel,
   getServiceLabel,
-  getUserOption,
   toDateKey,
 } from './utils/reportDisplay';
 
@@ -88,19 +81,13 @@ export const ServiceCommissionsReport = () => {
   const navigate = useNavigate();
   const user = useSelector(selectUser) as UserIdentity | null;
   const businessId = getBusinessId(user);
-  const userId = toCleanString(user?.uid) ?? toCleanString(user?.id);
   const [range, setRange] = useState<[Date, Date]>(() => {
     const end = dayjs().endOf('day').toDate();
     const start = dayjs().subtract(30, 'day').startOf('day').toDate();
     return [start, end];
   });
   const [collaboratorId, setCollaboratorId] = useState<string | null>(null);
-  const [collaboratorsOpen, setCollaboratorsOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const { users, loading: usersLoading } = useBusinessUsers() as {
-    users: BusinessUser[];
-    loading: boolean;
-  };
   const { rows: collaborators, loading: collaboratorsLoading } =
     useServiceCommissionCollaborators(businessId);
   const { rows, loading, error } = useServiceCommissionsReport({
@@ -111,24 +98,11 @@ export const ServiceCommissionsReport = () => {
   });
 
   const collaboratorOptions = useMemo(() => {
-    const options = new Map<string, CollaboratorOption>();
-    buildServiceCommissionCollaboratorOptions({
+    return buildServiceCommissionCollaboratorOptions({
       collaborators,
-      users,
-    })
-      .map(({ label, value }) => ({ label, value }))
-      .forEach((option) => {
-        options.set(option.value, option);
-      });
-    users
-      .map(getUserOption)
-      .filter((option): option is CollaboratorOption => Boolean(option))
-      .forEach((option) => {
-        if (!options.has(option.value)) options.set(option.value, option);
-      });
-    return Array.from(options.values());
-  }, [collaborators, users]);
-  const collaboratorFilterLoading = usersLoading || collaboratorsLoading;
+    }).map(({ label, value }): CollaboratorOption => ({ label, value }));
+  }, [collaborators]);
+  const collaboratorFilterLoading = collaboratorsLoading;
 
   const summary = useMemo(
     () =>
@@ -188,10 +162,12 @@ export const ServiceCommissionsReport = () => {
           <HeaderTools>
             <ManageCollaboratorsButton
               variant="secondary"
-              onPress={() => setCollaboratorsOpen(true)}
+              onPress={() =>
+                navigate(ROUTES_NAME.HR_PAYROLL_TERM.HR_EMPLOYEES)
+              }
             >
               <TeamOutlined />
-              Crear colaborador
+              Gestionar en RRHH
             </ManageCollaboratorsButton>
 
             <Filters>
@@ -410,23 +386,6 @@ export const ServiceCommissionsReport = () => {
           </ReportTable>
         </ReportTableFrame>
       </Page>
-      <VmModal
-        title="Crear colaborador"
-        ariaLabel="Crear colaborador de comisiones"
-        isOpen={collaboratorsOpen}
-        onOpenChange={setCollaboratorsOpen}
-        size="lg"
-        footer={
-          <VmButton
-            variant="primary"
-            onPress={() => setCollaboratorsOpen(false)}
-          >
-            Listo
-          </VmButton>
-        }
-      >
-        <CollaboratorsManager businessId={businessId} userId={userId} />
-      </VmModal>
     </PageLayout>
   );
 };

@@ -53,6 +53,11 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - `ServiceCommissionsReport` movio la paginacion local a `components/ReportPagination.tsx`.
 - `HrCommissionPeriodsPage` movio las columnas de cortes, lineas y pagos a `HrCommissionPeriodsPage.columns.tsx`, y separo estilos/helpers locales para dejar la pagina enfocada en estado, acciones y composicion.
 - `HrPayrollWorkspace` y `HrCommissionsPage` separaron columnas de tabla, helpers puros y estilos locales en archivos propios, reduciendo mezcla entre UI, filtros y handlers.
+- Los primitivos compartidos de RRHH (`HrPayrollPagePrimitives`) separaron styled-components a `HrPayrollPagePrimitives.styles.ts`, dejando el archivo principal enfocado en tabla paginada, rango de fechas y contrato publico.
+- `HrEmployeeEditorModal` separo estilos, tipos y helpers locales (`.styles.ts`, `.types.ts`, `.helpers.ts`), reduciendo acoplamiento tipo-only desde `HrPayrollWorkspace.helpers.ts`.
+- `RecordHrPaymentModal` separo estilos y helpers de metodos de pago en archivos locales, manteniendo el modal enfocado en estado del formulario y callbacks.
+- `VmPhoneField` separo estilos a un archivo local y conserva la logica reutilizable en `src/shared/phone`.
+- `useServiceCommissionCollaborators` movio la normalizacion pura de documentos Firestore a `useServiceCommissionCollaborators.utils.ts` con prueba dedicada, dejando el hook como sincronizador externo.
 - `InventoryConfig` separo estilos, acciones persistentes y helpers de presentacion en archivos locales, manteniendo el componente como composicion de opciones de inventario.
 - `GeneralConfigSearch` movio estilos/animaciones a `.styles.ts`, limpio textos con mojibake y reemplazo el cierre por cambio de dependencia con un guard basado en `useRef`/`useEffect`.
 - `Header`, `BillingConfig` y `SettingCard` de GeneralConfig separaron estilos y summaries puros en archivos locales, reduciendo inline styles y comentarios decorativos.

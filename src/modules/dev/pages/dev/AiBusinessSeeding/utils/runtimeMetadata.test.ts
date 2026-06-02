@@ -21,7 +21,7 @@ describe('runtimeMetadata', () => {
       formatRuntime({
         durationMs: 1200,
         location: 'us-central1',
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3-flash-preview',
         thinkingLevel: 'MEDIUM',
         usage: {
           inputTokens: 120,
@@ -34,7 +34,7 @@ describe('runtimeMetadata', () => {
         },
       }),
     ).toBe(
-      'gemini-2.5-flash @ us-central1 | thinking: medium | 1.2 s | tokens: 160 (120 in / 40 out) | prompt: 80 chars / ctx: 450 chars',
+      'gemini-3-flash-preview @ us-central1 | thinking: medium | 1.2 s | tokens: 160 (120 in / 40 out) | prompt: 80 chars / ctx: 450 chars',
     );
   });
 
@@ -72,12 +72,12 @@ describe('runtimeMetadata', () => {
         availableActions: ['chat', 'create_business'],
         constrainedOutput: true,
         location: 'us-central1',
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3-flash-preview',
         schemaVersion: 'ai-business-seeding-v2',
         thinkingLevel: 'MEDIUM',
       }),
     ).toBe(
-      'gemini-2.5-flash @ us-central1 | thinking: medium | ai-business-seeding-v2 | output: schema-constrained | enforced-limited-use | app check: ausente | auth: presente | acciones: chat, create_business',
+      'gemini-3-flash-preview @ us-central1 | thinking: medium | ai-business-seeding-v2 | output: schema-constrained | enforced-limited-use | app check: ausente | auth: presente | acciones: chat, create_business',
     );
   });
 });

@@ -12,6 +12,15 @@ export const HR_PAY_TYPES = new Set([
   'mixed',
 ]);
 
+export const HR_DOCUMENT_TYPES = new Set([
+  'cedula',
+  'passport',
+  'rnc',
+  'other',
+]);
+
+export const HR_EMPLOYEE_GENDERS = new Set(['male', 'female', 'other']);
+
 export const HR_PAYMENT_METHODS = new Set([
   'cash',
   'bank_transfer',
@@ -49,14 +58,56 @@ export const normalizeEmployeeDocumentId = (value) => {
   return documentId.slice(0, 32);
 };
 
+export const normalizeEmployeeDocumentType = (value) => {
+  const normalized = toCleanString(value)
+    ?.toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\s-]+/g, '_');
+  if (!normalized) return 'cedula';
+  if (['cedula', 'id', 'id_card'].includes(normalized)) return 'cedula';
+  if (['pasaporte', 'passport'].includes(normalized)) return 'passport';
+  if (HR_DOCUMENT_TYPES.has(normalized)) return normalized;
+  return 'cedula';
+};
+
+export const normalizeEmployeeGender = (value) => {
+  const normalized = toCleanString(value)
+    ?.toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\s-]+/g, '_');
+  if (!normalized) return null;
+  if (['m', 'male', 'masculino', 'hombre'].includes(normalized)) {
+    return 'male';
+  }
+  if (['f', 'female', 'femenino', 'mujer'].includes(normalized)) {
+    return 'female';
+  }
+  if (['o', 'other', 'otro', 'otra'].includes(normalized)) return 'other';
+  return HR_EMPLOYEE_GENDERS.has(normalized) ? normalized : null;
+};
+
 export const normalizeEmail = (value) => {
   const email = toCleanString(value)?.toLowerCase();
   return email || null;
 };
 
 export const normalizePhone = (value) => {
-  const phone = toCleanString(value)?.replace(/[^\d+()-\s]+/g, '');
-  return phone || null;
+  const source = toCleanString(value);
+  if (!source) return null;
+
+  const compact = source.replace(/[^\d+]/g, '');
+  if (compact.startsWith('+')) {
+    const digits = compact.slice(1).replace(/\D/g, '');
+    return digits.length >= 8 && digits.length <= 15 ? `+${digits}` : null;
+  }
+
+  const digits = compact.replace(/\D/g, '');
+  if (!digits) return null;
+  if (digits.length === 10) return `+1${digits}`;
+  if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`;
+  return digits.length >= 8 && digits.length <= 15 ? `+${digits}` : null;
 };
 
 export const normalizeIdSegment = (value) => {
@@ -170,10 +221,21 @@ export const normalizeHrEmployeeInput = (input, options = {}) => {
     fullName,
     legalName,
     displayName: fullName,
+    documentType: normalizeEmployeeDocumentType(
+      employeeInput.documentType ||
+        employeeInput.employeeDocumentType ||
+        employeeInput.identificationType,
+    ),
     documentId: normalizeEmployeeDocumentId(
       employeeInput.documentId ||
         employeeInput.employeeDocumentId ||
         employeeInput.identification,
+    ),
+    gender: normalizeEmployeeGender(
+      employeeInput.gender ||
+        employeeInput.genero ||
+        employeeInput.sex ||
+        employeeInput.sexo,
     ),
     email: normalizeEmail(employeeInput.email),
     phone: normalizePhone(employeeInput.phone || employeeInput.tel),
@@ -234,7 +296,9 @@ export const buildBusinessPartyPayload = ({
   type: 'person',
   displayName: employee.fullName,
   legalName: employee.legalName || employee.fullName,
+  documentType: employee.documentType,
   documentId: employee.documentId,
+  gender: employee.gender,
   email: employee.email,
   phone: employee.phone,
   status: employee.status === 'active' ? 'active' : 'inactive',
@@ -266,7 +330,9 @@ export const buildHrEmployeePayload = ({
   fullName: employee.fullName,
   legalName: employee.legalName,
   displayName: employee.displayName,
+  documentType: employee.documentType,
   documentId: employee.documentId,
+  gender: employee.gender,
   email: employee.email,
   phone: employee.phone,
   address: employee.address,
@@ -285,7 +351,9 @@ export const buildHrEmployeePayload = ({
   readyToPayIssues: employee.readyToPayIssues,
   partySnapshot: {
     displayName: employee.displayName,
+    documentType: employee.documentType,
     documentId: employee.documentId,
+    gender: employee.gender,
     email: employee.email,
     phone: employee.phone,
   },

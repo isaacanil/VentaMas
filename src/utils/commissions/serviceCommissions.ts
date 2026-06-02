@@ -120,6 +120,14 @@ export const normalizeCommissionCollaborator = (
     id,
     code,
     name,
+    documentType:
+      source.documentType === 'cedula' ||
+      source.documentType === 'passport' ||
+      source.documentType === 'rnc' ||
+      source.documentType === 'other'
+        ? source.documentType
+        : null,
+    documentId: toCleanString(source.documentId),
     hrEmployeeId:
       toCleanString(source.hrEmployeeId) ??
       toCleanString(source.employeeId) ??

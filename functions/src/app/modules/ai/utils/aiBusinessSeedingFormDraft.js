@@ -42,6 +42,8 @@ const normalizeLabel = (value) =>
     .replace(/\s+/g, ' ')
     .trim();
 
+const normalizeHeading = (value) => normalizeLabel(value).replace(/:+$/g, '');
+
 const parseLineLabel = (line) => {
   const text = readString(line);
   const separatorIndex = text.indexOf(':');
@@ -68,7 +70,7 @@ const cleanLines = (prompt) =>
     .filter(Boolean);
 
 const findHeadingIndex = (lines, heading) =>
-  lines.findIndex((line) => normalizeText(line) === heading);
+  lines.findIndex((line) => normalizeHeading(line) === heading);
 
 const getSectionLines = ({ lines, startHeading, endHeading }) => {
   const startIndex = findHeadingIndex(lines, startHeading);
@@ -100,22 +102,39 @@ const findLabelLineIndex = (lines, labels) => {
   });
 };
 
+const resolveRole = (value) => ROLE_ALIASES.get(normalizeText(value)) || '';
+
+const resolveRoleLabel = (value) => {
+  const directRole = resolveRole(value);
+  if (directRole) return directRole;
+
+  const parts = normalizeText(value)
+    .split(/[/,|]+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  for (const part of parts) {
+    const role = resolveRole(part);
+    if (role) return role;
+  }
+  return '';
+};
+
+const isUserBlockStart = (line) => {
+  const parsed = parseLineLabel(line);
+  return parsed ? Boolean(resolveRoleLabel(parsed.label)) : false;
+};
+
 const getBlockUntilNextHeading = (lines, startIndex) => {
   if (startIndex < 0) return [];
 
   const rest = lines.slice(startIndex);
   const nextHeadingOffset = rest
     .slice(1)
-    .findIndex((line) => {
-      const parsed = parseLineLabel(line);
-      return parsed && !parsed.value;
-    });
+    .findIndex((line) => isUserBlockStart(line));
 
   if (nextHeadingOffset < 0) return rest;
   return rest.slice(0, nextHeadingOffset + 1);
 };
-
-const resolveRole = (value) => ROLE_ALIASES.get(normalizeText(value)) || '';
 
 const mapRole = (value, fallback = 'admin') =>
   resolveRole(value) || fallback;
@@ -152,6 +171,53 @@ const buildBusinessFromLines = (businessLines) => {
     ),
   };
 };
+
+const getUserBlocks = (usersLines) => {
+  const blocks = [];
+  let currentBlock = [];
+
+  for (const line of usersLines) {
+    if (isUserBlockStart(line)) {
+      if (currentBlock.length) blocks.push(currentBlock);
+      currentBlock = [line];
+      continue;
+    }
+
+    if (currentBlock.length) currentBlock.push(line);
+  }
+
+  if (currentBlock.length) blocks.push(currentBlock);
+  return blocks;
+};
+
+const buildUserFromBlock = (block) => {
+  const heading = parseLineLabel(block[0]);
+  const headingRole = resolveRoleLabel(heading?.label);
+  const role = headingRole || resolveRole(readLabelValue(block, ['rol', 'role']));
+  const realName =
+    readString(heading?.value) ||
+    readLabelValue(block, ['nombre completo', 'nombre', 'realname']);
+  const username = buildUsername(
+    readLabelValue(block, ['nombre de usuario', 'usuario', 'username']),
+    realName,
+    role === 'cashier' ? 'caja' : role,
+  );
+  const email = readLabelValue(block, ['email', 'correo']);
+
+  if (!role || !username) return null;
+
+  return {
+    realName: realName || undefined,
+    name: username,
+    role,
+    password:
+      readLabelValue(block, ['contrasena', 'password', 'clave']) || undefined,
+    ...(email ? { email } : {}),
+  };
+};
+
+const buildUsersFromBlocks = (usersLines) =>
+  getUserBlocks(usersLines).map(buildUserFromBlock).filter(Boolean);
 
 const buildOwnerUser = (usersLines) => {
   const ownerIndex = findLabelLineIndex(usersLines, [
@@ -224,42 +290,46 @@ const uniqueUsersByName = (users) => {
 
 const collectUserAmbiguities = (usersLines) => {
   const ambiguities = [];
-  const ownerIndex = findLabelLineIndex(usersLines, [
-    'dueno',
-    'duena',
-    'owner',
-    'propietario',
-    'propietaria',
-  ]);
-  const ownerBlock = getBlockUntilNextHeading(usersLines, ownerIndex);
-  const ownerName =
-    readLabelValue(ownerBlock, ['nombre completo', 'nombre']) ||
-    readString(parseLineLabel(usersLines[ownerIndex])?.value);
-  const ownerRole = readLabelValue(ownerBlock, ['rol', 'role']);
-  const resolvedOwnerRole = resolveRole(ownerRole);
+  for (const block of getUserBlocks(usersLines)) {
+    const heading = parseLineLabel(block[0]);
+    const headingRole = resolveRoleLabel(heading?.label);
+    const explicitRole = readLabelValue(block, ['rol', 'role']);
+    const resolvedExplicitRole = resolveRole(explicitRole);
+    const nameCandidates = [
+      readString(heading?.value),
+      readLabelValue(block, ['nombre completo']),
+      readLabelValue(block, ['nombre']),
+      readLabelValue(block, ['nombre de usuario', 'usuario', 'username']),
+    ].filter(Boolean);
 
-  if (ownerRole && resolvedOwnerRole && resolvedOwnerRole !== 'owner') {
-    ambiguities.push(
-      'El bloque dice Dueno/Owner, pero el rol escrito ahi no es owner.',
-    );
-  }
+    if (
+      headingRole === 'owner' &&
+      explicitRole &&
+      resolvedExplicitRole &&
+      resolvedExplicitRole !== 'owner'
+    ) {
+      ambiguities.push(
+        'El bloque dice Dueno/Owner, pero el rol escrito ahi no es owner.',
+      );
+    }
 
-  if (hasSlashSeparatedPeople(ownerName)) {
-    ambiguities.push(
-      'El nombre del dueno contiene varias personas separadas por "/".',
-    );
-  }
+    if (
+      headingRole === 'owner' &&
+      nameCandidates.some(hasSlashSeparatedPeople)
+    ) {
+      ambiguities.push(
+        'El nombre del dueno contiene varias personas separadas por "/".',
+      );
+    }
 
-  const cashierIndex = findLabelLineIndex(usersLines, ['caja', 'cashier']);
-  const cashierBlock = getBlockUntilNextHeading(usersLines, cashierIndex);
-  const cashierName =
-    readLabelValue(cashierBlock, ['nombre completo', 'nombre']) ||
-    readLabelValue(cashierBlock, ['nombre de usuario', 'usuario', 'username']);
-
-  if (hasSlashSeparatedPeople(cashierName)) {
-    ambiguities.push(
-      'El nombre de Caja contiene varias personas separadas por "/".',
-    );
+    if (
+      headingRole === 'cashier' &&
+      nameCandidates.some(hasSlashSeparatedPeople)
+    ) {
+      ambiguities.push(
+        'El nombre de Caja contiene varias personas separadas por "/".',
+      );
+    }
   }
 
   return ambiguities;
@@ -289,10 +359,12 @@ export const buildAiBusinessSeedingFormDraft = (prompt) => {
   const business = buildBusinessFromLines(businessLines);
   if (!business) return null;
 
-  const users = uniqueUsersByName([
-    buildOwnerUser(usersLines),
-    buildCashierUser(usersLines),
-  ]);
+  const usersFromBlocks = buildUsersFromBlocks(usersLines);
+  const users = uniqueUsersByName(
+    usersFromBlocks.length
+      ? usersFromBlocks
+      : [buildOwnerUser(usersLines), buildCashierUser(usersLines)],
+  );
   const ambiguities = collectUserAmbiguities(usersLines);
 
   if (!users.length) {

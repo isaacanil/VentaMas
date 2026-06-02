@@ -13,7 +13,7 @@ describe('firebaseAiRuntimeConfig', () => {
     expect(
       resolveFirebaseAiRuntimeConfigValues({
         envLocation: 'us-central1',
-        envModel: 'gemini-2.5-flash',
+        envModel: 'gemini-3-flash-preview',
         remoteLocation: 'global',
         remoteModel: 'gemini-2.5-flash-lite',
       }),
@@ -27,13 +27,13 @@ describe('firebaseAiRuntimeConfig', () => {
     expect(
       resolveFirebaseAiRuntimeConfigValues({
         envLocation: 'us-central1',
-        envModel: 'gemini-2.5-pro',
+        envModel: 'gemini-custom-pro',
         remoteLocation: ' ',
         remoteModel: '',
       }),
     ).toEqual({
       location: 'us-central1',
-      model: 'gemini-2.5-pro',
+      model: 'gemini-custom-pro',
     });
   });
 

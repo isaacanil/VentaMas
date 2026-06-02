@@ -21,7 +21,6 @@ const {
   HR_EMPLOYEES,
   HR_COMMISSIONS,
   HR_COMMISSION_PERIODS,
-  HR_PAYROLL_PAYMENTS,
 } = ROUTES_NAME.HR_PAYROLL_TERM;
 
 const routes: AppRoute[] = [
@@ -49,16 +48,9 @@ const routes: AppRoute[] = [
   {
     path: HR_COMMISSION_PERIODS,
     element: <HrCommissionPeriodsPage />,
-    title: 'Cortes RRHH - Ventamax',
+    title: 'Cortes y pagos RRHH - Ventamax',
     metaDescription:
-      'Crea y aprueba cortes de comisiones para corridas de nomina en Ventamax.',
-  },
-  {
-    path: HR_PAYROLL_PAYMENTS,
-    element: <HrCommissionPeriodsPage />,
-    title: 'Pagos RRHH - Ventamax',
-    metaDescription:
-      'Registra pagos de comisiones y revisa la trazabilidad de nomina en Ventamax.',
+      'Agrupa comisiones por periodo, aprueba cortes y registra pagos a colaboradores en Ventamax.',
   },
   {
     path: '/recursos-humanos',

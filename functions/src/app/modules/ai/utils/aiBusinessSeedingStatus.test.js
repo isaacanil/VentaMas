@@ -16,7 +16,7 @@ describe('buildAiBusinessSeedingStatus', () => {
         authPresent: true,
         generatedAt: '2026-05-29T00:00:00.000Z',
         location: 'us-central1',
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3-flash-preview',
         thinkingLevel: 'MEDIUM',
       }),
     ).toEqual({
@@ -29,7 +29,7 @@ describe('buildAiBusinessSeedingStatus', () => {
         authPresent: true,
         generatedAt: '2026-05-29T00:00:00.000Z',
         location: 'us-central1',
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3-flash-preview',
         modelConfigSource: 'functions-env',
         schemaVersion: AI_BUSINESS_SEEDING_SCHEMA_VERSION,
         structuredOutput: true,
@@ -45,7 +45,7 @@ describe('buildAiBusinessSeedingStatus', () => {
       appCheckMode: 'enforced-limited-use',
       generatedAt: '2026-05-29T00:00:00.000Z',
       location: 'global',
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
     });
 
     expect(status.metadata.appCheckTokenPresent).toBe(false);

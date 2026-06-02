@@ -1,112 +1,285 @@
-import styled from 'styled-components';
+import { parseDate } from '@internationalized/date';
+import type { ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 
-import { PageShell } from '@/components/layout/PageShell';
+import {
+  VmButton,
+  VmDateField,
+  VmDateRangePicker,
+  VmRangeCalendar,
+  VmSpinner,
+  VmTable,
+} from '@/components/heroui';
+import { fromHrDateKey, toHrDateKey } from '@/modules/hrPayroll/utils/hrDateRange';
 
-export const HrPage = styled(PageShell)`
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-4);
-  padding: var(--ds-space-5);
-  overflow: auto;
-  background: var(--ds-color-bg-page);
-`;
+import {
+  DateInputContainer,
+  DateRangeGroup,
+  HrPaginationActions,
+  HrTableFooter,
+  HrTableFrame,
+  HrTableMeta,
+  HrTableState,
+  HrTableTitle,
+} from './HrPayrollPagePrimitives.styles';
 
-export const HrPageHeader = styled.header`
-  display: flex;
-  gap: var(--ds-space-4);
-  align-items: flex-start;
-  justify-content: space-between;
+export {
+  HrActionGroup,
+  HrAmountText,
+  HrCellStack,
+  HrDescription,
+  HrInlineStack,
+  HrMutedText,
+  HrNotice,
+  HrPage,
+  HrPageHeader,
+  HrPaginationActions,
+  HrPrimaryText,
+  HrStatusTag,
+  HrSummaryGrid,
+  HrSummaryItem,
+  HrSummaryLabel,
+  HrSummaryValue,
+  HrTableFrame,
+  HrTableFooter,
+  HrTableMeta,
+  HrTableState,
+  HrTableTitle,
+  HrTitle,
+  HrTitleBlock,
+  type HrTone,
+} from './HrPayrollPagePrimitives.styles';
 
-  @media (max-width: 860px) {
-    flex-direction: column;
-  }
-`;
+type HrRowKey = string | number;
 
-export const HrTitleBlock = styled.div`
-  display: grid;
-  gap: var(--ds-space-1);
-`;
+export type HrTableColumn<T> = {
+  align?: 'left' | 'center' | 'right';
+  isRowHeader?: boolean;
+  key: string;
+  render: (row: T) => ReactNode;
+  title: ReactNode;
+  width?: number | string;
+};
 
-export const HrTitle = styled.h1`
-  margin: 0;
-  color: var(--ds-color-text-primary);
-  font-size: var(--ds-font-size-xl);
-  font-weight: var(--ds-font-weight-semibold);
-  line-height: var(--ds-line-height-tight);
-`;
+interface HrDataTableProps<T> {
+  ariaLabel: string;
+  columns: HrTableColumn<T>[];
+  emptyText?: string;
+  getRowId?: (row: T) => HrRowKey;
+  loading?: boolean;
+  minTableWidth?: number | string;
+  onRowClick?: (row: T) => void;
+  pageSize?: number;
+  rows: T[];
+  selectedRowId?: HrRowKey | null;
+  title?: ReactNode;
+}
 
-export const HrDescription = styled.p`
-  max-width: 760px;
-  margin: 0;
-  color: var(--ds-color-text-secondary);
-  font-size: var(--ds-font-size-sm);
-  line-height: var(--ds-line-height-normal);
-`;
+const getDefaultRowId = <T extends { id?: HrRowKey }>(
+  row: T,
+  index: number,
+): HrRowKey =>
+  row.id ?? index;
 
-export const HrSummaryGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, minmax(140px, 1fr));
-  gap: var(--ds-space-3);
+export function HrDataTable<T extends { id?: HrRowKey }>({
+  ariaLabel,
+  columns,
+  emptyText = 'Sin datos',
+  getRowId,
+  loading = false,
+  minTableWidth,
+  onRowClick,
+  pageSize,
+  rows,
+  selectedRowId,
+  title,
+}: HrDataTableProps<T>) {
+  const [page, setPage] = useState(1);
+  const hasRows = rows.length > 0;
+  const totalPages = pageSize ? Math.max(1, Math.ceil(rows.length / pageSize)) : 1;
+  const safePage = Math.min(page, totalPages);
+  const visibleRows = useMemo(() => {
+    if (!pageSize) return rows;
+    const start = (safePage - 1) * pageSize;
+    return rows.slice(start, start + pageSize);
+  }, [pageSize, rows, safePage]);
+  const resolveRowId = (row: T, index: number) =>
+    getRowId ? getRowId(row) : getDefaultRowId(row, index);
 
-  @media (max-width: 920px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  return (
+    <HrTableFrame variant="primary">
+      {title ? <HrTableTitle>{title}</HrTableTitle> : null}
+      <VmTable.ScrollContainer>
+        <VmTable.Content
+          aria-label={ariaLabel}
+          style={{ minWidth: hasRows ? minTableWidth : undefined }}
+        >
+          <VmTable.Header>
+            {columns.map((column) => (
+              <VmTable.Column
+                key={column.key}
+                isRowHeader={column.isRowHeader}
+                style={{
+                  minWidth: hasRows ? column.width : undefined,
+                  textAlign: column.align,
+                }}
+              >
+                {column.title}
+              </VmTable.Column>
+            ))}
+          </VmTable.Header>
+          <VmTable.Body key={loading ? 'loading' : `rows-${safePage}`}>
+            {loading ? (
+              <VmTable.Row id="loading">
+                <VmTable.Cell colSpan={columns.length}>
+                  <HrTableState>
+                    <VmSpinner size="sm" />
+                    Cargando...
+                  </HrTableState>
+                </VmTable.Cell>
+              </VmTable.Row>
+            ) : visibleRows.length === 0 ? (
+              <VmTable.Row id="empty">
+                <VmTable.Cell colSpan={columns.length}>
+                  <HrTableState>{emptyText}</HrTableState>
+                </VmTable.Cell>
+              </VmTable.Row>
+            ) : (
+              visibleRows.map((row, index) => {
+                const rowId = resolveRowId(row, index);
+                const selected = selectedRowId != null && rowId === selectedRowId;
+                return (
+                  <VmTable.Row
+                    key={rowId}
+                    id={rowId}
+                    data-selected={selected ? 'true' : undefined}
+                    onClick={onRowClick ? () => onRowClick(row) : undefined}
+                    style={{
+                      background: selected
+                        ? 'var(--ds-color-bg-subtle)'
+                        : undefined,
+                      cursor: onRowClick ? 'pointer' : undefined,
+                    }}
+                  >
+                    {columns.map((column) => (
+                      <VmTable.Cell
+                        key={column.key}
+                        style={{ textAlign: column.align }}
+                      >
+                        {column.render(row)}
+                      </VmTable.Cell>
+                    ))}
+                  </VmTable.Row>
+                );
+              })
+            )}
+          </VmTable.Body>
+        </VmTable.Content>
+      </VmTable.ScrollContainer>
+      {pageSize && hasRows ? (
+        <HrTableFooter>
+          <HrTableMeta>
+            {rows.length === 0
+              ? '0 registros'
+              : `${visibleRows.length} / ${rows.length} registros`}
+          </HrTableMeta>
+          <HrPaginationActions>
+            <VmButton
+              variant="secondary"
+              isDisabled={safePage <= 1}
+              onPress={() => setPage((current) => Math.max(1, current - 1))}
+            >
+              Anterior
+            </VmButton>
+            <HrTableMeta>
+              {safePage} / {totalPages}
+            </HrTableMeta>
+            <VmButton
+              variant="secondary"
+              isDisabled={safePage >= totalPages}
+              onPress={() =>
+                setPage((current) => Math.min(totalPages, current + 1))
+              }
+            >
+              Siguiente
+            </VmButton>
+          </HrPaginationActions>
+        </HrTableFooter>
+      ) : null}
+    </HrTableFrame>
+  );
+}
 
-  @media (max-width: 560px) {
-    grid-template-columns: 1fr;
-  }
-`;
+interface HrDateRangeFieldProps {
+  ariaLabel: string;
+  onChange: (range: [Date, Date]) => void;
+  value: [Date, Date];
+}
 
-export const HrSummaryItem = styled.div`
-  display: grid;
-  gap: var(--ds-space-1);
-  min-width: 0;
-  padding: var(--ds-space-3);
-  border: 1px solid var(--ds-color-border-subtle);
-  border-radius: 8px;
-  background: var(--ds-color-bg-surface);
-`;
-
-export const HrSummaryLabel = styled.span`
-  color: var(--ds-color-text-secondary);
-  font-size: var(--ds-font-size-xs);
-`;
-
-export const HrSummaryValue = styled.strong`
-  color: var(--ds-color-text-primary);
-  font-size: var(--ds-font-size-lg);
-  line-height: var(--ds-line-height-tight);
-`;
-
-export const HrTableFrame = styled.div`
-  min-width: 0;
-  overflow: hidden;
-  border: 1px solid var(--ds-color-border-subtle);
-  border-radius: 8px;
-  background: var(--ds-color-bg-surface);
-`;
-
-export const HrCellStack = styled.div`
-  display: grid;
-  gap: 2px;
-  min-width: 0;
-`;
-
-export const HrPrimaryText = styled.span`
-  color: var(--ds-color-text-primary);
-  font-size: var(--ds-font-size-sm);
-  font-weight: var(--ds-font-weight-medium);
-`;
-
-export const HrMutedText = styled.span`
-  color: var(--ds-color-text-secondary);
-  font-size: var(--ds-font-size-xs);
-`;
-
-export const HrAmountText = styled.span`
-  display: block;
-  color: var(--ds-color-text-primary);
-  font-size: var(--ds-font-size-sm);
-  font-weight: var(--ds-font-weight-medium);
-  text-align: right;
-`;
+export function HrDateRangeField({
+  ariaLabel,
+  onChange,
+  value,
+}: HrDateRangeFieldProps) {
+  return (
+    <VmDateRangePicker
+      value={{
+        start: parseDate(toHrDateKey(value[0])),
+        end: parseDate(toHrDateKey(value[1])),
+      }}
+      onChange={(nextValue) => {
+        if (!nextValue?.start || !nextValue?.end) return;
+        onChange([
+          fromHrDateKey(nextValue.start.toString(), 'start'),
+          fromHrDateKey(nextValue.end.toString(), 'end'),
+        ]);
+      }}
+    >
+      <DateRangeGroup fullWidth>
+        <DateInputContainer>
+          <VmDateField.Input slot="start">
+            {(segment) => <VmDateField.Segment segment={segment} />}
+          </VmDateField.Input>
+          <VmDateRangePicker.RangeSeparator />
+          <VmDateField.Input slot="end">
+            {(segment) => <VmDateField.Segment segment={segment} />}
+          </VmDateField.Input>
+        </DateInputContainer>
+        <VmDateField.Suffix>
+          <VmDateRangePicker.Trigger aria-label={ariaLabel}>
+            <VmDateRangePicker.TriggerIndicator />
+          </VmDateRangePicker.Trigger>
+        </VmDateField.Suffix>
+      </DateRangeGroup>
+      <VmDateRangePicker.Popover>
+        <VmRangeCalendar aria-label={ariaLabel}>
+          <VmRangeCalendar.Header>
+            <VmRangeCalendar.YearPickerTrigger>
+              <VmRangeCalendar.YearPickerTriggerHeading />
+              <VmRangeCalendar.YearPickerTriggerIndicator />
+            </VmRangeCalendar.YearPickerTrigger>
+            <VmRangeCalendar.NavButton slot="previous" />
+            <VmRangeCalendar.NavButton slot="next" />
+          </VmRangeCalendar.Header>
+          <VmRangeCalendar.Grid>
+            <VmRangeCalendar.GridHeader>
+              {(day) => (
+                <VmRangeCalendar.HeaderCell>
+                  {day}
+                </VmRangeCalendar.HeaderCell>
+              )}
+            </VmRangeCalendar.GridHeader>
+            <VmRangeCalendar.GridBody>
+              {(date) => <VmRangeCalendar.Cell date={date} />}
+            </VmRangeCalendar.GridBody>
+          </VmRangeCalendar.Grid>
+          <VmRangeCalendar.YearPickerGrid>
+            <VmRangeCalendar.YearPickerGridBody>
+              {({ year }) => <VmRangeCalendar.YearPickerCell year={year} />}
+            </VmRangeCalendar.YearPickerGridBody>
+          </VmRangeCalendar.YearPickerGrid>
+        </VmRangeCalendar>
+      </VmDateRangePicker.Popover>
+    </VmDateRangePicker>
+  );
+}

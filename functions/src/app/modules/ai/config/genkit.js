@@ -14,7 +14,7 @@ const projectId =
   readEnvString(process.env.FIREBASE_PROJECT_ID) ||
   readEnvString(process.env.PROJECT_ID);
 
-const DEFAULT_VERTEX_MODEL = 'gemini-2.5-flash';
+const DEFAULT_VERTEX_MODEL = 'gemini-3-flash-preview';
 
 const vertexModelName =
   readEnvString(process.env.GENKIT_VERTEX_MODEL) || DEFAULT_VERTEX_MODEL;

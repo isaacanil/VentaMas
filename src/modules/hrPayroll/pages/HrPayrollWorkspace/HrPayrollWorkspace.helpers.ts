@@ -1,18 +1,26 @@
 import { cleanString as toCleanString } from '@/modules/hrPayroll/utils/hrPayrollDisplay';
 import type { HrEmployeeRecord } from '@/types/hrPayroll';
-import type { HrEmployeeFormValues } from './components/HrEmployeeEditorModal';
+import type {
+  HrEmployeeFormValues,
+  HrLinkedUserOption,
+} from './components/HrEmployeeEditorModal.types';
 
 export type BusinessUser = Record<string, unknown> & {
   id?: string;
   uid?: string;
+  number?: number | string;
   name?: string;
   displayName?: string;
   realName?: string;
   email?: string;
+  phone?: string;
+  tel?: string;
 };
 
 export const DEFAULT_FORM_VALUES: HrEmployeeFormValues = {
   status: 'active',
+  documentType: 'cedula',
+  gender: null,
   payType: 'salary',
   baseSalaryAmount: 0,
   hourlyRateAmount: 0,
@@ -38,6 +46,37 @@ export const getUserLabel = (user: BusinessUser): string => {
   );
 };
 
+export const getUserEmail = (user: BusinessUser): string | null =>
+  toCleanString(user.email);
+
+export const getUserPhone = (user: BusinessUser): string | null =>
+  toCleanString(user.phone) ?? toCleanString(user.tel);
+
+export const getUserCode = (user: BusinessUser): string | null =>
+  toCleanString(user.number);
+
+export const buildLinkedUserOptions = (
+  users: BusinessUser[],
+): HrLinkedUserOption[] =>
+  users
+    .map((businessUser): HrLinkedUserOption | null => {
+      const value = getUserId(businessUser);
+      if (!value) return null;
+      return {
+        value,
+        label: getUserLabel(businessUser),
+        code: getUserCode(businessUser),
+        email: getUserEmail(businessUser),
+        phone: getUserPhone(businessUser),
+      };
+    })
+    .filter((option): option is HrLinkedUserOption => option !== null);
+
+export const buildUserLabelMap = (
+  options: HrLinkedUserOption[],
+): Map<string, string> =>
+  new Map(options.map((option) => [option.value, option.label]));
+
 export const getErrorMessage = (error: unknown): string => {
   if (error instanceof Error) return error.message;
   if (typeof error === 'string') return error;
@@ -56,7 +95,9 @@ export const buildInitialValues = (
     code: employee.code,
     fullName: employee.fullName,
     legalName: employee.legalName,
+    documentType: employee.documentType ?? 'cedula',
     documentId: employee.documentId,
+    gender: employee.gender ?? null,
     email: employee.email,
     phone: employee.phone,
     address: employee.address,

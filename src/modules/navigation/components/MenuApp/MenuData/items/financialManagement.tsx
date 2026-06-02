@@ -23,7 +23,6 @@ const {
   HR_PAYROLL,
   HR_COMMISSIONS,
   HR_COMMISSION_PERIODS,
-  HR_PAYROLL_PAYMENTS,
 } = ROUTES_NAME.HR_PAYROLL_TERM;
 const {
   ACCOUNTING_JOURNAL_BOOK,
@@ -85,15 +84,9 @@ const financialManagement: MenuItem[] = [
         group: 'hrPayroll',
       },
       {
-        title: 'Cortes',
-        icon: <TeamOutlined />,
-        route: HR_COMMISSION_PERIODS,
-        group: 'hrPayroll',
-      },
-      {
-        title: 'Pagos',
+        title: 'Cortes y pagos',
         icon: icons.finances.money,
-        route: HR_PAYROLL_PAYMENTS,
+        route: HR_COMMISSION_PERIODS,
         group: 'hrPayroll',
       },
     ],

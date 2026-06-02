@@ -1,24 +1,44 @@
-import { DatePicker, Form, Input, Modal, Select } from 'antd';
-import type { FormInstance } from 'antd';
-import type { Dayjs } from 'dayjs';
+import type { FormEvent, Key } from 'react';
+import { useState } from 'react';
 
+import {
+  VmButton,
+  VmForm,
+  VmInput,
+  VmListBox,
+  VmModal,
+  VmSelect,
+} from '@/components/heroui';
 import {
   HrCellStack as CellStack,
   HrMutedText as MutedText,
   HrPrimaryText as PrimaryText,
 } from '@/modules/hrPayroll/components/HrPayrollPagePrimitives';
+import { fromHrDateKey, toHrDateKey } from '@/modules/hrPayroll/utils/hrDateRange';
 import { formatHrMoney as formatMoney } from '@/modules/hrPayroll/utils/hrPayrollDisplay';
 import type {
   HrPaymentMethod,
   HrPayrollEmployeeLineRecord,
 } from '@/types/hrPayroll';
 
+import {
+  PAYMENT_METHOD_OPTIONS,
+  normalizePaymentMethod,
+} from './RecordHrPaymentModal.helpers';
+import {
+  Field,
+  FieldGrid,
+  FieldLabel,
+  ModalActions,
+  PaymentSummary,
+} from './RecordHrPaymentModal.styles';
+
 export interface PaymentFormValues {
   bankAccountId?: string;
   cashAccountId?: string;
   cashCountId?: string;
   checkNumber?: string;
-  paymentDate?: Dayjs;
+  paymentDate: Date;
   paymentMethod: HrPaymentMethod;
   reference?: string;
   transferReference?: string;
@@ -26,102 +46,211 @@ export interface PaymentFormValues {
 
 interface RecordHrPaymentModalProps {
   actionKey: string | null;
-  form: FormInstance<PaymentFormValues>;
-  line: HrPayrollEmployeeLineRecord | null;
+  line: HrPayrollEmployeeLineRecord;
   onCancel: () => void;
   onFinish: (values: PaymentFormValues) => void | Promise<void>;
-  onSubmit: () => void;
 }
 
 export function RecordHrPaymentModal({
   actionKey,
-  form,
   line,
   onCancel,
   onFinish,
-  onSubmit,
 }: RecordHrPaymentModalProps) {
-  const watchedPaymentMethod = Form.useWatch('paymentMethod', form);
+  const [draft, setDraft] = useState<PaymentFormValues>(() => ({
+    paymentDate: new Date(),
+    paymentMethod: normalizePaymentMethod(line.paymentMethod),
+    reference: '',
+    transferReference: '',
+    checkNumber: '',
+    bankAccountId: '',
+    cashAccountId: '',
+    cashCountId: '',
+  }));
+  const saving = actionKey === `pay:${line.id}`;
+
+  const updateField = <K extends keyof PaymentFormValues>(
+    field: K,
+    value: PaymentFormValues[K],
+  ) => {
+    setDraft((current) => ({ ...current, [field]: value }));
+  };
+
+  const handleMethodChange = (key: Key | null) => {
+    if (!key) return;
+    updateField('paymentMethod', String(key) as HrPaymentMethod);
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void onFinish(draft);
+  };
 
   return (
-    <Modal
+    <VmModal
       title="Registrar pago"
-      open={Boolean(line)}
-      okText="Registrar"
-      cancelText="Cancelar"
-      confirmLoading={Boolean(line && actionKey === `pay:${line.id}`)}
-      destroyOnHidden
-      onCancel={onCancel}
-      onOk={onSubmit}
+      ariaLabel="Registrar pago de nomina"
+      isOpen
+      onOpenChange={(open) => {
+        if (!open) onCancel();
+      }}
+      size="sm"
+      footer={
+        <ModalActions>
+          <VmButton variant="secondary" isDisabled={saving} onPress={onCancel}>
+            Cancelar
+          </VmButton>
+          <VmButton
+            type="submit"
+            form="hr-payment-form"
+            variant="primary"
+            isDisabled={saving}
+          >
+            {saving ? 'Registrando...' : 'Registrar'}
+          </VmButton>
+        </ModalActions>
+      }
     >
-      {line ? (
+      <PaymentSummary>
         <CellStack>
           <PrimaryText>
             {line.employeeNameSnapshot || line.employeeCode || line.employeeId}
           </PrimaryText>
           <MutedText>{formatMoney(line.netAmount, line.currency)}</MutedText>
         </CellStack>
-      ) : null}
+      </PaymentSummary>
 
-      <Form<PaymentFormValues>
-        form={form}
-        layout="vertical"
-        onFinish={onFinish}
-        style={{ marginTop: 16 }}
-      >
-        <Form.Item
-          name="paymentDate"
-          label="Fecha de pago"
-          rules={[{ required: true, message: 'Selecciona la fecha.' }]}
-        >
-          <DatePicker style={{ width: '100%' }} />
-        </Form.Item>
+      <VmForm id="hr-payment-form" onSubmit={handleSubmit}>
+        <FieldGrid>
+          <Field>
+            <FieldLabel>Fecha de pago</FieldLabel>
+            <VmInput
+              aria-label="Fecha de pago"
+              type="date"
+              value={toHrDateKey(draft.paymentDate)}
+              disabled={saving}
+              onChange={(event) =>
+                updateField(
+                  'paymentDate',
+                  fromHrDateKey(event.target.value, 'start'),
+                )
+              }
+            />
+          </Field>
 
-        <Form.Item
-          name="paymentMethod"
-          label="Metodo"
-          rules={[{ required: true, message: 'Selecciona el metodo.' }]}
-        >
-          <Select
-            options={[
-              { value: 'cash', label: 'Efectivo' },
-              { value: 'bank_transfer', label: 'Transferencia' },
-              { value: 'check', label: 'Cheque' },
-              { value: 'other', label: 'Otro' },
-            ]}
-          />
-        </Form.Item>
+          <Field>
+            <FieldLabel>Metodo</FieldLabel>
+            <VmSelect
+              aria-label="Metodo de pago"
+              selectedKey={draft.paymentMethod}
+              isDisabled={saving}
+              onSelectionChange={handleMethodChange}
+            >
+              <VmSelect.Trigger>
+                <VmSelect.Value />
+                <VmSelect.Indicator />
+              </VmSelect.Trigger>
+              <VmSelect.Popover>
+                <VmListBox aria-label="Metodos de pago">
+                  {PAYMENT_METHOD_OPTIONS.map((option) => (
+                    <VmListBox.Item
+                      key={option.value}
+                      id={option.value}
+                      textValue={option.label}
+                    >
+                      {option.label}
+                      <VmListBox.ItemIndicator />
+                    </VmListBox.Item>
+                  ))}
+                </VmListBox>
+              </VmSelect.Popover>
+            </VmSelect>
+          </Field>
 
-        {watchedPaymentMethod === 'cash' ? (
-          <>
-            <Form.Item name="cashAccountId" label="Caja">
-              <Input placeholder="ID de caja" />
-            </Form.Item>
-            <Form.Item name="cashCountId" label="Cuadre">
-              <Input placeholder="ID de cuadre" />
-            </Form.Item>
-          </>
-        ) : null}
+          {draft.paymentMethod === 'cash' ? (
+            <>
+              <Field>
+                <FieldLabel>Caja</FieldLabel>
+                <VmInput
+                  aria-label="Caja"
+                  value={draft.cashAccountId ?? ''}
+                  disabled={saving}
+                  placeholder="ID de caja"
+                  onChange={(event) =>
+                    updateField('cashAccountId', event.target.value)
+                  }
+                />
+              </Field>
+              <Field>
+                <FieldLabel>Cuadre</FieldLabel>
+                <VmInput
+                  aria-label="Cuadre"
+                  value={draft.cashCountId ?? ''}
+                  disabled={saving}
+                  placeholder="ID de cuadre"
+                  onChange={(event) =>
+                    updateField('cashCountId', event.target.value)
+                  }
+                />
+              </Field>
+            </>
+          ) : null}
 
-        {watchedPaymentMethod && watchedPaymentMethod !== 'cash' ? (
-          <Form.Item name="bankAccountId" label="Cuenta bancaria">
-            <Input placeholder="ID de cuenta" />
-          </Form.Item>
-        ) : null}
+          {draft.paymentMethod !== 'cash' ? (
+            <Field>
+              <FieldLabel>Cuenta bancaria</FieldLabel>
+              <VmInput
+                aria-label="Cuenta bancaria"
+                value={draft.bankAccountId ?? ''}
+                disabled={saving}
+                placeholder="ID de cuenta"
+                onChange={(event) =>
+                  updateField('bankAccountId', event.target.value)
+                }
+              />
+            </Field>
+          ) : null}
 
-        {watchedPaymentMethod === 'check' ? (
-          <Form.Item name="checkNumber" label="Cheque">
-            <Input placeholder="Numero de cheque" />
-          </Form.Item>
-        ) : null}
+          {draft.paymentMethod === 'check' ? (
+            <Field>
+              <FieldLabel>Cheque</FieldLabel>
+              <VmInput
+                aria-label="Cheque"
+                value={draft.checkNumber ?? ''}
+                disabled={saving}
+                placeholder="Numero de cheque"
+                onChange={(event) =>
+                  updateField('checkNumber', event.target.value)
+                }
+              />
+            </Field>
+          ) : null}
 
-        <Form.Item name="transferReference" label="Referencia bancaria">
-          <Input placeholder="Referencia" />
-        </Form.Item>
-        <Form.Item name="reference" label="Referencia interna">
-          <Input placeholder="Referencia" />
-        </Form.Item>
-      </Form>
-    </Modal>
+          <Field>
+            <FieldLabel>Referencia bancaria</FieldLabel>
+            <VmInput
+              aria-label="Referencia bancaria"
+              value={draft.transferReference ?? ''}
+              disabled={saving}
+              placeholder="Referencia"
+              onChange={(event) =>
+                updateField('transferReference', event.target.value)
+              }
+            />
+          </Field>
+
+          <Field>
+            <FieldLabel>Referencia interna</FieldLabel>
+            <VmInput
+              aria-label="Referencia interna"
+              value={draft.reference ?? ''}
+              disabled={saving}
+              placeholder="Referencia"
+              onChange={(event) => updateField('reference', event.target.value)}
+            />
+          </Field>
+        </FieldGrid>
+      </VmForm>
+    </VmModal>
   );
 }

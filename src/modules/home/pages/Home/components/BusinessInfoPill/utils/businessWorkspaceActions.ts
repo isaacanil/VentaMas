@@ -1,8 +1,6 @@
-import { httpsCallable } from 'firebase/functions';
-
 import { fbSelectActiveBusiness } from '@/firebase/Auth/fbAuthV2/fbSelectActiveBusiness';
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 type RedeemBusinessInviteRequest = {
   code: string;
@@ -17,10 +15,10 @@ export type RedeemBusinessInviteResponse = {
   businessName?: string | null;
 };
 
-const redeemBusinessInviteCallable = httpsCallable<
+const redeemBusinessInviteCallable = createFirebaseCallable<
   RedeemBusinessInviteRequest,
   RedeemBusinessInviteResponse
->(functions, 'redeemBusinessInvite');
+>('redeemBusinessInvite');
 
 const resolveInviteErrorMessage = (error: unknown): string => {
   const typedError =
@@ -109,7 +107,7 @@ export const redeemBusinessInviteCode = async (
     });
 
     return {
-      payload: (response.data || {}) as RedeemBusinessInviteResponse,
+      payload: response || {},
     };
   } catch (error) {
     return {

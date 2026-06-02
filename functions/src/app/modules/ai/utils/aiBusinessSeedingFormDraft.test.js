@@ -146,4 +146,80 @@ Caja:
       },
     });
   });
+
+  it('builds all users and preserves address from colon headings and bullet labels', () => {
+    const result = buildAiBusinessSeedingFormDraft(`
+Datos del negocio:
+* Nombre: ESPALCA GLOBAL
+* Telefono: 8294490529 / 8099148619
+* Direccion: C/Paseo de la reforma #10, Pantoja, Sto. Dgo. Oeste
+* RNC: 133693021
+
+Usuarios:
+
+Dueno / owner:
+* Nombre completo: Ronald de Jesus Espinal Hernandez
+* Usuario: ronald.espinal
+* Contrasena:
+* Rol: owner
+
+Administrador:
+* Nombre completo: Carlos Orbelis Alcantara Lopez
+* Usuario: carlos.alcantara
+* Contrasena:
+* Rol: admin
+
+Caja:
+* Nombre completo: Ronald Espinal
+* Usuario: caja.ronald
+* Contrasena:
+* Rol: cajero
+
+Caja:
+* Nombre completo: Carlos Alcantara
+* Usuario: caja.carlos
+* Contrasena:
+* Rol: cajero
+`);
+
+    expect(result).toEqual({
+      action: 'create_business',
+      data: {
+        business: {
+          name: 'ESPALCA GLOBAL',
+          rnc: '133693021',
+          address: 'C/Paseo de la reforma #10, Pantoja, Sto. Dgo. Oeste',
+          tel: '8294490529 / 8099148619',
+          email: undefined,
+          businessType: 'general',
+        },
+        users: [
+          {
+            realName: 'Ronald de Jesus Espinal Hernandez',
+            name: 'ronald.espinal',
+            role: 'owner',
+            password: undefined,
+          },
+          {
+            realName: 'Carlos Orbelis Alcantara Lopez',
+            name: 'carlos.alcantara',
+            role: 'admin',
+            password: undefined,
+          },
+          {
+            realName: 'Ronald Espinal',
+            name: 'caja.ronald',
+            role: 'cashier',
+            password: undefined,
+          },
+          {
+            realName: 'Carlos Alcantara',
+            name: 'caja.carlos',
+            role: 'cashier',
+            password: undefined,
+          },
+        ],
+      },
+    });
+  });
 });

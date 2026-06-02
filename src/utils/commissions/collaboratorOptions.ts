@@ -11,19 +11,12 @@ import {
 export type ServiceCommissionCollaboratorOption = {
   collaborator: ServiceCommissionCollaboratorSnapshot;
   label: string;
-  source: 'catalog' | 'user';
+  source: 'catalog';
   value: string;
-};
-
-type BusinessUser = Record<string, unknown> & {
-  id?: string;
-  uid?: string;
-  number?: number;
 };
 
 interface BuildServiceCommissionCollaboratorOptionsArgs {
   collaborators?: ServiceCommissionCollaboratorRecord[] | null;
-  users?: BusinessUser[] | null;
 }
 
 export const getServiceCommissionCollaboratorOptionValue = (
@@ -41,11 +34,6 @@ export const getServiceCommissionCollaboratorOptionLabel = (
   return code ?? name ?? 'Colaborador';
 };
 
-const getUserKey = (user: BusinessUser): string | null =>
-  toCleanString(user.id) ??
-  toCleanString(user.uid) ??
-  toCleanString(user.number);
-
 const addOption = (
   options: Map<string, ServiceCommissionCollaboratorOption>,
   option: ServiceCommissionCollaboratorOption,
@@ -56,7 +44,6 @@ const addOption = (
 
 export const buildServiceCommissionCollaboratorOptions = ({
   collaborators,
-  users,
 }: BuildServiceCommissionCollaboratorOptionsArgs): ServiceCommissionCollaboratorOption[] => {
   const options = new Map<string, ServiceCommissionCollaboratorOption>();
 
@@ -74,21 +61,6 @@ export const buildServiceCommissionCollaboratorOptions = ({
         value,
       });
     });
-
-  (users ?? []).forEach((user) => {
-    const collaborator = normalizeCommissionCollaborator(user);
-    const value =
-      getUserKey(user) ??
-      getServiceCommissionCollaboratorOptionValue(collaborator);
-    if (!value || !collaborator.code) return;
-
-    addOption(options, {
-      collaborator,
-      label: getServiceCommissionCollaboratorOptionLabel(collaborator),
-      source: 'user',
-      value,
-    });
-  });
 
   return Array.from(options.values()).sort((left, right) =>
     left.label.localeCompare(right.label),

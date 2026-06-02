@@ -124,16 +124,10 @@ export const voidSupplierPayment = onCall(async (request) => {
   const paymentRef = db.doc(
     `businesses/${businessId}/accountsPayablePayments/${paymentId}`,
   );
-  const cashMovementsQuery = db
-    .collection(`businesses/${businessId}/cashMovements`)
-    .where('sourceId', '==', paymentId);
   let result = null;
 
   await db.runTransaction(async (transaction) => {
-    const [paymentSnap, cashMovementsSnap] = await Promise.all([
-      transaction.get(paymentRef),
-      transaction.get(cashMovementsQuery),
-    ]);
+    const paymentSnap = await transaction.get(paymentRef);
     if (!paymentSnap.exists) {
       throw new HttpsError('not-found', 'El pago a suplidor no existe.');
     }
@@ -184,16 +178,6 @@ export const voidSupplierPayment = onCall(async (request) => {
       return;
     }
 
-    const reconciledMovement = cashMovementsSnap.docs.find((docSnap) =>
-      isReconciledMovement(asRecord(docSnap.data())),
-    );
-    if (reconciledMovement) {
-      throw new HttpsError(
-        'failed-precondition',
-        'El pago tiene movimientos de caja/banco conciliados. Debe revertirse mediante un flujo de conciliación/refund controlado.',
-      );
-    }
-
     await assertAccountingPeriodOpenInTransaction({
       transaction,
       businessId,
@@ -205,6 +189,20 @@ export const voidSupplierPayment = onCall(async (request) => {
       createError: (message) =>
         new HttpsError('failed-precondition', message),
     });
+
+    const cashMovementsQuery = db
+      .collection(`businesses/${businessId}/cashMovements`)
+      .where('sourceId', '==', paymentId);
+    const cashMovementsSnap = await transaction.get(cashMovementsQuery);
+    const reconciledMovement = cashMovementsSnap.docs.find((docSnap) =>
+      isReconciledMovement(asRecord(docSnap.data())),
+    );
+    if (reconciledMovement) {
+      throw new HttpsError(
+        'failed-precondition',
+        'El pago tiene movimientos de caja/banco conciliados. Debe revertirse mediante un flujo de conciliación/refund controlado.',
+      );
+    }
 
     const paymentsQuery = db
       .collection(`businesses/${businessId}/accountsPayablePayments`)

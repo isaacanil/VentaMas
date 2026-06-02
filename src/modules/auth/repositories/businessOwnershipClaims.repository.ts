@@ -1,7 +1,5 @@
-import { httpsCallable } from 'firebase/functions';
-
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 export type CreateOwnershipClaimTokenResponse = {
   ok?: boolean;
@@ -31,15 +29,15 @@ type RedeemBusinessOwnershipClaimRequest = {
   sessionToken?: string;
 };
 
-const createBusinessOwnershipClaimTokenCallable = httpsCallable<
+const createBusinessOwnershipClaimTokenCallable = createFirebaseCallable<
   CreateOwnershipClaimTokenRequest,
   CreateOwnershipClaimTokenResponse
->(functions, 'createBusinessOwnershipClaimToken');
+>('createBusinessOwnershipClaimToken');
 
-const redeemBusinessOwnershipClaimCallable = httpsCallable<
+const redeemBusinessOwnershipClaimCallable = createFirebaseCallable<
   RedeemBusinessOwnershipClaimRequest,
   RedeemBusinessOwnershipClaimResponse
->(functions, 'redeemBusinessOwnershipClaimToken');
+>('redeemBusinessOwnershipClaimToken');
 
 export const createBusinessOwnershipClaimToken = async ({
   baseUrl,
@@ -57,7 +55,7 @@ export const createBusinessOwnershipClaimToken = async ({
     baseUrl,
   });
 
-  return response.data || {};
+  return response || {};
 };
 
 export const redeemBusinessOwnershipClaimToken = async (
@@ -71,7 +69,7 @@ export const redeemBusinessOwnershipClaimToken = async (
     sessionToken,
   });
 
-  return response.data || {};
+  return response || {};
 };
 
 const getRequiredSessionToken = (message: string) => {

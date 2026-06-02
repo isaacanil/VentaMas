@@ -1,6 +1,5 @@
-import { httpsCallable } from 'firebase/functions';
-
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
+import { createFirebaseCallableFor } from '@/firebase/functions/callable';
 
 import { getAiBusinessSeedingTargetFunctions } from './aiBusinessSeedingTargetFirebase';
 import {
@@ -50,7 +49,7 @@ export const fbAiBusinessSeedingAgentExecute = async ({
 }): Promise<ExecuteResponse> => {
   const currentEnvironmentId = getCurrentAiBusinessSeedingEnvironment().id;
   const environmentId = targetEnvironmentId || currentEnvironmentId;
-  const aiBusinessSeedingAgentExecuteCallable = httpsCallable<
+  const aiBusinessSeedingAgentExecuteCallable = createFirebaseCallableFor<
     ExecuteRequest,
     ExecuteResponse
   >(
@@ -58,6 +57,7 @@ export const fbAiBusinessSeedingAgentExecute = async ({
     'aiBusinessSeedingAgent',
     {
       timeout: AI_AGENT_CALLABLE_TIMEOUT_MS,
+      limitedUseAppCheckTokens: true,
     },
   );
   const { sessionToken } = getStoredSession();
@@ -73,5 +73,5 @@ export const fbAiBusinessSeedingAgentExecute = async ({
     ...(resolvedSessionToken ? { sessionToken: resolvedSessionToken } : {}),
   };
   const response = await aiBusinessSeedingAgentExecuteCallable(request);
-  return response?.data || {};
+  return response || {};
 };

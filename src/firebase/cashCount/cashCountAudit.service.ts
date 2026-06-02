@@ -11,11 +11,24 @@ import {
   where,
 } from 'firebase/firestore';
 import type { Unsubscribe } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
 
-import { db, functions } from '@/firebase/firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 export type FirestoreDoc = { id: string; data: Record<string, unknown> };
+
+type RunCashCountAuditPayload = {
+  allBusinesses: boolean;
+  businessId: string;
+  from: number | null;
+  threshold: number;
+  to: number | null;
+};
+
+const runCashCountAuditCallable = createFirebaseCallable<
+  RunCashCountAuditPayload,
+  unknown
+>('runCashCountAudit');
 
 export function listenCashCounts(params: {
   businessId: string;
@@ -146,15 +159,9 @@ export async function fetchAccountsReceivablePaymentsByCashierAndRange(params: {
   return snap.docs.map((d) => (d.data() || {}) as Record<string, unknown>);
 }
 
-export async function runCashCountAudit(params: {
-  businessId: string;
-  allBusinesses: boolean;
-  from: number | null;
-  to: number | null;
-  threshold: number;
-}): Promise<unknown> {
-  const callable = httpsCallable(functions, 'runCashCountAudit');
-  const { data } = await callable(params);
-  return data;
+export async function runCashCountAudit(
+  params: RunCashCountAuditPayload,
+): Promise<unknown> {
+  return runCashCountAuditCallable(params);
 }
 

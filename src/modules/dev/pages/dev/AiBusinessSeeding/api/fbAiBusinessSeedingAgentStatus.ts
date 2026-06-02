@@ -1,6 +1,4 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 import {
   AI_BUSINESS_SEEDING_OPERATIONS,
@@ -19,11 +17,12 @@ interface StatusResponse {
   metadata?: AgentRuntimeMetadata;
 }
 
-const aiBusinessSeedingAgentStatusCallable = httpsCallable<
+const aiBusinessSeedingAgentStatusCallable = createFirebaseCallable<
   StatusRequest,
   StatusResponse
->(functions, 'aiBusinessSeedingAgent', {
+>('aiBusinessSeedingAgent', {
   timeout: AI_AGENT_CALLABLE_TIMEOUT_MS,
+  limitedUseAppCheckTokens: true,
 });
 
 export const fbAiBusinessSeedingAgentStatus =
@@ -31,5 +30,5 @@ export const fbAiBusinessSeedingAgentStatus =
     const response = await aiBusinessSeedingAgentStatusCallable({
       operation: AI_BUSINESS_SEEDING_OPERATIONS.STATUS,
     });
-    return response?.data || {};
+    return response || {};
   };

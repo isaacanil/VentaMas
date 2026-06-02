@@ -6,11 +6,11 @@ import {
   query,
   where,
 } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
 import { useEffect, useMemo, useState } from 'react';
 
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { db, functions } from '@/firebase/firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 import type {
   HrEmployeePaymentRecord,
   HrEmployeePaymentStatus,
@@ -87,6 +87,31 @@ interface ManageHrPayrollPaymentArgs {
   transferReference?: string | null;
 }
 
+type ManageHrCommissionPeriodPayload = {
+  action: ManageHrCommissionPeriodAction;
+  businessId: string;
+  endDate?: string | null;
+  periodId?: string | null;
+  sessionToken?: string;
+  startDate?: string | null;
+};
+
+type ManageHrPayrollPaymentPayload = {
+  action: ManageHrPayrollPaymentAction;
+  amount?: number | string | null;
+  bankAccountId?: string | null;
+  businessId: string;
+  cashAccountId?: string | null;
+  cashCountId?: string | null;
+  checkNumber?: string | null;
+  paymentDate?: string | null;
+  paymentMethod?: HrPaymentMethod | null;
+  payrollLineId: string;
+  reference?: string | null;
+  sessionToken?: string;
+  transferReference?: string | null;
+};
+
 export interface ManageHrCommissionPeriodResponse {
   ok: boolean;
   reused?: boolean;
@@ -115,6 +140,16 @@ export interface ManageHrPayrollPaymentResponse {
   accountingEventId?: string | null;
   cashMovementIds: string[];
 }
+
+const manageHrCommissionPeriodCallable = createFirebaseCallable<
+  ManageHrCommissionPeriodPayload,
+  ManageHrCommissionPeriodResponse
+>('manageHrCommissionPeriod');
+
+const manageHrPayrollPaymentCallable = createFirebaseCallable<
+  ManageHrPayrollPaymentPayload,
+  ManageHrPayrollPaymentResponse
+>('manageHrPayrollPayment');
 
 const PERIOD_STATUS_VALUES = new Set<HrCommissionPeriodStatus>([
   'draft',
@@ -320,19 +355,7 @@ export const manageHrCommissionPeriod = async ({
   }
 
   const { sessionToken } = getStoredSession();
-  const callable = httpsCallable<
-    {
-      action: ManageHrCommissionPeriodAction;
-      businessId: string;
-      endDate?: string | null;
-      periodId?: string | null;
-      sessionToken?: string;
-      startDate?: string | null;
-    },
-    ManageHrCommissionPeriodResponse
-  >(functions, 'manageHrCommissionPeriod');
-
-  const result = await callable({
+  return manageHrCommissionPeriodCallable({
     action,
     businessId,
     endDate: toCallableDate(endDate),
@@ -340,8 +363,6 @@ export const manageHrCommissionPeriod = async ({
     startDate: toCallableDate(startDate),
     ...(sessionToken ? { sessionToken } : {}),
   });
-
-  return result.data;
 };
 
 export const recordHrPayrollPayment = async ({
@@ -363,26 +384,7 @@ export const recordHrPayrollPayment = async ({
   }
 
   const { sessionToken } = getStoredSession();
-  const callable = httpsCallable<
-    {
-      action: ManageHrPayrollPaymentAction;
-      amount?: number | string | null;
-      bankAccountId?: string | null;
-      businessId: string;
-      cashAccountId?: string | null;
-      cashCountId?: string | null;
-      checkNumber?: string | null;
-      paymentDate?: string | null;
-      paymentMethod?: HrPaymentMethod | null;
-      payrollLineId: string;
-      reference?: string | null;
-      sessionToken?: string;
-      transferReference?: string | null;
-    },
-    ManageHrPayrollPaymentResponse
-  >(functions, 'manageHrPayrollPayment');
-
-  const result = await callable({
+  return manageHrPayrollPaymentCallable({
     action,
     amount,
     bankAccountId: toCleanString(bankAccountId),
@@ -397,8 +399,6 @@ export const recordHrPayrollPayment = async ({
     transferReference: toCleanString(transferReference),
     ...(sessionToken ? { sessionToken } : {}),
   });
-
-  return result.data;
 };
 
 export const useHrCommissionPeriods = ({

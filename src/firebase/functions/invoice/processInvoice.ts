@@ -1,14 +1,15 @@
-import { httpsCallable, type HttpsCallableResult } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
-
-const callProcessInvoice = httpsCallable(functions, 'processInvoiceEndpoint');
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 interface ProcessInvoicePayload {
   message: string;
   timestamp: string;
   type: 'test-request';
 }
+
+const callProcessInvoice = createFirebaseCallable<
+  ProcessInvoicePayload,
+  unknown
+>('processInvoiceEndpoint');
 
 export async function testInvoiceFunction(
   inputData: string | null | undefined,
@@ -23,15 +24,13 @@ export async function testInvoiceFunction(
     };
 
     // Calling invoice processing function
-    const result = (await callProcessInvoice(
-      dataToSend,
-    )) as HttpsCallableResult<unknown>;
+    const result = await callProcessInvoice(dataToSend);
 
     // result.data contiene lo que tu función backend retornó
     console.info('Invoice function executed successfully');
 
     // Retornar los datos para mostrarlos en la UI
-    return result.data;
+    return result;
   } catch (error) {
     console.error('Error al llamar la función:', error);
     // Lanzar el error para que pueda ser manejado por el componente

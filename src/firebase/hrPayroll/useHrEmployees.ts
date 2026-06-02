@@ -1,11 +1,13 @@
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
 import { useEffect, useMemo, useState } from 'react';
 
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { db, functions } from '@/firebase/firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 import type {
   HrCommissionType,
+  HrEmployeeDocumentType,
+  HrEmployeeGender,
   HrEmployeeInput,
   HrEmployeePayType,
   HrEmployeeRecord,
@@ -34,6 +36,17 @@ interface ManageHrEmployeeResponse {
   employee?: HrEmployeeRecord | null;
 }
 
+type ManageHrEmployeePayload = {
+  businessId: string;
+  employee: HrEmployeeInput;
+  sessionToken?: string;
+};
+
+const manageHrEmployeeCallable = createFirebaseCallable<
+  ManageHrEmployeePayload,
+  ManageHrEmployeeResponse
+>('manageHrEmployee');
+
 const EMPTY_STATE: HrEmployeesState = {
   businessId: null,
   rows: [],
@@ -53,6 +66,13 @@ const PAY_TYPE_VALUES = new Set<HrEmployeePayType>([
   'commission_only',
   'mixed',
 ]);
+const DOCUMENT_TYPE_VALUES = new Set<HrEmployeeDocumentType>([
+  'cedula',
+  'passport',
+  'rnc',
+  'other',
+]);
+const GENDER_VALUES = new Set<HrEmployeeGender>(['male', 'female', 'other']);
 const PAYMENT_METHOD_VALUES = new Set<HrPaymentMethod>([
   'cash',
   'bank_transfer',
@@ -89,6 +109,14 @@ const normalizeEnum = <T extends string>(
   return normalized && allowedValues.has(normalized) ? normalized : fallback;
 };
 
+const normalizeOptionalEnum = <T extends string>(
+  value: unknown,
+  allowedValues: Set<T>,
+): T | null => {
+  const normalized = toCleanString(value)?.toLowerCase() as T | undefined;
+  return normalized && allowedValues.has(normalized) ? normalized : null;
+};
+
 const normalizeStringArray = (value: unknown): string[] =>
   Array.isArray(value)
     ? value
@@ -118,7 +146,13 @@ const normalizeHrEmployeeRecord = (
     fullName,
     legalName: toCleanString(data.legalName),
     displayName: toCleanString(data.displayName) ?? fullName,
+    documentType: normalizeEnum(
+      data.documentType,
+      DOCUMENT_TYPE_VALUES,
+      'cedula',
+    ),
     documentId: toCleanString(data.documentId),
+    gender: normalizeOptionalEnum(data.gender, GENDER_VALUES),
     email: toCleanString(data.email),
     phone: toCleanString(data.phone),
     address: toCleanString(data.address),
@@ -163,22 +197,11 @@ export const saveHrEmployee = async ({
   }
 
   const { sessionToken } = getStoredSession();
-  const callable = httpsCallable<
-    {
-      businessId: string;
-      employee: HrEmployeeInput;
-      sessionToken?: string;
-    },
-    ManageHrEmployeeResponse
-  >(functions, 'manageHrEmployee');
-
-  const result = await callable({
+  return manageHrEmployeeCallable({
     businessId,
     employee,
     ...(sessionToken ? { sessionToken } : {}),
   });
-
-  return result.data;
 };
 
 export const useHrEmployees = (businessId?: string | null) => {

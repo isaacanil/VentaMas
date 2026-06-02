@@ -13,7 +13,10 @@ describe('hrEmployees.service', () => {
     const employee = normalizeHrEmployeeInput({
       code: ' EMP-001 ',
       fullName: '  Ana Perez  ',
+      documentType: 'pasaporte',
       documentId: ' 001-1234567-8 ',
+      gender: 'Femenino',
+      phone: '809-123-4567',
       payType: 'mixed',
       baseSalaryAmount: '25000',
       commissionEnabled: true,
@@ -25,7 +28,10 @@ describe('hrEmployees.service', () => {
       employeeId: 'emp-001',
       code: 'EMP-001',
       fullName: 'Ana Perez',
+      documentType: 'passport',
       documentId: '001-1234567-8',
+      gender: 'female',
+      phone: '+18091234567',
       payType: 'mixed',
       baseSalaryAmount: 25000,
       commissionEnabled: true,
@@ -42,13 +48,16 @@ describe('hrEmployees.service', () => {
       id: 'cashier-1',
       code: 'CAJ-01',
       fullName: 'Caja Principal',
+      documentType: 'cedula',
       documentId: '40212345678',
+      phone: '+1 (829) 222-3333',
       payType: 'salary',
       baseSalaryAmount: 18000,
       paymentMethod: 'cash',
     });
 
     expect(employee.readyToPayStatus).toBe('ready');
+    expect(employee.phone).toBe('+18292223333');
     expect(employee.readyToPayIssues).toEqual([]);
   });
 
@@ -70,7 +79,9 @@ describe('hrEmployees.service', () => {
       code: 'EMP-1',
       fullName: 'Luis Mora',
       linkedUserId: 'user-1',
+      documentType: 'rnc',
       documentId: '00122233344',
+      gender: 'M',
       paymentMethod: 'cash',
       baseSalaryAmount: 10000,
     });
@@ -94,6 +105,9 @@ describe('hrEmployees.service', () => {
       id: 'employee-1',
       businessId: 'business-1',
       displayName: 'Luis Mora',
+      documentType: 'rnc',
+      documentId: '00122233344',
+      gender: 'male',
       roles: { employee: true },
       linkedUserIds: ['user-1'],
       profileRefs: { hrEmployeeId: 'employee-1' },
@@ -102,10 +116,14 @@ describe('hrEmployees.service', () => {
       id: 'employee-1',
       partyId: 'employee-1',
       linkedUserId: 'user-1',
+      documentType: 'rnc',
+      gender: 'male',
       readyToPayStatus: 'ready',
       partySnapshot: {
         displayName: 'Luis Mora',
+        documentType: 'rnc',
         documentId: '00122233344',
+        gender: 'male',
       },
     });
   });

@@ -1,7 +1,5 @@
-import { httpsCallable } from 'firebase/functions';
-
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 import type { BusinessInviteRedemptionResponse } from '../utils/businessInvite';
 
@@ -10,10 +8,10 @@ type RedeemBusinessInviteRequest = {
   sessionToken?: string;
 };
 
-const redeemBusinessInviteCallable = httpsCallable<
+const redeemBusinessInviteCallable = createFirebaseCallable<
   RedeemBusinessInviteRequest,
   BusinessInviteRedemptionResponse
->(functions, 'redeemBusinessInvite');
+>('redeemBusinessInvite');
 
 export const redeemBusinessInvite = async (
   code: string,
@@ -24,5 +22,5 @@ export const redeemBusinessInvite = async (
     ...(sessionToken ? { sessionToken } : {}),
   });
 
-  return response.data || {};
+  return response || {};
 };

@@ -21,7 +21,6 @@ import type {
 } from '@/features/cart/types';
 import { selectUser } from '@/features/auth/userSlice';
 import { useServiceCommissionCollaborators } from '@/firebase/commissions/useServiceCommissionCollaborators';
-import { useBusinessUsers } from '@/firebase/users/useBusinessUsers';
 import type {
   ServiceCommissionCollaboratorSnapshot,
   ServiceCommissionType,
@@ -65,12 +64,6 @@ import {
   TypeListBox,
   TypeSelect,
 } from './ServiceCommissionModal.styles';
-
-type BusinessUser = Record<string, unknown> & {
-  id?: string;
-  uid?: string;
-  number?: number;
-};
 
 interface ServiceCommissionModalProps {
   isOpen: boolean;
@@ -144,13 +137,9 @@ export const ServiceCommissionModal = ({
   const commissionSettings = normalizeServiceCommissionSettings(
     settings?.billing?.serviceCommissions,
   );
-  const { users, loading: usersLoading } = useBusinessUsers() as {
-    users: BusinessUser[];
-    loading: boolean;
-  };
   const { rows: collaborators, loading: collaboratorsLoading } =
     useServiceCommissionCollaborators(businessId);
-  const loading = usersLoading || collaboratorsLoading;
+  const loading = collaboratorsLoading;
   const currentCommission = product?.serviceCommission ?? null;
   const currentCollaborator = useMemo(
     () => buildCurrentCollaborator(currentCommission),
@@ -161,11 +150,10 @@ export const ServiceCommissionModal = ({
       withCurrentCollaboratorOption(
         buildServiceCommissionCollaboratorOptions({
           collaborators,
-          users,
         }),
         currentCollaborator,
       ),
-    [collaborators, currentCollaborator, users],
+    [collaborators, currentCollaborator],
   );
   const selectedKey =
     toCleanString(currentCommission?.collaboratorId) ??

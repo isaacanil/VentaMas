@@ -1,7 +1,5 @@
-import { httpsCallable } from 'firebase/functions';
-
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 type SeedBusinessUserInput = {
   name: string;
@@ -27,10 +25,10 @@ type SeedBusinessRequest = SeedBusinessInput & {
   sessionToken?: string | null;
 };
 
-const clientSeedBusinessWithUsersCallable = httpsCallable<
+const clientSeedBusinessWithUsersCallable = createFirebaseCallable<
   SeedBusinessRequest,
   SeedBusinessResponse
->(functions, 'clientSeedBusinessWithUsers');
+>('clientSeedBusinessWithUsers');
 
 export const fbSeedBusinessWithUsers = async ({
   business,
@@ -54,7 +52,7 @@ export const fbSeedBusinessWithUsers = async ({
       users,
       sessionToken,
     });
-    return response?.data || {};
+    return response || {};
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Error creando negocio y usuarios';

@@ -1,15 +1,17 @@
-import { Button, Space, Tag, Tooltip } from 'antd';
-import type { TableProps } from 'antd';
-
 import { EditOutlined, UserOutlined } from '@/constants/icons/antd';
+import { VmButton, VmTooltip } from '@/components/heroui';
 import {
   HrCellStack as CellStack,
+  HrInlineStack as InlineStack,
   HrMutedText as MutedText,
   HrPrimaryText as PrimaryText,
+  HrStatusTag as StatusTag,
+  type HrTableColumn,
 } from '@/modules/hrPayroll/components/HrPayrollPagePrimitives';
 import {
   cleanString as toCleanString,
   formatHrMoney as formatMoney,
+  HR_EMPLOYEE_DOCUMENT_TYPE_LABELS as DOCUMENT_TYPE_LABELS,
   HR_EMPLOYEE_PAY_TYPE_LABELS as PAY_TYPE_LABELS,
   HR_EMPLOYEE_STATUS_LABELS as STATUS_LABELS,
   HR_PAYMENT_METHOD_LABELS as PAYMENT_METHOD_LABELS,
@@ -24,31 +26,37 @@ interface EmployeeColumnsOptions {
 export const buildEmployeeColumns = ({
   usersById,
   onEdit,
-}: EmployeeColumnsOptions): TableProps<HrEmployeeRecord>['columns'] => [
+}: EmployeeColumnsOptions): HrTableColumn<HrEmployeeRecord>[] => [
   {
-    title: 'Empleado',
-    dataIndex: 'fullName',
+    title: 'Colaborador',
     key: 'employee',
     width: 260,
-    render: (_value, employee) => (
+    isRowHeader: true,
+    render: (employee) => (
       <CellStack>
         <PrimaryText>{employee.fullName}</PrimaryText>
         <MutedText>
           {employee.code}
-          {employee.documentId ? ` - ${employee.documentId}` : ''}
+          {employee.documentId
+            ? ` - ${
+                DOCUMENT_TYPE_LABELS[employee.documentType ?? 'cedula']
+              } ${employee.documentId}`
+            : ''}
         </MutedText>
       </CellStack>
     ),
   },
   {
     title: 'Usuario',
-    dataIndex: 'linkedUserId',
     key: 'linkedUserId',
     width: 180,
-    render: (linkedUserId) => {
-      const userId = toCleanString(linkedUserId);
+    render: (employee) => {
+      const userId = toCleanString(employee.linkedUserId);
       return userId ? (
-        <Tag icon={<UserOutlined />}>{usersById.get(userId) ?? userId}</Tag>
+        <StatusTag $tone="info">
+          <UserOutlined />
+          {usersById.get(userId) ?? userId}
+        </StatusTag>
       ) : (
         <MutedText>Sin usuario</MutedText>
       );
@@ -58,7 +66,7 @@ export const buildEmployeeColumns = ({
     title: 'Compensacion',
     key: 'compensation',
     width: 220,
-    render: (_value, employee) => (
+    render: (employee) => (
       <CellStack>
         <PrimaryText>{PAY_TYPE_LABELS[employee.payType]}</PrimaryText>
         <MutedText>
@@ -74,7 +82,7 @@ export const buildEmployeeColumns = ({
     title: 'Pago',
     key: 'payment',
     width: 220,
-    render: (_value, employee) => (
+    render: (employee) => (
       <CellStack>
         <PrimaryText>
           {PAYMENT_METHOD_LABELS[employee.paymentMethod]}
@@ -85,37 +93,46 @@ export const buildEmployeeColumns = ({
   },
   {
     title: 'Estado',
-    dataIndex: 'status',
     key: 'status',
     width: 160,
-    render: (_value, employee) => (
-      <Space size={4} direction="vertical">
-        <Tag color={employee.status === 'active' ? 'green' : 'default'}>
+    render: (employee) => (
+      <InlineStack>
+        <StatusTag $tone={employee.status === 'active' ? 'success' : 'default'}>
           {STATUS_LABELS[employee.status]}
-        </Tag>
+        </StatusTag>
         {employee.readyToPayStatus === 'ready' ? (
-          <Tag color="blue">Listo para pagar</Tag>
+          <StatusTag $tone="info">Listo para pagar</StatusTag>
         ) : (
-          <Tooltip title={employee.readyToPayIssues.join(' ')}>
-            <Tag color="orange">Revisar pago</Tag>
-          </Tooltip>
+          <VmTooltip>
+            <VmTooltip.Trigger>
+              <StatusTag $tone="warning">Revisar pago</StatusTag>
+            </VmTooltip.Trigger>
+            <VmTooltip.Content>
+              {employee.readyToPayIssues.join(' ')}
+            </VmTooltip.Content>
+          </VmTooltip>
         )}
-      </Space>
+      </InlineStack>
     ),
   },
   {
     title: '',
     key: 'actions',
     width: 72,
-    fixed: 'right',
-    render: (_value, employee) => (
-      <Tooltip title="Editar empleado">
-        <Button
-          aria-label="Editar empleado"
-          icon={<EditOutlined />}
-          onClick={() => onEdit(employee)}
-        />
-      </Tooltip>
+    align: 'right',
+    render: (employee) => (
+      <VmTooltip>
+        <VmTooltip.Trigger>
+          <VmButton
+            aria-label="Editar colaborador"
+            variant="secondary"
+            onPress={() => onEdit(employee)}
+          >
+            <EditOutlined />
+          </VmButton>
+        </VmTooltip.Trigger>
+        <VmTooltip.Content>Editar colaborador</VmTooltip.Content>
+      </VmTooltip>
     ),
   },
 ];

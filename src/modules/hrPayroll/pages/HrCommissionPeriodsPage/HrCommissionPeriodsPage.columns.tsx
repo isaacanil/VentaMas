@@ -1,24 +1,23 @@
-import { Button, Popconfirm, Space, Tag } from 'antd';
-import type { TableProps } from 'antd';
-
+import { VmAlertDialog, VmButton } from '@/components/heroui';
 import {
   CheckCircleOutlined,
   DollarOutlined,
   LockOutlined,
 } from '@/constants/icons/antd';
 import {
+  HrActionGroup as ActionGroup,
   HrAmountText as AmountText,
   HrCellStack as CellStack,
   HrMutedText as MutedText,
   HrPrimaryText as PrimaryText,
+  HrStatusTag as StatusTag,
+  type HrTableColumn,
 } from '@/modules/hrPayroll/components/HrPayrollPagePrimitives';
 import {
   formatHrDate as formatDate,
   formatHrMoney as formatMoney,
-  HR_COMMISSION_PERIOD_STATUS_COLORS as STATUS_COLORS,
   HR_COMMISSION_PERIOD_STATUS_LABELS as STATUS_LABELS,
   HR_PAYMENT_METHOD_LABELS as PAYMENT_METHOD_LABELS,
-  HR_PAYROLL_RUN_STATUS_COLORS as LINE_STATUS_COLORS,
   HR_PAYROLL_RUN_STATUS_LABELS as LINE_STATUS_LABELS,
 } from '@/modules/hrPayroll/utils/hrPayrollDisplay';
 import type {
@@ -28,6 +27,23 @@ import type {
   HrPayrollEmployeeLineRecord,
   HrPayrollRunStatus,
 } from '@/types/hrPayroll';
+
+const PERIOD_STATUS_TONES: Record<
+  HrCommissionPeriodStatus,
+  'default' | 'info' | 'success' | 'warning' | 'danger' | 'accent'
+> = {
+  draft: 'info',
+  closed: 'warning',
+  approved: 'success',
+  partially_paid: 'accent',
+  paid: 'success',
+  cancelled: 'default',
+};
+
+const LINE_STATUS_TONES: Record<
+  HrPayrollRunStatus,
+  'default' | 'info' | 'success' | 'warning' | 'danger' | 'accent'
+> = PERIOD_STATUS_TONES;
 
 interface PeriodColumnsOptions {
   actionKey: string | null;
@@ -40,13 +56,13 @@ interface PeriodColumnsOptions {
 export const buildPeriodColumns = ({
   actionKey,
   onAction,
-}: PeriodColumnsOptions): TableProps<HrCommissionPeriodRecord>['columns'] => [
+}: PeriodColumnsOptions): HrTableColumn<HrCommissionPeriodRecord>[] => [
   {
     title: 'Corte',
-    dataIndex: 'label',
     key: 'label',
     width: 260,
-    render: (_value, period) => (
+    isRowHeader: true,
+    render: (period) => (
       <CellStack>
         <PrimaryText>{period.label || period.periodKey}</PrimaryText>
         <MutedText>
@@ -57,34 +73,34 @@ export const buildPeriodColumns = ({
   },
   {
     title: 'Estado',
-    dataIndex: 'status',
     key: 'status',
     width: 120,
-    render: (status: HrCommissionPeriodStatus) => (
-      <Tag color={STATUS_COLORS[status]}>{STATUS_LABELS[status]}</Tag>
+    render: (period) => (
+      <StatusTag $tone={PERIOD_STATUS_TONES[period.status]}>
+        {STATUS_LABELS[period.status]}
+      </StatusTag>
     ),
   },
   {
     title: 'Colab.',
-    dataIndex: 'employeesCount',
     key: 'employeesCount',
     align: 'right',
     width: 90,
+    render: (period) => period.employeesCount,
   },
   {
     title: 'Comisiones',
-    dataIndex: 'entriesCount',
     key: 'entriesCount',
     align: 'right',
     width: 110,
+    render: (period) => period.entriesCount,
   },
   {
     title: 'Total',
-    dataIndex: 'totalCommissionAmount',
     key: 'totalCommissionAmount',
     align: 'right',
     width: 140,
-    render: (_value, period) => (
+    render: (period) => (
       <AmountText>
         {formatMoney(period.totalCommissionAmount, period.currency)}
       </AmountText>
@@ -95,36 +111,58 @@ export const buildPeriodColumns = ({
     key: 'actions',
     align: 'right',
     width: 190,
-    render: (_value, period) => (
-      <Space>
-        <Button
-          size="small"
-          icon={<LockOutlined />}
-          disabled={period.status !== 'draft'}
-          loading={actionKey === `close:${period.id}`}
-          onClick={() => onAction('close', period)}
+    render: (period) => (
+      <ActionGroup>
+        <VmButton
+          variant="secondary"
+          isDisabled={
+            period.status !== 'draft' || actionKey === `close:${period.id}`
+          }
+          onPress={() => onAction('close', period)}
         >
-          Cerrar
-        </Button>
-        <Popconfirm
-          title="Aprobar corte"
-          description="Se marcara la corrida como aprobada y se emitira el evento contable."
-          okText="Aprobar"
-          cancelText="Cancelar"
-          disabled={period.status !== 'closed'}
-          onConfirm={() => onAction('approve', period)}
-        >
-          <Button
-            size="small"
-            type="primary"
-            icon={<CheckCircleOutlined />}
-            disabled={period.status !== 'closed'}
-            loading={actionKey === `approve:${period.id}`}
+          <LockOutlined />
+          {actionKey === `close:${period.id}` ? 'Cerrando...' : 'Cerrar'}
+        </VmButton>
+        <VmAlertDialog>
+          <VmButton
+            variant="primary"
+            isDisabled={
+              period.status !== 'closed' ||
+              actionKey === `approve:${period.id}`
+            }
           >
-            Aprobar
-          </Button>
-        </Popconfirm>
-      </Space>
+            <CheckCircleOutlined />
+            {actionKey === `approve:${period.id}` ? 'Aprobando...' : 'Aprobar'}
+          </VmButton>
+          <VmAlertDialog.Backdrop>
+            <VmAlertDialog.Container>
+              <VmAlertDialog.Dialog>
+                <VmAlertDialog.Header>
+                  <VmAlertDialog.Heading>
+                    Aprobar corte
+                  </VmAlertDialog.Heading>
+                </VmAlertDialog.Header>
+                <VmAlertDialog.Body>
+                  Se marcara la corrida como aprobada y se emitira el evento
+                  contable.
+                </VmAlertDialog.Body>
+                <VmAlertDialog.Footer>
+                  <VmButton slot="close" variant="secondary">
+                    Cancelar
+                  </VmButton>
+                  <VmButton
+                    slot="close"
+                    variant="primary"
+                    onPress={() => onAction('approve', period)}
+                  >
+                    Aprobar
+                  </VmButton>
+                </VmAlertDialog.Footer>
+              </VmAlertDialog.Dialog>
+            </VmAlertDialog.Container>
+          </VmAlertDialog.Backdrop>
+        </VmAlertDialog>
+      </ActionGroup>
     ),
   },
 ];
@@ -137,11 +175,12 @@ interface LineColumnsOptions {
 export const buildLineColumns = ({
   paymentActionKey,
   onOpenPayment,
-}: LineColumnsOptions): TableProps<HrPayrollEmployeeLineRecord>['columns'] => [
+}: LineColumnsOptions): HrTableColumn<HrPayrollEmployeeLineRecord>[] => [
   {
     title: 'Colaborador',
     key: 'employee',
-    render: (_value, line) => (
+    isRowHeader: true,
+    render: (line) => (
       <CellStack>
         <PrimaryText>
           {line.employeeNameSnapshot || line.employeeCode || line.employeeId}
@@ -152,27 +191,27 @@ export const buildLineColumns = ({
   },
   {
     title: 'Entradas',
-    dataIndex: 'entriesCount',
     key: 'entriesCount',
     align: 'right',
     width: 100,
+    render: (line) => line.entriesCount,
   },
   {
     title: 'Estado',
-    dataIndex: 'status',
     key: 'status',
     width: 120,
-    render: (status: HrPayrollRunStatus) => (
-      <Tag color={LINE_STATUS_COLORS[status]}>{LINE_STATUS_LABELS[status]}</Tag>
+    render: (line) => (
+      <StatusTag $tone={LINE_STATUS_TONES[line.status]}>
+        {LINE_STATUS_LABELS[line.status]}
+      </StatusTag>
     ),
   },
   {
     title: 'Neto',
-    dataIndex: 'netAmount',
     key: 'netAmount',
     align: 'right',
     width: 140,
-    render: (_value, line) => (
+    render: (line) => (
       <AmountText>{formatMoney(line.netAmount, line.currency)}</AmountText>
     ),
   },
@@ -181,26 +220,27 @@ export const buildLineColumns = ({
     key: 'payment',
     align: 'right',
     width: 120,
-    render: (_value, line) => (
-      <Button
-        size="small"
-        type={line.status === 'paid' ? 'default' : 'primary'}
-        icon={<DollarOutlined />}
-        disabled={line.status !== 'approved'}
-        loading={paymentActionKey === `pay:${line.id}`}
-        onClick={() => onOpenPayment(line)}
+    render: (line) => (
+      <VmButton
+        variant={line.status === 'paid' ? 'secondary' : 'primary'}
+        isDisabled={
+          line.status !== 'approved' || paymentActionKey === `pay:${line.id}`
+        }
+        onPress={() => onOpenPayment(line)}
       >
+        <DollarOutlined />
         {line.status === 'paid' ? 'Pagado' : 'Pagar'}
-      </Button>
+      </VmButton>
     ),
   },
 ];
 
-export const paymentColumns: TableProps<HrEmployeePaymentRecord>['columns'] = [
+export const paymentColumns: HrTableColumn<HrEmployeePaymentRecord>[] = [
   {
     title: 'Pago',
     key: 'payment',
-    render: (_value, payment) => (
+    isRowHeader: true,
+    render: (payment) => (
       <CellStack>
         <PrimaryText>
           {payment.employeeNameSnapshot ||
@@ -216,10 +256,9 @@ export const paymentColumns: TableProps<HrEmployeePaymentRecord>['columns'] = [
   },
   {
     title: 'Referencia',
-    dataIndex: 'reference',
     key: 'reference',
     width: 160,
-    render: (_value, payment) => (
+    render: (payment) => (
       <MutedText>
         {payment.reference ||
           payment.transferReference ||
@@ -230,11 +269,10 @@ export const paymentColumns: TableProps<HrEmployeePaymentRecord>['columns'] = [
   },
   {
     title: 'Monto',
-    dataIndex: 'amount',
     key: 'amount',
     align: 'right',
     width: 130,
-    render: (_value, payment) => (
+    render: (payment) => (
       <AmountText>{formatMoney(payment.amount, payment.currency)}</AmountText>
     ),
   },
