@@ -1,22 +1,6 @@
-import { useState, useEffect } from 'react';
+import useViewportWidth from '@/hooks/windows/useViewportWidth';
 
 export function useWindowWidth(width = 800): boolean {
-  const [isWindowWide, setIsWindowWide] = useState<boolean>(() =>
-    typeof window !== 'undefined' ? window.innerWidth > width : true,
-  );
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const handleResize = () => {
-      setIsWindowWide(window.innerWidth > width);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [width]);
-
-  return isWindowWide;
+  const viewportWidth = useViewportWidth();
+  return viewportWidth === 0 ? true : viewportWidth > width;
 }

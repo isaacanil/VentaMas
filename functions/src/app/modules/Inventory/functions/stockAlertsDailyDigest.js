@@ -69,6 +69,23 @@ function val(paramDef, envName, def) {
   return def;
 }
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function sanitizeMailHeader(value) {
+  return String(value ?? '').replace(/[\r\n]+/g, ' ').trim();
+}
+
+function renderStockAlertRow(row) {
+  return `<tr><td>${escapeHtml(row.productName)}</td><td>${escapeHtml(row.batchNo || '-')}</td><td>${escapeHtml(row.exp || '-')}</td><td>${escapeHtml(row.location || '-')}</td><td style="text-align:right">${escapeHtml(row.qty)}</td></tr>`;
+}
+
 // Importante: para evitar warnings de "param.value() invoked during deployment", pasamos
 // directamente los objetos Param (defineString) en la configuración del schedule.
 // El consumo de .value() se hace dentro del handler para el resto de flags/valores.
@@ -177,6 +194,7 @@ export const stockAlertsDailyDigest = onSchedule(
       const data = bizDoc.data() || {};
       const businessName =
         data?.business?.name || data?.name || data?.displayName || bid;
+      const safeBusinessName = sanitizeMailHeader(businessName) || bid;
       if (orderField === 'business.createdAt') {
         const bizCreatedAt = data?.business?.createdAt;
         // Permitimos continuar aunque no tenga (solo contamos para diagnóstico), pero podrías elegir saltarlo totalmente:
@@ -330,7 +348,7 @@ export const stockAlertsDailyDigest = onSchedule(
           lowCount: lowList.length,
         });
 
-      const subjectBase = `[Stock Crítico] ${businessName}`;
+      const subjectBase = `[Stock Crítico] ${safeBusinessName}`;
       // 2) Productos estrictos + tracking, solo críticos (qty <= critical), por ubicación/lote/expiración
       /* eliminado: definición antigua buildStrictCriticalRows() que devolvía HTML */
       /*
@@ -1018,25 +1036,19 @@ export const stockAlertsDailyDigest = onSchedule(
 
       const subject = `${subjectBase} - ${strictRows.length} items`;
       const tr = strictRows
-        .map(
-          (r) =>
-            `<tr><td>${r.productName}</td><td>${r.batchNo || '-'}</td><td>${r.exp || '-'}</td><td>${r.location || '-'}</td><td style="text-align:right">${r.qty}</td></tr>`,
-        )
+        .map((r) => renderStockAlertRow(r))
         .join('');
       // Sección adicional: próximos a vencer (<= 3 meses)
       const expRows = await buildExpiringSoonRows();
       const expTr = (expRows || [])
-        .map(
-          (r) =>
-            `<tr><td>${r.productName}</td><td>${r.batchNo || '-'}</td><td>${r.exp || '-'}</td><td>${r.location || '-'}</td><td style="text-align:right">${r.qty}</td></tr>`,
-        )
+        .map((r) => renderStockAlertRow(r))
         .join('');
       const expSection =
         expRows && expRows.length
           ? `\n      <h3 style="margin:16px 0 8px">Proximos a vencer (<= 3 meses)</h3>\n      <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:Arial, sans-serif;font-size:13px;">\n        <thead>\n          <tr style="background:#f2f2f2"><th>Producto</th><th>Lote</th><th>Vencimiento</th><th>Ubicacion</th><th>Cantidad</th></tr>\n        </thead>\n        <tbody>${expTr}</tbody>\n      </table>`
           : '\n      <h3 style="margin:16px 0 8px">Proximos a vencer (<= 3 meses)</h3>\n      <p style="font-size:13px;color:#555">No hay productos con vencimiento dentro de los proximos 90 dias.</p>';
-      const html = `\n      <h2>Stock crítico (estricto) — ${businessName}</h2>\n      <p>Umbral crítico: ${critical}</p>\n      <p><a href="${link}" target="_blank" rel="noopener">Descargar Excel</a></p>\n      <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:Arial, sans-serif;font-size:13px;">\n        <thead>\n          <tr style="background:#f2f2f2"><th>Producto</th><th>Lote</th><th>Vencimiento</th><th>Ubicación</th><th>Cantidad</th></tr>\n        </thead>\n        <tbody>${tr}</tbody>\n      </table>\n      <p style="font-size:11px;color:#555">Generado: ${new Date().toLocaleString('es-DO', { hour12: false })}</p>\n    `;
-      const text = `Stock crítico (estricto) — ${businessName}\\nItems: ${strictRows.length}`;
+      const html = `\n      <h2>Stock crítico (estricto) — ${escapeHtml(safeBusinessName)}</h2>\n      <p>Umbral crítico: ${escapeHtml(critical)}</p>\n      <p><a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">Descargar Excel</a></p>\n      <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:Arial, sans-serif;font-size:13px;">\n        <thead>\n          <tr style="background:#f2f2f2"><th>Producto</th><th>Lote</th><th>Vencimiento</th><th>Ubicación</th><th>Cantidad</th></tr>\n        </thead>\n        <tbody>${tr}</tbody>\n      </table>\n      <p style="font-size:11px;color:#555">Generado: ${escapeHtml(new Date().toLocaleString('es-DO', { hour12: false }))}</p>\n    `;
+      const text = `Stock crítico (estricto) — ${safeBusinessName}\\nItems: ${strictRows.length}`;
 
       try {
         if (dryRun) {

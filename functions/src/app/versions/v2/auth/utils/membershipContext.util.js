@@ -9,6 +9,7 @@ export const INACTIVE_MEMBERSHIP_STATUSES = new Set([
   'inactive',
   'suspended',
   'revoked',
+  'disabled',
 ]);
 
 const toArray = (value) => (Array.isArray(value) ? value : []);
@@ -34,10 +35,7 @@ const normalizeStatus = (rawStatus, rawActive) => {
 const normalizeMembershipRole = (value, fallback = ROLE.CASHIER) =>
   normalizeRole(value || fallback) || fallback;
 
-export const normalizeMembershipEntries = (
-  userData,
-  options = {},
-) => {
+export const normalizeMembershipEntries = (userData, options = {}) => {
   const { includeBusinessName = false } = options;
   const root = asRecord(userData);
   const rootAccessControl = toArray(root.accessControl);
@@ -45,10 +43,7 @@ export const normalizeMembershipEntries = (
     ? []
     : toArray(root.memberships);
 
-  const rawEntries = [
-    ...rootAccessControl,
-    ...rootMembershipsFallback,
-  ];
+  const rawEntries = [...rootAccessControl, ...rootMembershipsFallback];
 
   const normalized = rawEntries
     .map((rawEntry) => {

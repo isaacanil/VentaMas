@@ -1,11 +1,12 @@
 import { m, type Variants } from 'framer-motion';
-import React from 'react';
+import React, { useId, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectCurrentUserNotification } from '@/features/UserNotification/UserNotificationSlice';
 import { Button, ButtonGroup } from '@/components/ui/Button/Button';
 import { FormattedValue } from '@/components/ui/FormattedValue/FormattedValue';
+import { useModalFocusTrap } from '@/hooks/useModalFocusTrap';
 
 type AlertDialogProps = {
   onSubmit?: () => void;
@@ -23,6 +24,14 @@ export const AlertDialog = ({ onSubmit, submitBtnName }: AlertDialogProps) => {
     selectCurrentUserNotification,
   ) as UserNotificationState;
   const { isOpen, title, description } = confirmation;
+  const containerRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const descriptionId = useId();
+
+  useModalFocusTrap({
+    open: isOpen,
+    containerRef,
+  });
 
   const BackdropVariants: Variants = {
     hidden: {
@@ -57,14 +66,20 @@ export const AlertDialog = ({ onSubmit, submitBtnName }: AlertDialogProps) => {
         animate={isOpen ? 'visible' : 'hidden'}
       >
         <Container
+          ref={containerRef}
           variants={ContainerVariants}
           initial={'hidden'}
           animate={isOpen ? 'visible' : 'hidden'}
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          aria-describedby={descriptionId}
+          tabIndex={-1}
         >
-          <Header>
+          <Header id={titleId}>
             <FormattedValue type={'title'} value={title} />
           </Header>
-          <Body>
+          <Body id={descriptionId}>
             <FormattedValue type={'paragraph'} value={description} />
           </Body>
           <Footer>
@@ -87,12 +102,12 @@ const Backdrop = styled(m.div)`
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 10000;
+  z-index: 1300;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100vw;
-  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
   backdrop-filter: blur(5px) brightness(0.5) saturate(100%) contrast(100%);
 `;
 const Container = styled(m.div)`

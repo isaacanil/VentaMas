@@ -7,12 +7,16 @@ export const updateStockOnInvoiceCreate = onDocumentCreated(
   { document: 'businesses/{bid}/invoices/{iid}', region: 'us-central1' },
   async (event) => {
     const invoiceSnap = event.data;
-    logger.log('[updateStockOnInvoiceCreate] invoiceSnap', event);
     if (!invoiceSnap) return null;
 
     const invoice = invoiceSnap?.data();
-    logger.log('[updateStockOnInvoiceCreate] invoice', invoice);
     const { bid: businessID } = event.params;
+    logger.log('[updateStockOnInvoiceCreate] invoice received', {
+      businessID,
+      invoiceId: event.params?.iid,
+      hasInvoice: Boolean(invoice),
+      stockDone: Boolean(invoice?.stockDone),
+    });
 
     if (!invoice || invoice?.stockDone) return null;
 

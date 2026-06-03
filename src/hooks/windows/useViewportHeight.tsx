@@ -1,42 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
+
+const getServerSnapshot = () => 0;
 
 export const useViewportHeight = () => {
-  const [viewportHeight, setViewportHeight] = useState<number>(() => {
-    if (typeof window !== 'undefined') {
-      return window.innerHeight;
+  const subscribe = useCallback((onStoreChange: () => void) => {
+    if (typeof window === 'undefined') {
+      return () => {};
     }
-    return 0;
-  });
 
-  useEffect(() => {
-    const updateHeight = () => {
-      // Usar la altura real del viewport
-      const height = window.innerHeight;
-      setViewportHeight(height);
-
-      // También actualizar la variable CSS custom
-      document.documentElement.style.setProperty(
-        '--viewport-height',
-        `${height}px`,
-      );
-    };
-
-    // Actualizar inmediatamente
-    updateHeight();
-
-    // Escuchar cambios en el viewport
-    window.addEventListener('resize', updateHeight);
-    window.addEventListener('orientationchange', updateHeight);
-
-    // Para iOS Safari que cambia la altura cuando se oculta/muestra la barra
-    window.addEventListener('scroll', updateHeight, { passive: true });
+    window.addEventListener('resize', onStoreChange);
+    window.addEventListener('orientationchange', onStoreChange);
 
     return () => {
-      window.removeEventListener('resize', updateHeight);
-      window.removeEventListener('orientationchange', updateHeight);
-      window.removeEventListener('scroll', updateHeight);
+      window.removeEventListener('resize', onStoreChange);
+      window.removeEventListener('orientationchange', onStoreChange);
     };
   }, []);
 
-  return viewportHeight;
+  const getSnapshot = useCallback(() => {
+    if (typeof window === 'undefined') {
+      return 0;
+    }
+
+    return window.visualViewport?.height ?? window.innerHeight;
+  }, []);
+
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 };

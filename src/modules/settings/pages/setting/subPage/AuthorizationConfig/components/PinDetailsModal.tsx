@@ -105,8 +105,9 @@ export const PinDetailsModal = ({
   };
 
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open('', '_blank', 'noopener,noreferrer');
     if (!printWindow) return;
+    printWindow.opener = null;
     printWindow.document.write(
       buildPinDetailsPrintContent({
         pinEntries,

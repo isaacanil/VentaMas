@@ -1,32 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import type { SalesRecord } from '../../../utils';
 import { toNumber } from '../../../utils';
 import { LazyBar } from '@/components/charts/LazyCharts';
 import styled from 'styled-components';
 
 import Typography from '@/components/ui/Typografy/Typografy';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 // Hook para detectar tamaño de pantalla
-const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return window.innerWidth < 768;
-  });
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const checkIsMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener('resize', checkIsMobile);
-
-    return () => window.removeEventListener('resize', checkIsMobile);
-  }, []);
-
-  return isMobile;
-};
-
 const translatePaymentMethod = (method: string) => {
   switch (method) {
     case 'card':
@@ -98,7 +79,7 @@ const accumulatePaymentMethodData = (sales: SalesRecord[]) => {
 };
 
 export const PaymentMethodBarChart = ({ sales }: { sales: SalesRecord[] }) => {
-  const isMobile = useIsMobile();
+  const isMobile = useMediaQuery('(max-width: 767px)');
   const normalizedSales = useMemo(
     () => (Array.isArray(sales) ? sales : []),
     [sales],

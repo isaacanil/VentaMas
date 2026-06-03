@@ -21,30 +21,42 @@ service cloud.firestore {
       return isSignedIn() && exists(currentUserPath());
     }
 
+    function currentUserIsActive() {
+      return currentUserExists()
+        && currentUserDoc().data.get('active', true) != false
+        && !(currentUserDoc().data.get('status', 'active') in [
+          'inactive',
+          'suspended',
+          'revoked',
+          'disabled',
+          'blocked'
+        ]);
+    }
+
     function currentUserRole() {
-      return currentUserDoc().data.role != null
-        ? currentUserDoc().data.role
+      return currentUserDoc().data.get('role', null) != null
+        ? currentUserDoc().data.get('role', null)
         : (
-          currentUserDoc().data.activeRole != null
-            ? currentUserDoc().data.activeRole
+          currentUserDoc().data.get('activeRole', null) != null
+            ? currentUserDoc().data.get('activeRole', null)
             : (
-              currentUserDoc().data.user.role != null
-                ? currentUserDoc().data.user.role
-                : currentUserDoc().data.user.activeRole
+              currentUserDoc().data.get('user', {}).get('role', null) != null
+                ? currentUserDoc().data.get('user', {}).get('role', null)
+                : currentUserDoc().data.get('user', {}).get('activeRole', null)
             )
         );
     }
 
     function isPlatformDev() {
-      return currentUserExists()
+      return currentUserIsActive()
         && (
-          currentUserDoc().data.platformRoles.dev == true
-          || currentUserDoc().data.user.platformRoles.dev == true
+          currentUserDoc().data.get('platformRoles', {}).get('dev', false) == true
+          || currentUserDoc().data.get('user', {}).get('platformRoles', {}).get('dev', false) == true
         );
     }
 
     function hasGlobalRole() {
-      return currentUserExists() && (
+      return currentUserIsActive() && (
         isPlatformDev()
         || currentUserRole() in ['dev']
       );
@@ -62,29 +74,97 @@ service cloud.firestore {
       return get(memberPath(businessId));
     }
 
+    function businessPath(businessId) {
+      return /databases/$(database)/documents/businesses/$(businessId);
+    }
+
+    function businessDoc(businessId) {
+      return get(businessPath(businessId));
+    }
+
+    function businessStatus(businessId) {
+      return businessDoc(businessId).data.get('status', null) != null
+        ? businessDoc(businessId).data.get('status', null)
+        : (
+          businessDoc(businessId).data.get('accessStatus', null) != null
+            ? businessDoc(businessId).data.get('accessStatus', null)
+            : (
+              businessDoc(businessId).data.get('business', {}).get('status', null) != null
+                ? businessDoc(businessId).data.get('business', {}).get('status', null)
+                : (
+                  businessDoc(businessId).data.get('business', {}).get('accessStatus', null) != null
+                    ? businessDoc(businessId).data.get('business', {}).get('accessStatus', null)
+                    : 'active'
+                )
+            )
+        );
+    }
+
+    function businessAllowsRead(businessId) {
+      return exists(businessPath(businessId))
+        && !(businessStatus(businessId) in [
+          'inactive',
+          'suspended',
+          'offboarded',
+          'closed',
+          'disabled',
+          'blocked'
+        ]);
+    }
+
+    function businessAllowsWrite(businessId) {
+      return businessAllowsRead(businessId)
+        && !(businessStatus(businessId) in ['read_only', 'readonly']);
+    }
+
     function hasCanonicalBusinessAccess(businessId) {
       return exists(memberPath(businessId))
-        && !(memberDoc(businessId).data.status in ['inactive', 'suspended', 'revoked'])
+        && !(memberDoc(businessId).data.status in [
+          'inactive',
+          'suspended',
+          'revoked',
+          'disabled'
+        ])
         && memberDoc(businessId).data.active != false;
     }
 
     function hasLegacyBusinessAccess(businessId) {
-      return currentUserExists()
+      return currentUserIsActive()
+        && !exists(memberPath(businessId))
         && (
-          currentUserDoc().data.activeBusinessId == businessId
-          || currentUserDoc().data.businessID == businessId
-          || currentUserDoc().data.businessId == businessId
-          || currentUserDoc().data.defaultBusinessId == businessId
-          || currentUserDoc().data.lastSelectedBusinessId == businessId
+          currentUserDoc().data.get('activeBusinessId', null) == businessId
+          || currentUserDoc().data.get('businessID', null) == businessId
+          || currentUserDoc().data.get('businessId', null) == businessId
+          || currentUserDoc().data.get('defaultBusinessId', null) == businessId
+          || currentUserDoc().data.get('lastSelectedBusinessId', null) == businessId
         );
     }
 
     function hasBusinessAccess(businessId) {
-      return isSignedIn()
+      return currentUserIsActive()
         && (
           hasGlobalRole()
-          || hasCanonicalBusinessAccess(businessId)
-          || hasLegacyBusinessAccess(businessId)
+          || (
+            businessAllowsRead(businessId)
+            && (
+              hasCanonicalBusinessAccess(businessId)
+              || hasLegacyBusinessAccess(businessId)
+            )
+          )
+        );
+    }
+
+    function hasBusinessWriteAccess(businessId) {
+      return currentUserIsActive()
+        && (
+          hasGlobalRole()
+          || (
+            businessAllowsWrite(businessId)
+            && (
+              hasCanonicalBusinessAccess(businessId)
+              || hasLegacyBusinessAccess(businessId)
+            )
+          )
         );
     }
 
@@ -103,6 +183,11 @@ service cloud.firestore {
         && currentBusinessRole(businessId) in roles;
     }
 
+    function hasBusinessWriteRole(businessId, roles) {
+      return hasBusinessWriteAccess(businessId)
+        && currentBusinessRole(businessId) in roles;
+    }
+
     function hasAccountingReadAccess(businessId) {
       return hasBusinessRole(businessId, [
         'owner',
@@ -116,7 +201,7 @@ service cloud.firestore {
     }
 
     function hasFinanceConfigAccess(businessId) {
-      return hasBusinessRole(businessId, [
+      return hasBusinessWriteRole(businessId, [
         'owner',
         'admin',
         'accountant',
@@ -126,7 +211,7 @@ service cloud.firestore {
     }
 
     function hasTreasuryConfigAccess(businessId) {
-      return hasBusinessRole(businessId, [
+      return hasBusinessWriteRole(businessId, [
         'owner',
         'admin',
         'accountant',
@@ -275,28 +360,30 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if isSignedIn();
+      allow read: if currentUserIsActive();
       allow create: if isSelf(userId) && isSelfProfileCreate();
-      allow update: if isSelf(userId) && isSelfProfileUpdate();
+      allow update: if currentUserIsActive() && isSelf(userId) && isSelfProfileUpdate();
       allow delete: if false;
 
       match /{document=**} {
-        allow read, write: if isSelf(userId) || hasGlobalRole();
+        allow read, write: if (
+          currentUserIsActive() && isSelf(userId)
+        ) || hasGlobalRole();
       }
     }
 
     match /app/{document=**} {
-      allow read: if isSignedIn();
+      allow read: if currentUserIsActive();
       allow write: if hasGlobalRole();
     }
 
     match /changelogs/{document=**} {
-      allow read: if isSignedIn();
+      allow read: if currentUserIsActive();
       allow write: if hasGlobalRole();
     }
 
     match /errors/{document=**} {
-      allow create: if isSignedIn();
+      allow create: if currentUserIsActive();
       allow read, update, delete: if hasGlobalRole();
     }
 
@@ -305,13 +392,14 @@ service cloud.firestore {
     }
 
     match /rncData/{document=**} {
-      allow read: if isSignedIn();
+      allow read: if currentUserIsActive();
       allow write: if hasGlobalRole();
     }
 
     match /businesses/{businessId} {
-      allow read, update: if hasBusinessAccess(businessId);
-      allow create: if isSignedIn();
+      allow read: if hasBusinessAccess(businessId);
+      allow update: if hasBusinessWriteAccess(businessId);
+      allow create: if currentUserIsActive();
       allow delete: if false;
     }
 
@@ -420,14 +508,14 @@ service cloud.firestore {
       allow read: if hasBusinessAccess(businessId);
       // Creación directa solo queda abierta para borradores sin huella
       // fiscal/contable. La emisión/finalización pasa por createInvoiceV2.
-      allow create: if hasBusinessAccess(businessId)
+      allow create: if hasBusinessWriteAccess(businessId)
         && isSafeInvoiceDraftCreate(request.resource.data);
-      allow update: if hasBusinessAccess(businessId)
+      allow update: if hasBusinessWriteAccess(businessId)
         && isDraftFinancialDocument(resource.data)
         && isDraftFinancialDocument(request.resource.data)
         && !isLockedInvoiceDocument(resource.data)
         && !isLockedInvoiceDocument(request.resource.data);
-      allow delete: if hasBusinessAccess(businessId)
+      allow delete: if hasBusinessWriteAccess(businessId)
         && isDraftFinancialDocument(resource.data)
         && !isLockedInvoiceDocument(resource.data);
 
@@ -607,89 +695,106 @@ service cloud.firestore {
 
     match /businesses/{businessId}/settings/{settingId} {
       allow read: if hasBusinessAccess(businessId);
-      allow create, update: if hasBusinessAccess(businessId)
+      allow create, update: if hasBusinessWriteAccess(businessId)
         && !(settingId in ['accounting']);
       allow delete: if false;
     }
 
     match /businesses/{businessId}/counters/{counterId} {
-      allow read, create, update: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update: if hasBusinessWriteAccess(businessId);
       allow delete: if false;
     }
 
     match /businesses/{businessId}/products/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasBusinessWriteAccess(businessId);
     }
 
     match /businesses/{businessId}/productsImages/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasBusinessWriteAccess(businessId);
     }
 
     match /businesses/{businessId}/clients/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasBusinessWriteAccess(businessId);
     }
 
     match /businesses/{businessId}/providers/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasBusinessWriteAccess(businessId);
     }
 
     match /businesses/{businessId}/warehouses/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasBusinessWriteAccess(businessId);
     }
 
     match /businesses/{businessId}/warehouseStructure/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasBusinessWriteAccess(businessId);
     }
 
     match /businesses/{businessId}/rows/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasBusinessWriteAccess(businessId);
     }
 
     match /businesses/{businessId}/shelves/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasBusinessWriteAccess(businessId);
     }
 
     match /businesses/{businessId}/segments/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasBusinessWriteAccess(businessId);
     }
 
     match /businesses/{businessId}/batches/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasBusinessWriteAccess(businessId);
     }
 
     match /businesses/{businessId}/productsStock/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasBusinessWriteAccess(businessId);
     }
 
     match /businesses/{businessId}/movements/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasBusinessWriteAccess(businessId);
     }
 
     match /businesses/{businessId}/inventorySessions/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasBusinessWriteAccess(businessId);
     }
 
     match /businesses/{businessId}/backOrders/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasBusinessWriteAccess(businessId);
     }
 
     match /businesses/{businessId}/categories/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasBusinessWriteAccess(businessId);
     }
 
     match /businesses/{businessId}/orders/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasBusinessWriteAccess(businessId);
     }
 
     match /businesses/{businessId}/purchases/{purchaseId} {
       allow read: if hasBusinessAccess(businessId);
-      allow create: if hasBusinessAccess(businessId)
+      allow create: if hasBusinessWriteAccess(businessId)
         && isMutablePurchaseSource(request.resource.data)
         && !isLockedPurchaseDocument(request.resource.data);
-      allow update: if hasBusinessAccess(businessId)
+      allow update: if hasBusinessWriteAccess(businessId)
         && isMutablePurchaseSource(resource.data)
         && !isLockedPurchaseDocument(resource.data);
-      allow delete: if hasBusinessAccess(businessId)
+      allow delete: if hasBusinessWriteAccess(businessId)
         && isDeletablePurchaseSource(resource.data)
         && !isLockedPurchaseDocument(resource.data);
 
@@ -700,7 +805,8 @@ service cloud.firestore {
     }
 
     match /businesses/{businessId}/expenses/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasBusinessWriteAccess(businessId);
     }
 
     match /businesses/{businessId}/vendorBills/{vendorBillId} {
@@ -709,11 +815,13 @@ service cloud.firestore {
     }
 
     match /businesses/{businessId}/doctors/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasBusinessWriteAccess(businessId);
     }
 
     match /businesses/{businessId}/userPermissions/{document=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasBusinessWriteAccess(businessId);
     }
 
     match /businesses/{businessId}/{document=**} {

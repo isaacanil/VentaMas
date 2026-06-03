@@ -1,32 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import type { SalesRecord } from '../../../utils';
 import { LazyBar } from '@/components/charts/LazyCharts';
 import styled from 'styled-components';
 
 import Typography from '@/components/ui/Typografy/Typografy';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
-// Hook para detectar tamaño de pantalla
-const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return window.innerWidth < 768;
-  });
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const checkIsMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener('resize', checkIsMobile);
-
-    return () => window.removeEventListener('resize', checkIsMobile);
-  }, []);
-
-  return isMobile;
-};
-
-// Función para crear opciones del gráfico dinámicamente
 const createChartOptions = (isMobile: boolean) => ({
   responsive: true,
   maintainAspectRatio: false,
@@ -35,7 +14,7 @@ const createChartOptions = (isMobile: boolean) => ({
       beginAtZero: true,
       title: {
         display: !isMobile,
-        text: 'Número de Ventas',
+        text: 'Numero de Ventas',
       },
       ticks: {
         font: {
@@ -80,7 +59,7 @@ const accumulatePurchaseTypeData = (sales: SalesRecord[]) => {
 };
 
 export const PurchaseTypeBarChart = ({ sales }: { sales: SalesRecord[] }) => {
-  const isMobile = useIsMobile();
+  const isMobile = useMediaQuery('(max-width: 767px)');
   const normalizedSales = useMemo(
     () => (Array.isArray(sales) ? sales : []),
     [sales],
@@ -99,7 +78,7 @@ export const PurchaseTypeBarChart = ({ sales }: { sales: SalesRecord[] }) => {
       labels,
       datasets: [
         {
-          label: 'Número de Ventas',
+          label: 'Numero de Ventas',
           data: dataTotals,
           backgroundColor: 'rgba(255, 99, 132, 0.2)',
           borderColor: 'rgba(255, 99, 132, 1)',
@@ -167,4 +146,3 @@ const ChartContainer = styled.div`
     overflow-x: auto;
   }
 `;
-

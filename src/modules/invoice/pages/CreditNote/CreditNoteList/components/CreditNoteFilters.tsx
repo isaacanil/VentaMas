@@ -1,9 +1,10 @@
 import { FilterOutlined } from '@/constants/icons/antd';
 import { Button, Drawer } from 'antd';
 import { DateTime } from 'luxon';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { useFbGetClientsOnOpen } from '@/firebase/client/useFbGetClientsOnOpen';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 import { CreditNoteFiltersContent } from './CreditNoteFilters/CreditNoteFiltersContent';
 import { MobileContainer } from './CreditNoteFilters/styles';
@@ -25,21 +26,11 @@ export const CreditNoteFilters = ({
   const { clients: fetchedClients, loading: clientsLoading } =
     useFbGetClientsOnOpen({
       isOpen: true,
-    });
+  });
   const clients = fetchedClients.map((c) => c.client) as ClientOption[];
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [draftRange, setDraftRange] = useState<DateTime | null>(null);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const handleDateRangeChange = (dates: DatePickerRangeValue) => {
     if (!dates || !dates[0]) {

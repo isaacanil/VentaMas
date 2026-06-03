@@ -5,8 +5,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Dropdown, type MenuProps } from 'antd';
-import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import type { ToolbarComponentProps } from '@/modules/navigation/components/MenuApp/GlobalMenu/types';
 
 const LeftContainer = styled.div`
@@ -57,18 +57,7 @@ export const ProductStudioToolbar = ({
   onToggleNavigation,
   onToggleSummary,
 }: ProductStudioToolbarProps) => {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 1200);
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  const isMobile = useMediaQuery('(max-width: 1200px)');
 
   if (side === 'left') {
     return <LeftContainer />;
@@ -101,7 +90,7 @@ export const ProductStudioToolbar = ({
           trigger={['click']}
           placement="bottomRight"
         >
-          <DropdownButton>
+          <DropdownButton type="button">
             <FontAwesomeIcon icon={faEllipsisV} />
           </DropdownButton>
         </Dropdown>

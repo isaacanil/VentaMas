@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { LazyBar } from '@/components/charts/LazyCharts';
 import styled from 'styled-components';
 import type { SalesPeriodType, SalesRecord } from '../../../utils';
@@ -14,6 +14,7 @@ import {
 
 import { formatPrice } from '@/utils/format';
 import Typography from '@/components/ui/Typografy/Typografy';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 type SalesByDayEntry = {
   total: number;
@@ -139,30 +140,10 @@ const accumulateSalesData = (sales: SalesRecord[], byMonth = false) => {
 };
 
 // Hook para detectar tamaño de pantalla
-const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return window.innerWidth < 768;
-  });
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const checkIsMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener('resize', checkIsMobile);
-
-    return () => window.removeEventListener('resize', checkIsMobile);
-  }, []);
-
-  return isMobile;
-};
-
 export const DailySalesBarChart = ({ sales }: { sales: SalesRecord[] }) => {
   const [periodType, setPeriodType] = useState<SalesPeriodType>('monthly');
   const [rawPeriodIndex, setRawPeriodIndex] = useState<number>(0);
-  const isMobile = useIsMobile();
+  const isMobile = useMediaQuery('(max-width: 767px)');
 
   const salesArray = useMemo(
     () => (Array.isArray(sales) ? sales : []),

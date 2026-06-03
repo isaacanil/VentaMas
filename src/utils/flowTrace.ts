@@ -8,7 +8,6 @@ type FlowTracePayload = {
 };
 
 type FlowTraceMeta = {
-  userAgent?: string;
   platform?: string;
   language?: string;
   viewport?: { width: number; height: number; dpr: number };
@@ -16,8 +15,6 @@ type FlowTraceMeta = {
   online?: boolean;
   connection?: {
     effectiveType?: string;
-    downlink?: number;
-    rtt?: number;
     saveData?: boolean;
   };
 };
@@ -44,6 +41,13 @@ const MAX_ARRAY = 30;
 const MAX_KEYS = 40;
 const MAX_STRING = 400;
 const MAX_SNAPSHOT = 200000;
+const REDACTED_VALUE = '[REDACTED]';
+const REDACTED_EMAIL = '[REDACTED_EMAIL]';
+const SENSITIVE_KEY_PATTERN =
+  /authorization|cookie|password|passcode|token|secret|apikey|card|cvv|pin|email|phone|telephone|cedula|rnc/i;
+const SENSITIVE_URL_PARAM_PATTERN =
+  /([?&](?:access_token|auth|code|pin|session|sessionToken|token|password|secret)=)[^&#\s"']*/gi;
+const EMAIL_VALUE_PATTERN = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
 
 const isEnabled = import.meta.env.VITE_FLOW_TRACE === '1';
 const rawEndpoint = import.meta.env.VITE_FLOW_TRACE_ENDPOINT as
@@ -118,11 +122,10 @@ const getEnvMeta = (): FlowTraceMeta => {
   const nav = window.navigator;
   const isMobile =
     window.matchMedia?.('(pointer: coarse)')?.matches ||
-    /Android|iPhone|iPad|iPod|Mobile/i.test(nav.userAgent);
+    window.innerWidth <= 768;
   const connection =
     nav && 'connection' in nav ? (nav as any).connection : null;
   return {
-    userAgent: nav?.userAgent,
     platform: nav?.platform,
     language: nav?.language,
     viewport: {
@@ -135,12 +138,24 @@ const getEnvMeta = (): FlowTraceMeta => {
     connection: connection
       ? {
           effectiveType: connection.effectiveType,
-          downlink: connection.downlink,
-          rtt: connection.rtt,
           saveData: connection.saveData,
         }
       : undefined,
   };
+};
+
+const shouldRedactKey = (key?: string | null): boolean =>
+  Boolean(key && SENSITIVE_KEY_PATTERN.test(key));
+
+const redactString = (value: string): string =>
+  value
+    .replace(SENSITIVE_URL_PARAM_PATTERN, `$1${REDACTED_VALUE}`)
+    .replace(EMAIL_VALUE_PATTERN, REDACTED_EMAIL);
+
+const sanitizeTraceUrl = (value: unknown): unknown => {
+  if (typeof value === 'string') return redactString(value);
+  if (value instanceof URL) return redactString(value.toString());
+  return value;
 };
 
 const redactHeaders = (
@@ -149,7 +164,7 @@ const redactHeaders = (
   if (!headers) return undefined;
   const result: Record<string, string> = {};
   const redact = (key: string, value: string) =>
-    /authorization|cookie|token|apikey/i.test(key) ? '[REDACTED]' : value;
+    shouldRedactKey(key) ? REDACTED_VALUE : redactString(value);
   if (headers instanceof Headers) {
     headers.forEach((value, key) => {
       result[key] = redact(key, value);
@@ -165,6 +180,12 @@ const redactHeaders = (
 const redactBody = (body: unknown) => {
   if (!body) return body;
   if (typeof body === 'string') {
+    const redactedBody = redactString(body);
+    if (redactedBody !== body) {
+      return redactedBody.length > MAX_SNAPSHOT
+        ? `${redactedBody.slice(0, MAX_SNAPSHOT)}...`
+        : redactedBody;
+    }
     if (body.length > MAX_SNAPSHOT) {
       return `${body.slice(0, MAX_SNAPSHOT)}…`;
     }
@@ -172,16 +193,18 @@ const redactBody = (body: unknown) => {
       const parsed = JSON.parse(body);
       return redactBody(parsed);
     } catch {
-      return body;
+      return redactedBody;
     }
   }
   if (typeof body !== 'object') return body;
   const redacted: Record<string, unknown> = {};
   Object.entries(body as Record<string, unknown>).forEach(([key, value]) => {
-    if (/password|token|secret|authorization|card|cvv/i.test(key)) {
-      redacted[key] = '[REDACTED]';
+    if (shouldRedactKey(key)) {
+      redacted[key] = REDACTED_VALUE;
     } else if (typeof value === 'object' && value !== null) {
       redacted[key] = redactBody(value);
+    } else if (typeof value === 'string') {
+      redacted[key] = redactString(value);
     } else {
       redacted[key] = value;
     }
@@ -189,10 +212,21 @@ const redactBody = (body: unknown) => {
   return redacted;
 };
 
-const safeNormalize = (value: unknown, depth = 0): unknown => {
+const safeNormalize = (
+  value: unknown,
+  depth = 0,
+  key?: string | null,
+): unknown => {
+  if (shouldRedactKey(key)) return REDACTED_VALUE;
   if (depth > MAX_DEPTH) return '[MaxDepth]';
   if (value === null || value === undefined) return value;
   if (typeof value === 'string') {
+    const redactedValue = redactString(value);
+    if (redactedValue !== value) {
+      return redactedValue.length > MAX_STRING
+        ? `${redactedValue.slice(0, MAX_STRING)}...`
+        : redactedValue;
+    }
     return value.length > MAX_STRING ? `${value.slice(0, MAX_STRING)}…` : value;
   }
   if (typeof value !== 'object') return value;
@@ -200,7 +234,7 @@ const safeNormalize = (value: unknown, depth = 0): unknown => {
   if (Array.isArray(value)) {
     return value
       .slice(0, MAX_ARRAY)
-      .map((item) => safeNormalize(item, depth + 1));
+      .map((item) => safeNormalize(item, depth + 1, key));
   }
 
   const entries = Object.entries(value as Record<string, unknown>).slice(
@@ -209,7 +243,7 @@ const safeNormalize = (value: unknown, depth = 0): unknown => {
   );
   const result: Record<string, unknown> = {};
   entries.forEach(([key, entryValue]) => {
-    result[key] = safeNormalize(entryValue, depth + 1);
+    result[key] = safeNormalize(entryValue, depth + 1, key);
   });
   return result;
 };
@@ -242,8 +276,8 @@ export const flowTrace = async (
     typeof (data as { snapshotContent?: unknown }).snapshotContent === 'string'
       ? {
           ...(data as Record<string, unknown>),
-          snapshotContent: String(
-            (data as { snapshotContent: string }).snapshotContent,
+          snapshotContent: redactString(
+            String((data as { snapshotContent: string }).snapshotContent),
           ).slice(0, MAX_SNAPSHOT),
         }
       : safeNormalize(data);
@@ -278,7 +312,26 @@ export const flowTrace = async (
 
 const captureDomSnapshot = (): string | null => {
   if (typeof document === 'undefined') return null;
-  const html = document.documentElement?.outerHTML ?? '';
+  const root = document.documentElement;
+  if (!root) return null;
+  const clone = root.cloneNode(true) as HTMLElement;
+  clone.querySelectorAll('input, select, textarea').forEach((field) => {
+    field.setAttribute('value', REDACTED_VALUE);
+    if (field instanceof HTMLTextAreaElement) {
+      field.textContent = REDACTED_VALUE;
+    }
+  });
+  clone.querySelectorAll('*').forEach((element) => {
+    Array.from(element.attributes).forEach((attribute) => {
+      element.setAttribute(
+        attribute.name,
+        shouldRedactKey(attribute.name)
+          ? REDACTED_VALUE
+          : redactString(attribute.value),
+      );
+    });
+  });
+  const html = redactString(clone.outerHTML);
   return html.length > MAX_SNAPSHOT ? `${html.slice(0, MAX_SNAPSHOT)}…` : html;
 };
 
@@ -436,18 +489,19 @@ export const initFlowTrace = (params?: {
           : input instanceof URL
             ? input.toString()
             : input.url;
+      const traceUrl = sanitizeTraceUrl(url);
       const start = performance.now();
       const headers = redactHeaders(
         init?.headers as Record<string, string> | undefined,
       );
       const body = redactBody(init?.body as unknown);
       const curl =
-        typeof url === 'string'
+        typeof traceUrl === 'string'
           ? [
               'curl',
               '-X',
               method,
-              `"${url}"`,
+              `"${traceUrl}"`,
               headers
                 ? Object.entries(headers)
                     .map(([key, value]) => `-H "${key}: ${value}"`)
@@ -465,7 +519,7 @@ export const initFlowTrace = (params?: {
           'NETWORK_FETCH',
           {
             method,
-            url,
+            url: traceUrl,
             status: response.status,
             ok: response.ok,
             durationMs: duration,
@@ -480,7 +534,7 @@ export const initFlowTrace = (params?: {
           'NETWORK_FETCH_ERROR',
           {
             method,
-            url,
+            url: traceUrl,
             durationMs: duration,
             message: error instanceof Error ? error.message : String(error),
             curl,
@@ -514,7 +568,7 @@ export const initFlowTrace = (params?: {
           'NETWORK_XHR',
           {
             method: meta.method,
-            url: meta.url,
+            url: sanitizeTraceUrl(meta.url),
             status: (this as XMLHttpRequest).status,
             durationMs: duration,
           },
@@ -570,9 +624,19 @@ export const initFlowTrace = (params?: {
     const handleInput = (event: Event) => {
       const targetEl = event.target as HTMLInputElement | null;
       const target = getElementDescriptor(event.target);
+      const fieldFingerprint = targetEl
+        ? [
+            targetEl.type,
+            targetEl.name,
+            targetEl.id,
+            targetEl.autocomplete,
+          ].join(' ')
+        : '';
       const value =
-        targetEl && typeof targetEl.value === 'string'
-          ? targetEl.value.slice(0, 50)
+        targetEl && typeof targetEl.value === 'string' && targetEl.value
+          ? shouldRedactKey(fieldFingerprint)
+            ? REDACTED_VALUE
+            : `[${targetEl.value.length} chars]`
           : undefined;
       pushBreadcrumb({ ts: Date.now(), type: 'input', target, value });
     };

@@ -1,5 +1,4 @@
 import { Label, ListBox, ListBoxItem } from '@heroui/react';
-import PropTypes from 'prop-types';
 import type { Key } from 'react';
 import styled from 'styled-components';
 import { VmButton, VmModal, VmSelect } from '@/components/heroui';
@@ -10,7 +9,6 @@ type ReceiptOption = {
   label: string;
   remaining?: string | number;
 };
-
 type TaxReceiptDepletedModalProps = {
   open: boolean;
   receipts?: TaxReceiptItem[];
@@ -232,24 +230,4 @@ export const TaxReceiptDepletedModal = ({
       </ContentWrapper>
     </VmModal>
   );
-};
-
-TaxReceiptDepletedModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  receipts: PropTypes.arrayOf(
-    PropTypes.shape({
-      data: PropTypes.shape({
-        name: PropTypes.string,
-        quantity: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-        disabled: PropTypes.bool,
-        serie: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-      }),
-    }),
-  ),
-  currentReceipt: PropTypes.string,
-  loading: PropTypes.bool,
-  onSelectReceipt: PropTypes.func,
-  onRetry: PropTypes.func,
-  onContinueWithout: PropTypes.func,
-  onCancel: PropTypes.func,
 };

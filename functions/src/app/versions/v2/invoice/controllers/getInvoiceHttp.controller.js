@@ -10,15 +10,7 @@ import {
   MEMBERSHIP_ROLE_GROUPS,
 } from '../services/repairTasks.service.js';
 import { assertBusinessSubscriptionAccess } from '../../billing/utils/subscriptionAccess.util.js';
-
-function setCors(res) {
-  res.set('Access-Control-Allow-Origin', '*');
-  res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.set(
-    'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, X-Session-Token',
-  );
-}
+import { applyHttpCors } from '../../http/httpCors.util.js';
 
 const normalizeDocRefPath = (value) => {
   if (!value) return null;
@@ -114,8 +106,15 @@ const mapCashCountDoc = (docSnap) => {
 };
 
 export const getInvoiceV2Http = https.onRequest(async (req, res) => {
-  setCors(res);
-  if (req.method === 'OPTIONS') return res.status(204).send('');
+  const corsAllowed = applyHttpCors(req, res, {
+    methods: 'GET, OPTIONS',
+    headers: 'Content-Type, Authorization, X-Session-Token',
+  });
+  if (req.method === 'OPTIONS') {
+    if (!corsAllowed) return res.status(403).send('');
+    return res.status(204).send('');
+  }
+  if (!corsAllowed) return res.status(403).json({ error: 'Origin not allowed' });
   if (req.method !== 'GET')
     return res.status(405).json({ error: 'Method Not Allowed' });
 
@@ -344,6 +343,6 @@ export const getInvoiceV2Http = https.onRequest(async (req, res) => {
     });
     return res
       .status(500)
-      .json({ error: 'Error interno', message: errorMessage });
+      .json({ error: 'Error interno al obtener la factura' });
   }
 });

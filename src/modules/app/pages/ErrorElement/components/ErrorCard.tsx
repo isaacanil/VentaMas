@@ -1,5 +1,4 @@
 import { Card } from '@heroui/react';
-import PropTypes from 'prop-types';
 import React from 'react';
 import styled from 'styled-components';
 
@@ -13,10 +12,6 @@ export const ErrorCard = ({ children }: ErrorCardProps) => {
       <Card.Content>{children}</Card.Content>
     </StyledCard>
   );
-};
-
-ErrorCard.propTypes = {
-  children: PropTypes.node.isRequired,
 };
 
 const StyledCard = styled(Card)`

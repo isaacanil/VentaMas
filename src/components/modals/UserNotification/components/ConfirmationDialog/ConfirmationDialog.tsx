@@ -1,5 +1,5 @@
 import { m, type Variants } from 'framer-motion';
-import React from 'react';
+import React, { useCallback, useId, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -11,6 +11,7 @@ import {
 import { useIsOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
 import { Button, ButtonGroup } from '@/components/ui/Button/Button';
 import { FormattedValue } from '@/components/ui/FormattedValue/FormattedValue';
+import { useModalFocusTrap } from '@/hooks/useModalFocusTrap';
 
 import { HandleConfirmationAction } from './HandleConfirmationAction';
 
@@ -44,6 +45,9 @@ export const ConfirmationDialog = ({
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const descriptionId = useId();
 
   const { status } = useIsOpenCashReconciliation();
   const isExistingOpenCR = status === 'open' || status === 'closing';
@@ -53,7 +57,16 @@ export const ConfirmationDialog = ({
   const handleConfirm = () =>
     HandleConfirmationAction(onConfirm, navigate, dispatch, resource);
 
-  const handleCloseConfirmation = () => dispatch(closeUserNotification());
+  const handleCloseConfirmation = useCallback(
+    () => dispatch(closeUserNotification()),
+    [dispatch],
+  );
+
+  useModalFocusTrap({
+    open: isOpen,
+    containerRef,
+    onEscape: handleCloseConfirmation,
+  });
 
   const BackdropVariants: Variants = {
     hidden: {
@@ -97,14 +110,20 @@ export const ConfirmationDialog = ({
         animate={isOpen ? 'visible' : 'hidden'}
       >
         <Container
+          ref={containerRef}
           variants={ContainerVariants}
           initial={'hidden'}
           animate={isOpen ? 'visible' : 'hidden'}
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          aria-describedby={descriptionId}
+          tabIndex={-1}
         >
-          <Header>
+          <Header id={titleId}>
             <FormattedValue type={'title'} value={title} />
           </Header>
-          <Body>
+          <Body id={descriptionId}>
             <FormattedValue type={'paragraph'} value={description} />
           </Body>
           <Footer>
@@ -136,12 +155,12 @@ const Backdrop = styled(m.div)`
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 10000;
+  z-index: 1300;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100vw;
-  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
   backdrop-filter: blur(5px) brightness(0.5) saturate(100%) contrast(100%);
 `;
 const Container = styled(m.div)`

@@ -11,6 +11,15 @@ type PrintJsFn = (configuration: {
   [key: string]: unknown;
 }) => void;
 
+const PDF_BLOB_URL_REVOKE_DELAY_MS = 60_000;
+
+const scheduleBlobUrlRevoke = (
+  blobUrl: string,
+  delayMs = PDF_BLOB_URL_REVOKE_DELAY_MS,
+): void => {
+  window.setTimeout(() => URL.revokeObjectURL(blobUrl), delayMs);
+};
+
 export async function printPdfBase64(
   base64Data: string,
   options: PrintPdfOptions = {},
@@ -55,9 +64,11 @@ export async function printPdfBase64(
       const byteArray = new Uint8Array(byteNumbers);
       const blob = new Blob([byteArray], { type: 'application/pdf' });
       const blobUrl = URL.createObjectURL(blob);
-      const newWindow = window.open(blobUrl, '_blank');
+      const newWindow = window.open(blobUrl, '_blank', 'noopener,noreferrer');
 
       if (newWindow) {
+        newWindow.opener = null;
+        scheduleBlobUrlRevoke(blobUrl);
         const onLoad = () => {
           try {
             newWindow.focus();
@@ -78,6 +89,7 @@ export async function printPdfBase64(
         link.href = blobUrl;
         link.download = 'document.pdf';
         link.click();
+        scheduleBlobUrlRevoke(blobUrl, 0);
       }
       return true;
     } catch (e) {

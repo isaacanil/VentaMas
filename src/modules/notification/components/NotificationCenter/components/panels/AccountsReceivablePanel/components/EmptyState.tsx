@@ -1,26 +1,32 @@
 import { Empty } from 'antd';
+import type { IconProp } from '@fortawesome/fontawesome-svg-core';
 import styled from 'styled-components';
 
 import { PanelCard } from '@/modules/notification/components/NotificationCenter/components/panels/shared/PanelPrimitives';
 
 import PanelHeader from '@/modules/notification/components/NotificationCenter/components/panels/shared/SimplePanelHeader';
 
-const EmptyState = ({ title, icon, daysThreshold }) => (
+type EmptyStateProps = {
+  title?: string;
+  icon?: IconProp;
+  daysThreshold?: number;
+};
+
+const EmptyState = ({
+  title = 'Cuentas por Cobrar',
+  icon,
+  daysThreshold = 7,
+}: EmptyStateProps) => (
   <PanelCard>
     <PanelHeader icon={icon} title={title} badgeCount={0} showMeta={false} />
     <StateContainer>
       <Empty
         image={Empty.PRESENTED_IMAGE_SIMPLE}
-        description={`No hay cuentas por cobrar próximas a vencer en los próximos ${daysThreshold} días`}
+        description={`No hay cuentas por cobrar proximas a vencer en los proximos ${daysThreshold} dias`}
       />
     </StateContainer>
   </PanelCard>
 );
-
-EmptyState.defaultProps = {
-  title: 'Cuentas por Cobrar',
-  daysThreshold: 7,
-};
 
 const StateContainer = styled.div`
   display: flex;

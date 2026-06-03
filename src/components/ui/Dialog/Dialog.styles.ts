@@ -38,7 +38,12 @@ export const BaseButton = styled.button`
   cursor: pointer;
   border-radius: 8px;
   transform-origin: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 
   &:disabled {
     cursor: not-allowed;
@@ -66,6 +71,11 @@ export const BaseButton = styled.button`
 
   &:active:not(:disabled) {
     transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #1677ff;
+    outline-offset: 2px;
   }
 `;
 
@@ -147,11 +157,11 @@ export const Backdrop = styled(m.div)`
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 10000;
+  z-index: 1300;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100vw;
+  width: 100dvw;
   height: 100%;
   padding: 1rem;
   backdrop-filter: blur(4px) brightness(0.7);

@@ -78,7 +78,8 @@ const toStringArray = (value: unknown): string[] | undefined => {
   return parsed.length ? parsed : undefined;
 };
 
-const toArray = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
+const toArray = (value: unknown): unknown[] =>
+  Array.isArray(value) ? value : [];
 
 const resolveBusinessIdFromNode = (node: UnknownRecord): string | null => {
   const business = asRecord(node.business);
@@ -131,8 +132,10 @@ const normalizeAccessControlList = (
       permissions: toStringArray(item.permissions),
       isOwner: toBoolean(item.isOwner),
       isPrimary: toBoolean(item.isPrimary),
-      createdAt: (item.createdAt as UserAccessControl['createdAt']) ?? undefined,
-      updatedAt: (item.updatedAt as UserAccessControl['updatedAt']) ?? undefined,
+      createdAt:
+        (item.createdAt as UserAccessControl['createdAt']) ?? undefined,
+      updatedAt:
+        (item.updatedAt as UserAccessControl['updatedAt']) ?? undefined,
     });
   }
 
@@ -162,7 +165,9 @@ const mergeAccessControl = (
   };
 };
 
-const dedupeAccessControl = (items: UserAccessControl[]): UserAccessControl[] => {
+const dedupeAccessControl = (
+  items: UserAccessControl[],
+): UserAccessControl[] => {
   const byBusinessId = new Map<string, UserAccessControl>();
 
   for (const item of items) {
@@ -197,7 +202,7 @@ const buildAvailableBusinesses = (
 ): AvailableBusinessContext[] =>
   accessControl.map((entry) => {
     const status = entry.status || 'active';
-    const isActive = !['inactive', 'suspended', 'revoked'].includes(
+    const isActive = !['inactive', 'suspended', 'revoked', 'disabled'].includes(
       String(status).toLowerCase(),
     );
 
@@ -216,26 +221,19 @@ export const normalizeCurrentUserContext = (
 ): CurrentUserContext => {
   const root = asRecord(user);
 
-  const uid = resolveString(
-    root.uid,
-    root.id,
-    root.userId,
-    root.user_id,
-  );
+  const uid = resolveString(root.uid, root.id, root.userId, root.user_id);
 
   const email = resolveString(root.email);
-  const displayName = resolveString(
-    root.displayName,
-    root.realName,
-    root.name,
-  );
+  const displayName = resolveString(root.displayName, root.realName, root.name);
 
   const rootPlatformRoles = asRecord(root.platformRoles);
   const isPlatformDev = rootPlatformRoles.dev === true;
 
-  const globalRole = (isPlatformDev
-    ? 'dev'
-    : normalizeRoleId(resolveString(root.activeRole, root.role))) as MembershipRole | null;
+  const globalRole = (
+    isPlatformDev
+      ? 'dev'
+      : normalizeRoleId(resolveString(root.activeRole, root.role))
+  ) as MembershipRole | null;
 
   const aliasBusinessId = resolveString(
     root.activeBusinessId,
@@ -250,10 +248,7 @@ export const normalizeCurrentUserContext = (
     : toArray(root.memberships);
 
   const persistedAccessControl = normalizeAccessControlList(
-    [
-      ...rootAccessControl,
-      ...membershipsFallback,
-    ],
+    [...rootAccessControl, ...membershipsFallback],
     globalRole,
   );
 
@@ -300,13 +295,9 @@ export const normalizeCurrentUserContext = (
       (normalizeRoleId(accessControl[0]?.role) as MembershipRole | null) ??
       null);
 
-  const defaultBusinessId = resolveString(
-    root.defaultBusinessId,
-  );
+  const defaultBusinessId = resolveString(root.defaultBusinessId);
 
-  const lastSelectedBusinessId = resolveString(
-    root.lastSelectedBusinessId,
-  );
+  const lastSelectedBusinessId = resolveString(root.lastSelectedBusinessId);
 
   const memberships: Membership[] = accessControl.map((entry) => ({
     uid: uid ?? undefined,

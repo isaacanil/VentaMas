@@ -1,7 +1,6 @@
 import { HomeOutlined, RollbackOutlined } from '@/constants/icons/antd';
 import { Alert, Button } from '@heroui/react';
 import { m } from 'framer-motion';
-import PropTypes from 'prop-types';
 import React from 'react';
 import styled from 'styled-components';
 
@@ -81,12 +80,6 @@ export const ErrorElement = ({
       </ErrorCard>
     </Container>
   );
-};
-
-ErrorElement.propTypes = {
-  autoReport: PropTypes.bool,
-  errorInfo: PropTypes.string,
-  errorStackTrace: PropTypes.string,
 };
 
 const Container = styled(m.main)`

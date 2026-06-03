@@ -1,7 +1,6 @@
 import { Button } from '@heroui/react';
 import { CopyOutlined } from '@/constants/icons/antd';
 import { m, type Variants } from 'framer-motion';
-import PropTypes from 'prop-types';
 import React from 'react';
 import styled from 'styled-components';
 
@@ -37,11 +36,6 @@ export const ErrorDetails = ({
       <ErrorCode>{errorStackTrace ?? 'Sin detalle disponible.'}</ErrorCode>
     </Container>
   );
-};
-
-ErrorDetails.propTypes = {
-  errorStackTrace: PropTypes.string,
-  variants: PropTypes.object,
 };
 
 const Container = styled(m.div)`

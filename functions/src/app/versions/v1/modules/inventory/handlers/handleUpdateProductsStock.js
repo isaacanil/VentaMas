@@ -40,11 +40,15 @@ export async function handleUpdateProductsStock({
   products,
   sale,
 }) {
-  logger.info('[handleUpdateProductsStock] sale completo:', sale);
-  logger.info('[handleUpdateProductsStock] sale.userID:', sale.userID);
-  logger.info('Actualizando stock', JSON.stringify({ saleId: sale.id }));
-  logger.info('Productos', JSON.stringify({ saleId: sale.id, products }));
-  logger.info('Negocio', JSON.stringify({ saleId: sale.id, businessID }));
+  logger.info('[handleUpdateProductsStock] updating stock', {
+    saleId: sale?.id,
+    userId: sale?.userID,
+    businessID,
+    productCount: Array.isArray(products) ? products.length : 0,
+    trackedProductCount: Array.isArray(products)
+      ? products.filter((product) => product?.trackInventory).length
+      : 0,
+  });
   if (!sale.userID) {
     throw new HttpsError(
       'failed-precondition',

@@ -19,6 +19,8 @@ export interface BusinessInfo {
   hasOwner: boolean;
   ownerSource: OwnerSource;
   ownerCandidates: string[];
+  status?: string | null;
+  accessStatus?: string | null;
   subscriptionStatus?: string | null;
   subscriptionPlanId?: string | null;
 }

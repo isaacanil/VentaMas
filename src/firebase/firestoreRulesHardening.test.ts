@@ -37,10 +37,7 @@ describe('firestore financial hardening rules', () => {
 
   it('forces accounting setup writes through backend callables', () => {
     expectCollectionLocked('chartOfAccounts', 'chartOfAccountId');
-    expectCollectionLocked(
-      'accountingPostingProfiles',
-      'postingProfileId',
-    );
+    expectCollectionLocked('accountingPostingProfiles', 'postingProfileId');
     expect(rules).toMatch(
       /match \/businesses\/\{businessId\}\/bankAccounts\/\{bankAccountId\} \{[\s\S]*?allow create, update: if hasTreasuryConfigAccess\(businessId\);/,
     );
@@ -48,25 +45,40 @@ describe('firestore financial hardening rules', () => {
 
   it('only lets legacy invoice writes create/update/delete drafts without posted footprint', () => {
     expect(rules).toMatch(
-      /allow create: if hasBusinessAccess\(businessId\)[\s\S]*?isSafeInvoiceDraftCreate\(request\.resource\.data\);/,
+      /allow create: if hasBusinessWriteAccess\(businessId\)[\s\S]*?isSafeInvoiceDraftCreate\(request\.resource\.data\);/,
     );
     expect(rules).toMatch(
-      /match \/businesses\/\{businessId\}\/invoices\/\{invoiceId\} \{[\s\S]*?allow update: if hasBusinessAccess\(businessId\)[\s\S]*?isDraftFinancialDocument\(resource\.data\)[\s\S]*?isDraftFinancialDocument\(request\.resource\.data\)[\s\S]*?!isLockedInvoiceDocument\(resource\.data\)[\s\S]*?!isLockedInvoiceDocument\(request\.resource\.data\);/,
+      /match \/businesses\/\{businessId\}\/invoices\/\{invoiceId\} \{[\s\S]*?allow update: if hasBusinessWriteAccess\(businessId\)[\s\S]*?isDraftFinancialDocument\(resource\.data\)[\s\S]*?isDraftFinancialDocument\(request\.resource\.data\)[\s\S]*?!isLockedInvoiceDocument\(resource\.data\)[\s\S]*?!isLockedInvoiceDocument\(request\.resource\.data\);/,
     );
     expect(rules).toMatch(
-      /allow delete: if hasBusinessAccess\(businessId\)[\s\S]*?isDraftFinancialDocument\(resource\.data\)[\s\S]*?!isLockedInvoiceDocument\(resource\.data\);/,
+      /allow delete: if hasBusinessWriteAccess\(businessId\)[\s\S]*?isDraftFinancialDocument\(resource\.data\)[\s\S]*?!isLockedInvoiceDocument\(resource\.data\);/,
     );
   });
 
   it('locks purchases after they leave the mutable receipt draft state', () => {
     expect(rules).toMatch(
-      /match \/businesses\/\{businessId\}\/purchases\/\{purchaseId\} \{[\s\S]*?allow create: if hasBusinessAccess\(businessId\)[\s\S]*?isMutablePurchaseSource\(request\.resource\.data\)[\s\S]*?!isLockedPurchaseDocument\(request\.resource\.data\);/,
+      /match \/businesses\/\{businessId\}\/purchases\/\{purchaseId\} \{[\s\S]*?allow create: if hasBusinessWriteAccess\(businessId\)[\s\S]*?isMutablePurchaseSource\(request\.resource\.data\)[\s\S]*?!isLockedPurchaseDocument\(request\.resource\.data\);/,
     );
     expect(rules).toMatch(
-      /allow update: if hasBusinessAccess\(businessId\)[\s\S]*?isMutablePurchaseSource\(resource\.data\)[\s\S]*?!isLockedPurchaseDocument\(resource\.data\);/,
+      /allow update: if hasBusinessWriteAccess\(businessId\)[\s\S]*?isMutablePurchaseSource\(resource\.data\)[\s\S]*?!isLockedPurchaseDocument\(resource\.data\);/,
     );
     expect(rules).toMatch(
-      /allow delete: if hasBusinessAccess\(businessId\)[\s\S]*?isDeletablePurchaseSource\(resource\.data\)[\s\S]*?!isLockedPurchaseDocument\(resource\.data\);/,
+      /allow delete: if hasBusinessWriteAccess\(businessId\)[\s\S]*?isDeletablePurchaseSource\(resource\.data\)[\s\S]*?!isLockedPurchaseDocument\(resource\.data\);/,
+    );
+  });
+
+  it('separates business read access from write access for inactive/read-only states', () => {
+    expect(rules).toContain('function currentUserIsActive()');
+    expect(rules).toContain('function businessAllowsRead(businessId)');
+    expect(rules).toContain('function businessAllowsWrite(businessId)');
+    expect(rules).toContain('function hasBusinessWriteAccess(businessId)');
+    expect(rules).toContain("currentUserDoc().data.get('active', true)");
+    expect(rules).toContain(
+      "currentUserDoc().data.get('platformRoles', {}).get('dev', false)",
+    );
+    expect(rules).toContain("businessDoc(businessId).data.get('status', null)");
+    expect(rules).toMatch(
+      /function hasLegacyBusinessAccess\(businessId\) \{[\s\S]*?!exists\(memberPath\(businessId\)\)/,
     );
   });
 

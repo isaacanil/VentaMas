@@ -57,7 +57,11 @@ const FileList = ({ files = EMPTY_FILES }: FileListProps) => {
           size="small"
           style={{ width: '100%', marginBottom: '10px' }}
           cover={coverContent}
-          onClick={() => (isImage ? null : window.open(url, '_blank'))}
+          onClick={() =>
+            isImage
+              ? null
+              : window.open(url, '_blank', 'noopener,noreferrer')
+          }
         >
           <Card.Meta title={name} description={`Size: ${size} bytes`} />
         </Card>

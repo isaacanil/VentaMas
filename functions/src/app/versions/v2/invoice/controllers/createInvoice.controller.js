@@ -196,10 +196,9 @@ export const createInvoiceV2 = onCall(async ({ data }, context) => {
       traceId,
       invoiceId: result.invoiceId,
       reused: result.alreadyExists,
+      businessId,
+      userId,
     });
-    logger.info('data', { traceId, data: { ...data, cart: 'omitted' } });
-    logger.info('idempotencyKey', { traceId, idempotencyKey });
-    logger.info('result', { traceId, result });
 
     return {
       status: 'pending',
@@ -225,12 +224,7 @@ export const createInvoiceV2 = onCall(async ({ data }, context) => {
     throw new https.HttpsError(
       'internal',
       'Error interno al iniciar la factura',
-      {
-        traceId,
-        message: errorInfo.message || String(err),
-        stack: errorInfo.stack,
-        name: errorInfo.name,
-      },
+      { traceId },
     );
   }
 });

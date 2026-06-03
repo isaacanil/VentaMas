@@ -32,6 +32,19 @@ import {
 } from '../pin/pin.users.js';
 import { extractUserData } from '../pin/pin.utils.js';
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function sanitizeMailHeader(value) {
+  return String(value ?? '').replace(/[\r\n]+/g, ' ').trim();
+}
+
 export const autoRotateModulePins = onSchedule(
   {
     schedule: PIN_ROTATION_SCHEDULE,
@@ -871,7 +884,9 @@ export const sendPinByEmail = onCall(
       }
 
       // Build email HTML
-      const displayName = targetUser?.displayName || targetUser?.name || 'Usuario';
+      const displayName =
+        sanitizeMailHeader(targetUser?.displayName || targetUser?.name) ||
+        'Usuario';
       const expiresAt = metadata?.expiresAt || '';
       const generatedAt = metadata?.generatedAt || new Date().toISOString();
 
@@ -889,14 +904,17 @@ export const sendPinByEmail = onCall(
               timeZone: 'America/Santo_Domingo',
             });
           }
+          const safeLabel = escapeHtml(label);
+          const safeExpiry = escapeHtml(expiry);
+          const safePin = escapeHtml(pin);
           return `
             <tr>
               <td style="padding: 14px 16px; border-bottom: 1px solid #f2f4f7;">
-                <div style="font-size: 15px; font-weight: 600; color: #101828;">${label}</div>
-                <div style="font-size: 12px; color: #667085; margin-top: 4px;">Expira: ${expiry}</div>
+                <div style="font-size: 15px; font-weight: 600; color: #101828;">${safeLabel}</div>
+                <div style="font-size: 12px; color: #667085; margin-top: 4px;">Expira: ${safeExpiry}</div>
               </td>
               <td style="padding: 14px 16px; border-bottom: 1px solid #f2f4f7; font-family: 'Courier New', monospace; font-size: 22px; letter-spacing: 0.35em; text-align: right; color: #1d2939; white-space: nowrap;">
-                ${pin}
+                ${safePin}
               </td>
             </tr>`;
         })
@@ -910,14 +928,14 @@ export const sendPinByEmail = onCall(
         <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; background: #ffffff; border: 1px solid #e4e7ec; border-radius: 16px;">
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e4e7ec; padding-bottom: 20px; margin-bottom: 24px;">
             <span style="font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: #475467;">VentaMax</span>
-            <span style="font-size: 11px; color: #98a2b3;">Generado ${new Date(generatedAt).toLocaleString('es-DO', { timeZone: 'America/Santo_Domingo' })}</span>
+            <span style="font-size: 11px; color: #98a2b3;">Generado ${escapeHtml(new Date(generatedAt).toLocaleString('es-DO', { timeZone: 'America/Santo_Domingo' }))}</span>
           </div>
           <h1 style="font-size: 24px; font-weight: 600; color: #101828; margin: 0 0 8px;">PIN de Autorización</h1>
-          <p style="font-size: 14px; color: #475467; margin: 0 0 24px;">Hola <strong>${displayName}</strong>, aquí están tus PINs de autorización.</p>
+          <p style="font-size: 14px; color: #475467; margin: 0 0 24px;">Hola <strong>${escapeHtml(displayName)}</strong>, aquí están tus PINs de autorización.</p>
           <div style="margin-bottom: 24px;">
             <div style="display: flex; justify-content: space-between; font-size: 13px; color: #475467; margin-bottom: 8px;">
-              <span>${displayName}</span>
-              <span>${pinCountLabel}</span>
+              <span>${escapeHtml(displayName)}</span>
+              <span>${escapeHtml(pinCountLabel)}</span>
             </div>
             <table style="width: 100%; border-collapse: collapse;">
               <thead>
@@ -942,8 +960,9 @@ export const sendPinByEmail = onCall(
 
       const plainPinList = Object.entries(pins)
         .map(([moduleKey, pinInfo]) => {
-          const label = MODULE_LABELS[moduleKey] || moduleKey;
-          return `${label}: ${pinInfo?.pin || '------'}`;
+          const label = sanitizeMailHeader(MODULE_LABELS[moduleKey] || moduleKey);
+          const pin = sanitizeMailHeader(pinInfo?.pin || '------');
+          return `${label}: ${pin}`;
         })
         .join('\n');
 

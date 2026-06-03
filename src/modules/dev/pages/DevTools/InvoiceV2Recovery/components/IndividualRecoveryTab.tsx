@@ -18,7 +18,6 @@ import {
   Timeline,
   Typography,
 } from 'antd';
-import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 
 import {
@@ -690,65 +689,4 @@ export const IndividualRecoveryTab: React.FC<IndividualRecoveryTabProps> = ({
       )}
     </Space>
   );
-};
-
-IndividualRecoveryTab.propTypes = {
-  form: PropTypes.object.isRequired,
-  watchedBusinessId: PropTypes.string,
-  businessOptions: PropTypes.array.isRequired,
-  loadingBusinesses: PropTypes.bool.isRequired,
-  invoiceOptions: PropTypes.array.isRequired,
-  loadingInvoices: PropTypes.bool.isRequired,
-  handleSubmit: PropTypes.func.isRequired,
-  loading: PropTypes.bool.isRequired,
-  errorMessage: PropTypes.string,
-  showEmptyState: PropTypes.bool.isRequired,
-  handleFetch: PropTypes.func.isRequired,
-  activeQuery: PropTypes.object,
-  invoiceData: PropTypes.object,
-  summary: PropTypes.object.isRequired,
-  canonicalData: PropTypes.object,
-  failedOutboxTasks: PropTypes.array.isRequired,
-  resolvedInvoiceId: PropTypes.string,
-  snapshot: PropTypes.object.isRequired,
-  v2CreatedAtLabel: PropTypes.string.isRequired,
-  canonicalDateLabel: PropTypes.string.isRequired,
-  shouldWarnDateMismatch: PropTypes.bool.isRequired,
-  shouldWarnCashCount: PropTypes.bool.isRequired,
-  selectedTasks: PropTypes.array.isRequired,
-  setSelectedTasks: PropTypes.func.isRequired,
-  reason: PropTypes.string.isRequired,
-  setReason: PropTypes.func.isRequired,
-  handleRepair: PropTypes.func.isRequired,
-  repairing: PropTypes.bool.isRequired,
-  availableTaskKeys: PropTypes.array.isRequired,
-  availableAutoRecoveryTasks: PropTypes.array.isRequired,
-  handleSingleAutoRecovery: PropTypes.func.isRequired,
-  repairResult: PropTypes.object,
-  linkedCashCounts: PropTypes.array.isRequired,
-  intendedCashCountId: PropTypes.string,
-  effectiveResolvedCashCountId: PropTypes.string,
-  isCashCountLinked: PropTypes.bool.isRequired,
-  statusTimeline: PropTypes.array.isRequired,
-  resolvedInvoiceNumber: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number,
-  ]),
-  canonicalInvoiceNumber: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number,
-  ]),
-  invoiceCounterValue: PropTypes.number,
-  invoiceCounterUpdatedAt: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.object,
-  ]),
-  loadingInvoiceCounter: PropTypes.bool.isRequired,
-  updatingInvoiceCounter: PropTypes.bool.isRequired,
-  refreshInvoiceCounter: PropTypes.func.isRequired,
-  syncCounterWithInvoiceNumber: PropTypes.func.isRequired,
-  updateInvoiceCounter: PropTypes.func.isRequired,
-  shouldWarnInvoiceNumber: PropTypes.bool.isRequired,
-  updateInvoiceNumberEverywhere: PropTypes.func.isRequired,
-  updatingInvoiceNumber: PropTypes.bool.isRequired,
 };

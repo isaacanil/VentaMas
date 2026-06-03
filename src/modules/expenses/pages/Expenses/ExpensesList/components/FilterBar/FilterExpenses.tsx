@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import { useCallback, useMemo } from 'react';
 
 import {
@@ -139,10 +138,4 @@ export const FilterExpenses = ({
       }}
     />
   );
-};
-
-FilterExpenses.propTypes = {
-  filters: PropTypes.object.isRequired,
-  onFiltersChange: PropTypes.func.isRequired,
-  categoryOptions: PropTypes.array,
 };

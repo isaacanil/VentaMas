@@ -135,6 +135,7 @@ const ContextPanels = ({ data }: ContextPanelsProps) => {
                   window.open(
                     `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data?.client?.address)}`,
                     '_blank',
+                    'noopener,noreferrer',
                   )
                 }
               >

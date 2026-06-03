@@ -72,6 +72,7 @@ export const openWhatsApp = (
   window.open(
     `https://wa.me/${cleanPhone}?text=${encodeURIComponent(defaultMessage)}`,
     '_blank',
+    'noopener,noreferrer',
   );
 };
 

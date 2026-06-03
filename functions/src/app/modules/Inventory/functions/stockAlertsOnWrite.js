@@ -60,6 +60,19 @@ import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 import { db, FieldValue } from '../../../core/config/firebase.js';
 import { sendMail } from '../../../core/config/mailer.js';
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function sanitizeMailHeader(value) {
+  return String(value ?? '').replace(/[\r\n]+/g, ' ').trim();
+}
+
 export const stockAlertsOnWrite = onDocumentWritten(
   {
     document: 'businesses/{bid}/productsStock/{stockId}',
@@ -197,18 +210,19 @@ export const stockAlertsOnWrite = onDocumentWritten(
     }
 
     // Preparar contenido
-    const productName = after.productName || after.productId || 'Producto';
+    const productName =
+      sanitizeMailHeader(after.productName || after.productId) || 'Producto';
     const subject =
       level === 'CRITICO'
         ? `ALERTA CRÍTICA: Stock crítico para ${productName}`
         : `Alerta: Stock bajo para ${productName}`;
 
     const html = `
-    <h2>${subject}</h2>
-    <p>Producto: <strong>${productName}</strong></p>
-    <p>Cantidad actual: <strong>${newQty}</strong></p>
-    <p>Umbral bajo: ${low} | Umbral crítico: ${critical}</p>
-    <p>Fecha: ${new Date().toLocaleString('es-DO', { hour12: false })}</p>
+    <h2>${escapeHtml(subject)}</h2>
+    <p>Producto: <strong>${escapeHtml(productName)}</strong></p>
+    <p>Cantidad actual: <strong>${escapeHtml(newQty)}</strong></p>
+    <p>Umbral bajo: ${escapeHtml(low)} | Umbral crítico: ${escapeHtml(critical)}</p>
+    <p>Fecha: ${escapeHtml(new Date().toLocaleString('es-DO', { hour12: false }))}</p>
     <hr />
     <small>Esta notificación fue generada automáticamente. No respondas este correo.</small>
   `;

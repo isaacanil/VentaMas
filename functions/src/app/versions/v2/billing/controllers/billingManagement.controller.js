@@ -77,6 +77,19 @@ const DISABLE_SESSION_EXPIRY =
   String(process.env.CLIENT_AUTH_DISABLE_SESSION_EXPIRY || '').toLowerCase() ===
   'true';
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function sanitizeMailHeader(value) {
+  return String(value ?? '').replace(/[\r\n]+/g, ' ').trim();
+}
+
 const usersCol = db.collection(USERS_COLLECTION);
 const sessionsCol = db.collection(SESSION_COLLECTION);
 
@@ -389,13 +402,13 @@ const buildPlanVersionNotice = ({
   const resolvedDisplayName =
     toCleanString(displayName) || toCleanString(planCode) || 'tu suscripcion';
   const effectiveAtLabel = formatEffectiveDate(effectiveAt);
-  const subject = `Cambio programado en tu suscripción ${resolvedDisplayName}`;
+  const subject = `Cambio programado en tu suscripción ${sanitizeMailHeader(resolvedDisplayName)}`;
   const changeItemsHtml = changes.length
     ? `
       <div style="margin-top: 16px;">
         <p style="margin: 0 0 8px;"><strong>Cambios que se aplicarán:</strong></p>
         <ul style="margin: 0; padding-left: 20px;">
-          ${changes.map((change) => `<li style="margin-bottom: 6px;">${change}</li>`).join('')}
+          ${changes.map((change) => `<li style="margin-bottom: 6px;">${escapeHtml(change)}</li>`).join('')}
         </ul>
       </div>
     `
@@ -404,13 +417,13 @@ const buildPlanVersionNotice = ({
     <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; color: #0f172a;">
       <h2 style="margin-bottom: 8px;">Actualización de tu suscripción</h2>
       <p style="margin: 0 0 16px;">
-        Programamos una nueva versión para <strong>${resolvedDisplayName}</strong>.
+        Programamos una nueva versión para <strong>${escapeHtml(resolvedDisplayName)}</strong>.
       </p>
       <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; background: #f8fafc;">
-        <p style="margin: 0 0 8px;"><strong>Código:</strong> ${planCode}</p>
-        <p style="margin: 0 0 8px;"><strong>Versión:</strong> ${versionId}</p>
-        <p style="margin: 0 0 8px;"><strong>Entrada en vigencia:</strong> ${effectiveAtLabel}</p>
-        <p style="margin: 0;"><strong>Ventana de aviso:</strong> ${noticeWindowDays} días</p>
+        <p style="margin: 0 0 8px;"><strong>Código:</strong> ${escapeHtml(planCode)}</p>
+        <p style="margin: 0 0 8px;"><strong>Versión:</strong> ${escapeHtml(versionId)}</p>
+        <p style="margin: 0 0 8px;"><strong>Entrada en vigencia:</strong> ${escapeHtml(effectiveAtLabel)}</p>
+        <p style="margin: 0;"><strong>Ventana de aviso:</strong> ${escapeHtml(noticeWindowDays)} días</p>
       </div>
       ${changeItemsHtml}
       <p style="margin-top: 16px; line-height: 1.6;">

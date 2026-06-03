@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 import bcrypt from 'bcryptjs';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { nanoid } from 'nanoid';
@@ -17,6 +19,7 @@ import {
   assertMembershipWritePolicy,
   resolveMembershipWritePolicy,
 } from '../utils/membershipWritePolicy.util.js';
+import { resolveUserBusinessAccessState } from '../utils/accountAccessPolicy.util.js';
 import {
   assertBusinessCreationLimit,
   provisionBusinessCoreInTransaction,
@@ -89,6 +92,44 @@ const ROLE_SWITCH_SOURCE = 'client-switch-user-role';
 const normalizeName = (name) => (typeof name === 'string' ? name.trim() : '');
 const toCleanString = (value) =>
   typeof value === 'string' && value.trim().length ? value.trim() : null;
+const SESSION_INFO_STRING_LIMIT = 256;
+const SESSION_INFO_USER_AGENT_LIMIT = 512;
+const SESSION_INFO_METADATA_KEYS = new Set([
+  'timezone',
+  'language',
+  'requestSource',
+  'requestedAt',
+  'refreshSource',
+  'lastActivityMs',
+  'targetEnvironment',
+]);
+const SESSION_LOG_ID_PATTERN = /^[a-f0-9]{24}$/i;
+const toBoundedString = (value, maxLength = SESSION_INFO_STRING_LIMIT) => {
+  const cleaned = toCleanString(value);
+  return cleaned ? cleaned.slice(0, maxLength) : null;
+};
+const sanitizeSessionInfoMetadata = (metadata) => {
+  if (!isPlainObject(metadata)) return null;
+  const sanitized = {};
+  SESSION_INFO_METADATA_KEYS.forEach((key) => {
+    const value = metadata[key];
+    if (typeof value === 'string') {
+      const cleaned = toBoundedString(value, SESSION_INFO_STRING_LIMIT);
+      if (cleaned) sanitized[key] = cleaned;
+    } else if (typeof value === 'number' && Number.isFinite(value)) {
+      sanitized[key] = value;
+    } else if (typeof value === 'boolean') {
+      sanitized[key] = value;
+    }
+  });
+  return Object.keys(sanitized).length ? sanitized : null;
+};
+const toSessionLogId = (sessionId) => {
+  const cleaned = toCleanString(sessionId);
+  if (!cleaned) return null;
+  if (SESSION_LOG_ID_PATTERN.test(cleaned)) return cleaned.toLowerCase();
+  return createHash('sha256').update(cleaned).digest('hex').slice(0, 24);
+};
 const resolveRequestOrigin = (request) =>
   toCleanString(request?.rawRequest?.headers?.origin)?.toLowerCase() || null;
 const canUsePublicSignup = (request) => {
@@ -129,26 +170,15 @@ const resolvePrivilegedRoleFromUserData = (userData = {}) => {
 const buildLegacyUserPayload = (payload, userId) => {
   const root = payload || {};
   const activeBusinessId =
-    root.activeBusinessId ??
-    root.lastSelectedBusinessId ??
-    null;
-  const resolvedRole =
-    root.activeRole ??
-    root.role ??
-    null;
+    root.activeBusinessId ?? root.lastSelectedBusinessId ?? null;
+  const resolvedRole = root.activeRole ?? root.role ?? null;
   return {
     id: root.id || userId,
     name: root.name ?? null,
     displayName: root.displayName ?? null,
     realName: root.realName ?? null,
-    businessID:
-      root.businessID ??
-      root.businessId ??
-      activeBusinessId,
-    businessId:
-      root.businessId ??
-      root.businessID ??
-      activeBusinessId,
+    businessID: root.businessID ?? root.businessId ?? activeBusinessId,
+    businessId: root.businessId ?? root.businessID ?? activeBusinessId,
     activeBusinessId,
     role: resolvedRole,
     activeRole: resolvedRole,
@@ -157,8 +187,7 @@ const buildLegacyUserPayload = (payload, userId) => {
     password: root.password ?? null,
     loginAttempts: root.loginAttempts ?? 0,
     lockUntil: root.lockUntil ?? null,
-    passwordChangedAt:
-      root.passwordChangedAt ?? null,
+    passwordChangedAt: root.passwordChangedAt ?? null,
     email: root.email ?? null,
     emailVerified: root.emailVerified ?? false,
     phoneNumber: root.phoneNumber ?? null,
@@ -213,9 +242,7 @@ const resolveCurrentRoleFromUserData = (userData = {}) => {
   }
 
   const root = isPlainObject(userData) ? userData : {};
-  return (
-    normalizeRole(root.activeRole || root.role || '') || ROLE.CASHIER
-  );
+  return normalizeRole(root.activeRole || root.role || '') || ROLE.CASHIER;
 };
 
 const resolveActiveBusinessIdFromUserData = (userData = {}) => {
@@ -226,6 +253,73 @@ const resolveActiveBusinessIdFromUserData = (userData = {}) => {
     toCleanString(root.lastSelectedBusinessId) ||
     null
   );
+};
+
+const applyResolvedBusinessContext = (userData, accessState) => {
+  const selected = accessState?.selectedMembership || null;
+  if (!selected?.businessId) return userData;
+
+  return {
+    ...userData,
+    activeBusinessId: selected.businessId,
+    lastSelectedBusinessId: selected.businessId,
+    activeRole: selected.role,
+  };
+};
+
+const syncResolvedBusinessContext = async (userDoc, userData, accessState) => {
+  const selected = accessState?.selectedMembership || null;
+  if (!selected?.businessId || accessState?.policy === 'platform-dev') {
+    return userData;
+  }
+
+  const currentBusinessId = resolveActiveBusinessIdFromUserData(userData);
+  const currentRole = normalizeRole(
+    userData?.activeRole || userData?.role || '',
+  );
+  const nextRole = normalizeRole(selected.role || '') || ROLE.CASHIER;
+  const updates = {};
+
+  if (currentBusinessId !== selected.businessId) {
+    updates.activeBusinessId = selected.businessId;
+    updates.lastSelectedBusinessId = selected.businessId;
+  }
+  if (currentRole !== nextRole) {
+    updates.activeRole = nextRole;
+  }
+
+  if (!Object.keys(updates).length) {
+    return userData;
+  }
+
+  await userDoc.ref.set(
+    {
+      ...updates,
+      updatedAt: FieldValue.serverTimestamp(),
+    },
+    { merge: true },
+  );
+
+  return {
+    ...userData,
+    ...updates,
+  };
+};
+
+const assertUserCanStartSession = async (userDoc, userData) => {
+  const accessState = await resolveUserBusinessAccessState({
+    userId: userDoc.id,
+    userData,
+  });
+  const syncedUser = await syncResolvedBusinessContext(
+    userDoc,
+    userData,
+    accessState,
+  );
+  return {
+    accessState,
+    user: applyResolvedBusinessContext(syncedUser, accessState),
+  };
 };
 
 const resolveBusinessIdFromEntry = (entry) => {
@@ -246,10 +340,7 @@ const updateBusinessRoleEntries = (
   businessId,
   userId,
   targetRole,
-  {
-    ensureEntry = false,
-    membership = false,
-  } = {},
+  { ensureEntry = false, membership = false } = {},
 ) => {
   const resolvedBusinessId = toCleanString(businessId);
   if (!resolvedBusinessId) {
@@ -269,7 +360,9 @@ const updateBusinessRoleEntries = (
     return {
       ...entry,
       role: targetRole,
-      ...(entry.activeRole != null || membership ? { activeRole: targetRole } : {}),
+      ...(entry.activeRole != null || membership
+        ? { activeRole: targetRole }
+        : {}),
       ...(entry.businessId != null ? { businessId: resolvedBusinessId } : {}),
       ...(entry.businessID != null ? { businessID: resolvedBusinessId } : {}),
     };
@@ -296,6 +389,28 @@ const updateBusinessRoleEntries = (
   }
 
   return updated;
+};
+
+const updateBusinessStatusEntries = (entries, businessId, nextStatus) => {
+  const resolvedBusinessId = toCleanString(businessId);
+  if (!resolvedBusinessId) {
+    return normalizeArray(entries).filter((entry) => isPlainObject(entry));
+  }
+
+  const normalizedEntries = normalizeArray(entries).filter((entry) =>
+    isPlainObject(entry),
+  );
+  if (!normalizedEntries.length) return entries;
+
+  return normalizedEntries.map((entry) => {
+    const entryBusinessId = resolveBusinessIdFromEntry(entry);
+    if (entryBusinessId !== resolvedBusinessId) return entry;
+    return {
+      ...entry,
+      status: nextStatus,
+      active: nextStatus === 'active',
+    };
+  });
 };
 
 const resolveRoleSwitchActor = async (request, action = 'role-switch') => {
@@ -357,7 +472,9 @@ const isUserBusinessOwner = async (businessId, userId) => {
   const ownerRole = normalizeRole(ownerMemberSnap.get('role') || '');
   if (ownerRole !== ROLE.OWNER) return false;
 
-  const status = String(ownerMemberSnap.get('status') || 'active').toLowerCase();
+  const status = String(
+    ownerMemberSnap.get('status') || 'active',
+  ).toLowerCase();
   return !INACTIVE_MEMBER_STATUSES.has(status);
 };
 
@@ -402,10 +519,7 @@ async function findUserByName(name) {
 
 async function findUserByEmail(email) {
   if (!email) return null;
-  const query = await usersCol
-    .where('email', '==', email)
-    .limit(1)
-    .get();
+  const query = await usersCol.where('email', '==', email).limit(1).get();
   if (!query.empty) {
     return query.docs[0];
   }
@@ -541,7 +655,7 @@ const buildSessionLogPayload = (doc) => {
   return {
     id: doc.id,
     userId: data.userId || null,
-    sessionId: data.sessionId || null,
+    sessionId: toSessionLogId(data.sessionId),
     event: data.event || null,
     context:
       typeof data.context === 'object' && data.context !== null
@@ -583,8 +697,9 @@ async function assertCanViewSessionLogs(actorUserId, targetUserId) {
 
   const actorSnap = await ensureUserExists(actorUserId);
   const actorData = actorSnap.data() || {};
-  const actorRole = (resolvePrivilegedRoleFromUserData(actorData) || '')
-    .toLowerCase();
+  const actorRole = (
+    resolvePrivilegedRoleFromUserData(actorData) || ''
+  ).toLowerCase();
 
   if (!PRIVILEGED_SESSION_LOG_ROLES.includes(actorRole)) {
     throw new HttpsError(
@@ -599,10 +714,12 @@ async function assertCanViewSessionLogs(actorUserId, targetUserId) {
 async function logSessionEvent({ userId, sessionId, event, context = {} }) {
   if (!userId || !sessionId || !event) return;
   if (!SESSION_LOG_WHITELIST.has(event)) return;
+  const sessionLogId = toSessionLogId(sessionId);
+  if (!sessionLogId) return;
   try {
     await sessionLogsCol.add({
       userId,
-      sessionId,
+      sessionId: sessionLogId,
       event,
       context,
       createdAt: FieldValue.serverTimestamp(),
@@ -698,8 +815,26 @@ async function terminateSession(docSnap, event = 'revoked', context = {}) {
     await docSnap.ref.delete();
     await logSessionEvent({ userId, sessionId, event, context: mergedContext });
   } catch (error) {
-    console.error(`terminate session error (${sessionId}):`, error);
+    console.error('terminate session error:', error);
   }
+}
+
+async function revokeUserSessions(userId, event = 'revoked', context = {}) {
+  const resolvedUserId = toCleanString(userId);
+  if (!resolvedUserId) return;
+
+  const snapshot = await sessionsCol
+    .where('userId', '==', resolvedUserId)
+    .get();
+  if (snapshot.empty) {
+    await updateUserPresence(resolvedUserId, 'offline');
+    return;
+  }
+
+  await Promise.allSettled(
+    snapshot.docs.map((docSnap) => terminateSession(docSnap, event, context)),
+  );
+  await updateUserPresence(resolvedUserId, 'offline');
 }
 
 async function enforceSessionLimit(
@@ -807,18 +942,22 @@ const extractRequestInfo = ({ data = {}, rawRequest } = {}) => {
   const sessionInfo = data.sessionInfo || {};
   const headers = rawRequest?.headers || {};
   const ip =
-    sessionInfo.ipAddress ||
+    toBoundedString(sessionInfo.ipAddress, SESSION_INFO_STRING_LIMIT) ||
     rawRequest?.ip ||
     headers['x-forwarded-for']?.split(',')[0]?.trim() ||
     null;
 
   return {
-    deviceId: sessionInfo.deviceId || null,
-    deviceLabel: sessionInfo.deviceLabel || sessionInfo.label || null,
-    userAgent: sessionInfo.userAgent || headers['user-agent'] || null,
-    platform: sessionInfo.platform || null,
-    ipAddress: ip,
-    metadata: sessionInfo.metadata || null,
+    deviceId: toBoundedString(sessionInfo.deviceId),
+    deviceLabel:
+      toBoundedString(sessionInfo.deviceLabel) ||
+      toBoundedString(sessionInfo.label),
+    userAgent:
+      toBoundedString(sessionInfo.userAgent, SESSION_INFO_USER_AGENT_LIMIT) ||
+      toBoundedString(headers['user-agent'], SESSION_INFO_USER_AGENT_LIMIT),
+    platform: toBoundedString(sessionInfo.platform),
+    ipAddress: toBoundedString(ip, SESSION_INFO_STRING_LIMIT),
+    metadata: sanitizeSessionInfoMetadata(sessionInfo.metadata),
   };
 };
 
@@ -921,245 +1060,253 @@ async function ensureUniqueUsername(name, excludeId = null) {
 export const clientPublicSignUp = onCall(
   { cors: CLIENT_AUTH_CORS_ORIGINS },
   async (request) => {
-  if (!canUsePublicSignup(request)) {
-    throw new HttpsError(
-      'permission-denied',
-      'El registro público no está habilitado. Contacte a soporte.',
-    );
-  }
+    if (!canUsePublicSignup(request)) {
+      throw new HttpsError(
+        'permission-denied',
+        'El registro público no está habilitado. Contacte a soporte.',
+      );
+    }
 
-  const { data = {} } = request || {};
-  const sessionInfo = extractRequestInfo(request);
-  const rawEmail = toCleanString(data.email);
-  const rawName = normalizeName(data.name || rawEmail || '');
-  const rawRealName = normalizeName(data.realName || data.displayName || '');
-  const password = data.password;
+    const { data = {} } = request || {};
+    const sessionInfo = extractRequestInfo(request);
+    const rawEmail = toCleanString(data.email);
+    const rawName = normalizeName(data.name || rawEmail || '');
+    const rawRealName = normalizeName(data.realName || data.displayName || '');
+    const password = data.password;
 
-  if (!rawEmail) {
-    throw new HttpsError('invalid-argument', 'Email requerido');
-  }
-  if (!String(rawEmail).includes('@')) {
-    throw new HttpsError('invalid-argument', 'Email inválido');
-  }
+    if (!rawEmail) {
+      throw new HttpsError('invalid-argument', 'Email requerido');
+    }
+    if (!String(rawEmail).includes('@')) {
+      throw new HttpsError('invalid-argument', 'Email inválido');
+    }
 
-  assertPassword(password);
+    assertPassword(password);
 
-  const name = rawName.toLowerCase();
-  const email = rawEmail.toLowerCase();
+    const name = rawName.toLowerCase();
+    const email = rawEmail.toLowerCase();
 
-  const existingUserByEmail = await findUserByEmail(email);
-  if (existingUserByEmail) {
-    throw new HttpsError(
-      'already-exists',
-      'Ya existe una cuenta registrada con este email.',
-    );
-  }
-  await ensureUniqueUsername(name);
+    const existingUserByEmail = await findUserByEmail(email);
+    if (existingUserByEmail) {
+      throw new HttpsError(
+        'already-exists',
+        'Ya existe una cuenta registrada con este email.',
+      );
+    }
+    await ensureUniqueUsername(name);
 
-  const id = nanoid(10);
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const now = Timestamp.now();
-  const resolvedDisplayName = rawRealName || name;
+    const id = nanoid(10);
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const now = Timestamp.now();
+    const resolvedDisplayName = rawRealName || name;
 
-  const newUserPayload = {
-    id,
-    name,
-    displayName: resolvedDisplayName,
-    realName: rawRealName || null,
-    activeBusinessId: null,
-    lastSelectedBusinessId: null,
-    activeRole: null,
-    number: null,
-    active: true,
-    password: hashedPassword,
-    loginAttempts: 0,
-    lockUntil: null,
-    passwordChangedAt: null,
-    email,
-    emailVerified: false,
-    phoneNumber: null,
-    phoneNumberE164: null,
-    phoneVerified: false,
-    providers: ['password'],
-    identities: {
-      password: {
-        uid: id,
-        email,
-        linkedAt: now,
+    const newUserPayload = {
+      id,
+      name,
+      displayName: resolvedDisplayName,
+      realName: rawRealName || null,
+      activeBusinessId: null,
+      lastSelectedBusinessId: null,
+      activeRole: null,
+      number: null,
+      active: true,
+      password: hashedPassword,
+      loginAttempts: 0,
+      lockUntil: null,
+      passwordChangedAt: null,
+      email,
+      emailVerified: false,
+      phoneNumber: null,
+      phoneNumberE164: null,
+      phoneVerified: false,
+      providers: ['password'],
+      identities: {
+        password: {
+          uid: id,
+          email,
+          linkedAt: now,
+        },
       },
-    },
-    photoURL: null,
-    meta: {
-      primaryProvider: 'password',
-      createdAt: now,
-      updatedAt: now,
-      lastLoginAt: null,
-    },
-    accessControl: [],
-    availableBusinesses: [],
-  };
-
-  await usersCol.doc(id).set(newUserPayload);
-
-  await enforceSessionLimit(id, {
-    allowSessions: MAX_PARALLEL_ACTIVE_SESSIONS,
-    reason: 'new-signup',
-  });
-
-  const { tokenId, expiresAt } = await createSessionToken(id, sessionInfo, {
-    displayName: resolvedDisplayName,
-    username: name,
-    realName: rawRealName || null,
-  });
-  const sessionSnap = await sessionsCol.doc(tokenId).get();
-  const session = buildSessionPayload(sessionSnap);
-
-  await logSessionEvent({
-    userId: id,
-    sessionId: tokenId,
-    event: 'login',
-    context: {
-      ...sessionInfo,
-      actor: {
-        id,
-        displayName: resolvedDisplayName,
-        username: name,
+      photoURL: null,
+      meta: {
+        primaryProvider: 'password',
+        createdAt: now,
+        updatedAt: now,
+        lastLoginAt: null,
       },
-      source: 'public-signup',
-    },
-  });
+      accessControl: [],
+      availableBusinesses: [],
+    };
 
-  const activeSessions = await syncUserPresence(id);
-  const firebaseCustomToken = await createFirebaseCustomToken(id);
+    await usersCol.doc(id).set(newUserPayload);
 
-  return {
-    ok: true,
-    userId: id,
-    user: sanitizeUserResponse(newUserPayload),
-    sessionToken: tokenId,
-    sessionExpiresAt: expiresAt.toMillis(),
-    session,
-    activeSessions,
-    businessHasOwners: false,
-    firebaseCustomToken,
-  };
-});
+    await enforceSessionLimit(id, {
+      allowSessions: MAX_PARALLEL_ACTIVE_SESSIONS,
+      reason: 'new-signup',
+    });
+
+    const { tokenId, expiresAt } = await createSessionToken(id, sessionInfo, {
+      displayName: resolvedDisplayName,
+      username: name,
+      realName: rawRealName || null,
+    });
+    const sessionSnap = await sessionsCol.doc(tokenId).get();
+    const session = buildSessionPayload(sessionSnap);
+
+    await logSessionEvent({
+      userId: id,
+      sessionId: tokenId,
+      event: 'login',
+      context: {
+        ...sessionInfo,
+        actor: {
+          id,
+          displayName: resolvedDisplayName,
+          username: name,
+        },
+        source: 'public-signup',
+      },
+    });
+
+    const activeSessions = await syncUserPresence(id);
+    const firebaseCustomToken = await createFirebaseCustomToken(id);
+
+    return {
+      ok: true,
+      userId: id,
+      user: sanitizeUserResponse(newUserPayload),
+      sessionToken: tokenId,
+      sessionExpiresAt: expiresAt.toMillis(),
+      session,
+      activeSessions,
+      businessHasOwners: false,
+      firebaseCustomToken,
+    };
+  },
+);
 
 export const clientLogin = onCall(
   {
     cors: CLIENT_AUTH_CORS_ORIGINS,
   },
   async (request) => {
-  const { data = {} } = request || {};
-  const { username, name, password } = data;
-  const sessionInfo = extractRequestInfo(request);
-  const identifier = normalizeName(username || name);
-  assertPassword(password, { requireComplexity: false });
-  if (!identifier) {
-    throw new HttpsError('invalid-argument', 'Nombre de usuario requerido');
-  }
-
-  const nowMs = Date.now();
-
-  const { userDoc, user } = await db.runTransaction(async (tx) => {
-    const snap = await findUserByName(identifier);
-    const payload = snap.data() || {};
-    const userData = payload;
-
-    if (userData.lockUntil && nowMs < userData.lockUntil) {
-      throw new HttpsError(
-        'failed-precondition',
-        'This account has been temporarily locked due to too many failed login attempts. Please try again later.',
-      );
+    const { data = {} } = request || {};
+    const { username, name, password } = data;
+    const sessionInfo = extractRequestInfo(request);
+    const identifier = normalizeName(username || name);
+    assertPassword(password, { requireComplexity: false });
+    if (!identifier) {
+      throw new HttpsError('invalid-argument', 'Nombre de usuario requerido');
     }
 
-    const ok = await bcrypt.compare(password, userData.password);
+    const nowMs = Date.now();
 
-    if (!ok) {
-      const updates = {
-        loginAttempts: FieldValue.increment(1),
-      };
-      const attempts = (userData.loginAttempts || 0) + 1;
-      if (attempts >= MAX_LOGIN_ATTEMPTS) {
-        updates.lockUntil = nowMs + LOCK_DURATION_MS;
+    const { userDoc, user } = await db.runTransaction(async (tx) => {
+      const snap = await findUserByName(identifier);
+      const payload = snap.data() || {};
+      const userData = payload;
+
+      if (userData.lockUntil && nowMs < userData.lockUntil) {
+        throw new HttpsError(
+          'failed-precondition',
+          'This account has been temporarily locked due to too many failed login attempts. Please try again later.',
+        );
       }
-      tx.update(snap.ref, updates);
-      throw new HttpsError('unauthenticated', 'Error: Contraseña incorrecta');
-    }
 
-    tx.update(snap.ref, {
-      loginAttempts: 0,
-      lockUntil: null,
+      const ok = await bcrypt.compare(password, userData.password);
+
+      if (!ok) {
+        const updates = {
+          loginAttempts: FieldValue.increment(1),
+        };
+        const attempts = (userData.loginAttempts || 0) + 1;
+        if (attempts >= MAX_LOGIN_ATTEMPTS) {
+          updates.lockUntil = nowMs + LOCK_DURATION_MS;
+        }
+        tx.update(snap.ref, updates);
+        throw new HttpsError('unauthenticated', 'Error: Contraseña incorrecta');
+      }
+
+      tx.update(snap.ref, {
+        loginAttempts: 0,
+        lockUntil: null,
+      });
+
+      return {
+        userDoc: snap,
+        user: userData,
+      };
     });
 
-    return {
-      userDoc: snap,
-      user: userData,
+    const authAccess = await assertUserCanStartSession(userDoc, user);
+    const sessionUser = authAccess.user;
+
+    await enforceSessionLimit(userDoc.id, {
+      allowSessions: MAX_PARALLEL_ACTIVE_SESSIONS,
+      reason: 'new-login',
+    });
+    const displayName =
+      sessionUser.realName ||
+      sessionUser.displayName ||
+      sessionUser.name ||
+      identifier;
+    const usernameValue = sessionUser.name || identifier;
+
+    const { tokenId, expiresAt } = await createSessionToken(
+      userDoc.id,
+      sessionInfo,
+      {
+        displayName,
+        username: usernameValue,
+        realName: user.realName || null,
+      },
+    );
+    const sessionSnap = await sessionsCol.doc(tokenId).get();
+    const session = buildSessionPayload(sessionSnap);
+
+    const logContext = {
+      ...sessionInfo,
+      actor: {
+        id: userDoc.id,
+        displayName,
+        username: usernameValue,
+      },
     };
-  });
 
-  await enforceSessionLimit(userDoc.id, {
-    allowSessions: MAX_PARALLEL_ACTIVE_SESSIONS,
-    reason: 'new-login',
-  });
-  const displayName =
-    user.realName || user.displayName || user.name || identifier;
-  const usernameValue = user.name || identifier;
+    await logSessionEvent({
+      userId: userDoc.id,
+      sessionId: tokenId,
+      event: 'login',
+      context: logContext,
+    });
+    const activeSessions = await syncUserPresence(userDoc.id);
+    const businessId =
+      sessionUser.activeBusinessId ||
+      sessionUser.businessId ||
+      sessionUser.businessID ||
+      userDoc.get('activeBusinessId') ||
+      null;
+    const businessHasOwners = await resolveBusinessHasOwners(businessId);
+    const firebaseCustomToken = await createFirebaseCustomToken(userDoc.id);
 
-  const { tokenId, expiresAt } = await createSessionToken(
-    userDoc.id,
-    sessionInfo,
-    {
-      displayName,
-      username: usernameValue,
-      realName: user.realName || null,
-    },
-  );
-  const sessionSnap = await sessionsCol.doc(tokenId).get();
-  const session = buildSessionPayload(sessionSnap);
-
-  const logContext = {
-    ...sessionInfo,
-    actor: {
-      id: userDoc.id,
-      displayName,
-      username: usernameValue,
-    },
-  };
-
-  await logSessionEvent({
-    userId: userDoc.id,
-    sessionId: tokenId,
-    event: 'login',
-    context: logContext,
-  });
-  const activeSessions = await syncUserPresence(userDoc.id);
-  const businessId =
-    userDoc.get('activeBusinessId') ||
-    user.activeBusinessId ||
-    user.businessId ||
-    user.businessID ||
-    null;
-  const businessHasOwners = await resolveBusinessHasOwners(businessId);
-  const firebaseCustomToken = await createFirebaseCustomToken(userDoc.id);
-
-  return {
-    ok: true,
-    userId: userDoc.id,
-    user: {
-      ...sanitizeUserResponse({
-        ...user,
-        id: user.id || userDoc.id,
-      }),
-    },
-    sessionToken: tokenId,
-    sessionExpiresAt: expiresAt.toMillis(),
-    session,
-    activeSessions,
-    businessHasOwners,
-    firebaseCustomToken,
-  };
-});
+    return {
+      ok: true,
+      userId: userDoc.id,
+      user: {
+        ...sanitizeUserResponse({
+          ...sessionUser,
+          id: sessionUser.id || userDoc.id,
+        }),
+      },
+      sessionToken: tokenId,
+      sessionExpiresAt: expiresAt.toMillis(),
+      session,
+      activeSessions,
+      businessHasOwners,
+      firebaseCustomToken,
+    };
+  },
+);
 
 export const clientLoginWithProvider = onCall(
   {
@@ -1228,9 +1375,7 @@ export const clientLoginWithProvider = onCall(
     if (userDoc) {
       const payload = userDoc.data() || {};
       const rootProviders = normalizeArray(payload.providers);
-      const currentProviders = rootProviders.length
-        ? [...rootProviders]
-        : [];
+      const currentProviders = rootProviders.length ? [...rootProviders] : [];
       const updates = {};
 
       if (!payload.email) updates.email = emailNormalized;
@@ -1328,21 +1473,22 @@ export const clientLoginWithProvider = onCall(
       userDoc = await usersCol.doc(id).get();
     }
 
+    const authAccess = await assertUserCanStartSession(
+      userDoc,
+      userDoc.data() || {},
+    );
+    const sessionUser = buildLegacyUserPayload(authAccess.user, userDoc.id);
+
     await enforceSessionLimit(userDoc.id, {
       allowSessions: MAX_PARALLEL_ACTIVE_SESSIONS,
       reason: 'new-login',
     });
-
-    const resolvedUser = buildLegacyUserPayload(
-      userDoc.data() || {},
-      userDoc.id,
-    );
     const displayNameValue =
-      resolvedUser.realName ||
-      resolvedUser.displayName ||
-      resolvedUser.name ||
+      sessionUser.realName ||
+      sessionUser.displayName ||
+      sessionUser.name ||
       email;
-    const usernameValue = resolvedUser.name || email;
+    const usernameValue = sessionUser.name || email;
 
     const { tokenId, expiresAt } = await createSessionToken(
       userDoc.id,
@@ -1350,7 +1496,7 @@ export const clientLoginWithProvider = onCall(
       {
         displayName: displayNameValue,
         username: usernameValue,
-        realName: resolvedUser.realName || null,
+        realName: sessionUser.realName || null,
       },
     );
     const sessionSnap = await sessionsCol.doc(tokenId).get();
@@ -1374,10 +1520,10 @@ export const clientLoginWithProvider = onCall(
     });
     const activeSessions = await syncUserPresence(userDoc.id);
     const businessId =
+      sessionUser.activeBusinessId ||
+      sessionUser.businessId ||
+      sessionUser.businessID ||
       userDoc.get('activeBusinessId') ||
-      resolvedUser.activeBusinessId ||
-      resolvedUser.businessId ||
-      resolvedUser.businessID ||
       null;
     const businessHasOwners = await resolveBusinessHasOwners(businessId);
     const firebaseCustomToken = await createFirebaseCustomToken(userDoc.id);
@@ -1387,8 +1533,8 @@ export const clientLoginWithProvider = onCall(
       userId: userDoc.id,
       user: {
         ...sanitizeUserResponse({
-          ...resolvedUser,
-          id: resolvedUser.id || userDoc.id,
+          ...sessionUser,
+          id: sessionUser.id || userDoc.id,
         }),
       },
       sessionToken: tokenId,
@@ -1404,119 +1550,121 @@ export const clientLoginWithProvider = onCall(
 export const clientClaimOwnership = onCall(
   { cors: CLIENT_AUTH_CORS_ORIGINS },
   async (request) => {
-  const { data = {} } = request || {};
-  const { sessionToken } = data;
+    const { data = {} } = request || {};
+    const { sessionToken } = data;
 
-  if (!sessionToken) {
-    throw new HttpsError('invalid-argument', 'sessionToken requerido');
-  }
-
-  const sessionSnap = await ensureActiveSession(sessionToken, {
-    eventContext: { action: 'claim-ownership' },
-  });
-  const userId = sessionSnap.get('userId');
-  const userSnap = await ensureUserExists(userId);
-
-  const userData = userSnap.data() || {};
-  const resolvedRole = resolvePrivilegedRoleFromUserData(userData);
-  if (![ROLE.ADMIN, ROLE.DEV].includes(resolvedRole)) {
-    throw new HttpsError(
-      'permission-denied',
-      'Solo administradores o dev pueden reclamar propiedad',
-    );
-  }
-
-  const businessId =
-    userSnap.get('activeBusinessId') ||
-    userSnap.get('lastSelectedBusinessId') ||
-    null;
-  if (!businessId) {
-    throw new HttpsError(
-      'failed-precondition',
-      'El usuario no tiene negocio asignado',
-    );
-  }
-
-  const businessRef = db.doc(`businesses/${businessId}`);
-
-  await db.runTransaction(async (tx) => {
-    const businessSnap = await tx.get(businessRef);
-    if (!businessSnap.exists) {
-      throw new HttpsError('not-found', 'Negocio no encontrado');
+    if (!sessionToken) {
+      throw new HttpsError('invalid-argument', 'sessionToken requerido');
     }
 
-    const ownerUid = toCleanString(businessSnap.get('ownerUid'));
-    if (ownerUid) {
+    const sessionSnap = await ensureActiveSession(sessionToken, {
+      eventContext: { action: 'claim-ownership' },
+    });
+    const userId = sessionSnap.get('userId');
+    const userSnap = await ensureUserExists(userId);
+
+    const userData = userSnap.data() || {};
+    const resolvedRole = resolvePrivilegedRoleFromUserData(userData);
+    if (![ROLE.ADMIN, ROLE.DEV].includes(resolvedRole)) {
       throw new HttpsError(
-        'failed-precondition',
-        'El negocio ya tiene propietario registrado.',
+        'permission-denied',
+        'Solo administradores o dev pueden reclamar propiedad',
       );
     }
 
-    const owners = businessSnap.get('owners');
-    if (Array.isArray(owners) && owners.length > 0) {
+    const businessId =
+      userSnap.get('activeBusinessId') ||
+      userSnap.get('lastSelectedBusinessId') ||
+      null;
+    if (!businessId) {
       throw new HttpsError(
         'failed-precondition',
-        'El negocio ya tiene propietario registrado.',
+        'El usuario no tiene negocio asignado',
       );
     }
 
-    tx.set(
-      businessRef,
-      {
-        ownerUid: userId,
-        owners: [userId],
-        billingContact: userId,
-      },
-      { merge: true },
-    );
+    const businessRef = db.doc(`businesses/${businessId}`);
 
-    const memberRef = db.doc(`businesses/${businessId}/members/${userId}`);
-    tx.set(
-      memberRef,
-      {
-        uid: userId,
-        userId,
-        businessId,
-        role: ROLE.ADMIN,
-        status: 'active',
-        source: 'claim_ownership_legacy_callable',
-        updatedAt: FieldValue.serverTimestamp(),
-      },
-      { merge: true },
-    );
+    await db.runTransaction(async (tx) => {
+      const businessSnap = await tx.get(businessRef);
+      if (!businessSnap.exists) {
+        throw new HttpsError('not-found', 'Negocio no encontrado');
+      }
 
-    tx.set(
-      userSnap.ref,
-      {
-        ...(resolvedRole !== ROLE.DEV
-          ? {
-            activeRole: ROLE.ADMIN,
-          }
-          : {}),
-        businessHasOwners: true,
-      },
-      { merge: true },
-    );
-  });
+      const ownerUid = toCleanString(businessSnap.get('ownerUid'));
+      if (ownerUid) {
+        throw new HttpsError(
+          'failed-precondition',
+          'El negocio ya tiene propietario registrado.',
+        );
+      }
 
-  return { ok: true, message: 'Ahora eres el propietario registrado.' };
-});
+      const owners = businessSnap.get('owners');
+      if (Array.isArray(owners) && owners.length > 0) {
+        throw new HttpsError(
+          'failed-precondition',
+          'El negocio ya tiene propietario registrado.',
+        );
+      }
+
+      tx.set(
+        businessRef,
+        {
+          ownerUid: userId,
+          owners: [userId],
+          billingContact: userId,
+        },
+        { merge: true },
+      );
+
+      const memberRef = db.doc(`businesses/${businessId}/members/${userId}`);
+      tx.set(
+        memberRef,
+        {
+          uid: userId,
+          userId,
+          businessId,
+          role: ROLE.ADMIN,
+          status: 'active',
+          source: 'claim_ownership_legacy_callable',
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+
+      tx.set(
+        userSnap.ref,
+        {
+          ...(resolvedRole !== ROLE.DEV
+            ? {
+                activeRole: ROLE.ADMIN,
+              }
+            : {}),
+          businessHasOwners: true,
+        },
+        { merge: true },
+      );
+    });
+
+    return { ok: true, message: 'Ahora eres el propietario registrado.' };
+  },
+);
 
 export const clientValidateSession = onCall(
   { cors: CLIENT_AUTH_CORS_ORIGINS },
   async (request) => {
-  const { data = {} } = request || {};
-  const { sessionToken } = data;
-  const snap = await ensureActiveSession(sessionToken, {
-    eventContext: { action: 'validate-session' },
-  });
-  const session = buildSessionPayload(snap);
-  return {
-    ok: true,
-    session,
-  };
-});
+    const { data = {} } = request || {};
+    const { sessionToken } = data;
+    const snap = await ensureActiveSession(sessionToken, {
+      eventContext: { action: 'validate-session' },
+    });
+    const session = buildSessionPayload(snap);
+    return {
+      ok: true,
+      session,
+    };
+  },
+);
 
 export const clientRefreshSession = onCall(
   {
@@ -1530,6 +1678,21 @@ export const clientRefreshSession = onCall(
     const snap = await ensureActiveSession(sessionToken, {
       eventContext: { action: 'refresh-session' },
     });
+    const sessionUserId = toCleanString(snap.get('userId'));
+    const userSnap = await ensureUserExists(sessionUserId);
+    let authAccess;
+    try {
+      authAccess = await assertUserCanStartSession(
+        userSnap,
+        userSnap.data() || {},
+      );
+    } catch (error) {
+      await terminateSession(snap, 'access-revoked', {
+        reason: 'user-or-business-inactive',
+      });
+      await updateUserPresence(sessionUserId, 'offline');
+      throw error;
+    }
 
     const updates = {
       lastActivity: FieldValue.serverTimestamp(),
@@ -1557,14 +1720,11 @@ export const clientRefreshSession = onCall(
     const refreshedSnap = await snap.ref.get();
     const session = buildSessionPayload(refreshedSnap);
     const activeSessions = await syncUserPresence(session.userId);
-    const userSnap = await ensureUserExists(session.userId);
     const userPayload = sanitizeUserDocResponse(
-      userSnap.data() || {},
+      authAccess.user,
       session.userId,
     );
-    const businessId =
-      userSnap.get('activeBusinessId') ||
-      null;
+    const businessId = authAccess.user?.activeBusinessId || null;
     const businessHasOwners = await resolveBusinessHasOwners(businessId);
     const firebaseCustomToken = await createFirebaseCustomToken(session.userId);
 
@@ -1642,218 +1802,459 @@ export const clientListSessionLogs = onCall(
 export const clientListSessions = onCall(
   { cors: CLIENT_AUTH_CORS_ORIGINS },
   async (request) => {
-  const { data = {} } = request || {};
-  const { sessionToken } = data;
-  const snap = await ensureActiveSession(sessionToken, {
-    eventContext: { action: 'list-sessions' },
-  });
-  const sessions = await syncUserPresence(snap.get('userId'));
+    const { data = {} } = request || {};
+    const { sessionToken } = data;
+    const snap = await ensureActiveSession(sessionToken, {
+      eventContext: { action: 'list-sessions' },
+    });
+    const sessions = await syncUserPresence(snap.get('userId'));
 
-  return {
-    ok: true,
-    currentSessionId: snap.id,
-    sessions,
-  };
-});
+    return {
+      ok: true,
+      currentSessionId: snap.id,
+      sessions,
+    };
+  },
+);
 
 export const clientRevokeSession = onCall(
   { cors: CLIENT_AUTH_CORS_ORIGINS },
   async (request) => {
-  const { data = {} } = request || {};
-  const { sessionToken, targetToken, targetUserId } = data;
+    const { data = {} } = request || {};
+    const { sessionToken, targetToken, targetUserId } = data;
 
-  if (!targetToken) {
-    throw new HttpsError(
-      'invalid-argument',
-      'Token de sesión objetivo requerido',
-    );
-  }
-
-  const actorSnap = await ensureActiveSession(sessionToken, {
-    eventContext: { action: 'revoke-session', targetToken },
-  });
-  const actorUserId = actorSnap.get('userId');
-
-  const targetSnap = await sessionsCol.doc(targetToken).get();
-  if (!targetSnap.exists) {
-    throw new HttpsError('not-found', 'Sesión no encontrada');
-  }
-
-  const sessionOwnerId = targetSnap.get('userId');
-
-  // Si el usuario intenta cerrar una sesión que no es suya
-  if (sessionOwnerId !== actorUserId) {
-    // Verificar si tiene permisos de administrador
-    // Reutilizamos la lógica de permisos de logs que permite a admins/devs/owners actuar sobre otros
-    await assertCanViewSessionLogs(actorUserId, sessionOwnerId);
-
-    // Opcional: Verificar que el targetUserId coincida si se envió
-    if (targetUserId && targetUserId !== sessionOwnerId) {
+    if (!targetToken) {
       throw new HttpsError(
         'invalid-argument',
-        'El usuario objetivo no coincide con la sesión',
+        'Token de sesión objetivo requerido',
       );
     }
-  }
 
-  const eventType = targetToken === sessionToken ? 'logout' : 'revoked';
+    const actorSnap = await ensureActiveSession(sessionToken, {
+      eventContext: {
+        action: 'revoke-session',
+        targetSelf: targetToken === sessionToken,
+      },
+    });
+    const actorUserId = actorSnap.get('userId');
 
-  // Registrar quién realizó la acción en el contexto
-  await terminateSession(targetSnap, eventType, {
-    requestedBy: actorUserId, // Guardamos el ID del usuario que solicitó el cierre
-    adminAction: sessionOwnerId !== actorUserId, // Flag para identificar cierres administrativos
-  });
+    const targetSnap = await sessionsCol.doc(targetToken).get();
+    if (!targetSnap.exists) {
+      throw new HttpsError('not-found', 'Sesión no encontrada');
+    }
 
-  const sessions = await syncUserPresence(sessionOwnerId);
+    const sessionOwnerId = targetSnap.get('userId');
 
-  return {
-    ok: true,
-    terminatedSession: targetToken,
-    sessions,
-  };
-});
+    // Si el usuario intenta cerrar una sesión que no es suya
+    if (sessionOwnerId !== actorUserId) {
+      // Verificar si tiene permisos de administrador
+      // Reutilizamos la lógica de permisos de logs que permite a admins/devs/owners actuar sobre otros
+      await assertCanViewSessionLogs(actorUserId, sessionOwnerId);
+
+      // Opcional: Verificar que el targetUserId coincida si se envió
+      if (targetUserId && targetUserId !== sessionOwnerId) {
+        throw new HttpsError(
+          'invalid-argument',
+          'El usuario objetivo no coincide con la sesión',
+        );
+      }
+    }
+
+    const eventType = targetToken === sessionToken ? 'logout' : 'revoked';
+
+    // Registrar quién realizó la acción en el contexto
+    await terminateSession(targetSnap, eventType, {
+      requestedBy: actorUserId, // Guardamos el ID del usuario que solicitó el cierre
+      adminAction: sessionOwnerId !== actorUserId, // Flag para identificar cierres administrativos
+    });
+
+    const sessions = await syncUserPresence(sessionOwnerId);
+
+    return {
+      ok: true,
+      terminatedSession: toSessionLogId(targetToken),
+      sessions,
+    };
+  },
+);
 
 export const clientLogout = onCall(
   { cors: CLIENT_AUTH_CORS_ORIGINS },
   async (request) => {
-  const { data = {} } = request || {};
-  const { sessionToken } = data;
-  if (!sessionToken) {
-    return { ok: true };
-  }
-
-  try {
-    const snap = await ensureActiveSession(sessionToken, {
-      eventContext: { action: 'logout' },
-    });
-    await terminateSession(snap, 'logout', { requestedBy: sessionToken });
-    await syncUserPresence(snap.get('userId'));
-  } catch (error) {
-    if (error instanceof HttpsError) {
-      if (error.code === 'unauthenticated') {
-        return { ok: true, status: 'already-expired' };
-      }
-      throw error;
+    const { data = {} } = request || {};
+    const { sessionToken } = data;
+    if (!sessionToken) {
+      return { ok: true };
     }
-    console.error('logout error:', error);
-    throw new HttpsError('internal', 'No se pudo cerrar la sesión');
-  }
 
-  return { ok: true };
-});
+    try {
+      const snap = await ensureActiveSession(sessionToken, {
+        eventContext: { action: 'logout' },
+      });
+      const userId = snap.get('userId');
+      await terminateSession(snap, 'logout', { requestedBy: userId });
+      await syncUserPresence(userId);
+    } catch (error) {
+      if (error instanceof HttpsError) {
+        if (error.code === 'unauthenticated') {
+          return { ok: true, status: 'already-expired' };
+        }
+        throw error;
+      }
+      console.error('logout error:', error);
+      throw new HttpsError('internal', 'No se pudo cerrar la sesión');
+    }
+
+    return { ok: true };
+  },
+);
 
 export const clientValidateUser = onCall(
   { cors: CLIENT_AUTH_CORS_ORIGINS },
   async ({ data }) => {
-  const { username, name, password, uid } = data || {};
-  const identifier = normalizeName(username || name);
-  assertPassword(password, { requireComplexity: false });
+    const { username, name, password, uid } = data || {};
+    const identifier = normalizeName(username || name);
+    assertPassword(password, { requireComplexity: false });
 
-  let snap;
-  if (uid) {
-    snap = await ensureUserExists(uid);
-  } else {
-    if (!identifier) {
-      throw new HttpsError('invalid-argument', 'Nombre de usuario requerido');
+    let snap;
+    if (uid) {
+      snap = await ensureUserExists(uid);
+    } else {
+      if (!identifier) {
+        throw new HttpsError('invalid-argument', 'Nombre de usuario requerido');
+      }
+      snap = await findUserByName(identifier);
     }
-    snap = await findUserByName(identifier);
-  }
 
-  const rawDoc = snap.data() || {};
-  const rootUser = isPlainObject(rawDoc) ? rawDoc : {};
-  const passwordHash =
-    typeof rootUser.password === 'string' ? rootUser.password : '';
-  if (!passwordHash) {
-    throw new HttpsError(
-      'failed-precondition',
-      'El usuario no tiene contraseña configurada en el esquema actual.',
-    );
-  }
-  const ok = await bcrypt.compare(password, passwordHash);
-  if (!ok) {
-    throw new HttpsError('unauthenticated', 'Contraseña incorrecta');
-  }
+    const rawDoc = snap.data() || {};
+    const rootUser = isPlainObject(rawDoc) ? rawDoc : {};
+    const passwordHash =
+      typeof rootUser.password === 'string' ? rootUser.password : '';
+    if (!passwordHash) {
+      throw new HttpsError(
+        'failed-precondition',
+        'El usuario no tiene contraseña configurada en el esquema actual.',
+      );
+    }
+    const ok = await bcrypt.compare(password, passwordHash);
+    if (!ok) {
+      throw new HttpsError('unauthenticated', 'Contraseña incorrecta');
+    }
 
-  const responseUser = sanitizeUserResponse({
-    ...rootUser,
-    id: rootUser.id || snap.id,
-  });
+    const responseUser = sanitizeUserResponse({
+      ...rootUser,
+      id: rootUser.id || snap.id,
+    });
 
-  return {
-    ok: true,
-    userId: snap.id,
-    user: {
-      ...responseUser,
-    },
-  };
-});
+    return {
+      ok: true,
+      userId: snap.id,
+      user: {
+        ...responseUser,
+      },
+    };
+  },
+);
 
 export const clientSeedBusinessWithUsers = onCall(
   { cors: CLIENT_AUTH_CORS_ORIGINS },
   async (request) => {
-  const { userId: actorUserId, role: actorRole } = await assertAdminAccess(
-    request,
-    'client-seed-business-with-users',
-  );
-  const { data = {} } = request || {};
-  const businessInput = isPlainObject(data.business) ? data.business : null;
-  const usersInput = normalizeArray(data.users).filter((entry) =>
-    isPlainObject(entry),
-  );
-
-  if (!businessInput) {
-    throw new HttpsError('invalid-argument', 'business requerido');
-  }
-  if (!usersInput.length) {
-    throw new HttpsError(
-      'invalid-argument',
-      'Debe incluir al menos un usuario para crear el negocio.',
+    const { userId: actorUserId, role: actorRole } = await assertAdminAccess(
+      request,
+      'client-seed-business-with-users',
     );
-  }
-
-  let writePolicy;
-  try {
-    writePolicy = assertMembershipWritePolicy(resolveMembershipWritePolicy());
-  } catch (policyError) {
-    throw new HttpsError(
-      'failed-precondition',
-      policyError?.message || 'Configuración de escritura inválida',
+    const { data = {} } = request || {};
+    const businessInput = isPlainObject(data.business) ? data.business : null;
+    const usersInput = normalizeArray(data.users).filter((entry) =>
+      isPlainObject(entry),
     );
-  }
 
-  const businessId =
-    typeof businessInput.id === 'string' && businessInput.id.trim()
-      ? businessInput.id.trim()
-      : nanoid();
+    if (!businessInput) {
+      throw new HttpsError('invalid-argument', 'business requerido');
+    }
+    if (!usersInput.length) {
+      throw new HttpsError(
+        'invalid-argument',
+        'Debe incluir al menos un usuario para crear el negocio.',
+      );
+    }
 
-  const seenNames = new Set();
-  const seenEmails = new Set();
-  const preparedUsers = [];
+    let writePolicy;
+    try {
+      writePolicy = assertMembershipWritePolicy(resolveMembershipWritePolicy());
+    } catch (policyError) {
+      throw new HttpsError(
+        'failed-precondition',
+        policyError?.message || 'Configuración de escritura inválida',
+      );
+    }
 
-  for (const rawEntry of usersInput) {
-    const name = normalizeName(rawEntry.name).toLowerCase();
+    const businessId =
+      typeof businessInput.id === 'string' && businessInput.id.trim()
+        ? businessInput.id.trim()
+        : nanoid();
+
+    const seenNames = new Set();
+    const seenEmails = new Set();
+    const preparedUsers = [];
+
+    for (const rawEntry of usersInput) {
+      const name = normalizeName(rawEntry.name).toLowerCase();
+      if (!name) {
+        throw new HttpsError(
+          'invalid-argument',
+          'Todos los usuarios requieren name.',
+        );
+      }
+      if (seenNames.has(name)) {
+        throw new HttpsError(
+          'already-exists',
+          `Usuario duplicado en la solicitud: ${name}`,
+        );
+      }
+      seenNames.add(name);
+
+      const password =
+        typeof rawEntry.password === 'string' ? rawEntry.password : '';
+      assertPassword(password);
+
+      const resolvedRole = normalizeRole(rawEntry.role || '');
+      if (!resolvedRole || !ROLE_SWITCH_ALLOWED_ROLES.has(resolvedRole)) {
+        throw new HttpsError('invalid-argument', `Rol inválido para ${name}.`);
+      }
+      if (resolvedRole === ROLE.DEV && actorRole !== ROLE.DEV) {
+        throw new HttpsError(
+          'permission-denied',
+          'Solo un usuario dev puede asignar rol dev.',
+        );
+      }
+
+      const normalizedEmail =
+        typeof rawEntry.email === 'string' && rawEntry.email.trim()
+          ? rawEntry.email.trim().toLowerCase()
+          : null;
+      if (normalizedEmail) {
+        if (seenEmails.has(normalizedEmail)) {
+          throw new HttpsError(
+            'already-exists',
+            `Correo duplicado en la solicitud: ${normalizedEmail}`,
+          );
+        }
+        seenEmails.add(normalizedEmail);
+      }
+
+      preparedUsers.push({
+        id: nanoid(10),
+        name,
+        password,
+        role: resolvedRole,
+        realName: toCleanString(rawEntry.realName) || null,
+        email: normalizedEmail,
+        active: rawEntry.active !== false,
+      });
+    }
+
+    const ownerUsers = preparedUsers.filter((user) => user.role === ROLE.OWNER);
+    if (ownerUsers.length !== 1) {
+      throw new HttpsError(
+        'invalid-argument',
+        'Debe existir exactamente 1 usuario con rol owner.',
+      );
+    }
+
+    await assertBusinessCreationLimit({ ownerUid: actorUserId });
+
+    for (const user of preparedUsers) {
+      await ensureUniqueUsername(user.name);
+      if (user.email) {
+        const emailSnap = await findUserByEmail(user.email);
+        if (emailSnap?.exists) {
+          throw new HttpsError(
+            'already-exists',
+            `Ya existe un usuario con el correo ${user.email}.`,
+          );
+        }
+      }
+    }
+
+    const hashedPasswords = await Promise.all(
+      preparedUsers.map((user) => bcrypt.hash(user.password, 10)),
+    );
+    const now = Timestamp.now();
+    const ownerUser = ownerUsers[0];
+    const businessName = toCleanString(businessInput.name);
+
+    await db.runTransaction(async (tx) => {
+      const counterRef = db.doc(`businesses/${businessId}/counters/users`);
+      const counterSnap = await tx.get(counterRef);
+      const currentCounter =
+        counterSnap.exists && typeof counterSnap.get('value') === 'number'
+          ? counterSnap.get('value')
+          : 0;
+
+      await provisionBusinessCoreInTransaction({
+        tx,
+        businessId,
+        business: businessInput,
+        createdBy: actorUserId,
+        requireNewBusiness: true,
+      });
+
+      let nextNumber = currentCounter;
+      for (let index = 0; index < preparedUsers.length; index += 1) {
+        const user = preparedUsers[index];
+        const hashedPassword = hashedPasswords[index];
+        nextNumber += 1;
+        user.number = nextNumber;
+
+        const membershipEntry = {
+          businessId,
+          role: user.role,
+          status: 'active',
+          ...(businessName ? { businessName } : {}),
+        };
+
+        const payload = {
+          id: user.id,
+          name: user.name,
+          realName: user.realName,
+          number: nextNumber,
+          password: hashedPassword,
+          active: user.active,
+          email: user.email,
+          activeBusinessId: businessId,
+          lastSelectedBusinessId: businessId,
+          activeRole: user.role,
+          createdAt: now,
+          updatedAt: now,
+          loginAttempts: 0,
+          lockUntil: null,
+          accessControl: [membershipEntry],
+        };
+
+        const userRef = usersCol.doc(user.id);
+        const memberRef = db.doc(`businesses/${businessId}/members/${user.id}`);
+        tx.set(userRef, payload);
+
+        if (writePolicy.writeCanonical) {
+          tx.set(
+            memberRef,
+            {
+              uid: user.id,
+              userId: user.id,
+              businessId,
+              role: user.role,
+              status: 'active',
+              source: 'client-seed-business-with-users',
+              createdBy: actorUserId,
+              updatedAt: FieldValue.serverTimestamp(),
+              createdAt: FieldValue.serverTimestamp(),
+            },
+            { merge: true },
+          );
+        }
+      }
+
+      tx.set(
+        counterRef,
+        {
+          value: nextNumber,
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+
+      await incrementBusinessUsageMetric({
+        businessId,
+        metricKey: 'usersTotal',
+        incrementBy: preparedUsers.length,
+        tx,
+      });
+
+      const businessRef = db.doc(`businesses/${businessId}`);
+      tx.set(
+        businessRef,
+        {
+          ownerUid: ownerUser.id,
+          owners: [ownerUser.id],
+          billingContact: ownerUser.id,
+          billingContactUid: ownerUser.id,
+          updatedAt: FieldValue.serverTimestamp(),
+          business: {
+            ownerUid: ownerUser.id,
+            owners: [ownerUser.id],
+            billingContact: ownerUser.id,
+            billingContactUid: ownerUser.id,
+            updatedAt: FieldValue.serverTimestamp(),
+          },
+        },
+        { merge: true },
+      );
+    });
+
+    await runBusinessPostProvisioning({
+      businessId,
+      actorUserId: actorUserId,
+    });
+
+    return {
+      ok: true,
+      id: businessId,
+      users: preparedUsers.map((user) =>
+        sanitizeUserResponse({
+          id: user.id,
+          name: user.name,
+          realName: user.realName,
+          email: user.email,
+          active: user.active,
+          activeRole: user.role,
+          role: user.role,
+          activeBusinessId: businessId,
+          lastSelectedBusinessId: businessId,
+          number: typeof user.number === 'number' ? user.number : null,
+        }),
+      ),
+    };
+  },
+);
+
+export const clientSignUp = onCall(
+  { cors: CLIENT_AUTH_CORS_ORIGINS },
+  async (request) => {
+    const { userId: actorUserId, role: actorRole } = await assertAdminAccess(
+      request,
+      'client-signup',
+    );
+    const { data } = request || {};
+    const userData = data?.userData || {};
+    const { name, password, businessID, role } = userData;
+    const assignAsBusinessOwner = userData?.assignAsBusinessOwner === true;
+
     if (!name) {
       throw new HttpsError(
         'invalid-argument',
-        'Todos los usuarios requieren name.',
+        'Error: Es obligatorio proporcionar un nombre de usuario.',
       );
     }
-    if (seenNames.has(name)) {
-      throw new HttpsError(
-        'already-exists',
-        `Usuario duplicado en la solicitud: ${name}`,
-      );
-    }
-    seenNames.add(name);
-
-    const password = typeof rawEntry.password === 'string' ? rawEntry.password : '';
     assertPassword(password);
+    if (!businessID) {
+      throw new HttpsError(
+        'invalid-argument',
+        'Error: Es obligatorio proporcionar un ID de negocio.',
+      );
+    }
+    if (!role) {
+      throw new HttpsError(
+        'invalid-argument',
+        'Error: Es obligatorio seleccionar un rol.',
+      );
+    }
 
-    const resolvedRole = normalizeRole(rawEntry.role || '');
+    const resolvedRole = normalizeRole(role);
     if (!resolvedRole || !ROLE_SWITCH_ALLOWED_ROLES.has(resolvedRole)) {
       throw new HttpsError(
         'invalid-argument',
-        `Rol inválido para ${name}.`,
+        'role inválido. Roles permitidos: owner, admin, manager, cashier, buyer, dev.',
       );
     }
     if (resolvedRole === ROLE.DEV && actorRole !== ROLE.DEV) {
@@ -1862,124 +2263,105 @@ export const clientSeedBusinessWithUsers = onCall(
         'Solo un usuario dev puede asignar rol dev.',
       );
     }
+    if (assignAsBusinessOwner && resolvedRole !== ROLE.OWNER) {
+      throw new HttpsError(
+        'invalid-argument',
+        'assignAsBusinessOwner requiere role owner.',
+      );
+    }
+
+    const normalizedName = normalizeName(name).toLowerCase();
+    await ensureUniqueUsername(normalizedName);
+
+    await assertBusinessSubscriptionAccess({
+      businessId: businessID,
+      action: 'write',
+      operation: LIMIT_OPERATION_KEYS.USER_CREATE,
+    });
+
+    const id = nanoid(10);
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const nextSequentialNumber = await getNextUserNumber(businessID);
 
     const normalizedEmail =
-      typeof rawEntry.email === 'string' && rawEntry.email.trim()
-        ? rawEntry.email.trim().toLowerCase()
+      typeof userData.email === 'string' && userData.email.trim()
+        ? userData.email.trim().toLowerCase()
         : null;
-    if (normalizedEmail) {
-      if (seenEmails.has(normalizedEmail)) {
-        throw new HttpsError(
-          'already-exists',
-          `Correo duplicado en la solicitud: ${normalizedEmail}`,
-        );
-      }
-      seenEmails.add(normalizedEmail);
+
+    let writePolicy;
+    try {
+      writePolicy = assertMembershipWritePolicy(resolveMembershipWritePolicy());
+    } catch (policyError) {
+      throw new HttpsError(
+        'failed-precondition',
+        policyError?.message || 'Configuración de escritura inválida',
+      );
     }
 
-    preparedUsers.push({
-      id: nanoid(10),
-      name,
-      password,
-      role: resolvedRole,
-      realName: toCleanString(rawEntry.realName) || null,
+    const payload = {
+      ...userData,
+      id,
+      name: normalizedName,
+      number: nextSequentialNumber,
+      password: hashedPassword,
+      active: true,
       email: normalizedEmail,
-      active: rawEntry.active !== false,
-    });
-  }
+      activeBusinessId: businessID,
+      lastSelectedBusinessId: businessID,
+      activeRole: resolvedRole,
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+      loginAttempts: 0,
+      lockUntil: null,
+    };
 
-  const ownerUsers = preparedUsers.filter((user) => user.role === ROLE.OWNER);
-  if (ownerUsers.length !== 1) {
-    throw new HttpsError(
-      'invalid-argument',
-      'Debe existir exactamente 1 usuario con rol owner.',
-    );
-  }
+    delete payload.user;
 
-  await assertBusinessCreationLimit({ ownerUid: actorUserId });
+    const userRef = usersCol.doc(id);
+    const businessRef = db.doc(`businesses/${businessID}`);
+    const memberRef = db.doc(`businesses/${businessID}/members/${id}`);
 
-  for (const user of preparedUsers) {
-    await ensureUniqueUsername(user.name);
-    if (user.email) {
-      const emailSnap = await findUserByEmail(user.email);
-      if (emailSnap?.exists) {
-        throw new HttpsError(
-          'already-exists',
-          `Ya existe un usuario con el correo ${user.email}.`,
-        );
+    await db.runTransaction(async (tx) => {
+      const businessSnap = await tx.get(businessRef);
+      if (!businessSnap.exists) {
+        throw new HttpsError('not-found', 'Negocio no encontrado');
       }
-    }
-  }
 
-  const hashedPasswords = await Promise.all(
-    preparedUsers.map((user) => bcrypt.hash(user.password, 10)),
-  );
-  const now = Timestamp.now();
-  const ownerUser = ownerUsers[0];
-  const businessName = toCleanString(businessInput.name);
-
-  await db.runTransaction(async (tx) => {
-    const counterRef = db.doc(`businesses/${businessId}/counters/users`);
-    const counterSnap = await tx.get(counterRef);
-    const currentCounter =
-      counterSnap.exists && typeof counterSnap.get('value') === 'number'
-        ? counterSnap.get('value')
-        : 0;
-
-    await provisionBusinessCoreInTransaction({
-      tx,
-      businessId,
-      business: businessInput,
-      createdBy: actorUserId,
-      requireNewBusiness: true,
-    });
-
-    let nextNumber = currentCounter;
-    for (let index = 0; index < preparedUsers.length; index += 1) {
-      const user = preparedUsers[index];
-      const hashedPassword = hashedPasswords[index];
-      nextNumber += 1;
-      user.number = nextNumber;
+      const businessNode = isPlainObject(businessSnap.get('business'))
+        ? businessSnap.get('business')
+        : {};
+      const businessName =
+        toCleanString(businessSnap.get('name')) ||
+        toCleanString(businessNode.name) ||
+        null;
 
       const membershipEntry = {
-        businessId,
-        role: user.role,
+        businessId: businessID,
+        role: resolvedRole,
         status: 'active',
         ...(businessName ? { businessName } : {}),
       };
 
-      const payload = {
-        id: user.id,
-        name: user.name,
-        realName: user.realName,
-        number: nextNumber,
-        password: hashedPassword,
-        active: user.active,
-        email: user.email,
-        activeBusinessId: businessId,
-        lastSelectedBusinessId: businessId,
-        activeRole: user.role,
-        createdAt: now,
-        updatedAt: now,
-        loginAttempts: 0,
-        lockUntil: null,
-        accessControl: [membershipEntry],
+      // Keep membership cache on the user doc in all modes (frontend reads from users/{uid}).
+      const accessControlPayload = [membershipEntry];
+      const userDocPayload = {
+        ...payload,
+        accessControl: accessControlPayload,
       };
 
-      const userRef = usersCol.doc(user.id);
-      const memberRef = db.doc(`businesses/${businessId}/members/${user.id}`);
-      tx.set(userRef, payload);
+      tx.set(userRef, userDocPayload);
 
       if (writePolicy.writeCanonical) {
         tx.set(
           memberRef,
           {
-            uid: user.id,
-            userId: user.id,
-            businessId,
-            role: user.role,
+            uid: id,
+            userId: id,
+            businessId: businessID,
+            role: resolvedRole,
             status: 'active',
-            source: 'client-seed-business-with-users',
+            source: 'client-signup',
             createdBy: actorUserId,
             updatedAt: FieldValue.serverTimestamp(),
             createdAt: FieldValue.serverTimestamp(),
@@ -1987,631 +2369,476 @@ export const clientSeedBusinessWithUsers = onCall(
           { merge: true },
         );
       }
-    }
 
-    tx.set(
-      counterRef,
-      {
-        value: nextNumber,
-        updatedAt: FieldValue.serverTimestamp(),
-      },
-      { merge: true },
-    );
+      if (resolvedRole === ROLE.OWNER) {
+        const ownerUid = toCleanString(businessSnap.get('ownerUid'));
+        const owners = normalizeArray(businessSnap.get('owners'))
+          .map((entry) => toCleanString(entry))
+          .filter(Boolean);
+        const hasOwners = Boolean(ownerUid) || owners.length > 0;
 
-    await incrementBusinessUsageMetric({
-      businessId,
-      metricKey: 'usersTotal',
-      incrementBy: preparedUsers.length,
-      tx,
-    });
+        const actorOwnsBusiness =
+          (ownerUid && ownerUid === actorUserId) ||
+          owners.includes(actorUserId);
+        const shouldTransferOwnership =
+          assignAsBusinessOwner &&
+          (!hasOwners || actorOwnsBusiness || actorRole === ROLE.DEV);
 
-    const businessRef = db.doc(`businesses/${businessId}`);
-    tx.set(
-      businessRef,
-      {
-        ownerUid: ownerUser.id,
-        owners: [ownerUser.id],
-        billingContact: ownerUser.id,
-        billingContactUid: ownerUser.id,
-        updatedAt: FieldValue.serverTimestamp(),
-        business: {
-          ownerUid: ownerUser.id,
-          owners: [ownerUser.id],
-          billingContact: ownerUser.id,
-          billingContactUid: ownerUser.id,
-          updatedAt: FieldValue.serverTimestamp(),
-        },
-      },
-      { merge: true },
-    );
-  });
+        if (assignAsBusinessOwner && !shouldTransferOwnership) {
+          throw new HttpsError(
+            'permission-denied',
+            'No se puede reasignar el owner del negocio desde este contexto.',
+          );
+        }
 
-  await runBusinessPostProvisioning({
-    businessId,
-    actorUserId: actorUserId,
-  });
-
-  return {
-    ok: true,
-    id: businessId,
-    users: preparedUsers.map((user) =>
-      sanitizeUserResponse({
-        id: user.id,
-        name: user.name,
-        realName: user.realName,
-        email: user.email,
-        active: user.active,
-        activeRole: user.role,
-        role: user.role,
-        activeBusinessId: businessId,
-        lastSelectedBusinessId: businessId,
-        number: typeof user.number === 'number' ? user.number : null,
-      }),
-    ),
-  };
-});
-
-export const clientSignUp = onCall(
-  { cors: CLIENT_AUTH_CORS_ORIGINS },
-  async (request) => {
-  const { userId: actorUserId, role: actorRole } = await assertAdminAccess(
-    request,
-    'client-signup',
-  );
-  const { data } = request || {};
-  const userData = data?.userData || {};
-  const { name, password, businessID, role } = userData;
-  const assignAsBusinessOwner = userData?.assignAsBusinessOwner === true;
-
-  if (!name) {
-    throw new HttpsError(
-      'invalid-argument',
-      'Error: Es obligatorio proporcionar un nombre de usuario.',
-    );
-  }
-  assertPassword(password);
-  if (!businessID) {
-    throw new HttpsError(
-      'invalid-argument',
-      'Error: Es obligatorio proporcionar un ID de negocio.',
-    );
-  }
-  if (!role) {
-    throw new HttpsError(
-      'invalid-argument',
-      'Error: Es obligatorio seleccionar un rol.',
-    );
-  }
-
-  const resolvedRole = normalizeRole(role);
-  if (!resolvedRole || !ROLE_SWITCH_ALLOWED_ROLES.has(resolvedRole)) {
-    throw new HttpsError(
-      'invalid-argument',
-      'role inválido. Roles permitidos: owner, admin, manager, cashier, buyer, dev.',
-    );
-  }
-  if (resolvedRole === ROLE.DEV && actorRole !== ROLE.DEV) {
-    throw new HttpsError(
-      'permission-denied',
-      'Solo un usuario dev puede asignar rol dev.',
-    );
-  }
-  if (assignAsBusinessOwner && resolvedRole !== ROLE.OWNER) {
-    throw new HttpsError(
-      'invalid-argument',
-      'assignAsBusinessOwner requiere role owner.',
-    );
-  }
-
-  const normalizedName = normalizeName(name).toLowerCase();
-  await ensureUniqueUsername(normalizedName);
-
-  await assertBusinessSubscriptionAccess({
-    businessId: businessID,
-    action: 'write',
-    operation: LIMIT_OPERATION_KEYS.USER_CREATE,
-  });
-
-  const id = nanoid(10);
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  const nextSequentialNumber = await getNextUserNumber(businessID);
-
-  const normalizedEmail =
-    typeof userData.email === 'string' && userData.email.trim()
-      ? userData.email.trim().toLowerCase()
-      : null;
-
-  let writePolicy;
-  try {
-    writePolicy = assertMembershipWritePolicy(resolveMembershipWritePolicy());
-  } catch (policyError) {
-    throw new HttpsError(
-      'failed-precondition',
-      policyError?.message || 'Configuración de escritura inválida',
-    );
-  }
-
-  const payload = {
-    ...userData,
-    id,
-    name: normalizedName,
-    number: nextSequentialNumber,
-    password: hashedPassword,
-    active: true,
-    email: normalizedEmail,
-    activeBusinessId: businessID,
-    lastSelectedBusinessId: businessID,
-    activeRole: resolvedRole,
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
-    loginAttempts: 0,
-    lockUntil: null,
-  };
-
-  delete payload.user;
-
-  const userRef = usersCol.doc(id);
-  const businessRef = db.doc(`businesses/${businessID}`);
-  const memberRef = db.doc(`businesses/${businessID}/members/${id}`);
-
-  await db.runTransaction(async (tx) => {
-    const businessSnap = await tx.get(businessRef);
-    if (!businessSnap.exists) {
-      throw new HttpsError('not-found', 'Negocio no encontrado');
-    }
-
-    const businessNode = isPlainObject(businessSnap.get('business'))
-      ? businessSnap.get('business')
-      : {};
-    const businessName =
-      toCleanString(businessSnap.get('name')) ||
-      toCleanString(businessNode.name) ||
-      null;
-
-    const membershipEntry = {
-      businessId: businessID,
-      role: resolvedRole,
-      status: 'active',
-      ...(businessName ? { businessName } : {}),
-    };
-
-    // Keep membership cache on the user doc in all modes (frontend reads from users/{uid}).
-    const accessControlPayload = [membershipEntry];
-    const userDocPayload = {
-      ...payload,
-      accessControl: accessControlPayload,
-    };
-
-    tx.set(userRef, userDocPayload);
-
-    if (writePolicy.writeCanonical) {
-      tx.set(
-        memberRef,
-        {
-          uid: id,
-          userId: id,
-          businessId: businessID,
-          role: resolvedRole,
-          status: 'active',
-          source: 'client-signup',
-          createdBy: actorUserId,
-          updatedAt: FieldValue.serverTimestamp(),
-          createdAt: FieldValue.serverTimestamp(),
-        },
-        { merge: true },
-      );
-    }
-
-    if (resolvedRole === ROLE.OWNER) {
-      const ownerUid = toCleanString(businessSnap.get('ownerUid'));
-      const owners = normalizeArray(businessSnap.get('owners'))
-        .map((entry) => toCleanString(entry))
-        .filter(Boolean);
-      const hasOwners = Boolean(ownerUid) || owners.length > 0;
-
-      const actorOwnsBusiness =
-        (ownerUid && ownerUid === actorUserId) || owners.includes(actorUserId);
-      const shouldTransferOwnership =
-        assignAsBusinessOwner && (!hasOwners || actorOwnsBusiness || actorRole === ROLE.DEV);
-
-      if (assignAsBusinessOwner && !shouldTransferOwnership) {
-        throw new HttpsError(
-          'permission-denied',
-          'No se puede reasignar el owner del negocio desde este contexto.',
-        );
-      }
-
-      if (!hasOwners || shouldTransferOwnership) {
-        tx.set(
-          businessRef,
-          {
-            ownerUid: id,
-            owners: [id],
-            billingContact: id,
-            billingContactUid: id,
-            updatedAt: FieldValue.serverTimestamp(),
-            business: {
-              ...businessNode,
+        if (!hasOwners || shouldTransferOwnership) {
+          tx.set(
+            businessRef,
+            {
               ownerUid: id,
               owners: [id],
               billingContact: id,
               billingContactUid: id,
               updatedAt: FieldValue.serverTimestamp(),
+              business: {
+                ...businessNode,
+                ownerUid: id,
+                owners: [id],
+                billingContact: id,
+                billingContactUid: id,
+                updatedAt: FieldValue.serverTimestamp(),
+              },
             },
-          },
-          { merge: true },
-        );
+            { merge: true },
+          );
+        }
       }
-    }
 
-    await incrementBusinessUsageMetric({
-      businessId: businessID,
-      metricKey: 'usersTotal',
-      incrementBy: 1,
-      tx,
+      await incrementBusinessUsageMetric({
+        businessId: businessID,
+        metricKey: 'usersTotal',
+        incrementBy: 1,
+        tx,
+      });
     });
-  });
 
-  return {
-    ok: true,
-    id,
-    user: sanitizeUserResponse(payload),
-  };
-});
+    return {
+      ok: true,
+      id,
+      user: sanitizeUserResponse(payload),
+    };
+  },
+);
 
 export const clientUpdateUser = onCall(
   { cors: CLIENT_AUTH_CORS_ORIGINS },
   async (request) => {
-  const {
-    userId: actorUserId,
-    adminSnap,
-    role: actorRole,
-  } = await assertAdminAccess(request, 'client-update-user');
-  const { data } = request || {};
-  const payload = data?.userData || {};
-  const userId = payload?.id;
-  if (!userId) {
-    throw new HttpsError('invalid-argument', 'ID de usuario requerido');
-  }
+    const {
+      userId: actorUserId,
+      adminSnap,
+      role: actorRole,
+    } = await assertAdminAccess(request, 'client-update-user');
+    const { data } = request || {};
+    const payload = data?.userData || {};
+    const userId = payload?.id;
+    if (!userId) {
+      throw new HttpsError('invalid-argument', 'ID de usuario requerido');
+    }
 
-  const snap = await ensureUserExists(userId);
-  const snapData = snap.data() || {};
-  const currentUser = {
-    ...(isPlainObject(snapData) ? snapData : {}),
-  };
-  const targetGlobalRole = resolvePrivilegedRoleFromUserData(snapData);
+    const snap = await ensureUserExists(userId);
+    const snapData = snap.data() || {};
+    const currentUser = {
+      ...(isPlainObject(snapData) ? snapData : {}),
+    };
+    const targetGlobalRole = resolvePrivilegedRoleFromUserData(snapData);
 
-  const name = normalizeName(payload.name || currentUser.name);
-  if (!name) {
-    throw new HttpsError(
-      'invalid-argument',
-      'Error: Es obligatorio proporcionar un nombre de usuario.',
-    );
-  }
-  await ensureUniqueUsername(name, userId);
-  if (Object.prototype.hasOwnProperty.call(payload, 'password')) {
-    assertPassword(payload.password);
-  }
-
-  const requestedRole = normalizeRole(payload.activeRole || payload.role || '');
-  if (actorRole !== ROLE.DEV && requestedRole === ROLE.DEV) {
-    throw new HttpsError(
-      'permission-denied',
-      'Solo un usuario dev puede asignar rol dev.',
-    );
-  }
-
-  if (
-    actorRole !== ROLE.DEV &&
-    Object.prototype.hasOwnProperty.call(payload, 'platformRoles')
-  ) {
-    throw new HttpsError(
-      'permission-denied',
-      'Solo un usuario dev puede modificar platformRoles.',
-    );
-  }
-
-  const businessID =
-    payload.businessID ||
-    payload.businessId ||
-    currentUser.businessID ||
-    currentUser.businessId ||
-    null;
-
-  if (actorRole !== ROLE.DEV && businessID) {
-    const actorData = adminSnap.data() || {};
-    if (!hasBusinessAccess(actorData, businessID)) {
+    const name = normalizeName(payload.name || currentUser.name);
+    if (!name) {
       throw new HttpsError(
-        'permission-denied',
-        'No tienes permisos para gestionar usuarios de este negocio.',
+        'invalid-argument',
+        'Error: Es obligatorio proporcionar un nombre de usuario.',
       );
     }
-  }
+    await ensureUniqueUsername(name, userId);
+    if (Object.prototype.hasOwnProperty.call(payload, 'password')) {
+      assertPassword(payload.password);
+    }
 
-  const hasActiveFlag = Object.prototype.hasOwnProperty.call(payload, 'active');
-  if (hasActiveFlag && payload.active === false) {
-    if (toCleanString(actorUserId) === toCleanString(userId)) {
+    const requestedRole = normalizeRole(
+      payload.activeRole || payload.role || '',
+    );
+    if (actorRole !== ROLE.DEV && requestedRole === ROLE.DEV) {
+      throw new HttpsError(
+        'permission-denied',
+        'Solo un usuario dev puede asignar rol dev.',
+      );
+    }
+
+    if (
+      actorRole !== ROLE.DEV &&
+      Object.prototype.hasOwnProperty.call(payload, 'platformRoles')
+    ) {
+      throw new HttpsError(
+        'permission-denied',
+        'Solo un usuario dev puede modificar platformRoles.',
+      );
+    }
+
+    const businessID =
+      payload.businessID ||
+      payload.businessId ||
+      currentUser.businessID ||
+      currentUser.businessId ||
+      null;
+
+    if (actorRole !== ROLE.DEV && businessID) {
+      const actorData = adminSnap.data() || {};
+      if (!hasBusinessAccess(actorData, businessID)) {
+        throw new HttpsError(
+          'permission-denied',
+          'No tienes permisos para gestionar usuarios de este negocio.',
+        );
+      }
+    }
+
+    const hasActiveFlag = Object.prototype.hasOwnProperty.call(
+      payload,
+      'active',
+    );
+    if (hasActiveFlag && payload.active === false) {
+      if (toCleanString(actorUserId) === toCleanString(userId)) {
+        throw new HttpsError(
+          'failed-precondition',
+          'No puedes desactivar tu propio usuario.',
+        );
+      }
+
+      if (targetGlobalRole === ROLE.DEV && actorRole !== ROLE.DEV) {
+        throw new HttpsError(
+          'permission-denied',
+          'Solo un usuario dev puede desactivar a otro usuario dev.',
+        );
+      }
+
+      const targetIsBusinessOwner = await isUserBusinessOwner(
+        businessID,
+        userId,
+      );
+      if (targetIsBusinessOwner && actorRole !== ROLE.DEV) {
+        throw new HttpsError(
+          'permission-denied',
+          'Solo un usuario dev puede desactivar al propietario del negocio.',
+        );
+      }
+    }
+
+    const hasNumber = typeof currentUser.number === 'number';
+    if (!hasNumber && !businessID) {
       throw new HttpsError(
         'failed-precondition',
-        'No puedes desactivar tu propio usuario.',
+        'No se puede asignar número de usuario sin businessID.',
       );
     }
 
-    if (targetGlobalRole === ROLE.DEV && actorRole !== ROLE.DEV) {
-      throw new HttpsError(
-        'permission-denied',
-        'Solo un usuario dev puede desactivar a otro usuario dev.',
+    const resolvedNumber = hasNumber
+      ? currentUser.number
+      : typeof payload.number === 'number'
+        ? payload.number
+        : await getNextUserNumber(businessID);
+
+    // Normalizar email a minúsculas
+    const normalizedEmail =
+      typeof payload.email === 'string' && payload.email.trim()
+        ? payload.email.trim().toLowerCase()
+        : (currentUser.email ?? null);
+
+    const aliasResolvedBusinessId =
+      toCleanString(payload.activeBusinessId) ||
+      toCleanString(payload.lastSelectedBusinessId) ||
+      toCleanString(payload.businessID) ||
+      toCleanString(payload.businessId) ||
+      null;
+    const aliasResolvedRole =
+      normalizeRole(payload.activeRole || payload.role || '') || null;
+
+    const normalizedPayload = { ...payload };
+    delete normalizedPayload.user;
+    delete normalizedPayload.businessID;
+    delete normalizedPayload.businessId;
+    delete normalizedPayload.role;
+
+    const updated = {
+      ...currentUser,
+      ...normalizedPayload,
+      ...(aliasResolvedBusinessId
+        ? {
+            activeBusinessId: aliasResolvedBusinessId,
+            lastSelectedBusinessId:
+              normalizedPayload.lastSelectedBusinessId ||
+              aliasResolvedBusinessId,
+          }
+        : {}),
+      ...(aliasResolvedRole ? { activeRole: aliasResolvedRole } : {}),
+      name,
+      number: resolvedNumber,
+      email: normalizedEmail,
+      updatedAt: Timestamp.now(),
+    };
+
+    // Never write the legacy nested mirror (`user`) again; root fields are canonical.
+    const nextUser = { ...updated };
+    delete nextUser.user;
+    delete nextUser.businessID;
+    delete nextUser.businessId;
+    delete nextUser.role;
+
+    if (hasActiveFlag && businessID) {
+      const nextMembershipStatus =
+        payload.active === false ? 'inactive' : 'active';
+      const nextAccessControl = updateBusinessStatusEntries(
+        nextUser.accessControl,
+        businessID,
+        nextMembershipStatus,
       );
-    }
-
-    const targetIsBusinessOwner = await isUserBusinessOwner(businessID, userId);
-    if (targetIsBusinessOwner && actorRole !== ROLE.DEV) {
-      throw new HttpsError(
-        'permission-denied',
-        'Solo un usuario dev puede desactivar al propietario del negocio.',
-      );
-    }
-  }
-
-  const hasNumber = typeof currentUser.number === 'number';
-  if (!hasNumber && !businessID) {
-    throw new HttpsError(
-      'failed-precondition',
-      'No se puede asignar número de usuario sin businessID.',
-    );
-  }
-
-  const resolvedNumber = hasNumber
-    ? currentUser.number
-    : typeof payload.number === 'number'
-      ? payload.number
-      : await getNextUserNumber(businessID);
-
-  // Normalizar email a minúsculas
-  const normalizedEmail =
-    typeof payload.email === 'string' && payload.email.trim()
-      ? payload.email.trim().toLowerCase()
-      : currentUser.email ?? null;
-
-  const aliasResolvedBusinessId =
-    toCleanString(payload.activeBusinessId) ||
-    toCleanString(payload.lastSelectedBusinessId) ||
-    toCleanString(payload.businessID) ||
-    toCleanString(payload.businessId) ||
-    null;
-  const aliasResolvedRole =
-    normalizeRole(payload.activeRole || payload.role || '') || null;
-
-  const normalizedPayload = { ...payload };
-  delete normalizedPayload.user;
-  delete normalizedPayload.businessID;
-  delete normalizedPayload.businessId;
-  delete normalizedPayload.role;
-
-  const updated = {
-    ...currentUser,
-    ...normalizedPayload,
-    ...(aliasResolvedBusinessId
-      ? {
-        activeBusinessId: aliasResolvedBusinessId,
-        lastSelectedBusinessId:
-          normalizedPayload.lastSelectedBusinessId || aliasResolvedBusinessId,
+      if (Array.isArray(nextAccessControl)) {
+        nextUser.accessControl = nextAccessControl;
       }
-      : {}),
-    ...(aliasResolvedRole ? { activeRole: aliasResolvedRole } : {}),
-    name,
-    number: resolvedNumber,
-    email: normalizedEmail,
-    updatedAt: Timestamp.now(),
-  };
+    }
 
-  // Never write the legacy nested mirror (`user`) again; root fields are canonical.
-  const nextUser = { ...updated };
-  delete nextUser.user;
-  delete nextUser.businessID;
-  delete nextUser.businessId;
-  delete nextUser.role;
+    await usersCol.doc(userId).set(nextUser, { merge: true });
 
-  await usersCol.doc(userId).set(nextUser, { merge: true });
+    if (hasActiveFlag && businessID) {
+      const nextIsActive = payload.active !== false;
+      await db.doc(`businesses/${businessID}/members/${userId}`).set(
+        {
+          active: nextIsActive,
+          status: nextIsActive ? 'active' : 'inactive',
+          updatedAt: FieldValue.serverTimestamp(),
+          ...(nextIsActive
+            ? {
+                reactivatedAt: FieldValue.serverTimestamp(),
+                reactivatedBy: actorUserId,
+              }
+            : {
+                deactivatedAt: FieldValue.serverTimestamp(),
+                deactivatedBy: actorUserId,
+              }),
+        },
+        { merge: true },
+      );
+    }
 
-  return {
-    ok: true,
-    id: userId,
-    user: nextUser,
-  };
-});
+    if (hasActiveFlag && payload.active === false) {
+      await revokeUserSessions(userId, 'user-deactivated', {
+        reason: 'user-deactivated',
+        actorUserId,
+        businessId: businessID || null,
+      });
+    }
+
+    return {
+      ok: true,
+      id: userId,
+      user: nextUser,
+    };
+  },
+);
 
 export const clientChangePassword = onCall(
   { cors: CLIENT_AUTH_CORS_ORIGINS },
   async ({ data }) => {
-  const { userId, oldPassword, newPassword } = data || {};
-  if (!userId) {
-    throw new HttpsError('invalid-argument', 'ID de usuario requerido');
-  }
-  assertPassword(newPassword);
-  assertPassword(oldPassword, { requireComplexity: false });
+    const { userId, oldPassword, newPassword } = data || {};
+    if (!userId) {
+      throw new HttpsError('invalid-argument', 'ID de usuario requerido');
+    }
+    assertPassword(newPassword);
+    assertPassword(oldPassword, { requireComplexity: false });
 
-  const snap = await ensureUserExists(userId);
-  const user = snap.data() || {};
+    const snap = await ensureUserExists(userId);
+    const user = snap.data() || {};
 
-  const ok = await bcrypt.compare(oldPassword, user.password);
-  if (!ok) {
-    throw new HttpsError(
-      'unauthenticated',
-      'La contraseña antigua no es correcta',
-    );
-  }
+    const ok = await bcrypt.compare(oldPassword, user.password);
+    if (!ok) {
+      throw new HttpsError(
+        'unauthenticated',
+        'La contraseña antigua no es correcta',
+      );
+    }
 
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
-  await snap.ref.update({
-    password: hashedPassword,
-    passwordChangedAt: Timestamp.now(),
-  });
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await snap.ref.update({
+      password: hashedPassword,
+      passwordChangedAt: Timestamp.now(),
+    });
 
-  // Revocar todas las sesiones activas del usuario por seguridad
-  const { revoked } = await revokeAllUserSessions(userId, 'password-changed');
+    // Revocar todas las sesiones activas del usuario por seguridad
+    const { revoked } = await revokeAllUserSessions(userId, 'password-changed');
 
-  return { ok: true, sessionsRevoked: revoked };
-});
+    return { ok: true, sessionsRevoked: revoked };
+  },
+);
 
 export const clientSetUserPassword = onCall(
   { cors: CLIENT_AUTH_CORS_ORIGINS },
   async (request) => {
-  await assertAdminAccess(request, 'client-set-user-password');
-  const { data } = request || {};
-  const { userId, newPassword } = data || {};
-  if (!userId) {
-    throw new HttpsError('invalid-argument', 'ID de usuario requerido');
-  }
-  assertPassword(newPassword);
+    await assertAdminAccess(request, 'client-set-user-password');
+    const { data } = request || {};
+    const { userId, newPassword } = data || {};
+    if (!userId) {
+      throw new HttpsError('invalid-argument', 'ID de usuario requerido');
+    }
+    assertPassword(newPassword);
 
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
-  await usersCol.doc(userId).update({
-    password: hashedPassword,
-    passwordChangedAt: Timestamp.now(),
-  });
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await usersCol.doc(userId).update({
+      password: hashedPassword,
+      passwordChangedAt: Timestamp.now(),
+    });
 
-  // Revocar todas las sesiones activas del usuario por seguridad
-  const { revoked } = await revokeAllUserSessions(userId, 'password-changed');
+    // Revocar todas las sesiones activas del usuario por seguridad
+    const { revoked } = await revokeAllUserSessions(userId, 'password-changed');
 
-  return { ok: true, sessionsRevoked: revoked };
-});
+    return { ok: true, sessionsRevoked: revoked };
+  },
+);
 
 export const clientSwitchUserRole = onCall(
   { cors: CLIENT_AUTH_CORS_ORIGINS },
   async (request) => {
-  const { data = {} } = request || {};
-  const targetRole = normalizeRole(data?.targetRole || data?.role || '');
+    const { data = {} } = request || {};
+    const targetRole = normalizeRole(data?.targetRole || data?.role || '');
 
-  if (!targetRole || !ROLE_SWITCH_ALLOWED_ROLES.has(targetRole)) {
-    throw new HttpsError(
-      'invalid-argument',
-      'targetRole inválido. Roles permitidos: owner, admin, manager, cashier, buyer, dev.',
+    if (!targetRole || !ROLE_SWITCH_ALLOWED_ROLES.has(targetRole)) {
+      throw new HttpsError(
+        'invalid-argument',
+        'targetRole inválido. Roles permitidos: owner, admin, manager, cashier, buyer, dev.',
+      );
+    }
+
+    const { userId: actorUserId, actorSnap } = await resolveRoleSwitchActor(
+      request,
+      'client-switch-user-role',
     );
-  }
 
-  const { userId: actorUserId, actorSnap } = await resolveRoleSwitchActor(
-    request,
-    'client-switch-user-role',
-  );
+    const currentData = actorSnap.data() || {};
+    const currentRole = resolveCurrentRoleFromUserData(currentData);
+    const isActorDev = currentRole === ROLE.DEV;
 
-  const currentData = actorSnap.data() || {};
-  const currentRole = resolveCurrentRoleFromUserData(currentData);
-  const isActorDev = currentRole === ROLE.DEV;
-
-  const existingSimulation = isPlainObject(currentData.roleSimulation)
-    ? currentData.roleSimulation
-    : {};
-  const simulationOriginalRole = normalizeRole(
-    existingSimulation.originalRole || '',
-  );
-  const canRestoreOwnRole =
-    simulationOriginalRole &&
-    simulationOriginalRole === targetRole &&
-    toCleanString(existingSimulation.actorUserId || actorUserId) === actorUserId;
-
-  if (!isActorDev && !canRestoreOwnRole) {
-    throw new HttpsError(
-      'permission-denied',
-      'Solo un usuario dev puede cambiar de rol.',
+    const existingSimulation = isPlainObject(currentData.roleSimulation)
+      ? currentData.roleSimulation
+      : {};
+    const simulationOriginalRole = normalizeRole(
+      existingSimulation.originalRole || '',
     );
-  }
+    const canRestoreOwnRole =
+      simulationOriginalRole &&
+      simulationOriginalRole === targetRole &&
+      toCleanString(existingSimulation.actorUserId || actorUserId) ===
+        actorUserId;
 
-  if (targetRole === currentRole) {
-    return {
-      ok: true,
-      userId: actorUserId,
-      role: currentRole,
-      restored: false,
-      message: 'El usuario ya tiene ese rol activo.',
-    };
-  }
+    if (!isActorDev && !canRestoreOwnRole) {
+      throw new HttpsError(
+        'permission-denied',
+        'Solo un usuario dev puede cambiar de rol.',
+      );
+    }
 
-  const activeBusinessId = resolveActiveBusinessIdFromUserData(currentData);
-
-  const root = isPlainObject(currentData) ? currentData : {};
-
-  const nextAccessControl = updateBusinessRoleEntries(
-    root.accessControl,
-    activeBusinessId,
-    actorUserId,
-    targetRole,
-    { ensureEntry: true },
-  );
-  const roleSimulationOriginalRole =
-    simulationOriginalRole || resolveCurrentRoleFromUserData(currentData);
-  const isRestoringOriginalRole =
-    simulationOriginalRole &&
-    targetRole === roleSimulationOriginalRole &&
-    canRestoreOwnRole;
-
-  const roleSimulationPayload = isRestoringOriginalRole
-    ? FieldValue.delete()
-    : {
-      active: true,
-      actorUserId,
-      originalRole: roleSimulationOriginalRole,
-      originalPlatformDev:
-          typeof existingSimulation.originalPlatformDev === 'boolean'
-            ? existingSimulation.originalPlatformDev
-            : hasPlatformDevRoleFromUserData(currentData),
-      startedAt: existingSimulation.startedAt || FieldValue.serverTimestamp(),
-      updatedAt: FieldValue.serverTimestamp(),
-    };
-
-  const shouldEnablePlatformDev =
-    targetRole === ROLE.DEV ||
-    (isRestoringOriginalRole &&
-      existingSimulation.originalPlatformDev === true);
-
-  await actorSnap.ref.set(
-    {
-      activeRole: targetRole,
-      updatedAt: FieldValue.serverTimestamp(),
-      accessControl: nextAccessControl,
-      ...(activeBusinessId
-        ? {
-          activeBusinessId,
-        }
-        : {}),
-      roleSimulation: roleSimulationPayload,
-      ...(shouldEnablePlatformDev
-        ? {
-          'platformRoles.dev': true,
-        }
-        : {
-          'platformRoles.dev': FieldValue.delete(),
-        }),
-    },
-    { merge: true },
-  );
-
-  if (activeBusinessId) {
-    await db.doc(`businesses/${activeBusinessId}/members/${actorUserId}`).set(
-      {
-        uid: actorUserId,
+    if (targetRole === currentRole) {
+      return {
+        ok: true,
         userId: actorUserId,
-        businessId: activeBusinessId,
-        role: targetRole,
+        role: currentRole,
+        restored: false,
+        message: 'El usuario ya tiene ese rol activo.',
+      };
+    }
+
+    const activeBusinessId = resolveActiveBusinessIdFromUserData(currentData);
+
+    const root = isPlainObject(currentData) ? currentData : {};
+
+    const nextAccessControl = updateBusinessRoleEntries(
+      root.accessControl,
+      activeBusinessId,
+      actorUserId,
+      targetRole,
+      { ensureEntry: true },
+    );
+    const roleSimulationOriginalRole =
+      simulationOriginalRole || resolveCurrentRoleFromUserData(currentData);
+    const isRestoringOriginalRole =
+      simulationOriginalRole &&
+      targetRole === roleSimulationOriginalRole &&
+      canRestoreOwnRole;
+
+    const roleSimulationPayload = isRestoringOriginalRole
+      ? FieldValue.delete()
+      : {
+          active: true,
+          actorUserId,
+          originalRole: roleSimulationOriginalRole,
+          originalPlatformDev:
+            typeof existingSimulation.originalPlatformDev === 'boolean'
+              ? existingSimulation.originalPlatformDev
+              : hasPlatformDevRoleFromUserData(currentData),
+          startedAt:
+            existingSimulation.startedAt || FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
+        };
+
+    const shouldEnablePlatformDev =
+      targetRole === ROLE.DEV ||
+      (isRestoringOriginalRole &&
+        existingSimulation.originalPlatformDev === true);
+
+    await actorSnap.ref.set(
+      {
         activeRole: targetRole,
-        status: 'active',
-        source: ROLE_SWITCH_SOURCE,
         updatedAt: FieldValue.serverTimestamp(),
+        accessControl: nextAccessControl,
+        ...(activeBusinessId
+          ? {
+              activeBusinessId,
+            }
+          : {}),
+        roleSimulation: roleSimulationPayload,
+        ...(shouldEnablePlatformDev
+          ? {
+              'platformRoles.dev': true,
+            }
+          : {
+              'platformRoles.dev': FieldValue.delete(),
+            }),
       },
       { merge: true },
     );
-  }
 
-  return {
-    ok: true,
-    userId: actorUserId,
-    businessId: activeBusinessId || null,
-    role: targetRole,
-    restored: Boolean(isRestoringOriginalRole),
-    originalRole: isRestoringOriginalRole ? null : roleSimulationOriginalRole,
-  };
-});
+    if (activeBusinessId) {
+      await db.doc(`businesses/${activeBusinessId}/members/${actorUserId}`).set(
+        {
+          uid: actorUserId,
+          userId: actorUserId,
+          businessId: activeBusinessId,
+          role: targetRole,
+          activeRole: targetRole,
+          status: 'active',
+          source: ROLE_SWITCH_SOURCE,
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+    }
+
+    return {
+      ok: true,
+      userId: actorUserId,
+      businessId: activeBusinessId || null,
+      role: targetRole,
+      restored: Boolean(isRestoringOriginalRole),
+      originalRole: isRestoringOriginalRole ? null : roleSimulationOriginalRole,
+    };
+  },
+);
 
 function sanitizeUserResponse(user) {
   if (!user || typeof user !== 'object') return user;
@@ -2639,14 +2866,20 @@ function sanitizeUserDocResponse(payload, userId) {
 async function createFirebaseCustomToken(userId) {
   const uid = typeof userId === 'string' ? userId.trim() : String(userId || '');
   if (!uid) {
-    throw new HttpsError('internal', 'No se pudo crear token de autenticación.');
+    throw new HttpsError(
+      'internal',
+      'No se pudo crear token de autenticación.',
+    );
   }
 
   try {
     return await admin.auth().createCustomToken(uid);
   } catch (error) {
     console.error('createCustomToken error:', error);
-    throw new HttpsError('internal', 'No se pudo crear token de autenticación.');
+    throw new HttpsError(
+      'internal',
+      'No se pudo crear token de autenticación.',
+    );
   }
 }
 
@@ -2674,7 +2907,8 @@ export const clientSendEmailVerification = onCall(
     await assertAdminAccess(request, 'send-email-verification');
     const { data } = request || {};
     const userId = data?.userId;
-    const email = typeof data?.email === 'string' ? data.email.trim().toLowerCase() : '';
+    const email =
+      typeof data?.email === 'string' ? data.email.trim().toLowerCase() : '';
 
     if (!userId) {
       throw new HttpsError('invalid-argument', 'ID de usuario requerido.');
@@ -2743,11 +2977,10 @@ export const clientSendEmailVerification = onCall(
         text: `Tu código de verificación de VentaMax es: ${code}. Expira en 10 minutos.`,
       });
     } catch {
-    // Limpiar el código si el envío falla
-      await usersCol.doc(userId).set(
-        { emailVerification: FieldValue.delete() },
-        { merge: true },
-      );
+      // Limpiar el código si el envío falla
+      await usersCol
+        .doc(userId)
+        .set({ emailVerification: FieldValue.delete() }, { merge: true });
       throw new HttpsError(
         'internal',
         'No se pudo enviar el correo de verificación. Verifica la configuración de correo.',
@@ -2760,7 +2993,8 @@ export const clientSendEmailVerification = onCall(
       expiresAtMillis,
       email,
     };
-  });
+  },
+);
 
 /**
  * Verifica el código enviado por email. Si es correcto, marca el email como verificado
@@ -2769,78 +3003,83 @@ export const clientSendEmailVerification = onCall(
 export const clientVerifyEmailCode = onCall(
   { cors: CLIENT_AUTH_CORS_ORIGINS },
   async (request) => {
-  await assertAdminAccess(request, 'verify-email-code');
-  const { data } = request || {};
-  const userId = data?.userId;
-  const code = typeof data?.code === 'string' ? data.code.trim() : '';
+    await assertAdminAccess(request, 'verify-email-code');
+    const { data } = request || {};
+    const userId = data?.userId;
+    const code = typeof data?.code === 'string' ? data.code.trim() : '';
 
-  if (!userId) {
-    throw new HttpsError('invalid-argument', 'ID de usuario requerido.');
-  }
-  if (!code || code.length !== EMAIL_CODE_LENGTH) {
-    throw new HttpsError('invalid-argument', 'Código de verificación inválido.');
-  }
+    if (!userId) {
+      throw new HttpsError('invalid-argument', 'ID de usuario requerido.');
+    }
+    if (!code || code.length !== EMAIL_CODE_LENGTH) {
+      throw new HttpsError(
+        'invalid-argument',
+        'Código de verificación inválido.',
+      );
+    }
 
-  const snap = await ensureUserExists(userId);
-  const docData = snap.data() || {};
-  const verification = docData.emailVerification;
+    const snap = await ensureUserExists(userId);
+    const docData = snap.data() || {};
+    const verification = docData.emailVerification;
 
-  if (!verification || !verification.code || !verification.email) {
-    throw new HttpsError(
-      'failed-precondition',
-      'No hay una verificación pendiente para este usuario.',
-    );
-  }
+    if (!verification || !verification.code || !verification.email) {
+      throw new HttpsError(
+        'failed-precondition',
+        'No hay una verificación pendiente para este usuario.',
+      );
+    }
 
-  // Verificar expiración
-  const expiresAt = verification.expiresAt?.toMillis?.() || 0;
-  if (Date.now() > expiresAt) {
+    // Verificar expiración
+    const expiresAt = verification.expiresAt?.toMillis?.() || 0;
+    if (Date.now() > expiresAt) {
+      await usersCol
+        .doc(userId)
+        .set({ emailVerification: FieldValue.delete() }, { merge: true });
+      throw new HttpsError(
+        'deadline-exceeded',
+        'El código ha expirado. Solicita uno nuevo.',
+      );
+    }
+
+    // Verificar intentos (máx 5)
+    const attempts = verification.attempts || 0;
+    if (attempts >= 5) {
+      await usersCol
+        .doc(userId)
+        .set({ emailVerification: FieldValue.delete() }, { merge: true });
+      throw new HttpsError(
+        'resource-exhausted',
+        'Demasiados intentos fallidos. Solicita un nuevo código.',
+      );
+    }
+
+    // Comparar código
+    const codeMatch = await bcrypt.compare(code, verification.code);
+    if (!codeMatch) {
+      await usersCol
+        .doc(userId)
+        .set({ 'emailVerification.attempts': attempts + 1 }, { merge: true });
+      throw new HttpsError(
+        'unauthenticated',
+        `Código incorrecto. ${4 - attempts} intentos restantes.`,
+      );
+    }
+
+    // Código correcto: guardar email verificado y limpiar
+    const verifiedEmail = verification.email;
     await usersCol.doc(userId).set(
-      { emailVerification: FieldValue.delete() },
+      {
+        email: verifiedEmail,
+        emailVerified: true,
+        emailVerification: FieldValue.delete(),
+      },
       { merge: true },
     );
-    throw new HttpsError(
-      'deadline-exceeded',
-      'El código ha expirado. Solicita uno nuevo.',
-    );
-  }
 
-  // Verificar intentos (máx 5)
-  const attempts = verification.attempts || 0;
-  if (attempts >= 5) {
-    await usersCol.doc(userId).set(
-      { emailVerification: FieldValue.delete() },
-      { merge: true },
-    );
-    throw new HttpsError(
-      'resource-exhausted',
-      'Demasiados intentos fallidos. Solicita un nuevo código.',
-    );
-  }
-
-  // Comparar código
-  const codeMatch = await bcrypt.compare(code, verification.code);
-  if (!codeMatch) {
-    await usersCol.doc(userId).set(
-      { 'emailVerification.attempts': attempts + 1 },
-      { merge: true },
-    );
-    throw new HttpsError(
-      'unauthenticated',
-      `Código incorrecto. ${4 - attempts} intentos restantes.`,
-    );
-  }
-
-  // Código correcto: guardar email verificado y limpiar
-  const verifiedEmail = verification.email;
-  await usersCol.doc(userId).set(
-    {
+    return {
+      ok: true,
       email: verifiedEmail,
-      emailVerified: true,
-      emailVerification: FieldValue.delete(),
-    },
-    { merge: true },
-  );
-
-  return { ok: true, email: verifiedEmail, message: 'Correo verificado exitosamente.' };
-});
+      message: 'Correo verificado exitosamente.',
+    };
+  },
+);

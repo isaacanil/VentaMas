@@ -1,7 +1,9 @@
 import { AnimatePresence, m } from 'framer-motion';
-import { type ReactNode, useEffect, useRef } from 'react';
+import { type ReactNode, useCallback, useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import styled from 'styled-components';
+
+import { useModalFocusTrap } from '@/hooks/useModalFocusTrap';
 
 export type AppModalProps = {
   open: boolean;
@@ -29,27 +31,32 @@ export const AppModal = ({
   children,
 }: AppModalProps) => {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
   const shouldRenderFooter = footer !== undefined && footer !== null;
 
-  // Escape key
-  useEffect(() => {
-    if (!open || !keyboard) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose?.();
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [open, keyboard, onClose]);
-
-  // Lock body scroll while open
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+  const handleEscape = useCallback(() => {
+    if (keyboard) {
+      onClose?.();
     }
+  }, [keyboard, onClose]);
+
+  useModalFocusTrap({
+    open,
+    containerRef: modalRef,
+    onEscape: keyboard ? handleEscape : undefined,
+  });
+
+  useEffect(() => {
+    if (!open) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = previousOverflow;
     };
   }, [open]);
 
@@ -70,8 +77,14 @@ export const AppModal = ({
           onClick={handleOverlayClick}
         >
           <ModalWrap
+            ref={modalRef}
             $width={width}
             as={m.div}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={title ? titleId : undefined}
+            aria-label={title ? undefined : 'Ventana modal'}
+            tabIndex={-1}
             layout
             initial={{ opacity: 0, y: 28, scale: 0.97 }}
             animate={{
@@ -98,9 +111,9 @@ export const AppModal = ({
             }}
           >
             <ModalHeader>
-              <ModalTitle>{title}</ModalTitle>
-              <CloseButton onClick={onClose} aria-label="Cerrar">
-                ✕
+              <ModalTitle id={title ? titleId : undefined}>{title}</ModalTitle>
+              <CloseButton type="button" onClick={onClose} aria-label="Cerrar">
+                x
               </CloseButton>
             </ModalHeader>
 
@@ -137,7 +150,7 @@ const ModalWrap = styled.div<{ $width: number | string }>`
   width: ${({ $width }) =>
     typeof $width === 'number' ? `${$width}px` : $width};
   max-width: 100%;
-  max-height: calc(100vh - 20px);
+  max-height: calc(100dvh - 20px);
   background: #fff;
   border-radius: 8px;
   box-shadow:
@@ -180,6 +193,11 @@ const CloseButton = styled.button`
   &:hover {
     color: rgba(0, 0, 0, 0.88);
     background: rgba(0, 0, 0, 0.06);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #1677ff;
+    outline-offset: 2px;
   }
 `;
 

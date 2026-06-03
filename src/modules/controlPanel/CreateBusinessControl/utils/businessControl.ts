@@ -66,6 +66,11 @@ const normalizeSubscriptionStatus = (value: unknown): string | null => {
   return status ? status.toLowerCase() : null;
 };
 
+const normalizeAccessStatus = (value: unknown): string | null => {
+  const status = toCleanString(value);
+  return status ? status.toLowerCase() : null;
+};
+
 export const resolveCreatedAtSeconds = (
   createdAt?: BusinessCreatedAt,
 ): number => {
@@ -175,8 +180,11 @@ export const normalizeBusinessDoc = (value: unknown): BusinessDoc | null => {
         resolveString(root.tel, businessNode.tel, nestedBusinessNode.tel) ||
         undefined,
       email:
-        resolveString(root.email, businessNode.email, nestedBusinessNode.email) ||
-        undefined,
+        resolveString(
+          root.email,
+          businessNode.email,
+          nestedBusinessNode.email,
+        ) || undefined,
       rnc:
         resolveString(root.rnc, businessNode.rnc, nestedBusinessNode.rnc) ||
         undefined,
@@ -203,6 +211,16 @@ export const normalizeBusinessDoc = (value: unknown): BusinessDoc | null => {
       hasOwner: ownerData.hasOwner,
       ownerSource: ownerData.ownerSource,
       ownerCandidates: ownerData.ownerCandidates,
+      status:
+        normalizeAccessStatus(root.status) ||
+        normalizeAccessStatus(businessNode.status) ||
+        normalizeAccessStatus(nestedBusinessNode.status) ||
+        null,
+      accessStatus:
+        normalizeAccessStatus(root.accessStatus) ||
+        normalizeAccessStatus(businessNode.accessStatus) ||
+        normalizeAccessStatus(nestedBusinessNode.accessStatus) ||
+        null,
       subscriptionStatus:
         normalizeSubscriptionStatus(rootSubscription.status) ||
         normalizeSubscriptionStatus(nestedSubscription.status) ||
@@ -222,7 +240,9 @@ export const collectSortedBusinessFieldValues = (
     new Set(
       items
         .map(selector)
-        .filter((item): item is string => typeof item === 'string' && item.length > 0),
+        .filter(
+          (item): item is string => typeof item === 'string' && item.length > 0,
+        ),
     ),
   ).sort();
 };
@@ -239,11 +259,13 @@ export const filterBusinesses = (
     const searchMatches =
       !normalizedSearch ||
       business.id.toLowerCase().includes(normalizedSearch) ||
-      (business.name && business.name.toLowerCase().includes(normalizedSearch)) ||
+      (business.name &&
+        business.name.toLowerCase().includes(normalizedSearch)) ||
       (business.address &&
         business.address.toLowerCase().includes(normalizedSearch)) ||
       (business.tel && business.tel.toLowerCase().includes(normalizedSearch)) ||
-      (business.email && business.email.toLowerCase().includes(normalizedSearch)) ||
+      (business.email &&
+        business.email.toLowerCase().includes(normalizedSearch)) ||
       (business.rnc && business.rnc.toLowerCase().includes(normalizedSearch));
     const provinceMatches =
       !filters.province || business.province === filters.province;
@@ -254,7 +276,9 @@ export const filterBusinesses = (
     const rncMatches = !filters.hasRNC || Boolean(business.rnc?.trim());
     const ownerMatches =
       filters.ownerState === 'all' ||
-      (filters.ownerState === 'with_owner' ? business.hasOwner : !business.hasOwner);
+      (filters.ownerState === 'with_owner'
+        ? business.hasOwner
+        : !business.hasOwner);
     const subscriptionMatches =
       !filters.subscriptionStatus ||
       (business.subscriptionStatus || '') === filters.subscriptionStatus;
@@ -315,10 +339,10 @@ export const paginateBusinesses = (
 export const hasAnyBusinessFilterApplied = (filters: BusinessFilters) => {
   return Boolean(
     filters.province ||
-      filters.country ||
-      filters.businessType ||
-      filters.hasRNC ||
-      filters.ownerState !== 'all' ||
-      filters.subscriptionStatus,
+    filters.country ||
+    filters.businessType ||
+    filters.hasRNC ||
+    filters.ownerState !== 'all' ||
+    filters.subscriptionStatus,
   );
 };

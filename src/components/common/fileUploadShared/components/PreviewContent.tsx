@@ -2,6 +2,8 @@ import { Alert, Drawer, Image, Spin } from 'antd';
 import { useCallback, useState } from 'react';
 import styled from 'styled-components';
 
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+
 import type { PreviewableFile } from '../types';
 
 const PreviewContainer = styled.div`
@@ -156,7 +158,7 @@ const PreviewContentInner = <TFile extends PreviewableFile>({
     <p>No hay vista previa disponible para este tipo de archivo</p>
   );
 
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   return (
     <Drawer

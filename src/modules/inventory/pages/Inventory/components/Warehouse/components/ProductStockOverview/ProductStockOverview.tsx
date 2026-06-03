@@ -13,6 +13,7 @@ import styled from 'styled-components';
 import { openDeleteModal } from '@/features/productStock/deleteProductStockSlice';
 import { useListenProductsStock } from '@/hooks/useProductStock';
 import { useLocationNames } from '@/hooks/useLocationNames';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import useStockAlertThresholds from '@/hooks/useStockAlertThresholds';
 
 import BatchGroup from './components/BatchGroup';
@@ -170,31 +171,17 @@ function ProductStockOverview() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [searchText, setSearchText] = useState('');
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    // Detectar si es un dispositivo móvil o tablet (ancho < 1024px)
-    return window.innerWidth < 1024 ? 'batches' : 'table';
-  });
+  const isSmallScreen = useMediaQuery('(max-width: 1023px)');
+  const [selectedViewMode, setSelectedViewMode] =
+    useState<ViewMode>('table');
+  const viewMode =
+    isSmallScreen && selectedViewMode === 'table'
+      ? 'batches'
+      : selectedViewMode;
   const { productId } = useParams<{ productId?: string }>();
   const { data: stockData, loading } = useListenProductsStock(productId);
   const { locationNames, fetchLocationName } = useLocationNames();
   const { lowThreshold, criticalThreshold } = useStockAlertThresholds();
-
-  // Ajustar vista según el tamaño de la pantalla
-  useEffect(() => {
-    const handleResize = () => {
-      const isSmallScreen = window.innerWidth < 1024;
-      setViewMode((prev) => {
-        // Si estamos en pantalla pequeña y la vista es tabla, cambiar a lotestes
-        if (isSmallScreen && prev === 'table') return 'batches';
-        // Si estamos en pantalla grande y la vista es lotes, cambiar a tabla
-        if (!isSmallScreen && prev === 'batches') return 'table';
-        return prev;
-      });
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const filteredStock = useMemo<ProductStockItem[]>(() => {
     if (!stockData) return [];
@@ -368,11 +355,11 @@ function ProductStockOverview() {
           <ViewModeToggle
             options={[
               { label: 'Lotes', value: 'batches' },
-              { label: 'Tabla', value: 'table' },
+              { label: 'Tabla', value: 'table', disabled: isSmallScreen },
             ]}
             value={viewMode}
             onChange={(value: string | number) =>
-              setViewMode(value as ViewMode)
+              setSelectedViewMode(value as ViewMode)
             }
           />
         </ControlsBar>

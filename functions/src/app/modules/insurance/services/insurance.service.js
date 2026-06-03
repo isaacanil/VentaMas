@@ -40,7 +40,8 @@ export function applyInsuranceUpdate(tx, snap, updates) {
   tx.set(ref, updates, { merge: true });
   logger.info('Applied insurance updates (tx)', {
     path: ref.path,
-    updates,
+    updateFields:
+      updates && typeof updates === 'object' ? Object.keys(updates) : [],
   });
 }
 

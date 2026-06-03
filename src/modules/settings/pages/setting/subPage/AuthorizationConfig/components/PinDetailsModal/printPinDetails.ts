@@ -1,5 +1,23 @@
 import type { PinEntryView } from './types';
 
+const escapeHtml = (value: unknown): string =>
+  String(value ?? '').replace(/[&<>"']/g, (char) => {
+    switch (char) {
+      case '&':
+        return '&amp;';
+      case '<':
+        return '&lt;';
+      case '>':
+        return '&gt;';
+      case '"':
+        return '&quot;';
+      case "'":
+        return '&#39;';
+      default:
+        return char;
+    }
+  });
+
 export const buildPinDetailsPrintContent = ({
   pinEntries,
   displayName,
@@ -13,10 +31,10 @@ export const buildPinDetailsPrintContent = ({
           (entry) => `
             <tr>
               <td class="module-name">
-                <div class="module-title">${entry.moduleName}</div>
-                <div class="module-meta">${entry.expiresAt ? `Expira: ${entry.expiresAt.toLocaleString()}` : 'Sin expiracion definida'}</div>
+                <div class="module-title">${escapeHtml(entry.moduleName)}</div>
+                <div class="module-meta">${entry.expiresAt ? `Expira: ${escapeHtml(entry.expiresAt.toLocaleString())}` : 'Sin expiracion definida'}</div>
               </td>
-              <td class="pin-code">${entry.pin || '------'}</td>
+              <td class="pin-code">${escapeHtml(entry.pin || '------')}</td>
             </tr>
           `,
         )
@@ -162,7 +180,7 @@ export const buildPinDetailsPrintContent = ({
           </header>
           <section class="table">
             <div class="table-intro">
-              <span>${displayName || '---'}</span>
+              <span>${escapeHtml(displayName || '---')}</span>
               <span>${pinCountLabel}</span>
             </div>
             <table>

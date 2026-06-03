@@ -20,23 +20,34 @@ export const Container = styled.div`
   height: min-content;
 `;
 
-export const Head = styled.div`
+export const Head = styled.button`
   display: flex;
   align-items: center;
   width: 100%;
   padding: 0 0 0 0.2em;
   overflow: hidden;
+  cursor: pointer;
   background-color: var(--white);
   border: 1px solid rgb(0 0 0 / 10%);
   border-radius: var(--border-radius-light);
-  transition-timing-function: ease-in-out;
-  transition-duration: 20s;
-  transition-property: all;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.75;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #1677ff;
+    outline-offset: 2px;
+  }
 `;
 
 export const Body = styled.div`
   position: absolute;
-  z-index: 999999999999;
+  z-index: 20;
   width: 100%;
   min-width: 300px;
   height: 300px;
@@ -64,7 +75,6 @@ export const Group = styled.div`
   width: 100%;
   height: 2.2em;
   padding-right: 0.5em;
-  transition: 1s display ease-in-out;
 
   h3 {
     display: -webkit-box;
@@ -76,7 +86,7 @@ export const Group = styled.div`
     -webkit-box-orient: vertical;
     font-size: 1em;
     font-weight: 500;
-    line-height: 1pc;
+    line-height: 1.2;
     color: rgb(66 66 66);
     text-transform: uppercase;
   }
@@ -86,16 +96,27 @@ interface ItemProps {
   $selected?: boolean;
 }
 
-export const Item = styled.p<ItemProps>`
+export const Item = styled.button<ItemProps>`
   display: flex;
   align-items: center;
+  width: 100%;
   height: 2.4em;
   padding: 0 1em;
+  color: rgb(66 66 66);
+  text-align: left;
   list-style: none;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
 
   &:hover {
     color: white;
     background-color: var(--color);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #1677ff;
+    outline-offset: -2px;
   }
 
   ${({ $selected }) => {

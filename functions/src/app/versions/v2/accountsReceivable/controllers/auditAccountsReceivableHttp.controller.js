@@ -10,6 +10,7 @@ import {
   MEMBERSHIP_ROLE_GROUPS,
 } from '../../invoice/services/repairTasks.service.js';
 import { assertBusinessSubscriptionAccess } from '../../billing/utils/subscriptionAccess.util.js';
+import { applyHttpCors } from '../../http/httpCors.util.js';
 
 const DEFAULT_DAYS = 30;
 const MAX_DAYS = 120;
@@ -39,15 +40,6 @@ const mapHttpsErrorToHttpStatus = (code) => {
   default:
     return 400;
   }
-};
-
-const setCors = (res) => {
-  res.set('Access-Control-Allow-Origin', '*');
-  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.set(
-    'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, X-Session-Token',
-  );
 };
 
 const clampNumber = (value, min, max, fallback) => {
@@ -640,8 +632,15 @@ async function collectInvoicesWithAnomalies({
 }
 
 export const auditAccountsReceivableHttp = https.onRequest(async (req, res) => {
-  setCors(res);
-  if (req.method === 'OPTIONS') return res.status(204).send('');
+  const corsAllowed = applyHttpCors(req, res, {
+    methods: 'POST, OPTIONS',
+    headers: 'Content-Type, Authorization, X-Session-Token',
+  });
+  if (req.method === 'OPTIONS') {
+    if (!corsAllowed) return res.status(403).send('');
+    return res.status(204).send('');
+  }
+  if (!corsAllowed) return res.status(403).json({ error: 'Origin not allowed' });
   if (req.method !== 'POST')
     return res.status(405).json({ error: 'Method Not Allowed' });
 

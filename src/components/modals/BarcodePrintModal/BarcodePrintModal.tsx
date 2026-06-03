@@ -17,6 +17,8 @@ interface BarcodePrintFormValues {
   quantity?: number | string;
 }
 
+const PDF_BLOB_URL_REVOKE_DELAY_MS = 60_000;
+
 const getPdfOrientation = (widthInMM: number, heightInMM: number) =>
   widthInMM > heightInMM ? 'l' : 'p';
 
@@ -89,17 +91,22 @@ export const BarcodePrintModal = () => {
 
         const pdfBlob = pdf.output('blob');
         const url = URL.createObjectURL(pdfBlob);
-        const printWindow = window.open(url, '_blank');
+        const printWindow = window.open(url, '_blank', 'noopener,noreferrer');
         if (printWindow) {
+          printWindow.opener = null;
+          const revokePrintUrl = () => URL.revokeObjectURL(url);
           printWindow.addEventListener(
             'load',
             function () {
               printWindow.focus();
               printWindow.print();
-              URL.revokeObjectURL(url);
+              revokePrintUrl();
             },
             { once: true },
           );
+          window.setTimeout(revokePrintUrl, PDF_BLOB_URL_REVOKE_DELAY_MS);
+        } else {
+          URL.revokeObjectURL(url);
         }
       }
     } catch (error) {

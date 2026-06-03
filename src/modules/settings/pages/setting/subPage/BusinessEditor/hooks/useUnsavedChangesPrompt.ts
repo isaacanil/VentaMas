@@ -1,75 +1,72 @@
 import { Modal } from 'antd';
-import { useContext, useEffect, useRef } from 'react';
-import { UNSAFE_NavigationContext } from 'react-router-dom';
-
-type Transition = {
-  retry: () => void;
-};
-
-type NavigatorWithBlock = {
-  block: (blocker: (tx: Transition) => void) => () => void;
-};
-
-const isNavigatorWithBlock = (
-  navigator: unknown,
-): navigator is NavigatorWithBlock =>
-  typeof navigator === 'object' &&
-  navigator !== null &&
-  'block' in navigator &&
-  typeof (navigator as { block?: unknown }).block === 'function';
+import { useEffect, useRef } from 'react';
+import { useBlocker } from 'react-router-dom';
 
 const useUnsavedChangesPrompt = (shouldBlock: boolean): void => {
-  const navigationContext = useContext(UNSAFE_NavigationContext);
+  const blocker = useBlocker(shouldBlock);
   const confirmRef = useRef<ReturnType<typeof Modal.confirm> | null>(null);
+  const handledRef = useRef(false);
 
   useEffect(() => {
-    if (!shouldBlock) {
-      if (confirmRef.current) {
-        confirmRef.current.destroy();
+    if (shouldBlock) {
+      return undefined;
+    }
+
+    if (confirmRef.current) {
+      confirmRef.current.destroy();
+      confirmRef.current = null;
+    }
+
+    if (blocker.state === 'blocked') {
+      blocker.reset();
+    }
+
+    return undefined;
+  }, [blocker, shouldBlock]);
+
+  useEffect(() => {
+    if (blocker.state !== 'blocked' || confirmRef.current) {
+      return undefined;
+    }
+
+    confirmRef.current = Modal.confirm({
+      title: 'Tienes cambios sin guardar',
+      content:
+        'Si sales ahora se perderan los cambios hechos en Datos de la Empresa.',
+      okText: 'Salir sin guardar',
+      okType: 'danger',
+      cancelText: 'Permanecer aqui',
+      centered: true,
+      onOk: () => {
+        handledRef.current = true;
         confirmRef.current = null;
-      }
-      return undefined;
-    }
-
-    const navigator = navigationContext?.navigator;
-    if (!isNavigatorWithBlock(navigator)) {
-      return undefined;
-    }
-
-    const unblock = navigator.block((tx) => {
-      if (confirmRef.current) {
-        return;
-      }
-
-      confirmRef.current = Modal.confirm({
-        title: 'Tienes cambios sin guardar',
-        content:
-          'Si sales ahora se perderán los cambios hechos en Datos de la Empresa.',
-        okText: 'Salir sin guardar',
-        okType: 'danger',
-        cancelText: 'Permanecer aquí',
-        centered: true,
-        onOk: () => {
-          confirmRef.current = null;
-          tx.retry();
-        },
-        onCancel: () => {
-          confirmRef.current = null;
-        },
-        afterClose: () => {
-          confirmRef.current = null;
-        },
-      });
+        blocker.proceed();
+      },
+      onCancel: () => {
+        handledRef.current = true;
+        confirmRef.current = null;
+        blocker.reset();
+      },
+      afterClose: () => {
+        if (!handledRef.current && blocker.state === 'blocked') {
+          blocker.reset();
+        }
+        handledRef.current = false;
+        confirmRef.current = null;
+      },
     });
 
+    return undefined;
+  }, [blocker]);
+
+  useEffect(() => {
     return () => {
-      unblock();
       if (confirmRef.current) {
         confirmRef.current.destroy();
         confirmRef.current = null;
       }
     };
-  }, [navigationContext, shouldBlock]);
+  }, []);
 };
 
 export default useUnsavedChangesPrompt;

@@ -20,10 +20,8 @@ const bcrypt = requireFromFunctions('bcryptjs');
 const DEFAULT_BUSINESS_ID = 'X63aIFwHzk3r0gmT8w6P';
 const DEFAULT_SOURCE_PROJECT = 'ventamaxpos';
 const DEFAULT_TARGET_PROJECT = 'ventamax-staging';
-const DEFAULT_SOURCE_KEY =
-  'C:/Dev/keys/VentaMas/ventamaxpos-firebase-adminsdk-r55lp-41498ebe9e.json';
-const DEFAULT_TARGET_KEY =
-  'C:/Dev/keys/VentaMas-staging/ventamax-staging-firebase-adminsdk-fbsvc-5400dd05d4.json';
+const DEFAULT_SOURCE_KEY = process.env.VENTAMAS_SOURCE_SERVICE_ACCOUNT || '';
+const DEFAULT_TARGET_KEY = process.env.VENTAMAS_TARGET_SERVICE_ACCOUNT || '';
 const DEFAULT_USERNAME = 'dev#3407';
 const DEFAULT_PASSWORD_ENV = 'STAGING_USER_PASSWORD';
 
@@ -36,8 +34,8 @@ Opciones:
   --business-id=<id>          Default: ${DEFAULT_BUSINESS_ID}
   --source-project=<id>       Default: ${DEFAULT_SOURCE_PROJECT}
   --target-project=<id>       Default: ${DEFAULT_TARGET_PROJECT}
-  --source-key=<path>         Default: ${DEFAULT_SOURCE_KEY}
-  --target-key=<path>         Default: ${DEFAULT_TARGET_KEY}
+  --source-key=<path>         Default: VENTAMAS_SOURCE_SERVICE_ACCOUNT or ADC
+  --target-key=<path>         Default: VENTAMAS_TARGET_SERVICE_ACCOUNT or ADC
   --username=<name>           Default: ${DEFAULT_USERNAME}
   --password-env=<name>       Default: ${DEFAULT_PASSWORD_ENV}
   --batch-size=<n>            Default: 300

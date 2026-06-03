@@ -4,6 +4,7 @@ import type { BusinessFilters, BusinessInfo } from '../types';
 import { INITIAL_BUSINESS_FILTERS } from '../utils/businessControl';
 
 interface BusinessControlUiState {
+  accessActionsModalOpen: boolean;
   currentPage: number;
   editModalOpen: boolean;
   filters: BusinessFilters;
@@ -13,17 +14,24 @@ interface BusinessControlUiState {
 }
 
 type BusinessControlUiAction =
+  | { type: 'closeAccessActionsModal' }
   | { type: 'closeEditModal' }
   | { type: 'closeFiltersDrawer' }
   | { type: 'goToNextPage'; totalPages: number }
   | { type: 'goToPrevPage' }
+  | { type: 'openAccessActionsModal'; business: BusinessInfo }
   | { type: 'openEditModal'; business: BusinessInfo }
   | { type: 'resetFilters' }
-  | { type: 'setFilter'; key: keyof BusinessFilters; value: BusinessFilters[keyof BusinessFilters] }
+  | {
+      type: 'setFilter';
+      key: keyof BusinessFilters;
+      value: BusinessFilters[keyof BusinessFilters];
+    }
   | { type: 'setSearchTerm'; value: string }
   | { type: 'showFiltersDrawer' };
 
 const initialState: BusinessControlUiState = {
+  accessActionsModalOpen: false,
   currentPage: 1,
   editModalOpen: false,
   filters: INITIAL_BUSINESS_FILTERS,
@@ -80,6 +88,7 @@ const businessControlUiReducer = (
     case 'openEditModal':
       return {
         ...state,
+        accessActionsModalOpen: false,
         editModalOpen: true,
         selectedBusiness: action.business,
       };
@@ -87,6 +96,19 @@ const businessControlUiReducer = (
       return {
         ...state,
         editModalOpen: false,
+        selectedBusiness: null,
+      };
+    case 'openAccessActionsModal':
+      return {
+        ...state,
+        accessActionsModalOpen: true,
+        editModalOpen: false,
+        selectedBusiness: action.business,
+      };
+    case 'closeAccessActionsModal':
+      return {
+        ...state,
+        accessActionsModalOpen: false,
         selectedBusiness: null,
       };
     default:
@@ -153,7 +175,21 @@ export const useBusinessControlUiState = () => {
     dispatch({ type: 'closeEditModal' });
   }, []);
 
+  const handleOpenAccessActions = useCallback((business: BusinessInfo) => {
+    dispatch({
+      type: 'openAccessActionsModal',
+      business,
+    });
+  }, []);
+
+  const handleCloseAccessActions = useCallback(() => {
+    dispatch({ type: 'closeAccessActionsModal' });
+  }, []);
+
   return {
+    accessActionsModalOpen: state.accessActionsModalOpen,
+    handleCloseAccessActions,
+    handleOpenAccessActions,
     closeFiltersDrawer,
     currentPage: state.currentPage,
     debouncedSearchTerm,

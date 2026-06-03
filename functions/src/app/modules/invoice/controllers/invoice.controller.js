@@ -12,25 +12,29 @@ export const handleInvoiceRequest = https.onCall(async (req, context) => {
     context.rawRequest?.headers['x-cloud-trace-context']?.split('/')[0] ??
     nanoid();
 
-  const rawBody = context.rawRequest?.rawBody?.toString();
+  const rawBodyPresent = Boolean(context.rawRequest?.rawBody);
   logger.debug('⇢ Raw request body', {
     structuredData: true,
     traceId,
-    rawBody,
+    rawBodyPresent,
   });
 
   logger.info('↪ handleInvoiceRequest invoked', {
     structuredData: true,
     traceId,
     uid: req?.user?.uid || 'no se esta pasando el uid',
-    payloadKeys: Object.keys(req),
-    payload: req,
+    payloadKeys: Object.keys(req || {}),
+    payloadOmitted: true,
   });
   const invoice = req?.data;
   logger.info('Invoice data', {
     structuredData: true,
     traceId,
-    invoiceData: JSON.stringify(invoice),
+    invoiceKeys:
+      invoice && typeof invoice === 'object' ? Object.keys(invoice) : [],
+    hasClient: Boolean(invoice?.client),
+    hasCart: Boolean(invoice?.cart),
+    taxReceiptEnabled: Boolean(invoice?.taxReceiptEnabled),
   });
   // 3) Validación de inputs mínimos
   const {
@@ -52,7 +56,8 @@ export const handleInvoiceRequest = https.onCall(async (req, context) => {
       traceId,
       userPresent: !!user,
       cartPresent: !!cart,
-      data: req.data,
+      invoiceKeys:
+        invoice && typeof invoice === 'object' ? Object.keys(invoice) : [],
     });
     throw new https.HttpsError(
       'invalid-argument',
@@ -62,7 +67,12 @@ export const handleInvoiceRequest = https.onCall(async (req, context) => {
 
   // 4) Validar tipos de taxReceipt
   if (taxReceiptEnabled && (typeof ncfType !== 'string' || !ncfType.trim())) {
-    logger.error('Invalid NCF type', { traceId, taxReceiptEnabled, ncfType });
+    logger.error('Invalid NCF type', {
+      traceId,
+      taxReceiptEnabled,
+      ncfTypeType: typeof ncfType,
+      ncfTypePresent: Boolean(String(ncfType || '').trim()),
+    });
     throw new https.HttpsError(
       'invalid-argument',
       '`ncfType` inválido cuando `taxReceiptEnabled=true`',
@@ -111,7 +121,8 @@ export const handleInvoiceRequest = https.onCall(async (req, context) => {
     } else {
       logger.error('Unhandled error in  handleInvoiceRequest', {
         traceId,
-        err,
+        errorName: err instanceof Error ? err.name : typeof err,
+        message: err instanceof Error ? err.message : String(err),
       });
       throw new https.HttpsError(
         'internal', // código de error estándar
@@ -119,8 +130,6 @@ export const handleInvoiceRequest = https.onCall(async (req, context) => {
         {
           // objeto de detalles opcional
           traceId,
-          error: err,
-          message: err instanceof Error ? err.message : String(err),
         },
       );
     }

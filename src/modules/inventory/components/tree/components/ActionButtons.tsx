@@ -1,7 +1,5 @@
-// ActionButtons.tsx
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Dropdown } from 'antd';
-import PropTypes from 'prop-types';
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
 import type { TreeAction, TreeNodeData, TreeNodeId } from '../types';
@@ -26,6 +24,11 @@ const ActionButton = styled.button`
   &:hover {
     color: #0056b3;
   }
+
+  &:focus-visible {
+    outline: 2px solid #1677ff;
+    outline-offset: 2px;
+  }
 `;
 
 type ActionButtonsProps = {
@@ -36,7 +39,6 @@ type ActionButtonsProps = {
 };
 
 const ActionButtons = ({ node, actions, level, path }: ActionButtonsProps) => {
-  // Agregar 'path' como prop
   const visibleActions = useMemo<TreeAction<TreeNodeData>[]>(() => {
     const safeActions = Array.isArray(actions) ? actions : [];
     return safeActions.filter((action) => {
@@ -56,19 +58,22 @@ const ActionButtons = ({ node, actions, level, path }: ActionButtonsProps) => {
           return (
             <ActionButton
               key={action.name}
-              onClick={(e) => {
-                e.stopPropagation();
-                action.handler(node, level, path); // Pasar 'path' al handler
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                action.handler(node, level, path);
               }}
               title={action.name}
             >
               <FontAwesomeIcon icon={action.icon} />
             </ActionButton>
           );
-        } else if (action.type === 'dropdown') {
+        }
+
+        if (action.type === 'dropdown') {
           const items =
             typeof action.items === 'function'
-              ? action.items(node, level, path) // Pasar 'path' a las items
+              ? action.items(node, level, path)
               : action.items;
 
           if (!items || items.length === 0) return null;
@@ -89,8 +94,8 @@ const ActionButtons = ({ node, actions, level, path }: ActionButtonsProps) => {
                     </>
                   ),
                   danger: item.name.toLowerCase().includes('eliminar'),
-                  onClick: (e) => {
-                    e.domEvent.stopPropagation();
+                  onClick: (event) => {
+                    event.domEvent.stopPropagation();
                     item.handler(node, level, path);
                   },
                 })),
@@ -98,7 +103,8 @@ const ActionButtons = ({ node, actions, level, path }: ActionButtonsProps) => {
               trigger={['click']}
             >
               <ActionButton
-                onClick={(e) => e.stopPropagation()}
+                type="button"
+                onClick={(event) => event.stopPropagation()}
                 title={action.name}
               >
                 <FontAwesomeIcon icon={action.icon} />
@@ -106,40 +112,11 @@ const ActionButtons = ({ node, actions, level, path }: ActionButtonsProps) => {
             </Dropdown>
           );
         }
+
         return null;
       })}
     </ActionButtonsContainer>
   );
-};
-
-ActionButtons.propTypes = {
-  actions: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      type: PropTypes.oneOf(['button', 'dropdown']).isRequired,
-      icon: PropTypes.object.isRequired, // Asegúrate de que los íconos sean objetos válidos de FontAwesome
-      handler: PropTypes.func, // Cambiar a opcional
-      show: PropTypes.func, // Opcional
-      items: PropTypes.oneOfType([
-        PropTypes.arrayOf(
-          PropTypes.shape({
-            name: PropTypes.string.isRequired,
-            icon: PropTypes.object.isRequired,
-            handler: PropTypes.func.isRequired,
-          }),
-        ),
-        PropTypes.func,
-      ]),
-    }),
-  ),
-  node: PropTypes.object.isRequired,
-  level: PropTypes.number.isRequired,
-  path: PropTypes.array, // Nueva propType para 'path'
-};
-
-ActionButtons.defaultProps = {
-  actions: [],
-  path: undefined,
 };
 
 export default ActionButtons;

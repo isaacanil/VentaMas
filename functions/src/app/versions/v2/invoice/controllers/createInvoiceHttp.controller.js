@@ -12,6 +12,7 @@ import {
 } from '../services/repairTasks.service.js';
 import { LIMIT_OPERATION_KEYS } from '../../billing/config/limitOperations.config.js';
 import { assertBusinessSubscriptionAccess } from '../../billing/utils/subscriptionAccess.util.js';
+import { applyHttpCors } from '../../http/httpCors.util.js';
 
 let depsPromise;
 async function loadDeps() {
@@ -32,15 +33,6 @@ async function loadDeps() {
     });
   }
   return depsPromise;
-}
-
-function setCors(res) {
-  res.set('Access-Control-Allow-Origin', '*');
-  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.set(
-    'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, X-Session-Token, Idempotency-Key',
-  );
 }
 
 const mapHttpsErrorToStatus = (code) => {
@@ -64,10 +56,15 @@ const mapHttpsErrorToStatus = (code) => {
 };
 
 export const createInvoiceV2Http = https.onRequest(async (req, res) => {
-  setCors(res);
+  const corsAllowed = applyHttpCors(req, res, {
+    methods: 'POST, OPTIONS',
+    headers: 'Content-Type, Authorization, X-Session-Token, Idempotency-Key',
+  });
   if (req.method === 'OPTIONS') {
+    if (!corsAllowed) return res.status(403).send('');
     return res.status(204).send('');
   }
+  if (!corsAllowed) return res.status(403).json({ error: 'Origin not allowed' });
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
@@ -212,7 +209,6 @@ export const createInvoiceV2Http = https.onRequest(async (req, res) => {
     return res.status(500).json({
       error: 'Error interno al iniciar la factura',
       traceId,
-      message: err?.message || String(err),
     });
   }
 });

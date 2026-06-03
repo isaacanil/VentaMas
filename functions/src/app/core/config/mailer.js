@@ -54,6 +54,10 @@ function paramOrEnv(paramDef, envName) {
   return process.env[envName];
 }
 
+function sanitizeMailHeader(value) {
+  return String(value || '').replace(/[\r\n]+/g, ' ').trim();
+}
+
 async function resolveSecrets() {
   // defineSecret().value() retorna un placeholder si no fue proporcionado; aún así lo usamos.
   // Forzamos lectura para garantizar inyección antes de crear el transport.
@@ -191,11 +195,11 @@ export async function sendMail({
   } catch {
     fromEnv = process.env.STOCK_ALERT_MAIL_FROM;
   }
-  const userEnv = process.env.STOCK_ALERT_MAIL_USER; // ya tenemos user, pero para no exponer secrets nuevamente
+  const userEnv = sanitizeMailHeader(process.env.STOCK_ALERT_MAIL_USER); // ya tenemos user, pero para no exponer secrets nuevamente
 
   const from =
-    (overrideFrom && overrideFrom.trim()) ||
-    fromEnv ||
+    sanitizeMailHeader(overrideFrom) ||
+    sanitizeMailHeader(fromEnv) ||
     (userEnv
       ? `Stock Alerts <${userEnv}>`
       : 'Stock Alerts <no-reply@example.com>');
@@ -205,15 +209,16 @@ export async function sendMail({
     ? to
     : String(to || '')
       .split(',')
-      .map((s) => s.trim())
+      .map((s) => sanitizeMailHeader(s))
       .filter(Boolean);
 
   const finalTo = list.join(',');
+  const finalSubject = sanitizeMailHeader(subject);
 
   const info = await transport.sendMail({
     from,
     to: finalTo,
-    subject,
+    subject: finalSubject,
     html,
     text,
     attachments,
@@ -221,7 +226,7 @@ export async function sendMail({
   logger.info('[mailer] Correo enviado', {
     messageId: info.messageId,
     to: list,
-    subject,
+    subject: finalSubject,
   });
   return info;
 }

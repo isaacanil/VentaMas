@@ -1,17 +1,37 @@
 import fs from 'node:fs';
 import admin from 'firebase-admin';
 
+const args = process.argv.slice(2);
+
+const getFlagValue = (name) => {
+  const withEquals = args.find((arg) => arg.startsWith(`${name}=`));
+  if (withEquals) return withEquals.split('=').slice(1).join('=');
+  const index = args.indexOf(name);
+  return index >= 0 ? args[index + 1] : undefined;
+};
+
+const projectId =
+  getFlagValue('--projectId') || process.env.GCLOUD_PROJECT || 'ventamaxpos';
+const businessId =
+  getFlagValue('--businessId') || 'X63aIFwHzk3r0gmT8w6P';
+const keyPath =
+  getFlagValue('--keyPath') ||
+  getFlagValue('--service-account') ||
+  process.env.GOOGLE_APPLICATION_CREDENTIALS;
+
+const credential = keyPath
+  ? admin.credential.cert(JSON.parse(fs.readFileSync(keyPath, 'utf8')))
+  : admin.credential.applicationDefault();
+
 admin.initializeApp({
-  credential: admin.credential.cert(
-    JSON.parse(fs.readFileSync('C:/Dev/keys/VentaMas/ventamaxpos-firebase-adminsdk-r55lp-41498ebe9e.json', 'utf8'))
-  ),
-  projectId: 'ventamaxpos',
+  credential,
+  projectId,
 });
 
 const db = admin.firestore();
 
 const snap = await db
-  .collection('businesses/X63aIFwHzk3r0gmT8w6P/invoices')
+  .collection(`businesses/${businessId}/invoices`)
   .where('data.NCF', '>', '')
   .orderBy('data.NCF', 'desc')
   .limit(15)

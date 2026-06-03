@@ -1,4 +1,10 @@
-import { useState } from 'react';
+import {
+  cloneElement,
+  isValidElement,
+  useId,
+  useState,
+  type ReactElement,
+} from 'react';
 import styled from 'styled-components';
 import type { TooltipProps } from '@/types/ui';
 
@@ -8,35 +14,51 @@ export const Tooltip = ({
   placement,
 }: TooltipProps) => {
   const [isVisible, setIsVisible] = useState(false);
+  const tooltipId = useId();
+  const shouldRenderTooltip = isVisible && description;
+  const child =
+    isValidElement(Children) && description
+      ? cloneElement(Children as ReactElement<Record<string, unknown>>, {
+          'aria-describedby': shouldRenderTooltip ? tooltipId : undefined,
+        })
+      : Children;
 
   return (
     <Container
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
+      onFocusCapture={() => setIsVisible(true)}
+      onBlurCapture={() => setIsVisible(false)}
     >
-      {Children}
-      {isVisible && <Message placement={placement}>{description}</Message>}
+      {child}
+      {shouldRenderTooltip && (
+        <Message id={tooltipId} role="tooltip" placement={placement}>
+          {description}
+        </Message>
+      )}
     </Container>
   );
 };
+
 const Container = styled.div`
   position: relative;
   width: min-content;
 `;
+
 type MessageProps = {
   placement?: TooltipProps['placement'];
 };
 
 const Message = styled.div<MessageProps>`
-  background-color: rgb(0 0 0 / 87%);
-  color: white;
-  padding: 0 8px;
-  border-radius: var(--border-radius-light);
   position: absolute;
+  z-index: 1200;
   width: auto;
-  white-space: nowrap;
-  z-index: 20000000000000;
+  padding: 0 8px;
   font-size: 12px;
+  color: white;
+  white-space: nowrap;
+  background-color: rgb(0 0 0 / 87%);
+  border-radius: var(--border-radius-light);
   transform: scale(1);
 
   ${(props) => {
@@ -45,23 +67,18 @@ const Message = styled.div<MessageProps>`
         return `
           top: 100%;
           left: 0;
-         
         `;
       case 'top':
         return `
-        left: 50%;
-        transform: translateX(-50%);
-        top: -100%;
+          left: 50%;
+          top: -100%;
+          transform: translateX(-50%);
         `;
 
       case 'top-end':
         return `
           top: 100%;
           right: 0;
-      `;
-      case 'left-start':
-        return `
-          
         `;
       case 'left':
         return `
@@ -71,44 +88,33 @@ const Message = styled.div<MessageProps>`
         `;
       case 'left-end':
         return `
-        left: -100%;
-          top: 0px;
-        
-        `;
-      case 'right-start':
-        return `
-          
+          left: -100%;
+          top: 0;
         `;
       case 'right':
         return `
-        right: -100%;
+          right: -100%;
           top: 50%;
           transform: translateY(-50%);
         `;
-      case 'right-end':
-        return `
-          
-        `;
       case 'bottom-start':
         return `
-        bottom: -100%;
-        left: 0;
+          bottom: -100%;
+          left: 0;
         `;
       case 'bottom':
         return `
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: -100%;
-          
+          left: 50%;
+          bottom: -100%;
+          transform: translateX(-50%);
         `;
       case 'bottom-end':
         return `
-        bottom: -100%;
-        right: 0;
+          bottom: -100%;
+          right: 0;
         `;
-
       default:
-        break;
+        return '';
     }
   }}
 `;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import type { ReactNode } from 'react';
 import styled from 'styled-components';
 import Typography from '@/components/ui/Typografy/Typografy';
@@ -10,38 +10,26 @@ type BaseChartContainerProps = {
 };
 
 type ContainerProps = {
-  $isMobile: boolean;
   $height: string;
 };
 
-// Hook para detectar tamaño de pantalla
-const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(false);
+const reduceHeight = (height: string, offset: number) => {
+  const value = Number.parseFloat(height);
+  if (!Number.isFinite(value)) {
+    return height;
+  }
 
-  useEffect(() => {
-    const checkIsMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkIsMobile();
-    window.addEventListener('resize', checkIsMobile);
-
-    return () => window.removeEventListener('resize', checkIsMobile);
-  }, []);
-
-  return isMobile;
+  const unit = height.replace(String(value), '') || 'px';
+  return `${Math.max(value - offset, 0)}${unit}`;
 };
 
-// Componente base para gráficos
 export const BaseChartContainer = ({
   title,
   children,
   height = '200px',
 }: BaseChartContainerProps) => {
-  const isMobile = useIsMobile();
-
   return (
-    <Container $isMobile={isMobile} $height={height}>
+    <Container $height={height}>
       <TitleContainer>
         <Typography variant="h3">{title}</Typography>
       </TitleContainer>
@@ -52,26 +40,17 @@ export const BaseChartContainer = ({
 
 const Container = styled.div<ContainerProps>`
   display: grid;
-  gap: ${(props: ContainerProps) => (props.$isMobile ? '0.5em' : '1em')};
-  height: ${(props: ContainerProps) => {
-    const baseHeight = parseInt(props.$height);
-    return props.$isMobile ? `${baseHeight - 20}px` : props.$height;
-  }};
+  gap: 1em;
+  height: ${(props: ContainerProps) => props.$height};
 
   @media (width <= 768px) {
     gap: 0.5em;
-    height: ${(props: ContainerProps) => {
-      const baseHeight = parseInt(props.$height);
-      return `${baseHeight - 20}px`;
-    }};
+    height: ${(props: ContainerProps) => reduceHeight(props.$height, 20)};
   }
 
   @media (width <= 480px) {
     gap: 0.25em;
-    height: ${(props: ContainerProps) => {
-      const baseHeight = parseInt(props.$height);
-      return `${baseHeight - 40}px`;
-    }};
+    height: ${(props: ContainerProps) => reduceHeight(props.$height, 40)};
   }
 `;
 

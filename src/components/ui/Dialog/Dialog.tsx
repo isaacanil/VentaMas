@@ -1,12 +1,13 @@
 import { message } from 'antd';
 import { AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useCallback, useId, useRef, useState } from 'react';
 
 import { icons } from '@/constants/icons/icons';
 import { useDialog } from '@/Context/Dialog/useDialog';
 import type { DialogSize, DialogType } from '@/Context/Dialog/contextState';
 import { ButtonGroup } from '@/components/ui/Button/Button';
 import Typography from '@/components/ui/Typografy/Typografy';
+import { useModalFocusTrap } from '@/hooks/useModalFocusTrap';
 
 import { iconTypes } from './Dialog.config';
 import {
@@ -28,7 +29,9 @@ import { BackdropVariants, ContainerVariants } from './variants';
 const Dialog = () => {
   const { dialog, onClose } = useDialog();
   const [isLoading, setIsLoading] = useState(false);
-  if (!dialog.isOpen) return null;
+  const containerRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const descriptionId = useId();
 
   const {
     isOpen,
@@ -43,12 +46,20 @@ const Dialog = () => {
     confirmButtonText,
   } = dialog;
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     if (!isLoading) {
       onCancel?.();
       onClose();
     }
-  };
+  }, [isLoading, onCancel, onClose]);
+
+  useModalFocusTrap({
+    open: isOpen,
+    containerRef,
+    onEscape: handleCancel,
+  });
+
+  if (!isOpen) return null;
 
   const finishConfirmFlow = () => {
     setIsLoading(false);
@@ -87,18 +98,25 @@ const Dialog = () => {
           exit="hidden"
         >
           <Container
+            ref={containerRef}
             variants={ContainerVariants}
             initial="hidden"
             animate="visible"
             exit="hidden"
             $size={size as DialogSize}
             $type={typedType}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            aria-describedby={descriptionId}
+            tabIndex={-1}
           >
             <Header $type={typedType}>
-              <Typography variant="h2" disableMargins>
+              <Typography id={titleId} variant="h2" disableMargins>
                 {title}
               </Typography>
               <CloseButton
+                type="button"
                 onClick={onClose}
                 $type={typedType}
                 disabled={isLoading}
@@ -112,18 +130,28 @@ const Dialog = () => {
                 <IconWrapper $type={typedType}>
                   {iconTypes[typedType]}
                 </IconWrapper>
-                <MessageText variant="p" color="inherit" disableMargins>
+                <MessageText
+                  id={descriptionId}
+                  variant="p"
+                  color="inherit"
+                  disableMargins
+                >
                   {dialogMessage}
                 </MessageText>
               </Description>
             </Body>
             <Footer>
               <ButtonGroup>
-                <CancelButton onClick={handleCancel} disabled={isLoading}>
+                <CancelButton
+                  type="button"
+                  onClick={handleCancel}
+                  disabled={isLoading}
+                >
                   {cancelText}
                 </CancelButton>
                 {onConfirm !== null && (
                   <ConfirmButton
+                    type="button"
                     onClick={handleConfirm}
                     $type={typedType}
                     disabled={isLoading}

@@ -21,31 +21,182 @@ import {
   resolveUserIdFromSessionToken,
   toMillis,
 } from '../utils/sessionAuth.util.js';
+import { upsertAccessControlEntry } from '../utils/membershipMirror.util.js';
 import {
-  upsertAccessControlEntry,
-} from '../utils/membershipMirror.util.js';
-import {
-  ensureBusinessOnboardingSubscription,
-} from '../../billing/services/subscriptionSnapshot.service.js';
+  assertBusinessAllowsMemberRead,
+  assertUserAccountActive,
+} from '../utils/accountAccessPolicy.util.js';
+import { ensureBusinessOnboardingSubscription } from '../../billing/services/subscriptionSnapshot.service.js';
 import { incrementBusinessUsageMetric } from '../../billing/services/usage.service.js';
 
 const USERS_COLLECTION = 'users';
+const SESSION_COLLECTION = 'sessionTokens';
 const DEV_IMPERSONATION_AUDIT_COLLECTION = 'devBusinessImpersonationAudit';
+const BUSINESS_ACCESS_AUDIT_COLLECTION = 'businessAccessAudit';
+const BUSINESS_ACCESS_SOURCE = 'clientUpdateBusinessAccess';
 const DEV_IMPERSONATION_MIN_TTL_MINUTES = 5;
 const DEV_IMPERSONATION_MAX_TTL_MINUTES = 240;
 const DEV_IMPERSONATION_DEFAULT_TTL_MINUTES =
   Number(process.env.DEV_BUSINESS_IMPERSONATION_TTL_MINUTES) || 30;
-const INACTIVE_MEMBERSHIP_STATUSES = new Set(['inactive', 'suspended', 'revoked']);
+const BUSINESS_ACCESS_BATCH_LIMIT = 400;
+const INACTIVE_MEMBERSHIP_STATUSES = new Set([
+  'inactive',
+  'suspended',
+  'revoked',
+  'disabled',
+]);
+const BLOCKING_BUSINESS_ACCESS_STATUSES = new Set([
+  'inactive',
+  'suspended',
+  'offboarded',
+  'closed',
+  'disabled',
+  'blocked',
+]);
+const READ_ONLY_BUSINESS_ACCESS_STATUSES = new Set(['read_only', 'readonly']);
+const ALLOWED_BUSINESS_ACCESS_STATUSES = new Set([
+  'active',
+  'read_only',
+  'suspended',
+  'inactive',
+  'offboarded',
+  'closed',
+]);
+const BUSINESS_ACCESS_STATUS_LABELS = {
+  active: 'Activo',
+  read_only: 'Solo lectura',
+  suspended: 'Suspendido',
+  inactive: 'Inactivo',
+  offboarded: 'Offboarding',
+  closed: 'Cerrado',
+};
 
 const usersCol = db.collection(USERS_COLLECTION);
-const devImpersonationAuditCol = db.collection(DEV_IMPERSONATION_AUDIT_COLLECTION);
+const sessionsCol = db.collection(SESSION_COLLECTION);
+const devImpersonationAuditCol = db.collection(
+  DEV_IMPERSONATION_AUDIT_COLLECTION,
+);
+const businessAccessAuditCol = db.collection(BUSINESS_ACCESS_AUDIT_COLLECTION);
 
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 
-const resolveCanonicalMembershipForBusiness = async ({ userId, businessId }) => {
+const toArray = (value) => (Array.isArray(value) ? value : []);
+
+const normalizeBusinessAccessStatus = (value, fallback = 'active') =>
+  (toCleanString(value) || fallback).toLowerCase();
+
+const isBlockingBusinessAccessStatus = (status) =>
+  BLOCKING_BUSINESS_ACCESS_STATUSES.has(normalizeBusinessAccessStatus(status));
+
+const isReadOnlyBusinessAccessStatus = (status) =>
+  READ_ONLY_BUSINESS_ACCESS_STATUSES.has(normalizeBusinessAccessStatus(status));
+
+const resolveBusinessIdFromEntry = (entry) => {
+  const record = asRecord(entry);
+  const businessNode = asRecord(record.business);
+  return (
+    toCleanString(record.businessId) ||
+    toCleanString(record.businessID) ||
+    toCleanString(businessNode.id) ||
+    toCleanString(businessNode.businessId) ||
+    toCleanString(businessNode.businessID) ||
+    null
+  );
+};
+
+const isActiveMembershipEntry = (entry) => {
+  const record = asRecord(entry);
+  const status = normalizeBusinessAccessStatus(record.status);
+  return !INACTIVE_MEMBERSHIP_STATUSES.has(status) && record.active !== false;
+};
+
+const resolveBusinessCurrentAccessStatus = (businessData) => {
+  const root = asRecord(businessData);
+  const businessNode = asRecord(root.business);
+  return normalizeBusinessAccessStatus(
+    root.status ||
+      root.accessStatus ||
+      businessNode.status ||
+      businessNode.accessStatus,
+  );
+};
+
+const buildNextAccessControl = ({
+  entries,
+  businessId,
+  memberActive,
+  membershipStatus,
+}) => {
+  const normalizedEntries = toArray(entries).filter(
+    (entry) => entry && typeof entry === 'object' && !Array.isArray(entry),
+  );
+  let touched = false;
+
+  const nextEntries = normalizedEntries.map((entry) => {
+    const entryBusinessId = resolveBusinessIdFromEntry(entry);
+    if (entryBusinessId !== businessId) return entry;
+    touched = true;
+    return {
+      ...entry,
+      active: memberActive,
+      status: membershipStatus,
+    };
+  });
+
+  return {
+    entries: nextEntries,
+    touched,
+  };
+};
+
+const createBatchWriter = () => {
+  let batch = db.batch();
+  let count = 0;
+  let commits = 0;
+
+  const commit = async () => {
+    if (!count) return;
+    await batch.commit();
+    commits += 1;
+    batch = db.batch();
+    count = 0;
+  };
+
+  return {
+    set(ref, data, options) {
+      batch.set(ref, data, options);
+      count += 1;
+    },
+    delete(ref) {
+      batch.delete(ref);
+      count += 1;
+    },
+    async flushIfNeeded() {
+      if (count >= BUSINESS_ACCESS_BATCH_LIMIT) {
+        await commit();
+      }
+    },
+    async close() {
+      await commit();
+      return commits;
+    },
+  };
+};
+
+const resolveCanonicalMembershipForBusiness = async ({
+  userId,
+  businessId,
+}) => {
   if (!userId || !businessId) return null;
-  const snap = await db.doc(`businesses/${businessId}/members/${userId}`).get();
+  const [businessSnap, snap] = await Promise.all([
+    db.doc(`businesses/${businessId}`).get(),
+    db.doc(`businesses/${businessId}/members/${userId}`).get(),
+  ]);
+  if (!businessSnap.exists) {
+    throw new HttpsError('not-found', 'Negocio no encontrado');
+  }
+  assertBusinessAllowsMemberRead(businessSnap.data() || {});
   if (!snap.exists) return null;
 
   const status =
@@ -277,8 +428,7 @@ const resolveUserIdFromSession = async (request) => {
   return resolveUserIdFromSessionToken({
     sessionToken: toCleanString(request?.data?.sessionToken),
     normalizeUserId: toCleanString,
-    createAuthError: (message) =>
-      new HttpsError('unauthenticated', message),
+    createAuthError: (message) => new HttpsError('unauthenticated', message),
   });
 };
 
@@ -306,19 +456,21 @@ export const clientCreateBusinessForCurrentAccount = onCall(async (request) => {
   }
 
   const userData = userSnap.data() || {};
-  const entries = normalizeMembershipEntries(userData, { includeBusinessName: true });
+  const entries = normalizeMembershipEntries(userData, {
+    includeBusinessName: true,
+  });
   const activeBusinessIds = getDistinctActiveBusinesses(entries);
   const hasBusinesses = activeBusinessIds.length > 0;
   const currentRole =
-      normalizeRole(userData.activeRole || userData.role || ROLE.CASHIER) ||
-      ROLE.CASHIER;
+    normalizeRole(userData.activeRole || userData.role || ROLE.CASHIER) ||
+    ROLE.CASHIER;
   const isDevActor = hasDevPrivileges(userData);
 
   const canCreateForCurrentAccount =
-      isDevActor ||
-      !hasBusinesses ||
-      currentRole === ROLE.OWNER ||
-      currentRole === ROLE.ADMIN;
+    isDevActor ||
+    !hasBusinesses ||
+    currentRole === ROLE.OWNER ||
+    currentRole === ROLE.ADMIN;
 
   if (!canCreateForCurrentAccount) {
     throw new HttpsError(
@@ -333,9 +485,7 @@ export const clientCreateBusinessForCurrentAccount = onCall(async (request) => {
   const businessId = requestedBusinessId || nanoid();
   const businessNode = asRecord(business.business);
   const businessName =
-      toCleanString(business.name) ||
-      toCleanString(businessNode.name) ||
-      null;
+    toCleanString(business.name) || toCleanString(businessNode.name) || null;
 
   let hasMultipleBusinesses = false;
   let resultingRole = ROLE.OWNER;
@@ -433,7 +583,8 @@ export const clientCreateBusinessForCurrentAccount = onCall(async (request) => {
     role: resultingRole,
     hasMultipleBusinesses,
     onboardingSubscriptionStatus,
-    subscriptionStatus: toCleanString(onboardingSubscription?.status)?.toLowerCase() || null,
+    subscriptionStatus:
+      toCleanString(onboardingSubscription?.status)?.toLowerCase() || null,
     subscriptionPlanId: toCleanString(onboardingSubscription?.planId),
   };
 });
@@ -456,13 +607,17 @@ export const clientSelectActiveBusiness = onCall(async (request) => {
   }
 
   const userData = userSnap.data() || {};
-  const entries = normalizeMembershipEntries(userData, { includeBusinessName: true });
+  assertUserAccountActive(userData);
+  const entries = normalizeMembershipEntries(userData, {
+    includeBusinessName: true,
+  });
   const canonicalMembership = await resolveCanonicalMembershipForBusiness({
     userId,
     businessId,
   });
 
-  const selectedMembership = canonicalMembership ||
+  const selectedMembership =
+    canonicalMembership ||
     assertActiveMembershipForBusiness(
       entries,
       businessId,
@@ -470,15 +625,15 @@ export const clientSelectActiveBusiness = onCall(async (request) => {
     );
 
   let nextEntries = entries;
-  const cachedEntry = entries.find((entry) => entry?.businessId === businessId) || null;
+  const cachedEntry =
+    entries.find((entry) => entry?.businessId === businessId) || null;
   const cacheNeedsSync =
     !!canonicalMembership &&
-    (
-      !cachedEntry ||
-      normalizeRole(cachedEntry.role || '') !== normalizeRole(selectedMembership.role || '') ||
+    (!cachedEntry ||
+      normalizeRole(cachedEntry.role || '') !==
+        normalizeRole(selectedMembership.role || '') ||
       String(cachedEntry.status || 'active').toLowerCase() !==
-        String(selectedMembership.status || 'active').toLowerCase()
-    );
+        String(selectedMembership.status || 'active').toLowerCase());
 
   if (cacheNeedsSync) {
     nextEntries = upsertAccessControlEntry(entries, {
@@ -495,8 +650,8 @@ export const clientSelectActiveBusiness = onCall(async (request) => {
     {
       ...(cacheNeedsSync
         ? {
-          accessControl: nextEntries,
-        }
+            accessControl: nextEntries,
+          }
         : {}),
       lastSelectedBusinessId: businessId,
       activeBusinessId: businessId,
@@ -511,6 +666,258 @@ export const clientSelectActiveBusiness = onCall(async (request) => {
     businessId,
     role: selectedMembership.role,
     hasMultipleBusinesses: activeBusinessIds.length > 1,
+  };
+});
+
+export const clientUpdateBusinessAccess = onCall(async (request) => {
+  const payload = asRecord(request?.data);
+  const businessId = toCleanString(payload.businessId);
+  const status = normalizeBusinessAccessStatus(payload.status, 'suspended');
+  const reason =
+    toCleanString(payload.reason) || 'developer-business-access-update';
+
+  if (!businessId) {
+    throw new HttpsError('invalid-argument', 'businessId es requerido');
+  }
+  if (!ALLOWED_BUSINESS_ACCESS_STATUSES.has(status)) {
+    throw new HttpsError(
+      'invalid-argument',
+      `Estado invalido. Usa uno de: ${Array.from(
+        ALLOWED_BUSINESS_ACCESS_STATUSES,
+      ).join(', ')}`,
+    );
+  }
+
+  const actorUserId = await resolveAuthUserId(request);
+  if (!actorUserId) {
+    throw new HttpsError('unauthenticated', 'Usuario no autenticado');
+  }
+
+  const actorSnap = await usersCol.doc(actorUserId).get();
+  if (!actorSnap.exists) {
+    throw new HttpsError('not-found', 'Usuario actor no encontrado');
+  }
+  const actorData = actorSnap.data() || {};
+  if (!hasDevPrivileges(actorData)) {
+    throw new HttpsError(
+      'permission-denied',
+      'Solo un usuario dev puede cambiar el acceso completo de un negocio',
+    );
+  }
+
+  const businessRef = db.doc(`businesses/${businessId}`);
+  const businessSnap = await businessRef.get();
+  if (!businessSnap.exists) {
+    throw new HttpsError('not-found', 'Negocio no encontrado');
+  }
+
+  const currentStatus = resolveBusinessCurrentAccessStatus(
+    businessSnap.data() || {},
+  );
+  const blocksLogin = isBlockingBusinessAccessStatus(status);
+  const readOnly = isReadOnlyBusinessAccessStatus(status);
+  const memberActive = !blocksLogin;
+  const membershipStatus = blocksLogin ? 'suspended' : 'active';
+  const now = FieldValue.serverTimestamp();
+  const membersSnap = await businessRef.collection('members').get();
+  const stats = {
+    membersFound: membersSnap.size,
+    membersUpdated: 0,
+    usersUpdated: 0,
+    usersDeactivated: 0,
+    usersReactivated: 0,
+    sessionsRevoked: 0,
+  };
+  const writer = createBatchWriter();
+
+  writer.set(
+    businessRef,
+    {
+      status,
+      accessStatus: status,
+      accessPolicy: {
+        readAllowed: !blocksLogin,
+        writeAllowed: status === 'active',
+        loginBlocked: blocksLogin,
+        readOnly,
+        updatedAt: now,
+        updatedBy: actorUserId,
+        reason,
+      },
+      updatedAt: now,
+      accessStatusUpdatedAt: now,
+      accessStatusUpdatedBy: actorUserId,
+      accessStatusReason: reason,
+      ...(blocksLogin
+        ? {
+            suspendedAt: now,
+            suspendedBy: actorUserId,
+            suspendedReason: reason,
+          }
+        : status === 'active'
+          ? {
+              reactivatedAt: now,
+              reactivatedBy: actorUserId,
+              reactivatedReason: reason,
+            }
+          : {
+              readOnlyAt: now,
+              readOnlyBy: actorUserId,
+              readOnlyReason: reason,
+            }),
+    },
+    { merge: true },
+  );
+  await writer.flushIfNeeded();
+
+  for (const memberDoc of membersSnap.docs) {
+    const targetUserId = memberDoc.id;
+    const memberData = memberDoc.data() || {};
+    const targetRole =
+      toCleanString(memberData.role) ||
+      toCleanString(memberData.activeRole) ||
+      null;
+    const userRef = usersCol.doc(targetUserId);
+    const [userSnap, sessionsSnap] = await Promise.all([
+      userRef.get(),
+      blocksLogin
+        ? sessionsCol.where('userId', '==', targetUserId).get()
+        : Promise.resolve({ docs: [] }),
+    ]);
+
+    stats.membersUpdated += 1;
+    writer.set(
+      memberDoc.ref,
+      {
+        active: memberActive,
+        status: membershipStatus,
+        updatedAt: now,
+        ...(blocksLogin
+          ? {
+              suspendedAt: now,
+              suspendedBy: actorUserId,
+              suspendedReason: reason,
+            }
+          : status === 'active'
+            ? {
+                reactivatedAt: now,
+                reactivatedBy: actorUserId,
+                reactivatedReason: reason,
+              }
+            : {
+                readOnlyAt: now,
+                readOnlyBy: actorUserId,
+                readOnlyReason: reason,
+              }),
+      },
+      { merge: true },
+    );
+    await writer.flushIfNeeded();
+
+    if (userSnap.exists) {
+      const userData = userSnap.data() || {};
+      const accessControlResult = buildNextAccessControl({
+        entries: userData.accessControl,
+        businessId,
+        memberActive,
+        membershipStatus,
+      });
+      const remainingActiveEntries = accessControlResult.entries.filter(
+        (entry) =>
+          resolveBusinessIdFromEntry(entry) !== businessId &&
+          isActiveMembershipEntry(entry),
+      );
+      const fallbackBusiness = remainingActiveEntries[0] || null;
+      const userPatch = {
+        updatedAt: now,
+      };
+
+      if (accessControlResult.touched) {
+        userPatch.accessControl = accessControlResult.entries;
+      }
+
+      if (blocksLogin) {
+        if (!hasDevPrivileges(userData) && !remainingActiveEntries.length) {
+          userPatch.active = false;
+          userPatch.activeBusinessId = null;
+          userPatch.lastSelectedBusinessId = null;
+          userPatch.activeRole = null;
+          userPatch.deactivatedAt = now;
+          userPatch.deactivatedBy = actorUserId;
+          userPatch.deactivatedSource = BUSINESS_ACCESS_SOURCE;
+          userPatch.deactivatedReason = reason;
+          stats.usersDeactivated += 1;
+        } else if (toCleanString(userData.activeBusinessId) === businessId) {
+          const fallbackBusinessId =
+            resolveBusinessIdFromEntry(fallbackBusiness);
+          userPatch.activeBusinessId = fallbackBusinessId;
+          userPatch.lastSelectedBusinessId = fallbackBusinessId;
+          userPatch.activeRole =
+            toCleanString(asRecord(fallbackBusiness).role) || null;
+        }
+      } else if (
+        userData.active === false &&
+        !hasDevPrivileges(userData) &&
+        (userData.deactivatedSource === BUSINESS_ACCESS_SOURCE ||
+          userData.deactivatedBy === BUSINESS_ACCESS_SOURCE ||
+          userData.deactivatedBy === 'suspendBusinessAccess')
+      ) {
+        userPatch.active = true;
+        userPatch.activeBusinessId =
+          toCleanString(userData.activeBusinessId) || businessId;
+        userPatch.lastSelectedBusinessId = userPatch.activeBusinessId;
+        userPatch.activeRole =
+          normalizeRole(
+            targetRole || userData.activeRole || userData.role || '',
+          ) || null;
+        userPatch.reactivatedAt = now;
+        userPatch.reactivatedBy = actorUserId;
+        userPatch.reactivatedSource = BUSINESS_ACCESS_SOURCE;
+        userPatch.reactivatedReason = reason;
+        stats.usersReactivated += 1;
+      }
+
+      if (Object.keys(userPatch).length > 1) {
+        stats.usersUpdated += 1;
+        writer.set(userRef, userPatch, { merge: true });
+        await writer.flushIfNeeded();
+      }
+    }
+
+    if (blocksLogin) {
+      stats.sessionsRevoked += sessionsSnap.docs.length;
+      for (const sessionDoc of sessionsSnap.docs) {
+        writer.delete(sessionDoc.ref);
+        await writer.flushIfNeeded();
+      }
+    }
+  }
+
+  const batchesCommitted = await writer.close();
+  await businessAccessAuditCol.add({
+    businessId,
+    actorUserId,
+    status,
+    previousStatus: currentStatus,
+    reason,
+    source: BUSINESS_ACCESS_SOURCE,
+    stats: {
+      ...stats,
+      batchesCommitted,
+    },
+    createdAt: FieldValue.serverTimestamp(),
+  });
+
+  return {
+    ok: true,
+    businessId,
+    status,
+    previousStatus: currentStatus,
+    statusLabel: BUSINESS_ACCESS_STATUS_LABELS[status] || status,
+    stats: {
+      ...stats,
+      batchesCommitted,
+    },
   };
 });
 
@@ -703,8 +1110,9 @@ export const clientGetBusinessImpersonationStatus = onCall(async (request) => {
   if (!activeState.active) {
     const refreshedSnap =
       activeState.expired === true ? await userRef.get() : userSnap;
-    const refreshedUserData =
-      refreshedSnap.exists ? refreshedSnap.data() || {} : userData;
+    const refreshedUserData = refreshedSnap.exists
+      ? refreshedSnap.data() || {}
+      : userData;
     const simulation = resolveDevSimulation(refreshedUserData);
     return {
       ok: true,

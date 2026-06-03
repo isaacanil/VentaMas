@@ -1,11 +1,20 @@
 import { Spin } from 'antd';
+import type { IconProp } from '@fortawesome/fontawesome-svg-core';
 import styled from 'styled-components';
 
 import { PanelCard } from '@/modules/notification/components/NotificationCenter/components/panels/shared/PanelPrimitives';
 
 import PanelHeader from '@/modules/notification/components/NotificationCenter/components/panels/shared/SimplePanelHeader';
 
-const LoadingState = ({ title, icon }) => (
+type LoadingStateProps = {
+  title?: string;
+  icon?: IconProp;
+};
+
+const LoadingState = ({
+  title = 'Cuentas por Cobrar',
+  icon,
+}: LoadingStateProps) => (
   <PanelCard>
     <PanelHeader icon={icon} title={title} showMeta={false} />
     <StateContainer>
@@ -13,10 +22,6 @@ const LoadingState = ({ title, icon }) => (
     </StateContainer>
   </PanelCard>
 );
-
-LoadingState.defaultProps = {
-  title: 'Cuentas por Cobrar',
-};
 
 const StateContainer = styled.div`
   display: flex;

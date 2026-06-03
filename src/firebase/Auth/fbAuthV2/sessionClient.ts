@@ -53,8 +53,40 @@ export const isLogoutInProgress = (): boolean => logoutInProgress;
 export const getLastLogoutAt = (): number => lastLogoutAt;
 
 const safeLocalStorage = (): Storage | null => {
-  if (typeof window === 'undefined' || !window.localStorage) return null;
-  return window.localStorage;
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.localStorage || null;
+  } catch {
+    return null;
+  }
+};
+
+const safeStorageGetItem = (storage: Storage, key: string): string | null => {
+  try {
+    return storage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+const safeStorageSetItem = (
+  storage: Storage,
+  key: string,
+  value: string,
+): void => {
+  try {
+    storage.setItem(key, value);
+  } catch {
+    // Storage may be blocked by browser privacy settings.
+  }
+};
+
+const safeStorageRemoveItem = (storage: Storage, key: string): void => {
+  try {
+    storage.removeItem(key);
+  } catch {
+    // Storage may be blocked by browser privacy settings.
+  }
 };
 
 const generateClientId = (): string => {
@@ -74,10 +106,10 @@ const generatePresenceConnectionSuffix = (): string => {
 export const ensureDeviceId = (): string | null => {
   const storage = safeLocalStorage();
   if (!storage) return null;
-  let deviceId = storage.getItem(DEVICE_ID_KEY);
+  let deviceId = safeStorageGetItem(storage, DEVICE_ID_KEY);
   if (!deviceId) {
     deviceId = generateClientId();
-    storage.setItem(DEVICE_ID_KEY, deviceId);
+    safeStorageSetItem(storage, DEVICE_ID_KEY, deviceId);
   }
   return deviceId;
 };
@@ -167,10 +199,10 @@ export const storeSessionLocally = ({
 }: StoreSessionInput): void => {
   const storage = safeLocalStorage();
   if (!storage) return;
-  if (sessionToken) storage.setItem(TOKEN_KEY, sessionToken);
+  if (sessionToken) safeStorageSetItem(storage, TOKEN_KEY, sessionToken);
   if (sessionExpiresAt)
-    storage.setItem(EXPIRES_KEY, sessionExpiresAt.toString());
-  if (sessionId) storage.setItem(SESSION_ID_KEY, sessionId);
+    safeStorageSetItem(storage, EXPIRES_KEY, sessionExpiresAt.toString());
+  if (sessionId) safeStorageSetItem(storage, SESSION_ID_KEY, sessionId);
 };
 
 export const getStoredSession = (): StoredSession => {
@@ -183,22 +215,21 @@ export const getStoredSession = (): StoredSession => {
       deviceId: null,
     };
   }
+  const sessionExpires = safeStorageGetItem(storage, EXPIRES_KEY);
   return {
-    sessionToken: storage.getItem(TOKEN_KEY),
-    sessionExpiresAt: storage.getItem(EXPIRES_KEY)
-      ? Number(storage.getItem(EXPIRES_KEY))
-      : null,
-    sessionId: storage.getItem(SESSION_ID_KEY),
-    deviceId: storage.getItem(DEVICE_ID_KEY),
+    sessionToken: safeStorageGetItem(storage, TOKEN_KEY),
+    sessionExpiresAt: sessionExpires ? Number(sessionExpires) : null,
+    sessionId: safeStorageGetItem(storage, SESSION_ID_KEY),
+    deviceId: safeStorageGetItem(storage, DEVICE_ID_KEY),
   };
 };
 
 export const clearStoredSession = (): void => {
   const storage = safeLocalStorage();
   if (!storage) return;
-  storage.removeItem(TOKEN_KEY);
-  storage.removeItem(EXPIRES_KEY);
-  storage.removeItem(SESSION_ID_KEY);
+  safeStorageRemoveItem(storage, TOKEN_KEY);
+  safeStorageRemoveItem(storage, EXPIRES_KEY);
+  safeStorageRemoveItem(storage, SESSION_ID_KEY);
 };
 
 

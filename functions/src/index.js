@@ -140,6 +140,7 @@ import {
 import {
   clientCreateBusinessForCurrentAccount,
   clientSelectActiveBusiness as clientSelectActiveBusinessV2,
+  clientUpdateBusinessAccess,
   clientStartBusinessImpersonation,
   clientStopBusinessImpersonation,
   clientGetBusinessImpersonationStatus,
@@ -272,6 +273,7 @@ export {
   clientClaimOwnership,
   clientCreateBusinessForCurrentAccount,
   clientSelectActiveBusinessV2 as clientSelectActiveBusiness,
+  clientUpdateBusinessAccess,
   clientStartBusinessImpersonation,
   clientStopBusinessImpersonation,
   clientGetBusinessImpersonationStatus,

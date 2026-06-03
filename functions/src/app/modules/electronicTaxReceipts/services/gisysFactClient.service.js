@@ -53,6 +53,27 @@ const readJsonResponse = async (response) => {
   }
 };
 
+const summarizeGisysResponse = (body) => {
+  if (!body || typeof body !== 'object') {
+    return {
+      type: typeof body,
+      present: body !== undefined && body !== null,
+    };
+  }
+
+  const keys = Object.keys(body).slice(0, 20);
+  return {
+    keys,
+    truncatedKeys: Object.keys(body).length > keys.length,
+    hasSubmissionId: Boolean(body.submissionId),
+    hasStatus: Boolean(body.status),
+    hasCode: Boolean(body.code || body.errorCode),
+    hasMessage: Boolean(body.message || body.error || body.errorMessage),
+    hasRawText: Boolean(body.rawText),
+    hasLinks: Boolean(body.links),
+  };
+};
+
 export const issueGisysFactDocument = async ({
   config,
   payload,
@@ -86,14 +107,15 @@ export const issueGisysFactDocument = async ({
 
     const body = await readJsonResponse(response);
     if (!response.ok) {
+      const responseSummary = summarizeGisysResponse(body);
       throw new HttpsError(
         'failed-precondition',
-        `GISYS FACT issue failed (${response.status}): ${JSON.stringify(body)}`,
+        `GISYS FACT issue failed (${response.status})`,
         {
           reason: 'gisys-issue-failed',
           status: response.status,
           url: issueUrl,
-          body,
+          responseSummary,
         },
       );
     }
@@ -147,14 +169,15 @@ const requestGisysFactJson = async ({ config, url, method }) => {
     const body = await readJsonResponse(response);
 
     if (!response.ok) {
+      const responseSummary = summarizeGisysResponse(body);
       throw new HttpsError(
         'failed-precondition',
-        `GISYS FACT request failed (${response.status}): ${JSON.stringify(body)}`,
+        `GISYS FACT request failed (${response.status})`,
         {
           reason: 'gisys-request-failed',
           status: response.status,
           url,
-          body,
+          responseSummary,
         },
       );
     }

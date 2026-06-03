@@ -20,6 +20,7 @@ import {
 import { fbAddProvider } from '@/firebase/provider/fbAddProvider';
 import { fbCheckProviderExists } from '@/firebase/provider/fbCheckProviderExists';
 import { fbUpdateProvider } from '@/firebase/provider/fbUpdateProvider';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useRncSearch } from '@/hooks/useRncSearch';
 import {
   formatPhoneNumber,
@@ -128,13 +129,7 @@ export const ProviderForm = () => {
   const [hasSubmittedSuccessfully, setHasSubmittedSuccessfully] =
     useState(false);
 
-  const [isWideScreen, setIsWideScreen] = useState(window.innerWidth > 1100);
-
-  useEffect(() => {
-    const handleResize = () => setIsWideScreen(window.innerWidth > 1100);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const isWideScreen = useMediaQuery('(min-width: 1101px)');
 
   const {
     loading,

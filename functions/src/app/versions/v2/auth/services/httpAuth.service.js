@@ -42,9 +42,7 @@ async function verifySessionToken(token) {
     },
   });
 
-  return userId
-    ? { uid: userId, method: 'session', sessionToken: token }
-    : null;
+  return userId ? { uid: userId, method: 'session' } : null;
 }
 
 export async function resolveHttpAuthUser(req) {

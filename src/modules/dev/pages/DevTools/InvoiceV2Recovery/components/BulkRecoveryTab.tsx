@@ -8,7 +8,6 @@ import {
   Switch,
   Typography,
 } from 'antd';
-import PropTypes from 'prop-types';
 import React from 'react';
 
 const { Paragraph, Text } = Typography;
@@ -257,18 +256,4 @@ export const BulkRecoveryTab: React.FC<BulkRecoveryTabProps> = ({
       </Space>
     </Card>
   );
-};
-
-BulkRecoveryTab.propTypes = {
-  bulkOptions: PropTypes.shape({
-    runForAllBusinesses: PropTypes.bool.isRequired,
-    dryRun: PropTypes.bool.isRequired,
-    startAfterBusinessId: PropTypes.string.isRequired,
-    startAfterInvoiceId: PropTypes.string.isRequired,
-  }).isRequired,
-  bulkResult: PropTypes.object,
-  bulkLoading: PropTypes.bool.isRequired,
-  updateBulkOption: PropTypes.func.isRequired,
-  setBulkResult: PropTypes.func.isRequired,
-  handleBulkAutoRecovery: PropTypes.func.isRequired,
 };

@@ -23,11 +23,12 @@ const toCleanString = (value: unknown): string | null => {
   return trimmed.length ? trimmed : null;
 };
 
-const toArray = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
+const toArray = (value: unknown): unknown[] =>
+  Array.isArray(value) ? value : [];
 
 const isActiveStatus = (status: MembershipStatus): boolean => {
   const normalized = String(status || 'active').toLowerCase();
-  return !['inactive', 'suspended', 'revoked'].includes(normalized);
+  return !['inactive', 'suspended', 'revoked', 'disabled'].includes(normalized);
 };
 
 const normalizeBusiness = (
@@ -101,15 +102,11 @@ export const normalizeAvailableBusinesses = (
 
   const fromAvailableBusinesses = toArray(record.availableBusinesses)
     .map((item) => normalizeBusiness(asRecord(item)))
-    .filter(
-      (item): item is AvailableBusinessContext => item !== null,
-    );
+    .filter((item): item is AvailableBusinessContext => item !== null);
 
   const fromAccessControl = toArray(record.accessControl)
     .map((item) => normalizeBusiness(asRecord(item)))
-    .filter(
-      (item): item is AvailableBusinessContext => item !== null,
-    );
+    .filter((item): item is AvailableBusinessContext => item !== null);
 
   const fallbackLegacy = normalizeBusiness({
     activeBusinessId: record.activeBusinessId,
@@ -126,7 +123,9 @@ export const normalizeAvailableBusinesses = (
   ]);
 };
 
-export const resolveCurrentActiveBusinessId = (user: unknown): string | null => {
+export const resolveCurrentActiveBusinessId = (
+  user: unknown,
+): string | null => {
   const record = asRecord(user);
   return (
     toCleanString(record.activeBusinessId) ||
@@ -136,7 +135,9 @@ export const resolveCurrentActiveBusinessId = (user: unknown): string | null => 
   );
 };
 
-export const resolveCurrentActiveRole = (user: unknown): MembershipRole | null => {
+export const resolveCurrentActiveRole = (
+  user: unknown,
+): MembershipRole | null => {
   const record = asRecord(user);
   return (normalizeRoleId(record.activeRole) ||
     normalizeRoleId(record.role)) as MembershipRole | null;
@@ -145,7 +146,9 @@ export const resolveCurrentActiveRole = (user: unknown): MembershipRole | null =
 export const getStoredActiveBusinessId = (): string | null => {
   if (typeof window === 'undefined') return null;
   try {
-    return toCleanString(window.localStorage.getItem(ACTIVE_BUSINESS_STORAGE_KEY));
+    return toCleanString(
+      window.localStorage.getItem(ACTIVE_BUSINESS_STORAGE_KEY),
+    );
   } catch {
     return null;
   }

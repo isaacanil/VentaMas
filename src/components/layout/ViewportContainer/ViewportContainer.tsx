@@ -1,44 +1,29 @@
 import React, { type ReactNode } from 'react';
 import styled from 'styled-components';
 
-import { useViewportHeight } from '@/hooks/windows/useViewportHeight';
-
 type ViewportContainerProps = {
   children: ReactNode;
 };
 
-type ViewportContainerStyleProps = {
-  $viewportHeight: number;
-};
-
 export const ViewportContainer = ({ children }: ViewportContainerProps) => {
-  const viewportHeight = useViewportHeight();
-
-  return <Container $viewportHeight={viewportHeight}>{children}</Container>;
+  return <Container>{children}</Container>;
 };
 
-const Container = styled.div<ViewportContainerStyleProps>`
-  /* Posicionamiento para que sea el contenedor raíz */
+const Container = styled.div`
   position: relative;
   width: 100%;
-
-  /* Usar la altura dinámica del viewport */
-  height: ${({ $viewportHeight }) => $viewportHeight}px;
-
-  /* Fallback para navegadores que soportan dvh */
+  height: 100vh;
   height: 100dvh;
-
-  /* Asegurar que no hay scroll horizontal */
+  min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
 
-  /* Fallback tradicional */
-  @supports not (height: 100dvh) {
+  @supports not (min-height: 100dvh) {
     height: 100vh;
+    min-height: 100vh;
   }
 
-  /* Para dispositivos móviles, evitar el scroll causado por la barra de navegación */
   @media (width <= 768px) {
-    height: ${({ $viewportHeight }) => $viewportHeight}px;
     overflow: hidden;
   }
 `;

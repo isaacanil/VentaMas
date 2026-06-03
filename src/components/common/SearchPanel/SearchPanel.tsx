@@ -2,7 +2,7 @@ import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Input } from 'antd';
 import { AnimatePresence, m } from 'framer-motion';
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
@@ -121,13 +121,9 @@ export const SearchPanel = ({
                 onClear={handleClearSearch}
               />
               <CloseButton
+                type="button"
                 onClick={onClose}
-                role="button"
                 aria-label="Cerrar búsqueda"
-                tabIndex={0}
-                onKeyDown={(e: React.KeyboardEvent) =>
-                  e.key === 'Enter' && onClose()
-                }
               >
                 <FontAwesomeIcon icon={faTimes} />
               </CloseButton>
@@ -217,13 +213,14 @@ const SearchPanelContent = styled.div`
   }
 `;
 
-const CloseButton = styled(m.div)`
+const CloseButton = styled(m.button)`
   display: flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
   width: 2.2em;
   height: 2.2em;
+  padding: 0;
   cursor: pointer;
   background-color: rgb(0 0 0 / 8%);
   border: 1px solid rgb(0 0 0 / 10%);

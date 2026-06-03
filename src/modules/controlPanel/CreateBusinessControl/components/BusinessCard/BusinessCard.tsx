@@ -8,33 +8,20 @@ import {
   faUserShield,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Tooltip } from 'antd';
+import { Button, Tooltip } from 'antd';
 import { DateTime } from 'luxon';
 import { useMemo } from 'react';
 import styled from 'styled-components';
 
-import type { FC, KeyboardEvent, SyntheticEvent } from 'react';
+import type { BusinessCreatedAt, BusinessInfo, OwnerSource } from '../../types';
+import type { FC, SyntheticEvent } from 'react';
 
-type BusinessCreatedAt = { seconds?: number } | string | Date;
-type OwnerSource = 'ownerUid' | 'legacyOwners' | 'none';
 type StatusTone = 'ok' | 'warn' | 'danger' | 'neutral';
-
-interface BusinessInfo {
-  id?: string;
-  name?: string;
-  address?: string;
-  tel?: string;
-  createdAt?: BusinessCreatedAt;
-  hasOwner?: boolean;
-  ownerUid?: string | null;
-  ownerSource?: OwnerSource;
-  subscriptionStatus?: string | null;
-  subscriptionPlanId?: string | null;
-}
 
 interface BusinessCardProps {
   business: BusinessInfo;
   onEditBusiness: (business: BusinessInfo) => void;
+  onOpenAccessActions?: (business: BusinessInfo) => void;
 }
 
 const SUBSCRIPTION_LABELS: Record<string, string> = {
@@ -44,6 +31,17 @@ const SUBSCRIPTION_LABELS: Record<string, string> = {
   canceled: 'Cancelada',
   paused: 'Pausada',
   unpaid: 'Sin pago',
+};
+
+const ACCESS_STATUS_LABELS: Record<string, string> = {
+  active: 'Activo',
+  read_only: 'Solo lectura',
+  suspended: 'Suspendido',
+  inactive: 'Inactivo',
+  offboarded: 'Offboarding',
+  closed: 'Cerrado',
+  disabled: 'Deshabilitado',
+  blocked: 'Bloqueado',
 };
 
 const getSubscriptionTone = (status: string | null): StatusTone => {
@@ -60,6 +58,27 @@ const getSubscriptionLabel = (status: string | null): string => {
   return SUBSCRIPTION_LABELS[status] || status;
 };
 
+const getAccessStatusTone = (status: string | null): StatusTone => {
+  if (!status || status === 'active') return 'ok';
+  if (status === 'read_only') return 'warn';
+  if (
+    status === 'suspended' ||
+    status === 'inactive' ||
+    status === 'offboarded' ||
+    status === 'closed' ||
+    status === 'disabled' ||
+    status === 'blocked'
+  ) {
+    return 'danger';
+  }
+  return 'neutral';
+};
+
+const getAccessStatusLabel = (status: string | null): string => {
+  if (!status) return ACCESS_STATUS_LABELS.active;
+  return ACCESS_STATUS_LABELS[status] || status;
+};
+
 const getOwnerSourceLabel = (source: OwnerSource): string => {
   if (source === 'ownerUid') return 'ownerUid';
   if (source === 'legacyOwners') return 'owners[] legacy';
@@ -69,6 +88,7 @@ const getOwnerSourceLabel = (source: OwnerSource): string => {
 export const BusinessCard: FC<BusinessCardProps> = ({
   business,
   onEditBusiness,
+  onOpenAccessActions,
 }) => {
   const formatTimeAgo = (createdAt?: BusinessCreatedAt) => {
     if (!createdAt) return 'Fecha no disponible';
@@ -131,6 +151,12 @@ export const BusinessCard: FC<BusinessCardProps> = ({
       typeof business.subscriptionStatus === 'string'
         ? business.subscriptionStatus.toLowerCase()
         : null;
+    const accessStatus =
+      typeof business.accessStatus === 'string'
+        ? business.accessStatus.toLowerCase()
+        : typeof business.status === 'string'
+          ? business.status.toLowerCase()
+          : 'active';
 
     return {
       address: business.address || 'Sin dirección proporcionada',
@@ -147,6 +173,9 @@ export const BusinessCard: FC<BusinessCardProps> = ({
       ownerTone: (hasOwner ? 'ok' : 'danger') as StatusTone,
       ownerLabel: hasOwner ? 'Con dueño' : 'Sin dueño',
       ownerSourceLabel: getOwnerSourceLabel(ownerSource),
+      accessStatus,
+      accessTone: getAccessStatusTone(accessStatus),
+      accessLabel: getAccessStatusLabel(accessStatus),
       subscriptionTone: getSubscriptionTone(subscriptionStatus),
       subscriptionLabel: getSubscriptionLabel(subscriptionStatus),
     };
@@ -157,27 +186,39 @@ export const BusinessCard: FC<BusinessCardProps> = ({
     onEditBusiness(business);
   };
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      openModal(event);
-    }
+  const openAccessActions = (event: SyntheticEvent<HTMLElement>) => {
+    event.stopPropagation();
+    onOpenAccessActions?.(business);
   };
 
   return (
-    <StyledCard
-      onClick={openModal}
-      onKeyDown={handleKeyDown}
-      role="button"
-      tabIndex={0}
-    >
+    <StyledCard>
       <Head>
         <Tooltip title={businessData.name} placement="top">
           <BusinessName>{businessData.name}</BusinessName>
         </Tooltip>
-        <EditIcon>
-          <FontAwesomeIcon icon={faEdit} />
-        </EditIcon>
+        <ActionGroup>
+          <Tooltip title="Editar negocio">
+            <IconActionButton
+              aria-label="Editar negocio"
+              icon={<FontAwesomeIcon icon={faEdit} />}
+              onClick={openModal}
+              size="small"
+              type="text"
+            />
+          </Tooltip>
+          {onOpenAccessActions ? (
+            <Tooltip title="Acciones de acceso">
+              <IconActionButton
+                aria-label="Acciones de acceso"
+                icon={<FontAwesomeIcon icon={faUserShield} />}
+                onClick={openAccessActions}
+                size="small"
+                type="text"
+              />
+            </Tooltip>
+          ) : null}
+        </ActionGroup>
       </Head>
       <Body>
         <InfoItem>
@@ -206,6 +247,15 @@ export const BusinessCard: FC<BusinessCardProps> = ({
             {businessData.ownerLabel}
           </StatusPill>
           <InlineMeta>{businessData.ownerSourceLabel}</InlineMeta>
+        </InfoItem>
+        <InfoItem>
+          <IconWrapper>
+            <FontAwesomeIcon icon={faUserShield} />
+          </IconWrapper>
+          <StatusPill $tone={businessData.accessTone}>
+            {businessData.accessLabel}
+          </StatusPill>
+          <InlineMeta>Acceso</InlineMeta>
         </InfoItem>
         {businessData.ownerUid ? (
           <InfoItem>
@@ -241,7 +291,6 @@ export const BusinessCard: FC<BusinessCardProps> = ({
 
 const StyledCard = styled.div`
   padding: 0.75rem;
-  cursor: pointer;
   background-color: #fff;
   border: 1px solid var(--color-border, #e8e8e8);
   border-radius: 6px;
@@ -291,14 +340,22 @@ const BusinessName = styled.div`
   }
 `;
 
-const EditIcon = styled.span`
-  padding: 4px;
+const ActionGroup = styled.div`
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 2px;
+  align-items: center;
+`;
+
+const IconActionButton = styled(Button)`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--color-primary, #1890ff);
-  opacity: 0.7;
-  transition: opacity 0.2s ease;
 
   &:hover {
-    opacity: 1;
+    color: var(--color-primary, #1890ff) !important;
+    background: rgb(24 144 255 / 10%) !important;
   }
 `;
 

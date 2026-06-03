@@ -8,7 +8,8 @@
  *   node scripts/diagnose-invoice-missing-fields.mjs `
  *     --keyPath=C:\Dev\keys\VentaMas\ventamaxpos-firebase-adminsdk-r55lp-41498ebe9e.json `
  *     --businessId=X63aIFwHzk3r0gmT8w6P `
- *     --numberIds=953,954
+ *     --numberIds=953,954 `
+ *     --showSensitive=false
  */
 
 import fs from 'node:fs';
@@ -28,6 +29,7 @@ const parseArgs = () => {
     numberIds: args.numberIds
       ? args.numberIds.split(',').map((n) => Number(n.trim())).filter(Number.isFinite)
       : [],
+    showSensitive: args.showSensitive === 'true' || args.showSensitive === '1',
   };
 };
 
@@ -37,8 +39,37 @@ const toClean = (v) => {
   return s.length ? s : null;
 };
 
+const SENSITIVE_CLIENT_FIELDS = new Set([
+  'cedula',
+  'email',
+  'name',
+  'personalID',
+  'phone',
+  'phoneNumber',
+  'rnc',
+]);
+
+const maskSensitiveValue = (value, showSensitive) => {
+  const cleaned = toClean(value);
+  if (!cleaned) return null;
+  if (showSensitive) return cleaned;
+  if (cleaned.length <= 4) return '****';
+  return `${'*'.repeat(Math.min(cleaned.length - 4, 8))}${cleaned.slice(-4)}`;
+};
+
+const sanitizeClientForLog = (client, showSensitive) =>
+  Object.fromEntries(
+    Object.entries(client).map(([key, value]) => [
+      key,
+      SENSITIVE_CLIENT_FIELDS.has(key)
+        ? maskSensitiveValue(value, showSensitive)
+        : value,
+    ]),
+  );
+
 const main = async () => {
-  const { keyPath, projectId, businessId, numberIds } = parseArgs();
+  const { keyPath, projectId, businessId, numberIds, showSensitive } =
+    parseArgs();
 
   if (!numberIds.length) {
     console.error('Debes pasar --numberIds=953,954 (al menos uno).');
@@ -58,6 +89,11 @@ const main = async () => {
   console.log(`\nBusiness  : ${businessId}`);
   console.log(`Collection: ${collPath}`);
   console.log(`NumberIDs : ${numberIds.join(', ')}\n`);
+  if (!showSensitive) {
+    console.log(
+      'Sensitive client fields are masked. Pass --showSensitive=true to reveal them.\n',
+    );
+  }
 
   // Firestore doesn't support OR queries on the same field in older SDKs,
   // so we run one query per numberID.
@@ -75,14 +111,17 @@ const main = async () => {
     for (const docSnap of snap.docs) {
       const raw = docSnap.data();
       const d = raw?.data ?? {};
-      const client = (d?.client && typeof d.client === 'object') ? d.client : {};
+      const rawClient =
+        d?.client && typeof d.client === 'object' ? d.client : {};
+      const client = sanitizeClientForLog(rawClient, showSensitive);
+      const safeClient = client;
 
       console.log(`── Invoice #${numberID}  (docId: ${docSnap.id}) ──`);
       console.log(`  data.numberID          : ${d?.numberID ?? '❌ missing'}`);
       console.log(`  data.NCF               : ${toClean(d?.NCF) ?? toClean(d?.comprobante) ?? '❌ missing'}`);
       console.log(`  data.status            : ${toClean(d?.status) ?? '❌ missing'}`);
       console.log(`  data.date              : ${d?.date?.toDate?.()?.toISOString() ?? d?.date ?? '❌ missing'}`);
-      console.log(`  data.client            : ${JSON.stringify(client)}`);
+      console.log(`  data.client            : ${JSON.stringify(safeClient)}`);
       console.log(`    client.id            : ${toClean(client.id) ?? '❌ missing'}`);
       console.log(`    client.rnc           : ${toClean(client.rnc) ?? '❌ missing'}`);
       console.log(`    client.personalID    : ${toClean(client.personalID) ?? '❌ missing'}`);

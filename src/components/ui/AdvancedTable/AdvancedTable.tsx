@@ -13,6 +13,7 @@ import styled from 'styled-components';
 import { icons } from '@/constants/icons/icons';
 import { filterData } from '@/hooks/search/useSearch';
 import { useWindowWidth } from '@/hooks/useWindowWidth';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import {
   DatePicker,
   type DateRangeValue,
@@ -168,20 +169,7 @@ const invokeScrollMetricsHandler = (
 };
 
 const useWideLayout = (): boolean => {
-  const [isWide, setIsWide] = useState(() =>
-    typeof window === 'undefined' ? true : window.innerWidth >= 1600,
-  );
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const handleResize = () => setIsWide(window.innerWidth >= 1600);
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  return isWide;
+  return useMediaQuery('(min-width: 1600px)');
 };
 
 const selectUserUid = (state: UserStoreState): string | undefined => {

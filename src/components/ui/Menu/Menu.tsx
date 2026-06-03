@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useId, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
 import { Button } from '@/components/ui/Button/Button';
+import { useModalFocusTrap } from '@/hooks/useModalFocusTrap';
 
 import Modal from './Modal';
 
@@ -28,6 +29,14 @@ const Menu = ({
 }: MenuProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState<MenuOption | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+
+  useModalFocusTrap({
+    open: isOpen && !isModalOpen,
+    containerRef,
+    onEscape: onClose,
+  });
 
   const openModal = (option: MenuOption) => {
     setSelectedOption(option);
@@ -42,18 +51,27 @@ const Menu = ({
   return (
     isOpen && (
       <Backdrop>
-        <MenuContainer>
+        <MenuContainer
+          ref={containerRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          tabIndex={-1}
+        >
           <Header>
-            <h1>Configuraciones</h1>
+            <h1 id={titleId}>Configuraciones</h1>
             <Button title={icons.operationModes.close} onClick={onClose} />
           </Header>
-          {}
           {options?.map((option) => (
-            <MenuItem key={option.id} onClick={() => openModal(option)}>
+            <MenuItem
+              key={option.id}
+              type="button"
+              onClick={() => openModal(option)}
+            >
               {option.label}
             </MenuItem>
           ))}
-          {isModalOpen && (
+          {isModalOpen && selectedOption && (
             <Modal content={selectedOption.component} closeModal={closeModal} />
           )}
         </MenuContainer>
@@ -63,13 +81,11 @@ const Menu = ({
 };
 
 export default Menu;
+
 const Backdrop = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1000000000000000000;
-  width: 100%;
-  height: 100%;
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
   background-color: rgb(0 0 0 / 50%);
 `;
 
@@ -79,10 +95,15 @@ const MenuContainer = styled.div`
   align-content: start;
   width: 100%;
   max-width: 500px;
-  height: 90vh;
+  height: 90dvh;
   margin: 0 auto;
   background-color: white;
   border: var(--border-primary);
+
+  &:focus-visible {
+    outline: 2px solid #1677ff;
+    outline-offset: 2px;
+  }
 `;
 
 const MenuItem = styled.button`
@@ -91,6 +112,11 @@ const MenuItem = styled.button`
   cursor: pointer;
   background-color: #3498db;
   border: none;
+
+  &:focus-visible {
+    outline: 2px solid #1677ff;
+    outline-offset: -2px;
+  }
 `;
 
 const Header = styled.div`

@@ -1,5 +1,4 @@
 import { Tooltip } from 'antd';
-import PropTypes from 'prop-types';
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
@@ -365,62 +364,6 @@ const NodeName = ({
       {content}
     </Tooltip>
   );
-};
-
-NodeName.propTypes = {
-  title: PropTypes.string.isRequired,
-  isMatch: PropTypes.bool,
-  children: PropTypes.node,
-  isLoading: PropTypes.bool,
-  searchTerm: PropTypes.string,
-  config: PropTypes.object,
-  matchedStockCount: PropTypes.number,
-  stockSummary: PropTypes.shape({
-    totalUnits: PropTypes.number,
-    totalLots: PropTypes.number,
-    directUnits: PropTypes.number,
-    directLots: PropTypes.number,
-  }),
-  stockSummaryLoading: PropTypes.bool,
-  renderHighlightedText: PropTypes.func,
-  themeStyles: PropTypes.shape({
-    label: PropTypes.string,
-    labelBackground: PropTypes.string,
-    labelColor: PropTypes.string,
-    accentColor: PropTypes.string,
-  }),
-  extraDetails: PropTypes.oneOfType([
-    PropTypes.arrayOf(
-      PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.shape({
-          text: PropTypes.string,
-          type: PropTypes.string,
-        }),
-      ]),
-    ),
-    PropTypes.string,
-    PropTypes.shape({
-      text: PropTypes.string,
-      type: PropTypes.string,
-    }),
-  ]),
-  tooltipDetails: PropTypes.oneOfType([
-    PropTypes.arrayOf(
-      PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number,
-        PropTypes.shape({
-          text: PropTypes.string,
-        }),
-      ]),
-    ),
-    PropTypes.string,
-    PropTypes.number,
-    PropTypes.shape({
-      text: PropTypes.string,
-    }),
-  ]),
 };
 
 export default NodeName;

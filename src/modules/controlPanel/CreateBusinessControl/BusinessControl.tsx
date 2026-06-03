@@ -31,14 +31,17 @@ import {
   paginateBusinesses,
   sortBusinesses,
 } from './utils/businessControl';
+import { BusinessAccessActionsModal } from './components/BusinessAccessActionsModal/BusinessAccessActionsModal';
 
 export const BusinessControl: React.FC = () => {
-  const authUser = useSelector(selectUser) as
-    | { role?: string | null; uid?: string | null }
-    | null;
+  const authUser = useSelector(selectUser) as {
+    role?: string | null;
+    uid?: string | null;
+  } | null;
   const authReady = useSelector(selectAuthReady);
   const isDeveloper = hasDeveloperAccess(authUser);
   const {
+    accessActionsModalOpen,
     closeFiltersDrawer,
     currentPage,
     debouncedSearchTerm,
@@ -47,9 +50,11 @@ export const BusinessControl: React.FC = () => {
     filtersVisible,
     goToNextPage,
     goToPrevPage,
+    handleCloseAccessActions,
     handleCloseModal,
     handleEditBusiness,
     handleFilterChange,
+    handleOpenAccessActions,
     resetFilters,
     searchTerm,
     selectedBusiness,
@@ -58,7 +63,8 @@ export const BusinessControl: React.FC = () => {
   } = useBusinessControlUiState();
 
   const itemsPerPage = 20;
-  const businessFeedKey = authReady && isDeveloper ? authUser?.uid ?? 'developer' : null;
+  const businessFeedKey =
+    authReady && isDeveloper ? (authUser?.uid ?? 'developer') : null;
   const businessFeed = useBusinessFeed(businessFeedKey);
 
   const hasResolvedBusinessFeed =
@@ -67,7 +73,8 @@ export const BusinessControl: React.FC = () => {
     authReady && isDeveloper && hasResolvedBusinessFeed
       ? businessFeed.items
       : EMPTY_BUSINESSES;
-  const isLoading = !authReady || (businessFeedKey !== null && !hasResolvedBusinessFeed);
+  const isLoading =
+    !authReady || (businessFeedKey !== null && !hasResolvedBusinessFeed);
   const error = !authReady
     ? null
     : !isDeveloper
@@ -76,16 +83,27 @@ export const BusinessControl: React.FC = () => {
         ? businessFeed.error
         : null;
   const availableProvinces = useMemo(
-    () => collectSortedBusinessFieldValues(businesses, (item) => item.business.province),
+    () =>
+      collectSortedBusinessFieldValues(
+        businesses,
+        (item) => item.business.province,
+      ),
     [businesses],
   );
   const availableCountries = useMemo(
-    () => collectSortedBusinessFieldValues(businesses, (item) => item.business.country),
+    () =>
+      collectSortedBusinessFieldValues(
+        businesses,
+        (item) => item.business.country,
+      ),
     [businesses],
   );
   const availableBusinessTypes = useMemo(
     () =>
-      collectSortedBusinessFieldValues(businesses, (item) => item.business.businessType),
+      collectSortedBusinessFieldValues(
+        businesses,
+        (item) => item.business.businessType,
+      ),
     [businesses],
   );
   const availableSubscriptionStatuses = useMemo(
@@ -135,7 +153,8 @@ export const BusinessControl: React.FC = () => {
             onClick={showFiltersDrawer}
             type={filtersVisible ? 'primary' : 'default'}
           >
-            Filtros {hasAnyFilterApplied ? `(${filteredBusinesses.length})` : ''}
+            Filtros{' '}
+            {hasAnyFilterApplied ? `(${filteredBusinesses.length})` : ''}
           </Button>
         </SearchAndFilterContainer>
         <FiltersDrawer
@@ -153,7 +172,9 @@ export const BusinessControl: React.FC = () => {
         <StatsStrip>
           <StatChip>Total: {healthStats.total}</StatChip>
           <StatChip $tone="ok">Con dueño: {healthStats.withOwner}</StatChip>
-          <StatChip $tone="danger">Sin dueño: {healthStats.missingOwner}</StatChip>
+          <StatChip $tone="danger">
+            Sin dueño: {healthStats.missingOwner}
+          </StatChip>
           <StatChip>Con suscripción: {healthStats.withSubscription}</StatChip>
           <StatChip $tone="ok">
             Suscripción activa/prueba: {healthStats.activeSubscription}
@@ -161,9 +182,7 @@ export const BusinessControl: React.FC = () => {
         </StatsStrip>
       </Head>
       <Body>
-        {error && businesses.length > 0 && (
-          <ErrorBanner>{error}</ErrorBanner>
-        )}
+        {error && businesses.length > 0 && <ErrorBanner>{error}</ErrorBanner>}
         {isLoading ? (
           <LoadingMessage>
             <FontAwesomeIcon icon={faStoreAlt} spin /> Cargando negocios…
@@ -206,6 +225,7 @@ export const BusinessControl: React.FC = () => {
                 key={item.id}
                 business={item.business}
                 onEditBusiness={handleEditBusiness}
+                onOpenAccessActions={handleOpenAccessActions}
               />
             );
           })
@@ -235,6 +255,11 @@ export const BusinessControl: React.FC = () => {
           business={selectedBusiness}
         />
       )}
+      <BusinessAccessActionsModal
+        isOpen={accessActionsModalOpen}
+        business={selectedBusiness}
+        onClose={handleCloseAccessActions}
+      />
     </Container>
   );
 };

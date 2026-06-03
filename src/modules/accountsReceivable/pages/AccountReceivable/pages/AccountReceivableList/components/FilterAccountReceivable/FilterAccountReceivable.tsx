@@ -1,5 +1,4 @@
 import { Button, Select, Space } from 'antd';
-import PropTypes from 'prop-types';
 import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
@@ -364,28 +363,6 @@ export const FilterAccountReceivable = ({
       }}
     />
   );
-};
-
-FilterAccountReceivable.propTypes = {
-  datesSelected: PropTypes.shape({
-    startDate: PropTypes.number,
-    endDate: PropTypes.number,
-  }),
-  setDatesSelected: PropTypes.func,
-  clientType: PropTypes.string,
-  onClientTypeChange: PropTypes.func,
-  statusFilter: PropTypes.string,
-  onStatusFilterChange: PropTypes.func,
-  sortCriteria: PropTypes.string,
-  sortDirection: PropTypes.string,
-  onSortChange: PropTypes.func,
-  onToggleSortDirection: PropTypes.func,
-  totalCount: PropTypes.number,
-  selectedClient: PropTypes.string,
-  onClientChange: PropTypes.func,
-  clientOptions: PropTypes.array,
-  paymentStatusFilter: PropTypes.string,
-  onPaymentStatusChange: PropTypes.func,
 };
 
 const TotalBadge = styled.div`

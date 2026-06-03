@@ -23,6 +23,13 @@ const resolveTokenFromQuery = (search: string): string => {
   return normalizeToken(rawToken);
 };
 
+const removeTokenFromSearch = (search: string): string => {
+  const params = new URLSearchParams(search);
+  params.delete('token');
+  const nextSearch = params.toString();
+  return nextSearch ? `?${nextSearch}` : '';
+};
+
 type ClaimBusinessState = {
   token: string;
   submitting: boolean;
@@ -108,6 +115,24 @@ export const ClaimBusinessPage = (): JSX.Element => {
 
   const isPlatformDeveloper = hasDeveloperAccess(user);
   const defaultHomePath = resolveDefaultHomeRoute(user);
+
+  useEffect(() => {
+    if (!tokenFromQuery) return;
+    navigate(
+      {
+        pathname: location.pathname,
+        search: removeTokenFromSearch(location.search),
+        hash: location.hash,
+      },
+      { replace: true },
+    );
+  }, [
+    location.hash,
+    location.pathname,
+    location.search,
+    navigate,
+    tokenFromQuery,
+  ]);
 
   useEffect(() => {
     return () => {

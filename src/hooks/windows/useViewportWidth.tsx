@@ -1,25 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
+
+const getServerSnapshot = () => 0;
 
 export function useViewportWidth() {
-  // Establecer el ancho inicial del viewport.
-  const [width, setWidth] = useState<number>(window.innerWidth);
+  const subscribe = useCallback((onStoreChange: () => void) => {
+    if (typeof window === 'undefined') {
+      return () => {};
+    }
 
-  useEffect(() => {
-    // Función para manejar el cambio de tamaño y actualizar el estado.
-    const handleResize = () => {
-      setWidth(window.innerWidth);
-    };
+    window.addEventListener('resize', onStoreChange);
 
-    // Añadir el escuchador de eventos para detectar cambios de tamaño.
-    window.addEventListener('resize', handleResize);
-
-    // Limpieza: eliminar el escuchador de eventos cuando ya no sea necesario.
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', onStoreChange);
     };
-  }, []); // Dependencia vacía, por lo que el efecto solo se ejecuta una vez (al montar y desmontar).
+  }, []);
 
-  return width; // Devolver el ancho actual del viewport.
+  const getSnapshot = useCallback(() => {
+    if (typeof window === 'undefined') {
+      return 0;
+    }
+
+    return window.innerWidth;
+  }, []);
+
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
 export default useViewportWidth;

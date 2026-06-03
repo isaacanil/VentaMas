@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 import type { DateTime } from 'luxon';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { LeftSide } from './LeftSide/LeftSide';
 import { RightSide } from './RightSide/RightSide';
 
@@ -10,22 +11,10 @@ interface BodyProps {
 
 export const Body: React.FC<BodyProps> = ({ closingDate: _closingDate }) => {
   const [calculationIsOpen, setCalculationIsOpen] = useState(true);
-  const [isNarrowScreen, setIsNarrowScreen] = useState(false);
+  const isNarrowScreen = useMediaQuery('(max-width: 767px)');
   const [activeSide, setActiveSide] = useState<'leftSide' | 'rightSide'>(
     'leftSide',
   );
-
-  useEffect(() => {
-    const checkScreenWidth = () => {
-      setIsNarrowScreen(window.innerWidth < 768);
-    };
-
-    checkScreenWidth();
-    window.addEventListener('resize', checkScreenWidth);
-    return () => {
-      window.removeEventListener('resize', checkScreenWidth);
-    };
-  }, []);
 
   return (
     <Container>
@@ -33,12 +22,14 @@ export const Body: React.FC<BodyProps> = ({ closingDate: _closingDate }) => {
         <PillToggle>
           <ToggleButton
             $active={activeSide === 'leftSide'}
+            type="button"
             onClick={() => setActiveSide('leftSide')}
           >
             Apertura
           </ToggleButton>
           <ToggleButton
             $active={activeSide === 'rightSide'}
+            type="button"
             onClick={() => setActiveSide('rightSide')}
           >
             Cierre
@@ -100,7 +91,8 @@ const ToggleButton = styled.button<{ $active: boolean }>`
     background: ${({ $active }) => ($active ? '#4285F4' : '#e0e0e0')};
   }
 
-  &:focus {
-    outline: none;
+  &:focus-visible {
+    outline: 2px solid #1677ff;
+    outline-offset: 2px;
   }
 `;

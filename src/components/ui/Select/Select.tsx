@@ -5,7 +5,15 @@ import {
   shift,
   useFloating,
 } from '@floating-ui/react';
-import { useCallback, useRef, useState, type RefObject } from 'react';
+import {
+  useCallback,
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 
 import { icons } from '@/constants/icons/icons';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
@@ -27,20 +35,26 @@ import {
 } from './Select.styles';
 import { getItemKey, getValueByKeyOrPath } from './Select.utils';
 
-interface SelectProps {
+type SelectChangeEvent<TItem> = {
+  target: {
+    value: TItem | null;
+  };
+};
+
+interface SelectProps<TItem = unknown> {
   title?: string;
-  data: any[];
-  value: any;
-  onChange: (e: { target: { value: any } }) => void;
+  data: TItem[];
+  value: ReactNode;
+  onChange: (e: SelectChangeEvent<TItem>) => void;
   displayKey: string;
   labelVariant?: 'primary' | 'label2' | 'label1';
   onNoneOptionSelected?: () => void;
   isLoading?: boolean;
   required?: boolean;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
-export const Select = ({
+export const Select = <TItem,>({
   title,
   data,
   value,
@@ -49,11 +63,12 @@ export const Select = ({
   labelVariant = 'primary',
   onNoneOptionSelected,
   isLoading = false,
-  ...props
-}: SelectProps) => {
+  required = false,
+}: SelectProps<TItem>) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const listboxId = useId();
   const { refs, floatingStyles } = useFloating({
     placement: 'bottom-start',
     whileElementsMounted: autoUpdate,
@@ -68,10 +83,10 @@ export const Select = ({
     [refs],
   );
 
-  const handleSelect = (select: any) => {
+  const handleSelect = (selectedItem: TItem) => {
     setSearchTerm('');
     setIsOpen(false);
-    onChange({ target: { value: select } });
+    onChange({ target: { value: selectedItem } });
   };
 
   const handleToggleOpen = () => {
@@ -82,13 +97,26 @@ export const Select = ({
     setIsOpen((prev) => !prev);
   };
 
+  const handleTriggerKeyDown = (
+    event: KeyboardEvent<HTMLButtonElement>,
+  ) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setSearchTerm('');
+      setIsOpen(true);
+    }
+  };
+
   const filteredItems = Array.isArray(data)
     ? data.filter((item) => {
-        const value = getValueByKeyOrPath(item, displayKey);
+        const itemValue = getValueByKeyOrPath(item, displayKey);
         return (
-          value &&
-          (typeof value === 'string' || typeof value === 'number') &&
-          value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+          itemValue &&
+          (typeof itemValue === 'string' || typeof itemValue === 'number') &&
+          itemValue
+            .toString()
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
         );
       })
     : [];
@@ -104,59 +132,77 @@ export const Select = ({
     setIsOpen(false);
   });
 
+  const triggerLabel = value || title || 'Seleccionar';
+
   return (
     <Container ref={selectRef}>
       <OtherContainer>
         {(value || labelVariant === 'label2' || labelVariant === 'label1') && (
           <Label $labelVariant={labelVariant}>{title}:</Label>
         )}
-        {props.required && <Asterisk>{icons.forms.asterisk}</Asterisk>}
+        {required && <Asterisk>{icons.forms.asterisk}</Asterisk>}
       </OtherContainer>
-      <Head ref={setReference}>
-        {isLoading === true ? (
-          <Group>
-            <h3>{'cargando ...'}</h3>
-            <Icon>{icons.arrows.chevronDown}</Icon>
-          </Group>
-        ) : (
-          <Group onClick={handleToggleOpen}>
-            <h3>{value ? value : title ? title : ''}</h3>
-            <Icon>
-              {!isOpen ? icons.arrows.chevronDown : icons.arrows.chevronUp}
-            </Icon>
-          </Group>
-        )}
+      <Head
+        ref={setReference}
+        type="button"
+        onClick={isLoading ? undefined : handleToggleOpen}
+        onKeyDown={handleTriggerKeyDown}
+        disabled={isLoading}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-controls={isOpen ? listboxId : undefined}
+      >
+        <Group>
+          <h3>{isLoading ? 'cargando ...' : triggerLabel}</h3>
+          <Icon>
+            {isOpen ? icons.arrows.chevronUp : icons.arrows.chevronDown}
+          </Icon>
+        </Group>
       </Head>
       {isOpen ? (
         <Body ref={setFloating} style={floatingStyles}>
           {data?.length > 0 ? (
-            <List>
-              <SearchSection>
+            <List id={listboxId} role="listbox" aria-label={title || 'Opciones'}>
+              <SearchSection role="search">
                 <InputV4
                   icon={icons.forms.search}
-                  placeholder={`Buscar ${title}`}
+                  placeholder={`Buscar ${title || 'opcion'}`}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   size="medium"
                   value={searchTerm}
                   onClear={() => setSearchTerm('')}
                 />
               </SearchSection>
-              <Item $selected={!value} onClick={handleReset}>
+              <Item
+                type="button"
+                role="option"
+                $selected={!value}
+                aria-selected={!value}
+                onClick={handleReset}
+              >
                 Ninguno
               </Item>
-              {filteredItems.map((item) => (
-                <Item
-                  key={getItemKey(item, displayKey)}
-                  $selected={value === getValueByKeyOrPath(item, displayKey)}
-                  onClick={() => handleSelect(item)}
-                >
-                  {getValueByKeyOrPath(item, displayKey)}
-                </Item>
-              ))}
+              {filteredItems.map((item) => {
+                const itemValue = getValueByKeyOrPath(item, displayKey);
+                const selected = value === itemValue;
+
+                return (
+                  <Item
+                    key={getItemKey(item, displayKey)}
+                    type="button"
+                    role="option"
+                    $selected={selected}
+                    aria-selected={selected}
+                    onClick={() => handleSelect(item)}
+                  >
+                    {itemValue}
+                  </Item>
+                );
+              })}
             </List>
           ) : (
             filteredItems.length === 0 && (
-              <NoneItemMessageContainer>
+              <NoneItemMessageContainer role="status">
                 No hay {title}.
               </NoneItemMessageContainer>
             )

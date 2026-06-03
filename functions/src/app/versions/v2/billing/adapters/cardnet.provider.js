@@ -40,6 +40,15 @@ const FAILED_STATUS_TOKENS = [
   'rejected',
 ];
 
+const summarizeCardnetSessionResponse = (response) => {
+  const record = asRecord(response);
+  return {
+    responseKeys: Object.keys(record),
+    hasSession: Boolean(record.SESSION || record.session || record.sessionId),
+    hasSessionKey: Boolean(record['session-key'] || record.sessionKey),
+  };
+};
+
 const resolveBaseUrl = (envValue, fallback) =>
   toCleanString(envValue) || fallback;
 
@@ -343,7 +352,8 @@ const createCardnetSession = async ({
   if (!response.ok) {
     throw new HttpsError(
       'failed-precondition',
-      `CardNET session failed (${response.status}): ${JSON.stringify(body)}`,
+      `CardNET session failed (${response.status}).`,
+      summarizeCardnetSessionResponse(body),
     );
   }
 
@@ -398,7 +408,8 @@ const verifyCardnetSession = async ({
   if (!response.ok) {
     throw new HttpsError(
       'failed-precondition',
-      `CardNET verification failed (${response.status}): ${JSON.stringify(body)}`,
+      `CardNET verification failed (${response.status}).`,
+      summarizeCardnetSessionResponse(body),
     );
   }
 
@@ -481,7 +492,8 @@ export const cardnetProviderAdapter = {
     if (!sessionId || !sessionKey) {
       throw new HttpsError(
         'failed-precondition',
-        `CardNET session response missing SESSION/session-key: ${JSON.stringify(sessionResponse)}`,
+        'CardNET session response missing SESSION/session-key.',
+        summarizeCardnetSessionResponse(sessionResponse),
       );
     }
 
