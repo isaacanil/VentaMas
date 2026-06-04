@@ -24,9 +24,41 @@ type PostingProfilePayload = {
   reason?: string | null;
 };
 
+type BankAccountPayload = {
+  businessId: string;
+  bankAccount?: unknown;
+  account?: unknown;
+  clientUserId?: string | null;
+};
+
+type BankAccountBackfillPayload = {
+  businessId: string;
+  clientUserId?: string | null;
+};
+
 type ChartAccountResult = {
   ok: boolean;
   accountId: string;
+};
+
+type BankAccountResult = {
+  ok: boolean;
+  bankAccountId: string;
+  chartOfAccountId: string;
+};
+
+type BankAccountBackfillResult = {
+  ok: boolean;
+  processed: number;
+  created: number;
+  linkedExisting: number;
+  skippedAlreadyLinked: number;
+  results: Array<{
+    bankAccountId: string;
+    chartOfAccountId?: string | null;
+    code?: string | null;
+    status: string;
+  }>;
 };
 
 type PostingProfileResult = {
@@ -40,6 +72,16 @@ const createChartAccountCallable = httpsCallable<
   ChartAccountPayload,
   ChartAccountResult
 >(functions, 'createChartOfAccount');
+
+const createBankAccountCallable = httpsCallable<
+  BankAccountPayload,
+  BankAccountResult
+>(functions, 'createBankAccount');
+
+const backfillBankAccountChartLinksCallable = httpsCallable<
+  BankAccountBackfillPayload,
+  BankAccountBackfillResult
+>(functions, 'backfillBankAccountChartLinks');
 
 const updateChartAccountCallable = httpsCallable<
   ChartAccountPayload,
@@ -71,6 +113,13 @@ const unwrap = <T>(result: CallableResult<T>): T => result.data;
 export const createChartOfAccountConfig = async (
   payload: ChartAccountPayload,
 ) => unwrap(await createChartAccountCallable(payload));
+
+export const createBankAccountConfig = async (payload: BankAccountPayload) =>
+  unwrap(await createBankAccountCallable(payload));
+
+export const backfillBankAccountChartLinksConfig = async (
+  payload: BankAccountBackfillPayload,
+) => unwrap(await backfillBankAccountChartLinksCallable(payload));
 
 export const updateChartOfAccountConfig = async (
   payload: ChartAccountPayload,

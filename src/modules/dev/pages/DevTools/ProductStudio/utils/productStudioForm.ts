@@ -1,10 +1,7 @@
 import {
-  BRAND_DEFAULT_OPTION_VALUE,
-  BRAND_LEGACY_OPTION_VALUE,
-} from '@/components/modals/ProductForm/constants/brandOptions';
-import {
-  PRODUCT_BRAND_DEFAULT,
-} from '@/features/updateProduct/updateProductSlice';
+  normalizeProductBrandName,
+  resolveBrandSelection,
+} from '@/components/modals/ProductForm/utils/brandSelection';
 import {
   buildNormalizedProductSnapshot,
   normalizeItemType,
@@ -200,34 +197,13 @@ export const getChangedProductPatch = ({
   }
 
   if (key === 'brand') {
-    const normalizedBrand =
-      typeof value === 'string' ? value.replace(/\s+/g, ' ').trim() : '';
     return {
-      brand: normalizedBrand || PRODUCT_BRAND_DEFAULT,
+      brand: normalizeProductBrandName(value),
     };
   }
 
   if (key === 'brandId') {
-    const normalizedId = typeof value === 'string' ? value.trim() : null;
-    let resolvedBrand = PRODUCT_BRAND_DEFAULT;
-
-    if (normalizedId && normalizedId !== BRAND_DEFAULT_OPTION_VALUE) {
-      if (normalizedId === BRAND_LEGACY_OPTION_VALUE && product?.brand) {
-        resolvedBrand = product.brand;
-      } else {
-        const brandMatch = productBrands?.find(
-          (brand) => brand?.id === normalizedId,
-        );
-        if (typeof brandMatch?.name === 'string') {
-          resolvedBrand = brandMatch.name.trim();
-        }
-      }
-    }
-
-    return {
-      brandId: normalizedId,
-      brand: resolvedBrand || PRODUCT_BRAND_DEFAULT,
-    };
+    return resolveBrandSelection({ value, product, productBrands });
   }
 
   return { [key]: value } as ProductPatch;

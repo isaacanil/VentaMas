@@ -154,6 +154,7 @@ export const manageHrEmployee = onCall(async (request) => {
             partyId: employee.partyId,
             defaultType: employee.defaultCommissionType,
             defaultRate: employee.defaultCommissionRate || 0,
+            serviceCommissionRules: employee.serviceCommissionRules,
             active:
               employee.commissionEnabled === true &&
               employee.status === 'active',

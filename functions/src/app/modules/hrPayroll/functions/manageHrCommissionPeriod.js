@@ -11,13 +11,23 @@ import { toCleanString } from '../../../versions/v2/billing/utils/billingCommon.
 import {
   buildHrCommissionAccrualAccountingEvent,
   buildHrCommissionCutDocuments,
+  buildHrPayrollEmployeeLinePayableAdjustment,
+  normalizeHrCommissionCutRule,
   normalizeHrCommissionPeriodDateRange,
   normalizeHrCommissionPeriodStatus,
+  resolveNextHrCommissionCutRuleRange,
   resolveHrCommissionPeriodId,
 } from '../services/hrCommissionPeriods.service.js';
 
 const MAX_CUT_ENTRIES = 450;
-const ACTIONS = new Set(['create', 'close', 'approve']);
+const ACTIONS = new Set([
+  'create',
+  'close',
+  'approve',
+  'adjust_line',
+  'upsert_cut_rule',
+  'deactivate_cut_rule',
+]);
 
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -33,6 +43,31 @@ const requirePeriodId = (payload) => {
     throw new HttpsError('invalid-argument', 'periodId es requerido.');
   }
   return periodId;
+};
+
+const requireLineId = (payload) => {
+  const lineId =
+    toCleanString(payload.payrollLineId) ||
+    toCleanString(payload.payrollEmployeeLineId) ||
+    toCleanString(payload.lineId);
+  if (!lineId) {
+    throw new HttpsError(
+      'invalid-argument',
+      'payrollLineId es requerido para editar el total a pagar.',
+    );
+  }
+  return lineId;
+};
+
+const requireCutRuleId = (payload) => {
+  const ruleId =
+    toCleanString(payload.cutRuleId) ||
+    toCleanString(payload.ruleId) ||
+    toCleanString(payload.id);
+  if (!ruleId) {
+    throw new HttpsError('invalid-argument', 'ruleId es requerido.');
+  }
+  return ruleId;
 };
 
 const toPeriodResult = ({
@@ -53,6 +88,28 @@ const toPeriodResult = ({
   entriesCount: Number(period?.entriesCount) || entriesCount || 0,
   employeesCount: Number(period?.employeesCount) || 0,
   totalCommissionAmount: Number(period?.totalCommissionAmount) || 0,
+  deductionsAmount: Number(period?.deductionsAmount) || 0,
+  netAmount:
+    Number(period?.netAmount) ||
+    Number(period?.totalPayableAmount) ||
+    Number(period?.totalCommissionAmount) ||
+    0,
+});
+
+const toCutRuleResult = ({ rule }) => ({
+  ok: true,
+  businessId: toCleanString(rule?.businessId),
+  ruleId: toCleanString(rule?.id),
+  rule: {
+    id: toCleanString(rule?.id),
+    businessId: toCleanString(rule?.businessId),
+    label: toCleanString(rule?.label),
+    frequency: toCleanString(rule?.frequency) || 'monthly',
+    startDay: Number(rule?.startDay) || 1,
+    endDay: Number(rule?.endDay) || 31,
+    active: rule?.active === false ? false : true,
+    sortOrder: Number(rule?.sortOrder) || 0,
+  },
 });
 
 const readPeriodSnapshot = async (transaction, businessId, periodId) => {
@@ -70,10 +127,122 @@ const readPeriodSnapshot = async (transaction, businessId, periodId) => {
   };
 };
 
+const readCutRule = async ({ businessId, ruleId }) => {
+  const ruleSnap = await db
+    .doc(`businesses/${businessId}/hrCommissionCutRules/${ruleId}`)
+    .get();
+  if (!ruleSnap.exists) {
+    throw new HttpsError('not-found', 'La regla de corte no existe.');
+  }
+
+  const normalized = normalizeHrCommissionCutRule(
+    { id: ruleSnap.id, ...ruleSnap.data() },
+    { businessId, ruleId: ruleSnap.id },
+  );
+  if (!normalized.ok) {
+    throw new HttpsError('failed-precondition', normalized.error);
+  }
+  if (normalized.rule.active === false) {
+    throw new HttpsError(
+      'failed-precondition',
+      'La regla de corte esta inactiva.',
+    );
+  }
+  return normalized.rule;
+};
+
+const readCutRulePeriods = async ({ businessId, ruleId }) => {
+  const periodsSnap = await db
+    .collection(`businesses/${businessId}/hrCommissionPeriods`)
+    .where('cutRuleId', '==', ruleId)
+    .get();
+
+  return periodsSnap.docs.map((docSnap) => ({
+    id: docSnap.id,
+    ...docSnap.data(),
+  }));
+};
+
+const upsertHrCommissionCutRule = async ({ authUid, businessId, payload }) => {
+  const normalized = normalizeHrCommissionCutRule(payload, {
+    businessId,
+    ruleId:
+      toCleanString(payload.ruleId) ||
+      toCleanString(payload.cutRuleId) ||
+      toCleanString(payload.id),
+  });
+  if (!normalized.ok) {
+    throw new HttpsError('invalid-argument', normalized.error);
+  }
+
+  const ruleRef = db.doc(
+    `businesses/${businessId}/hrCommissionCutRules/${normalized.rule.id}`,
+  );
+  const timestamp = FieldValue.serverTimestamp();
+  const existingSnap = await ruleRef.get();
+  const rulePayload = {
+    ...normalized.rule,
+    businessId,
+    updatedAt: timestamp,
+    updatedBy: authUid,
+    ...(existingSnap.exists
+      ? {}
+      : {
+          createdAt: timestamp,
+          createdBy: authUid,
+        }),
+  };
+
+  await ruleRef.set(rulePayload, { merge: true });
+  return toCutRuleResult({ rule: rulePayload });
+};
+
+const deactivateHrCommissionCutRule = async ({
+  authUid,
+  businessId,
+  payload,
+}) => {
+  const ruleId = requireCutRuleId(payload);
+  const ruleRef = db.doc(
+    `businesses/${businessId}/hrCommissionCutRules/${ruleId}`,
+  );
+  const ruleSnap = await ruleRef.get();
+  if (!ruleSnap.exists) {
+    throw new HttpsError('not-found', 'La regla de corte no existe.');
+  }
+
+  const timestamp = FieldValue.serverTimestamp();
+  await ruleRef.set(
+    {
+      active: false,
+      deactivatedAt: timestamp,
+      deactivatedBy: authUid,
+      updatedAt: timestamp,
+      updatedBy: authUid,
+    },
+    { merge: true },
+  );
+
+  return toCutRuleResult({
+    rule: { id: ruleSnap.id, ...ruleSnap.data(), active: false },
+  });
+};
+
 const createHrCommissionPeriod = async ({ authUid, businessId, payload }) => {
+  const ruleId = requireCutRuleId(payload);
+  const cutRule = await readCutRule({ businessId, ruleId });
+  const priorPeriods = await readCutRulePeriods({ businessId, ruleId });
+  const nextRange = resolveNextHrCommissionCutRuleRange({
+    periods: priorPeriods,
+    rule: cutRule,
+  });
+  if (!nextRange.ok) {
+    throw new HttpsError('failed-precondition', nextRange.error);
+  }
+
   const range = normalizeHrCommissionPeriodDateRange({
-    startDate: payload.startDate,
-    endDate: payload.endDate,
+    startDate: nextRange.start,
+    endDate: nextRange.end,
   });
   if (!range.ok) {
     throw new HttpsError('invalid-argument', range.error);
@@ -81,7 +250,6 @@ const createHrCommissionPeriod = async ({ authUid, businessId, payload }) => {
 
   const periodId = resolveHrCommissionPeriodId({
     endDate: range.end,
-    periodId: payload.periodId,
     startDate: range.start,
   });
   const periodRef = db.doc(
@@ -117,8 +285,19 @@ const createHrCommissionPeriod = async ({ authUid, businessId, payload }) => {
     const entries = entrySnaps
       .filter((entrySnap) => entrySnap.exists)
       .map((entrySnap) => ({ id: entrySnap.id, ...entrySnap.data() }));
+    const employeesSnap = await transaction.get(
+      db
+        .collection(`businesses/${businessId}/hrEmployees`)
+        .where('status', '==', 'active'),
+    );
+    const employees = employeesSnap.docs.map((employeeSnap) => ({
+      id: employeeSnap.id,
+      ...employeeSnap.data(),
+    }));
     const documents = buildHrCommissionCutDocuments({
       businessId,
+      cutRule,
+      employees,
       entries,
       endDate: range.end,
       periodId,
@@ -302,6 +481,106 @@ const approveHrCommissionPeriod = async ({ authUid, businessId, periodId }) =>
     });
   });
 
+const adjustHrCommissionPeriodLine = async ({
+  authUid,
+  businessId,
+  payload,
+}) => {
+  const lineId = requireLineId(payload);
+  const lineRef = db.doc(
+    `businesses/${businessId}/hrPayrollEmployeeLines/${lineId}`,
+  );
+
+  return db.runTransaction(async (transaction) => {
+    const timestamp = FieldValue.serverTimestamp();
+    const lineSnap = await transaction.get(lineRef);
+    if (!lineSnap.exists) {
+      throw new HttpsError('not-found', 'La linea de colaborador no existe.');
+    }
+
+    const line = { id: lineSnap.id, ...lineSnap.data() };
+    const periodId = toCleanString(line.periodId);
+    const payrollRunId = toCleanString(line.payrollRunId);
+    const periodRef = periodId
+      ? db.doc(`businesses/${businessId}/hrCommissionPeriods/${periodId}`)
+      : null;
+    const payrollRunRef = payrollRunId
+      ? db.doc(`businesses/${businessId}/hrPayrollRuns/${payrollRunId}`)
+      : null;
+    const [periodSnap, linesSnap] = await Promise.all([
+      periodRef ? transaction.get(periodRef) : null,
+      periodId
+        ? transaction.get(
+            db
+              .collection(`businesses/${businessId}/hrPayrollEmployeeLines`)
+              .where('periodId', '==', periodId),
+          )
+        : null,
+    ]);
+    const period = periodSnap?.exists
+      ? { id: periodSnap.id, ...periodSnap.data() }
+      : null;
+    const periodStatus = normalizeHrCommissionPeriodStatus(
+      period?.status ?? line.status,
+    );
+    if (!['draft', 'closed'].includes(periodStatus)) {
+      throw new HttpsError(
+        'failed-precondition',
+        'Solo puedes editar el total antes de aprobar el corte.',
+      );
+    }
+
+    const employeeLines = linesSnap
+      ? linesSnap.docs.map((docSnap) => ({
+          id: docSnap.id,
+          ...docSnap.data(),
+        }))
+      : [line];
+    const adjustment = buildHrPayrollEmployeeLinePayableAdjustment({
+      comment:
+        payload.comment ??
+        payload.adjustmentComment ??
+        payload.modificationComment ??
+        payload.notes,
+      employeeLines,
+      historyTimestamp: Timestamp.now(),
+      line,
+      timestamp,
+      totalToPay:
+        payload.totalToPay ??
+        payload.totalPayableAmount ??
+        payload.netAmount ??
+        payload.amount,
+      userId: authUid,
+    });
+    if (!adjustment.ok) {
+      throw new HttpsError('failed-precondition', adjustment.error);
+    }
+
+    transaction.set(lineRef, adjustment.linePatch, { merge: true });
+    if (payrollRunRef) {
+      transaction.set(payrollRunRef, adjustment.aggregatePatch, {
+        merge: true,
+      });
+    }
+    if (periodRef) {
+      transaction.set(periodRef, adjustment.aggregatePatch, { merge: true });
+    }
+
+    return {
+      ok: true,
+      businessId,
+      periodId,
+      payrollRunId,
+      payrollLineId: lineId,
+      deductionsAmount: adjustment.deductionsAmount,
+      grossAmount: adjustment.grossAmount,
+      netAmount: adjustment.netAmount,
+      previousNetAmount: adjustment.previousNetAmount,
+    };
+  });
+};
+
 export const manageHrCommissionPeriod = onCall(async (request) => {
   try {
     const authUid = await resolveCallableAuthUid(request);
@@ -325,8 +604,17 @@ export const manageHrCommissionPeriod = onCall(async (request) => {
     });
 
     const action = normalizeAction(payload.action);
+    if (action === 'upsert_cut_rule') {
+      return upsertHrCommissionCutRule({ authUid, businessId, payload });
+    }
+    if (action === 'deactivate_cut_rule') {
+      return deactivateHrCommissionCutRule({ authUid, businessId, payload });
+    }
     if (action === 'create') {
       return createHrCommissionPeriod({ authUid, businessId, payload });
+    }
+    if (action === 'adjust_line') {
+      return adjustHrCommissionPeriodLine({ authUid, businessId, payload });
     }
 
     const periodId = requirePeriodId(payload);

@@ -1,7 +1,8 @@
 import { ListBoxItem } from '@heroui/react';
 import { parseDate } from '@internationalized/date';
+import { message } from 'antd';
 import dayjs from 'dayjs';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { Key } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -16,7 +17,7 @@ import {
   VmSpinner,
   VmTable,
 } from '@/components/heroui';
-import { TeamOutlined } from '@/constants/icons/antd';
+import { FileExcelOutlined, TeamOutlined } from '@/constants/icons/antd';
 import { useServiceCommissionCollaborators } from '@/firebase/commissions/useServiceCommissionCollaborators';
 import { useServiceCommissionsReport } from '@/firebase/commissions/useServiceCommissionsReport';
 import { selectUser } from '@/features/auth/userSlice';
@@ -45,8 +46,9 @@ import {
   FooterContent,
   FooterMeta,
   Header,
+  HeaderActionButton,
+  HeaderActions,
   HeaderTools,
-  ManageCollaboratorsButton,
   MutedText,
   Page,
   ReportTable,
@@ -73,6 +75,7 @@ import {
   getServiceLabel,
   toDateKey,
 } from './utils/reportDisplay';
+import { exportServiceCommissionsReportWorkbook } from './utils/serviceCommissionsReportExport';
 
 const PAGE_SIZE = 20;
 const ALL_COLLABORATORS_KEY = '__all__';
@@ -88,6 +91,7 @@ export const ServiceCommissionsReport = () => {
   });
   const [collaboratorId, setCollaboratorId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [exporting, setExporting] = useState(false);
   const { rows: collaborators, loading: collaboratorsLoading } =
     useServiceCommissionCollaborators(businessId);
   const { rows, loading, error } = useServiceCommissionsReport({
@@ -136,6 +140,31 @@ export const ServiceCommissionsReport = () => {
     setCollaboratorId(nextValue === ALL_COLLABORATORS_KEY ? null : nextValue);
   };
 
+  const handleExportExcel = useCallback(async () => {
+    if (!rows.length) {
+      message.warning('No hay comisiones para exportar.');
+      return;
+    }
+
+    setExporting(true);
+    try {
+      await exportServiceCommissionsReportWorkbook({
+        endDate: range[1],
+        rows,
+        startDate: range[0],
+      });
+      message.success('Reporte de comisiones exportado a Excel.');
+    } catch (exportError) {
+      console.error(
+        '[ServiceCommissionsReport] excel export failed',
+        exportError,
+      );
+      message.error('No se pudo exportar el reporte de comisiones.');
+    } finally {
+      setExporting(false);
+    }
+  }, [range, rows]);
+
   const tableBodyStateKey = loading
     ? 'loading'
     : pagedRows.length === 0
@@ -160,15 +189,26 @@ export const ServiceCommissionsReport = () => {
           </TitleBlock>
 
           <HeaderTools>
-            <ManageCollaboratorsButton
-              variant="secondary"
-              onPress={() =>
-                navigate(ROUTES_NAME.HR_PAYROLL_TERM.HR_EMPLOYEES)
-              }
-            >
-              <TeamOutlined />
-              Gestionar en RRHH
-            </ManageCollaboratorsButton>
+            <HeaderActions>
+              <HeaderActionButton
+                variant="secondary"
+                isDisabled={loading || exporting || rows.length === 0}
+                onPress={() => void handleExportExcel()}
+              >
+                <FileExcelOutlined />
+                {exporting ? 'Exportando...' : 'Exportar Excel'}
+              </HeaderActionButton>
+
+              <HeaderActionButton
+                variant="secondary"
+                onPress={() =>
+                  navigate(ROUTES_NAME.HR_PAYROLL_TERM.HR_EMPLOYEES)
+                }
+              >
+                <TeamOutlined />
+                Gestionar en RRHH
+              </HeaderActionButton>
+            </HeaderActions>
 
             <Filters>
               <FilterField>

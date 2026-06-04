@@ -1,8 +1,11 @@
 import { CalendarOutlined, CloseOutlined } from '@ant-design/icons';
-import React from 'react';
-import styled from 'styled-components';
 
-import { VmInput } from '@/components/heroui/Input';
+import {
+  ClearButton,
+  InputShell,
+  PrefixIcon,
+  StyledInput,
+} from './HeroUIDatePickerInput.styles';
 import type { DatePickerInputProps } from '../types';
 
 export const HeroUIDatePickerInput = ({
@@ -33,7 +36,7 @@ export const HeroUIDatePickerInput = ({
         aria-label="Limpiar fecha"
         onClick={(event) => {
           event.stopPropagation();
-          onClear?.(event as unknown as React.MouseEvent<HTMLElement>);
+          onClear?.(event);
         }}
       >
         <CloseOutlined />
@@ -41,64 +44,3 @@ export const HeroUIDatePickerInput = ({
     ) : null}
   </InputShell>
 );
-
-const InputShell = styled.div`
-  position: relative;
-  width: 100%;
-`;
-
-const PrefixIcon = styled.span`
-  position: absolute;
-  top: 50%;
-  left: 10px;
-  z-index: 1;
-  display: inline-flex;
-  color: var(--ds-color-text-secondary);
-  transform: translateY(-50%);
-  pointer-events: none;
-  font-size: 13px;
-`;
-
-const StyledInput = styled(VmInput)<{ $hasValue?: boolean }>`
-  width: 100%;
-  /* leave room for the prefix calendar icon */
-  padding-left: 32px !important;
-
-  color: ${({ $hasValue }) =>
-    $hasValue
-      ? 'var(--ds-color-text-primary)'
-      : 'var(--ds-color-text-secondary)'};
-  cursor: pointer;
-
-  &::placeholder {
-    color: var(--ds-color-text-tertiary);
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-  }
-`;
-
-const ClearButton = styled.button`
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: var(--ds-color-text-tertiary);
-  color: var(--ds-color-bg-surface);
-  font-size: 10px;
-  cursor: pointer;
-  transform: translateY(-50%);
-
-  &:hover {
-    background: var(--ds-color-text-secondary);
-  }
-`;

@@ -118,6 +118,22 @@ describe('bankAccounts', () => {
     expect(account.isCustomBank).toBe(false);
   });
 
+  it('preserva el enlace hacia la cuenta contable bancaria', () => {
+    const account = normalizeBankAccountRecord(
+      'bank-1',
+      'business-1',
+      {
+        name: 'Cuenta operativa',
+        currency: 'DOP',
+        bankCode: 'popular',
+        chartOfAccountId: 'chart-bank-1',
+      },
+      { bankInstitutionCatalog: BANK_CATALOG },
+    );
+
+    expect(account.chartOfAccountId).toBe('chart-bank-1');
+  });
+
   it('preserva bankCode top-level aunque catalogo aun no haya cargado', () => {
     const values = getBankAccountDraftFormValues({
       bankCode: 'popular',

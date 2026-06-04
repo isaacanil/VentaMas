@@ -5,6 +5,7 @@ import type {
   AccountingPostingAmountSource,
   AccountingPostingCondition,
   AccountingPostingProfile,
+  BankAccount,
   ChartOfAccount,
   ChartOfAccountNormalSide,
   ChartOfAccountType,
@@ -269,7 +270,7 @@ const CASH_PAYMENT_METHODS = new Set(['cash']);
 const BANK_PAYMENT_METHODS = new Set(['card', 'transfer']);
 const OTHER_PAYMENT_METHODS = new Set(['creditNote', 'supplierCreditNote']);
 
-const resolveSaleSettlementBreakdown = (event: AccountingEvent) => {
+const resolveSaleSettlementContext = (event: AccountingEvent) => {
   const payload = asRecord(event.payload);
   const monetary = asRecord(event.monetary);
   const documentTotal = toFiniteAmount(monetary.amount);
@@ -282,22 +283,42 @@ const resolveSaleSettlementBreakdown = (event: AccountingEvent) => {
     ? payload.paymentMethods
     : [];
 
+  return {
+    functionalRate,
+    paymentMethods,
+    payload,
+    total,
+  };
+};
+
+const resolvePaymentMethodFunctionalAmount = (
+  method: unknown,
+  functionalRate: number,
+): number => {
+  const methodRecord = asRecord(method);
+  const explicitFunctionalAmount = toFiniteAmount(
+    methodRecord.functionalValue ??
+      methodRecord.functionalAmount ??
+      methodRecord.functionalTotal,
+  );
+  const documentAmount = toFiniteAmount(
+    methodRecord.value ?? methodRecord.amount,
+  );
+  const amount =
+    explicitFunctionalAmount > 0
+      ? explicitFunctionalAmount
+      : documentAmount * functionalRate;
+
+  return amount > 0 ? amount : 0;
+};
+
+const resolveSaleSettlementBreakdown = (event: AccountingEvent) => {
+  const { functionalRate, paymentMethods, payload, total } =
+    resolveSaleSettlementContext(event);
   const breakdown = paymentMethods.reduce(
     (accumulator, method) => {
       const methodRecord = asRecord(method);
-      const explicitFunctionalAmount = toFiniteAmount(
-        methodRecord.functionalValue ??
-          methodRecord.functionalAmount ??
-          methodRecord.functionalTotal,
-      );
-      const documentAmount = toFiniteAmount(
-        methodRecord.value ?? methodRecord.amount,
-      );
-      const amount =
-        explicitFunctionalAmount > 0
-          ? explicitFunctionalAmount
-          : documentAmount * functionalRate;
-
+      const amount = resolvePaymentMethodFunctionalAmount(method, functionalRate);
       if (amount <= 0) {
         return accumulator;
       }
@@ -351,6 +372,216 @@ const resolveSaleSettlementBreakdown = (event: AccountingEvent) => {
     other: roundAccountingAmount(breakdown.other),
     settledAmount: roundAccountingAmount(settledAmount),
     receivableBalance: roundAccountingAmount(receivableBalance),
+  };
+};
+
+const resolveReceivablePaymentAmounts = (event: AccountingEvent) => {
+  const payload = asRecord(event.payload);
+  const monetary = asRecord(event.monetary);
+  const total =
+    toFiniteAmount(monetary.functionalAmount) ||
+    toFiniteAmount(monetary.amount);
+  const withholding = asRecord(payload.thirdPartyWithholding);
+  const applied =
+    toFiniteAmount(payload.functionalAppliedAmount) ||
+    toFiniteAmount(payload.appliedFunctionalAmount) ||
+    toFiniteAmount(payload.appliedAmount) ||
+    toFiniteAmount(monetary.amount) ||
+    total;
+  const collected =
+    toFiniteAmount(payload.functionalCollectedAmount) ||
+    toFiniteAmount(payload.collectedFunctionalAmount) ||
+    toFiniteAmount(payload.collectedAmount) ||
+    total;
+  const withheld =
+    toFiniteAmount(payload.functionalWithholdingAmount) ||
+    toFiniteAmount(payload.withholdingFunctionalAmount) ||
+    toFiniteAmount(withholding.functionalTotalWithheld) ||
+    toFiniteAmount(withholding.functionalAmount) ||
+    toFiniteAmount(withholding.totalWithheld) ||
+    Math.max(applied - collected, 0);
+
+  return {
+    applied: roundAccountingAmount(Math.max(applied, 0)),
+    collected: roundAccountingAmount(Math.max(collected, 0)),
+    withheld: roundAccountingAmount(Math.max(withheld, 0)),
+  };
+};
+
+const resolvePayablePaymentBreakdown = (event: AccountingEvent) => {
+  const payload = asRecord(event.payload);
+  const monetary = asRecord(event.monetary);
+  const documentTotal = toFiniteAmount(monetary.amount);
+  const total =
+    toFiniteAmount(monetary.functionalAmount) ||
+    toFiniteAmount(monetary.amount);
+  const functionalRate =
+    documentTotal > 0 && total > 0 ? total / documentTotal : 1;
+  const paymentMethods = Array.isArray(payload.paymentMethods)
+    ? payload.paymentMethods
+    : [];
+
+  const breakdown = paymentMethods.reduce(
+    (accumulator, method) => {
+      const methodRecord = asRecord(method);
+      const amount = resolvePaymentMethodFunctionalAmount(method, functionalRate);
+      if (amount <= 0) {
+        return accumulator;
+      }
+
+      const methodCode = normalizePaymentMethodCode(
+        methodRecord.method ?? methodRecord.code ?? method,
+      );
+
+      if (CASH_PAYMENT_METHODS.has(methodCode ?? '')) {
+        accumulator.cash += amount;
+        return accumulator;
+      }
+
+      if (BANK_PAYMENT_METHODS.has(methodCode ?? '')) {
+        accumulator.bank += amount;
+        return accumulator;
+      }
+
+      if (OTHER_PAYMENT_METHODS.has(methodCode ?? '')) {
+        accumulator.creditNote += amount;
+        return accumulator;
+      }
+
+      accumulator.other += amount;
+      return accumulator;
+    },
+    { cash: 0, bank: 0, creditNote: 0, other: 0 },
+  );
+
+  return {
+    cash: roundAccountingAmount(breakdown.cash),
+    bank: roundAccountingAmount(breakdown.bank),
+    creditNote: roundAccountingAmount(breakdown.creditNote),
+    other: roundAccountingAmount(breakdown.other),
+    settledAmount: roundAccountingAmount(total),
+  };
+};
+
+const resolvePayrollDeductionAmounts = (event: AccountingEvent) => {
+  const payload = asRecord(event.payload);
+  const summary = asRecord(payload.payrollDeductionSummary);
+  const summaryTax = toFiniteAmount(summary.taxAmount);
+  const summaryOther = toFiniteAmount(summary.otherPayableAmount);
+  if (summaryTax > 0 || summaryOther > 0) {
+    return {
+      tax: roundAccountingAmount(summaryTax),
+      other: roundAccountingAmount(summaryOther),
+    };
+  }
+
+  const employeeLines = Array.isArray(payload.employeeLines)
+    ? payload.employeeLines
+    : [];
+  const totals = employeeLines.reduce(
+    (accumulator, line) => {
+      const lineRecord = asRecord(line);
+      const deductionLines = Array.isArray(lineRecord.deductionLines)
+        ? lineRecord.deductionLines
+        : [];
+
+      deductionLines.forEach((deductionLine) => {
+        const deduction = asRecord(deductionLine);
+        if (deduction.payableObligation === false) {
+          return;
+        }
+
+        const amount = toFiniteAmount(
+          deduction.functionalAmount ??
+            deduction.calculatedAmount ??
+            deduction.amount,
+        );
+        if (amount <= 0) {
+          return;
+        }
+
+        const accountSystemKey = toCleanString(deduction.accountSystemKey);
+        const kind = toCleanString(deduction.kind);
+        if (accountSystemKey === 'tax_payable' || kind === 'salary_itbis') {
+          accumulator.tax += amount;
+          return;
+        }
+
+        accumulator.other += amount;
+      });
+
+      return accumulator;
+    },
+    { tax: 0, other: 0 },
+  );
+
+  return {
+    tax: roundAccountingAmount(totals.tax),
+    other: roundAccountingAmount(totals.other),
+  };
+};
+
+const resolvePayrollAccrualAmounts = (event: AccountingEvent) => {
+  const monetary = asRecord(event.monetary);
+  const payload = asRecord(event.payload);
+  const total =
+    toFiniteAmount(monetary.functionalAmount) ||
+    toFiniteAmount(monetary.amount);
+  const deductions = resolvePayrollDeductionAmounts(event);
+  const net =
+    toFiniteAmount(payload.functionalNetAmount) ||
+    toFiniteAmount(payload.netAmount) ||
+    Math.max(total - deductions.tax - deductions.other, 0);
+
+  return {
+    accrual: roundAccountingAmount(total),
+    net: roundAccountingAmount(Math.max(net, 0)),
+    taxDeductions: deductions.tax,
+    otherDeductions: deductions.other,
+  };
+};
+
+const resolveSaleBankSettlementAllocations = (event: AccountingEvent) => {
+  const { functionalRate, paymentMethods } = resolveSaleSettlementContext(event);
+  const allocationsByBankAccountId = new Map<string, number>();
+  let unassignedAmount = 0;
+
+  paymentMethods.forEach((method) => {
+    const methodRecord = asRecord(method);
+    const methodCode = normalizePaymentMethodCode(
+      methodRecord.method ?? methodRecord.code ?? method,
+    );
+    if (!BANK_PAYMENT_METHODS.has(methodCode ?? '')) {
+      return;
+    }
+
+    const amount = resolvePaymentMethodFunctionalAmount(method, functionalRate);
+    if (amount <= 0) {
+      return;
+    }
+
+    const bankAccountId = toCleanString(methodRecord.bankAccountId);
+    if (!bankAccountId) {
+      unassignedAmount += amount;
+      return;
+    }
+
+    allocationsByBankAccountId.set(
+      bankAccountId,
+      roundAccountingAmount(
+        (allocationsByBankAccountId.get(bankAccountId) ?? 0) + amount,
+      ),
+    );
+  });
+
+  return {
+    allocations: Array.from(allocationsByBankAccountId.entries())
+      .map(([bankAccountId, amount]) => ({
+        bankAccountId,
+        amount: roundAccountingAmount(amount),
+      }))
+      .filter((allocation) => allocation.amount > 0),
+    unassignedAmount: roundAccountingAmount(unassignedAmount),
   };
 };
 
@@ -520,6 +751,88 @@ const matchesProfileConditions = (
   return true;
 };
 
+const resolveEventBankAccountId = (event: AccountingEvent): string | null => {
+  const payload = asRecord(event.payload);
+  const treasury = asRecord(event.treasury);
+  const treasuryBankAccountId = toCleanString(treasury.bankAccountId);
+  if (treasuryBankAccountId) {
+    return treasuryBankAccountId;
+  }
+
+  const paymentMethods = Array.isArray(payload.paymentMethods)
+    ? payload.paymentMethods
+    : [];
+  const bankAccountIds = new Set(
+    paymentMethods
+      .filter((method) => {
+        const methodCode = normalizePaymentMethodCode(
+          method?.method ?? method?.code ?? method,
+        );
+        return BANK_PAYMENT_METHODS.has(methodCode);
+      })
+      .map((method) => toCleanString(method?.bankAccountId))
+      .filter((bankAccountId): bankAccountId is string => Boolean(bankAccountId)),
+  );
+
+  return bankAccountIds.size === 1 ? Array.from(bankAccountIds)[0] : null;
+};
+
+const resolveAccountForProjectedLine = ({
+  accountId,
+  accountSystemKey,
+  accountsById,
+  accountsBySystemKey,
+  bankAccountsById,
+  event,
+}: {
+  accountId?: string | null;
+  accountSystemKey?: string | null;
+  accountsById: Map<string, ChartOfAccount>;
+  accountsBySystemKey: Map<string, ChartOfAccount>;
+  bankAccountsById: Map<string, BankAccount>;
+  event: AccountingEvent;
+}): ChartOfAccount | null => {
+  const account = accountId ? (accountsById.get(accountId) ?? null) : null;
+  const effectiveSystemKey = accountSystemKey ?? account?.systemKey ?? null;
+  if (effectiveSystemKey === 'bank') {
+    const bankAccountId = resolveEventBankAccountId(event);
+    const bankAccount = bankAccountId
+      ? (bankAccountsById.get(bankAccountId) ?? null)
+      : null;
+    const bankChartAccountId = toCleanString(bankAccount?.chartOfAccountId);
+    const bankChartAccount = bankChartAccountId
+      ? (accountsById.get(bankChartAccountId) ?? null)
+      : null;
+    if (bankChartAccount && bankAccount?.status === 'active') {
+      return bankChartAccount;
+    }
+  }
+
+  return account ?? (accountSystemKey ? (accountsBySystemKey.get(accountSystemKey) ?? null) : null);
+};
+
+const resolveBankChartAccount = ({
+  accountsById,
+  bankAccountId,
+  bankAccountsById,
+}: {
+  accountsById: Map<string, ChartOfAccount>;
+  bankAccountId: string | null;
+  bankAccountsById: Map<string, BankAccount>;
+}): ChartOfAccount | null => {
+  const bankAccount = bankAccountId
+    ? (bankAccountsById.get(bankAccountId) ?? null)
+    : null;
+  const bankChartAccountId = toCleanString(bankAccount?.chartOfAccountId);
+  const bankChartAccount = bankChartAccountId
+    ? (accountsById.get(bankChartAccountId) ?? null)
+    : null;
+
+  return bankChartAccount && bankAccount?.status === 'active'
+    ? bankChartAccount
+    : null;
+};
+
 const ACCOUNTING_JOURNAL_TYPE_LABELS = {
   adjustment: 'Ajuste',
   collection: 'Cobro',
@@ -579,6 +892,9 @@ const resolveEventAmountSource = (
     toFiniteAmount(monetary.taxAmount);
   const netSales = Math.max(total - tax, 0);
   const saleSettlement = resolveSaleSettlementBreakdown(event);
+  const receivablePayment = resolveReceivablePaymentAmounts(event);
+  const payablePayment = resolvePayablePaymentBreakdown(event);
+  const payrollAccrual = resolvePayrollAccrualAmounts(event);
   const gain = Math.max(total, 0);
   const loss = Math.abs(Math.min(total, 0));
 
@@ -599,10 +915,30 @@ const resolveEventAmountSource = (
       return saleSettlement.other;
     case 'credit_note_net_total':
       return netSales;
+    case 'accounts_receivable_applied_amount':
+      return receivablePayment.applied;
+    case 'accounts_receivable_collected_amount':
+    case 'accounts_receivable_payment_amount':
+      return receivablePayment.collected;
+    case 'accounts_receivable_withholding_amount':
+      return receivablePayment.withheld;
+    case 'accounts_payable_cash_paid':
+      return payablePayment.cash;
+    case 'accounts_payable_bank_paid':
+      return payablePayment.bank;
+    case 'accounts_payable_credit_note_applied':
+      return payablePayment.creditNote;
+    case 'payroll_accrual_amount':
+      return payrollAccrual.accrual;
+    case 'payroll_net_payable_amount':
+      return payrollAccrual.net;
+    case 'payroll_tax_deductions_amount':
+      return payrollAccrual.taxDeductions;
+    case 'payroll_other_deductions_amount':
+      return payrollAccrual.otherDeductions;
     case 'purchase_total':
     case 'expense_total':
     case 'document_total':
-    case 'accounts_receivable_payment_amount':
     case 'accounts_payable_payment_amount':
     case 'transfer_amount':
       return total;
@@ -621,43 +957,172 @@ const resolveEventAmountSource = (
   }
 };
 
+const buildProjectedLine = ({
+  account,
+  amount,
+  event,
+  line,
+  lineNumber,
+  metadata = {},
+  profile,
+}: {
+  account: ChartOfAccount;
+  amount: number;
+  event: AccountingEvent;
+  line: AccountingPostingProfile['linesTemplate'][number];
+  lineNumber: number;
+  metadata?: Record<string, unknown>;
+  profile: AccountingPostingProfile;
+}): JournalEntryLine => ({
+  lineNumber,
+  accountId: account.id,
+  accountCode: account.code ?? line.accountCode ?? null,
+  accountName: account.name ?? line.accountName ?? null,
+  accountSystemKey: line.accountSystemKey ?? account.systemKey ?? null,
+  description: line.description ?? profile.name,
+  debit: line.side === 'debit' ? amount : 0,
+  credit: line.side === 'credit' ? amount : 0,
+  amountSource: line.amountSource,
+  reference: event.sourceDocumentId ?? event.sourceId ?? event.id,
+  metadata: {
+    projectedFromProfileId: profile.id,
+    ...metadata,
+  },
+});
+
 const buildProjectedLines = ({
   accountsById,
+  accountsBySystemKey,
+  bankAccountsById,
   event,
   profile,
 }: {
   accountsById: Map<string, ChartOfAccount>;
+  accountsBySystemKey: Map<string, ChartOfAccount>;
+  bankAccountsById: Map<string, BankAccount>;
   event: AccountingEvent;
   profile: AccountingPostingProfile;
 }): JournalEntryLine[] =>
-  profile.linesTemplate.flatMap((line, index) => {
+  profile.linesTemplate
+    .flatMap((line, index) => {
     const amount = resolveEventAmountSource(event, line.amountSource);
     if (line.omitIfZero && amount === 0) {
       return [];
     }
 
-    const account = line.accountId
+    const templateAccount = line.accountId
       ? (accountsById.get(line.accountId) ?? null)
       : null;
+    const effectiveSystemKey =
+      line.accountSystemKey ?? templateAccount?.systemKey ?? null;
+    if (
+      effectiveSystemKey === 'bank' &&
+      line.amountSource === 'sale_bank_received'
+    ) {
+      const bankSettlement = resolveSaleBankSettlementAllocations(event);
+      if (bankSettlement.allocations.length) {
+        const allocationLines = bankSettlement.allocations.flatMap(
+          (allocation) => {
+            const account = resolveBankChartAccount({
+              accountsById,
+              bankAccountId: allocation.bankAccountId,
+              bankAccountsById,
+            });
+            if (!account) {
+              return [];
+            }
+
+            return [
+              buildProjectedLine({
+                account,
+                amount: allocation.amount,
+                event,
+                line,
+                lineNumber: index + 1,
+                metadata: {
+                  bankAccountId: allocation.bankAccountId,
+                  splitFromAmountSource: line.amountSource,
+                },
+                profile,
+              }),
+            ];
+          },
+        );
+
+        if (bankSettlement.unassignedAmount <= 0) {
+          return allocationLines;
+        }
+
+        const fallbackAccount = resolveAccountForProjectedLine({
+          accountId: line.accountId,
+          accountSystemKey: line.accountSystemKey,
+          accountsById,
+          accountsBySystemKey,
+          bankAccountsById,
+          event,
+        });
+        if (!fallbackAccount) {
+          return allocationLines;
+        }
+
+        return [
+          ...allocationLines,
+          buildProjectedLine({
+            account: fallbackAccount,
+            amount: bankSettlement.unassignedAmount,
+            event,
+            line,
+            lineNumber: index + 1,
+            metadata: {
+              splitFromAmountSource: line.amountSource,
+              splitUnassignedBankAmount: true,
+            },
+            profile,
+          }),
+        ];
+      }
+    }
+
+    const account = resolveAccountForProjectedLine({
+      accountId: line.accountId,
+      accountSystemKey: line.accountSystemKey,
+      accountsById,
+      accountsBySystemKey,
+      bankAccountsById,
+      event,
+    });
 
     return [
-      {
-        lineNumber: index + 1,
-        accountId: line.accountId ?? account?.id ?? `preview-${index + 1}`,
-        accountCode: line.accountCode ?? account?.code ?? null,
-        accountName: line.accountName ?? account?.name ?? null,
-        accountSystemKey: line.accountSystemKey ?? account?.systemKey ?? null,
-        description: line.description ?? profile.name,
-        debit: line.side === 'debit' ? amount : 0,
-        credit: line.side === 'credit' ? amount : 0,
-        amountSource: line.amountSource,
-        reference: event.sourceDocumentId ?? event.sourceId ?? event.id,
-        metadata: {
-          projectedFromProfileId: profile.id,
-        },
-      },
+      account
+        ? buildProjectedLine({
+            account,
+            amount,
+            event,
+            line,
+            lineNumber: index + 1,
+            profile,
+          })
+        : {
+            lineNumber: index + 1,
+            accountId: line.accountId ?? `preview-${index + 1}`,
+            accountCode: line.accountCode ?? null,
+            accountName: line.accountName ?? null,
+            accountSystemKey: line.accountSystemKey ?? null,
+            description: line.description ?? profile.name,
+            debit: line.side === 'debit' ? amount : 0,
+            credit: line.side === 'credit' ? amount : 0,
+            amountSource: line.amountSource,
+            reference: event.sourceDocumentId ?? event.sourceId ?? event.id,
+            metadata: {
+              projectedFromProfileId: profile.id,
+            },
+          },
     ];
-  });
+    })
+    .map((line, index) => ({
+      ...line,
+      lineNumber: index + 1,
+    }));
 
 const resolvePostingProfile = (
   event: AccountingEvent,
@@ -742,12 +1207,14 @@ export const buildWorkspaceSummary = (
 
 export const buildLedgerRecords = ({
   accounts,
+  bankAccounts = [],
   events,
   journalEntries,
   postingProfiles,
   userNamesById = {},
 }: {
   accounts: ChartOfAccount[];
+  bankAccounts?: BankAccount[];
   events: AccountingEvent[];
   journalEntries: JournalEntry[];
   postingProfiles: AccountingPostingProfile[];
@@ -755,6 +1222,14 @@ export const buildLedgerRecords = ({
 }): AccountingLedgerRecord[] => {
   const accountsById = new Map(
     accounts.map((account) => [account.id, account]),
+  );
+  const accountsBySystemKey = new Map(
+    accounts
+      .filter((account) => toCleanString(account.systemKey))
+      .map((account) => [account.systemKey as string, account]),
+  );
+  const bankAccountsById = new Map(
+    bankAccounts.map((account) => [account.id, account]),
   );
   const entriesById = new Map(
     journalEntries.map((entry) => [entry.id, entry] as const),
@@ -778,6 +1253,8 @@ export const buildLedgerRecords = ({
       (profile
         ? buildProjectedLines({
             accountsById,
+            accountsBySystemKey,
+            bankAccountsById,
             event,
             profile,
           })

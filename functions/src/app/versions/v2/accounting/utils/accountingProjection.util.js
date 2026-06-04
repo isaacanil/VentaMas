@@ -33,6 +33,7 @@ const normalizePostingCondition = (value) => {
     settlementKind:
       record.settlementKind === 'cash' ||
       record.settlementKind === 'bank' ||
+      record.settlementKind === 'mixed' ||
       record.settlementKind === 'other'
         ? record.settlementKind
         : 'any',
@@ -103,6 +104,15 @@ export const normalizeChartOfAccountRecord = (value) => {
   };
 };
 
+export const normalizeBankAccountRecord = (value) => {
+  const record = asRecord(value);
+  return {
+    id: toCleanString(record.id),
+    status: record.status === 'inactive' ? 'inactive' : 'active',
+    chartOfAccountId: toCleanString(record.chartOfAccountId),
+  };
+};
+
 const resolveEventContext = (event) => {
   const eventRecord = asRecord(event);
   const payload = asRecord(eventRecord.payload);
@@ -135,6 +145,7 @@ const resolveEventContext = (event) => {
     settlementKind:
       settlementKindCandidate === 'cash' ||
       settlementKindCandidate === 'bank' ||
+      settlementKindCandidate === 'mixed' ||
       settlementKindCandidate === 'other'
         ? settlementKindCandidate
         : 'any',
@@ -154,7 +165,34 @@ const resolveEventContext = (event) => {
   };
 };
 
-const resolveSaleSettlementBreakdown = (event) => {
+const resolveEventBankAccountId = (event) => {
+  const eventRecord = asRecord(event);
+  const treasury = asRecord(eventRecord.treasury);
+  const payload = asRecord(eventRecord.payload);
+  const treasuryBankAccountId = toCleanString(treasury.bankAccountId);
+  if (treasuryBankAccountId) {
+    return treasuryBankAccountId;
+  }
+
+  const paymentMethods = Array.isArray(payload.paymentMethods)
+    ? payload.paymentMethods
+    : [];
+  const bankAccountIds = new Set(
+    paymentMethods
+      .filter((method) => {
+        const methodCode = normalizePaymentMethodCode(
+          method?.method ?? method?.code ?? method,
+        );
+        return BANK_PAYMENT_METHODS.has(methodCode);
+      })
+      .map((method) => toCleanString(method?.bankAccountId))
+      .filter(Boolean),
+  );
+
+  return bankAccountIds.size === 1 ? Array.from(bankAccountIds)[0] : null;
+};
+
+const resolveSaleSettlementContext = (event) => {
   const eventRecord = asRecord(event);
   const payload = asRecord(eventRecord.payload);
   const monetary = asRecord(eventRecord.monetary);
@@ -167,18 +205,32 @@ const resolveSaleSettlementBreakdown = (event) => {
     ? payload.paymentMethods
     : [];
 
+  return {
+    functionalRate,
+    paymentMethods,
+    payload,
+    total,
+  };
+};
+
+const resolvePaymentMethodFunctionalAmount = (method, functionalRate) => {
+  const explicitFunctionalAmount = safeNumber(
+    method?.functionalValue ?? method?.functionalAmount ?? method?.functionalTotal,
+  );
+  const documentAmount = safeNumber(method?.value ?? method?.amount);
+  const amount =
+    explicitFunctionalAmount > 0
+      ? explicitFunctionalAmount
+      : documentAmount * functionalRate;
+  return amount > 0 ? amount : 0;
+};
+
+const resolveSaleSettlementBreakdown = (event) => {
+  const { functionalRate, paymentMethods, payload, total } =
+    resolveSaleSettlementContext(event);
   const breakdown = paymentMethods.reduce(
     (accumulator, method) => {
-      const explicitFunctionalAmount = safeNumber(
-        method?.functionalValue ??
-          method?.functionalAmount ??
-          method?.functionalTotal,
-      );
-      const documentAmount = safeNumber(method?.value ?? method?.amount);
-      const amount =
-        explicitFunctionalAmount > 0
-          ? explicitFunctionalAmount
-          : documentAmount * functionalRate;
+      const amount = resolvePaymentMethodFunctionalAmount(method, functionalRate);
       if (amount <= 0) {
         return accumulator;
       }
@@ -232,6 +284,213 @@ const resolveSaleSettlementBreakdown = (event) => {
     other: roundJournalAmount(breakdown.other),
     settledAmount: roundJournalAmount(settledAmount),
     receivableBalance: roundJournalAmount(receivableBalance),
+  };
+};
+
+const resolveSaleBankSettlementAllocations = (event) => {
+  const { functionalRate, paymentMethods } = resolveSaleSettlementContext(event);
+  const allocationsByBankAccountId = new Map();
+  let unassignedAmount = 0;
+
+  paymentMethods.forEach((method) => {
+    const methodCode = normalizePaymentMethodCode(
+      method?.method ?? method?.code ?? method,
+    );
+    if (!BANK_PAYMENT_METHODS.has(methodCode)) {
+      return;
+    }
+
+    const amount = resolvePaymentMethodFunctionalAmount(method, functionalRate);
+    if (amount <= 0) {
+      return;
+    }
+
+    const bankAccountId = toCleanString(method?.bankAccountId);
+    if (!bankAccountId) {
+      unassignedAmount += amount;
+      return;
+    }
+
+    allocationsByBankAccountId.set(
+      bankAccountId,
+      roundJournalAmount(
+        (allocationsByBankAccountId.get(bankAccountId) ?? 0) + amount,
+      ),
+    );
+  });
+
+  return {
+    allocations: Array.from(allocationsByBankAccountId.entries())
+      .map(([bankAccountId, amount]) => ({
+        bankAccountId,
+        amount: roundJournalAmount(amount),
+      }))
+      .filter((allocation) => allocation.amount > 0),
+    unassignedAmount: roundJournalAmount(unassignedAmount),
+  };
+};
+
+const resolveReceivablePaymentAmounts = (event) => {
+  const payload = asRecord(event?.payload);
+  const monetary = asRecord(event?.monetary);
+  const total =
+    safeNumber(monetary.functionalAmount) || safeNumber(monetary.amount);
+  const withholding = asRecord(payload.thirdPartyWithholding);
+  const applied =
+    safeNumber(payload.functionalAppliedAmount) ||
+    safeNumber(payload.appliedFunctionalAmount) ||
+    safeNumber(payload.appliedAmount) ||
+    safeNumber(monetary.amount) ||
+    total;
+  const collected =
+    safeNumber(payload.functionalCollectedAmount) ||
+    safeNumber(payload.collectedFunctionalAmount) ||
+    safeNumber(payload.collectedAmount) ||
+    total;
+  const withheld =
+    safeNumber(payload.functionalWithholdingAmount) ||
+    safeNumber(payload.withholdingFunctionalAmount) ||
+    safeNumber(withholding.functionalTotalWithheld) ||
+    safeNumber(withholding.functionalAmount) ||
+    safeNumber(withholding.totalWithheld) ||
+    Math.max(applied - collected, 0);
+
+  return {
+    applied: roundJournalAmount(Math.max(applied, 0)),
+    collected: roundJournalAmount(Math.max(collected, 0)),
+    withheld: roundJournalAmount(Math.max(withheld, 0)),
+  };
+};
+
+const resolvePayablePaymentBreakdown = (event) => {
+  const eventRecord = asRecord(event);
+  const payload = asRecord(eventRecord.payload);
+  const monetary = asRecord(eventRecord.monetary);
+  const documentTotal = safeNumber(monetary.amount);
+  const total =
+    safeNumber(monetary.functionalAmount) || safeNumber(monetary.amount);
+  const functionalRate =
+    documentTotal > 0 && total > 0 ? total / documentTotal : 1;
+  const paymentMethods = Array.isArray(payload.paymentMethods)
+    ? payload.paymentMethods
+    : [];
+
+  const breakdown = paymentMethods.reduce(
+    (accumulator, method) => {
+      const amount = resolvePaymentMethodFunctionalAmount(method, functionalRate);
+      if (amount <= 0) {
+        return accumulator;
+      }
+
+      const methodCode = normalizePaymentMethodCode(
+        method?.method ?? method?.code ?? method,
+      );
+
+      if (CASH_PAYMENT_METHODS.has(methodCode)) {
+        accumulator.cash += amount;
+        return accumulator;
+      }
+
+      if (BANK_PAYMENT_METHODS.has(methodCode)) {
+        accumulator.bank += amount;
+        return accumulator;
+      }
+
+      if (OTHER_PAYMENT_METHODS.has(methodCode)) {
+        accumulator.creditNote += amount;
+        return accumulator;
+      }
+
+      accumulator.other += amount;
+      return accumulator;
+    },
+    { cash: 0, bank: 0, creditNote: 0, other: 0 },
+  );
+
+  return {
+    cash: roundJournalAmount(breakdown.cash),
+    bank: roundJournalAmount(breakdown.bank),
+    creditNote: roundJournalAmount(breakdown.creditNote),
+    other: roundJournalAmount(breakdown.other),
+    settledAmount: roundJournalAmount(total),
+  };
+};
+
+const resolvePayrollDeductionAmounts = (event) => {
+  const payload = asRecord(event?.payload);
+  const summary = asRecord(payload.payrollDeductionSummary);
+  const fromSummary = {
+    tax: safeNumber(summary.taxAmount),
+    other: safeNumber(summary.otherPayableAmount),
+  };
+  if (fromSummary.tax > 0 || fromSummary.other > 0) {
+    return {
+      tax: roundJournalAmount(fromSummary.tax),
+      other: roundJournalAmount(fromSummary.other),
+    };
+  }
+
+  const employeeLines = Array.isArray(payload.employeeLines)
+    ? payload.employeeLines
+    : [];
+
+  const totals = employeeLines.reduce(
+    (accumulator, line) => {
+      const deductionLines = Array.isArray(line?.deductionLines)
+        ? line.deductionLines
+        : [];
+      deductionLines.forEach((deductionLine) => {
+        const deduction = asRecord(deductionLine);
+        if (deduction.payableObligation === false) {
+          return;
+        }
+
+        const amount = safeNumber(
+          deduction.functionalAmount ??
+            deduction.calculatedAmount ??
+            deduction.amount,
+        );
+        if (amount <= 0) {
+          return;
+        }
+
+        const accountSystemKey = toCleanString(deduction.accountSystemKey);
+        const kind = toCleanString(deduction.kind);
+        if (accountSystemKey === 'tax_payable' || kind === 'salary_itbis') {
+          accumulator.tax += amount;
+          return;
+        }
+
+        accumulator.other += amount;
+      });
+
+      return accumulator;
+    },
+    { tax: 0, other: 0 },
+  );
+
+  return {
+    tax: roundJournalAmount(totals.tax),
+    other: roundJournalAmount(totals.other),
+  };
+};
+
+const resolvePayrollAccrualAmounts = (event) => {
+  const monetary = asRecord(event?.monetary);
+  const payload = asRecord(event?.payload);
+  const total =
+    safeNumber(monetary.functionalAmount) || safeNumber(monetary.amount);
+  const deductions = resolvePayrollDeductionAmounts(event);
+  const net =
+    safeNumber(payload.functionalNetAmount) ||
+    safeNumber(payload.netAmount) ||
+    Math.max(total - deductions.tax - deductions.other, 0);
+
+  return {
+    accrual: roundJournalAmount(total),
+    net: roundJournalAmount(Math.max(net, 0)),
+    taxDeductions: deductions.tax,
+    otherDeductions: deductions.other,
   };
 };
 
@@ -296,6 +555,9 @@ export const resolveEventAmountSource = (event, amountSource) => {
     safeNumber(monetary.functionalTaxAmount) || safeNumber(monetary.taxAmount);
   const netSales = Math.max(total - tax, 0);
   const saleSettlement = resolveSaleSettlementBreakdown(event);
+  const receivablePayment = resolveReceivablePaymentAmounts(event);
+  const payablePayment = resolvePayablePaymentBreakdown(event);
+  const payrollAccrual = resolvePayrollAccrualAmounts(event);
   const gain = Math.max(total, 0);
   const loss = Math.abs(Math.min(total, 0));
 
@@ -316,10 +578,30 @@ export const resolveEventAmountSource = (event, amountSource) => {
       return saleSettlement.other;
     case 'credit_note_net_total':
       return roundJournalAmount(netSales);
+    case 'accounts_receivable_applied_amount':
+      return receivablePayment.applied;
+    case 'accounts_receivable_collected_amount':
+    case 'accounts_receivable_payment_amount':
+      return receivablePayment.collected;
+    case 'accounts_receivable_withholding_amount':
+      return receivablePayment.withheld;
+    case 'accounts_payable_cash_paid':
+      return payablePayment.cash;
+    case 'accounts_payable_bank_paid':
+      return payablePayment.bank;
+    case 'accounts_payable_credit_note_applied':
+      return payablePayment.creditNote;
+    case 'payroll_accrual_amount':
+      return payrollAccrual.accrual;
+    case 'payroll_net_payable_amount':
+      return payrollAccrual.net;
+    case 'payroll_tax_deductions_amount':
+      return payrollAccrual.taxDeductions;
+    case 'payroll_other_deductions_amount':
+      return payrollAccrual.otherDeductions;
     case 'purchase_total':
     case 'expense_total':
     case 'document_total':
-    case 'accounts_receivable_payment_amount':
     case 'accounts_payable_payment_amount':
     case 'transfer_amount':
       return roundJournalAmount(total);
@@ -343,10 +625,27 @@ export const resolveEventAmountSource = (event, amountSource) => {
 const resolveAccountForPostingLine = ({
   accountId,
   accountSystemKey,
+  bankAccountsById,
+  event,
   accountsById,
   accountsBySystemKey,
 }) => {
   const byId = accountId ? accountsById.get(accountId) ?? null : null;
+  const effectiveSystemKey = accountSystemKey || byId?.systemKey || null;
+  if (effectiveSystemKey === 'bank') {
+    const bankAccountId = resolveEventBankAccountId(event);
+    const bankAccount = bankAccountId
+      ? bankAccountsById.get(bankAccountId) ?? null
+      : null;
+    const bankChartAccountId = toCleanString(bankAccount?.chartOfAccountId);
+    const bankChartAccount = bankChartAccountId
+      ? accountsById.get(bankChartAccountId) ?? null
+      : null;
+    if (bankChartAccount && bankAccount?.status === 'active') {
+      return bankChartAccount;
+    }
+  }
+
   if (byId) {
     return byId;
   }
@@ -354,16 +653,68 @@ const resolveAccountForPostingLine = ({
   return accountSystemKey ? accountsBySystemKey.get(accountSystemKey) ?? null : null;
 };
 
+const resolveBankChartAccount = ({
+  accountsById,
+  bankAccountId,
+  bankAccountsById,
+}) => {
+  const bankAccount = bankAccountId
+    ? bankAccountsById.get(bankAccountId) ?? null
+    : null;
+  const bankChartAccountId = toCleanString(bankAccount?.chartOfAccountId);
+  const bankChartAccount = bankChartAccountId
+    ? accountsById.get(bankChartAccountId) ?? null
+    : null;
+  return bankChartAccount && bankAccount?.status === 'active'
+    ? bankChartAccount
+    : null;
+};
+
+const buildProjectedLine = ({
+  account,
+  amount,
+  event,
+  line,
+  lineNumber,
+  metadata = {},
+  profile,
+}) => ({
+  lineNumber,
+  accountId: account.id,
+  accountCode: account.code || line.accountCode || null,
+  accountName: account.name || line.accountName || null,
+  accountSystemKey: line.accountSystemKey || account.systemKey || null,
+  description: line.description || profile.name,
+  debit: line.side === 'debit' ? amount : 0,
+  credit: line.side === 'credit' ? amount : 0,
+  amountSource: line.amountSource,
+  reference:
+    toCleanString(event?.sourceDocumentId) ||
+    toCleanString(event?.sourceId) ||
+    toCleanString(event?.id),
+  metadata: {
+    projectedFromProfileId: profile.id,
+    ...metadata,
+  },
+});
+
 export const buildProjectedJournalLines = ({
   event,
   profile,
+  bankAccounts,
   chartOfAccounts,
 }) => {
   const normalizedAccounts = (Array.isArray(chartOfAccounts) ? chartOfAccounts : [])
     .map(normalizeChartOfAccountRecord)
     .filter((account) => account.id);
+  const normalizedBankAccounts = (Array.isArray(bankAccounts) ? bankAccounts : [])
+    .map(normalizeBankAccountRecord)
+    .filter((account) => account.id);
   const accountsById = new Map(
     normalizedAccounts.map((account) => [account.id, account]),
+  );
+  const bankAccountsById = new Map(
+    normalizedBankAccounts.map((account) => [account.id, account]),
   );
   const accountsBySystemKey = new Map(
     normalizedAccounts
@@ -372,15 +723,120 @@ export const buildProjectedJournalLines = ({
   );
   const unresolvedLines = [];
 
-  const lines = profile.linesTemplate.flatMap((line, index) => {
+  const rawLines = profile.linesTemplate.flatMap((line, index) => {
     const amount = resolveEventAmountSource(event, line.amountSource);
     if (line.omitIfZero && amount === 0) {
       return [];
     }
 
+    const templateAccount = line.accountId
+      ? accountsById.get(line.accountId) ?? null
+      : null;
+    const effectiveSystemKey =
+      line.accountSystemKey || templateAccount?.systemKey || null;
+    if (
+      effectiveSystemKey === 'bank' &&
+      line.amountSource === 'sale_bank_received'
+    ) {
+      const bankSettlement = resolveSaleBankSettlementAllocations(event);
+      if (bankSettlement.allocations.length) {
+        const allocationLines = bankSettlement.allocations.flatMap(
+          (allocation) => {
+            const account = resolveBankChartAccount({
+              accountsById,
+              bankAccountId: allocation.bankAccountId,
+              bankAccountsById,
+            });
+            if (
+              !account ||
+              account.status !== 'active' ||
+              account.postingAllowed === false
+            ) {
+              unresolvedLines.push({
+                lineId: `${line.id || `line-${index + 1}`}:${allocation.bankAccountId}`,
+                accountId: account?.id ?? line.accountId ?? null,
+                accountSystemKey: line.accountSystemKey ?? null,
+                bankAccountId: allocation.bankAccountId,
+                reason: !account
+                  ? 'bank_chart_account_not_found'
+                  : account.status !== 'active'
+                    ? 'account_inactive'
+                    : 'account_posting_disabled',
+              });
+              return [];
+            }
+
+            return [
+              buildProjectedLine({
+                account,
+                amount: allocation.amount,
+                event,
+                line,
+                lineNumber: index + 1,
+                metadata: {
+                  bankAccountId: allocation.bankAccountId,
+                  splitFromAmountSource: line.amountSource,
+                },
+                profile,
+              }),
+            ];
+          },
+        );
+
+        if (bankSettlement.unassignedAmount <= 0) {
+          return allocationLines;
+        }
+
+        const fallbackAccount = resolveAccountForPostingLine({
+          accountId: line.accountId,
+          accountSystemKey: line.accountSystemKey,
+          bankAccountsById,
+          event,
+          accountsById,
+          accountsBySystemKey,
+        });
+
+        if (
+          !fallbackAccount ||
+          fallbackAccount.status !== 'active' ||
+          fallbackAccount.postingAllowed === false
+        ) {
+          unresolvedLines.push({
+            lineId: line.id || `line-${index + 1}`,
+            accountId: line.accountId ?? null,
+            accountSystemKey: line.accountSystemKey ?? null,
+            reason: !fallbackAccount
+              ? 'account_not_found'
+              : fallbackAccount.status !== 'active'
+                ? 'account_inactive'
+                : 'account_posting_disabled',
+          });
+          return allocationLines;
+        }
+
+        return [
+          ...allocationLines,
+          buildProjectedLine({
+            account: fallbackAccount,
+            amount: bankSettlement.unassignedAmount,
+            event,
+            line,
+            lineNumber: index + 1,
+            metadata: {
+              splitFromAmountSource: line.amountSource,
+              splitUnassignedBankAmount: true,
+            },
+            profile,
+          }),
+        ];
+      }
+    }
+
     const account = resolveAccountForPostingLine({
       accountId: line.accountId,
       accountSystemKey: line.accountSystemKey,
+      bankAccountsById,
+      event,
       accountsById,
       accountsBySystemKey,
     });
@@ -399,26 +855,21 @@ export const buildProjectedJournalLines = ({
     }
 
     return [
-      {
+      buildProjectedLine({
+        account,
+        amount,
+        event,
+        line,
         lineNumber: index + 1,
-        accountId: account.id,
-        accountCode: line.accountCode || account.code || null,
-        accountName: line.accountName || account.name || null,
-        accountSystemKey: line.accountSystemKey || account.systemKey || null,
-        description: line.description || profile.name,
-        debit: line.side === 'debit' ? amount : 0,
-        credit: line.side === 'credit' ? amount : 0,
-        amountSource: line.amountSource,
-        reference:
-          toCleanString(event?.sourceDocumentId) ||
-          toCleanString(event?.sourceId) ||
-          toCleanString(event?.id),
-        metadata: {
-          projectedFromProfileId: profile.id,
-        },
-      },
+        profile,
+      }),
     ];
   });
+
+  const lines = rawLines.map((line, index) => ({
+    ...line,
+    lineNumber: index + 1,
+  }));
 
   return {
     lines,

@@ -10,9 +10,10 @@ import { toMillis } from '@/utils/date/dateUtils';
 import { BadgeDate } from './BadgeDate';
 
 import type { ConfigItem } from '@/config/statusActionConfig';
+import type { TimestampLike } from '@/utils/date/types';
 
 interface EnhancedDateDisplayProps {
-  timestamp: number | string | Date;
+  timestamp: TimestampLike;
 }
 
 export const EnhancedDateDisplay: React.FC<EnhancedDateDisplayProps> = ({

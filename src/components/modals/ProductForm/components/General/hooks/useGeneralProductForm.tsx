@@ -8,7 +8,6 @@ import { selectUser } from '@/features/auth/userSlice';
 import { closeModalUpdateProd } from '@/features/modals/modalSlice';
 import {
   ChangeProductData,
-  PRODUCT_BRAND_DEFAULT,
   changeProductPrice,
   clearUpdateProductData,
   selectUpdateProductData,
@@ -16,10 +15,11 @@ import {
 import { useListenProductBrands } from '@/firebase/products/brands/productBrands';
 import { fbAddProduct } from '@/firebase/products/fbAddProduct';
 import { fbUpdateProduct } from '@/firebase/products/fbUpdateProduct';
+import { BRAND_DEFAULT_OPTION_VALUE } from '@/components/modals/ProductForm/constants/brandOptions';
 import {
-  BRAND_DEFAULT_OPTION_VALUE,
-  BRAND_LEGACY_OPTION_VALUE,
-} from '@/components/modals/ProductForm/constants/brandOptions';
+  normalizeProductBrandName,
+  resolveBrandSelection,
+} from '@/components/modals/ProductForm/utils/brandSelection';
 import {
   buildNormalizedProductSnapshot,
   buildSanitizedProductForSubmit,
@@ -75,7 +75,9 @@ export const useGeneralProductForm = () => {
       if (normalizedPricing.tax !== undefined) {
         const tax = normalizedPricing.tax;
         normalizedPricing.tax =
-          typeof tax === 'string' ? parseFloat(tax) || initTaxes[0] : Number(tax);
+          typeof tax === 'string'
+            ? parseFloat(tax) || initTaxes[0]
+            : Number(tax);
       }
       if (normalizedPricing.cost !== undefined) {
         normalizedPricing.cost =
@@ -138,9 +140,7 @@ export const useGeneralProductForm = () => {
     }
 
     if (key === 'brand') {
-      const normalizedBrand =
-        typeof value === 'string' ? value.replace(/\s+/g, ' ').trim() : '';
-      const sanitizedBrand = normalizedBrand || PRODUCT_BRAND_DEFAULT;
+      const sanitizedBrand = normalizeProductBrandName(value);
       dispatch(ChangeProductData({ product: { brand: sanitizedBrand } }));
       if (value !== sanitizedBrand) {
         form.setFieldsValue({ brand: sanitizedBrand });
@@ -149,33 +149,19 @@ export const useGeneralProductForm = () => {
     }
 
     if (key === 'brandId') {
-      const normalizedId = typeof value === 'string' ? value.trim() : null;
-      let resolvedBrand = PRODUCT_BRAND_DEFAULT;
-
-      if (normalizedId && normalizedId !== BRAND_DEFAULT_OPTION_VALUE) {
-        if (normalizedId === BRAND_LEGACY_OPTION_VALUE && product?.brand) {
-          resolvedBrand = product.brand;
-        } else {
-          const brandMatch = productBrands?.find(
-            (brand) => brand?.id === normalizedId,
-          );
-          const brandName =
-            typeof brandMatch?.name === 'string' ? brandMatch.name.trim() : '';
-          if (brandName) {
-            resolvedBrand = brandName;
-          }
-        }
-      }
+      const resolvedBrandSelection = resolveBrandSelection({
+        value,
+        product,
+        productBrands,
+      });
 
       dispatch(
         ChangeProductData({
-          product: {
-            brandId: normalizedId,
-            brand: resolvedBrand || PRODUCT_BRAND_DEFAULT,
-          },
+          product: resolvedBrandSelection,
         }),
       );
 
+      const normalizedId = resolvedBrandSelection.brandId;
       if (!normalizedId || normalizedId === BRAND_DEFAULT_OPTION_VALUE) {
         form.setFieldsValue({ brandId: BRAND_DEFAULT_OPTION_VALUE });
       }

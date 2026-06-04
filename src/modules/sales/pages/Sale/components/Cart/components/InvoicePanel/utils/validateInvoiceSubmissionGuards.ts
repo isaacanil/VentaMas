@@ -7,6 +7,7 @@ import type { CashCountState } from '@/utils/cashCount/types';
 import {
   getServiceCommissionCollaboratorLabel,
   isServiceCommissionEligible,
+  isServiceCommissionLineEligible,
   normalizeServiceCommissionSettings,
 } from '@/utils/commissions/serviceCommissions';
 import type {
@@ -36,6 +37,13 @@ type GuardFailure =
     }
   | {
       code: 'service-commission-collaborator';
+      description: string;
+      message: string;
+      ok: false;
+      product: Product;
+    }
+  | {
+      code: 'service-commission-collaborator-ineligible';
       description: string;
       message: string;
       ok: false;
@@ -71,6 +79,16 @@ const isServiceMissingCommissionCollaborator = (
     product &&
     isServiceCommissionEligible(product) &&
     !getServiceCommissionCollaboratorLabel(product.serviceCommission),
+  );
+
+const isServiceWithIneligibleCommissionCollaborator = (
+  product: Product | null | undefined,
+): boolean =>
+  Boolean(
+    product &&
+    isServiceCommissionEligible(product) &&
+    getServiceCommissionCollaboratorLabel(product.serviceCommission) &&
+    !isServiceCommissionLineEligible(product.serviceCommission, product),
   );
 
 const resolveCashCountDescription = (
@@ -121,6 +139,23 @@ export const validateInvoiceSubmissionGuards = async ({
   if (!invalidProduct) {
     const commissionSettings =
       normalizeServiceCommissionSettings(serviceCommissions);
+    if (commissionSettings.enabled) {
+      const serviceWithIneligibleCollaborator = (
+        Array.isArray(cart?.products) ? cart.products : []
+      ).find(isServiceWithIneligibleCommissionCollaborator);
+
+      if (serviceWithIneligibleCollaborator) {
+        return {
+          ok: false,
+          code: 'service-commission-collaborator-ineligible',
+          message: 'Configura la comision del colaborador',
+          description:
+            'El colaborador asignado no tiene una comision configurada y no es elegible para comisiones. Configuralo en RRHH antes de facturar.',
+          product: serviceWithIneligibleCollaborator,
+        };
+      }
+    }
+
     if (
       commissionSettings.enabled &&
       commissionSettings.requireCollaboratorOnService

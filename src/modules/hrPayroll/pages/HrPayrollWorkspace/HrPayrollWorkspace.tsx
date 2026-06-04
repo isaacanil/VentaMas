@@ -1,16 +1,13 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import {
-  VmAlert,
-  VmButton,
-  VmSearchField,
-} from '@/components/heroui';
+import { VmAlert, VmButton, VmSearchField } from '@/components/heroui';
 import { PlusOutlined } from '@/constants/icons/antd';
 import {
   saveHrEmployee,
   useHrEmployees,
 } from '@/firebase/hrPayroll/useHrEmployees';
+import { useServiceProductOptions } from '@/firebase/products/useServiceProductOptions';
 import { useBusinessUsers } from '@/firebase/users/useBusinessUsers';
 import { selectUser } from '@/features/auth/userSlice';
 import {
@@ -42,6 +39,7 @@ import {
   HrEmployeeEditorModal,
   type HrEmployeeFormValues,
 } from './components/HrEmployeeEditorModal';
+import { HrEmployeeServiceCommissionModal } from './components/HrEmployeeServiceCommissionModal/HrEmployeeServiceCommissionModal';
 
 type NoticeState = {
   description?: string;
@@ -53,9 +51,13 @@ export default function HrPayrollWorkspace() {
   const currentUser = useSelector(selectUser);
   const businessId = currentUser?.businessID ?? null;
   const { rows: employees, loading, error } = useHrEmployees(businessId);
+  const { loading: servicesLoading, options: serviceOptions } =
+    useServiceProductOptions(businessId);
   const { users: businessUsers } = useBusinessUsers();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEmployee, setSelectedEmployee] =
+    useState<HrEmployeeRecord | null>(null);
+  const [commissionEmployee, setCommissionEmployee] =
     useState<HrEmployeeRecord | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -94,19 +96,33 @@ export default function HrPayrollWorkspace() {
     [selectedEmployee],
   );
 
+  const commissionInitialValues = useMemo(
+    () => buildInitialValues(commissionEmployee),
+    [commissionEmployee],
+  );
+
   const handleEditEmployee = useCallback((employee: HrEmployeeRecord) => {
     setSelectedEmployee(employee);
     setEditorOpen(true);
     setNotice(null);
   }, []);
 
+  const handleConfigureCommissions = useCallback(
+    (employee: HrEmployeeRecord) => {
+      setCommissionEmployee(employee);
+      setNotice(null);
+    },
+    [],
+  );
+
   const columns = useMemo(
     () =>
       buildEmployeeColumns({
         usersById,
+        onConfigureCommissions: handleConfigureCommissions,
         onEdit: handleEditEmployee,
       }),
-    [handleEditEmployee, usersById],
+    [handleConfigureCommissions, handleEditEmployee, usersById],
   );
 
   const handleCreate = () => {
@@ -118,6 +134,10 @@ export default function HrPayrollWorkspace() {
   const handleCloseEditor = () => {
     setEditorOpen(false);
     setSelectedEmployee(null);
+  };
+
+  const handleCloseCommissionEditor = () => {
+    setCommissionEmployee(null);
   };
 
   const handleSave = async (values: HrEmployeeFormValues) => {
@@ -141,6 +161,34 @@ export default function HrPayrollWorkspace() {
       setNotice({
         status: 'danger',
         title: 'No se pudo guardar el colaborador.',
+        description: getErrorMessage(saveError),
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveCommissions = async (values: HrEmployeeFormValues) => {
+    if (!businessId || !commissionEmployee) return;
+    setSaving(true);
+    try {
+      await saveHrEmployee({
+        businessId,
+        employee: {
+          ...values,
+          id: commissionEmployee.id ?? values.id,
+          employeeId: commissionEmployee.employeeId ?? values.employeeId,
+        },
+      });
+      setNotice({
+        status: 'success',
+        title: 'Comisiones actualizadas.',
+      });
+      handleCloseCommissionEditor();
+    } catch (saveError) {
+      setNotice({
+        status: 'danger',
+        title: 'No se pudieron guardar las comisiones.',
         description: getErrorMessage(saveError),
       });
     } finally {
@@ -247,6 +295,20 @@ export default function HrPayrollWorkspace() {
           open={editorOpen}
           saving={saving}
           userOptions={userOptions}
+        />
+      ) : null}
+
+      {commissionEmployee ? (
+        <HrEmployeeServiceCommissionModal
+          key={commissionEmployee.id}
+          employee={commissionEmployee}
+          initialValues={commissionInitialValues}
+          onCancel={handleCloseCommissionEditor}
+          onSave={handleSaveCommissions}
+          open={Boolean(commissionEmployee)}
+          saving={saving}
+          serviceOptions={serviceOptions}
+          servicesLoading={servicesLoading}
         />
       ) : null}
     </>

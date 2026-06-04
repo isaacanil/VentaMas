@@ -44,13 +44,23 @@ export const HeaderTools = styled.div`
   }
 `;
 
-export const ManageCollaboratorsButton = styled(VmButton)`
-  justify-self: end;
+export const HeaderActions = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  justify-content: flex-end;
 
   @media (max-width: 860px) {
-    justify-self: stretch;
+    width: 100%;
+    justify-content: stretch;
+
+    > * {
+      flex: 1 1 180px;
+    }
   }
 `;
+
+export const HeaderActionButton = styled(VmButton)``;
 
 export const TitleBlock = styled.div`
   display: grid;

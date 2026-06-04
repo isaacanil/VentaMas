@@ -231,6 +231,13 @@ export const resolvePaymentCollectedFunctionalAmount = ({
   fallbackAmount,
 }) => {
   const monetary = asRecord(pilotMonetarySnapshot);
+  const paidFunctionalAmount = roundToTwoDecimals(
+    resolveFunctionalAmount(monetary, 'paid'),
+  );
+  if (paidFunctionalAmount > THRESHOLD) {
+    return paidFunctionalAmount;
+  }
+
   const functionalAmount = roundToTwoDecimals(
     resolveFunctionalAmount(monetary, 'total'),
   );

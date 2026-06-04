@@ -112,7 +112,7 @@ const toEndOfDay = (date: Date): Date => {
   return nextDate;
 };
 
-const normalizeHrCommissionEntryRecord = (
+export const normalizeHrCommissionEntryRecord = (
   id: string,
   data: Record<string, unknown>,
 ): HrCommissionEntryRecord => ({

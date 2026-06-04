@@ -166,6 +166,9 @@ vi.mock('../utils/receivablePaymentVoid.util.js', () => ({
 }));
 
 import { voidAccountsReceivablePayment } from './voidAccountsReceivablePayment.js';
+import * as accountingEventUtil from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
+import * as cashMovementUtil from '../../../versions/v2/accounting/utils/cashMovement.util.js';
+import * as receivablePaymentVoidUtil from '../utils/receivablePaymentVoid.util.js';
 
 describe('voidAccountsReceivablePayment accounting period validation', () => {
   beforeEach(() => {
@@ -182,12 +185,63 @@ describe('voidAccountsReceivablePayment accounting period validation', () => {
     });
     isAccountingRolloutEnabledForBusinessMock.mockReturnValue(true);
     buildAccountingEventIdMock.mockReturnValue('event-recorded-1');
+    accountingEventUtil.buildAccountingEvent.mockImplementation((input) => ({
+      id: `${input.eventType}__${input.sourceId}`,
+      ...input,
+    }));
+    cashMovementUtil.buildReceivablePaymentVoidCashMovements.mockReturnValue([]);
+    receivablePaymentVoidUtil.buildVoidReceivablePaymentPlan.mockReturnValue({
+      accountUpdate: {
+        arId: 'ar-1',
+        payload: {
+          arBalance: 100,
+          paymentState: {
+            balance: 100,
+          },
+        },
+      },
+      installmentUpdates: [],
+      installmentPaymentUpdates: [],
+      invoiceAggregate: null,
+      restoredAmount: 100,
+    });
     collectionMock.mockImplementation((path) => {
       if (path === 'businesses/business-1/cashMovements') {
         return {
           where: vi.fn((_field, _operator, sourceId) => ({
             kind: 'cash-movements-by-source',
             sourceId,
+          })),
+        };
+      }
+      if (path === 'businesses/business-1/accountsReceivableFxSettlements') {
+        return {
+          where: vi.fn((_field, _operator, paymentId) => ({
+            kind: 'fx-settlements-by-payment',
+            paymentId,
+          })),
+        };
+      }
+      if (path === 'businesses/business-1/accountsReceivableInstallments') {
+        return {
+          where: vi.fn((_field, _operator, arId) => ({
+            orderBy: vi.fn(() => ({
+              kind: 'installments-by-ar',
+              arId,
+            })),
+          })),
+        };
+      }
+      if (
+        path === 'businesses/business-1/accountsReceivableInstallmentPayments'
+      ) {
+        return {
+          where: vi.fn((_field, _operator, value) => ({
+            kind:
+              _field === 'paymentId'
+                ? 'installment-payments-by-payment'
+                : 'installment-payments-by-ar',
+            value,
           })),
         };
       }
@@ -200,6 +254,42 @@ describe('voidAccountsReceivablePayment accounting period validation', () => {
         ).map((entry) => ({
           id: entry.id,
           data: () => entry,
+        }));
+        return { docs };
+      }
+      if (ref?.kind === 'fx-settlements-by-payment') {
+        const docs = (
+          transactionSnapshots.get(`fxSettlements:${ref.paymentId}`) || []
+        ).map((entry) => ({
+          id: entry.id,
+          data: () => entry,
+          ref: {
+            path: `businesses/business-1/accountsReceivableFxSettlements/${entry.id}`,
+          },
+        }));
+        return { docs };
+      }
+      if (ref?.kind === 'installments-by-ar') {
+        const docs = (transactionSnapshots.get(`installments:${ref.arId}`) || [])
+          .map((entry) => ({
+            id: entry.id,
+            data: () => entry,
+          }));
+        return { docs };
+      }
+      if (
+        ref?.kind === 'installment-payments-by-payment' ||
+        ref?.kind === 'installment-payments-by-ar'
+      ) {
+        const docs = (
+          transactionSnapshots.get(`${ref.kind}:${ref.value}`) || []
+        ).map((entry) => ({
+          id: entry.id,
+          data: () => entry,
+          get: (field) =>
+            field
+              .split('.')
+              .reduce((current, key) => current?.[key], entry ?? null),
         }));
         return { docs };
       }
@@ -305,5 +395,139 @@ describe('voidAccountsReceivablePayment accounting period validation', () => {
     });
 
     expect(transactionSetMock).not.toHaveBeenCalled();
+  });
+
+  it('emits FX settlement void accounting events when voiding a foreign-currency payment', async () => {
+    const paymentRecord = {
+      id: 'payment-1',
+      status: 'posted',
+      clientId: 'client-1',
+      paymentMethods: [
+        {
+          method: 'transfer',
+          value: 5900,
+          bankAccountId: 'bank-1',
+        },
+      ],
+      totalApplied: 100,
+      totalCollected: 5900,
+      functionalAppliedAmount: 5900,
+      historicalFunctionalAppliedAmount: 6000,
+      functionalCollectedAmount: 5900,
+      functionalWithholdingAmount: 0,
+      accountEntries: [
+        {
+          arId: 'ar-1',
+          invoiceId: 'invoice-1',
+          totalPaid: 100,
+        },
+      ],
+      monetary: {
+        documentCurrency: { code: 'USD' },
+        functionalCurrency: { code: 'DOP' },
+      },
+    };
+
+    documentSnapshots.set(
+      'businesses/business-1/accountsReceivablePayments/payment-1',
+      paymentRecord,
+    );
+    transactionSnapshots.set(
+      'businesses/business-1/accountsReceivablePayments/payment-1',
+      paymentRecord,
+    );
+    transactionSnapshots.set('cashMovements:payment-1', []);
+    transactionSnapshots.set('fxSettlements:payment-1', [
+      {
+        id: 'payment-1_ar-1',
+        paymentId: 'payment-1',
+        arId: 'ar-1',
+        invoiceId: 'invoice-1',
+        clientId: 'client-1',
+        documentCurrency: 'USD',
+        functionalCurrency: 'DOP',
+        appliedDocumentAmount: 100,
+        historicalFunctionalAmount: 6000,
+        settlementFunctionalAmount: 5900,
+        fxGainLossAmount: -100,
+        fxDirection: 'loss',
+      },
+    ]);
+    transactionSnapshots.set(
+      'businesses/business-1/accountsReceivable/ar-1',
+      {
+        id: 'ar-1',
+        invoiceId: 'invoice-1',
+        arBalance: 0,
+      },
+    );
+    transactionSnapshots.set('installments:ar-1', []);
+    transactionSnapshots.set(
+      'installment-payments-by-ar:ar-1',
+      [],
+    );
+    transactionSnapshots.set('businesses/business-1/invoices/invoice-1', {
+      id: 'invoice-1',
+      accumulatedPaid: 100,
+      balanceDue: 0,
+    });
+    transactionSnapshots.set('businesses/business-1/clients/client-1', {
+      client: {
+        id: 'client-1',
+      },
+    });
+
+    await voidAccountsReceivablePayment({
+      data: {
+        businessId: 'business-1',
+        paymentId: 'payment-1',
+        reason: 'Error de registro',
+      },
+    });
+
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/accountsReceivableFxSettlements/payment-1_ar-1',
+      }),
+      expect.objectContaining({
+        status: 'void',
+        voidReason: 'Error de registro',
+      }),
+      { merge: true },
+    );
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/accountingEvents/fx_settlement.voided__payment-1_ar-1',
+      }),
+      expect.objectContaining({
+        eventType: 'fx_settlement.voided',
+        sourceId: 'payment-1_ar-1',
+        reversalOfEventId: 'event-recorded-1',
+        monetary: expect.objectContaining({
+          amount: -100,
+          functionalAmount: -100,
+        }),
+        payload: expect.objectContaining({
+          reason: 'Error de registro',
+          historicalFunctionalAmount: 6000,
+          settlementFunctionalAmount: 5900,
+          fxGainLossAmount: -100,
+          fxDirection: 'loss',
+        }),
+      }),
+    );
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/accountingEvents/accounts_receivable.payment.voided__payment-1',
+      }),
+      expect.objectContaining({
+        eventType: 'accounts_receivable.payment.voided',
+        payload: expect.objectContaining({
+          functionalAppliedAmount: 5900,
+          historicalFunctionalAppliedAmount: 6000,
+          voidedFxSettlementIds: ['payment-1_ar-1'],
+        }),
+      }),
+    );
   });
 });

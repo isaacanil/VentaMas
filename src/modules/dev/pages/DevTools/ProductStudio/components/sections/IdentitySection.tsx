@@ -19,6 +19,8 @@ import type { SyntheticEvent } from 'react';
 import styled from 'styled-components';
 
 import { imgFailed } from '@/components/modals/ProductForm/ImageManager/ImageManager';
+import type { BrandOption } from '@/components/modals/ProductForm/utils/brandSelection';
+import { matchesSelectOptionText } from '@/components/modals/ProductForm/utils/selectOptionText';
 import type { CategoryDocument } from '@/firebase/categories/types';
 import {
   DividerLabel,
@@ -73,6 +75,11 @@ const PreviewButton = styled(Button)`
   width: 140px;
 `;
 
+const EmptyPreviewIcon = styled(CloudUploadOutlined)`
+  font-size: 48px;
+  color: #94a3b8;
+`;
+
 const { Option } = Select;
 
 const FieldWithAction = styled.div`
@@ -92,11 +99,6 @@ interface BrandMeta {
   helper: string;
 }
 
-interface BrandOption {
-  value: string;
-  label: string;
-}
-
 interface IdentitySectionProps {
   domId: string;
   brandMeta: BrandMeta;
@@ -110,18 +112,6 @@ interface IdentitySectionProps {
   onOpenImageManager: () => void;
   onResetImage: () => void;
 }
-
-const getOptionText = (value: unknown): string => {
-  if (typeof value === 'string') {
-    return value;
-  }
-  if (Array.isArray(value)) {
-    return value
-      .filter((item): item is string => typeof item === 'string')
-      .join(' ');
-  }
-  return '';
-};
 
 export const IdentitySection = ({
   domId,
@@ -155,7 +145,7 @@ export const IdentitySection = ({
             }}
           />
         ) : (
-          <CloudUploadOutlined style={{ fontSize: 48, color: '#94a3b8' }} />
+          <EmptyPreviewIcon />
         )}
       </PreviewFrame>
       <PreviewActions>
@@ -235,9 +225,7 @@ export const IdentitySection = ({
               options={brandOptions}
               optionFilterProp="label"
               filterOption={(inputValue, option) =>
-                getOptionText(option?.label)
-                  .toLowerCase()
-                  .includes(inputValue.toLowerCase())
+                matchesSelectOptionText(inputValue, option?.label)
               }
             />
             <Button
@@ -258,9 +246,7 @@ export const IdentitySection = ({
               placeholder="Asigna una categoría"
               optionFilterProp="children"
               filterOption={(input, option) =>
-                getOptionText(option?.children)
-                  .toLowerCase()
-                  .includes(input.toLowerCase())
+                matchesSelectOptionText(input, option?.children)
               }
               allowClear
             >
@@ -312,9 +298,7 @@ export const IdentitySection = ({
             placeholder="Selecciona el principio activo"
             optionFilterProp="children"
             filterOption={(input, option) =>
-              getOptionText(option?.children)
-                .toLowerCase()
-                .includes(input.toLowerCase())
+              matchesSelectOptionText(input, option?.children)
             }
             allowClear
           >

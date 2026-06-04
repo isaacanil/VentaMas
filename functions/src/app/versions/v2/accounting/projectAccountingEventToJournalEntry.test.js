@@ -251,6 +251,624 @@ describe('projectAccountingEventToJournalEntry', () => {
     ).toBe(false);
   });
 
+  it('projects receivable payments with third-party withholding as collected plus tax receivable', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+      functionalCurrency: 'DOP',
+    });
+    collectionSnapshots.set('businesses/business-1/accountingPostingProfiles', [
+      {
+        id: 'profile-ar-payment-withholding',
+        data: {
+          id: 'profile-ar-payment-withholding',
+          name: 'Cobro con retencion sufrida',
+          eventType: 'accounts_receivable.payment.recorded',
+          status: 'active',
+          priority: 10,
+          conditions: {
+            settlementKind: 'cash',
+          },
+          linesTemplate: [
+            {
+              id: 'l1',
+              side: 'debit',
+              accountSystemKey: 'cash',
+              amountSource: 'accounts_receivable_collected_amount',
+            },
+            {
+              id: 'l2',
+              side: 'debit',
+              accountSystemKey: 'tax_receivable',
+              amountSource: 'accounts_receivable_withholding_amount',
+              omitIfZero: true,
+            },
+            {
+              id: 'l3',
+              side: 'credit',
+              accountSystemKey: 'accounts_receivable',
+              amountSource: 'accounts_receivable_applied_amount',
+            },
+          ],
+        },
+      },
+    ]);
+    collectionSnapshots.set('businesses/business-1/chartOfAccounts', [
+      {
+        id: 'cash-1',
+        data: {
+          id: 'cash-1',
+          code: '1100',
+          name: 'Caja',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'cash',
+        },
+      },
+      {
+        id: 'tax-receivable-1',
+        data: {
+          id: 'tax-receivable-1',
+          code: '1125',
+          name: 'Impuestos por recuperar',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'tax_receivable',
+        },
+      },
+      {
+        id: 'ar-1',
+        data: {
+          id: 'ar-1',
+          code: '1120',
+          name: 'Cuentas por cobrar',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'accounts_receivable',
+        },
+      },
+    ]);
+
+    await projectAccountingEventToJournalEntry({
+      params: {
+        businessId: 'business-1',
+        eventId: 'accounts_receivable.payment.recorded__payment-1',
+      },
+      data: {
+        data: () => ({
+          id: 'accounts_receivable.payment.recorded__payment-1',
+          businessId: 'business-1',
+          eventType: 'accounts_receivable.payment.recorded',
+          eventVersion: 1,
+          sourceType: 'accountsReceivablePayment',
+          sourceId: 'payment-1',
+          sourceDocumentId: 'payment-1',
+          sourceDocumentType: 'accountsReceivablePayment',
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: {
+            amount: 118,
+            functionalAmount: 100,
+          },
+          treasury: {
+            paymentChannel: 'cash',
+          },
+          payload: {
+            appliedAmount: 118,
+            functionalAppliedAmount: 118,
+            collectedAmount: 100,
+            functionalCollectedAmount: 100,
+            functionalWithholdingAmount: 18,
+            thirdPartyWithholding: {
+              itbisWithheld: 18,
+              incomeTaxWithheld: 0,
+              totalWithheld: 18,
+              functionalTotalWithheld: 18,
+            },
+          },
+        }),
+      },
+    });
+
+    const journalEntry =
+      documentSnapshots.get(
+        'businesses/business-1/journalEntries/accounts_receivable.payment.recorded__payment-1',
+      ) ?? null;
+
+    expect(journalEntry).toMatchObject({
+      eventType: 'accounts_receivable.payment.recorded',
+      totals: {
+        debit: 118,
+        credit: 118,
+      },
+    });
+    expect(journalEntry.lines).toEqual([
+      expect.objectContaining({
+        accountSystemKey: 'cash',
+        debit: 100,
+        credit: 0,
+        amountSource: 'accounts_receivable_collected_amount',
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'tax_receivable',
+        debit: 18,
+        credit: 0,
+        amountSource: 'accounts_receivable_withholding_amount',
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'accounts_receivable',
+        debit: 0,
+        credit: 118,
+        amountSource: 'accounts_receivable_applied_amount',
+      }),
+    ]);
+  });
+
+  it('projects mixed payable payments with supplier credits split by payment source', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+      functionalCurrency: 'DOP',
+    });
+    collectionSnapshots.set('businesses/business-1/accountingPostingProfiles', [
+      {
+        id: 'profile-ap-payment-mixed',
+        data: {
+          id: 'profile-ap-payment-mixed',
+          name: 'Pago mixto a suplidor',
+          eventType: 'accounts_payable.payment.recorded',
+          status: 'active',
+          priority: 10,
+          conditions: {
+            settlementKind: 'mixed',
+          },
+          linesTemplate: [
+            {
+              id: 'l1',
+              side: 'debit',
+              accountSystemKey: 'accounts_payable',
+              amountSource: 'accounts_payable_payment_amount',
+            },
+            {
+              id: 'l2',
+              side: 'credit',
+              accountSystemKey: 'cash',
+              amountSource: 'accounts_payable_cash_paid',
+              omitIfZero: true,
+            },
+            {
+              id: 'l3',
+              side: 'credit',
+              accountSystemKey: 'bank',
+              amountSource: 'accounts_payable_bank_paid',
+              omitIfZero: true,
+            },
+            {
+              id: 'l4',
+              side: 'credit',
+              accountSystemKey: 'supplier_credits',
+              amountSource: 'accounts_payable_credit_note_applied',
+              omitIfZero: true,
+            },
+          ],
+        },
+      },
+    ]);
+    collectionSnapshots.set('businesses/business-1/chartOfAccounts', [
+      {
+        id: 'ap-1',
+        data: {
+          id: 'ap-1',
+          code: '2100',
+          name: 'Cuentas por pagar',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'accounts_payable',
+        },
+      },
+      {
+        id: 'cash-1',
+        data: {
+          id: 'cash-1',
+          code: '1100',
+          name: 'Caja',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'cash',
+        },
+      },
+      {
+        id: 'bank-1',
+        data: {
+          id: 'bank-1',
+          code: '1110',
+          name: 'Banco',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'bank',
+        },
+      },
+      {
+        id: 'supplier-credits-1',
+        data: {
+          id: 'supplier-credits-1',
+          code: '1140',
+          name: 'Saldos a favor de suplidores',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'supplier_credits',
+        },
+      },
+    ]);
+
+    await projectAccountingEventToJournalEntry({
+      params: {
+        businessId: 'business-1',
+        eventId: 'accounts_payable.payment.recorded__payment-1',
+      },
+      data: {
+        data: () => ({
+          id: 'accounts_payable.payment.recorded__payment-1',
+          businessId: 'business-1',
+          eventType: 'accounts_payable.payment.recorded',
+          eventVersion: 1,
+          sourceType: 'accountsPayablePayment',
+          sourceId: 'payment-1',
+          sourceDocumentId: 'payment-1',
+          sourceDocumentType: 'accountsPayablePayment',
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: {
+            amount: 100,
+            functionalAmount: 100,
+          },
+          treasury: {
+            paymentChannel: 'mixed',
+          },
+          payload: {
+            paymentMethods: [
+              {
+                method: 'cash',
+                amount: 10,
+              },
+              {
+                method: 'transfer',
+                amount: 60,
+              },
+              {
+                method: 'supplierCreditNote',
+                amount: 30,
+                supplierCreditNoteId: 'scn-1',
+              },
+            ],
+          },
+        }),
+      },
+    });
+
+    const journalEntry =
+      documentSnapshots.get(
+        'businesses/business-1/journalEntries/accounts_payable.payment.recorded__payment-1',
+      ) ?? null;
+
+    expect(journalEntry).toMatchObject({
+      eventType: 'accounts_payable.payment.recorded',
+      totals: {
+        debit: 100,
+        credit: 100,
+      },
+    });
+    expect(journalEntry.lines).toEqual([
+      expect.objectContaining({
+        accountSystemKey: 'accounts_payable',
+        debit: 100,
+        credit: 0,
+        amountSource: 'accounts_payable_payment_amount',
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'cash',
+        debit: 0,
+        credit: 10,
+        amountSource: 'accounts_payable_cash_paid',
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'bank',
+        debit: 0,
+        credit: 60,
+        amountSource: 'accounts_payable_bank_paid',
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'supplier_credits',
+        debit: 0,
+        credit: 30,
+        amountSource: 'accounts_payable_credit_note_applied',
+      }),
+    ]);
+  });
+
+  it('projects issued supplier credit notes into supplier credits', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+      functionalCurrency: 'DOP',
+    });
+    collectionSnapshots.set('businesses/business-1/accountingPostingProfiles', [
+      {
+        id: 'profile-supplier-credit-issued',
+        data: {
+          id: 'profile-supplier-credit-issued',
+          name: 'Saldo a favor de suplidor emitido',
+          eventType: 'supplier_credit_note.issued',
+          status: 'active',
+          priority: 10,
+          linesTemplate: [
+            {
+              id: 'l1',
+              side: 'debit',
+              accountSystemKey: 'supplier_credits',
+              amountSource: 'document_total',
+            },
+            {
+              id: 'l2',
+              side: 'credit',
+              accountSystemKey: 'accounts_payable',
+              amountSource: 'document_total',
+            },
+          ],
+        },
+      },
+    ]);
+    collectionSnapshots.set('businesses/business-1/chartOfAccounts', [
+      {
+        id: 'supplier-credits-1',
+        data: {
+          id: 'supplier-credits-1',
+          code: '1140',
+          name: 'Saldos a favor de suplidores',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'supplier_credits',
+        },
+      },
+      {
+        id: 'ap-1',
+        data: {
+          id: 'ap-1',
+          code: '2100',
+          name: 'Cuentas por pagar',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'accounts_payable',
+        },
+      },
+    ]);
+
+    await projectAccountingEventToJournalEntry({
+      params: {
+        businessId: 'business-1',
+        eventId: 'supplier_credit_note.issued__purchase_overpaid_purchase-1',
+      },
+      data: {
+        data: () => ({
+          id: 'supplier_credit_note.issued__purchase_overpaid_purchase-1',
+          businessId: 'business-1',
+          eventType: 'supplier_credit_note.issued',
+          eventVersion: 1,
+          sourceType: 'supplierCreditNote',
+          sourceId: 'purchase_overpaid_purchase-1',
+          sourceDocumentId: 'purchase_overpaid_purchase-1',
+          sourceDocumentType: 'supplierCreditNote',
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: {
+            amount: 45,
+            functionalAmount: 45,
+          },
+          payload: {
+            purchaseId: 'purchase-1',
+            supplierCreditNoteId: 'purchase_overpaid_purchase-1',
+          },
+        }),
+      },
+    });
+
+    const journalEntry =
+      documentSnapshots.get(
+        'businesses/business-1/journalEntries/supplier_credit_note.issued__purchase_overpaid_purchase-1',
+      ) ?? null;
+
+    expect(journalEntry).toMatchObject({
+      eventType: 'supplier_credit_note.issued',
+      totals: {
+        debit: 45,
+        credit: 45,
+      },
+    });
+    expect(journalEntry.lines).toEqual([
+      expect.objectContaining({
+        accountSystemKey: 'supplier_credits',
+        debit: 45,
+        credit: 0,
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'accounts_payable',
+        debit: 0,
+        credit: 45,
+      }),
+    ]);
+  });
+
+  it('projects payroll accruals as gross expense with net pay and deductions payable', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+      functionalCurrency: 'DOP',
+    });
+    collectionSnapshots.set('businesses/business-1/accountingPostingProfiles', [
+      {
+        id: 'profile-payroll-accrued',
+        data: {
+          id: 'profile-payroll-accrued',
+          name: 'Nomina RRHH devengada',
+          eventType: 'hr_commission.accrued',
+          status: 'active',
+          priority: 10,
+          conditions: {
+            documentNature: 'expense',
+            settlementTiming: 'deferred',
+          },
+          linesTemplate: [
+            {
+              id: 'l1',
+              side: 'debit',
+              accountSystemKey: 'operating_expenses',
+              amountSource: 'payroll_accrual_amount',
+            },
+            {
+              id: 'l2',
+              side: 'credit',
+              accountSystemKey: 'payroll_payable',
+              amountSource: 'payroll_net_payable_amount',
+            },
+            {
+              id: 'l3',
+              side: 'credit',
+              accountSystemKey: 'tax_payable',
+              amountSource: 'payroll_tax_deductions_amount',
+              omitIfZero: true,
+            },
+            {
+              id: 'l4',
+              side: 'credit',
+              accountSystemKey: 'payroll_withholdings_payable',
+              amountSource: 'payroll_other_deductions_amount',
+              omitIfZero: true,
+            },
+          ],
+        },
+      },
+    ]);
+    collectionSnapshots.set('businesses/business-1/chartOfAccounts', [
+      {
+        id: 'expense-1',
+        data: {
+          id: 'expense-1',
+          code: '5200',
+          name: 'Gastos operativos',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'operating_expenses',
+        },
+      },
+      {
+        id: 'payroll-payable-1',
+        data: {
+          id: 'payroll-payable-1',
+          code: '2110',
+          name: 'Nomina por pagar',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'payroll_payable',
+        },
+      },
+      {
+        id: 'tax-payable-1',
+        data: {
+          id: 'tax-payable-1',
+          code: '2200',
+          name: 'Impuestos por pagar',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'tax_payable',
+        },
+      },
+      {
+        id: 'payroll-withholdings-1',
+        data: {
+          id: 'payroll-withholdings-1',
+          code: '2120',
+          name: 'Retenciones laborales por pagar',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'payroll_withholdings_payable',
+        },
+      },
+    ]);
+
+    await projectAccountingEventToJournalEntry({
+      params: {
+        businessId: 'business-1',
+        eventId: 'hr_commission.accrued__period-1',
+      },
+      data: {
+        data: () => ({
+          id: 'hr_commission.accrued__period-1',
+          businessId: 'business-1',
+          eventType: 'hr_commission.accrued',
+          eventVersion: 1,
+          sourceType: 'hrCommissionPeriod',
+          sourceId: 'period-1',
+          sourceDocumentId: 'period-1',
+          sourceDocumentType: 'hrCommissionPeriod',
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: {
+            amount: 1000,
+            functionalAmount: 1000,
+          },
+          payload: {
+            documentNature: 'expense',
+            settlementTiming: 'deferred',
+            netAmount: 850,
+            payrollDeductionSummary: {
+              taxAmount: 50,
+              otherPayableAmount: 100,
+            },
+          },
+        }),
+      },
+    });
+
+    const journalEntry =
+      documentSnapshots.get(
+        'businesses/business-1/journalEntries/hr_commission.accrued__period-1',
+      ) ?? null;
+
+    expect(journalEntry).toMatchObject({
+      eventType: 'hr_commission.accrued',
+      totals: {
+        debit: 1000,
+        credit: 1000,
+      },
+    });
+    expect(journalEntry.lines).toEqual([
+      expect.objectContaining({
+        accountSystemKey: 'operating_expenses',
+        debit: 1000,
+        credit: 0,
+        amountSource: 'payroll_accrual_amount',
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'payroll_payable',
+        debit: 0,
+        credit: 850,
+        amountSource: 'payroll_net_payable_amount',
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'tax_payable',
+        debit: 0,
+        credit: 50,
+        amountSource: 'payroll_tax_deductions_amount',
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'payroll_withholdings_payable',
+        debit: 0,
+        credit: 100,
+        amountSource: 'payroll_other_deductions_amount',
+      }),
+    ]);
+  });
+
   it('marks the event as pending_account_mapping when no profile applies', async () => {
     documentSnapshots.set('businesses/business-1/settings/accounting', {
       rolloutEnabled: true,
@@ -298,6 +916,183 @@ describe('projectAccountingEventToJournalEntry', () => {
       lastError: expect.objectContaining({
         code: 'posting-profile-not-found',
       }),
+    });
+  });
+
+  it('fails projection when the event period is already closed', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+      functionalCurrency: 'DOP',
+    });
+    documentSnapshots.set(
+      'businesses/business-1/accountingPeriodClosures/2026-04',
+      {
+        id: '2026-04',
+        status: 'closed',
+      },
+    );
+    collectionSnapshots.set('businesses/business-1/accountingPostingProfiles', []);
+    collectionSnapshots.set('businesses/business-1/chartOfAccounts', []);
+
+    await projectAccountingEventToJournalEntry({
+      params: {
+        businessId: 'business-1',
+        eventId: 'expense.recorded__expense-closed-1',
+      },
+      data: {
+        data: () => ({
+          id: 'expense.recorded__expense-closed-1',
+          businessId: 'business-1',
+          eventType: 'expense.recorded',
+          occurredAt: new Date('2026-04-12T12:00:00.000Z'),
+          monetary: {
+            amount: 100,
+            functionalAmount: 100,
+          },
+        }),
+      },
+    });
+
+    expect(
+      documentSnapshots.has(
+        'businesses/business-1/journalEntries/expense.recorded__expense-closed-1',
+      ),
+    ).toBe(false);
+    expect(
+      documentSnapshots.get(
+        'businesses/business-1/accountingEvents/expense.recorded__expense-closed-1',
+      ),
+    ).toMatchObject({
+      projection: expect.objectContaining({
+        status: 'failed',
+        lastError: expect.objectContaining({
+          code: 'accounting-period-closed',
+        }),
+      }),
+    });
+    expect(
+      documentSnapshots.get(
+        'businesses/business-1/accountingEventProjectionDeadLetters/expense.recorded__expense-closed-1',
+      ),
+    ).toMatchObject({
+      id: 'expense.recorded__expense-closed-1',
+      projectionStatus: 'failed',
+      lastError: expect.objectContaining({
+        code: 'accounting-period-closed',
+      }),
+    });
+  });
+
+  it('projects inventory COGS events into cost of sales and inventory', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+      functionalCurrency: 'DOP',
+    });
+    collectionSnapshots.set('businesses/business-1/accountingPostingProfiles', [
+      {
+        id: 'profile-cogs',
+        data: {
+          id: 'profile-cogs',
+          name: 'Costo de venta',
+          eventType: 'inventory.cogs.recorded',
+          status: 'active',
+          priority: 10,
+          conditions: {
+            documentNature: 'inventory',
+          },
+          linesTemplate: [
+            {
+              id: 'l1',
+              side: 'debit',
+              accountSystemKey: 'cost_of_sales',
+              amountSource: 'document_total',
+            },
+            {
+              id: 'l2',
+              side: 'credit',
+              accountSystemKey: 'inventory',
+              amountSource: 'document_total',
+            },
+          ],
+        },
+      },
+    ]);
+    collectionSnapshots.set('businesses/business-1/chartOfAccounts', [
+      {
+        id: 'cost-of-sales-1',
+        data: {
+          id: 'cost-of-sales-1',
+          code: '5100',
+          name: 'Costo de venta',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'cost_of_sales',
+        },
+      },
+      {
+        id: 'inventory-1',
+        data: {
+          id: 'inventory-1',
+          code: '1130',
+          name: 'Inventario',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'inventory',
+        },
+      },
+    ]);
+
+    await projectAccountingEventToJournalEntry({
+      params: {
+        businessId: 'business-1',
+        eventId: 'inventory.cogs.recorded__invoice-1',
+      },
+      data: {
+        data: () => ({
+          id: 'inventory.cogs.recorded__invoice-1',
+          businessId: 'business-1',
+          eventType: 'inventory.cogs.recorded',
+          eventVersion: 1,
+          sourceType: 'invoice_inventory',
+          sourceId: 'invoice-1',
+          sourceDocumentId: 'invoice-1',
+          sourceDocumentType: 'invoice',
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: {
+            amount: 50,
+            functionalAmount: 50,
+          },
+          payload: {
+            documentNature: 'inventory',
+          },
+        }),
+      },
+    });
+
+    expect(
+      documentSnapshots.get(
+        'businesses/business-1/journalEntries/inventory.cogs.recorded__invoice-1',
+      ),
+    ).toMatchObject({
+      totals: {
+        debit: 50,
+        credit: 50,
+      },
+      lines: [
+        expect.objectContaining({
+          accountSystemKey: 'cost_of_sales',
+          debit: 50,
+          credit: 0,
+        }),
+        expect.objectContaining({
+          accountSystemKey: 'inventory',
+          debit: 0,
+          credit: 50,
+        }),
+      ],
     });
   });
 
@@ -781,6 +1576,188 @@ describe('projectAccountingEventToJournalEntry', () => {
     ]);
   });
 
+  it('splits bank-backed sales by linked bank account chart accounts', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+      functionalCurrency: 'DOP',
+    });
+    collectionSnapshots.set('businesses/business-1/accountingPostingProfiles', [
+      {
+        id: 'profile-bank-sale',
+        data: {
+          id: 'profile-bank-sale',
+          name: 'Venta bancaria',
+          eventType: 'invoice.committed',
+          status: 'active',
+          priority: 10,
+          conditions: {
+            paymentTerm: 'cash',
+            settlementKind: 'bank',
+          },
+          linesTemplate: [
+            {
+              id: 'l1',
+              side: 'debit',
+              accountSystemKey: 'bank',
+              amountSource: 'sale_bank_received',
+            },
+            {
+              id: 'l2',
+              side: 'credit',
+              accountSystemKey: 'sales',
+              amountSource: 'net_sales',
+            },
+          ],
+        },
+      },
+    ]);
+    collectionSnapshots.set('businesses/business-1/chartOfAccounts', [
+      {
+        id: 'bank-root',
+        data: {
+          id: 'bank-root',
+          code: '1110',
+          name: 'Cuentas bancarias',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'bank',
+        },
+      },
+      {
+        id: 'bank-popular-ledger',
+        data: {
+          id: 'bank-popular-ledger',
+          code: '1110.01',
+          name: 'Banco Popular Corriente 1234',
+          status: 'active',
+          postingAllowed: true,
+          parentId: 'bank-root',
+        },
+      },
+      {
+        id: 'bank-bhd-ledger',
+        data: {
+          id: 'bank-bhd-ledger',
+          code: '1110.02',
+          name: 'Banco BHD Corriente 5678',
+          status: 'active',
+          postingAllowed: true,
+          parentId: 'bank-root',
+        },
+      },
+      {
+        id: 'sales-1',
+        data: {
+          id: 'sales-1',
+          code: '4100',
+          name: 'Ventas',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'sales',
+        },
+      },
+    ]);
+    collectionSnapshots.set('businesses/business-1/bankAccounts', [
+      {
+        id: 'bank-popular',
+        data: {
+          id: 'bank-popular',
+          status: 'active',
+          chartOfAccountId: 'bank-popular-ledger',
+        },
+      },
+      {
+        id: 'bank-bhd',
+        data: {
+          id: 'bank-bhd',
+          status: 'active',
+          chartOfAccountId: 'bank-bhd-ledger',
+        },
+      },
+    ]);
+
+    await projectAccountingEventToJournalEntry({
+      params: {
+        businessId: 'business-1',
+        eventId: 'invoice.committed__invoice-bank-split-1',
+      },
+      data: {
+        data: () => ({
+          id: 'invoice.committed__invoice-bank-split-1',
+          businessId: 'business-1',
+          eventType: 'invoice.committed',
+          eventVersion: 1,
+          sourceType: 'invoice',
+          sourceId: 'invoice-bank-split-1',
+          sourceDocumentId: 'invoice-bank-split-1',
+          sourceDocumentType: 'invoice',
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: {
+            amount: 1000,
+            functionalAmount: 1000,
+          },
+          treasury: {
+            paymentChannel: 'bank',
+          },
+          payload: {
+            paymentTerm: 'cash',
+            paymentMethods: [
+              {
+                method: 'card',
+                value: 400,
+                bankAccountId: 'bank-popular',
+              },
+              {
+                method: 'transfer',
+                value: 600,
+                bankAccountId: 'bank-bhd',
+              },
+            ],
+          },
+        }),
+      },
+    });
+
+    const journalEntry =
+      documentSnapshots.get(
+        'businesses/business-1/journalEntries/invoice.committed__invoice-bank-split-1',
+      ) ?? null;
+
+    expect(journalEntry).toMatchObject({
+      totals: {
+        debit: 1000,
+        credit: 1000,
+      },
+    });
+    expect(journalEntry.lines).toEqual([
+      expect.objectContaining({
+        accountId: 'bank-popular-ledger',
+        accountCode: '1110.01',
+        debit: 400,
+        credit: 0,
+        metadata: expect.objectContaining({
+          bankAccountId: 'bank-popular',
+        }),
+      }),
+      expect.objectContaining({
+        accountId: 'bank-bhd-ledger',
+        accountCode: '1110.02',
+        debit: 600,
+        credit: 0,
+        metadata: expect.objectContaining({
+          bankAccountId: 'bank-bhd',
+        }),
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'sales',
+        debit: 0,
+        credit: 1000,
+      }),
+    ]);
+  });
+
   it('projects issued customer credit notes into customer credits', async () => {
     documentSnapshots.set('businesses/business-1/settings/accounting', {
       rolloutEnabled: true,
@@ -1200,14 +2177,25 @@ describe('projectAccountingEventToJournalEntry', () => {
     ]);
     collectionSnapshots.set('businesses/business-1/chartOfAccounts', [
       {
-        id: 'bank-1',
+        id: 'bank-root',
         data: {
-          id: 'bank-1',
+          id: 'bank-root',
           code: '1110',
           name: 'Banco',
           status: 'active',
           postingAllowed: true,
           systemKey: 'bank',
+        },
+      },
+      {
+        id: 'bank-ledger-1',
+        data: {
+          id: 'bank-ledger-1',
+          code: '1110.01',
+          name: 'Banco Popular Corriente 1234',
+          status: 'active',
+          postingAllowed: true,
+          parentId: 'bank-root',
         },
       },
       {
@@ -1230,6 +2218,16 @@ describe('projectAccountingEventToJournalEntry', () => {
           status: 'active',
           postingAllowed: true,
           systemKey: 'bank_reconciliation_income',
+        },
+      },
+    ]);
+    collectionSnapshots.set('businesses/business-1/bankAccounts', [
+      {
+        id: 'bank-account-1',
+        data: {
+          id: 'bank-account-1',
+          status: 'active',
+          chartOfAccountId: 'bank-ledger-1',
         },
       },
     ]);
@@ -1256,7 +2254,7 @@ describe('projectAccountingEventToJournalEntry', () => {
             functionalAmount: -12.5,
           },
           treasury: {
-            bankAccountId: 'bank-1',
+            bankAccountId: 'bank-account-1',
             paymentChannel: 'bank',
           },
         }),
@@ -1284,8 +2282,217 @@ describe('projectAccountingEventToJournalEntry', () => {
       }),
       expect.objectContaining({
         accountSystemKey: 'bank',
+        accountId: 'bank-ledger-1',
+        accountCode: '1110.01',
         debit: 0,
         credit: 12.5,
+      }),
+    ]);
+  });
+
+  it('projects recorded and voided FX settlement losses without reclassifying the reversal as income', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+      functionalCurrency: 'DOP',
+    });
+    collectionSnapshots.set('businesses/business-1/accountingPostingProfiles', [
+      {
+        id: 'profile-fx-settlement-recorded',
+        data: {
+          id: 'profile-fx-settlement-recorded',
+          name: 'Diferencia cambiaria liquidada',
+          eventType: 'fx_settlement.recorded',
+          status: 'active',
+          priority: 10,
+          linesTemplate: [
+            {
+              id: 'l1',
+              side: 'debit',
+              accountSystemKey: 'accounts_receivable',
+              amountSource: 'fx_gain',
+            },
+            {
+              id: 'l2',
+              side: 'debit',
+              accountSystemKey: 'fx_loss',
+              amountSource: 'fx_loss',
+            },
+            {
+              id: 'l3',
+              side: 'credit',
+              accountSystemKey: 'accounts_receivable',
+              amountSource: 'fx_loss',
+            },
+            {
+              id: 'l4',
+              side: 'credit',
+              accountSystemKey: 'fx_gain',
+              amountSource: 'fx_gain',
+            },
+          ],
+        },
+      },
+      {
+        id: 'profile-fx-settlement-voided',
+        data: {
+          id: 'profile-fx-settlement-voided',
+          name: 'Anulacion de diferencia cambiaria',
+          eventType: 'fx_settlement.voided',
+          status: 'active',
+          priority: 10,
+          linesTemplate: [
+            {
+              id: 'v1',
+              side: 'debit',
+              accountSystemKey: 'fx_gain',
+              amountSource: 'fx_gain',
+            },
+            {
+              id: 'v2',
+              side: 'debit',
+              accountSystemKey: 'accounts_receivable',
+              amountSource: 'fx_loss',
+            },
+            {
+              id: 'v3',
+              side: 'credit',
+              accountSystemKey: 'accounts_receivable',
+              amountSource: 'fx_gain',
+            },
+            {
+              id: 'v4',
+              side: 'credit',
+              accountSystemKey: 'fx_loss',
+              amountSource: 'fx_loss',
+            },
+          ],
+        },
+      },
+    ]);
+    collectionSnapshots.set('businesses/business-1/chartOfAccounts', [
+      {
+        id: 'accounts-receivable-1',
+        data: {
+          id: 'accounts-receivable-1',
+          code: '1120',
+          name: 'Cuentas por cobrar',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'accounts_receivable',
+        },
+      },
+      {
+        id: 'fx-gain-1',
+        data: {
+          id: 'fx-gain-1',
+          code: '4200',
+          name: 'Ingresos por diferencia cambiaria',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'fx_gain',
+        },
+      },
+      {
+        id: 'fx-loss-1',
+        data: {
+          id: 'fx-loss-1',
+          code: '5300',
+          name: 'Gastos por diferencia cambiaria',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'fx_loss',
+        },
+      },
+    ]);
+
+    await projectAccountingEventToJournalEntry({
+      params: {
+        businessId: 'business-1',
+        eventId: 'fx_settlement.recorded__payment-1_ar-1',
+      },
+      data: {
+        data: () => ({
+          id: 'fx_settlement.recorded__payment-1_ar-1',
+          businessId: 'business-1',
+          eventType: 'fx_settlement.recorded',
+          eventVersion: 1,
+          sourceType: 'accountsReceivableFxSettlement',
+          sourceId: 'payment-1_ar-1',
+          monetary: {
+            amount: -100,
+            functionalAmount: -100,
+          },
+        }),
+      },
+    });
+
+    await projectAccountingEventToJournalEntry({
+      params: {
+        businessId: 'business-1',
+        eventId: 'fx_settlement.voided__payment-1_ar-1',
+      },
+      data: {
+        data: () => ({
+          id: 'fx_settlement.voided__payment-1_ar-1',
+          businessId: 'business-1',
+          eventType: 'fx_settlement.voided',
+          eventVersion: 1,
+          sourceType: 'accountsReceivableFxSettlement',
+          sourceId: 'payment-1_ar-1',
+          monetary: {
+            amount: -100,
+            functionalAmount: -100,
+          },
+          reversalOfEventId: 'fx_settlement.recorded__payment-1_ar-1',
+        }),
+      },
+    });
+
+    const recordedJournalEntry = documentSnapshots.get(
+      'businesses/business-1/journalEntries/fx_settlement.recorded__payment-1_ar-1',
+    );
+    expect(recordedJournalEntry).toMatchObject({
+      eventType: 'fx_settlement.recorded',
+      totals: {
+        debit: 100,
+        credit: 100,
+      },
+    });
+    expect(recordedJournalEntry.lines).toEqual([
+      expect.objectContaining({
+        accountSystemKey: 'fx_loss',
+        debit: 100,
+        credit: 0,
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'accounts_receivable',
+        debit: 0,
+        credit: 100,
+      }),
+    ]);
+
+    const voidedJournalEntry = documentSnapshots.get(
+      'businesses/business-1/journalEntries/fx_settlement.voided__payment-1_ar-1',
+    );
+    expect(voidedJournalEntry).toMatchObject({
+      eventType: 'fx_settlement.voided',
+      reversalOfEventId: 'fx_settlement.recorded__payment-1_ar-1',
+      totals: {
+        debit: 100,
+        credit: 100,
+      },
+    });
+    expect(voidedJournalEntry.lines).toEqual([
+      expect.objectContaining({
+        accountSystemKey: 'accounts_receivable',
+        debit: 100,
+        credit: 0,
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'fx_loss',
+        debit: 0,
+        credit: 100,
       }),
     ]);
   });

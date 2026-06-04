@@ -32,6 +32,14 @@ describe('normalizeServiceCommissionCollaboratorRecord', () => {
         name: 'Carlos',
         defaultType: 'fixed',
         defaultRate: '125.5',
+        serviceCommissionRules: [
+          {
+            serviceId: 'service-1',
+            serviceName: 'Consulta',
+            type: 'percentage',
+            rateValue: '18',
+          },
+        ],
       }),
     ).toMatchObject({
       id: 'emp-2',
@@ -42,6 +50,12 @@ describe('normalizeServiceCommissionCollaboratorRecord', () => {
       hrEmployeeId: 'hr-2',
       defaultType: 'fixed',
       defaultRate: 125.5,
+      serviceCommissionRules: [
+        expect.objectContaining({
+          serviceId: 'service-1',
+          rateValue: 18,
+        }),
+      ],
       active: false,
     });
   });

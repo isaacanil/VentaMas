@@ -80,12 +80,19 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - `Dialog` separo configuracion visual e iconos a `Dialog.config.ts` y styled-components a `Dialog.styles.ts`; `Dialog.tsx` quedo enfocado en estado de carga, confirmacion/cancelacion y render.
 - `InputV4` movio todos sus styled-components a `InputV4.styles.ts`, elimino estilos inline del icono de limpiar y limpio comentarios/contenido mojibake sin cambiar props ni handlers.
 - `ButtonIconMenu`, `DatePicker`, `RouteErrorFallback` y `CustomInput` movieron estilos locales a archivos `.styles.ts`, retirando estilos inline puntuales y textos mojibake en el fallback de rutas.
+- `DatePicker` centralizo el locale de Luxon en `constants/dateLocale.ts`, tipa `layout` como contrato `grid | sidebar`, elimino casts/props redundantes de presets y separo estilos locales de `DatePickerInput` y `HeroUIDatePickerInput`.
+- `DatePicker/PresetsSection` movio sus estilos locales a `PresetsSection.styles.ts`, conservando los calculos de rangos y handlers en el componente.
+- `BadgeDate` separo estilos y utilidad de icono en archivos locales; `Badge`, `Loader`, `PillButton` y `Counter` exponen contratos publicos pequenos para evitar reflexion de tipos en consumidores.
+- `FrontendFeatureRouteGate` separo el copy de vistas bloqueadas en `FrontendFeatureRouteGate.config.ts`, dejando el gate enfocado en permisos y composicion.
+- El copy especifico de reclamo de negocio vive como configuracion nombrada en `FrontendFeatureRouteGate.config.ts`, evitando objetos inline en rutas de auth.
+- `CellRenderer` de `AdvancedTable` reutiliza `toMillis` para fechas y cubre explicitamente el tipo `price`, cerrando deuda de contrato sin cambiar los componentes de fecha.
+- La lectura de changelogs del panel de control vive ahora en `ChangeLogControl/ChangelogList` con repository/hook local y prueba de normalizacion; la ruta de escritura de `AppUpdate` queda fuera de este lote.
 - `Select` separo helpers de acceso por clave/ruta y estilos locales en `Select.utils.ts` y `Select.styles.ts`, preservando Floating UI y el contrato de `onChange`.
 - `ImageViewer` movio overlay, contenedor, header y estilos de imagen a `ImageViewer.styles.ts`, manteniendo zoom/pan y cierre por Escape/click externo.
 - `ImagenBlock` de producto separo estilos de imagen/carga a `ImagenBlock.styles.ts`, retirando inline styles sin cambiar fallback, conectividad ni estado de carga.
 - `PeerReviewAuthorization` separo estilos del modal/header a archivos locales, elimino subcomponentes `Body/Footer` sin uso y dejo el flujo de validacion intacto.
 - `ColumnMenu` dejo de persistir `columnOrder:v1`; la persistencia queda centralizada en `useColumnOrder` por tabla/usuario.
-- Se eliminaron duplicados accidentales: `useLoadingStatus.tsx\``, `utils/data/products/category` sin extension y la version vieja `useCheckAccountReceivable.tsx`.
+- Se eliminaron duplicados accidentales: `useLoadingStatus.tsx\``, `utils/data/products/category`sin extension y la version vieja`useCheckAccountReceivable.tsx`.
 - `FilterBarLegacy` fue retirado: el hook compartido vive en `src/components/common/FilterBar/hooks/useFilterBar.ts`.
 - `FileUploader` y `EvidenceUpload` reutilizan `fileUploadShared` para lista, controles y boton de carga, dejando wrappers solo para contratos especificos.
 - Se normalizaron rutas con typos o estructura legacy: `referenceUtils`, `TextCell`, `PaymentDatesOverview`, `InventoryFilterAndSort` y carpetas locales `components`.

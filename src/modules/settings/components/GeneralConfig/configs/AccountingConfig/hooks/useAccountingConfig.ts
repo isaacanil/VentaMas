@@ -13,6 +13,7 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 
+import { createBankAccountConfig } from '@/firebase/accounting/accountingConfiguration';
 import { db } from '@/firebase/firebaseconfig';
 import {
   DEFAULT_BANK_INSTITUTION_COUNTRY_CODE,
@@ -75,11 +76,13 @@ const buildBankAccountSnapshot = ({
   openingBalanceDate,
   status = 'active',
   type,
+  chartOfAccountId,
 }: {
   accountNumberLast4?: string | null;
   bankCode?: string | null;
   bankAccountId: string;
   businessId: string;
+  chartOfAccountId?: string | null;
   countryCode?: string | null;
   currency: BankAccount['currency'];
   isCustomBank?: boolean | null;
@@ -103,6 +106,9 @@ const buildBankAccountSnapshot = ({
   countryCode: countryCode ?? null,
   isCustomBank: isCustomBank === true,
   accountNumberLast4: accountNumberLast4 ?? null,
+  ...(chartOfAccountId !== undefined
+    ? { chartOfAccountId: chartOfAccountId ?? null }
+    : {}),
   openingBalance: openingBalance ?? null,
   openingBalanceDate: openingBalanceDate ?? null,
   notes: notes ?? null,
@@ -564,51 +570,24 @@ export const useAccountingConfig = ({
         return;
       }
 
-      const now = Timestamp.now();
-      const bankAccountRef = doc(
-        collection(db, 'businesses', businessId, 'bankAccounts'),
-      );
-      const nextSnapshot = buildBankAccountSnapshot({
-        bankAccountId: bankAccountRef.id,
-        businessId,
-        name: normalizedDraft.name,
-        currency: normalizedDraft.currency,
-        type: normalizedDraft.type ?? null,
-        institutionName: normalizedDraft.institutionName ?? null,
-        bankCode: normalizedDraft.bankCode ?? null,
-        countryCode: normalizedDraft.countryCode ?? null,
-        isCustomBank: normalizedDraft.isCustomBank ?? null,
-        accountNumberLast4: normalizedDraft.accountNumberLast4 ?? null,
-        openingBalance: normalizedDraft.openingBalance ?? null,
-        openingBalanceDate: normalizedDraft.openingBalanceDate ?? null,
-        notes: normalizedDraft.notes ?? null,
-        metadata: normalizedDraft.metadata ?? {},
-        status: 'active',
-      });
-      const batch = writeBatch(db);
-
       try {
-        batch.set(bankAccountRef, {
-          ...nextSnapshot,
-          createdAt: now,
-          updatedAt: now,
-          createdBy: userId ?? null,
-          updatedBy: userId ?? null,
+        const result = await createBankAccountConfig({
+          businessId,
+          bankAccount: normalizedDraft,
+          clientUserId: userId ?? null,
         });
-
-        await batch.commit();
 
         const nextActiveBankAccountIds = [
           ...bankAccounts
             .filter((bankAccount) => bankAccount.status === 'active')
             .map((bankAccount) => bankAccount.id),
-          bankAccountRef.id,
+          result.bankAccountId,
         ];
         await syncDefaultBankAccountWithActiveAccountsRef.current({
           activeBankAccountIds: nextActiveBankAccountIds,
         });
 
-        void message.success('Cuenta bancaria guardada.');
+        void message.success('Cuenta bancaria guardada con subcuenta contable.');
       } catch (cause) {
         const errorMessage =
           cause instanceof Error

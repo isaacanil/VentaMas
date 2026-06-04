@@ -1,5 +1,10 @@
-import { EditOutlined, UserOutlined } from '@/constants/icons/antd';
-import { VmButton, VmTooltip } from '@/components/heroui';
+import {
+  EditOutlined,
+  MoreOutlined,
+  PercentageOutlined,
+  UserOutlined,
+} from '@/constants/icons/antd';
+import { VmDropdown, VmTooltip } from '@/components/heroui';
 import {
   HrCellStack as CellStack,
   HrInlineStack as InlineStack,
@@ -17,14 +22,17 @@ import {
   HR_PAYMENT_METHOD_LABELS as PAYMENT_METHOD_LABELS,
 } from '@/modules/hrPayroll/utils/hrPayrollDisplay';
 import type { HrEmployeeRecord } from '@/types/hrPayroll';
+import { summarizeSalaryDeductions } from '@/utils/hrPayroll/salaryDeductions';
 
 interface EmployeeColumnsOptions {
   usersById: Map<string, string>;
+  onConfigureCommissions: (employee: HrEmployeeRecord) => void;
   onEdit: (employee: HrEmployeeRecord) => void;
 }
 
 export const buildEmployeeColumns = ({
   usersById,
+  onConfigureCommissions,
   onEdit,
 }: EmployeeColumnsOptions): HrTableColumn<HrEmployeeRecord>[] => [
   {
@@ -66,17 +74,23 @@ export const buildEmployeeColumns = ({
     title: 'Compensacion',
     key: 'compensation',
     width: 220,
-    render: (employee) => (
-      <CellStack>
-        <PrimaryText>{PAY_TYPE_LABELS[employee.payType]}</PrimaryText>
-        <MutedText>
-          {employee.payType === 'hourly'
-            ? formatMoney(employee.hourlyRateAmount, employee.currency)
-            : formatMoney(employee.baseSalaryAmount, employee.currency)}
-          {employee.commissionEnabled ? ' + comision' : ''}
-        </MutedText>
-      </CellStack>
-    ),
+    render: (employee) => {
+      const deductionSummary = summarizeSalaryDeductions(
+        employee.salaryDeductions,
+      );
+      return (
+        <CellStack>
+          <PrimaryText>{PAY_TYPE_LABELS[employee.payType]}</PrimaryText>
+          <MutedText>
+            {employee.payType === 'hourly'
+              ? formatMoney(employee.hourlyRateAmount, employee.currency)
+              : formatMoney(employee.baseSalaryAmount, employee.currency)}
+            {employee.commissionEnabled ? ' + comision' : ''}
+          </MutedText>
+          {deductionSummary ? <MutedText>{deductionSummary}</MutedText> : null}
+        </CellStack>
+      );
+    },
   },
   {
     title: 'Pago',
@@ -118,21 +132,48 @@ export const buildEmployeeColumns = ({
   {
     title: '',
     key: 'actions',
-    width: 72,
+    width: 84,
     align: 'right',
     render: (employee) => (
-      <VmTooltip>
-        <VmTooltip.Trigger>
-          <VmButton
-            aria-label="Editar colaborador"
-            variant="secondary"
-            onPress={() => onEdit(employee)}
+      <VmDropdown>
+        <VmDropdown.Button
+          aria-label={`Acciones de ${employee.fullName}`}
+          isIconOnly
+          size="sm"
+        >
+          <MoreOutlined />
+        </VmDropdown.Button>
+        <VmDropdown.Popover>
+          <VmDropdown.Menu
+            aria-label={`Acciones de ${employee.fullName}`}
+            onAction={(key) => {
+              if (key === 'edit') {
+                onEdit(employee);
+                return;
+              }
+              if (key === 'service-commission') {
+                onConfigureCommissions(employee);
+              }
+            }}
           >
-            <EditOutlined />
-          </VmButton>
-        </VmTooltip.Trigger>
-        <VmTooltip.Content>Editar colaborador</VmTooltip.Content>
-      </VmTooltip>
+            <VmDropdown.Item id="edit" textValue="Editar">
+              <InlineStack>
+                <EditOutlined />
+                <span>Editar</span>
+              </InlineStack>
+            </VmDropdown.Item>
+            <VmDropdown.Item
+              id="service-commission"
+              textValue="Comision por servicio"
+            >
+              <InlineStack>
+                <PercentageOutlined />
+                <span>Comision por servicio</span>
+              </InlineStack>
+            </VmDropdown.Item>
+          </VmDropdown.Menu>
+        </VmDropdown.Popover>
+      </VmDropdown>
     ),
   },
 ];

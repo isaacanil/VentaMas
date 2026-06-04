@@ -173,15 +173,18 @@ const PriceContainer = styled.div`
 type DropdownButtonStyleProps = { disabled?: boolean };
 
 const DropdownButton = styled.button`
+  flex: 0 0 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 28px;
   height: 100%;
+  padding: 0;
   cursor: ${(props: DropdownButtonStyleProps) =>
     props.disabled ? 'not-allowed' : 'pointer'};
   background-color: #f5f5f5;
   border: none;
+  border-right: 1px solid #ddd;
   opacity: ${(props: DropdownButtonStyleProps) => (props.disabled ? 0.5 : 1)};
   transition: background-color 0.2s;
 
@@ -204,12 +207,16 @@ const CaretIcon = styled.div`
 `;
 
 const PriceInput = styled.input`
-  flex: 1;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
   height: 100%;
-  padding: 0 8px;
+  box-sizing: border-box;
+  padding: 0 12px;
   font-size: 14px;
   font-weight: 500;
   color: #333;
+  font-variant-numeric: tabular-nums;
   outline: none;
   background-color: white;
   border: none;

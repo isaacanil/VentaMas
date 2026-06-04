@@ -1,3 +1,5 @@
+import { normalizeSalaryDeductionLines } from './hrSalaryDeductions.service.js';
+
 export const HR_EMPLOYEE_STATUSES = new Set([
   'active',
   'inactive',
@@ -145,6 +147,42 @@ const normalizeRate = (value) => {
   return Math.max(0, toFiniteNumber(value));
 };
 
+const normalizeCommissionType = (value) => {
+  const normalized = toCleanString(value)?.toLowerCase();
+  return HR_COMMISSION_TYPES.has(normalized) ? normalized : 'percentage';
+};
+
+export const normalizeServiceCommissionRules = (value) => {
+  const entries = Array.isArray(value) ? value : [];
+  const byServiceId = new Map();
+
+  entries.forEach((entry) => {
+    const source = asRecord(entry);
+    const serviceId =
+      toCleanString(source.serviceId) ||
+      toCleanString(source.productId) ||
+      toCleanString(source.id);
+    if (!serviceId) return;
+
+    byServiceId.set(serviceId, {
+      id: toCleanString(source.id) || serviceId,
+      serviceId,
+      serviceName:
+        toCleanString(source.serviceName) ||
+        toCleanString(source.productName) ||
+        toCleanString(source.name),
+      type: normalizeCommissionType(source.type),
+      rateValue: Math.max(
+        0,
+        toFiniteNumber(source.rateValue ?? source.defaultRate),
+      ),
+      active: source.active === false ? false : true,
+    });
+  });
+
+  return Array.from(byServiceId.values());
+};
+
 const shouldEnableCommission = ({ payType, rawValue }) => {
   if (rawValue === false) return false;
   if (rawValue === true) return true;
@@ -154,6 +192,15 @@ const shouldEnableCommission = ({ payType, rawValue }) => {
 export const buildReadyToPayIssues = (employee) => {
   const issues = [];
   const status = employee.status || 'active';
+  const activeSalaryDeductions = Array.isArray(employee.salaryDeductions)
+    ? employee.salaryDeductions.filter((line) => line.active !== false)
+    : [];
+  const hasCommissionConfig =
+    employee.defaultCommissionRate != null ||
+    (Array.isArray(employee.serviceCommissionRules) &&
+      employee.serviceCommissionRules.some(
+        (rule) => rule.active !== false && toFiniteNumber(rule.rateValue) > 0,
+      ));
 
   if (status !== 'active') {
     issues.push('El empleado no esta activo.');
@@ -175,7 +222,7 @@ export const buildReadyToPayIssues = (employee) => {
   }
   if (
     employee.payType === 'commission_only' &&
-    (!employee.commissionEnabled || employee.defaultCommissionRate == null)
+    (!employee.commissionEnabled || !hasCommissionConfig)
   ) {
     issues.push('Falta configuracion de comision.');
   }
@@ -183,9 +230,16 @@ export const buildReadyToPayIssues = (employee) => {
     employee.payType === 'mixed' &&
     employee.baseSalaryAmount <= 0 &&
     employee.hourlyRateAmount <= 0 &&
-    (!employee.commissionEnabled || employee.defaultCommissionRate == null)
+    (!employee.commissionEnabled || !hasCommissionConfig)
   ) {
     issues.push('Falta compensacion base o comision.');
+  }
+  if (
+    activeSalaryDeductions.length > 0 &&
+    ['salary', 'mixed'].includes(employee.payType) &&
+    employee.baseSalaryAmount <= 0
+  ) {
+    issues.push('Las deducciones salariales requieren salario base.');
   }
 
   return issues;
@@ -263,6 +317,12 @@ export const normalizeHrEmployeeInput = (input, options = {}) => {
       'percentage',
     ),
     defaultCommissionRate: normalizeRate(employeeInput.defaultCommissionRate),
+    salaryDeductions: normalizeSalaryDeductionLines(
+      employeeInput.salaryDeductions,
+    ),
+    serviceCommissionRules: normalizeServiceCommissionRules(
+      employeeInput.serviceCommissionRules,
+    ),
     notes: toCleanString(employeeInput.notes),
   };
 
@@ -341,12 +401,14 @@ export const buildHrEmployeePayload = ({
   payType: employee.payType,
   baseSalaryAmount: employee.baseSalaryAmount,
   hourlyRateAmount: employee.hourlyRateAmount,
+  salaryDeductions: employee.salaryDeductions,
   currency: employee.currency,
   paymentMethod: employee.paymentMethod,
   paymentDestination: employee.paymentDestination,
   commissionEnabled: employee.commissionEnabled,
   defaultCommissionType: employee.defaultCommissionType,
   defaultCommissionRate: employee.defaultCommissionRate,
+  serviceCommissionRules: employee.serviceCommissionRules,
   readyToPayStatus: employee.readyToPayStatus,
   readyToPayIssues: employee.readyToPayIssues,
   partySnapshot: {

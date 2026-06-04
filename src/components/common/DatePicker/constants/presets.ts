@@ -1,11 +1,7 @@
-import { DateTime } from 'luxon';
+import { getLocalizedNow } from './dateLocale';
 import type { DatePickerMode, DatePickerPreset } from '../types';
 
-const DATE_LOCALE = 'es';
-
-const getWeekRangeMondayAligned = (
-  reference = DateTime.local().setLocale(DATE_LOCALE),
-) => {
+const getWeekRangeMondayAligned = (reference = getLocalizedNow()) => {
   const referenceStart = reference.startOf('day');
   const daysToSubtract = (referenceStart.weekday + 6) % 7;
   const start = referenceStart.minus({ days: daysToSubtract });
@@ -20,37 +16,23 @@ export const createDefaultPresets = (
     label: 'Hoy',
     value:
       mode === 'range'
-        ? [
-            DateTime.local().setLocale(DATE_LOCALE).startOf('day'),
-            DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
-          ]
-        : DateTime.local().setLocale(DATE_LOCALE).startOf('day'),
+        ? [getLocalizedNow().startOf('day'), getLocalizedNow().endOf('day')]
+        : getLocalizedNow().startOf('day'),
   },
   {
     label: 'Ayer',
     value:
       mode === 'range'
         ? [
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .minus({ days: 1 })
-              .startOf('day'),
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .minus({ days: 1 })
-              .endOf('day'),
+            getLocalizedNow().minus({ days: 1 }).startOf('day'),
+            getLocalizedNow().minus({ days: 1 }).endOf('day'),
           ]
-        : DateTime.local()
-            .setLocale(DATE_LOCALE)
-            .minus({ days: 1 })
-            .startOf('day'),
+        : getLocalizedNow().minus({ days: 1 }).startOf('day'),
   },
   {
     label: 'Esta semana',
     value: (() => {
-      const { start, end } = getWeekRangeMondayAligned(
-        DateTime.local().setLocale(DATE_LOCALE),
-      );
+      const { start, end } = getWeekRangeMondayAligned(getLocalizedNow());
       return mode === 'range' ? [start, end] : start;
     })(),
   },
@@ -58,21 +40,15 @@ export const createDefaultPresets = (
     label: 'Este mes',
     value:
       mode === 'range'
-        ? [
-            DateTime.local().setLocale(DATE_LOCALE).startOf('month'),
-            DateTime.local().setLocale(DATE_LOCALE).endOf('month'),
-          ]
-        : DateTime.local().setLocale(DATE_LOCALE).startOf('month'),
+        ? [getLocalizedNow().startOf('month'), getLocalizedNow().endOf('month')]
+        : getLocalizedNow().startOf('month'),
   },
   {
     label: 'Este año',
     value:
       mode === 'range'
-        ? [
-            DateTime.local().setLocale(DATE_LOCALE).startOf('year'),
-            DateTime.local().setLocale(DATE_LOCALE).endOf('year'),
-          ]
-        : DateTime.local().setLocale(DATE_LOCALE).startOf('year'),
+        ? [getLocalizedNow().startOf('year'), getLocalizedNow().endOf('year')]
+        : getLocalizedNow().startOf('year'),
   },
   // Periodos recientes
   {
@@ -80,16 +56,10 @@ export const createDefaultPresets = (
     value:
       mode === 'range'
         ? [
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .minus({ days: 6 })
-              .startOf('day'),
-            DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
+            getLocalizedNow().minus({ days: 6 }).startOf('day'),
+            getLocalizedNow().endOf('day'),
           ]
-        : DateTime.local()
-            .setLocale(DATE_LOCALE)
-            .minus({ days: 6 })
-            .startOf('day'),
+        : getLocalizedNow().minus({ days: 6 }).startOf('day'),
     group: 'Periodos recientes',
   },
   {
@@ -97,16 +67,10 @@ export const createDefaultPresets = (
     value:
       mode === 'range'
         ? [
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .minus({ days: 29 })
-              .startOf('day'),
-            DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
+            getLocalizedNow().minus({ days: 29 }).startOf('day'),
+            getLocalizedNow().endOf('day'),
           ]
-        : DateTime.local()
-            .setLocale(DATE_LOCALE)
-            .minus({ days: 29 })
-            .startOf('day'),
+        : getLocalizedNow().minus({ days: 29 }).startOf('day'),
     group: 'Periodos recientes',
   },
   {
@@ -114,25 +78,17 @@ export const createDefaultPresets = (
     value:
       mode === 'range'
         ? [
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .minus({ days: 89 })
-              .startOf('day'),
-            DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
+            getLocalizedNow().minus({ days: 89 }).startOf('day'),
+            getLocalizedNow().endOf('day'),
           ]
-        : DateTime.local()
-            .setLocale(DATE_LOCALE)
-            .minus({ days: 89 })
-            .startOf('day'),
+        : getLocalizedNow().minus({ days: 89 }).startOf('day'),
     group: 'Periodos recientes',
   },
   // Periodos pasados
   {
     label: 'Semana pasada',
     value: (() => {
-      const reference = DateTime.local()
-        .setLocale(DATE_LOCALE)
-        .minus({ weeks: 1 });
+      const reference = getLocalizedNow().minus({ weeks: 1 });
       const { start, end } = getWeekRangeMondayAligned(reference);
       return mode === 'range' ? [start, end] : start;
     })(),
@@ -143,19 +99,10 @@ export const createDefaultPresets = (
     value:
       mode === 'range'
         ? [
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .minus({ months: 1 })
-              .startOf('month'),
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .minus({ months: 1 })
-              .endOf('month'),
+            getLocalizedNow().minus({ months: 1 }).startOf('month'),
+            getLocalizedNow().minus({ months: 1 }).endOf('month'),
           ]
-        : DateTime.local()
-            .setLocale(DATE_LOCALE)
-            .minus({ months: 1 })
-            .startOf('month'),
+        : getLocalizedNow().minus({ months: 1 }).startOf('month'),
     group: 'Periodos pasados',
   },
   {
@@ -163,19 +110,10 @@ export const createDefaultPresets = (
     value:
       mode === 'range'
         ? [
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .minus({ years: 1 })
-              .startOf('year'),
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .minus({ years: 1 })
-              .endOf('year'),
+            getLocalizedNow().minus({ years: 1 }).startOf('year'),
+            getLocalizedNow().minus({ years: 1 }).endOf('year'),
           ]
-        : DateTime.local()
-            .setLocale(DATE_LOCALE)
-            .minus({ years: 1 })
-            .startOf('year'),
+        : getLocalizedNow().minus({ years: 1 }).startOf('year'),
     group: 'Periodos pasados',
   },
   // Trimestres actuales
@@ -184,14 +122,13 @@ export const createDefaultPresets = (
     value:
       mode === 'range'
         ? [
-            DateTime.local().setLocale(DATE_LOCALE).startOf('year'),
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
+            getLocalizedNow().startOf('year'),
+            getLocalizedNow()
               .startOf('year')
               .plus({ months: 2 })
               .endOf('month'),
           ]
-        : DateTime.local().setLocale(DATE_LOCALE).startOf('year'),
+        : getLocalizedNow().startOf('year'),
     group: 'Trimestres',
   },
   {
@@ -199,20 +136,13 @@ export const createDefaultPresets = (
     value:
       mode === 'range'
         ? [
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .startOf('year')
-              .plus({ months: 3 }),
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
+            getLocalizedNow().startOf('year').plus({ months: 3 }),
+            getLocalizedNow()
               .startOf('year')
               .plus({ months: 5 })
               .endOf('month'),
           ]
-        : DateTime.local()
-            .setLocale(DATE_LOCALE)
-            .startOf('year')
-            .plus({ months: 3 }),
+        : getLocalizedNow().startOf('year').plus({ months: 3 }),
     group: 'Trimestres',
   },
   {
@@ -220,20 +150,13 @@ export const createDefaultPresets = (
     value:
       mode === 'range'
         ? [
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .startOf('year')
-              .plus({ months: 6 }),
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
+            getLocalizedNow().startOf('year').plus({ months: 6 }),
+            getLocalizedNow()
               .startOf('year')
               .plus({ months: 8 })
               .endOf('month'),
           ]
-        : DateTime.local()
-            .setLocale(DATE_LOCALE)
-            .startOf('year')
-            .plus({ months: 6 }),
+        : getLocalizedNow().startOf('year').plus({ months: 6 }),
     group: 'Trimestres',
   },
   {
@@ -241,20 +164,13 @@ export const createDefaultPresets = (
     value:
       mode === 'range'
         ? [
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .startOf('year')
-              .plus({ months: 9 }),
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
+            getLocalizedNow().startOf('year').plus({ months: 9 }),
+            getLocalizedNow()
               .startOf('year')
               .plus({ months: 11 })
               .endOf('month'),
           ]
-        : DateTime.local()
-            .setLocale(DATE_LOCALE)
-            .startOf('year')
-            .plus({ months: 9 }),
+        : getLocalizedNow().startOf('year').plus({ months: 9 }),
     group: 'Trimestres',
   },
 ];

@@ -35,7 +35,10 @@ const {
 
   const hoistedGetDocRef = (path) => {
     if (!hoistedDocumentRefs.has(path)) {
-      hoistedDocumentRefs.set(path, { path });
+      hoistedDocumentRefs.set(path, {
+        id: path.split('/').at(-1) ?? null,
+        path,
+      });
     }
     return hoistedDocumentRefs.get(path);
   };
@@ -97,6 +100,14 @@ vi.mock('../../../core/config/firebase.js', () => ({
       this.millis = millis;
     }
 
+    static fromDate(date) {
+      return new MockTimestamp(date.getTime());
+    }
+
+    static fromMillis(millis) {
+      return new MockTimestamp(millis);
+    }
+
     static now() {
       return new MockTimestamp(Date.parse('2026-04-15T12:00:00.000Z'));
     }
@@ -138,7 +149,9 @@ vi.mock('../../../versions/v2/invoice/services/repairTasks.service.js', () => ({
 }));
 
 import {
+  backfillBankAccountChartLinks,
   createAccountingPostingProfile,
+  createBankAccount,
   createChartOfAccount,
   disableChartOfAccount,
 } from './manageAccountingConfiguration.js';
@@ -180,6 +193,151 @@ describe('manageAccountingConfiguration', () => {
         updatedBy: 'accountant-1',
       }),
     );
+  });
+
+  it('creates a bank account with a linked 1110 child chart account', async () => {
+    collectionSnapshots.set('businesses/business-1/chartOfAccounts', [
+      {
+        id: 'assets-root',
+        data: {
+          code: '1000',
+          name: 'Activos',
+          type: 'asset',
+          status: 'active',
+          postingAllowed: false,
+        },
+      },
+      {
+        id: 'bank-root',
+        data: {
+          code: '1110',
+          name: 'Cuentas bancarias',
+          type: 'asset',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'bank',
+        },
+      },
+      {
+        id: 'bank-existing',
+        data: {
+          code: '1110.01',
+          name: 'Banco existente',
+          type: 'asset',
+          status: 'active',
+          postingAllowed: true,
+          parentId: 'bank-root',
+        },
+      },
+    ]);
+
+    const result = await createBankAccount({
+      data: {
+        businessId: 'business-1',
+        bankAccount: {
+          name: 'Cuenta operativa',
+          currency: 'DOP',
+          type: 'checking',
+          institutionName: 'Banco Popular Dominicano',
+          accountNumberLast4: '1234',
+        },
+      },
+    });
+
+    const chartWrite = setCalls.find((call) =>
+      call.ref.path.includes('/chartOfAccounts/'),
+    );
+    const bankWrite = setCalls.find((call) =>
+      call.ref.path.includes('/bankAccounts/'),
+    );
+
+    expect(result).toMatchObject({
+      ok: true,
+      bankAccountId: 'generated-1',
+      chartOfAccountId: 'generated-1',
+    });
+    expect(chartWrite?.data).toMatchObject({
+      businessId: 'business-1',
+      code: '1110.02',
+      name: 'Banco Popular Dominicano Corriente 1234',
+      parentId: 'bank-root',
+      subtype: 'bank_account',
+      metadata: {
+        source: 'bank_account',
+        bankAccountId: 'generated-1',
+      },
+    });
+    expect(bankWrite?.data).toMatchObject({
+      businessId: 'business-1',
+      name: 'Cuenta operativa',
+      chartOfAccountId: 'generated-1',
+      accountNumberLast4: '1234',
+    });
+  });
+
+  it('backfills legacy bank accounts with linked 1110 child chart accounts', async () => {
+    collectionSnapshots.set('businesses/business-1/chartOfAccounts', [
+      {
+        id: 'bank-root',
+        data: {
+          code: '1110',
+          name: 'Cuentas bancarias',
+          type: 'asset',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'bank',
+        },
+      },
+    ]);
+    collectionSnapshots.set('businesses/business-1/bankAccounts', [
+      {
+        id: 'legacy-bank-1',
+        data: {
+          name: 'Cuenta legacy',
+          currency: 'DOP',
+          type: 'checking',
+          institutionName: 'Banco Popular Dominicano',
+          accountNumberLast4: '1234',
+          status: 'active',
+        },
+      },
+    ]);
+
+    const result = await backfillBankAccountChartLinks({
+      data: {
+        businessId: 'business-1',
+      },
+    });
+
+    const chartWrite = setCalls.find((call) =>
+      call.ref.path.includes('/chartOfAccounts/'),
+    );
+    const bankWrite = setCalls.find(
+      (call) =>
+        call.ref.path ===
+        'businesses/business-1/bankAccounts/legacy-bank-1',
+    );
+
+    expect(result).toMatchObject({
+      ok: true,
+      processed: 1,
+      created: 1,
+      linkedExisting: 0,
+      skippedAlreadyLinked: 0,
+    });
+    expect(chartWrite?.data).toMatchObject({
+      code: '1110.01',
+      name: 'Banco Popular Dominicano Corriente 1234',
+      parentId: 'bank-root',
+      metadata: {
+        source: 'bank_account',
+        bankAccountId: 'legacy-bank-1',
+      },
+    });
+    expect(bankWrite?.data).toMatchObject({
+      chartOfAccountId: 'generated-1',
+      updatedBy: 'accountant-1',
+    });
   });
 
   it('blocks disabling a chart account used by posted journal entries', async () => {

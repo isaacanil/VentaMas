@@ -16,8 +16,10 @@ export const ACCOUNTING_EVENT_TYPE_VALUES = [
   'cash_over_short.recorded',
   'bank_statement_adjustment.recorded',
   'internal_transfer.posted',
+  'inventory.cogs.recorded',
   'manual.entry.recorded',
   'fx_settlement.recorded',
+  'fx_settlement.voided',
   'hr_commission.accrued',
   'hr_payroll.payment.recorded',
 ];

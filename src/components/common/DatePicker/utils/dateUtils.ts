@@ -1,11 +1,11 @@
 import { DateTime } from 'luxon';
+
+import { DATE_LOCALE } from '../constants/dateLocale';
 import type {
   DatePickerMode,
   DatePickerPreset,
   DatePickerValue,
 } from '../types';
-
-const DATE_LOCALE = 'es';
 
 const toLuxonFormat = (format = 'DD/MM/YYYY') =>
   format

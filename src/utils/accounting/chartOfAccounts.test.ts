@@ -15,6 +15,12 @@ describe('chartOfAccounts', () => {
     const accountsPayableAccount = DEFAULT_CHART_OF_ACCOUNTS_TEMPLATE.find(
       (account) => account.systemKey === 'accounts_payable',
     );
+    const payrollPayableAccount = DEFAULT_CHART_OF_ACCOUNTS_TEMPLATE.find(
+      (account) => account.systemKey === 'payroll_payable',
+    );
+    const payrollWithholdingsAccount = DEFAULT_CHART_OF_ACCOUNTS_TEMPLATE.find(
+      (account) => account.systemKey === 'payroll_withholdings_payable',
+    );
     const retainedEarningsAccount = DEFAULT_CHART_OF_ACCOUNTS_TEMPLATE.find(
       (account) => account.systemKey === 'retained_earnings',
     );
@@ -37,6 +43,16 @@ describe('chartOfAccounts', () => {
     });
     expect(accountsPayableAccount).toMatchObject({
       code: '2100',
+      type: 'liability',
+      normalSide: 'credit',
+    });
+    expect(payrollPayableAccount).toMatchObject({
+      code: '2110',
+      type: 'liability',
+      normalSide: 'credit',
+    });
+    expect(payrollWithholdingsAccount).toMatchObject({
+      code: '2120',
       type: 'liability',
       normalSide: 'credit',
     });

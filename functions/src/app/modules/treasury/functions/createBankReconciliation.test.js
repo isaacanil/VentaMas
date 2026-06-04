@@ -350,6 +350,38 @@ describe('createBankReconciliation', () => {
     expect(transactionSetMock).not.toHaveBeenCalled();
   });
 
+  it('rejects creating a reconciliation with unresolved variance', async () => {
+    documentSnapshots.set('businesses/business-1/bankAccounts/bank-1', {
+      status: 'active',
+      openingBalance: 200,
+    });
+    transactionSnapshots.set(
+      'businesses/business-1/treasuryIdempotency/recon-variance',
+      null,
+    );
+
+    await expect(
+      createBankReconciliation({
+        data: {
+          businessId: 'business-1',
+          bankAccountId: 'bank-1',
+          idempotencyKey: 'recon-variance',
+          openingStatementBalance: 200,
+          periodStart: '2026-04-01T00:00:00.000Z',
+          statementDate: '2026-04-12T00:00:00.000Z',
+          statementBalance: 290,
+          reference: 'APR-2026',
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      message:
+        'La conciliacion tiene una diferencia de 15. Resuelve la diferencia con un ajuste/write-off antes de cerrar el periodo.',
+    });
+
+    expect(transactionSetMock).not.toHaveBeenCalled();
+  });
+
   it('rejects an invalid statement date instead of falling back to now', async () => {
     documentSnapshots.set('businesses/business-1/bankAccounts/bank-1', {
       status: 'active',

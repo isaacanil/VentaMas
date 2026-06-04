@@ -68,8 +68,10 @@ export type AccountingEventType =
   | 'cash_over_short.recorded'
   | 'bank_statement_adjustment.recorded'
   | 'internal_transfer.posted'
+  | 'inventory.cogs.recorded'
   | 'manual.entry.recorded'
   | 'fx_settlement.recorded'
+  | 'fx_settlement.voided'
   | 'hr_commission.accrued'
   | 'hr_payroll.payment.recorded';
 export type AccountingEventStatus = 'recorded' | 'projected' | 'voided';
@@ -96,12 +98,27 @@ export type AccountingPostingAmountSource =
   | 'bank_statement_adjustment_gain'
   | 'bank_statement_adjustment_loss'
   | 'accounts_receivable_payment_amount'
+  | 'accounts_receivable_applied_amount'
+  | 'accounts_receivable_collected_amount'
+  | 'accounts_receivable_withholding_amount'
   | 'accounts_payable_payment_amount'
+  | 'accounts_payable_cash_paid'
+  | 'accounts_payable_bank_paid'
+  | 'accounts_payable_credit_note_applied'
+  | 'payroll_accrual_amount'
+  | 'payroll_net_payable_amount'
+  | 'payroll_tax_deductions_amount'
+  | 'payroll_other_deductions_amount'
   | 'transfer_amount'
   | 'fx_gain'
   | 'fx_loss';
 export type AccountingPostingPaymentTerm = 'any' | 'cash' | 'credit';
-export type AccountingPostingSettlementKind = 'any' | 'cash' | 'bank' | 'other';
+export type AccountingPostingSettlementKind =
+  | 'any'
+  | 'cash'
+  | 'bank'
+  | 'mixed'
+  | 'other';
 export type AccountingPostingTaxTreatment = 'any' | 'taxed' | 'untaxed';
 export type AccountingPostingDocumentNature =
   | 'any'
@@ -181,6 +198,7 @@ export interface BankAccount {
   countryCode?: string | null;
   isCustomBank?: boolean | null;
   accountNumberLast4?: string | null;
+  chartOfAccountId?: string | null;
   openingBalance?: number | null;
   openingBalanceDate?: TimestampLike | null;
   createdAt?: TimestampLike | null;

@@ -1,7 +1,9 @@
 import { db, FieldValue, Timestamp } from '../../../core/config/firebase.js';
 import { buildAccountingEvent } from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
+import { calculateSalaryDeductions } from './hrSalaryDeductions.service.js';
 
 const ELIGIBLE_ENTRY_STATUSES = new Set(['calculated', 'eligible']);
+const CUT_RULE_FREQUENCIES = new Set(['monthly']);
 const PERIOD_STATUSES = new Set([
   'draft',
   'closed',
@@ -10,6 +12,10 @@ const PERIOD_STATUSES = new Set([
   'paid',
   'cancelled',
 ]);
+const LINE_ADJUSTABLE_STATUSES = new Set(['draft', 'closed']);
+const ADJUSTMENT_COMMENT_MIN_LENGTH = 6;
+const MAX_ADJUSTMENT_HISTORY = 20;
+const THRESHOLD = 0.01;
 
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -28,12 +34,52 @@ const safeNumber = (value, fallback = 0) => {
 
 const roundMoney = (value) => Number(safeNumber(value).toFixed(2));
 
+const toFiniteInputNumber = (value) => {
+  if (typeof value === 'string' && !value.trim()) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
 const sanitizeDocId = (value) =>
   toCleanString(value)?.replace(/[^a-zA-Z0-9_-]/g, '_') || null;
+
+const toIntegerInRange = (value, { fallback, max, min }) => {
+  const parsed = Math.trunc(safeNumber(value, fallback));
+  if (parsed < min || parsed > max) return null;
+  return parsed;
+};
 
 const withoutUndefined = (value) =>
   Object.fromEntries(
     Object.entries(value).filter(([, entryValue]) => entryValue !== undefined),
+  );
+
+const normalizeAdjustmentHistory = (value) =>
+  Array.isArray(value)
+    ? value.filter((entry) => entry && typeof entry === 'object')
+    : [];
+
+const resolveLineGrossAmount = (line) =>
+  roundMoney(line.grossAmount ?? line.commissionAmount ?? line.netAmount);
+
+const resolveLineNetAmount = (line) =>
+  roundMoney(line.netAmount ?? line.commissionAmount ?? line.grossAmount);
+
+const resolveLineDeductionAmount = (line) => {
+  const explicitDeduction = roundMoney(line.deductionsAmount);
+  if (explicitDeduction > THRESHOLD) return explicitDeduction;
+  return Math.max(
+    0,
+    roundMoney(resolveLineGrossAmount(line) - resolveLineNetAmount(line)),
+  );
+};
+
+const resolveLineManualAdjustmentAmount = (line) =>
+  Math.max(0, roundMoney(line.manualAdjustmentAmount));
+
+const resolveLineCalculatedPayableAmount = (line) =>
+  roundMoney(
+    resolveLineNetAmount(line) + resolveLineManualAdjustmentAmount(line),
   );
 
 const toDateFromTimestampLike = (value) => {
@@ -103,9 +149,154 @@ const parseBoundaryDate = (value, { endOfDay = false } = {}) => {
 
 const toMillis = (value) => toDateFromTimestampLike(value)?.getTime() ?? null;
 
+const getUtcDaysInMonth = (year, monthIndex) =>
+  new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
+
+const toUtcMonthAnchor = (dateLike) => {
+  const dateValue = toDateFromTimestampLike(dateLike) ?? new Date();
+  return new Date(
+    Date.UTC(dateValue.getUTCFullYear(), dateValue.getUTCMonth(), 1),
+  );
+};
+
 export const normalizeHrCommissionPeriodStatus = (value) => {
   const status = toCleanString(value)?.toLowerCase();
   return PERIOD_STATUSES.has(status) ? status : 'draft';
+};
+
+export const resolveHrCommissionCutRuleId = ({
+  endDay,
+  label,
+  ruleId = null,
+  startDay,
+} = {}) => {
+  const explicitId = sanitizeDocId(ruleId);
+  if (explicitId) return explicitId;
+
+  const fallbackLabel = toCleanString(label) || 'corte';
+  return sanitizeDocId(
+    `cut_${String(startDay).padStart(2, '0')}_${String(endDay).padStart(
+      2,
+      '0',
+    )}_${fallbackLabel}`,
+  );
+};
+
+export const normalizeHrCommissionCutRule = (
+  ruleLike,
+  { businessId = null, ruleId = null } = {},
+) => {
+  const rule = asRecord(ruleLike);
+  const label = toCleanString(rule.label);
+  const startDay = toIntegerInRange(rule.startDay, {
+    fallback: 1,
+    min: 1,
+    max: 31,
+  });
+  const endDay = toIntegerInRange(rule.endDay, {
+    fallback: 31,
+    min: 1,
+    max: 31,
+  });
+  const frequency = toCleanString(rule.frequency)?.toLowerCase() || 'monthly';
+
+  if (!label) {
+    return { ok: false, error: 'La regla requiere un nombre.' };
+  }
+  if (!CUT_RULE_FREQUENCIES.has(frequency)) {
+    return { ok: false, error: 'La frecuencia del corte no es valida.' };
+  }
+  if (!startDay || !endDay) {
+    return { ok: false, error: 'Los dias del corte deben estar entre 1 y 31.' };
+  }
+  if (startDay > endDay) {
+    return {
+      ok: false,
+      error: 'El dia inicial del corte no puede ser mayor que el dia final.',
+    };
+  }
+
+  const resolvedRuleId = resolveHrCommissionCutRuleId({
+    endDay,
+    label,
+    ruleId: ruleId || rule.ruleId || rule.id,
+    startDay,
+  });
+  if (!resolvedRuleId) {
+    return { ok: false, error: 'No se pudo generar la regla de corte.' };
+  }
+
+  return {
+    ok: true,
+    rule: withoutUndefined({
+      id: resolvedRuleId,
+      businessId: toCleanString(rule.businessId) || toCleanString(businessId),
+      label,
+      frequency,
+      startDay,
+      endDay,
+      active: rule.active === false ? false : true,
+      sortOrder: safeNumber(rule.sortOrder, startDay),
+    }),
+  };
+};
+
+export const resolveHrCommissionCutRuleRange = ({
+  anchorDate = new Date(),
+  rule,
+} = {}) => {
+  const normalizedRule = normalizeHrCommissionCutRule(rule);
+  if (!normalizedRule.ok) return normalizedRule;
+
+  const anchor = toUtcMonthAnchor(anchorDate);
+  const year = anchor.getUTCFullYear();
+  const month = anchor.getUTCMonth();
+  const daysInMonth = getUtcDaysInMonth(year, month);
+  const startDay = Math.min(normalizedRule.rule.startDay, daysInMonth);
+  const endDay = Math.min(normalizedRule.rule.endDay, daysInMonth);
+  const start = new Date(Date.UTC(year, month, startDay, 0, 0, 0, 0));
+  const end = new Date(Date.UTC(year, month, endDay, 23, 59, 59, 999));
+
+  return {
+    ok: true,
+    rule: normalizedRule.rule,
+    start,
+    end,
+    startKey: toDateKey(start),
+    endKey: toDateKey(end),
+  };
+};
+
+export const resolveNextHrCommissionCutRuleRange = ({
+  periods = [],
+  referenceDate = new Date(),
+  rule,
+} = {}) => {
+  const normalizedRule = normalizeHrCommissionCutRule(rule);
+  if (!normalizedRule.ok) return normalizedRule;
+
+  const latestEndDate = (Array.isArray(periods) ? periods : [])
+    .filter((period) => {
+      const periodRuleId = toCleanString(period?.cutRuleId);
+      return periodRuleId === normalizedRule.rule.id;
+    })
+    .map((period) => toDateFromTimestampLike(period?.endDate))
+    .filter(Boolean)
+    .sort((left, right) => right.getTime() - left.getTime())[0];
+  const anchorDate = latestEndDate
+    ? new Date(
+        Date.UTC(
+          latestEndDate.getUTCFullYear(),
+          latestEndDate.getUTCMonth() + 1,
+          1,
+        ),
+      )
+    : referenceDate;
+
+  return resolveHrCommissionCutRuleRange({
+    anchorDate,
+    rule: normalizedRule.rule,
+  });
 };
 
 export const resolveHrCommissionPeriodId = ({
@@ -234,6 +425,8 @@ export const groupHrCommissionEntriesByEmployee = (entries = []) => {
 
 export const buildHrCommissionCutDocuments = ({
   businessId,
+  cutRule = null,
+  employees = [],
   entries = [],
   endDate,
   periodId = null,
@@ -266,15 +459,70 @@ export const buildHrCommissionCutDocuments = ({
       }),
     )
     .map(normalizeCommissionEntry);
-  if (!eligibleEntries.length) {
+  const employeesById = new Map(
+    (Array.isArray(employees) ? employees : [])
+      .map((employee) => {
+        const employeeRecord = asRecord(employee);
+        const employeeId =
+          toCleanString(employeeRecord.employeeId) ||
+          toCleanString(employeeRecord.id);
+        return employeeId ? [employeeId, employeeRecord] : null;
+      })
+      .filter(Boolean),
+  );
+  const salaryEmployeeGroups = Array.from(employeesById.values())
+    .filter((employee) => {
+      const payType = toCleanString(employee.payType);
+      const status = toCleanString(employee.status)?.toLowerCase() || 'active';
+      return (
+        ['salary', 'mixed'].includes(payType) &&
+        roundMoney(employee.baseSalaryAmount) > 0 &&
+        status === 'active'
+      );
+    })
+    .map((employee) => {
+      const employeeId =
+        toCleanString(employee.employeeId) || toCleanString(employee.id);
+      return {
+        employeeId,
+        employeeCode: toCleanString(employee.code),
+        employeeNameSnapshot:
+          toCleanString(employee.fullName) ||
+          toCleanString(employee.displayName) ||
+          toCleanString(employee.legalName),
+        partyId: toCleanString(employee.partyId),
+        currency: toCleanString(employee.currency)?.toUpperCase() || 'DOP',
+        entries: [],
+        totalCommissionAmount: 0,
+      };
+    })
+    .filter((employee) => employee.employeeId);
+  if (!eligibleEntries.length && !salaryEmployeeGroups.length) {
     return {
       ok: false,
-      error:
-        'No hay comisiones calculadas y vinculadas a empleados para este rango.',
+      error: 'No hay comisiones ni empleados con salario base para este rango.',
     };
   }
 
-  const groups = groupHrCommissionEntriesByEmployee(eligibleEntries);
+  const commissionGroups = groupHrCommissionEntriesByEmployee(eligibleEntries);
+  const groupsByEmployee = new Map(
+    commissionGroups.map((group) => [group.employeeId, group]),
+  );
+  salaryEmployeeGroups.forEach((group) => {
+    if (!groupsByEmployee.has(group.employeeId)) {
+      groupsByEmployee.set(group.employeeId, group);
+    }
+  });
+
+  const groups = Array.from(groupsByEmployee.values()).sort((left, right) =>
+    (
+      left.employeeNameSnapshot ||
+      left.employeeCode ||
+      left.employeeId
+    ).localeCompare(
+      right.employeeNameSnapshot || right.employeeCode || right.employeeId,
+    ),
+  );
   const currency = groups[0]?.currency || 'DOP';
   const payrollRunId = `run_${resolvedPeriodId}`;
   const totalCommissionAmount = roundMoney(
@@ -283,9 +531,33 @@ export const buildHrCommissionCutDocuments = ({
   const startTimestamp = Timestamp.fromDate(range.start);
   const endTimestamp = Timestamp.fromDate(range.end);
   const periodKey = `${range.startKey}_${range.endKey}`;
+  const normalizedCutRule = cutRule
+    ? normalizeHrCommissionCutRule(cutRule, { businessId })
+    : null;
+  const cutRuleSnapshot = normalizedCutRule?.ok
+    ? {
+        id: normalizedCutRule.rule.id,
+        label: normalizedCutRule.rule.label,
+        frequency: normalizedCutRule.rule.frequency,
+        startDay: normalizedCutRule.rule.startDay,
+        endDay: normalizedCutRule.rule.endDay,
+      }
+    : null;
 
   const employeeLines = groups.map((group) => {
     const lineId = sanitizeDocId(`${resolvedPeriodId}_${group.employeeId}`);
+    const employee = employeesById.get(group.employeeId) || {};
+    const employeePayType = toCleanString(employee.payType);
+    const baseSalaryAmount = ['salary', 'mixed'].includes(employeePayType)
+      ? roundMoney(employee.baseSalaryAmount)
+      : 0;
+    const commissionAmount = group.totalCommissionAmount;
+    const grossAmount = roundMoney(baseSalaryAmount + commissionAmount);
+    const deductions = calculateSalaryDeductions({
+      baseSalaryAmount,
+      grossAmount,
+      salaryDeductions: employee.salaryDeductions,
+    });
     return {
       id: lineId,
       businessId,
@@ -295,21 +567,40 @@ export const buildHrCommissionCutDocuments = ({
       employeeCode: group.employeeCode,
       employeeNameSnapshot: group.employeeNameSnapshot,
       partyId: group.partyId,
-      type: 'commission',
+      type:
+        baseSalaryAmount > 0 && commissionAmount > 0
+          ? 'mixed'
+          : baseSalaryAmount > 0
+            ? 'salary'
+            : 'commission',
       status: 'draft',
       currency: group.currency || currency,
-      grossAmount: group.totalCommissionAmount,
-      deductionsAmount: 0,
-      netAmount: group.totalCommissionAmount,
-      commissionAmount: group.totalCommissionAmount,
+      baseSalaryAmount,
+      grossAmount,
+      deductionsAmount: deductions.deductionsAmount,
+      netAmount: deductions.netAmount,
+      commissionAmount,
+      deductionLines: deductions.deductionLines,
       commissionEntryIds: group.entries.map((entry) => entry.id),
       entriesCount: group.entries.length,
+      manualAdjustmentAmount: 0,
+      manualAdjustmentComment: null,
+      manualAdjustmentHistory: [],
       createdAt: timestamp,
       createdBy: userId,
       updatedAt: timestamp,
       updatedBy: userId,
     };
   });
+  const grossAmount = roundMoney(
+    employeeLines.reduce((sum, line) => sum + line.grossAmount, 0),
+  );
+  const deductionsAmount = roundMoney(
+    employeeLines.reduce((sum, line) => sum + line.deductionsAmount, 0),
+  );
+  const netAmount = roundMoney(
+    employeeLines.reduce((sum, line) => sum + line.netAmount, 0),
+  );
 
   const entryPatches = employeeLines.flatMap((line) =>
     line.commissionEntryIds.map((entryId) => ({
@@ -330,14 +621,26 @@ export const buildHrCommissionCutDocuments = ({
     businessId,
     type: 'commission',
     periodKey,
-    label: `Comisiones ${range.startKey} - ${range.endKey}`,
+    label: cutRuleSnapshot
+      ? `${cutRuleSnapshot.label} ${range.startKey} - ${range.endKey}`
+      : `Comisiones ${range.startKey} - ${range.endKey}`,
     status: 'draft',
     startDate: startTimestamp,
     endDate: endTimestamp,
+    cutRuleId: cutRuleSnapshot?.id ?? null,
+    cutRuleLabel: cutRuleSnapshot?.label ?? null,
+    cutRuleSnapshot,
     currency,
     entriesCount: eligibleEntries.length,
     employeesCount: groups.length,
     totalCommissionAmount,
+    grossAmount,
+    deductionsAmount,
+    netAmount,
+    totalPayableAmount: netAmount,
+    manualAdjustmentAmount: 0,
+    adjustmentsCount: 0,
+    lastAdjustmentComment: null,
     payrollRunId,
     accountingEventId: null,
     createdAt: timestamp,
@@ -355,12 +658,19 @@ export const buildHrCommissionCutDocuments = ({
     periodKey,
     startDate: startTimestamp,
     endDate: endTimestamp,
+    cutRuleId: cutRuleSnapshot?.id ?? null,
+    cutRuleLabel: cutRuleSnapshot?.label ?? null,
+    cutRuleSnapshot,
     currency,
     employeeCount: groups.length,
     lineCount: employeeLines.length,
-    grossAmount: totalCommissionAmount,
-    deductionsAmount: 0,
-    netAmount: totalCommissionAmount,
+    grossAmount,
+    deductionsAmount,
+    netAmount,
+    totalPayableAmount: netAmount,
+    manualAdjustmentAmount: 0,
+    adjustmentsCount: 0,
+    lastAdjustmentComment: null,
     accountingEventId: null,
     createdAt: timestamp,
     createdBy: userId,
@@ -378,6 +688,208 @@ export const buildHrCommissionCutDocuments = ({
   };
 };
 
+export const buildHrPayrollEmployeeLinePayableAdjustment = ({
+  comment,
+  employeeLines = [],
+  historyTimestamp = null,
+  line,
+  timestamp = FieldValue.serverTimestamp(),
+  totalToPay,
+  userId = null,
+} = {}) => {
+  const lineRecord = asRecord(line);
+  const lineId = toCleanString(lineRecord.id);
+  const lineStatus = toCleanString(lineRecord.status)?.toLowerCase() || 'draft';
+  const requestedNetAmount = toFiniteInputNumber(totalToPay);
+  const cleanComment = toCleanString(comment);
+
+  if (!lineId) {
+    return { ok: false, error: 'La linea de colaborador es requerida.' };
+  }
+  if (!LINE_ADJUSTABLE_STATUSES.has(lineStatus)) {
+    return {
+      ok: false,
+      error: 'Solo puedes editar el total antes de aprobar el corte.',
+    };
+  }
+  if (requestedNetAmount == null) {
+    return { ok: false, error: 'El total a pagar debe ser un monto valido.' };
+  }
+  if (!cleanComment || cleanComment.length < ADJUSTMENT_COMMENT_MIN_LENGTH) {
+    return {
+      ok: false,
+      error: 'Agrega un comentario sobre la modificacion del total a pagar.',
+    };
+  }
+
+  const grossAmount = resolveLineGrossAmount(lineRecord);
+  const previousNetAmount = resolveLineNetAmount(lineRecord);
+  const previousManualAdjustmentAmount =
+    resolveLineManualAdjustmentAmount(lineRecord);
+  const previousDeductionsAmount = resolveLineDeductionAmount(lineRecord);
+  const baseDeductionsAmount = Math.max(
+    0,
+    roundMoney(previousDeductionsAmount - previousManualAdjustmentAmount),
+  );
+  const calculatedPayableAmount =
+    resolveLineCalculatedPayableAmount(lineRecord);
+  const nextNetAmount = roundMoney(requestedNetAmount);
+
+  if (nextNetAmount < 0) {
+    return { ok: false, error: 'El total a pagar no puede ser negativo.' };
+  }
+  if (nextNetAmount - calculatedPayableAmount > THRESHOLD) {
+    return {
+      ok: false,
+      error: 'El total a pagar no puede exceder el calculo original.',
+    };
+  }
+  if (Math.abs(nextNetAmount - previousNetAmount) <= THRESHOLD) {
+    return { ok: false, error: 'El total a pagar no tiene cambios.' };
+  }
+
+  const manualAdjustmentAmount = Math.max(
+    0,
+    roundMoney(calculatedPayableAmount - nextNetAmount),
+  );
+  const deductionsAmount = roundMoney(
+    baseDeductionsAmount + manualAdjustmentAmount,
+  );
+  const history = normalizeAdjustmentHistory(
+    lineRecord.manualAdjustmentHistory,
+  ).slice(-(MAX_ADJUSTMENT_HISTORY - 1));
+  const historyEntry = withoutUndefined({
+    previousNetAmount,
+    newNetAmount: nextNetAmount,
+    previousDeductionsAmount,
+    newDeductionsAmount: deductionsAmount,
+    previousManualAdjustmentAmount,
+    newManualAdjustmentAmount: manualAdjustmentAmount,
+    deltaAmount: roundMoney(nextNetAmount - previousNetAmount),
+    comment: cleanComment,
+    createdAt: historyTimestamp ?? timestamp,
+    createdBy: userId,
+  });
+  const nextHistory = [...history, historyEntry];
+  const linePatch = {
+    deductionsAmount,
+    manualAdjustmentAmount,
+    manualAdjustmentComment: cleanComment,
+    manualAdjustmentHistory: nextHistory,
+    netAmount: nextNetAmount,
+    totalPayableAmount: nextNetAmount,
+    updatedAt: timestamp,
+    updatedBy: userId,
+  };
+  const effectiveLines = (Array.isArray(employeeLines) ? employeeLines : [])
+    .map((entry) => asRecord(entry))
+    .map((entry) =>
+      toCleanString(entry.id) === lineId ? { ...entry, ...linePatch } : entry,
+    );
+  const hasCurrentLine = effectiveLines.some(
+    (entry) => toCleanString(entry.id) === lineId,
+  );
+  if (!hasCurrentLine) {
+    effectiveLines.push({ ...lineRecord, ...linePatch });
+  }
+
+  const grossTotal = roundMoney(
+    effectiveLines.reduce(
+      (sum, entry) => sum + resolveLineGrossAmount(entry),
+      0,
+    ),
+  );
+  const deductionsTotal = roundMoney(
+    effectiveLines.reduce(
+      (sum, entry) => sum + resolveLineDeductionAmount(entry),
+      0,
+    ),
+  );
+  const netTotal = roundMoney(
+    effectiveLines.reduce((sum, entry) => sum + resolveLineNetAmount(entry), 0),
+  );
+  const adjustmentsCount = effectiveLines.reduce(
+    (sum, entry) =>
+      sum + normalizeAdjustmentHistory(entry.manualAdjustmentHistory).length,
+    0,
+  );
+  const manualAdjustmentTotal = roundMoney(
+    effectiveLines.reduce(
+      (sum, entry) => sum + resolveLineManualAdjustmentAmount(entry),
+      0,
+    ),
+  );
+  const aggregatePatch = {
+    grossAmount: grossTotal,
+    deductionsAmount: deductionsTotal,
+    manualAdjustmentAmount: manualAdjustmentTotal,
+    netAmount: netTotal,
+    totalPayableAmount: netTotal,
+    adjustmentsCount,
+    lastAdjustmentComment: cleanComment,
+    lastAdjustmentAt: timestamp,
+    lastAdjustmentBy: userId,
+    updatedAt: timestamp,
+    updatedBy: userId,
+  };
+
+  return {
+    ok: true,
+    aggregatePatch,
+    deductionsAmount,
+    grossAmount,
+    linePatch,
+    netAmount: nextNetAmount,
+    previousNetAmount,
+  };
+};
+
+const summarizePayrollDeductionLines = (employeeLines = []) => {
+  const summary = (Array.isArray(employeeLines) ? employeeLines : []).reduce(
+    (accumulator, line) => {
+      const deductionLines = Array.isArray(line?.deductionLines)
+        ? line.deductionLines
+        : [];
+
+      deductionLines.forEach((entry) => {
+        const deduction = asRecord(entry);
+        if (deduction.payableObligation === false) {
+          return;
+        }
+
+        const amount = roundMoney(deduction.calculatedAmount ?? deduction.amount);
+        if (amount <= THRESHOLD) {
+          return;
+        }
+
+        const accountSystemKey = toCleanString(deduction.accountSystemKey);
+        const kind = toCleanString(deduction.kind);
+        if (accountSystemKey === 'tax_payable' || kind === 'salary_itbis') {
+          accumulator.taxAmount = roundMoney(accumulator.taxAmount + amount);
+          return;
+        }
+
+        accumulator.otherPayableAmount = roundMoney(
+          accumulator.otherPayableAmount + amount,
+        );
+      });
+
+      return accumulator;
+    },
+    {
+      taxAmount: 0,
+      otherPayableAmount: 0,
+    },
+  );
+
+  return {
+    ...summary,
+    totalPayableDeductionsAmount: roundMoney(
+      summary.taxAmount + summary.otherPayableAmount,
+    ),
+  };
+};
+
 export const buildHrCommissionAccrualAccountingEvent = ({
   businessId,
   employeeLines = [],
@@ -387,7 +899,46 @@ export const buildHrCommissionAccrualAccountingEvent = ({
 } = {}) => {
   const periodRecord = asRecord(period);
   const periodId = toCleanString(periodRecord.id);
-  const totalAmount = roundMoney(periodRecord.totalCommissionAmount);
+  const normalizedEmployeeLines = (
+    Array.isArray(employeeLines) ? employeeLines : []
+  ).map((line) => asRecord(line));
+  const employeeLineGrossTotal = roundMoney(
+    normalizedEmployeeLines.reduce(
+      (sum, line) => sum + resolveLineGrossAmount(line),
+      0,
+    ),
+  );
+  const employeeLineManualAdjustmentTotal = roundMoney(
+    normalizedEmployeeLines.reduce(
+      (sum, line) => sum + resolveLineManualAdjustmentAmount(line),
+      0,
+    ),
+  );
+  const employeeLineAccrualTotal = Math.max(
+    0,
+    roundMoney(employeeLineGrossTotal - employeeLineManualAdjustmentTotal),
+  );
+  const employeeLineNetTotal = roundMoney(
+    normalizedEmployeeLines.reduce(
+      (sum, line) => sum + resolveLineNetAmount(line),
+      0,
+    ),
+  );
+  const payrollDeductionSummary =
+    summarizePayrollDeductionLines(normalizedEmployeeLines);
+  const fallbackGrossAmount = roundMoney(
+    periodRecord.grossAmount ?? periodRecord.totalCommissionAmount,
+  );
+  const fallbackManualAdjustmentAmount = roundMoney(
+    periodRecord.manualAdjustmentAmount,
+  );
+  const totalAmount =
+    employeeLineAccrualTotal > THRESHOLD
+      ? employeeLineAccrualTotal
+      : Math.max(
+          0,
+          roundMoney(fallbackGrossAmount - fallbackManualAdjustmentAmount),
+        );
   if (!businessId || !periodId || totalAmount <= 0) return null;
 
   return buildAccountingEvent({
@@ -415,17 +966,47 @@ export const buildHrCommissionAccrualAccountingEvent = ({
       periodKey: toCleanString(periodRecord.periodKey),
       startDate: periodRecord.startDate ?? null,
       endDate: periodRecord.endDate ?? null,
+      grossAmount:
+        employeeLineGrossTotal > THRESHOLD
+          ? employeeLineGrossTotal
+          : fallbackGrossAmount,
+      deductionsAmount: roundMoney(periodRecord.deductionsAmount),
+      manualAdjustmentAmount:
+        employeeLineManualAdjustmentTotal > THRESHOLD
+          ? employeeLineManualAdjustmentTotal
+          : fallbackManualAdjustmentAmount,
+      netAmount:
+        employeeLineNetTotal > THRESHOLD
+          ? employeeLineNetTotal
+          : roundMoney(
+              periodRecord.netAmount ?? periodRecord.totalPayableAmount,
+            ),
+      payrollDeductionSummary,
       employeesCount: safeNumber(periodRecord.employeesCount),
       entriesCount: safeNumber(periodRecord.entriesCount),
-      employeeLines: (Array.isArray(employeeLines) ? employeeLines : []).map(
-        (line) => ({
-          id: toCleanString(line.id),
-          employeeId: toCleanString(line.employeeId),
-          employeeCode: toCleanString(line.employeeCode),
-          employeeNameSnapshot: toCleanString(line.employeeNameSnapshot),
-          amount: roundMoney(line.netAmount ?? line.commissionAmount),
-        }),
-      ),
+      employeeLines: normalizedEmployeeLines.map((line) => ({
+        id: toCleanString(line.id),
+        employeeId: toCleanString(line.employeeId),
+        employeeCode: toCleanString(line.employeeCode),
+        employeeNameSnapshot: toCleanString(line.employeeNameSnapshot),
+        baseSalaryAmount: roundMoney(line.baseSalaryAmount),
+        commissionAmount: roundMoney(line.commissionAmount),
+        grossAmount: resolveLineGrossAmount(line),
+        deductionsAmount: resolveLineDeductionAmount(line),
+        manualAdjustmentAmount: resolveLineManualAdjustmentAmount(line),
+        netAmount: resolveLineNetAmount(line),
+        amount: Math.max(
+          0,
+          roundMoney(
+            resolveLineGrossAmount(line) -
+              resolveLineManualAdjustmentAmount(line),
+          ),
+        ),
+        deductionLines: Array.isArray(line.deductionLines)
+          ? line.deductionLines
+          : [],
+        adjustmentComment: toCleanString(line.manualAdjustmentComment),
+      })),
     },
     dedupeKey: `${businessId}:hr_commission.accrued:${periodId}:1`,
     projectionStatus: 'pending',

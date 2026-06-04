@@ -11,6 +11,7 @@ import {
   resolvePostingProfileForEvent,
   validateProjectedLines,
 } from './utils/accountingProjection.util.js';
+import { buildAccountingPeriodKey } from './utils/periodClosure.util.js';
 
 export const PROJECTOR_VERSION = 1;
 
@@ -35,6 +36,12 @@ const buildCollectionDocs = (snapshot) =>
         ...asRecord(docSnapshot.data()),
       }))
     : [];
+
+const resolveEventPeriodKey = (event, fallbackDate) =>
+  buildAccountingPeriodKey(
+    event?.occurredAt ?? event?.entryDate ?? event?.recordedAt ?? fallbackDate,
+    fallbackDate,
+  );
 
 const buildProjectionUpdate = ({
   accountingEvent,
@@ -176,14 +183,16 @@ export const runAccountingEventProjection = async ({
   );
   const now = Timestamp.now();
 
-  const [settingsSnap, entrySnap, profilesSnap, chartSnap] = await Promise.all([
-    settingsRef.get(),
-    entryRef.get(),
-    db
-      .collection(`businesses/${normalizedBusinessId}/accountingPostingProfiles`)
-      .get(),
-    db.collection(`businesses/${normalizedBusinessId}/chartOfAccounts`).get(),
-  ]);
+  const [settingsSnap, entrySnap, profilesSnap, chartSnap, bankAccountsSnap] =
+    await Promise.all([
+      settingsRef.get(),
+      entryRef.get(),
+      db
+        .collection(`businesses/${normalizedBusinessId}/accountingPostingProfiles`)
+        .get(),
+      db.collection(`businesses/${normalizedBusinessId}/chartOfAccounts`).get(),
+      db.collection(`businesses/${normalizedBusinessId}/bankAccounts`).get(),
+    ]);
 
   if (entrySnap.exists) {
     const projectionUpdate = buildProjectionUpdate({
@@ -257,8 +266,57 @@ export const runAccountingEventProjection = async ({
     };
   }
 
+  const eventPeriodKey = resolveEventPeriodKey(eventRecord, now);
+  const closureSnap = eventPeriodKey
+    ? await db
+        .doc(
+          `businesses/${normalizedBusinessId}/accountingPeriodClosures/${eventPeriodKey}`,
+        )
+        .get()
+    : null;
+  if (closureSnap?.exists) {
+    const lastError = buildProjectionError({
+      code: 'accounting-period-closed',
+      message:
+        'El periodo contable del evento esta cerrado; reabre el periodo o registra un ajuste posterior.',
+      now,
+      details: {
+        periodKey: eventPeriodKey,
+      },
+    });
+    const projectionUpdate = buildProjectionUpdate({
+      accountingEvent: eventRecord,
+      status: 'failed',
+      now,
+      projectorVersion: PROJECTOR_VERSION,
+      lastError,
+      replayRequestedBy,
+    });
+    await eventRef.update(projectionUpdate);
+    await persistDeadLetter({
+      deadLetterRef,
+      businessId: normalizedBusinessId,
+      eventId: normalizedEventId,
+      accountingEvent: eventRecord,
+      projectionUpdate,
+      lastError,
+      replayRequestedBy,
+      now,
+    });
+
+    return {
+      ok: false,
+      status: 'failed',
+      journalEntryId: null,
+      reusedExistingEntry: false,
+      deadLetterId: normalizedEventId,
+      lastError,
+    };
+  }
+
   const postingProfiles = buildCollectionDocs(profilesSnap);
   const chartOfAccounts = buildCollectionDocs(chartSnap);
+  const bankAccounts = buildCollectionDocs(bankAccountsSnap);
   const profile = resolvePostingProfileForEvent(eventRecord, postingProfiles);
 
   if (!profile) {
@@ -304,6 +362,7 @@ export const runAccountingEventProjection = async ({
   const { lines, unresolvedLines } = buildProjectedJournalLines({
     event: eventRecord,
     profile,
+    bankAccounts,
     chartOfAccounts,
   });
 

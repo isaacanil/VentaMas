@@ -27,17 +27,41 @@ describe('postingProfiles', () => {
       type: 'asset',
       systemKey: 'accounts_receivable',
     }),
+    normalizeChartOfAccountRecord('tax-receivable-id', 'business-1', {
+      code: '1125',
+      name: 'Impuestos por recuperar',
+      type: 'asset',
+      systemKey: 'tax_receivable',
+    }),
     normalizeChartOfAccountRecord('inventory-id', 'business-1', {
       code: '1130',
       name: 'Inventario',
       type: 'asset',
       systemKey: 'inventory',
     }),
+    normalizeChartOfAccountRecord('supplier-credits-id', 'business-1', {
+      code: '1140',
+      name: 'Saldos a favor de suplidores',
+      type: 'asset',
+      systemKey: 'supplier_credits',
+    }),
     normalizeChartOfAccountRecord('ap-id', 'business-1', {
       code: '2100',
       name: 'Cuentas por pagar',
       type: 'liability',
       systemKey: 'accounts_payable',
+    }),
+    normalizeChartOfAccountRecord('payroll-payable-id', 'business-1', {
+      code: '2110',
+      name: 'Nomina por pagar',
+      type: 'liability',
+      systemKey: 'payroll_payable',
+    }),
+    normalizeChartOfAccountRecord('payroll-withholdings-id', 'business-1', {
+      code: '2120',
+      name: 'Retenciones laborales por pagar',
+      type: 'liability',
+      systemKey: 'payroll_withholdings_payable',
     }),
     normalizeChartOfAccountRecord('customer-credits-id', 'business-1', {
       code: '2300',
@@ -73,11 +97,23 @@ describe('postingProfiles', () => {
       type: 'income',
       systemKey: 'sales',
     }),
+    normalizeChartOfAccountRecord('fx-gain-id', 'business-1', {
+      code: '4200',
+      name: 'Ingresos por diferencia cambiaria',
+      type: 'income',
+      systemKey: 'fx_gain',
+    }),
     normalizeChartOfAccountRecord('expense-id', 'business-1', {
       code: '5200',
       name: 'Gastos operativos',
       type: 'expense',
       systemKey: 'operating_expenses',
+    }),
+    normalizeChartOfAccountRecord('cost-of-sales-id', 'business-1', {
+      code: '5100',
+      name: 'Costo de venta',
+      type: 'expense',
+      systemKey: 'cost_of_sales',
     }),
     normalizeChartOfAccountRecord('cash-over-short-expense-id', 'business-1', {
       code: '5250',
@@ -95,6 +131,12 @@ describe('postingProfiles', () => {
         systemKey: 'bank_reconciliation_expense',
       },
     ),
+    normalizeChartOfAccountRecord('fx-loss-id', 'business-1', {
+      code: '5300',
+      name: 'Gastos por diferencia cambiaria',
+      type: 'expense',
+      systemKey: 'fx_loss',
+    }),
   ];
 
   it('normaliza drafts con defaults minimos', () => {
@@ -123,8 +165,52 @@ describe('postingProfiles', () => {
       'cash_over_short_gain',
     );
     expect(
+      normalizeAccountingPostingAmountSource(
+        'accounts_receivable_applied_amount',
+      ),
+    ).toBe('accounts_receivable_applied_amount');
+    expect(
+      normalizeAccountingPostingAmountSource(
+        'accounts_receivable_collected_amount',
+      ),
+    ).toBe('accounts_receivable_collected_amount');
+    expect(
+      normalizeAccountingPostingAmountSource(
+        'accounts_receivable_withholding_amount',
+      ),
+    ).toBe('accounts_receivable_withholding_amount');
+    expect(
+      normalizeAccountingPostingAmountSource('accounts_payable_cash_paid'),
+    ).toBe('accounts_payable_cash_paid');
+    expect(
+      normalizeAccountingPostingAmountSource('accounts_payable_bank_paid'),
+    ).toBe('accounts_payable_bank_paid');
+    expect(
+      normalizeAccountingPostingAmountSource(
+        'accounts_payable_credit_note_applied',
+      ),
+    ).toBe('accounts_payable_credit_note_applied');
+    expect(normalizeAccountingPostingAmountSource('payroll_accrual_amount')).toBe(
+      'payroll_accrual_amount',
+    );
+    expect(
+      normalizeAccountingPostingAmountSource('payroll_net_payable_amount'),
+    ).toBe('payroll_net_payable_amount');
+    expect(
+      normalizeAccountingPostingAmountSource(
+        'payroll_tax_deductions_amount',
+      ),
+    ).toBe('payroll_tax_deductions_amount');
+    expect(
+      normalizeAccountingPostingAmountSource(
+        'payroll_other_deductions_amount',
+      ),
+    ).toBe('payroll_other_deductions_amount');
+    expect(
       normalizeAccountingPostingAmountSource('bank_statement_adjustment_loss'),
     ).toBe('bank_statement_adjustment_loss');
+    expect(normalizeAccountingPostingAmountSource('fx_gain')).toBe('fx_gain');
+    expect(normalizeAccountingPostingAmountSource('fx_loss')).toBe('fx_loss');
   });
 
   it('construye templates base cuando existen las cuentas canonicas', () => {
@@ -139,6 +225,13 @@ describe('postingProfiles', () => {
     ).toBe(true);
     expect(
       result.some(
+        (profile) =>
+          profile.name === 'Costo de venta por salida de inventario' &&
+          profile.eventType === 'inventory.cogs.recorded',
+      ),
+    ).toBe(true);
+    expect(
+      result.some(
         (profile) => profile.name === 'Venta a credito con abono inicial',
       ),
     ).toBe(true);
@@ -146,7 +239,58 @@ describe('postingProfiles', () => {
       true,
     );
     expect(
+      result
+        .find((profile) => profile.name === 'Cobro por banco')
+        ?.linesTemplate.some(
+          (line) =>
+            line.accountSystemKey === 'tax_receivable' &&
+            line.amountSource === 'accounts_receivable_withholding_amount',
+        ),
+    ).toBe(true);
+    expect(
       result.some((profile) => profile.name === 'Pago a suplidor por banco'),
+    ).toBe(true);
+    expect(
+      result.some(
+        (profile) =>
+          profile.name === 'Saldo a favor de suplidor emitido' &&
+          profile.eventType === 'supplier_credit_note.issued',
+      ),
+    ).toBe(true);
+    expect(
+      result.some(
+        (profile) =>
+          profile.name === 'Pago mixto a suplidor' &&
+          profile.eventType === 'accounts_payable.payment.recorded',
+      ),
+    ).toBe(true);
+    expect(
+      result.some(
+        (profile) =>
+          profile.name === 'Diferencia cambiaria liquidada' &&
+          profile.eventType === 'fx_settlement.recorded',
+      ),
+    ).toBe(true);
+    expect(
+      result.some(
+        (profile) =>
+          profile.name === 'Anulacion de diferencia cambiaria' &&
+          profile.eventType === 'fx_settlement.voided',
+      ),
+    ).toBe(true);
+    expect(
+      result.some(
+        (profile) =>
+          profile.name === 'Pago a suplidor con saldo a favor' &&
+          profile.eventType === 'accounts_payable.payment.recorded',
+      ),
+    ).toBe(true);
+    expect(
+      result.some(
+        (profile) =>
+          profile.name === 'Compra inventariable al contado por banco' &&
+          profile.eventType === 'purchase.committed',
+      ),
     ).toBe(true);
     expect(
       result.some((profile) => profile.name === 'Pago a suplidor por caja'),
@@ -181,7 +325,16 @@ describe('postingProfiles', () => {
       true,
     );
     expect(
-      result.some((profile) => profile.name === 'Comisiones RRHH devengadas'),
+      result.some((profile) => profile.name === 'Nomina RRHH devengada'),
+    ).toBe(true);
+    expect(
+      result
+        .find((profile) => profile.name === 'Nomina RRHH devengada')
+        ?.linesTemplate.some(
+          (line) =>
+            line.accountSystemKey === 'payroll_withholdings_payable' &&
+            line.amountSource === 'payroll_other_deductions_amount',
+        ),
     ).toBe(true);
     expect(
       result.some((profile) => profile.name === 'Pago de nomina por caja'),

@@ -12,6 +12,7 @@ const setDocMock = vi.hoisted(() => vi.fn());
 const whereMock = vi.hoisted(() => vi.fn());
 const writeBatchMock = vi.hoisted(() => vi.fn());
 const dbMock = vi.hoisted(() => ({ name: 'db-mock' }));
+const createBankAccountConfigMock = vi.hoisted(() => vi.fn());
 const useAccountingRolloutEnabledMock = vi.hoisted(() => vi.fn());
 
 vi.mock('firebase/firestore', () => ({
@@ -34,6 +35,11 @@ vi.mock('@/firebase/firebaseconfig', () => ({
   db: dbMock,
 }));
 
+vi.mock('@/firebase/accounting/accountingConfiguration', () => ({
+  createBankAccountConfig: (...args: unknown[]) =>
+    createBankAccountConfigMock(...args),
+}));
+
 vi.mock('@/hooks/useAccountingRolloutEnabled', () => ({
   useAccountingRolloutEnabled: (...args: unknown[]) =>
     useAccountingRolloutEnabledMock(...args),
@@ -53,6 +59,7 @@ describe('useAccountingConfig loading', () => {
     setDocMock.mockReset();
     whereMock.mockReset();
     writeBatchMock.mockReset();
+    createBankAccountConfigMock.mockReset();
     useAccountingRolloutEnabledMock.mockReset();
 
     useAccountingRolloutEnabledMock.mockReturnValue(true);

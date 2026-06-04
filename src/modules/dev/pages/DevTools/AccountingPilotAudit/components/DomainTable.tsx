@@ -1,8 +1,21 @@
-import { Alert, Card, Empty, Skeleton, Statistic, Table, Tag, Typography } from 'antd';
+import {
+  Alert,
+  Card,
+  Empty,
+  Skeleton,
+  Statistic,
+  Table,
+  Tag,
+  Typography,
+} from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React from 'react';
 
 import type { AuditRow, DomainAuditResult } from '../types';
+import {
+  formatAuditAmount,
+  formatAuditDate,
+} from '../utils/accountingAuditFormatters';
 
 const { Text } = Typography;
 
@@ -18,14 +31,6 @@ const DOMAIN_LABELS: Record<string, string> = {
   expenses: 'Gastos',
 };
 
-const formatDate = (millis: number | null): string => {
-  if (millis === null) return '—';
-  return new Date(millis).toLocaleString('es-DO', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  });
-};
-
 const columns: ColumnsType<AuditRow> = [
   {
     title: 'ID',
@@ -33,14 +38,20 @@ const columns: ColumnsType<AuditRow> = [
     key: 'id',
     width: 180,
     ellipsis: true,
-    render: (id: string) => <Text code copyable style={{ fontSize: 11 }}>{id}</Text>,
+    render: (id: string) => (
+      <Text code copyable style={{ fontSize: 11 }}>
+        {id}
+      </Text>
+    ),
   },
   {
     title: 'Fecha',
     dataIndex: 'date',
     key: 'date',
     width: 140,
-    render: (date: number | null) => <Text style={{ fontSize: 12 }}>{formatDate(date)}</Text>,
+    render: (date: number | null) => (
+      <Text style={{ fontSize: 12 }}>{formatAuditDate(date)}</Text>
+    ),
   },
   {
     title: 'Monto',
@@ -50,7 +61,7 @@ const columns: ColumnsType<AuditRow> = [
     align: 'right',
     render: (amount: number | null) =>
       amount !== null ? (
-        <Text style={{ fontSize: 12 }}>{amount.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</Text>
+        <Text style={{ fontSize: 12 }}>{formatAuditAmount(amount)}</Text>
       ) : (
         <Text type="secondary">—</Text>
       ),
@@ -62,18 +73,16 @@ const columns: ColumnsType<AuditRow> = [
     width: 110,
     align: 'center',
     render: (has: boolean) =>
-      has ? (
-        <Tag color="success">yes</Tag>
-      ) : (
-        <Tag color="error">no</Tag>
-      ),
+      has ? <Tag color="success">yes</Tag> : <Tag color="error">no</Tag>,
   },
   {
     title: 'docCurrency',
     key: 'documentCurrency',
     width: 100,
     render: (_: unknown, row: AuditRow) => (
-      <Text style={{ fontSize: 12 }}>{row.monetary?.documentCurrency ?? '—'}</Text>
+      <Text style={{ fontSize: 12 }}>
+        {row.monetary?.documentCurrency ?? '—'}
+      </Text>
     ),
   },
   {
@@ -81,7 +90,9 @@ const columns: ColumnsType<AuditRow> = [
     key: 'functionalCurrency',
     width: 100,
     render: (_: unknown, row: AuditRow) => (
-      <Text style={{ fontSize: 12 }}>{row.monetary?.functionalCurrency ?? '—'}</Text>
+      <Text style={{ fontSize: 12 }}>
+        {row.monetary?.functionalCurrency ?? '—'}
+      </Text>
     ),
   },
   {
@@ -98,7 +109,9 @@ const columns: ColumnsType<AuditRow> = [
     key: 'capturedAt',
     width: 140,
     render: (_: unknown, row: AuditRow) => (
-      <Text style={{ fontSize: 12 }}>{formatDate(row.monetary?.capturedAt ?? null)}</Text>
+      <Text style={{ fontSize: 12 }}>
+        {formatAuditDate(row.monetary?.capturedAt ?? null)}
+      </Text>
     ),
   },
   {
@@ -106,7 +119,9 @@ const columns: ColumnsType<AuditRow> = [
     key: 'snippet',
     ellipsis: true,
     render: (_: unknown, row: AuditRow) => (
-      <Text type="secondary" style={{ fontSize: 11 }}>{row.monetary?.snippet ?? '—'}</Text>
+      <Text type="secondary" style={{ fontSize: 11 }}>
+        {row.monetary?.snippet ?? '—'}
+      </Text>
     ),
   },
 ];
@@ -120,9 +135,25 @@ const CoverageSummary: React.FC<{ rows: AuditRow[] }> = ({ rows }) => {
   return (
     <div style={{ display: 'flex', gap: 24, marginBottom: 12 }}>
       <Statistic title="Consultados" value={total} />
-      <Statistic title="Con monetary" value={withMonetary} valueStyle={{ color: '#3f8600' }} />
-      <Statistic title="Sin monetary" value={withoutMonetary} valueStyle={{ color: withoutMonetary > 0 ? '#cf1322' : undefined }} />
-      <Statistic title="Cobertura" value={coverage} suffix="%" valueStyle={{ color: coverage === 100 ? '#3f8600' : coverage > 0 ? '#d48806' : '#cf1322' }} />
+      <Statistic
+        title="Con monetary"
+        value={withMonetary}
+        valueStyle={{ color: '#3f8600' }}
+      />
+      <Statistic
+        title="Sin monetary"
+        value={withoutMonetary}
+        valueStyle={{ color: withoutMonetary > 0 ? '#cf1322' : undefined }}
+      />
+      <Statistic
+        title="Cobertura"
+        value={coverage}
+        suffix="%"
+        valueStyle={{
+          color:
+            coverage === 100 ? '#3f8600' : coverage > 0 ? '#d48806' : '#cf1322',
+        }}
+      />
     </div>
   );
 };
@@ -149,7 +180,10 @@ export const DomainTable: React.FC<Props> = ({ result, title }) => {
       )}
 
       {!result.loading && !result.error && result.rows.length === 0 && (
-        <Empty description="Sin resultados" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        <Empty
+          description="Sin resultados"
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+        />
       )}
 
       {!result.loading && !result.error && result.rows.length > 0 && (
@@ -162,7 +196,9 @@ export const DomainTable: React.FC<Props> = ({ result, title }) => {
             size="small"
             pagination={false}
             scroll={{ x: 1000 }}
-            rowClassName={(row) => (row.hasMonetary ? '' : 'ant-table-row-danger')}
+            rowClassName={(row) =>
+              row.hasMonetary ? '' : 'ant-table-row-danger'
+            }
           />
         </>
       )}

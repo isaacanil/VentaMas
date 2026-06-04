@@ -94,6 +94,12 @@ export async function processInvoiceData({
         accountsReceivable,
         insuranceId: insuranceAR?.insuranceId,
       });
+    const accountingSettingsSnap = await tx.get(
+      db.doc(`businesses/${user.businessID}/settings/accounting`),
+    );
+    const accountingSettings = accountingSettingsSnap.exists
+      ? accountingSettingsSnap.data() || {}
+      : null;
 
     // Verificar si el usuario tiene un cuadre de caja abierto
     const { cashCount, cashCountId } = await checkOpenCashCount({
@@ -141,6 +147,7 @@ export async function processInvoiceData({
       products: cart.products,
       sale: invoice,
       inventoryPrevreqs,
+      accountingSettings,
     });
     logger.info('Inventory adjusted (tx)', { traceId });
 

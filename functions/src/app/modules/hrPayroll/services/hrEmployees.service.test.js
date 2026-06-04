@@ -61,6 +61,94 @@ describe('hrEmployees.service', () => {
     expect(employee.readyToPayIssues).toEqual([]);
   });
 
+  it('normaliza deducciones salariales como obligaciones por pagar', () => {
+    const employee = normalizeHrEmployeeInput({
+      id: 'employee-deductions',
+      code: 'EMP-DED',
+      fullName: 'Empleado con Deducciones',
+      documentId: '40212345678',
+      paymentMethod: 'cash',
+      payType: 'salary',
+      baseSalaryAmount: 30000,
+      salaryDeductions: [
+        { id: 'afp', kind: 'afp', mode: 'percentage', rate: '2.87' },
+        { id: 'tss', kind: 'tss', mode: 'percentage', rate: 3.04 },
+        {
+          id: 'salary_itbis',
+          kind: 'salary_itbis',
+          mode: 'percentage',
+          rate: 1,
+        },
+      ],
+    });
+
+    expect(employee.readyToPayStatus).toBe('ready');
+    expect(employee.salaryDeductions).toEqual([
+      expect.objectContaining({
+        id: 'afp',
+        kind: 'afp',
+        rate: 2.87,
+        payableObligation: true,
+        accountSystemKey: 'accounts_payable',
+      }),
+      expect.objectContaining({
+        id: 'tss',
+        kind: 'tss',
+        rate: 3.04,
+        payableObligation: true,
+        accountSystemKey: 'accounts_payable',
+      }),
+      expect.objectContaining({
+        id: 'salary_itbis',
+        kind: 'salary_itbis',
+        rate: 1,
+        payableObligation: true,
+        accountSystemKey: 'tax_payable',
+      }),
+    ]);
+  });
+
+  it('acepta comision configurada solo por servicio especifico', () => {
+    const employee = normalizeHrEmployeeInput({
+      id: 'stylist-1',
+      code: 'STY-01',
+      fullName: 'Servicio Avanzado',
+      documentType: 'cedula',
+      documentId: '40212345678',
+      payType: 'commission_only',
+      commissionEnabled: true,
+      paymentMethod: 'cash',
+      serviceCommissionRules: [
+        {
+          serviceId: 'service-advanced',
+          serviceName: 'Servicio avanzado',
+          type: 'percentage',
+          rateValue: '30',
+        },
+      ],
+    });
+
+    const payload = buildHrEmployeePayload({
+      businessId: 'business-1',
+      employee,
+      timestamp: { __serverTimestamp: true },
+      authUid: 'admin-1',
+      isNew: true,
+    });
+
+    expect(employee.readyToPayStatus).toBe('ready');
+    expect(payload.serviceCommissionRules).toEqual([
+      {
+        id: 'service-advanced',
+        serviceId: 'service-advanced',
+        serviceName: 'Servicio avanzado',
+        type: 'percentage',
+        rateValue: 30,
+        active: true,
+      },
+    ]);
+  });
+
   it('valida campos obligatorios antes de escribir', () => {
     const employee = normalizeHrEmployeeInput({
       code: '',

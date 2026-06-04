@@ -610,6 +610,11 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    match /businesses/{businessId}/hrCommissionCutRules/{documentId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
     match /businesses/{businessId}/hrCommissionPeriods/{documentId} {
       allow read: if hasBusinessAccess(businessId);
       allow create, update, delete: if false;

@@ -1,3 +1,5 @@
+import type { ServiceCommissionServiceRule } from './commissions';
+
 export type HrEmployeeStatus =
   | 'active'
   | 'inactive'
@@ -20,11 +22,19 @@ export type HrPaymentMethod =
 
 export type HrCommissionType = 'percentage' | 'fixed';
 
+export type HrSalaryDeductionKind = 'afp' | 'tss' | 'salary_itbis' | 'other';
+
+export type HrSalaryDeductionMode = 'percentage' | 'fixed';
+
+export type HrSalaryDeductionBasis = 'base_salary' | 'gross_pay';
+
 export type HrEmployeeDocumentType = 'cedula' | 'passport' | 'rnc' | 'other';
 
 export type HrEmployeeGender = 'male' | 'female' | 'other';
 
 export type HrReadyToPayStatus = 'ready' | 'needs_review';
+
+export type HrCommissionCutRuleFrequency = 'monthly';
 
 export type HrCommissionPeriodStatus =
   | 'draft'
@@ -75,9 +85,28 @@ export interface HrEmployeeInput {
   currency?: string | null;
   paymentMethod?: HrPaymentMethod | null;
   paymentDestination?: string | null;
+  salaryDeductions?: HrSalaryDeductionLine[] | null;
   commissionEnabled?: boolean | null;
   defaultCommissionType?: HrCommissionType | null;
   defaultCommissionRate?: number | string | null;
+  serviceCommissionRules?: ServiceCommissionServiceRule[] | null;
+  notes?: string | null;
+}
+
+export interface HrSalaryDeductionLine extends Record<string, unknown> {
+  id: string;
+  kind: HrSalaryDeductionKind;
+  name: string;
+  mode: HrSalaryDeductionMode;
+  rate: number;
+  amount: number;
+  basis: HrSalaryDeductionBasis;
+  active: boolean;
+  payableObligation: boolean;
+  obligationKey?: string | null;
+  accountSystemKey?: string | null;
+  basisAmount?: number;
+  calculatedAmount?: number;
   notes?: string | null;
 }
 
@@ -104,9 +133,11 @@ export interface HrEmployeeRecord extends Record<string, unknown> {
   currency: string;
   paymentMethod: HrPaymentMethod;
   paymentDestination?: string | null;
+  salaryDeductions: HrSalaryDeductionLine[];
   commissionEnabled: boolean;
   defaultCommissionType: HrCommissionType;
   defaultCommissionRate?: number | null;
+  serviceCommissionRules: ServiceCommissionServiceRule[];
   readyToPayStatus: HrReadyToPayStatus;
   readyToPayIssues: string[];
   notes?: string | null;
@@ -152,6 +183,30 @@ export interface HrCommissionEntryRecord extends Record<string, unknown> {
   updatedAt?: unknown;
 }
 
+export interface HrCommissionCutRuleInput {
+  id?: string | null;
+  ruleId?: string | null;
+  label?: string | null;
+  frequency?: HrCommissionCutRuleFrequency | null;
+  startDay?: number | string | null;
+  endDay?: number | string | null;
+  active?: boolean | null;
+  sortOrder?: number | string | null;
+}
+
+export interface HrCommissionCutRuleRecord extends Record<string, unknown> {
+  id: string;
+  businessId: string;
+  label: string;
+  frequency: HrCommissionCutRuleFrequency;
+  startDay: number;
+  endDay: number;
+  active: boolean;
+  sortOrder: number;
+  createdAt?: unknown;
+  updatedAt?: unknown;
+}
+
 export interface HrCommissionPeriodRecord extends Record<string, unknown> {
   id: string;
   businessId: string;
@@ -161,10 +216,20 @@ export interface HrCommissionPeriodRecord extends Record<string, unknown> {
   status: HrCommissionPeriodStatus;
   startDate?: unknown;
   endDate?: unknown;
+  cutRuleId?: string | null;
+  cutRuleLabel?: string | null;
+  cutRuleSnapshot?: Record<string, unknown> | null;
   currency: string;
   entriesCount: number;
   employeesCount: number;
   totalCommissionAmount: number;
+  grossAmount?: number;
+  deductionsAmount?: number;
+  netAmount?: number;
+  totalPayableAmount?: number;
+  manualAdjustmentAmount?: number;
+  adjustmentsCount?: number;
+  lastAdjustmentComment?: string | null;
   payrollRunId?: string | null;
   accountingEventId?: string | null;
   createdAt?: unknown;
@@ -186,6 +251,7 @@ export interface HrPayrollRunRecord extends Record<string, unknown> {
   grossAmount: number;
   deductionsAmount: number;
   netAmount: number;
+  totalPayableAmount?: number;
   accountingEventId?: string | null;
   paidAmount?: number;
   paidLinesCount?: number;
@@ -204,12 +270,18 @@ export interface HrPayrollEmployeeLineRecord extends Record<string, unknown> {
   type: 'commission' | 'salary' | 'mixed';
   status: HrPayrollRunStatus;
   currency: string;
+  baseSalaryAmount?: number;
   grossAmount: number;
   deductionsAmount: number;
   netAmount: number;
+  totalPayableAmount?: number;
   commissionAmount: number;
+  deductionLines: HrSalaryDeductionLine[];
   commissionEntryIds: string[];
   entriesCount: number;
+  manualAdjustmentAmount?: number;
+  manualAdjustmentComment?: string | null;
+  manualAdjustmentHistory?: Array<Record<string, unknown>>;
   accountingEventId?: string | null;
   employeePaymentId?: string | null;
   paymentMethod?: HrPaymentMethod | null;

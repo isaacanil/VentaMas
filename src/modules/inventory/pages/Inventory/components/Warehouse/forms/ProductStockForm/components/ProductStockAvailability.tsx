@@ -1,4 +1,12 @@
-import { Alert, Form, InputNumber, Progress } from 'antd';
+import { Form, Progress } from 'antd';
+
+import {
+  AvailabilityWarning,
+  FullWidthInputNumber,
+  RemainingStockLimit,
+  StockExceededAlert,
+  StockInputRow,
+} from './ProductStockAvailability.styles';
 
 interface ProductStockAvailabilityProps {
   batchId: string;
@@ -27,11 +35,10 @@ export const ProductStockAvailability = ({
 }: ProductStockAvailabilityProps) => {
   if (!isStockAvailable) {
     return batchId ? (
-      <Alert
+      <AvailabilityWarning
         message="El máximo disponible ha sido alcanzado. Por favor intenta con otro producto o lote."
         type="warning"
         showIcon
-        style={{ marginBottom: '16px' }}
       />
     ) : null;
   }
@@ -49,23 +56,17 @@ export const ProductStockAvailability = ({
           },
         ]}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1em' }}>
-          <InputNumber
+        <StockInputRow>
+          <FullWidthInputNumber
             min={0}
             max={Math.max(totalStockFromBatches - totalStockFromProducts, 0)}
-            style={{ width: '100%' }}
             value={value}
             onChange={onStockChange}
           />
-          <span
-            style={{
-              whiteSpace: 'nowrap',
-              color: remainingStock < 0 ? 'red' : 'black',
-            }}
-          >
+          <RemainingStockLimit $isExceeded={remainingStock < 0}>
             {` (Maximo: ${totalStockFromBatches - totalStockFromProducts})`}
-          </span>
-        </div>
+          </RemainingStockLimit>
+        </StockInputRow>
       </Form.Item>
 
       <Form.Item
@@ -77,14 +78,14 @@ export const ProductStockAvailability = ({
             percent={Math.max(0, Math.min(100, stockUsagePercent))}
             status={remainingStock < 0 ? 'exception' : 'normal'}
           />
-          <span>{formattedStockDifference}</span>/<span>{formattedTotalStock}</span>
+          <span>{formattedStockDifference}</span>/
+          <span>{formattedTotalStock}</span>
         </div>
         {remainingStock < 0 && (
-          <Alert
+          <StockExceededAlert
             message="El stock ingresado excede el total disponible. Por favor ajusta la cantidad."
             type="error"
             showIcon
-            style={{ marginTop: '8px' }}
           />
         )}
       </Form.Item>

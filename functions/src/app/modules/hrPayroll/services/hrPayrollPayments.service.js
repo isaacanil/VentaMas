@@ -254,6 +254,13 @@ export const buildHrPayrollPaymentAccountingEvent = ({
       employeeId: toCleanString(paymentRecord.employeeId),
       employeeCode: toCleanString(paymentRecord.employeeCode),
       employeeNameSnapshot: toCleanString(paymentRecord.employeeNameSnapshot),
+      baseSalaryAmount: roundMoney(paymentRecord.baseSalaryAmount),
+      commissionAmount: roundMoney(paymentRecord.commissionAmount),
+      grossAmount: roundMoney(paymentRecord.grossAmount),
+      deductionsAmount: roundMoney(paymentRecord.deductionsAmount),
+      deductionLines: Array.isArray(paymentRecord.deductionLines)
+        ? paymentRecord.deductionLines
+        : [],
     },
     dedupeKey: `${businessId}:hr_payroll.payment.recorded:${paymentId}:1`,
     projectionStatus: 'pending',
@@ -326,6 +333,13 @@ export const buildHrPayrollPaymentDocuments = ({
     employeeCode: toCleanString(lineRecord.employeeCode),
     employeeNameSnapshot: toCleanString(lineRecord.employeeNameSnapshot),
     partyId: toCleanString(lineRecord.partyId),
+    baseSalaryAmount: roundMoney(lineRecord.baseSalaryAmount),
+    commissionAmount: roundMoney(lineRecord.commissionAmount),
+    grossAmount: roundMoney(lineRecord.grossAmount),
+    deductionsAmount: roundMoney(lineRecord.deductionsAmount),
+    deductionLines: Array.isArray(lineRecord.deductionLines)
+      ? lineRecord.deductionLines
+      : [],
     amount: amountResult.amount,
     currency: toCleanString(lineRecord.currency)?.toUpperCase() || 'DOP',
     status: 'confirmed',

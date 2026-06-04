@@ -33,6 +33,16 @@ import TextCell from '@/components/ui/AdvancedTable/components/Cells/Text/TextCe
 import { Badge } from '@/components/common/Badge/Badge';
 import { formatPrice } from '@/utils/format/formatPrice';
 
+import {
+  ActionsCellWrapper,
+  PaymentDateCellWrapper,
+  PaymentDateTextGroup,
+  PaymentStatusLabel,
+  PrimaryPaymentDate,
+  SecondaryPaymentDate,
+  TotalPaymentCellWrapper,
+} from './tableCells.styles';
+
 interface ProviderCellProps {
   value?: string | null;
 }
@@ -211,12 +221,7 @@ export function PurchaseActionButtons({
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-      }}
+    <ActionsCellWrapper
       role="presentation"
       onClick={(e) => e.stopPropagation()}
       onKeyDown={(e) => e.stopPropagation()}
@@ -229,18 +234,8 @@ export function PurchaseActionButtons({
           hoverColor="#1677ff"
         />
       </Dropdown>
-    </div>
+    </ActionsCellWrapper>
   );
-}
-
-interface PaymentStatusCellProps {
-  value?: string | null;
-}
-
-export function PaymentStatusCell({ value }: PaymentStatusCellProps) {
-  if (!value) return null;
-  const label = value.replace(/_/g, ' ');
-  return <TextCell value={label} />;
 }
 
 interface TotalPaymentCellProps {
@@ -269,31 +264,15 @@ export function TotalPaymentCell({
   const { bgColor, color, label } = getPaymentStatusStyles(paymentStatus);
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-end',
-        gap: '2px',
-      }}
-    >
+    <TotalPaymentCellWrapper>
       <Badge
         text={formatPrice(total)}
         bgColor={bgColor}
         color={color}
         size="medium"
       />
-      <span
-        style={{
-          fontSize: '10px',
-          color: '#888',
-          textTransform: 'uppercase',
-          fontWeight: '600',
-        }}
-      >
-        {label}
-      </span>
-    </div>
+      <PaymentStatusLabel>{label}</PaymentStatusLabel>
+    </TotalPaymentCellWrapper>
   );
 }
 
@@ -313,22 +292,13 @@ export function DatePaymentCell({
   const nextPaymentAtStr = formatDate(nextPaymentAt);
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-        gap: '4px',
-      }}
-    >
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <span style={{ fontSize: '13px', fontWeight: '500' }}>
-          Último: {paymentAtStr || '---'}
-        </span>
-        <span style={{ fontSize: '11px', color: '#888' }}>
+    <PaymentDateCellWrapper>
+      <PaymentDateTextGroup>
+        <PrimaryPaymentDate>Último: {paymentAtStr || '---'}</PrimaryPaymentDate>
+        <SecondaryPaymentDate>
           Próximo: {nextPaymentAtStr || '---'}
-        </span>
-      </div>
-    </div>
+        </SecondaryPaymentDate>
+      </PaymentDateTextGroup>
+    </PaymentDateCellWrapper>
   );
 }

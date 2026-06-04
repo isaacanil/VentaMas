@@ -271,8 +271,17 @@ describe('validateInvoiceSubmissionGuards', () => {
             amountToBuy: 1,
             itemType: 'service',
             serviceCommission: {
+              collaborator: {
+                code: 'C-001',
+                defaultRate: 5,
+                defaultType: 'percentage',
+                name: 'Ana',
+              },
               collaboratorCode: 'C-001',
               collaboratorName: 'Ana',
+              rateValue: 5,
+              source: 'collaborator',
+              type: 'percentage',
             },
           },
         ],
@@ -285,5 +294,101 @@ describe('validateInvoiceSubmissionGuards', () => {
     });
 
     expect(result).toEqual({ ok: true });
+  });
+
+  it('permite el submit cuando la comision viene de una regla especifica del servicio', async () => {
+    vi.mocked(checkOpenCashReconciliation).mockResolvedValue({
+      state: 'open',
+      cashCount: {} as never,
+    });
+
+    const result = await validateInvoiceSubmissionGuards({
+      cart: {
+        products: [
+          {
+            id: 'service-advanced',
+            name: 'Servicio avanzado',
+            amountToBuy: 1,
+            itemType: 'service',
+            serviceCommission: {
+              collaborator: {
+                code: 'C-003',
+                defaultRate: null,
+                defaultType: 'percentage',
+                name: 'Marta',
+                serviceCommissionRules: [
+                  {
+                    serviceId: 'service-advanced',
+                    serviceName: 'Servicio avanzado',
+                    type: 'percentage',
+                    rateValue: 30,
+                    active: true,
+                  },
+                ],
+              },
+              collaboratorCode: 'C-003',
+              collaboratorName: 'Marta',
+              rateValue: 30,
+              source: 'service',
+              type: 'percentage',
+            },
+          },
+        ],
+      },
+      serviceCommissions: {
+        enabled: true,
+        requireCollaboratorOnService: true,
+      },
+      user: user as never,
+    });
+
+    expect(result).toEqual({ ok: true });
+  });
+
+  it('bloquea el submit cuando el colaborador asignado no tiene comision configurada', async () => {
+    vi.mocked(checkOpenCashReconciliation).mockResolvedValue({
+      state: 'open',
+      cashCount: {} as never,
+    });
+
+    const result = await validateInvoiceSubmissionGuards({
+      cart: {
+        products: [
+          {
+            id: 'service-3',
+            name: 'Consulta',
+            amountToBuy: 1,
+            itemType: 'service',
+            serviceCommission: {
+              collaborator: {
+                code: 'C-002',
+                defaultRate: 0,
+                defaultType: 'percentage',
+                name: 'Luis',
+              },
+              collaboratorCode: 'C-002',
+              collaboratorName: 'Luis',
+              rateValue: 0,
+              source: 'collaborator',
+              type: 'percentage',
+            },
+          },
+        ],
+      },
+      serviceCommissions: {
+        enabled: true,
+        requireCollaboratorOnService: false,
+      },
+      user: user as never,
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: false,
+        code: 'service-commission-collaborator-ineligible',
+        message: 'Configura la comision del colaborador',
+      }),
+    );
+    expect(getProductStockByProductId).not.toHaveBeenCalled();
   });
 });

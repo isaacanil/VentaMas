@@ -1,26 +1,26 @@
 import { Card, Button, Input, Row, Col, Select, Form } from 'antd';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { icons } from '@/constants/icons/icons';
 import { useCategoryState } from '@/Context/CategoryContext/useCategoryState';
 import { openModal } from '@/features/activeIngredients/activeIngredientsSlice';
 import { openBrandModal } from '@/features/productBrands/productBrandSlice';
-import {
-  PRODUCT_BRAND_DEFAULT,
-  PRODUCT_ITEM_TYPE_OPTIONS,
-} from '@/features/updateProduct/updateProductSlice';
+import { PRODUCT_ITEM_TYPE_OPTIONS } from '@/features/updateProduct/updateProductSlice';
 import { useFbGetCategories } from '@/firebase/categories/useFbGetCategories';
 import { useListenActiveIngredients } from '@/firebase/products/activeIngredient/activeIngredients';
-import {
-  BRAND_DEFAULT_OPTION_VALUE,
-  BRAND_LEGACY_OPTION_VALUE,
-} from '@/components/modals/ProductForm/constants/brandOptions';
+import { buildBrandOptions } from '@/components/modals/ProductForm/utils/brandSelection';
 import type {
   ActiveIngredient,
   ProductBrand,
   ProductRecord,
 } from '@/types/products';
+
+import {
+  getProductBrandFieldMeta,
+  matchesProductOptionText,
+} from './ProductInfo.helpers';
+import { FieldWithAction } from './ProductInfo.styles';
 
 type ProductInfoProps = {
   product: ProductRecord;
@@ -52,85 +52,14 @@ export const ProductInfo = ({
   const handleOpenBrandModal = () =>
     dispatch(openBrandModal({ initialValues: null }));
 
-  const brandFieldMeta = useMemo(() => {
-    const normalizedType = (product?.type || '').toLowerCase();
-    if (
-      normalizedType.includes('medic') ||
-      normalizedType.includes('farm') ||
-      normalizedType.includes('salud')
-    ) {
-      return {
-        label: 'Marca / Laboratorio',
-        placeholder: 'Ej: Pfizer, Genfar, Laboratorio ACME',
-        helper:
-          'Indica la marca comercial, laboratorio o denominación bajo la cual se vende el producto.',
-      };
-    }
-    if (
-      normalizedType.includes('bebida') ||
-      normalizedType.includes('alimento') ||
-      normalizedType.includes('consumo')
-    ) {
-      return {
-        label: 'Marca / Casa comercial',
-        placeholder: 'Ej: Coca-Cola, La Costeña, Artesanal',
-        helper:
-          'Puedes registrar la marca comercial, línea artesanal o fabricante principal.',
-      };
-    }
-    if (
-      normalizedType.includes('cosm') ||
-      normalizedType.includes('higiene') ||
-      normalizedType.includes('belleza')
-    ) {
-      return {
-        label: 'Marca / Línea',
-        placeholder: "Ej: L'Oréal, Dove, Genérico",
-        helper:
-          'Define la casa comercial, línea o fabricante responsable del producto.',
-      };
-    }
-    return {
-      label: 'Marca',
-      placeholder: 'Ej: Samsung, Genérico, Marca Propia',
-      helper:
-        'Registra la marca, fabricante o referencia que identifique el producto en tu catálogo.',
-    };
-  }, [product?.type]);
-
-  const brandOptions = useMemo(() => {
-    const normalizedBrands = Array.isArray(productBrands)
-      ? productBrands
-          .map(({ id, name }) => ({
-            value: id,
-            label: typeof name === 'string' ? name.trim() : '',
-          }))
-          .filter(({ value, label }) => value && label)
-      : [];
-
-    const options = [
-      {
-        value: BRAND_DEFAULT_OPTION_VALUE,
-        label: PRODUCT_BRAND_DEFAULT,
-      },
-      ...normalizedBrands,
-    ];
-
-    const hasLegacyBrand = Boolean(
-      !product?.brandId &&
-      product?.brand &&
-      product.brand !== PRODUCT_BRAND_DEFAULT,
-    );
-
-    if (hasLegacyBrand) {
-      options.push({
-        value: BRAND_LEGACY_OPTION_VALUE,
-        label: product.brand,
-      });
-    }
-
-    return options;
-  }, [productBrands, product]);
+  const brandFieldMeta = useMemo(
+    () => getProductBrandFieldMeta(product?.type),
+    [product?.type],
+  );
+  const brandOptions = useMemo(
+    () => buildBrandOptions(productBrands, product),
+    [productBrands, product],
+  );
 
   const itemTypeOptions = PRODUCT_ITEM_TYPE_OPTIONS;
 
@@ -179,38 +108,31 @@ export const ProductInfo = ({
       </Row>
 
       <Row gutter={16}>
-        <Col
-          span={24}
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr min-content',
-            gap: '0.2em',
-          }}
-        >
-          <Form.Item
-            name="brandId"
-            label={brandFieldMeta.label}
-            tooltip="Este campo se adapta al tipo de producto para capturar la marca, laboratorio o fabricante."
-            extra={brandFieldMeta.helper}
-          >
-            <Select
-              showSearch
-              placeholder={brandFieldMeta.placeholder}
-              options={brandOptions}
-              optionFilterProp="label"
-              filterOption={(inputValue, option) =>
-                (option?.label || '')
-                  .toLowerCase()
-                  .includes(inputValue.toLowerCase())
-              }
-            />
-          </Form.Item>
-          <Form.Item label={' '}>
-            <Button
-              icon={icons.operationModes.add}
-              onClick={handleOpenBrandModal}
-            ></Button>
-          </Form.Item>
+        <Col span={24}>
+          <FieldWithAction>
+            <Form.Item
+              name="brandId"
+              label={brandFieldMeta.label}
+              tooltip="Este campo se adapta al tipo de producto para capturar la marca, laboratorio o fabricante."
+              extra={brandFieldMeta.helper}
+            >
+              <Select
+                showSearch
+                placeholder={brandFieldMeta.placeholder}
+                options={brandOptions}
+                optionFilterProp="label"
+                filterOption={(inputValue, option) =>
+                  matchesProductOptionText(inputValue, option?.label)
+                }
+              />
+            </Form.Item>
+            <Form.Item label={' '}>
+              <Button
+                icon={icons.operationModes.add}
+                onClick={handleOpenBrandModal}
+              />
+            </Form.Item>
+          </FieldWithAction>
         </Col>
       </Row>
 
@@ -220,91 +142,77 @@ export const ProductInfo = ({
             <Input placeholder="Ingresa el tamaño" />
           </Form.Item>
         </Col>
-        <Col
-          span={12}
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr min-content',
-            gap: '0.2em',
-          }}
-        >
-          <Form.Item name="category" label={'Categoría'}>
-            <Select
-              showSearch
-              placeholder="Selecciona una categoría"
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                String(option?.children ?? '')
-                  .toLowerCase()
-                  .includes(input.toLowerCase())
-              }
-            >
-              <Option key="none" value="none">
-                Ninguna
-              </Option>
-              {categories
-                .map(({ category }) => category?.name)
-                .filter((name): name is string => Boolean(name))
-                .map((name) => (
-                  <Option key={name} value={name}>
-                    {name}
-                  </Option>
-                ))}
-            </Select>
-          </Form.Item>
-          <Form.Item label={' '}>
-            <Button
-              icon={icons.operationModes.add}
-              onClick={configureAddProductCategoryModal}
-            ></Button>
-          </Form.Item>
+        <Col span={12}>
+          <FieldWithAction>
+            <Form.Item name="category" label={'Categoría'}>
+              <Select
+                showSearch
+                placeholder="Selecciona una categoría"
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  matchesProductOptionText(input, option?.children)
+                }
+              >
+                <Option key="none" value="none">
+                  Ninguna
+                </Option>
+                {categories
+                  .map(({ category }) => category?.name)
+                  .filter((name): name is string => Boolean(name))
+                  .map((name) => (
+                    <Option key={name} value={name}>
+                      {name}
+                    </Option>
+                  ))}
+              </Select>
+            </Form.Item>
+            <Form.Item label={' '}>
+              <Button
+                icon={icons.operationModes.add}
+                onClick={configureAddProductCategoryModal}
+              />
+            </Form.Item>
+          </FieldWithAction>
         </Col>
       </Row>
       <Row gutter={16}>
-        <Col
-          span={12}
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr min-content',
-            gap: '0.2em',
-          }}
-        >
-          <Form.Item name="activeIngredients" label={'Principio Activo'}>
-            <Select
-              showSearch
-              placeholder="Selecciona el principio activo"
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                String(option?.children ?? '')
-                  .toLowerCase()
-                  .includes(input.toLowerCase())
-              }
-            >
-              <Option key="none" value="none">
-                Ninguno
-              </Option>
-              {activeIngredients
-                .filter(
-                  (
-                    ingredient,
-                  ): ingredient is ActiveIngredient & {
-                    id: string;
-                    name: string;
-                  } => Boolean(ingredient?.id && ingredient?.name),
-                )
-                .map((ingredient) => (
-                  <Option key={ingredient.id} value={ingredient.name}>
-                    {ingredient.name}
-                  </Option>
-                ))}
-            </Select>
-          </Form.Item>
-          <Form.Item label={' '}>
-            <Button
-              icon={icons.operationModes.add}
-              onClick={handleOpenActiveIngredientModal}
-            ></Button>
-          </Form.Item>
+        <Col span={12}>
+          <FieldWithAction>
+            <Form.Item name="activeIngredients" label={'Principio Activo'}>
+              <Select
+                showSearch
+                placeholder="Selecciona el principio activo"
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  matchesProductOptionText(input, option?.children)
+                }
+              >
+                <Option key="none" value="none">
+                  Ninguno
+                </Option>
+                {activeIngredients
+                  .filter(
+                    (
+                      ingredient,
+                    ): ingredient is ActiveIngredient & {
+                      id: string;
+                      name: string;
+                    } => Boolean(ingredient?.id && ingredient?.name),
+                  )
+                  .map((ingredient) => (
+                    <Option key={ingredient.id} value={ingredient.name}>
+                      {ingredient.name}
+                    </Option>
+                  ))}
+              </Select>
+            </Form.Item>
+            <Form.Item label={' '}>
+              <Button
+                icon={icons.operationModes.add}
+                onClick={handleOpenActiveIngredientModal}
+              />
+            </Form.Item>
+          </FieldWithAction>
         </Col>
       </Row>
       <Row gutter={16}>

@@ -14,6 +14,15 @@ export type ServiceCommissionCollaboratorDocumentType =
   | 'rnc'
   | 'other';
 
+export interface ServiceCommissionServiceRule {
+  id?: string | null;
+  serviceId: string;
+  serviceName?: string | null;
+  type: ServiceCommissionType;
+  rateValue: number;
+  active?: boolean;
+}
+
 export interface ServiceCommissionCollaboratorSnapshot {
   id?: string | null;
   code?: string | null;
@@ -25,6 +34,7 @@ export interface ServiceCommissionCollaboratorSnapshot {
   linkedUserId?: string | null;
   defaultType?: ServiceCommissionType | null;
   defaultRate?: number | null;
+  serviceCommissionRules?: ServiceCommissionServiceRule[];
   active?: boolean;
 }
 

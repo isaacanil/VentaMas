@@ -11,7 +11,7 @@ import { Button, Popconfirm, Tooltip } from 'antd';
 import { type KeyboardEventHandler } from 'react';
 import styled from 'styled-components';
 
-import { getStatusLabel, statusTheme } from '../constants/constants';
+import { AuthorizationStatusBadge } from './AuthorizationStatusBadge';
 
 import type {
   AuthorizationRequest,
@@ -77,7 +77,7 @@ export const RequestCard = ({
           <CardTitle>{moduleMeta.title}</CardTitle>
           <CardSubtitle>{moduleMeta.summary}</CardSubtitle>
         </HeaderInfo>
-        <StatusPill $status={status}>{getStatusLabel(status)}</StatusPill>
+        <AuthorizationStatusBadge status={status} />
       </CardHeader>
 
       <MetaList>
@@ -219,16 +219,6 @@ const CardTitle = styled.h3`
 const CardSubtitle = styled.span`
   font-size: 12px;
   color: rgb(0 0 0 / 50%);
-`;
-
-const StatusPill = styled.span<{ $status: string }>`
-  justify-self: end;
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  color: ${({ $status }) => statusTheme[$status]?.color || '#434343'};
-  background: ${({ $status }) => statusTheme[$status]?.bg || '#f0f0f0'};
-  border-radius: 999px;
 `;
 
 const MetaList = styled.ul`

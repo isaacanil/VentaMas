@@ -1,6 +1,6 @@
 import { PlusOutlined } from '@/constants/icons/antd';
 import { Button, Tooltip } from 'antd';
-import React, { Fragment, useState } from 'react';
+import { Fragment } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -15,7 +15,6 @@ import type { UserIdentity } from '@/types/users';
 import { hasBusinessSettingsManageAccess } from '@/utils/access/businessSettingsAccess';
 
 export const WarehouseToolbar = ({ side = 'left' }: ToolbarComponentProps) => {
-  const [_isOpen, _setIsOpen] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -66,13 +65,6 @@ export const WarehouseToolbar = ({ side = 'left' }: ToolbarComponentProps) => {
             </Group>
           )}
         </Container>
-        {/* {_isOpen && (
-                    <WarehouseForm
-                        isOpen={_isOpen}
-                        onClose={() => _setIsOpen(false)}
-                        
-                    />
-                )} */}
       </Fragment>
     )
   );

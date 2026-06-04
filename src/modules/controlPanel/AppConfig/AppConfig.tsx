@@ -2,17 +2,12 @@ import { SettingOutlined } from '@/constants/icons/antd';
 import { Card, List } from 'antd';
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
 
-import ROUTES_NAME from '@/router/routes/routesName';
 import { PageShell } from '@/components/layout/PageShell';
 import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 
-interface ConfigOption {
-  title: string;
-  description: string;
-  route: string;
-}
+import { APP_CONFIG_OPTIONS, type ConfigOption } from './AppConfig.options';
+import { ContentWrapper, StyledCard } from './AppConfig.styles';
 
 const renderConfigOption = (item: ConfigOption) => (
   <List.Item>
@@ -26,18 +21,9 @@ const renderConfigOption = (item: ConfigOption) => (
 
 const AppConfig: React.FC = () => {
   const navigate = useNavigate();
-  const configOptions: ConfigOption[] = [
-    {
-      title: 'Imagen de Login',
-      description:
-        'Configurar la imagen que se muestra en la página de inicio de sesión',
-      route: ROUTES_NAME.DEV_VIEW_TERM.APP_CONFIG.LOGIN_IMAGE,
-    },
-    // Aquí puedes agregar más opciones de configuración en el futuro
-  ];
 
   return (
-    <PageWrapper>
+    <PageShell>
       <MenuApp
         sectionName="Configuración de App"
         sectionNameIcon={<SettingOutlined />}
@@ -54,36 +40,12 @@ const AppConfig: React.FC = () => {
             xl: 3,
             xxl: 3,
           }}
-          dataSource={configOptions}
+          dataSource={APP_CONFIG_OPTIONS}
           renderItem={renderConfigOption}
         />
       </ContentWrapper>
-    </PageWrapper>
+    </PageShell>
   );
 };
-
-const PageWrapper = styled(PageShell)``;
-
-const ContentWrapper = styled.div`
-  flex: 1 1 auto;
-  min-height: 0;
-  max-width: 1200px;
-  padding: 0 1rem;
-  margin: 2rem auto;
-`;
-
-const StyledCard = styled(Card)`
-  height: 100%;
-
-  .ant-card-meta-title {
-    margin-bottom: 0.5rem;
-    font-size: 1.1rem;
-  }
-
-  .ant-card-meta-description {
-    line-height: 1.5;
-    color: rgb(0 0 0 / 45%);
-  }
-`;
 
 export default AppConfig;

@@ -79,6 +79,133 @@ interface DefaultPostingProfileSeed {
   linesTemplate: DefaultPostingProfileSeedLine[];
 }
 
+const buildImmediatePurchaseProfileSeed = ({
+  creditAccountSystemKey,
+  debitAccountSystemKey,
+  description,
+  documentNature,
+  name,
+  priority,
+  seedKey,
+  settlementKind,
+}: {
+  creditAccountSystemKey: string;
+  debitAccountSystemKey: string;
+  description: string;
+  documentNature: AccountingPostingDocumentNature;
+  name: string;
+  priority: number;
+  seedKey: string;
+  settlementKind: AccountingPostingSettlementKind;
+}): DefaultPostingProfileSeed => ({
+  seedKey,
+  name,
+  description,
+  eventType: 'purchase.committed',
+  moduleKey: 'purchases',
+  priority,
+  conditions: {
+    documentNature,
+    settlementKind,
+    settlementTiming: 'immediate',
+  },
+  linesTemplate: [
+    {
+      side: 'debit',
+      accountSystemKey: debitAccountSystemKey,
+      amountSource: 'purchase_total',
+    },
+    {
+      side: 'credit',
+      accountSystemKey: creditAccountSystemKey,
+      amountSource: 'purchase_total',
+    },
+  ],
+});
+
+const IMMEDIATE_PURCHASE_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
+  buildImmediatePurchaseProfileSeed({
+    seedKey: 'purchase_immediate_inventory_cash',
+    name: 'Compra inventariable al contado por caja',
+    description: 'Compra confirmada de inventario pagada en caja.',
+    documentNature: 'inventory',
+    settlementKind: 'cash',
+    debitAccountSystemKey: 'inventory',
+    creditAccountSystemKey: 'cash',
+    priority: 41,
+  }),
+  buildImmediatePurchaseProfileSeed({
+    seedKey: 'purchase_immediate_inventory_bank',
+    name: 'Compra inventariable al contado por banco',
+    description: 'Compra confirmada de inventario pagada por banco.',
+    documentNature: 'inventory',
+    settlementKind: 'bank',
+    debitAccountSystemKey: 'inventory',
+    creditAccountSystemKey: 'bank',
+    priority: 42,
+  }),
+  buildImmediatePurchaseProfileSeed({
+    seedKey: 'purchase_immediate_expense_cash',
+    name: 'Compra de gasto al contado por caja',
+    description: 'Compra confirmada como gasto pagada en caja.',
+    documentNature: 'expense',
+    settlementKind: 'cash',
+    debitAccountSystemKey: 'operating_expenses',
+    creditAccountSystemKey: 'cash',
+    priority: 46,
+  }),
+  buildImmediatePurchaseProfileSeed({
+    seedKey: 'purchase_immediate_expense_bank',
+    name: 'Compra de gasto al contado por banco',
+    description: 'Compra confirmada como gasto pagada por banco.',
+    documentNature: 'expense',
+    settlementKind: 'bank',
+    debitAccountSystemKey: 'operating_expenses',
+    creditAccountSystemKey: 'bank',
+    priority: 47,
+  }),
+  buildImmediatePurchaseProfileSeed({
+    seedKey: 'purchase_immediate_asset_cash',
+    name: 'Compra de activo al contado por caja',
+    description: 'Compra confirmada de activo fijo pagada en caja.',
+    documentNature: 'asset',
+    settlementKind: 'cash',
+    debitAccountSystemKey: 'fixed_assets',
+    creditAccountSystemKey: 'cash',
+    priority: 51,
+  }),
+  buildImmediatePurchaseProfileSeed({
+    seedKey: 'purchase_immediate_asset_bank',
+    name: 'Compra de activo al contado por banco',
+    description: 'Compra confirmada de activo fijo pagada por banco.',
+    documentNature: 'asset',
+    settlementKind: 'bank',
+    debitAccountSystemKey: 'fixed_assets',
+    creditAccountSystemKey: 'bank',
+    priority: 52,
+  }),
+  buildImmediatePurchaseProfileSeed({
+    seedKey: 'purchase_immediate_service_cash',
+    name: 'Compra de servicio al contado por caja',
+    description: 'Compra confirmada de servicios pagada en caja.',
+    documentNature: 'service',
+    settlementKind: 'cash',
+    debitAccountSystemKey: 'operating_expenses',
+    creditAccountSystemKey: 'cash',
+    priority: 56,
+  }),
+  buildImmediatePurchaseProfileSeed({
+    seedKey: 'purchase_immediate_service_bank',
+    name: 'Compra de servicio al contado por banco',
+    description: 'Compra confirmada de servicios pagada por banco.',
+    documentNature: 'service',
+    settlementKind: 'bank',
+    debitAccountSystemKey: 'operating_expenses',
+    creditAccountSystemKey: 'bank',
+    priority: 57,
+  }),
+];
+
 export const ACCOUNTING_POSTING_PROFILE_STATUS_LABELS: Record<
   AccountingPostingProfileStatus,
   string
@@ -103,6 +230,7 @@ export const ACCOUNTING_POSTING_SETTLEMENT_KIND_LABELS: Record<
   any: 'Cualquiera',
   cash: 'Caja',
   bank: 'Banco',
+  mixed: 'Mixto',
   other: 'Otro medio',
 };
 
@@ -155,7 +283,17 @@ export const ACCOUNTING_POSTING_AMOUNT_SOURCE_LABELS: Record<
   bank_statement_adjustment_gain: 'Ajuste bancario a favor',
   bank_statement_adjustment_loss: 'Ajuste bancario en contra',
   accounts_receivable_payment_amount: 'Monto del cobro',
+  accounts_receivable_applied_amount: 'Monto saldado en CxC',
+  accounts_receivable_collected_amount: 'Monto cobrado en caja/banco',
+  accounts_receivable_withholding_amount: 'Retencion sufrida por tercero',
   accounts_payable_payment_amount: 'Monto del pago',
+  accounts_payable_cash_paid: 'Monto pagado por caja',
+  accounts_payable_bank_paid: 'Monto pagado por banco',
+  accounts_payable_credit_note_applied: 'Saldo a favor de suplidor aplicado',
+  payroll_accrual_amount: 'Nomina devengada',
+  payroll_net_payable_amount: 'Neto de nomina por pagar',
+  payroll_tax_deductions_amount: 'Retenciones fiscales de nomina',
+  payroll_other_deductions_amount: 'Retenciones laborales por pagar',
   transfer_amount: 'Monto transferido',
   fx_gain: 'Ganancia cambiaria',
   fx_loss: 'Pérdida cambiaria',
@@ -184,6 +322,7 @@ export const normalizeAccountingPostingSettlementKind = (
   switch (value) {
     case 'cash':
     case 'bank':
+    case 'mixed':
     case 'other':
       return value;
     default:
@@ -249,7 +388,17 @@ export const normalizeAccountingPostingAmountSource = (
     case 'bank_statement_adjustment_gain':
     case 'bank_statement_adjustment_loss':
     case 'accounts_receivable_payment_amount':
+    case 'accounts_receivable_applied_amount':
+    case 'accounts_receivable_collected_amount':
+    case 'accounts_receivable_withholding_amount':
     case 'accounts_payable_payment_amount':
+    case 'accounts_payable_cash_paid':
+    case 'accounts_payable_bank_paid':
+    case 'accounts_payable_credit_note_applied':
+    case 'payroll_accrual_amount':
+    case 'payroll_net_payable_amount':
+    case 'payroll_tax_deductions_amount':
+    case 'payroll_other_deductions_amount':
     case 'transfer_amount':
     case 'fx_gain':
     case 'fx_loss':
@@ -526,6 +675,30 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
     ],
   },
   {
+    seedKey: 'inventory_cogs_recorded',
+    name: 'Costo de venta por salida de inventario',
+    description:
+      'Salida de inventario valorizada contra costo de venta al confirmar una factura.',
+    eventType: 'inventory.cogs.recorded',
+    moduleKey: 'sales',
+    priority: 10,
+    conditions: {
+      documentNature: 'inventory',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'cost_of_sales',
+        amountSource: 'document_total',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'inventory',
+        amountSource: 'document_total',
+      },
+    ],
+  },
+  {
     seedKey: 'ar_payment_cash',
     name: 'Cobro en caja',
     description: 'Cobro aplicado a cuentas por cobrar usando caja.',
@@ -539,12 +712,18 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'debit',
         accountSystemKey: 'cash',
-        amountSource: 'accounts_receivable_payment_amount',
+        amountSource: 'accounts_receivable_collected_amount',
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'tax_receivable',
+        amountSource: 'accounts_receivable_withholding_amount',
+        omitIfZero: true,
       },
       {
         side: 'credit',
         accountSystemKey: 'accounts_receivable',
-        amountSource: 'accounts_receivable_payment_amount',
+        amountSource: 'accounts_receivable_applied_amount',
       },
     ],
   },
@@ -562,12 +741,18 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'debit',
         accountSystemKey: 'bank',
-        amountSource: 'accounts_receivable_payment_amount',
+        amountSource: 'accounts_receivable_collected_amount',
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'tax_receivable',
+        amountSource: 'accounts_receivable_withholding_amount',
+        omitIfZero: true,
       },
       {
         side: 'credit',
         accountSystemKey: 'accounts_receivable',
-        amountSource: 'accounts_receivable_payment_amount',
+        amountSource: 'accounts_receivable_applied_amount',
       },
     ],
   },
@@ -585,12 +770,18 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'debit',
         accountSystemKey: 'accounts_receivable',
-        amountSource: 'accounts_receivable_payment_amount',
+        amountSource: 'accounts_receivable_applied_amount',
       },
       {
         side: 'credit',
         accountSystemKey: 'cash',
-        amountSource: 'accounts_receivable_payment_amount',
+        amountSource: 'accounts_receivable_collected_amount',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'tax_receivable',
+        amountSource: 'accounts_receivable_withholding_amount',
+        omitIfZero: true,
       },
     ],
   },
@@ -608,12 +799,18 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'debit',
         accountSystemKey: 'accounts_receivable',
-        amountSource: 'accounts_receivable_payment_amount',
+        amountSource: 'accounts_receivable_applied_amount',
       },
       {
         side: 'credit',
         accountSystemKey: 'bank',
-        amountSource: 'accounts_receivable_payment_amount',
+        amountSource: 'accounts_receivable_collected_amount',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'tax_receivable',
+        amountSource: 'accounts_receivable_withholding_amount',
+        omitIfZero: true,
       },
     ],
   },
@@ -661,6 +858,27 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'credit',
         accountSystemKey: 'accounts_receivable',
+        amountSource: 'document_total',
+      },
+    ],
+  },
+  {
+    seedKey: 'supplier_credit_note_issued',
+    name: 'Saldo a favor de suplidor emitido',
+    description:
+      'Reconoce un saldo a favor del suplidor originado por sobrepago.',
+    eventType: 'supplier_credit_note.issued',
+    moduleKey: 'accounts_payable',
+    priority: 39,
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'supplier_credits',
+        amountSource: 'document_total',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'accounts_payable',
         amountSource: 'document_total',
       },
     ],
@@ -762,6 +980,7 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       },
     ],
   },
+  ...IMMEDIATE_PURCHASE_PROFILE_SEEDS,
   {
     seedKey: 'ap_payment_bank',
     name: 'Pago a suplidor por banco',
@@ -782,6 +1001,66 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
         side: 'credit',
         accountSystemKey: 'bank',
         amountSource: 'accounts_payable_payment_amount',
+      },
+    ],
+  },
+  {
+    seedKey: 'ap_payment_mixed',
+    name: 'Pago mixto a suplidor',
+    description:
+      'Pago de cuentas por pagar con combinacion de caja, banco y saldo a favor.',
+    eventType: 'accounts_payable.payment.recorded',
+    moduleKey: 'accounts_payable',
+    priority: 48,
+    conditions: {
+      settlementKind: 'mixed',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'accounts_payable',
+        amountSource: 'accounts_payable_payment_amount',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'cash',
+        amountSource: 'accounts_payable_cash_paid',
+        omitIfZero: true,
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'bank',
+        amountSource: 'accounts_payable_bank_paid',
+        omitIfZero: true,
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'supplier_credits',
+        amountSource: 'accounts_payable_credit_note_applied',
+        omitIfZero: true,
+      },
+    ],
+  },
+  {
+    seedKey: 'ap_payment_supplier_credit_note',
+    name: 'Pago a suplidor con saldo a favor',
+    description: 'Aplicacion de saldo a favor de suplidor contra CxP.',
+    eventType: 'accounts_payable.payment.recorded',
+    moduleKey: 'accounts_payable',
+    priority: 49,
+    conditions: {
+      settlementKind: 'other',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'accounts_payable',
+        amountSource: 'accounts_payable_payment_amount',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'supplier_credits',
+        amountSource: 'accounts_payable_credit_note_applied',
       },
     ],
   },
@@ -823,6 +1102,67 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
         side: 'debit',
         accountSystemKey: 'bank',
         amountSource: 'accounts_payable_payment_amount',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'accounts_payable',
+        amountSource: 'accounts_payable_payment_amount',
+      },
+    ],
+  },
+  {
+    seedKey: 'ap_payment_void_mixed',
+    name: 'Anulacion de pago mixto a suplidor',
+    description:
+      'Reversa un pago de cuentas por pagar con caja, banco y saldo a favor.',
+    eventType: 'accounts_payable.payment.voided',
+    moduleKey: 'accounts_payable',
+    priority: 53,
+    conditions: {
+      settlementKind: 'mixed',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'cash',
+        amountSource: 'accounts_payable_cash_paid',
+        omitIfZero: true,
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'bank',
+        amountSource: 'accounts_payable_bank_paid',
+        omitIfZero: true,
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'supplier_credits',
+        amountSource: 'accounts_payable_credit_note_applied',
+        omitIfZero: true,
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'accounts_payable',
+        amountSource: 'accounts_payable_payment_amount',
+      },
+    ],
+  },
+  {
+    seedKey: 'ap_payment_void_supplier_credit_note',
+    name: 'Anulacion de pago con saldo a favor',
+    description:
+      'Restaura saldo a favor de suplidor y la cuenta por pagar al anular el pago.',
+    eventType: 'accounts_payable.payment.voided',
+    moduleKey: 'accounts_payable',
+    priority: 54,
+    conditions: {
+      settlementKind: 'other',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'supplier_credits',
+        amountSource: 'accounts_payable_credit_note_applied',
       },
       {
         side: 'credit',
@@ -925,9 +1265,9 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
   },
   {
     seedKey: 'hr_commission_accrued',
-    name: 'Comisiones RRHH devengadas',
+    name: 'Nomina RRHH devengada',
     description:
-      'Reconoce comisiones aprobadas de colaboradores como gasto pendiente de pago.',
+      'Reconoce salario y comisiones aprobadas separando neto y retenciones.',
     eventType: 'hr_commission.accrued',
     moduleKey: 'payroll',
     priority: 70,
@@ -939,12 +1279,24 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'debit',
         accountSystemKey: 'operating_expenses',
-        amountSource: 'document_total',
+        amountSource: 'payroll_accrual_amount',
       },
       {
         side: 'credit',
-        accountSystemKey: 'accounts_payable',
-        amountSource: 'document_total',
+        accountSystemKey: 'payroll_payable',
+        amountSource: 'payroll_net_payable_amount',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'tax_payable',
+        amountSource: 'payroll_tax_deductions_amount',
+        omitIfZero: true,
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'payroll_withholdings_payable',
+        amountSource: 'payroll_other_deductions_amount',
+        omitIfZero: true,
       },
     ],
   },
@@ -961,7 +1313,7 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
     linesTemplate: [
       {
         side: 'debit',
-        accountSystemKey: 'accounts_payable',
+        accountSystemKey: 'payroll_payable',
         amountSource: 'document_total',
       },
       {
@@ -985,7 +1337,7 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
     linesTemplate: [
       {
         side: 'debit',
-        accountSystemKey: 'accounts_payable',
+        accountSystemKey: 'payroll_payable',
         amountSource: 'document_total',
       },
       {
@@ -1061,6 +1413,76 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
         side: 'credit',
         accountSystemKey: 'bank_reconciliation_income',
         amountSource: 'bank_statement_adjustment_gain',
+        omitIfZero: true,
+      },
+    ],
+  },
+  {
+    seedKey: 'fx_settlement_recorded',
+    name: 'Diferencia cambiaria liquidada',
+    description:
+      'Reconoce ganancia o perdida cambiaria al liquidar una cuenta por cobrar en moneda extranjera.',
+    eventType: 'fx_settlement.recorded',
+    moduleKey: 'fx',
+    priority: 72,
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'accounts_receivable',
+        amountSource: 'fx_gain',
+        omitIfZero: true,
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'fx_loss',
+        amountSource: 'fx_loss',
+        omitIfZero: true,
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'accounts_receivable',
+        amountSource: 'fx_loss',
+        omitIfZero: true,
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'fx_gain',
+        amountSource: 'fx_gain',
+        omitIfZero: true,
+      },
+    ],
+  },
+  {
+    seedKey: 'fx_settlement_voided',
+    name: 'Anulacion de diferencia cambiaria',
+    description:
+      'Revierte la ganancia o perdida cambiaria asociada a un cobro anulado.',
+    eventType: 'fx_settlement.voided',
+    moduleKey: 'fx',
+    priority: 72,
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'fx_gain',
+        amountSource: 'fx_gain',
+        omitIfZero: true,
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'accounts_receivable',
+        amountSource: 'fx_loss',
+        omitIfZero: true,
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'accounts_receivable',
+        amountSource: 'fx_gain',
+        omitIfZero: true,
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'fx_loss',
+        amountSource: 'fx_loss',
         omitIfZero: true,
       },
     ],

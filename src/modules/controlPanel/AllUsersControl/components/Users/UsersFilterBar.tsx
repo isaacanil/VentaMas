@@ -1,7 +1,14 @@
 import { Input, Select, Space } from 'antd';
 import { useMemo } from 'react';
 
-import type { CSSProperties, ChangeEvent, FC, ReactNode } from 'react';
+import type { ChangeEvent, FC, ReactNode } from 'react';
+
+import {
+  BusinessOptionContainer,
+  BusinessOptionId,
+  BusinessOptionName,
+  FilterContainer,
+} from './UsersFilterBar.styles';
 
 export interface UsersFilterBarFilters {
   search: string;
@@ -39,21 +46,6 @@ interface SearchableOption {
   searchText?: string;
 }
 
-const optionContainerStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  lineHeight: 1.2,
-};
-
-const optionPrimaryStyle: CSSProperties = {
-  fontWeight: 500,
-};
-
-const optionSecondaryStyle: CSSProperties = {
-  fontSize: 12,
-  color: '#6b7280',
-};
-
 export const UsersFilterBar: FC<UsersFilterBarProps> = ({
   filters,
   onFilterChange,
@@ -83,10 +75,10 @@ export const UsersFilterBar: FC<UsersFilterBarProps> = ({
         return {
           value: option.value,
           label: (
-            <div style={optionContainerStyle}>
-              <span style={optionPrimaryStyle}>{name}</span>
-              <span style={optionSecondaryStyle}>ID: {id}</span>
-            </div>
+            <BusinessOptionContainer>
+              <BusinessOptionName>{name}</BusinessOptionName>
+              <BusinessOptionId>ID: {id}</BusinessOptionId>
+            </BusinessOptionContainer>
           ),
           name,
           searchText,
@@ -114,7 +106,7 @@ export const UsersFilterBar: FC<UsersFilterBarProps> = ({
   );
 
   return (
-    <div style={{ margin: '16px 0', padding: '0 16px' }}>
+    <FilterContainer>
       <Space size="middle" wrap>
         <Input
           placeholder="Buscar por nombre, ID, negocio o rol"
@@ -127,7 +119,7 @@ export const UsersFilterBar: FC<UsersFilterBarProps> = ({
           value={filters.businessID || undefined}
           onChange={handleBusinessChange}
           allowClear
-          style={{ minWidth: 240 }}
+          className="business-filter-select"
           options={businessSelectOptions}
           showSearch
           optionLabelProp="name"
@@ -142,7 +134,7 @@ export const UsersFilterBar: FC<UsersFilterBarProps> = ({
           value={filters.role || undefined}
           onChange={handleRoleChange}
           allowClear
-          style={{ minWidth: 180 }}
+          className="role-filter-select"
           options={roleSelectOptions}
           showSearch
           optionFilterProp="label"
@@ -153,6 +145,6 @@ export const UsersFilterBar: FC<UsersFilterBarProps> = ({
           }
         />
       </Space>
-    </div>
+    </FilterContainer>
   );
 };

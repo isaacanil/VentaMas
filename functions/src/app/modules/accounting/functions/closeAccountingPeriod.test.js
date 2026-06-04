@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const {
   assertUserAccessMock,
+  collectionMock,
+  collectionSnapshots,
   getDocRef,
   getPilotAccountingSettingsForBusinessMock,
   isAccountingRolloutEnabledForBusinessMock,
@@ -13,11 +15,13 @@ const {
   transactionSetMock,
   transactionSnapshots,
 } = vi.hoisted(() => {
+  const hoistedCollectionSnapshots = new Map();
   const hoistedTransactionSnapshots = new Map();
   const hoistedResolveCallableAuthUidMock = vi.fn();
   const hoistedAssertUserAccessMock = vi.fn();
   const hoistedGetPilotAccountingSettingsForBusinessMock = vi.fn();
   const hoistedIsAccountingRolloutEnabledForBusinessMock = vi.fn();
+  const hoistedCollectionMock = vi.fn();
   const hoistedRunTransactionMock = vi.fn();
   const hoistedTransactionGetMock = vi.fn();
   const hoistedTransactionSetMock = vi.fn();
@@ -41,8 +45,23 @@ const {
     id: path.split('/').at(-1) ?? null,
   });
 
+  const buildQueryRef = (path) => ({
+    path,
+    where: vi.fn(() => buildQueryRef(path)),
+    get: vi.fn(async () => ({
+      docs: (hoistedCollectionSnapshots.get(path) ?? []).map((entry) => ({
+        id: entry.id,
+        data: () => entry.data,
+      })),
+    })),
+  });
+
+  hoistedCollectionMock.mockImplementation((path) => buildQueryRef(path));
+
   return {
     assertUserAccessMock: hoistedAssertUserAccessMock,
+    collectionMock: hoistedCollectionMock,
+    collectionSnapshots: hoistedCollectionSnapshots,
     getDocRef: hoistedGetDocRef,
     getPilotAccountingSettingsForBusinessMock:
       hoistedGetPilotAccountingSettingsForBusinessMock,
@@ -71,6 +90,7 @@ vi.mock('../../../core/config/firebase.js', () => ({
   },
   db: {
     doc: (path) => getDocRef(path),
+    collection: (...args) => collectionMock(...args),
     runTransaction: (...args) => runTransactionMock(...args),
   },
 }));
@@ -98,6 +118,7 @@ import { closeAccountingPeriod } from './closeAccountingPeriod.js';
 
 describe('closeAccountingPeriod', () => {
   beforeEach(() => {
+    collectionSnapshots.clear();
     transactionSnapshots.clear();
     vi.clearAllMocks();
 
@@ -158,6 +179,40 @@ describe('closeAccountingPeriod', () => {
       periodKey: '2026-04',
       reused: true,
     });
+    expect(transactionSetMock).not.toHaveBeenCalled();
+  });
+
+  it('blocks period close when accounting events are not projected', async () => {
+    collectionSnapshots.set('businesses/business-1/accountingEvents', [
+      {
+        id: 'invoice.committed__invoice-1',
+        data: {
+          eventType: 'invoice.committed',
+          projection: {
+            status: 'pending_account_mapping',
+          },
+        },
+      },
+    ]);
+    transactionSnapshots.set(
+      'businesses/business-1/accountingPeriodClosures/2026-04',
+      null,
+    );
+
+    await expect(
+      closeAccountingPeriod({
+        data: {
+          businessId: 'business-1',
+          periodKey: '2026-04',
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      details: expect.objectContaining({
+        unresolvedEventCount: 1,
+      }),
+    });
+
     expect(transactionSetMock).not.toHaveBeenCalled();
   });
 });

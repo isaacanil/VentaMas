@@ -17,6 +17,21 @@ const CHART_ACCOUNT_TYPES = new Set([
 const NORMAL_SIDES = new Set(['debit', 'credit']);
 const CURRENCY_MODES = new Set(['functional_only', 'multi_currency_reference']);
 const PROFILE_STATUSES = new Set(['active', 'inactive']);
+const BANK_ACCOUNT_TYPES = new Set([
+  'checking',
+  'savings',
+  'credit_card',
+  'other',
+]);
+const BANK_CHART_PARENT_CODE = '1110';
+const BANK_CHART_PARENT_SYSTEM_KEY = 'bank';
+const BANK_ACCOUNT_CHART_METADATA_SOURCE = 'bank_account';
+const BANK_ACCOUNT_TYPE_LABELS = new Map([
+  ['checking', 'Corriente'],
+  ['savings', 'Ahorros'],
+  ['credit_card', 'Tarjeta'],
+  ['other', 'Banco'],
+]);
 const ACCOUNTING_EVENT_MODULES = new Map([
   ['invoice.committed', 'sales'],
   ['invoice.voided', 'sales'],
@@ -33,8 +48,10 @@ const ACCOUNTING_EVENT_MODULES = new Map([
   ['cash_over_short.recorded', 'cash'],
   ['bank_statement_adjustment.recorded', 'banking'],
   ['internal_transfer.posted', 'cash'],
+  ['inventory.cogs.recorded', 'sales'],
   ['manual.entry.recorded', 'general_ledger'],
   ['fx_settlement.recorded', 'fx'],
+  ['fx_settlement.voided', 'fx'],
   ['hr_commission.accrued', 'payroll'],
   ['hr_payroll.payment.recorded', 'payroll'],
 ]);
@@ -55,7 +72,17 @@ const AMOUNT_SOURCES = new Set([
   'bank_statement_adjustment_gain',
   'bank_statement_adjustment_loss',
   'accounts_receivable_payment_amount',
+  'accounts_receivable_applied_amount',
+  'accounts_receivable_collected_amount',
+  'accounts_receivable_withholding_amount',
   'accounts_payable_payment_amount',
+  'accounts_payable_cash_paid',
+  'accounts_payable_bank_paid',
+  'accounts_payable_credit_note_applied',
+  'payroll_accrual_amount',
+  'payroll_net_payable_amount',
+  'payroll_tax_deductions_amount',
+  'payroll_other_deductions_amount',
   'transfer_amount',
   'fx_gain',
   'fx_loss',
@@ -87,8 +114,64 @@ const toFiniteNumber = (value, fallback = 100) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const toNullableFiniteNumber = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
 const resolveBusinessId = (payload) =>
   toCleanString(payload.businessId) || toCleanString(payload.businessID);
+
+const normalizeTimestampLike = (value) => {
+  if (!value) return null;
+  if (typeof value.toDate === 'function') return value;
+  if (value instanceof Date && Number.isFinite(value.getTime())) {
+    return Timestamp.fromDate(value);
+  }
+
+  const record = asRecord(value);
+  const seconds = Number(record.seconds ?? record._seconds);
+  const nanoseconds = Number(record.nanoseconds ?? record._nanoseconds ?? 0);
+  if (Number.isFinite(seconds)) {
+    return Timestamp.fromMillis(seconds * 1000 + nanoseconds / 1000000);
+  }
+
+  const parsedDate = new Date(value);
+  return Number.isFinite(parsedDate.getTime())
+    ? Timestamp.fromDate(parsedDate)
+    : null;
+};
+
+const normalizeCurrencyCode = (value, fallback = 'DOP') =>
+  (toCleanString(value) || fallback).toUpperCase();
+
+const normalizeAccountNumberLast4 = (value) => {
+  const digits = (toCleanString(value) || '').replace(/\D/g, '');
+  return digits ? digits.slice(-4) : null;
+};
+
+const normalizeBankAccountDraft = (value) => {
+  const record = asRecord(value);
+  const type = toCleanString(record.type);
+
+  return {
+    name: toCleanString(record.name) || '',
+    currency: normalizeCurrencyCode(record.currency),
+    status: 'active',
+    type: BANK_ACCOUNT_TYPES.has(type) ? type : null,
+    institutionName: toCleanString(record.institutionName),
+    bankCode: toCleanString(record.bankCode),
+    countryCode: normalizeCurrencyCode(record.countryCode, 'DO'),
+    isCustomBank: record.isCustomBank === true,
+    accountNumberLast4: normalizeAccountNumberLast4(
+      record.accountNumberLast4 ?? record.last4,
+    ),
+    openingBalance: toNullableFiniteNumber(record.openingBalance),
+    openingBalanceDate: normalizeTimestampLike(record.openingBalanceDate),
+    notes: toCleanString(record.notes),
+    metadata: asRecord(record.metadata),
+  };
+};
 
 const resolveNormalSide = (type, value) => {
   if (NORMAL_SIDES.has(value)) return value;
@@ -101,7 +184,9 @@ const normalizeConditions = (value) => {
     paymentTerm: ['cash', 'credit'].includes(record.paymentTerm)
       ? record.paymentTerm
       : 'any',
-    settlementKind: ['cash', 'bank', 'other'].includes(record.settlementKind)
+    settlementKind: ['cash', 'bank', 'mixed', 'other'].includes(
+      record.settlementKind,
+    )
       ? record.settlementKind
       : 'any',
     taxTreatment: ['taxed', 'untaxed'].includes(record.taxTreatment)
@@ -140,6 +225,98 @@ const normalizeAccountDraft = (value, current = {}) => {
     metadata: asRecord(record.metadata),
   };
 };
+
+const findBankChartParentAccount = (accounts) =>
+  accounts.find(
+    (account) =>
+      account.status === 'active' &&
+      toCleanString(account.systemKey) === BANK_CHART_PARENT_SYSTEM_KEY,
+  ) ??
+  accounts.find(
+    (account) =>
+      account.status === 'active' &&
+      toCleanString(account.code) === BANK_CHART_PARENT_CODE,
+  ) ??
+  null;
+
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const buildBankLedgerAccountName = (bankAccount) => {
+  const institutionName = toCleanString(bankAccount.institutionName);
+  const typeLabel = bankAccount.type
+    ? BANK_ACCOUNT_TYPE_LABELS.get(bankAccount.type) ?? null
+    : null;
+  const last4 = toCleanString(bankAccount.accountNumberLast4);
+  const descriptiveName = [institutionName, typeLabel, last4]
+    .filter(Boolean)
+    .join(' ');
+
+  return descriptiveName || toCleanString(bankAccount.name) || 'Cuenta bancaria';
+};
+
+const buildNextBankLedgerAccountCode = ({ accounts, parentCode }) => {
+  const childCodePattern = new RegExp(`^${escapeRegExp(parentCode)}\\.(\\d+)$`);
+  const usedCodes = new Set(
+    accounts
+      .map((account) => toCleanString(account.code))
+      .filter(Boolean)
+      .map((code) => code.toLowerCase()),
+  );
+  let sequence =
+    accounts.reduce((currentMax, account) => {
+      const code = toCleanString(account.code);
+      const match = code ? code.match(childCodePattern) : null;
+      if (!match) return currentMax;
+      const parsed = Number.parseInt(match[1] ?? '', 10);
+      return Number.isFinite(parsed) ? Math.max(currentMax, parsed) : currentMax;
+    }, 0) + 1;
+
+  while (true) {
+    const candidate = `${parentCode}.${String(sequence).padStart(2, '0')}`;
+    if (!usedCodes.has(candidate.toLowerCase())) {
+      return candidate;
+    }
+    sequence += 1;
+  }
+};
+
+const buildBankLedgerAccountDraft = ({
+  accounts,
+  bankAccount,
+  bankAccountId,
+  parentAccount,
+}) =>
+  normalizeAccountDraft({
+    code: buildNextBankLedgerAccountCode({
+      accounts,
+      parentCode: toCleanString(parentAccount.code) || BANK_CHART_PARENT_CODE,
+    }),
+    name: buildBankLedgerAccountName(bankAccount),
+    type: 'asset',
+    subtype: 'bank_account',
+    parentId: parentAccount.id,
+    postingAllowed: true,
+    status: 'active',
+    normalSide: 'debit',
+    currencyMode: 'multi_currency_reference',
+    systemKey: null,
+    metadata: {
+      source: BANK_ACCOUNT_CHART_METADATA_SOURCE,
+      bankAccountId,
+      bankAccountName: bankAccount.name,
+      bankAccountCurrency: bankAccount.currency,
+    },
+  });
+
+const findExistingBankLedgerAccount = ({ accounts, bankAccountId }) =>
+  accounts.find((account) => {
+    const metadata = asRecord(account.metadata);
+    return (
+      account.status === 'active' &&
+      toCleanString(metadata.source) === BANK_ACCOUNT_CHART_METADATA_SOURCE &&
+      toCleanString(metadata.bankAccountId) === bankAccountId
+    );
+  }) ?? null;
 
 const normalizePostingLine = (value, accountsById) => {
   const record = asRecord(value);
@@ -247,6 +424,21 @@ const assertAccountDraft = (draft) => {
   }
 };
 
+const assertBankAccountDraft = (draft) => {
+  if (!draft.name) {
+    throw new HttpsError(
+      'invalid-argument',
+      'El nombre de la cuenta bancaria es requerido.',
+    );
+  }
+  if (!draft.currency) {
+    throw new HttpsError(
+      'invalid-argument',
+      'La moneda de la cuenta bancaria es requerida.',
+    );
+  }
+};
+
 const assertUniqueAccountCode = ({ accounts, accountId, code }) => {
   const normalizedCode = code.trim().toLowerCase();
   const duplicate = accounts.find(
@@ -315,6 +507,16 @@ const loadAccounts = async (transaction, businessId) => {
     accounts,
     accountsById: new Map(accounts.map((account) => [account.id, account])),
   };
+};
+
+const loadBankAccounts = async (transaction, businessId) => {
+  const snap = await transaction.get(
+    db.collection(`businesses/${businessId}/bankAccounts`),
+  );
+  return snap.docs.map((docSnap) => ({
+    id: docSnap.id,
+    ...asRecord(docSnap.data()),
+  }));
 };
 
 const loadPostingProfiles = async (transaction, businessId) => {
@@ -544,6 +746,36 @@ const buildAccountRecord = ({
   updatedBy: authUid,
 });
 
+const buildBankAccountRecord = ({
+  businessId,
+  bankAccountId,
+  chartOfAccountId,
+  draft,
+  now,
+  authUid,
+}) => ({
+  id: bankAccountId,
+  businessId,
+  name: draft.name,
+  currency: draft.currency,
+  status: 'active',
+  type: draft.type,
+  institutionName: draft.institutionName,
+  bankCode: draft.bankCode,
+  countryCode: draft.countryCode,
+  isCustomBank: draft.isCustomBank === true,
+  accountNumberLast4: draft.accountNumberLast4,
+  chartOfAccountId,
+  openingBalance: draft.openingBalance,
+  openingBalanceDate: draft.openingBalanceDate,
+  notes: draft.notes,
+  metadata: draft.metadata,
+  createdAt: now,
+  updatedAt: now,
+  createdBy: authUid,
+  updatedBy: authUid,
+});
+
 const buildPostingProfileRecord = ({
   businessId,
   profileId,
@@ -567,6 +799,243 @@ const buildPostingProfileRecord = ({
   createdBy: authUid,
   updatedBy: authUid,
 });
+
+export const createBankAccount = onCall(
+  { cors: true, invoker: 'public' },
+  async (request) => {
+    const authUid = await resolveCallableAuthUid(request);
+    if (!authUid)
+      throw new HttpsError('unauthenticated', 'Usuario no autenticado');
+
+    const payload = asRecord(request?.data);
+    const businessId = resolveBusinessId(payload);
+    const draft = normalizeBankAccountDraft(
+      payload.bankAccount || payload.account || payload.data,
+    );
+    if (!businessId) {
+      throw new HttpsError('invalid-argument', 'businessId es requerido.');
+    }
+    await assertConfigurationAccess({ authUid, businessId });
+    assertBankAccountDraft(draft);
+
+    const bankAccountRef = db
+      .collection(`businesses/${businessId}/bankAccounts`)
+      .doc();
+    const ledgerAccountRef = db
+      .collection(`businesses/${businessId}/chartOfAccounts`)
+      .doc();
+    const now = Timestamp.now();
+
+    await db.runTransaction(async (transaction) => {
+      const { accounts, accountsById } = await loadAccounts(
+        transaction,
+        businessId,
+      );
+      const parentAccount = findBankChartParentAccount(accounts);
+      if (!parentAccount) {
+        throw new HttpsError(
+          'failed-precondition',
+          'Primero crea o restaura la cuenta 1110 - Cuentas bancarias.',
+        );
+      }
+
+      const ledgerDraft = buildBankLedgerAccountDraft({
+        accounts,
+        bankAccount: draft,
+        bankAccountId: bankAccountRef.id,
+        parentAccount,
+      });
+
+      assertAccountDraft(ledgerDraft);
+      assertUniqueAccountCode({
+        accounts,
+        accountId: ledgerAccountRef.id,
+        code: ledgerDraft.code,
+      });
+      assertValidAccountParent({
+        accountsById,
+        accountId: ledgerAccountRef.id,
+        draft: ledgerDraft,
+      });
+
+      transaction.set(
+        ledgerAccountRef,
+        buildAccountRecord({
+          businessId,
+          accountId: ledgerAccountRef.id,
+          draft: ledgerDraft,
+          now,
+          authUid,
+        }),
+      );
+      transaction.set(
+        bankAccountRef,
+        buildBankAccountRecord({
+          businessId,
+          bankAccountId: bankAccountRef.id,
+          chartOfAccountId: ledgerAccountRef.id,
+          draft,
+          now,
+          authUid,
+        }),
+      );
+    });
+
+    return {
+      ok: true,
+      bankAccountId: bankAccountRef.id,
+      chartOfAccountId: ledgerAccountRef.id,
+    };
+  },
+);
+
+export const backfillBankAccountChartLinks = onCall(
+  { cors: true, invoker: 'public' },
+  async (request) => {
+    const authUid = await resolveCallableAuthUid(request);
+    if (!authUid)
+      throw new HttpsError('unauthenticated', 'Usuario no autenticado');
+
+    const payload = asRecord(request?.data);
+    const businessId = resolveBusinessId(payload);
+    if (!businessId) {
+      throw new HttpsError('invalid-argument', 'businessId es requerido.');
+    }
+    await assertConfigurationAccess({ authUid, businessId });
+
+    const now = Timestamp.now();
+    const summary = await db.runTransaction(async (transaction) => {
+      const [accountContext, bankAccounts] = await Promise.all([
+        loadAccounts(transaction, businessId),
+        loadBankAccounts(transaction, businessId),
+      ]);
+      const parentAccount = findBankChartParentAccount(accountContext.accounts);
+      if (!parentAccount) {
+        throw new HttpsError(
+          'failed-precondition',
+          'Primero crea o restaura la cuenta 1110 - Cuentas bancarias.',
+        );
+      }
+
+      const workingAccounts = [...accountContext.accounts];
+      const results = [];
+
+      bankAccounts.forEach((bankAccount) => {
+        const bankAccountId = toCleanString(bankAccount.id);
+        if (!bankAccountId) {
+          return;
+        }
+
+        if (toCleanString(bankAccount.chartOfAccountId)) {
+          results.push({
+            bankAccountId,
+            status: 'skipped_already_linked',
+            chartOfAccountId: toCleanString(bankAccount.chartOfAccountId),
+          });
+          return;
+        }
+
+        const existingLedgerAccount = findExistingBankLedgerAccount({
+          accounts: workingAccounts,
+          bankAccountId,
+        });
+        const bankAccountRef = db.doc(
+          `businesses/${businessId}/bankAccounts/${bankAccountId}`,
+        );
+
+        if (existingLedgerAccount) {
+          transaction.set(
+            bankAccountRef,
+            {
+              chartOfAccountId: existingLedgerAccount.id,
+              updatedAt: now,
+              updatedBy: authUid,
+            },
+            { merge: true },
+          );
+          results.push({
+            bankAccountId,
+            status: 'linked_existing_chart_account',
+            chartOfAccountId: existingLedgerAccount.id,
+            code: toCleanString(existingLedgerAccount.code),
+          });
+          return;
+        }
+
+        const normalizedBankAccount = normalizeBankAccountDraft({
+          ...bankAccount,
+          name: toCleanString(bankAccount.name) || 'Cuenta bancaria',
+        });
+        const ledgerAccountRef = db
+          .collection(`businesses/${businessId}/chartOfAccounts`)
+          .doc();
+        const ledgerDraft = buildBankLedgerAccountDraft({
+          accounts: workingAccounts,
+          bankAccount: normalizedBankAccount,
+          bankAccountId,
+          parentAccount,
+        });
+        assertAccountDraft(ledgerDraft);
+        assertUniqueAccountCode({
+          accounts: workingAccounts,
+          accountId: ledgerAccountRef.id,
+          code: ledgerDraft.code,
+        });
+        assertValidAccountParent({
+          accountsById: accountContext.accountsById,
+          accountId: ledgerAccountRef.id,
+          draft: ledgerDraft,
+        });
+
+        const ledgerRecord = buildAccountRecord({
+          businessId,
+          accountId: ledgerAccountRef.id,
+          draft: ledgerDraft,
+          now,
+          authUid,
+        });
+
+        transaction.set(ledgerAccountRef, ledgerRecord);
+        transaction.set(
+          bankAccountRef,
+          {
+            chartOfAccountId: ledgerAccountRef.id,
+            updatedAt: now,
+            updatedBy: authUid,
+          },
+          { merge: true },
+        );
+        workingAccounts.push(ledgerRecord);
+        accountContext.accountsById.set(ledgerRecord.id, ledgerRecord);
+        results.push({
+          bankAccountId,
+          status: 'created_chart_account',
+          chartOfAccountId: ledgerAccountRef.id,
+          code: ledgerDraft.code,
+        });
+      });
+
+      return {
+        processed: bankAccounts.length,
+        created: results.filter(
+          (result) => result.status === 'created_chart_account',
+        ).length,
+        linkedExisting: results.filter(
+          (result) => result.status === 'linked_existing_chart_account',
+        ).length,
+        skippedAlreadyLinked: results.filter(
+          (result) => result.status === 'skipped_already_linked',
+        ).length,
+        results,
+      };
+    });
+
+    return {
+      ok: true,
+      ...summary,
+    };
+  },
+);
 
 export const createChartOfAccount = onCall(
   { cors: true, invoker: 'public' },

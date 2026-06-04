@@ -12,12 +12,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Modal, Button, Space, Tooltip, Popconfirm } from 'antd';
 import styled from 'styled-components';
 
-import {
-  formatDateTime,
-  getStatusLabel,
-  statusTheme,
-} from '../constants/constants';
+import { formatDateTime } from '../constants/constants';
 import { resolveModuleMeta } from '../utils/utils';
+import { AuthorizationStatusBadge } from './AuthorizationStatusBadge';
 
 import type { AuthorizationRequest } from '@/modules/authorizations/pages/Authorizations/components/AuthorizationRequests/types';
 
@@ -154,9 +151,7 @@ export const DetailModal = ({
                 'Revisa la información antes de tomar una acción.'}
             </HeaderSummary>
           </HeaderContent>
-          <StatusBadge $status={detailStatus}>
-            {getStatusLabel(detailStatus)}
-          </StatusBadge>
+          <AuthorizationStatusBadge status={detailStatus} density="spacious" />
         </Header>
 
         <InfoGrid>
@@ -273,16 +268,6 @@ const HeaderSummary = styled.p`
   margin: 0;
   font-size: 13px;
   color: rgb(0 0 0 / 55%);
-`;
-
-const StatusBadge = styled.span<{ $status: string }>`
-  justify-self: end;
-  padding: 4px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: ${({ $status }) => statusTheme[$status]?.color || '#434343'};
-  background: ${({ $status }) => statusTheme[$status]?.bg || '#f0f0f0'};
-  border-radius: 999px;
 `;
 
 const InfoGrid = styled.div`

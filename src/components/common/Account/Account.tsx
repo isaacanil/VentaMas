@@ -1,12 +1,11 @@
-import { faUserCog } from '@fortawesome/free-solid-svg-icons';
-import { faExternalLink } from '@fortawesome/free-solid-svg-icons';
+import { faExternalLink, faUserCog } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import { logout } from '@/features/auth/userSlice';
-import { auth } from '@/firebase/firebaseconfig';
+import { fbSignOut } from '@/firebase/Auth/fbAuthV2/fbSignOut';
 import { Button } from '@/components/ui/Button/Button';
 
 import Style from './Account.module.css';
@@ -15,11 +14,14 @@ export const Account = () => {
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
   const handleOpenMenu = () => {
-    setIsOpen(!isOpen);
+    setIsOpen((open) => !open);
   };
   const logoutOfApp = () => {
-    dispatch(logout());
-    auth.signOut();
+    void fbSignOut()
+      .catch(() => undefined)
+      .finally(() => {
+        dispatch(logout());
+      });
   };
 
   return (

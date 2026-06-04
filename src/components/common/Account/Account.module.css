@@ -2,7 +2,6 @@
 
 .Component_container {
   position: relative;
-  display: -webkit-box;
   display: flex;
   gap: 0.5em;
   align-items: center;
@@ -14,7 +13,6 @@
   cursor: pointer;
   background-color: #383838;
   border-radius: 100px;
-  -ms-flex-align: center;
 }
 
 .AccountMenu {
@@ -39,9 +37,7 @@
 }
 
 .AccountMenu .Items .Item {
-  display: -webkit-box;
   display: flex;
-  -ms-flex-pack: justify;
   justify-content: space-between;
 }
 
@@ -53,12 +49,6 @@
 
 .AccountMenu .Items .Item .Icon_wrapper {
   width: 1em;
-}
-
-.AccountMenu .Items .Item .Icon_wrapper .Icon {
-  display: block;
-  width: 100%;
-  fill: #505050;
 }
 
 .AccountMenu.Open {

@@ -35,6 +35,7 @@ const ACCOUNTING_EVENT_TYPE_LABELS = {
   'internal_transfer.posted': 'Transferencia interna posteada',
   'manual.entry.recorded': 'Asiento manual registrado',
   'fx_settlement.recorded': 'Settlement FX registrado',
+  'fx_settlement.voided': 'Settlement FX anulado',
   'hr_commission.accrued': 'Comision RRHH devengada',
   'hr_payroll.payment.recorded': 'Pago de nomina registrado',
 };
@@ -71,6 +72,7 @@ const ACCOUNTING_EVENT_MODULES = {
   'internal_transfer.posted': 'banking',
   'manual.entry.recorded': 'general_ledger',
   'fx_settlement.recorded': 'fx',
+  'fx_settlement.voided': 'fx',
   'hr_commission.accrued': 'payroll',
   'hr_payroll.payment.recorded': 'payroll',
 };

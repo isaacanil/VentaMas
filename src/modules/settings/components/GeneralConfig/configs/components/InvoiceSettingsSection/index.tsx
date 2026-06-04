@@ -27,12 +27,7 @@ import { AdditionalInfoSection } from './components/AdditionalInfoSection';
 import { DueDateSection } from './components/DueDateSection';
 import { SignatureAssetsSection } from './components/SignatureAssetsSection';
 import { VisualStyleSection } from './components/VisualStyleSection';
-import {
-  ConfigSidebar,
-  MainLayout,
-  PreviewCanvas,
-  StyledForm,
-} from './styles';
+import { ConfigSidebar, MainLayout, PreviewCanvas, StyledForm } from './styles';
 import {
   DEFAULT_SIGNATURE_TRANSFORM,
   DEFAULT_STAMP_TRANSFORM,
@@ -45,12 +40,22 @@ import {
 } from './utils/signatureAssets';
 
 type AssetUploadStage = 'preparing' | 'uploading' | 'saving';
+type SignatureAssetsUpdater =
+  | NormalizedSignatureAssets
+  | ((current: NormalizedSignatureAssets) => NormalizedSignatureAssets);
 
-const INITIAL_ASSET_UPLOAD_STAGE: Record<InvoiceAssetType, AssetUploadStage | null> =
-  {
-    signature: null,
-    stamp: null,
-  };
+interface SignatureAssetsDraft {
+  source: NormalizedSignatureAssets;
+  value: NormalizedSignatureAssets;
+}
+
+const INITIAL_ASSET_UPLOAD_STAGE: Record<
+  InvoiceAssetType,
+  AssetUploadStage | null
+> = {
+  signature: null,
+  stamp: null,
+};
 
 const InvoiceSettingsSection = () => {
   const [form] = Form.useForm<InvoiceFormValues>();
@@ -76,17 +81,38 @@ const InvoiceSettingsSection = () => {
   const showSignatureAssetsSection = isInvoiceTemplateV3Beta(
     selectedInvoiceType || business?.invoice?.invoiceType,
   );
-  const [signatureAssets, setSignatureAssets] = useState(
-    currentSignatureAssets,
+  const [signatureAssetsDraft, setSignatureAssetsDraft] =
+    useState<SignatureAssetsDraft | null>(null);
+  const signatureAssets =
+    signatureAssetsDraft?.source === currentSignatureAssets
+      ? signatureAssetsDraft.value
+      : currentSignatureAssets;
+  const setSignatureAssets = useCallback(
+    (nextValue: SignatureAssetsUpdater) => {
+      setSignatureAssetsDraft((currentDraft) => {
+        const currentValue =
+          currentDraft?.source === currentSignatureAssets
+            ? currentDraft.value
+            : currentSignatureAssets;
+        const value =
+          typeof nextValue === 'function' ? nextValue(currentValue) : nextValue;
+
+        return {
+          source: currentSignatureAssets,
+          value,
+        };
+      });
+    },
+    [currentSignatureAssets],
+  );
+  const resetSignatureAssetsDraft = useCallback(
+    () => setSignatureAssetsDraft(null),
+    [],
   );
 
   useEffect(() => {
     form.setFieldsValue({ invoiceMessage: currentMessage });
   }, [form, currentMessage]);
-
-  useEffect(() => {
-    setSignatureAssets(currentSignatureAssets);
-  }, [currentSignatureAssets]);
 
   const handleInvoiceMessageBlur = () => {
     const value = form.getFieldValue('invoiceMessage') ?? '';
@@ -115,13 +141,10 @@ const InvoiceSettingsSection = () => {
   };
 
   const persistSignatureAssets = useCallback(
-    async (
-      nextAssets: NormalizedSignatureAssets,
-      successMessage: string,
-    ) => {
+    async (nextAssets: NormalizedSignatureAssets, successMessage: string) => {
       if (!user?.businessID) {
         messageApi.error('No se pudo guardar la configuración visual.');
-        setSignatureAssets(currentSignatureAssets);
+        resetSignatureAssetsDraft();
         return false;
       }
 
@@ -132,14 +155,14 @@ const InvoiceSettingsSection = () => {
         messageApi.success(successMessage);
         return true;
       } catch {
-        setSignatureAssets(currentSignatureAssets);
+        resetSignatureAssetsDraft();
         messageApi.error('No se pudo guardar la configuración visual.');
         return false;
       } finally {
         setIsSavingAssets(false);
       }
     },
-    [currentSignatureAssets, messageApi, user],
+    [messageApi, resetSignatureAssetsDraft, setSignatureAssets, user],
   );
 
   const updateSignatureAssets = useCallback(
@@ -164,7 +187,7 @@ const InvoiceSettingsSection = () => {
         },
       }));
     },
-    [],
+    [setSignatureAssets],
   );
 
   const handleSignatureAssetsToggle = async (checked: boolean) => {
@@ -276,7 +299,7 @@ const InvoiceSettingsSection = () => {
           );
         }
       } catch {
-        setSignatureAssets(currentSignatureAssets);
+        resetSignatureAssetsDraft();
         messageApi.error('No se pudo subir la imagen.');
       } finally {
         setUploadingAsset(null);
@@ -296,7 +319,10 @@ const InvoiceSettingsSection = () => {
           [assetType]: 'preparing',
         }));
 
-        const processedFile = await processAssetBeforeUpload(file as RcFile, []);
+        const processedFile = await processAssetBeforeUpload(
+          file as RcFile,
+          [],
+        );
 
         if (!processedFile) {
           setUploadingAsset(null);
@@ -332,7 +358,7 @@ const InvoiceSettingsSection = () => {
         assetType === 'signature' ? 'Firma eliminada' : 'Sello eliminado',
       );
     } catch {
-      setSignatureAssets(currentSignatureAssets);
+      resetSignatureAssetsDraft();
       messageApi.error('No se pudo quitar la imagen.');
     } finally {
       setIsSavingAssets(false);

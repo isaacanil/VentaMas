@@ -233,6 +233,9 @@ export const createManualJournalEntry = onCall(
         entryOrigin: 'manual',
       },
     });
+    const eventRef = db.doc(
+      `businesses/${businessId}/accountingEvents/${accountingEvent.id}`,
+    );
     const entry = buildJournalEntry({
       businessId,
       entryId,
@@ -252,6 +255,7 @@ export const createManualJournalEntry = onCall(
       },
     });
 
+    transaction.set(eventRef, accountingEvent);
     transaction.set(entryRef, entry);
     result = {
       ok: true,

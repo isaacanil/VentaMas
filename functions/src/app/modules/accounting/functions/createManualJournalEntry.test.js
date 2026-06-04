@@ -211,6 +211,19 @@ describe('createManualJournalEntry', () => {
     });
     expect(transactionSetMock).toHaveBeenCalledWith(
       expect.objectContaining({
+        path: 'businesses/business-1/accountingEvents/manual.entry.recorded__entry-1',
+      }),
+      expect.objectContaining({
+        id: 'manual.entry.recorded__entry-1',
+        eventType: 'manual.entry.recorded',
+        projection: expect.objectContaining({
+          journalEntryId: 'entry-1',
+          status: 'projected',
+        }),
+      }),
+    );
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
         path: 'businesses/business-1/journalEntries/entry-1',
       }),
       expect.objectContaining({

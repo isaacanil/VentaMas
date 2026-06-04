@@ -1,9 +1,5 @@
-import { VmAlertDialog, VmButton } from '@/components/heroui';
-import {
-  CheckCircleOutlined,
-  DollarOutlined,
-  LockOutlined,
-} from '@/constants/icons/antd';
+import { VmButton } from '@/components/heroui';
+import { DollarOutlined, EditOutlined } from '@/constants/icons/antd';
 import {
   HrActionGroup as ActionGroup,
   HrAmountText as AmountText,
@@ -28,6 +24,8 @@ import type {
   HrPayrollRunStatus,
 } from '@/types/hrPayroll';
 
+import { PeriodActionButtons } from './components/PeriodActionButtons';
+
 const PERIOD_STATUS_TONES: Record<
   HrCommissionPeriodStatus,
   'default' | 'info' | 'success' | 'warning' | 'danger' | 'accent'
@@ -44,6 +42,16 @@ const LINE_STATUS_TONES: Record<
   HrPayrollRunStatus,
   'default' | 'info' | 'success' | 'warning' | 'danger' | 'accent'
 > = PERIOD_STATUS_TONES;
+
+const getPeriodPayableAmount = (period: HrCommissionPeriodRecord): number =>
+  period.netAmount ?? period.totalPayableAmount ?? period.totalCommissionAmount;
+
+const getPeriodDeductionAmount = (period: HrCommissionPeriodRecord): number =>
+  period.deductionsAmount ||
+  Math.max(0, period.totalCommissionAmount - getPeriodPayableAmount(period));
+
+const getPeriodAdjustmentAmount = (period: HrCommissionPeriodRecord): number =>
+  period.manualAdjustmentAmount ?? 0;
 
 interface PeriodColumnsOptions {
   actionKey: string | null;
@@ -96,83 +104,70 @@ export const buildPeriodColumns = ({
     render: (period) => period.entriesCount,
   },
   {
-    title: 'Total',
-    key: 'totalCommissionAmount',
+    title: 'A pagar',
+    key: 'totalPayableAmount',
     align: 'right',
-    width: 140,
-    render: (period) => (
-      <AmountText>
-        {formatMoney(period.totalCommissionAmount, period.currency)}
-      </AmountText>
-    ),
+    width: 170,
+    render: (period) => {
+      const deductionAmount = getPeriodDeductionAmount(period);
+      const adjustmentAmount = getPeriodAdjustmentAmount(period);
+
+      return (
+        <CellStack>
+          <AmountText>
+            {formatMoney(getPeriodPayableAmount(period), period.currency)}
+          </AmountText>
+          {adjustmentAmount > 0 ? (
+            <MutedText>
+              Ajuste -{formatMoney(adjustmentAmount, period.currency)}
+            </MutedText>
+          ) : deductionAmount > 0 ? (
+            <MutedText>
+              Deducciones -{formatMoney(deductionAmount, period.currency)}
+            </MutedText>
+          ) : null}
+        </CellStack>
+      );
+    },
   },
   {
     title: '',
     key: 'actions',
     align: 'right',
-    width: 190,
+    width: 260,
     render: (period) => (
-      <ActionGroup>
-        <VmButton
-          variant="secondary"
-          isDisabled={
-            period.status !== 'draft' || actionKey === `close:${period.id}`
-          }
-          onPress={() => onAction('close', period)}
-        >
-          <LockOutlined />
-          {actionKey === `close:${period.id}` ? 'Cerrando...' : 'Cerrar'}
-        </VmButton>
-        <VmAlertDialog>
-          <VmButton
-            variant="primary"
-            isDisabled={
-              period.status !== 'closed' ||
-              actionKey === `approve:${period.id}`
-            }
-          >
-            <CheckCircleOutlined />
-            {actionKey === `approve:${period.id}` ? 'Aprobando...' : 'Aprobar'}
-          </VmButton>
-          <VmAlertDialog.Backdrop>
-            <VmAlertDialog.Container>
-              <VmAlertDialog.Dialog>
-                <VmAlertDialog.Header>
-                  <VmAlertDialog.Heading>
-                    Aprobar corte
-                  </VmAlertDialog.Heading>
-                </VmAlertDialog.Header>
-                <VmAlertDialog.Body>
-                  Se marcara la corrida como aprobada y se emitira el evento
-                  contable.
-                </VmAlertDialog.Body>
-                <VmAlertDialog.Footer>
-                  <VmButton slot="close" variant="secondary">
-                    Cancelar
-                  </VmButton>
-                  <VmButton
-                    slot="close"
-                    variant="primary"
-                    onPress={() => onAction('approve', period)}
-                  >
-                    Aprobar
-                  </VmButton>
-                </VmAlertDialog.Footer>
-              </VmAlertDialog.Dialog>
-            </VmAlertDialog.Container>
-          </VmAlertDialog.Backdrop>
-        </VmAlertDialog>
-      </ActionGroup>
+      <PeriodActionButtons
+        actionKey={actionKey}
+        period={period}
+        onAction={onAction}
+      />
     ),
   },
 ];
 
 interface LineColumnsOptions {
+  adjustmentActionKey: string | null;
+  onOpenAdjustment: (line: HrPayrollEmployeeLineRecord) => void;
   paymentActionKey: string | null;
   onOpenPayment: (line: HrPayrollEmployeeLineRecord) => void;
 }
 
+const getLineGrossAmount = (line: HrPayrollEmployeeLineRecord): number =>
+  line.grossAmount || line.commissionAmount || line.netAmount || 0;
+
+const getLineDeductionAmount = (line: HrPayrollEmployeeLineRecord): number =>
+  line.deductionsAmount ||
+  Math.max(0, getLineGrossAmount(line) - line.netAmount);
+
+const getLineAdjustmentAmount = (line: HrPayrollEmployeeLineRecord): number =>
+  line.manualAdjustmentAmount ?? 0;
+
+const isLineAdjustable = (line: HrPayrollEmployeeLineRecord): boolean =>
+  line.status === 'draft' || line.status === 'closed';
+
 export const buildLineColumns = ({
+  adjustmentActionKey,
+  onOpenAdjustment,
   paymentActionKey,
   onOpenPayment,
 }: LineColumnsOptions): HrTableColumn<HrPayrollEmployeeLineRecord>[] => [
@@ -207,30 +202,63 @@ export const buildLineColumns = ({
     ),
   },
   {
-    title: 'Neto',
+    title: 'A pagar',
     key: 'netAmount',
     align: 'right',
-    width: 140,
-    render: (line) => (
-      <AmountText>{formatMoney(line.netAmount, line.currency)}</AmountText>
-    ),
+    width: 190,
+    render: (line) => {
+      const deductionAmount = getLineDeductionAmount(line);
+      const adjustmentAmount = getLineAdjustmentAmount(line);
+      const adjustmentComment = line.manualAdjustmentComment;
+
+      return (
+        <CellStack>
+          <AmountText>{formatMoney(line.netAmount, line.currency)}</AmountText>
+          {adjustmentAmount > 0 ? (
+            <MutedText>
+              Ajuste -{formatMoney(adjustmentAmount, line.currency)}
+            </MutedText>
+          ) : deductionAmount > 0 ? (
+            <MutedText>
+              Deducciones -{formatMoney(deductionAmount, line.currency)}
+            </MutedText>
+          ) : null}
+          {adjustmentComment ? (
+            <MutedText>{adjustmentComment}</MutedText>
+          ) : null}
+        </CellStack>
+      );
+    },
   },
   {
     title: '',
     key: 'payment',
     align: 'right',
-    width: 120,
+    width: 220,
     render: (line) => (
-      <VmButton
-        variant={line.status === 'paid' ? 'secondary' : 'primary'}
-        isDisabled={
-          line.status !== 'approved' || paymentActionKey === `pay:${line.id}`
-        }
-        onPress={() => onOpenPayment(line)}
-      >
-        <DollarOutlined />
-        {line.status === 'paid' ? 'Pagado' : 'Pagar'}
-      </VmButton>
+      <ActionGroup>
+        <VmButton
+          variant="secondary"
+          isDisabled={
+            !isLineAdjustable(line) ||
+            adjustmentActionKey === `adjust:${line.id}`
+          }
+          onPress={() => onOpenAdjustment(line)}
+        >
+          <EditOutlined />
+          Editar
+        </VmButton>
+        <VmButton
+          variant={line.status === 'paid' ? 'secondary' : 'primary'}
+          isDisabled={
+            line.status !== 'approved' || paymentActionKey === `pay:${line.id}`
+          }
+          onPress={() => onOpenPayment(line)}
+        >
+          <DollarOutlined />
+          {line.status === 'paid' ? 'Pagado' : 'Pagar'}
+        </VmButton>
+      </ActionGroup>
     ),
   },
 ];

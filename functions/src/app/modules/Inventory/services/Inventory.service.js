@@ -2,8 +2,116 @@ import { https, logger } from 'firebase-functions';
 import { nanoid } from 'nanoid';
 
 import { db, serverTimestamp } from '../../../core/config/firebase.js';
+import { buildAccountingEvent } from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
+import { isAccountingRolloutEnabledForBusiness } from '../../../versions/v2/accounting/utils/accountingRollout.util.js';
 
 import { MovementType, MovementReason } from './movementEnums.js';
+
+const asRecord = (value) =>
+  value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+
+const safeNumber = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const roundMoney = (value) =>
+  Math.round((safeNumber(value) ?? 0) * 100) / 100;
+
+const readSnapshotField = (snapshot, fieldPath) => {
+  if (!snapshot || !fieldPath) return null;
+  if (typeof snapshot.get === 'function') {
+    try {
+      const value = snapshot.get(fieldPath);
+      if (value !== undefined) return value;
+    } catch {
+      // Fall back to data() for lightweight test doubles.
+    }
+  }
+
+  const data = asRecord(snapshot.data?.());
+  return fieldPath.split('.').reduce((current, key) => {
+    const record = asRecord(current);
+    return record[key];
+  }, data);
+};
+
+const resolvePositiveNumber = (...values) => {
+  for (const value of values) {
+    const number = safeNumber(value);
+    if (number != null && number > 0) {
+      return number;
+    }
+  }
+
+  return null;
+};
+
+const resolveInventoryUnitCost = ({ batchSnap, productSnap, productStockSnap }) =>
+  resolvePositiveNumber(
+    readSnapshotField(productStockSnap, 'unitCost'),
+    readSnapshotField(productStockSnap, 'cost'),
+    readSnapshotField(productStockSnap, 'pricing.cost'),
+    readSnapshotField(productStockSnap, 'cost.unit'),
+    readSnapshotField(batchSnap, 'unitCost'),
+    readSnapshotField(batchSnap, 'cost'),
+    readSnapshotField(batchSnap, 'pricing.cost'),
+    readSnapshotField(batchSnap, 'cost.unit'),
+    readSnapshotField(productSnap, 'pricing.cost'),
+    readSnapshotField(productSnap, 'cost.unit'),
+    readSnapshotField(productSnap, 'cost'),
+  );
+
+const shouldWriteAccountingEvents = (settings, businessId) =>
+  settings?.generalAccountingEnabled === true &&
+  isAccountingRolloutEnabledForBusiness(businessId, settings);
+
+const writeInventoryCogsAccountingEvent = ({
+  accountingSettings,
+  businessID,
+  cogsLines,
+  saleId,
+  tx,
+  uid,
+}) => {
+  const totalCost = roundMoney(
+    cogsLines.reduce((sum, line) => sum + line.totalCost, 0),
+  );
+  if (totalCost <= 0) return;
+
+  const now = serverTimestamp();
+  const functionalCurrency = accountingSettings?.functionalCurrency || 'DOP';
+  const accountingEvent = buildAccountingEvent({
+    businessId: businessID,
+    eventType: 'inventory.cogs.recorded',
+    sourceType: 'invoice_inventory',
+    sourceId: saleId,
+    sourceDocumentType: 'invoice',
+    sourceDocumentId: saleId,
+    currency: functionalCurrency,
+    functionalCurrency,
+    monetary: {
+      amount: totalCost,
+      functionalAmount: totalCost,
+    },
+    payload: {
+      documentNature: 'inventory',
+      lineCount: cogsLines.length,
+      lines: cogsLines,
+      inventoryMovementSource: 'sale',
+    },
+    occurredAt: now,
+    recordedAt: now,
+    idempotencyKey: `inventory-cogs:${saleId}`,
+    createdAt: now,
+    createdBy: uid,
+  });
+
+  tx.set(
+    db.doc(`businesses/${businessID}/accountingEvents/${accountingEvent.id}`),
+    accountingEvent,
+  );
+};
 
 /**
  * Ajusta inventario de productos usando BulkWriter de Admin SDK.
@@ -12,10 +120,11 @@ import { MovementType, MovementReason } from './movementEnums.js';
  * @param {{ uid: string; businessID: string }} user
  * @param {Array<{ id: string; name: string; amountToBuy: number; trackInventory: boolean; productStockId?: string; batchId?: string }>} products
  * @param {{ id: string }} sale
+ * @param {object|null} accountingSettings
  */
 export async function adjustProductInventory(
   tx,
-  { user, products, sale, inventoryPrevreqs },
+  { user, products, sale, inventoryPrevreqs, accountingSettings = null },
 ) {
   if (!user?.businessID || !user?.uid) {
     throw new https.HttpsError(
@@ -41,6 +150,12 @@ export async function adjustProductInventory(
   const productAdjustments = new Map();
   const batchAdjustments = new Map();
   const skippedProducts = [];
+  const normalizedAccountingSettings = asRecord(accountingSettings);
+  const accountingEnabled = shouldWriteAccountingEvents(
+    normalizedAccountingSettings,
+    businessID,
+  );
+  const cogsLines = [];
 
   const registerBackorder = ({ productId, productStockId, pendingQty }) => {
     if (!pendingQty || pendingQty <= 0) return;
@@ -189,6 +304,25 @@ export async function adjustProductInventory(
         requestedQuantity: quantityRequested,
         sourceLocation,
       });
+
+      if (accountingEnabled) {
+        const unitCost = resolveInventoryUnitCost({
+          batchSnap,
+          productSnap,
+          productStockSnap,
+        });
+        if (unitCost != null) {
+          cogsLines.push({
+            productId,
+            productName: productName || null,
+            productStockId: productStockId || null,
+            batchId: batchId || null,
+            quantity: qtyToConsume,
+            unitCost: roundMoney(unitCost),
+            totalCost: roundMoney(unitCost * qtyToConsume),
+          });
+        }
+      }
     }
 
     if (backorderQty > 0) {
@@ -244,6 +378,17 @@ export async function adjustProductInventory(
     logger.info('Productos con inventario omitido por falta de referencia', {
       saleId,
       skippedProducts,
+    });
+  }
+
+  if (accountingEnabled) {
+    writeInventoryCogsAccountingEvent({
+      accountingSettings: normalizedAccountingSettings,
+      businessID,
+      cogsLines,
+      saleId,
+      tx,
+      uid,
     });
   }
 

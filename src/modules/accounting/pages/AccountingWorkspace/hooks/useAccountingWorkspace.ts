@@ -84,6 +84,7 @@ export const useAccountingWorkspace = ({
     user?.businessID ?? user?.businessId ?? user?.activeBusinessId ?? null;
   const userId = user?.uid ?? user?.id ?? null;
   const {
+    bankAccounts,
     config,
     error: configError,
     isAccountingRolloutBusiness,
@@ -277,12 +278,20 @@ export const useAccountingWorkspace = ({
     () =>
       buildLedgerRecords({
         accounts: chartOfAccounts,
+        bankAccounts,
         events: accountingEvents,
         journalEntries,
         postingProfiles,
         userNamesById,
       }),
-    [accountingEvents, chartOfAccounts, journalEntries, postingProfiles, userNamesById],
+    [
+      accountingEvents,
+      bankAccounts,
+      chartOfAccounts,
+      journalEntries,
+      postingProfiles,
+      userNamesById,
+    ],
   );
 
   const periodOptions = useMemo(

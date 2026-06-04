@@ -5,6 +5,7 @@ import {
   getPilotAccountingSettingsForBusiness,
   isAccountingRolloutEnabledForBusiness,
 } from '../../../versions/v2/accounting/utils/accountingRollout.util.js';
+import { buildAccountingEvent } from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
 import {
   THRESHOLD,
   asRecord,
@@ -25,6 +26,37 @@ const resolveOverpaidAmount = (purchaseRecord) => {
   return roundToTwoDecimals(Math.max(paid - total, 0));
 };
 
+const resolveCurrencyCode = (value) =>
+  toCleanString(asRecord(value).code ?? value)?.toUpperCase() ?? null;
+
+const resolveSupplierCreditNoteMonetarySnapshot = ({
+  amount,
+  purchaseRecord,
+}) => {
+  const monetary = asRecord(purchaseRecord.monetary);
+  const documentTotals = asRecord(monetary.documentTotals);
+  const functionalTotals = asRecord(monetary.functionalTotals);
+  const purchaseDocumentTotal = roundToTwoDecimals(
+    documentTotals.total ?? documentTotals.gross,
+  );
+  const purchaseFunctionalTotal = roundToTwoDecimals(
+    functionalTotals.total ?? functionalTotals.gross,
+  );
+  const functionalAmount =
+    purchaseDocumentTotal > THRESHOLD && purchaseFunctionalTotal > THRESHOLD
+      ? roundToTwoDecimals((purchaseFunctionalTotal * amount) / purchaseDocumentTotal)
+      : roundToTwoDecimals(amount);
+
+  return {
+    currency: resolveCurrencyCode(monetary.documentCurrency),
+    functionalCurrency: resolveCurrencyCode(monetary.functionalCurrency),
+    monetary: {
+      amount: roundToTwoDecimals(amount),
+      functionalAmount,
+    },
+  };
+};
+
 export const syncPurchaseSupplierCreditNote = onDocumentWritten(
   {
     document: 'businesses/{businessId}/purchases/{purchaseId}',
@@ -41,6 +73,8 @@ export const syncPurchaseSupplierCreditNote = onDocumentWritten(
     ) {
       return null;
     }
+    const shouldProjectAccountingEvents =
+      accountingSettings?.generalAccountingEnabled !== false;
 
     const purchaseRecord = asRecord(event.data?.after?.data());
     if (!Object.keys(purchaseRecord).length) {
@@ -124,7 +158,52 @@ export const syncPurchaseSupplierCreditNote = onDocumentWritten(
       },
     };
 
-    await noteRef.set(payload, { merge: true });
+    const writes = [noteRef.set(payload, { merge: true })];
+
+    if (shouldProjectAccountingEvents && nextTotalAmount > THRESHOLD) {
+      const creditNoteMonetary = resolveSupplierCreditNoteMonetarySnapshot({
+        amount: nextTotalAmount,
+        purchaseRecord,
+      });
+      const accountingEvent = buildAccountingEvent({
+        businessId,
+        eventType: 'supplier_credit_note.issued',
+        sourceType: 'supplierCreditNote',
+        sourceId: noteId,
+        sourceDocumentType: 'supplierCreditNote',
+        sourceDocumentId: noteId,
+        counterpartyType: 'supplier',
+        counterpartyId: supplierId,
+        currency: creditNoteMonetary.currency,
+        functionalCurrency: creditNoteMonetary.functionalCurrency,
+        monetary: creditNoteMonetary.monetary,
+        payload: {
+          supplierCreditNoteId: noteId,
+          purchaseId,
+          purchaseNumber: payload.metadata.purchaseNumber,
+          originType: payload.originType,
+          totalAmount: nextTotalAmount,
+          appliedAmount,
+          remainingAmount: nextRemainingAmount,
+          status: nextStatus,
+        },
+        occurredAt:
+          purchaseRecord.completedAt ??
+          purchaseRecord.updatedAt ??
+          payload.createdAt,
+        recordedAt: payload.createdAt,
+        createdAt: payload.createdAt,
+        createdBy: payload.createdBy ?? payload.updatedBy,
+      });
+
+      writes.push(
+        db
+          .doc(`businesses/${businessId}/accountingEvents/${accountingEvent.id}`)
+          .set(accountingEvent, { merge: true }),
+      );
+    }
+
+    await Promise.all(writes);
     return null;
   },
 );

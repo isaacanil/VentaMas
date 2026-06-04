@@ -10,12 +10,10 @@ import {
   VmModal,
   VmNumberField,
   VmSelect,
-  VmSwitch,
   VmTextArea,
 } from '@/components/heroui';
 import { VmPhoneField } from '@/components/phone';
 import {
-  HR_COMMISSION_TYPE_LABELS as COMMISSION_TYPE_LABELS,
   HR_EMPLOYEE_DOCUMENT_TYPE_LABELS as DOCUMENT_TYPE_LABELS,
   HR_EMPLOYEE_GENDER_LABELS as GENDER_LABELS,
   HR_EMPLOYEE_PAY_TYPE_LABELS as PAY_TYPE_LABELS,
@@ -27,6 +25,8 @@ import {
   normalizePhoneToE164,
 } from '@/shared/phone';
 import type { HrEmployeeInput, HrEmployeeRecord } from '@/types/hrPayroll';
+import { normalizeServiceCommissionServiceRules } from '@/utils/commissions/serviceCommissions';
+import { normalizeSalaryDeductionLines } from '@/utils/hrPayroll/salaryDeductions';
 
 import {
   DOCUMENT_PLACEHOLDERS,
@@ -42,13 +42,12 @@ import {
   FieldLabel,
   FullWidthField,
   ModalActions,
-  SwitchCopy,
-  SwitchField,
 } from './HrEmployeeEditorModal.styles';
 import type {
   HrEmployeeFormValues,
   HrLinkedUserOption,
 } from './HrEmployeeEditorModal.types';
+import { SalaryDeductionsSection } from './SalaryDeductionsSection/SalaryDeductionsSection';
 
 export type {
   HrEmployeeFormValues,
@@ -120,10 +119,14 @@ export function HrEmployeeEditorModal({
       phone: normalizedPhone,
       baseSalaryAmount: toFiniteNumber(draft.baseSalaryAmount),
       hourlyRateAmount: toFiniteNumber(draft.hourlyRateAmount),
+      salaryDeductions: normalizeSalaryDeductionLines(draft.salaryDeductions),
       defaultCommissionRate:
         draft.defaultCommissionRate == null
           ? null
           : toFiniteNumber(draft.defaultCommissionRate),
+      serviceCommissionRules: normalizeServiceCommissionServiceRules(
+        draft.serviceCommissionRules,
+      ),
     });
   };
 
@@ -260,13 +263,10 @@ export function HrEmployeeEditorModal({
               selectedKey={draft.documentType ?? 'cedula'}
               isDisabled={saving}
               onSelectionChange={(key) => {
-                const nextDocumentType = (key
-                  ? String(key)
-                  : 'cedula') as HrEmployeeInput['documentType'];
-                updateField(
-                  'documentType',
-                  nextDocumentType,
-                );
+                const nextDocumentType = (
+                  key ? String(key) : 'cedula'
+                ) as HrEmployeeInput['documentType'];
+                updateField('documentType', nextDocumentType);
               }}
             >
               <VmSelect.Trigger>
@@ -296,8 +296,12 @@ export function HrEmployeeEditorModal({
               aria-label="Documento"
               value={draft.documentId ?? ''}
               disabled={saving}
-              placeholder={DOCUMENT_PLACEHOLDERS[draft.documentType ?? 'cedula']}
-              onChange={(event) => updateField('documentId', event.target.value)}
+              placeholder={
+                DOCUMENT_PLACEHOLDERS[draft.documentType ?? 'cedula']
+              }
+              onChange={(event) =>
+                updateField('documentId', event.target.value)
+              }
             />
           </Field>
 
@@ -372,7 +376,10 @@ export function HrEmployeeEditorModal({
               selectedKey={draft.payType ?? 'salary'}
               isDisabled={saving}
               onSelectionChange={(key) =>
-                updateField('payType', String(key) as HrEmployeeInput['payType'])
+                updateField(
+                  'payType',
+                  String(key) as HrEmployeeInput['payType'],
+                )
               }
             >
               <VmSelect.Trigger>
@@ -416,7 +423,9 @@ export function HrEmployeeEditorModal({
               <VmSelect.Popover>
                 <VmListBox aria-label="Metodos de pago">
                   {Object.entries(PAYMENT_METHOD_LABELS)
-                    .filter(([value]) => value !== 'transfer' && value !== 'card')
+                    .filter(
+                      ([value]) => value !== 'transfer' && value !== 'card',
+                    )
                     .map(([value, label]) => (
                       <VmListBox.Item key={value} id={value} textValue={label}>
                         {label}
@@ -442,6 +451,15 @@ export function HrEmployeeEditorModal({
               </VmNumberField.Group>
             </VmNumberField>
           </Field>
+
+          <SalaryDeductionsSection
+            baseSalaryAmount={toFiniteNumber(draft.baseSalaryAmount)}
+            disabled={saving}
+            value={draft.salaryDeductions}
+            onChange={(salaryDeductions) =>
+              updateField('salaryDeductions', salaryDeductions)
+            }
+          />
 
           <Field>
             <FieldLabel>Tarifa por hora</FieldLabel>
@@ -481,74 +499,6 @@ export function HrEmployeeEditorModal({
                 updateField('paymentDestination', event.target.value)
               }
             />
-          </Field>
-
-          <SwitchField>
-            <SwitchCopy>
-              <FieldLabel>Comisiones</FieldLabel>
-              <FieldHint>Activa el espejo para ventas y reportes.</FieldHint>
-            </SwitchCopy>
-            <VmSwitch
-              aria-label="Comisiones"
-              isSelected={draft.commissionEnabled === true}
-              isDisabled={saving}
-              onChange={(commissionEnabled) =>
-                updateField('commissionEnabled', commissionEnabled)
-              }
-            />
-          </SwitchField>
-
-          <Field>
-            <FieldLabel>Tipo de comision</FieldLabel>
-            <VmSelect
-              aria-label="Tipo de comision"
-              selectedKey={draft.defaultCommissionType ?? 'percentage'}
-              isDisabled={saving}
-              onSelectionChange={(key) =>
-                updateField(
-                  'defaultCommissionType',
-                  String(key) as HrEmployeeInput['defaultCommissionType'],
-                )
-              }
-            >
-              <VmSelect.Trigger>
-                <VmSelect.Value>
-                  {getOptionLabel(
-                    COMMISSION_TYPE_LABELS,
-                    draft.defaultCommissionType,
-                  )}
-                </VmSelect.Value>
-                <VmSelect.Indicator />
-              </VmSelect.Trigger>
-              <VmSelect.Popover>
-                <VmListBox aria-label="Tipos de comision">
-                  {Object.entries(COMMISSION_TYPE_LABELS).map(
-                    ([value, label]) => (
-                      <VmListBox.Item key={value} id={value} textValue={label}>
-                        {label}
-                        <VmListBox.ItemIndicator />
-                      </VmListBox.Item>
-                    ),
-                  )}
-                </VmListBox>
-              </VmSelect.Popover>
-            </VmSelect>
-          </Field>
-
-          <Field>
-            <FieldLabel>Valor de comision</FieldLabel>
-            <VmNumberField
-              aria-label="Valor de comision"
-              minValue={0}
-              step={0.01}
-              value={toFiniteNumber(draft.defaultCommissionRate)}
-              isDisabled={saving}
-              onChange={(value) => updateField('defaultCommissionRate', value)}
-            >
-              <VmNumberField.Group>
-                <VmNumberField.Input />
-              </VmNumberField.Group>
-            </VmNumberField>
           </Field>
 
           <FullWidthField>

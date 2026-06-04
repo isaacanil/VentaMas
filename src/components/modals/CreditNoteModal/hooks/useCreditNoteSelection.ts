@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import type { CreditNoteRecord } from '@/types/creditNote';
 import type { InvoiceProduct } from '@/types/invoice';
@@ -34,10 +34,18 @@ export const useCreditNoteSelection = ({
   );
   const [selectAll, setSelectAll] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [filteredProducts, setFilteredProducts] = useState<CreditNoteProduct[]>(
-    [],
-  );
   const [currentPage, setCurrentPage] = useState(1);
+
+  const filteredProducts = useMemo(() => {
+    if (!selectedInvoiceId) return [];
+
+    const searchLower = searchText.toLowerCase().trim();
+    if (!searchLower) return availableInvoiceItems;
+
+    return availableInvoiceItems.filter((item) =>
+      item.name?.toLowerCase().includes(searchLower),
+    );
+  }, [availableInvoiceItems, searchText, selectedInvoiceId]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -64,7 +72,6 @@ export const useCreditNoteSelection = ({
         setSelectedItems([]);
         setItemQuantities({});
         setSelectAll(false);
-        setFilteredProducts([]);
       }
       return;
     }
@@ -72,7 +79,6 @@ export const useCreditNoteSelection = ({
     // Si estamos en modo edición, no reseteamos la selección inicial
     // ya que fue cargada desde la nota de crédito existe en el otro effect
     if (mode === 'edit') {
-      setFilteredProducts(availableInvoiceItems);
       setSearchText('');
       setCurrentPage(1);
       return;
@@ -90,7 +96,6 @@ export const useCreditNoteSelection = ({
       initialSelection.length > 0 &&
         initialSelection.length === availableInvoiceItems.length,
     );
-    setFilteredProducts(availableInvoiceItems);
     setSearchText('');
     setCurrentPage(1);
   }, [
@@ -101,22 +106,6 @@ export const useCreditNoteSelection = ({
     invoicesLoading,
     mode,
   ]);
-
-  useEffect(() => {
-    const baseList = availableInvoiceItems;
-
-    if (!searchText.trim()) {
-      setFilteredProducts(baseList);
-      return;
-    }
-
-    const searchLower = searchText.toLowerCase().trim();
-    const filtered = baseList.filter((item) =>
-      item.name?.toLowerCase().includes(searchLower),
-    );
-    setFilteredProducts(filtered);
-    setCurrentPage(1);
-  }, [searchText, availableInvoiceItems]);
 
   const handleSearchTextChange = (value: string) => {
     setSearchText(value);
@@ -161,7 +150,6 @@ export const useCreditNoteSelection = ({
     setSelectedItems([]);
     setItemQuantities({});
     setSelectAll(false);
-    setFilteredProducts([]);
     setSearchText('');
     setCurrentPage(1);
   };

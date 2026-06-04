@@ -33,7 +33,7 @@ import { formatPriceByCurrency } from '@/utils/format';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
 import { getTotalPrice } from '@/utils/pricing';
 import PriceAndSaleUnitsModal from '@/modules/sales/pages/Sale/components/Cart/components/PriceAndSaleUnitsModal';
-import { Counter } from '@/components/ui/Counter/Counter';
+import { Counter, type CounterItem } from '@/components/ui/Counter/Counter';
 
 import { InsuranceCoverage } from './components/InsuranceCoverage/InsuranceCoverage';
 import { PriceEditor } from './components/PriceEditor/PriceEditor';
@@ -55,7 +55,10 @@ import type {
 } from '@/types/products';
 import type { InvoiceProduct } from '@/types/invoice';
 import type { PriceOption } from './utils/priceUtils';
-import type { CartSettings, Product as CartProduct } from '@/features/cart/types';
+import type {
+  CartSettings,
+  Product as CartProduct,
+} from '@/features/cart/types';
 
 interface DiscountInfo {
   value?: number;
@@ -68,7 +71,6 @@ type PricingCarrier = {
 };
 
 type PriceEditorItem = Parameters<typeof PriceEditor>[0]['item'];
-type CounterItem = Parameters<typeof Counter>[0]['item'];
 type InsuranceItem = Parameters<typeof InsuranceCoverage>[0]['item'];
 type SaleUnitItem = Parameters<typeof PriceAndSaleUnitsModal>[0]['item'];
 
@@ -133,9 +135,7 @@ const ensureNumber = (
   return 0;
 };
 
-const resolvePriceValue = (
-  price: CartItem['price'],
-): number | string => {
+const resolvePriceValue = (price: CartItem['price']): number | string => {
   if (typeof price === 'number' || typeof price === 'string') {
     return price;
   }
@@ -220,8 +220,7 @@ export const ProductCardForCart = ({
   );
   const lineId = item.cid || item.id;
   const requiresPhysicalSelection = Boolean(
-    item?.restrictSaleWithoutStock &&
-      (!item?.productStockId || !item?.batchId),
+    item?.restrictSaleWithoutStock && (!item?.productStockId || !item?.batchId),
   );
   const expirationTooltip = !showExpirationIndicator
     ? ''
@@ -304,7 +303,9 @@ export const ProductCardForCart = ({
             icon: <EnvironmentOutlined />,
             tone: 'warning' as const,
             onClick: () =>
-              dispatch(openProductStockSimple(item as unknown as ProductRecord)),
+              dispatch(
+                openProductStockSimple(item as unknown as ProductRecord),
+              ),
           },
         ]
       : []),
@@ -339,7 +340,8 @@ export const ProductCardForCart = ({
     requiresPhysicalSelection || item.comment || item.discount || hasBatchInfo,
   );
   const finalPrice = getTotalPrice(item as InvoiceProduct, taxReceiptEnabled);
-  const originalPriceValue = item.pricing?.price ?? resolvePriceValue(item.price);
+  const originalPriceValue =
+    item.pricing?.price ?? resolvePriceValue(item.price);
   const originalPrice = ensureNumber(originalPriceValue);
   const taxPercentage = ensureNumber(item.pricing?.tax);
   const quantity = item.amountToBuy ?? 1;
@@ -349,9 +351,9 @@ export const ProductCardForCart = ({
       ? '#52c41a'
       : requiresPhysicalSelection
         ? '#d97706'
-      : hasBatchInfo
-        ? '#4096ff'
-        : '#8c8c8c';
+        : hasBatchInfo
+          ? '#4096ff'
+          : '#8c8c8c';
   const rawBatchNumber =
     getBatchIdentifier(batchInfo?.batchNumber) ??
     getBatchIdentifier(batchInfo?.batchNumberId) ??
@@ -528,7 +530,10 @@ export const ProductCardForCart = ({
               )}
               {hasDiscount && (
                 <OriginalPrice>
-                  {formatPriceByCurrency(displayedOriginalPrice, documentCurrency)}
+                  {formatPriceByCurrency(
+                    displayedOriginalPrice,
+                    documentCurrency,
+                  )}
                 </OriginalPrice>
               )}
               <Price $hasDiscount={hasDiscount}>

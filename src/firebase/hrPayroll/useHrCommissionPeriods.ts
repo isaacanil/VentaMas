@@ -12,6 +12,9 @@ import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
 import { db } from '@/firebase/firebaseconfig';
 import { createFirebaseCallable } from '@/firebase/functions/callable';
 import type {
+  HrCommissionCutRuleInput,
+  HrCommissionCutRuleRecord,
+  HrCommissionEntryRecord,
   HrEmployeePaymentRecord,
   HrEmployeePaymentStatus,
   HrPaymentMethod,
@@ -20,9 +23,23 @@ import type {
   HrPayrollEmployeeLineRecord,
   HrPayrollRunStatus,
 } from '@/types/hrPayroll';
+import { normalizeSalaryDeductionLines } from '@/utils/hrPayroll/salaryDeductions';
+import { normalizeHrCommissionEntryRecord } from './useHrCommissionEntries';
 
-type ManageHrCommissionPeriodAction = 'create' | 'close' | 'approve';
+type ManageHrCommissionPeriodAction =
+  | 'create'
+  | 'close'
+  | 'approve'
+  | 'adjust_line';
+type ManageHrCommissionCutRuleAction =
+  | 'upsert_cut_rule'
+  | 'deactivate_cut_rule';
 type ManageHrPayrollPaymentAction = 'record';
+
+interface UseHrCommissionCutRulesArgs {
+  businessId?: string | null;
+  pageSize?: number;
+}
 
 interface UseHrCommissionPeriodsArgs {
   businessId?: string | null;
@@ -30,6 +47,11 @@ interface UseHrCommissionPeriodsArgs {
 }
 
 interface UseHrPayrollEmployeeLinesArgs {
+  businessId?: string | null;
+  periodId?: string | null;
+}
+
+interface UseHrCommissionPeriodEntriesArgs {
   businessId?: string | null;
   periodId?: string | null;
 }
@@ -46,6 +68,12 @@ interface HookState<T> {
   rows: T[];
 }
 
+interface UseHrCommissionCutRulesResult {
+  error: Error | null;
+  loading: boolean;
+  rows: HrCommissionCutRuleRecord[];
+}
+
 interface UseHrCommissionPeriodsResult {
   error: Error | null;
   loading: boolean;
@@ -58,6 +86,12 @@ interface UseHrPayrollEmployeeLinesResult {
   rows: HrPayrollEmployeeLineRecord[];
 }
 
+interface UseHrCommissionPeriodEntriesResult {
+  error: Error | null;
+  loading: boolean;
+  rows: HrCommissionEntryRecord[];
+}
+
 interface UseHrEmployeePaymentsResult {
   error: Error | null;
   loading: boolean;
@@ -67,9 +101,32 @@ interface UseHrEmployeePaymentsResult {
 interface ManageHrCommissionPeriodArgs {
   action: ManageHrCommissionPeriodAction;
   businessId: string;
+  comment?: string | null;
+  cutRuleId?: string | null;
   endDate?: Date | string | null;
   periodId?: string | null;
+  payrollLineId?: string | null;
+  ruleId?: string | null;
   startDate?: Date | string | null;
+  totalToPay?: number | string | null;
+}
+
+interface AdjustHrPayrollLinePayableArgs {
+  businessId: string;
+  comment: string;
+  payrollLineId: string;
+  totalToPay: number | string;
+}
+
+interface ManageHrCommissionCutRuleArgs {
+  action?: ManageHrCommissionCutRuleAction;
+  businessId: string;
+  rule: HrCommissionCutRuleInput;
+}
+
+interface DeactivateHrCommissionCutRuleArgs {
+  businessId: string;
+  ruleId: string;
 }
 
 interface ManageHrPayrollPaymentArgs {
@@ -90,10 +147,29 @@ interface ManageHrPayrollPaymentArgs {
 type ManageHrCommissionPeriodPayload = {
   action: ManageHrCommissionPeriodAction;
   businessId: string;
+  comment?: string | null;
+  cutRuleId?: string | null;
   endDate?: string | null;
   periodId?: string | null;
+  payrollLineId?: string | null;
+  ruleId?: string | null;
   sessionToken?: string;
   startDate?: string | null;
+  totalToPay?: number | string | null;
+};
+
+type ManageHrCommissionCutRulePayload = {
+  action: ManageHrCommissionCutRuleAction;
+  active?: boolean | null;
+  businessId: string;
+  cutRuleId?: string | null;
+  endDay?: number | string | null;
+  frequency?: string | null;
+  label?: string | null;
+  ruleId?: string | null;
+  sessionToken?: string;
+  sortOrder?: number | string | null;
+  startDay?: number | string | null;
 };
 
 type ManageHrPayrollPaymentPayload = {
@@ -123,6 +199,17 @@ export interface ManageHrCommissionPeriodResponse {
   entriesCount: number;
   employeesCount: number;
   totalCommissionAmount: number;
+  deductionsAmount?: number;
+  grossAmount?: number;
+  netAmount?: number;
+  payrollLineId?: string | null;
+}
+
+export interface ManageHrCommissionCutRuleResponse {
+  ok: boolean;
+  businessId: string;
+  ruleId: string;
+  rule: HrCommissionCutRuleRecord;
 }
 
 export interface ManageHrPayrollPaymentResponse {
@@ -144,6 +231,11 @@ export interface ManageHrPayrollPaymentResponse {
 const manageHrCommissionPeriodCallable = createFirebaseCallable<
   ManageHrCommissionPeriodPayload,
   ManageHrCommissionPeriodResponse
+>('manageHrCommissionPeriod');
+
+const manageHrCommissionCutRuleCallable = createFirebaseCallable<
+  ManageHrCommissionCutRulePayload,
+  ManageHrCommissionCutRuleResponse
 >('manageHrCommissionPeriod');
 
 const manageHrPayrollPaymentCallable = createFirebaseCallable<
@@ -198,6 +290,37 @@ const toFiniteNumber = (value: unknown, fallback = 0): number => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const toMoneyNumber = (value: unknown, fallback = 0): number =>
+  Math.max(0, toFiniteNumber(value, fallback));
+
+const resolveGrossAmount = (data: Record<string, unknown>): number =>
+  toMoneyNumber(
+    data.grossAmount ??
+      data.commissionAmount ??
+      data.totalCommissionAmount ??
+      data.netAmount,
+  );
+
+const resolveNetAmount = (data: Record<string, unknown>): number =>
+  toMoneyNumber(
+    data.netAmount ??
+      data.totalPayableAmount ??
+      data.commissionAmount ??
+      data.grossAmount ??
+      data.totalCommissionAmount,
+  );
+
+const resolveDeductionsAmount = (data: Record<string, unknown>): number => {
+  const explicitDeduction = toMoneyNumber(data.deductionsAmount);
+  if (explicitDeduction > 0) return explicitDeduction;
+  return Math.max(0, resolveGrossAmount(data) - resolveNetAmount(data));
+};
+
+const toDayNumber = (value: unknown, fallback: number): number => {
+  const parsed = Math.trunc(toFiniteNumber(value, fallback));
+  return parsed >= 1 && parsed <= 31 ? parsed : fallback;
+};
+
 const normalizeEnum = <T extends string>(
   value: unknown,
   allowedValues: Set<T>,
@@ -228,6 +351,23 @@ const normalizeCashMovementIds = (value: unknown): string[] =>
     ? value.map(toCleanString).filter(isNonNullableString)
     : [];
 
+const normalizeCutRuleRecord = (
+  id: string,
+  data: Record<string, unknown>,
+): HrCommissionCutRuleRecord => ({
+  ...data,
+  id,
+  businessId: toCleanString(data.businessId) ?? '',
+  label: toCleanString(data.label) ?? 'Corte',
+  frequency: 'monthly',
+  startDay: toDayNumber(data.startDay, 1),
+  endDay: toDayNumber(data.endDay, 31),
+  active: data.active !== false,
+  sortOrder: toFiniteNumber(data.sortOrder, toDayNumber(data.startDay, 1)),
+  createdAt: data.createdAt,
+  updatedAt: data.updatedAt,
+});
+
 const toMillis = (value: unknown): number => {
   if (!value) return 0;
   if (value instanceof Date) return value.getTime();
@@ -256,6 +396,12 @@ const normalizePeriodRecord = (
   status: normalizeEnum(data.status, PERIOD_STATUS_VALUES, 'draft'),
   startDate: data.startDate,
   endDate: data.endDate,
+  cutRuleId: toCleanString(data.cutRuleId),
+  cutRuleLabel: toCleanString(data.cutRuleLabel),
+  cutRuleSnapshot:
+    data.cutRuleSnapshot && typeof data.cutRuleSnapshot === 'object'
+      ? (data.cutRuleSnapshot as Record<string, unknown>)
+      : null,
   currency: toCleanString(data.currency)?.toUpperCase() ?? 'DOP',
   entriesCount: Math.max(0, toFiniteNumber(data.entriesCount)),
   employeesCount: Math.max(0, toFiniteNumber(data.employeesCount)),
@@ -263,6 +409,13 @@ const normalizePeriodRecord = (
     0,
     toFiniteNumber(data.totalCommissionAmount),
   ),
+  grossAmount: resolveGrossAmount(data),
+  deductionsAmount: resolveDeductionsAmount(data),
+  netAmount: resolveNetAmount(data),
+  totalPayableAmount: resolveNetAmount(data),
+  manualAdjustmentAmount: toMoneyNumber(data.manualAdjustmentAmount),
+  adjustmentsCount: Math.max(0, toFiniteNumber(data.adjustmentsCount)),
+  lastAdjustmentComment: toCleanString(data.lastAdjustmentComment),
   paidAmount: Math.max(0, toFiniteNumber(data.paidAmount)),
   paidLinesCount: Math.max(0, toFiniteNumber(data.paidLinesCount)),
   lastPaymentId: toCleanString(data.lastPaymentId),
@@ -285,17 +438,31 @@ const normalizePayrollEmployeeLineRecord = (
   employeeCode: toCleanString(data.employeeCode),
   employeeNameSnapshot: toCleanString(data.employeeNameSnapshot),
   partyId: toCleanString(data.partyId),
-  type: 'commission',
+  type:
+    data.type === 'salary' || data.type === 'mixed' ? data.type : 'commission',
   status: normalizeEnum(data.status, RUN_STATUS_VALUES, 'draft'),
   currency: toCleanString(data.currency)?.toUpperCase() ?? 'DOP',
-  grossAmount: Math.max(0, toFiniteNumber(data.grossAmount)),
-  deductionsAmount: Math.max(0, toFiniteNumber(data.deductionsAmount)),
-  netAmount: Math.max(0, toFiniteNumber(data.netAmount)),
+  baseSalaryAmount: Math.max(0, toFiniteNumber(data.baseSalaryAmount)),
+  grossAmount: resolveGrossAmount(data),
+  deductionsAmount: resolveDeductionsAmount(data),
+  netAmount: resolveNetAmount(data),
+  totalPayableAmount: resolveNetAmount(data),
   commissionAmount: Math.max(0, toFiniteNumber(data.commissionAmount)),
+  deductionLines: normalizeSalaryDeductionLines(
+    data.deductionLines ?? data.salaryDeductions,
+  ),
   commissionEntryIds: Array.isArray(data.commissionEntryIds)
     ? data.commissionEntryIds.map(toCleanString).filter(isNonNullableString)
     : [],
   entriesCount: Math.max(0, toFiniteNumber(data.entriesCount)),
+  manualAdjustmentAmount: toMoneyNumber(data.manualAdjustmentAmount),
+  manualAdjustmentComment: toCleanString(data.manualAdjustmentComment),
+  manualAdjustmentHistory: Array.isArray(data.manualAdjustmentHistory)
+    ? data.manualAdjustmentHistory.filter(
+        (entry): entry is Record<string, unknown> =>
+          Boolean(entry) && typeof entry === 'object',
+      )
+    : [],
   accountingEventId: toCleanString(data.accountingEventId),
   employeePaymentId: toCleanString(data.employeePaymentId),
   paymentMethod: data.paymentMethod
@@ -346,9 +513,14 @@ const normalizeHrEmployeePaymentRecord = (
 export const manageHrCommissionPeriod = async ({
   action,
   businessId,
+  comment,
+  cutRuleId,
   endDate,
   periodId,
+  payrollLineId,
+  ruleId,
   startDate,
+  totalToPay,
 }: ManageHrCommissionPeriodArgs): Promise<ManageHrCommissionPeriodResponse> => {
   if (!businessId) {
     throw new Error('Falta el negocio para gestionar el corte.');
@@ -358,9 +530,71 @@ export const manageHrCommissionPeriod = async ({
   return manageHrCommissionPeriodCallable({
     action,
     businessId,
+    comment: toCleanString(comment),
+    cutRuleId: toCleanString(cutRuleId),
     endDate: toCallableDate(endDate),
     periodId: toCleanString(periodId),
+    payrollLineId: toCleanString(payrollLineId),
+    ruleId: toCleanString(ruleId),
     startDate: toCallableDate(startDate),
+    totalToPay,
+    ...(sessionToken ? { sessionToken } : {}),
+  });
+};
+
+export const adjustHrPayrollLinePayable = async ({
+  businessId,
+  comment,
+  payrollLineId,
+  totalToPay,
+}: AdjustHrPayrollLinePayableArgs): Promise<ManageHrCommissionPeriodResponse> =>
+  manageHrCommissionPeriod({
+    action: 'adjust_line',
+    businessId,
+    comment,
+    payrollLineId,
+    totalToPay,
+  });
+
+export const saveHrCommissionCutRule = async ({
+  action = 'upsert_cut_rule',
+  businessId,
+  rule,
+}: ManageHrCommissionCutRuleArgs): Promise<ManageHrCommissionCutRuleResponse> => {
+  if (!businessId) {
+    throw new Error('Falta el negocio para guardar la regla.');
+  }
+
+  const { sessionToken } = getStoredSession();
+  const normalizedRuleId = toCleanString(rule.ruleId ?? rule.id);
+  return manageHrCommissionCutRuleCallable({
+    action,
+    active: rule.active,
+    businessId,
+    cutRuleId: normalizedRuleId,
+    endDay: rule.endDay,
+    frequency: rule.frequency ?? 'monthly',
+    label: toCleanString(rule.label),
+    ruleId: normalizedRuleId,
+    sortOrder: rule.sortOrder,
+    startDay: rule.startDay,
+    ...(sessionToken ? { sessionToken } : {}),
+  });
+};
+
+export const deactivateHrCommissionCutRule = async ({
+  businessId,
+  ruleId,
+}: DeactivateHrCommissionCutRuleArgs): Promise<ManageHrCommissionCutRuleResponse> => {
+  if (!businessId || !ruleId) {
+    throw new Error('Faltan datos para desactivar la regla.');
+  }
+
+  const { sessionToken } = getStoredSession();
+  return manageHrCommissionCutRuleCallable({
+    action: 'deactivate_cut_rule',
+    businessId,
+    ruleId: toCleanString(ruleId),
     ...(sessionToken ? { sessionToken } : {}),
   });
 };
@@ -399,6 +633,68 @@ export const recordHrPayrollPayment = async ({
     transferReference: toCleanString(transferReference),
     ...(sessionToken ? { sessionToken } : {}),
   });
+};
+
+export const useHrCommissionCutRules = ({
+  businessId,
+  pageSize = 80,
+}: UseHrCommissionCutRulesArgs): UseHrCommissionCutRulesResult => {
+  const [state, setState] = useState<HookState<HrCommissionCutRuleRecord>>({
+    key: '',
+    rows: [],
+    loading: false,
+    error: null,
+  });
+  const reportKey = useMemo(
+    () => [businessId ?? 'no-business', pageSize].join('|'),
+    [businessId, pageSize],
+  );
+
+  useEffect(() => {
+    if (!businessId) return undefined;
+
+    const rulesRef = collection(
+      db,
+      'businesses',
+      businessId,
+      'hrCommissionCutRules',
+    );
+    const rulesQuery = query(rulesRef, limit(pageSize));
+
+    return onSnapshot(
+      rulesQuery,
+      (snapshot) => {
+        const rows = snapshot.docs
+          .map((docSnapshot) =>
+            normalizeCutRuleRecord(
+              docSnapshot.id,
+              docSnapshot.data() as Record<string, unknown>,
+            ),
+          )
+          .sort((left, right) => {
+            const byActive = Number(right.active) - Number(left.active);
+            if (byActive !== 0) return byActive;
+            const byOrder = left.sortOrder - right.sortOrder;
+            if (byOrder !== 0) return byOrder;
+            return left.label.localeCompare(right.label);
+          });
+
+        setState({ key: reportKey, rows, loading: false, error: null });
+      },
+      (error) => {
+        setState({ key: reportKey, rows: [], loading: false, error });
+      },
+    );
+  }, [businessId, pageSize, reportKey]);
+
+  if (!businessId) {
+    return { rows: [], loading: false, error: null };
+  }
+  if (state.key !== reportKey) {
+    return { rows: [], loading: true, error: null };
+  }
+
+  return state;
 };
 
 export const useHrCommissionPeriods = ({
@@ -506,6 +802,62 @@ export const useHrPayrollEmployeeLines = ({
                 right.employeeId,
             ),
           );
+
+        setState({ key: reportKey, rows, loading: false, error: null });
+      },
+      (error) => {
+        setState({ key: reportKey, rows: [], loading: false, error });
+      },
+    );
+  }, [businessId, periodId, reportKey]);
+
+  if (!businessId || !periodId) {
+    return { rows: [], loading: false, error: null };
+  }
+  if (state.key !== reportKey) {
+    return { rows: [], loading: true, error: null };
+  }
+
+  return state;
+};
+
+export const useHrCommissionPeriodEntries = ({
+  businessId,
+  periodId,
+}: UseHrCommissionPeriodEntriesArgs): UseHrCommissionPeriodEntriesResult => {
+  const [state, setState] = useState<HookState<HrCommissionEntryRecord>>({
+    key: '',
+    rows: [],
+    loading: false,
+    error: null,
+  });
+  const reportKey = useMemo(
+    () => [businessId ?? 'no-business', periodId ?? 'no-period'].join('|'),
+    [businessId, periodId],
+  );
+
+  useEffect(() => {
+    if (!businessId || !periodId) return undefined;
+
+    const entriesRef = collection(
+      db,
+      'businesses',
+      businessId,
+      'hrCommissionEntries',
+    );
+    const entriesQuery = query(entriesRef, where('periodId', '==', periodId));
+
+    return onSnapshot(
+      entriesQuery,
+      (snapshot) => {
+        const rows = snapshot.docs
+          .map((docSnapshot) =>
+            normalizeHrCommissionEntryRecord(
+              docSnapshot.id,
+              docSnapshot.data() as Record<string, unknown>,
+            ),
+          )
+          .sort((left, right) => toMillis(right.date) - toMillis(left.date));
 
         setState({ key: reportKey, rows, loading: false, error: null });
       },

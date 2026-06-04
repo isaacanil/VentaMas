@@ -4,9 +4,9 @@ import { VmTabs } from '@/components/heroui';
 
 export const PeriodsToolbar = styled.div`
   display: grid;
-  grid-template-columns: minmax(260px, 380px) max-content;
+  grid-template-columns: minmax(260px, 380px) repeat(3, max-content);
   gap: var(--ds-space-3);
-  align-items: center;
+  align-items: end;
   justify-content: start;
 
   @media (max-width: 640px) {
@@ -27,7 +27,17 @@ export const DetailSection = styled.section`
 `;
 
 export const DetailHeader = styled.header`
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-3);
+  align-items: flex-start;
+  justify-content: space-between;
+  min-width: 0;
+`;
+
+export const DetailHeadingStack = styled.div`
   display: grid;
+  flex: 1 1 280px;
   gap: var(--ds-space-1);
   min-width: 0;
 `;

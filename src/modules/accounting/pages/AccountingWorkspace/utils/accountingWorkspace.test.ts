@@ -508,6 +508,159 @@ describe('accountingWorkspace projected profile lines', () => {
     ]);
   });
 
+  it('previsualiza ventas bancarias separadas por cuenta bancaria enlazada', () => {
+    const bankRootAccount = {
+      ...buildAccount({
+        id: 'bank-root',
+        code: '1110',
+        name: 'Cuentas bancarias',
+        type: 'asset',
+        normalSide: 'debit',
+      }),
+      systemKey: 'bank',
+    };
+    const popularLedgerAccount = buildAccount({
+      id: 'bank-popular-ledger',
+      code: '1110.01',
+      name: 'Banco Popular Corriente 1234',
+      type: 'asset',
+      normalSide: 'debit',
+    });
+    const bhdLedgerAccount = buildAccount({
+      id: 'bank-bhd-ledger',
+      code: '1110.02',
+      name: 'Banco BHD Corriente 5678',
+      type: 'asset',
+      normalSide: 'debit',
+    });
+    const salesAccount = {
+      ...buildAccount({
+        id: 'sales-1',
+        code: '401',
+        name: 'Ventas',
+        type: 'income',
+        normalSide: 'credit',
+      }),
+      systemKey: 'sales',
+    };
+
+    const [record] = buildLedgerRecords({
+      accounts: [
+        bankRootAccount,
+        popularLedgerAccount,
+        bhdLedgerAccount,
+        salesAccount,
+      ],
+      bankAccounts: [
+        {
+          id: 'bank-popular',
+          businessId: 'business-1',
+          name: 'Popular',
+          currency: 'DOP',
+          status: 'active',
+          chartOfAccountId: 'bank-popular-ledger',
+        },
+        {
+          id: 'bank-bhd',
+          businessId: 'business-1',
+          name: 'BHD',
+          currency: 'DOP',
+          status: 'active',
+          chartOfAccountId: 'bank-bhd-ledger',
+        },
+      ] as any,
+      events: [
+        {
+          id: 'invoice.committed__invoice-bank-split-1',
+          businessId: 'business-1',
+          eventType: 'invoice.committed',
+          eventVersion: 1,
+          status: 'recorded',
+          occurredAt: new Date('2026-04-18T12:00:00.000Z'),
+          recordedAt: new Date('2026-04-18T12:00:00.000Z'),
+          sourceId: 'invoice-bank-split-1',
+          sourceDocumentType: 'invoice',
+          sourceDocumentId: 'invoice-bank-split-1',
+          counterpartyType: 'customer',
+          counterpartyId: 'customer-1',
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: { amount: 1000, functionalAmount: 1000 },
+          treasury: { paymentChannel: 'bank' },
+          payload: {
+            paymentTerm: 'cash',
+            paymentMethods: [
+              { method: 'card', value: 400, bankAccountId: 'bank-popular' },
+              { method: 'transfer', value: 600, bankAccountId: 'bank-bhd' },
+            ],
+          },
+          dedupeKey: 'dedupe-bank-split-sale',
+          idempotencyKey: 'idem-bank-split-sale',
+          projection: { status: 'pending', journalEntryId: null },
+          reversalOfEventId: null,
+          createdAt: new Date('2026-04-18T12:00:00.000Z'),
+          createdBy: 'ana@ventamas.do',
+          metadata: {},
+        },
+      ],
+      journalEntries: [],
+      postingProfiles: [
+        {
+          id: 'profile-bank-sale',
+          businessId: 'business-1',
+          name: 'Venta bancaria',
+          eventType: 'invoice.committed',
+          moduleKey: 'sales',
+          status: 'active',
+          priority: 1,
+          conditions: {
+            paymentTerm: 'cash',
+            settlementKind: 'bank',
+          },
+          linesTemplate: [
+            {
+              id: 'debit-bank',
+              side: 'debit',
+              accountId: 'bank-root',
+              accountCode: '1110',
+              accountName: 'Cuentas bancarias',
+              accountSystemKey: 'bank',
+              amountSource: 'sale_bank_received',
+              omitIfZero: true,
+            },
+            {
+              id: 'credit-sales',
+              side: 'credit',
+              accountSystemKey: 'sales',
+              amountSource: 'net_sales',
+              omitIfZero: true,
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(record.lines).toEqual([
+      expect.objectContaining({
+        accountId: 'bank-popular-ledger',
+        accountCode: '1110.01',
+        debit: 400,
+        credit: 0,
+      }),
+      expect.objectContaining({
+        accountId: 'bank-bhd-ledger',
+        accountCode: '1110.02',
+        debit: 600,
+        credit: 0,
+      }),
+      expect.objectContaining({
+        accountId: 'sales-1',
+        debit: 0,
+        credit: 1000,
+      }),
+    ]);
+  });
+
   it('respeta condiciones de naturaleza documental en perfiles proyectados', () => {
     const inventoryAccount = buildAccount({
       id: 'inventory-1',
@@ -633,10 +786,20 @@ describe('accountingWorkspace projected profile lines', () => {
   });
 
   it('previsualiza ajustes bancarios negativos contra gasto de conciliacion y banco', () => {
-    const bankAccount = buildAccount({
-      id: 'bank-1',
-      code: '1102',
-      name: 'Banco principal',
+    const bankRootAccount = {
+      ...buildAccount({
+        id: 'bank-root',
+        code: '1110',
+        name: 'Cuentas bancarias',
+        type: 'asset',
+        normalSide: 'debit',
+      }),
+      systemKey: 'bank',
+    };
+    const bankLedgerAccount = buildAccount({
+      id: 'bank-ledger-1',
+      code: '1110.01',
+      name: 'Banco Popular Corriente 1234',
       type: 'asset',
       normalSide: 'debit',
     });
@@ -649,7 +812,17 @@ describe('accountingWorkspace projected profile lines', () => {
     });
 
     const [record] = buildLedgerRecords({
-      accounts: [bankAccount, reconciliationExpense],
+      accounts: [bankRootAccount, bankLedgerAccount, reconciliationExpense],
+      bankAccounts: [
+        {
+          id: 'bank-account-1',
+          businessId: 'business-1',
+          name: 'Cuenta operativa',
+          currency: 'DOP',
+          status: 'active',
+          chartOfAccountId: 'bank-ledger-1',
+        },
+      ] as any,
       events: [
         {
           id: 'bank_statement_adjustment.recorded__statement-line-1',
@@ -667,7 +840,7 @@ describe('accountingWorkspace projected profile lines', () => {
           currency: 'DOP',
           functionalCurrency: 'DOP',
           monetary: { amount: -12.5, functionalAmount: -12.5 },
-          treasury: { bankAccountId: 'bank-1', paymentChannel: 'bank' },
+          treasury: { bankAccountId: 'bank-account-1', paymentChannel: 'bank' },
           payload: {},
           dedupeKey: 'dedupe-bank-adjustment',
           idempotencyKey: 'idem-bank-adjustment',
@@ -702,9 +875,9 @@ describe('accountingWorkspace projected profile lines', () => {
             {
               id: 'credit-bank',
               side: 'credit',
-              accountId: 'bank-1',
-              accountCode: '1102',
-              accountName: 'Banco principal',
+              accountId: 'bank-root',
+              accountCode: '1110',
+              accountName: 'Cuentas bancarias',
               accountSystemKey: 'bank',
               amountSource: 'bank_statement_adjustment_loss',
               omitIfZero: true,
@@ -723,7 +896,8 @@ describe('accountingWorkspace projected profile lines', () => {
         amountSource: 'bank_statement_adjustment_loss',
       }),
       expect.objectContaining({
-        accountId: 'bank-1',
+        accountId: 'bank-ledger-1',
+        accountCode: '1110.01',
         debit: 0,
         credit: 12.5,
         amountSource: 'bank_statement_adjustment_loss',

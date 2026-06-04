@@ -356,6 +356,7 @@ const buildBankAccountSnapshot = ({ businessId, entityId, value }) => {
     countryCode: toCleanString(record.countryCode),
     isCustomBank: record.isCustomBank === true,
     accountNumberLast4: toCleanString(record.accountNumberLast4),
+    chartOfAccountId: toCleanString(record.chartOfAccountId),
     openingBalance: safeNumber(record.openingBalance),
     openingBalanceDate: record.openingBalanceDate ?? null,
     notes: toCleanString(record.notes),

@@ -3,6 +3,7 @@ import { Modal, Form, Input, Button, message } from 'antd';
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
+import type { AppDispatch } from '@/app/store';
 import { selectUser } from '@/features/auth/userSlice';
 import {
   selectDoctorsModal,
@@ -13,10 +14,16 @@ import {
   updateDoctor,
   clearError,
 } from '@/features/doctors/doctorsSlice';
+import { ModalTitle } from './DoctorModal.styles';
+
+interface DoctorFormValues extends Record<string, unknown> {
+  name: string;
+  specialty: string;
+}
 
 const DoctorModal = () => {
-  const [form] = Form.useForm();
-  const dispatch = useDispatch<any>();
+  const [form] = Form.useForm<DoctorFormValues>();
+  const dispatch = useDispatch<AppDispatch>();
 
   const user = useSelector(selectUser);
   const modal = useSelector(selectDoctorsModal);
@@ -92,10 +99,10 @@ const DoctorModal = () => {
   return (
     <Modal
       title={
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <ModalTitle>
           <MedicineBoxOutlined />
           {isEditMode ? 'Editar Médico' : 'Agregar Médico'}
-        </div>
+        </ModalTitle>
       }
       open={modal.open}
       onCancel={handleCancel}

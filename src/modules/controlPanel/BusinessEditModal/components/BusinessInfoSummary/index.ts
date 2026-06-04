@@ -1,0 +1,1 @@
+export { BusinessInfoSummary } from './BusinessInfoSummary';

@@ -18,6 +18,9 @@ describe('accountingEvents', () => {
       (definition) =>
         definition.eventType === 'bank_statement_adjustment.recorded',
     )).toBe(true);
+    expect(ACCOUNTING_EVENT_DEFINITIONS.some(
+      (definition) => definition.eventType === 'fx_settlement.voided',
+    )).toBe(true);
     expect(getAccountingEventDefinition('purchase.committed')).toMatchObject({
       moduleKey: 'purchases',
     });

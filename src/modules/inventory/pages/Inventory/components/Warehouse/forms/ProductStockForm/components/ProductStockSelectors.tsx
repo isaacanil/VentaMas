@@ -18,6 +18,18 @@ interface ProductStockSelectorsProps {
   productsList: ProductRecord[];
 }
 
+type SearchableSelectOption = {
+  children?: unknown;
+};
+
+const filterSelectOptionByChildren = (
+  input: string,
+  option?: SearchableSelectOption,
+) =>
+  String(option?.children ?? '')
+    .toLowerCase()
+    .includes(input.toLowerCase());
+
 export const ProductStockSelectors = ({
   batchesList,
   onBatchChange,
@@ -41,11 +53,7 @@ export const ProductStockSelectors = ({
           placeholder="Selecciona un producto"
           optionFilterProp="children"
           onChange={onProductChange}
-          filterOption={(input, option) =>
-            String(option?.children ?? '')
-              .toLowerCase()
-              .includes(input.toLowerCase())
-          }
+          filterOption={filterSelectOptionByChildren}
           value={productId || undefined}
           allowClear
         >
@@ -74,11 +82,7 @@ export const ProductStockSelectors = ({
             placeholder="Selecciona un batch"
             optionFilterProp="children"
             onChange={onBatchChange}
-            filterOption={(input, option) =>
-              String(option?.children ?? '')
-                .toLowerCase()
-                .includes(input.toLowerCase())
-            }
+            filterOption={filterSelectOptionByChildren}
             value={batchId || undefined}
             allowClear
           >

@@ -1,7 +1,8 @@
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useRef, type ChangeEventHandler } from 'react';
-import styled from 'styled-components';
+
+import { Container } from './Input.styles';
 
 type OrderFilterInputProps = {
   data: { name: string };
@@ -37,31 +38,3 @@ export const Input = ({ data, onChange, fn }: OrderFilterInputProps) => {
     </Container>
   );
 };
-
-const Container = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  height: 2em;
-  padding: 0 1em;
-  background-color: white;
-  border-radius: 6px;
-
-  input {
-    outline: none;
-    border: none;
-  }
-
-  button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.2em;
-    height: 1.2em;
-    padding: 0;
-    cursor: pointer;
-    background-color: var(--white-2, var(--white2));
-    border: 0;
-  }
-`;

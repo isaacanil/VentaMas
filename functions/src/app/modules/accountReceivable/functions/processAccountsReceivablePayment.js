@@ -47,6 +47,110 @@ const safeNumber = (value) => {
 
 const roundToTwoDecimals = (value) => Math.round(safeNumber(value) * 100) / 100;
 
+const resolveFunctionalAppliedAmount = ({
+  pilotMonetarySnapshot,
+  fallbackAmount,
+}) => {
+  const monetary = asRecord(pilotMonetarySnapshot);
+  const documentTotals = asRecord(monetary.documentTotals);
+  const functionalTotals = asRecord(monetary.functionalTotals);
+  const appliedDocumentAmount = roundToTwoDecimals(fallbackAmount);
+  const documentTotal = roundToTwoDecimals(documentTotals.total);
+  const functionalTotal = roundToTwoDecimals(functionalTotals.total);
+  if (functionalTotal > THRESHOLD && documentTotal > THRESHOLD) {
+    return appliedDocumentAmount + THRESHOLD >= documentTotal
+      ? functionalTotal
+      : roundToTwoDecimals((functionalTotal * appliedDocumentAmount) / documentTotal);
+  }
+
+  return appliedDocumentAmount;
+};
+
+const buildThirdPartyWithholdingEventPayload = ({
+  withholding,
+  withholdingDoc,
+  functionalAmount,
+}) => {
+  if (!withholding) {
+    return null;
+  }
+
+  const itbisWithheld = roundToTwoDecimals(withholding.itbisWithheld);
+  const incomeTaxWithheld = roundToTwoDecimals(withholding.incomeTaxWithheld);
+  const totalWithheld = roundToTwoDecimals(itbisWithheld + incomeTaxWithheld);
+  const functionalTotalWithheld = roundToTwoDecimals(functionalAmount);
+
+  if (totalWithheld <= THRESHOLD && functionalTotalWithheld <= THRESHOLD) {
+    return null;
+  }
+
+  return {
+    id: toCleanString(withholdingDoc?.id) ?? null,
+    invoiceId: toCleanString(withholdingDoc?.invoiceId) ?? null,
+    retentionDate: withholding.retentionDate.toISOString(),
+    itbisWithheld,
+    incomeTaxWithheld,
+    totalWithheld,
+    functionalTotalWithheld,
+  };
+};
+
+const buildReceivableFxSettlementAccountingEvent = ({
+  businessId,
+  settlement,
+  payment,
+  paymentMethods,
+  cashCountId,
+  idempotencyKey,
+  occurredAt,
+  createdBy,
+}) =>
+  buildAccountingEvent({
+    businessId,
+    eventType: 'fx_settlement.recorded',
+    sourceType: 'accountsReceivableFxSettlement',
+    sourceId: settlement.id,
+    sourceDocumentType: 'accountsReceivableFxSettlement',
+    sourceDocumentId: settlement.id,
+    counterpartyType: 'client',
+    counterpartyId:
+      toCleanString(settlement.clientId) || toCleanString(payment.clientId),
+    currency: toCleanString(settlement.documentCurrency),
+    functionalCurrency: toCleanString(settlement.functionalCurrency),
+    monetary: {
+      amount: roundToTwoDecimals(settlement.fxGainLossAmount),
+      functionalAmount: roundToTwoDecimals(settlement.fxGainLossAmount),
+    },
+    treasury: {
+      cashCountId: cashCountId || null,
+      bankAccountId: resolvePrimaryBankAccountId(paymentMethods),
+      paymentChannel: resolveAccountingPaymentChannel(paymentMethods),
+    },
+    idempotencyKey,
+    payload: {
+      paymentId: toCleanString(settlement.paymentId),
+      arId: toCleanString(settlement.arId),
+      invoiceId: toCleanString(settlement.invoiceId),
+      clientId:
+        toCleanString(settlement.clientId) || toCleanString(payment.clientId),
+      appliedDocumentAmount: roundToTwoDecimals(
+        settlement.appliedDocumentAmount,
+      ),
+      historicalFunctionalAmount: roundToTwoDecimals(
+        settlement.historicalFunctionalAmount,
+      ),
+      settlementFunctionalAmount: roundToTwoDecimals(
+        settlement.settlementFunctionalAmount,
+      ),
+      fxGainLossAmount: roundToTwoDecimals(settlement.fxGainLossAmount),
+      fxDirection: toCleanString(settlement.fxDirection) || 'none',
+    },
+    occurredAt,
+    recordedAt: occurredAt,
+    createdAt: occurredAt,
+    createdBy,
+  });
+
 const sanitizeForResponse = (value) => {
   if (value instanceof Timestamp) {
     return value.toMillis();
@@ -1067,6 +1171,22 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
     const appliedAmount = roundToTwoDecimals(
       Math.max(appliedDocumentAmount - change, 0),
     );
+    const historicalFunctionalAppliedAmount = resolveFunctionalAppliedAmount({
+      pilotMonetarySnapshot,
+      fallbackAmount: appliedAmount,
+    });
+    const declaredWithheldAmount = thirdPartyWithholding
+      ? roundToTwoDecimals(
+          thirdPartyWithholding.itbisWithheld +
+            thirdPartyWithholding.incomeTaxWithheld,
+        )
+      : 0;
+    const functionalWithholdingAmount = roundToTwoDecimals(
+      Math.max(declaredWithheldAmount, 0),
+    );
+    const functionalAppliedAmount = roundToTwoDecimals(
+      collectedFunctionalAmount + functionalWithholdingAmount,
+    );
     const functionalSettlements = allocateFunctionalAmountsByDocument({
       entries: accountEntries,
       totalFunctionalAmount: collectedFunctionalAmount,
@@ -1119,6 +1239,10 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
       ...basePayment,
       totalApplied: appliedAmount,
       totalCollected: collectedFunctionalAmount,
+      functionalAppliedAmount,
+      historicalFunctionalAppliedAmount,
+      functionalCollectedAmount: collectedFunctionalAmount,
+      functionalWithholdingAmount,
       unappliedAmount: change,
       accountEntries: enrichedAccountEntries,
       fxSettlementSummary: fxSettlements.length ? {
@@ -1192,7 +1316,7 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
           pilotMonetarySnapshot?.functionalCurrency?.code ?? null,
         monetary: {
           amount: appliedAmount,
-          functionalAmount: collectedFunctionalAmount,
+          functionalAmount: functionalAppliedAmount,
         },
         treasury: {
           cashCountId: cashCountState.cashCountId || null,
@@ -1203,6 +1327,17 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
         payload: {
           paymentScope,
           paymentOption: paymentOption || null,
+          appliedAmount,
+          functionalAppliedAmount,
+          historicalFunctionalAppliedAmount,
+          collectedAmount: collectedFunctionalAmount,
+          functionalCollectedAmount: collectedFunctionalAmount,
+          functionalWithholdingAmount,
+          thirdPartyWithholding: buildThirdPartyWithholdingEventPayload({
+            withholding: thirdPartyWithholding,
+            withholdingDoc,
+            functionalAmount: functionalWithholdingAmount,
+          }),
           receiptNumber:
             toCleanString(payment?.receiptNumber) ??
             toCleanString(payment?.receiptId) ??
@@ -1232,6 +1367,25 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
         ),
         accountingEvent,
       );
+
+      fxSettlements.forEach((settlement) => {
+        const fxAccountingEvent = buildReceivableFxSettlementAccountingEvent({
+          businessId,
+          settlement,
+          payment,
+          paymentMethods,
+          cashCountId: cashCountState.cashCountId,
+          idempotencyKey,
+          occurredAt: now,
+          createdBy: authUid,
+        });
+        transaction.set(
+          db.doc(
+            `businesses/${businessId}/accountingEvents/${fxAccountingEvent.id}`,
+          ),
+          fxAccountingEvent,
+        );
+      });
     }
     fxSettlements.forEach((settlement) => {
       transaction.set(

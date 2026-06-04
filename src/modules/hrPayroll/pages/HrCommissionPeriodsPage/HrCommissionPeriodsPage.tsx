@@ -1,11 +1,22 @@
 import { useCallback, useMemo, useState } from 'react';
+import { message } from 'antd';
 import { useSelector } from 'react-redux';
 
-import { VmAlert, VmButton, VmTabs } from '@/components/heroui';
-import { PlusOutlined } from '@/constants/icons/antd';
+import { VmAlert, VmButton, VmDropdown, VmTabs } from '@/components/heroui';
 import {
+  DownOutlined,
+  FileExcelOutlined,
+  FilePdfOutlined,
+  SyncOutlined,
+} from '@/constants/icons/antd';
+import {
+  adjustHrPayrollLinePayable,
+  deactivateHrCommissionCutRule,
   manageHrCommissionPeriod,
   recordHrPayrollPayment,
+  saveHrCommissionCutRule,
+  useHrCommissionCutRules,
+  useHrCommissionPeriodEntries,
   useHrEmployeePayments,
   useHrCommissionPeriods,
   useHrPayrollEmployeeLines,
@@ -14,7 +25,7 @@ import { selectUser } from '@/features/auth/userSlice';
 import {
   HrDescription as Description,
   HrDataTable,
-  HrDateRangeField,
+  HrInlineStack as InlineStack,
   HrNotice as Notice,
   HrPage as Page,
   HrPageHeader as Header,
@@ -31,6 +42,8 @@ import {
 } from '@/modules/hrPayroll/utils/hrPayrollDisplay';
 import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 import type {
+  HrCommissionCutRuleInput,
+  HrCommissionCutRuleRecord,
   HrEmployeePaymentRecord,
   HrCommissionPeriodRecord,
   HrPayrollEmployeeLineRecord,
@@ -47,6 +60,7 @@ import {
   DetailEmptyText,
   DetailEmptyTitle,
   DetailHeader,
+  DetailHeadingStack,
   DetailPanelContent,
   DetailSection,
   DetailTabs,
@@ -55,9 +69,22 @@ import {
   PeriodsToolbar,
 } from './HrCommissionPeriodsPage.styles';
 import {
+  EditHrPayableAmountModal,
+  type PayableAmountFormValues,
+} from './components/EditHrPayableAmountModal';
+import {
   RecordHrPaymentModal,
   type PaymentFormValues,
 } from './components/RecordHrPaymentModal';
+import { PeriodActionButtons } from './components/PeriodActionButtons';
+import { HrCommissionCutRulePicker } from './components/HrCommissionCutRulePicker/HrCommissionCutRulePicker';
+import { HrCommissionCutRulesPanel } from './components/HrCommissionCutRulesPanel/HrCommissionCutRulesPanel';
+import { resolveNextHrCommissionCutRuleRange } from './utils/hrCommissionCutRules';
+import {
+  exportHrCommissionPeriodsPdf,
+  exportHrCommissionPeriodsWorkbook,
+  type HrCommissionPeriodsPdfMode,
+} from './utils/hrCommissionPeriodsExport';
 
 type NoticeState = {
   description?: string;
@@ -65,24 +92,53 @@ type NoticeState = {
   title: string;
 };
 
-const getDefaultDateRange = (): [Date, Date] => {
-  const now = new Date();
-  return [
-    new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0),
-    new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999),
-  ];
+type PeriodAction = 'create' | 'close' | 'approve';
+type PeriodActionResult = Awaited<ReturnType<typeof manageHrCommissionPeriod>>;
+
+const getPeriodPayableAmount = (period: HrCommissionPeriodRecord): number =>
+  period.netAmount ?? period.totalPayableAmount ?? period.totalCommissionAmount;
+
+const getActionSuccessTitle = (
+  action: PeriodAction,
+  result: PeriodActionResult,
+): string => {
+  if (action === 'create') {
+    return result.reused
+      ? `Corte existente: ${result.entriesCount} comisiones.`
+      : `Corte generado: ${result.entriesCount} comisiones.`;
+  }
+
+  if (action === 'close') {
+    return result.reused
+      ? `Corte ya ${STATUS_LABELS[result.status].toLowerCase()}.`
+      : 'Corte generado para aprobar.';
+  }
+
+  return result.reused
+    ? `Corte ya ${STATUS_LABELS[result.status].toLowerCase()}.`
+    : 'Corte aprobado.';
 };
 
 export default function HrCommissionPeriodsPage() {
   const currentUser = useSelector(selectUser);
   const businessId = currentUser?.businessID ?? null;
   const [notice, setNotice] = useState<NoticeState | null>(null);
-  const [dateRange, setDateRange] = useState<[Date, Date]>(getDefaultDateRange);
+  const [selectedCutRuleId, setSelectedCutRuleId] = useState<string | null>(
+    null,
+  );
   const [selectedPeriodId, setSelectedPeriodId] = useState<string | null>(null);
   const [actionKey, setActionKey] = useState<string | null>(null);
   const [paymentLine, setPaymentLine] =
     useState<HrPayrollEmployeeLineRecord | null>(null);
   const [paymentActionKey, setPaymentActionKey] = useState<string | null>(null);
+  const [adjustmentLine, setAdjustmentLine] =
+    useState<HrPayrollEmployeeLineRecord | null>(null);
+  const [adjustmentActionKey, setAdjustmentActionKey] = useState<string | null>(
+    null,
+  );
+  const [exporting, setExporting] = useState(false);
+  const [exportingPdfMode, setExportingPdfMode] =
+    useState<HrCommissionPeriodsPdfMode | null>(null);
   const {
     rows: periods,
     loading,
@@ -90,6 +146,33 @@ export default function HrCommissionPeriodsPage() {
   } = useHrCommissionPeriods({
     businessId,
   });
+  const {
+    rows: cutRules,
+    loading: cutRulesLoading,
+    error: cutRulesError,
+  } = useHrCommissionCutRules({
+    businessId,
+  });
+  const activeCutRules = useMemo(
+    () => cutRules.filter((rule) => rule.active),
+    [cutRules],
+  );
+  const effectiveSelectedCutRuleId = activeCutRules.some(
+    (rule) => rule.id === selectedCutRuleId,
+  )
+    ? selectedCutRuleId
+    : (activeCutRules[0]?.id ?? null);
+  const selectedCutRule =
+    activeCutRules.find((rule) => rule.id === effectiveSelectedCutRuleId) ??
+    null;
+  const selectedCutRuleRange = useMemo(
+    () =>
+      resolveNextHrCommissionCutRuleRange({
+        periods,
+        rule: selectedCutRule,
+      }),
+    [periods, selectedCutRule],
+  );
   const selectedPeriod =
     periods.find((period) => period.id === selectedPeriodId) ??
     periods[0] ??
@@ -99,6 +182,14 @@ export default function HrCommissionPeriodsPage() {
     loading: linesLoading,
     error: linesError,
   } = useHrPayrollEmployeeLines({
+    businessId,
+    periodId: selectedPeriod?.id,
+  });
+  const {
+    rows: commissionEntries,
+    loading: entriesLoading,
+    error: entriesError,
+  } = useHrCommissionPeriodEntries({
     businessId,
     periodId: selectedPeriod?.id,
   });
@@ -115,7 +206,7 @@ export default function HrCommissionPeriodsPage() {
     () => ({
       periods: periods.length,
       amount: periods.reduce(
-        (sum, period) => sum + period.totalCommissionAmount,
+        (sum, period) => sum + getPeriodPayableAmount(period),
         0,
       ),
       approved: periods.filter((period) => period.status === 'approved').length,
@@ -127,29 +218,26 @@ export default function HrCommissionPeriodsPage() {
   );
 
   const handleAction = useCallback(
-    async (
-      action: 'create' | 'close' | 'approve',
-      period?: HrCommissionPeriodRecord,
-    ) => {
+    async (action: PeriodAction, period?: HrCommissionPeriodRecord) => {
       if (!businessId) return;
       const key =
         action === 'create' ? 'create' : `${action}:${period?.id ?? 'none'}`;
       setActionKey(key);
       try {
+        if (action === 'create' && !effectiveSelectedCutRuleId) {
+          throw new Error('Configura y selecciona una regla de corte activa.');
+        }
+
         const result = await manageHrCommissionPeriod({
           action,
           businessId,
           periodId: period?.id,
-          startDate: dateRange[0],
-          endDate: dateRange[1],
+          ruleId: action === 'create' ? effectiveSelectedCutRuleId : undefined,
         });
         setSelectedPeriodId(result.periodId);
         setNotice({
           status: 'success',
-          title:
-            action === 'create'
-              ? `Corte listo: ${result.entriesCount} comisiones.`
-              : `Corte ${STATUS_LABELS[result.status].toLowerCase()}.`,
+          title: getActionSuccessTitle(action, result),
         });
       } catch (actionError) {
         setNotice({
@@ -161,12 +249,123 @@ export default function HrCommissionPeriodsPage() {
         setActionKey(null);
       }
     },
-    [businessId, dateRange],
+    [businessId, effectiveSelectedCutRuleId],
+  );
+
+  const handleSaveCutRule = useCallback(
+    async (rule: HrCommissionCutRuleInput) => {
+      if (!businessId) return false;
+
+      const key = `cut-rule:save:${rule.id ?? rule.ruleId ?? 'new'}`;
+      setActionKey(key);
+      try {
+        const result = await saveHrCommissionCutRule({
+          businessId,
+          rule,
+        });
+        if (result.rule.active) {
+          setSelectedCutRuleId(result.ruleId);
+        }
+        setNotice({
+          status: 'success',
+          title: 'Regla de corte guardada.',
+        });
+        return true;
+      } catch (ruleError) {
+        setNotice({
+          status: 'danger',
+          title: 'No se pudo guardar la regla.',
+          description: getErrorMessage(ruleError),
+        });
+        return false;
+      } finally {
+        setActionKey(null);
+      }
+    },
+    [businessId],
+  );
+
+  const handleSetCutRuleActive = useCallback(
+    async (rule: HrCommissionCutRuleRecord, active: boolean) => {
+      if (!businessId) return false;
+
+      const key = `cut-rule:active:${rule.id}`;
+      setActionKey(key);
+      try {
+        if (active) {
+          const result = await saveHrCommissionCutRule({
+            businessId,
+            rule: { ...rule, active: true },
+          });
+          setSelectedCutRuleId(result.ruleId);
+        } else {
+          await deactivateHrCommissionCutRule({
+            businessId,
+            ruleId: rule.id,
+          });
+          if (effectiveSelectedCutRuleId === rule.id) {
+            setSelectedCutRuleId(null);
+          }
+        }
+        setNotice({
+          status: 'success',
+          title: active
+            ? 'Regla de corte reactivada.'
+            : 'Regla de corte desactivada.',
+        });
+        return true;
+      } catch (ruleError) {
+        setNotice({
+          status: 'danger',
+          title: 'No se pudo actualizar la regla.',
+          description: getErrorMessage(ruleError),
+        });
+        return false;
+      } finally {
+        setActionKey(null);
+      }
+    },
+    [businessId, effectiveSelectedCutRuleId],
   );
 
   const handleOpenPayment = useCallback((line: HrPayrollEmployeeLineRecord) => {
     setPaymentLine(line);
   }, []);
+
+  const handleOpenAdjustment = useCallback(
+    (line: HrPayrollEmployeeLineRecord) => {
+      setAdjustmentLine(line);
+    },
+    [],
+  );
+
+  const handleAdjustPayableAmount = async (values: PayableAmountFormValues) => {
+    if (!businessId || !adjustmentLine) return;
+    const key = `adjust:${adjustmentLine.id}`;
+    setAdjustmentActionKey(key);
+    try {
+      await adjustHrPayrollLinePayable({
+        businessId,
+        comment: values.comment,
+        payrollLineId: adjustmentLine.id,
+        totalToPay: values.totalToPay,
+      });
+      setNotice({
+        status: 'success',
+        title: 'Total a pagar actualizado.',
+        description: 'El comentario quedo registrado en el historial.',
+      });
+      setAdjustmentLine(null);
+    } catch (adjustmentError) {
+      setNotice({
+        status: 'danger',
+        title: 'No se pudo editar el total a pagar.',
+        description: getErrorMessage(adjustmentError),
+      });
+    } finally {
+      setAdjustmentActionKey(null);
+    }
+  };
 
   const handleRecordPayment = async (values: PaymentFormValues) => {
     if (!businessId || !paymentLine) return;
@@ -204,6 +403,73 @@ export default function HrCommissionPeriodsPage() {
     }
   };
 
+  const handleExportExcel = useCallback(async () => {
+    if (!periods.length) {
+      message.warning('No hay cortes para exportar.');
+      return;
+    }
+
+    setExporting(true);
+    try {
+      await exportHrCommissionPeriodsWorkbook({
+        employeeLines,
+        payments,
+        periods,
+        selectedPeriod,
+      });
+      message.success('Cortes exportados a Excel.');
+    } catch (exportError) {
+      console.error(
+        '[HrCommissionPeriodsPage] excel export failed',
+        exportError,
+      );
+      message.error('No se pudo exportar los cortes.');
+    } finally {
+      setExporting(false);
+    }
+  }, [employeeLines, payments, periods, selectedPeriod]);
+
+  const handleExportPdf = useCallback(
+    async (mode: HrCommissionPeriodsPdfMode) => {
+      if (!selectedPeriod) {
+        message.warning('Selecciona un corte para exportar.');
+        return;
+      }
+      if (!employeeLines.length) {
+        message.warning('No hay colaboradores para exportar en este corte.');
+        return;
+      }
+      if (mode === 'detail' && !commissionEntries.length) {
+        message.warning('No hay detalle de comisiones para exportar.');
+        return;
+      }
+
+      setExportingPdfMode(mode);
+      try {
+        await exportHrCommissionPeriodsPdf({
+          employeeLines,
+          entries: commissionEntries,
+          mode,
+          selectedPeriod,
+        });
+        message.success(
+          mode === 'general'
+            ? 'Resumen general exportado a PDF.'
+            : 'Detalle por empleado exportado a PDF.',
+        );
+      } catch (exportError) {
+        console.error(
+          '[HrCommissionPeriodsPage] pdf export failed',
+          exportError,
+        );
+        message.error('No se pudo exportar el PDF del corte.');
+      } finally {
+        setExportingPdfMode(null);
+      }
+    },
+    [commissionEntries, employeeLines, selectedPeriod],
+  );
+
   const periodColumns = useMemo(
     () =>
       buildPeriodColumns({
@@ -216,10 +482,17 @@ export default function HrCommissionPeriodsPage() {
   const lineColumns = useMemo(
     () =>
       buildLineColumns({
+        adjustmentActionKey,
+        onOpenAdjustment: handleOpenAdjustment,
         paymentActionKey,
         onOpenPayment: handleOpenPayment,
       }),
-    [handleOpenPayment, paymentActionKey],
+    [
+      adjustmentActionKey,
+      handleOpenAdjustment,
+      handleOpenPayment,
+      paymentActionKey,
+    ],
   );
   const selectedPeriodLabel =
     selectedPeriod?.label || selectedPeriod?.periodKey || 'Corte seleccionado';
@@ -231,23 +504,84 @@ export default function HrCommissionPeriodsPage() {
           <TitleBlock>
             <Title>Cortes y pagos de comisiones</Title>
             <Description>
-              Agrupa comisiones por periodo, aprueba el corte y registra pagos
-              a colaboradores.
+              Agrupa comisiones por periodo, aprueba el corte y registra pagos a
+              colaboradores.
             </Description>
           </TitleBlock>
           <PeriodsToolbar>
-            <HrDateRangeField
-              ariaLabel="Rango de cortes y pagos RRHH"
-              value={dateRange}
-              onChange={setDateRange}
+            <HrCommissionCutRulePicker
+              disabled={!businessId}
+              loading={cutRulesLoading}
+              range={selectedCutRuleRange}
+              rules={activeCutRules}
+              selectedRuleId={effectiveSelectedCutRuleId}
+              onSelect={setSelectedCutRuleId}
             />
             <VmButton
+              variant="secondary"
+              isDisabled={
+                !businessId ||
+                loading ||
+                linesLoading ||
+                paymentsLoading ||
+                exporting ||
+                periods.length === 0
+              }
+              onPress={() => void handleExportExcel()}
+            >
+              <FileExcelOutlined />
+              {exporting ? 'Exportando...' : 'Exportar Excel'}
+            </VmButton>
+            <VmDropdown>
+              <VmDropdown.Button
+                aria-label="Exportar corte a PDF"
+                isDisabled={
+                  !businessId ||
+                  loading ||
+                  linesLoading ||
+                  entriesLoading ||
+                  exporting ||
+                  Boolean(exportingPdfMode) ||
+                  periods.length === 0
+                }
+              >
+                <FilePdfOutlined />
+                {exportingPdfMode ? 'Exportando PDF...' : 'Exportar PDF'}
+                <DownOutlined />
+              </VmDropdown.Button>
+              <VmDropdown.Popover placement="bottom end">
+                <VmDropdown.Menu
+                  aria-label="Opciones de PDF del corte"
+                  onAction={(key) =>
+                    void handleExportPdf(key as HrCommissionPeriodsPdfMode)
+                  }
+                >
+                  <VmDropdown.Item id="general" textValue="Resumen general">
+                    <InlineStack>
+                      <FilePdfOutlined />
+                      <span>Resumen general</span>
+                    </InlineStack>
+                  </VmDropdown.Item>
+                  <VmDropdown.Item id="detail" textValue="Detalle por empleado">
+                    <InlineStack>
+                      <FilePdfOutlined />
+                      <span>Detalle por empleado</span>
+                    </InlineStack>
+                  </VmDropdown.Item>
+                </VmDropdown.Menu>
+              </VmDropdown.Popover>
+            </VmDropdown>
+            <VmButton
               variant="primary"
-              isDisabled={actionKey === 'create'}
+              isDisabled={
+                !businessId ||
+                !effectiveSelectedCutRuleId ||
+                actionKey === 'create'
+              }
               onPress={() => handleAction('create')}
             >
-              <PlusOutlined />
-              {actionKey === 'create' ? 'Creando...' : 'Crear corte'}
+              <SyncOutlined />
+              {actionKey === 'create' ? 'Generando...' : 'Generar/Actualizar'}
             </VmButton>
           </PeriodsToolbar>
         </Header>
@@ -296,6 +630,24 @@ export default function HrCommissionPeriodsPage() {
           </Notice>
         ) : null}
 
+        {entriesError ? (
+          <Notice status="danger">
+            <VmAlert.Content>
+              <strong>No se pudo cargar el detalle de comisiones.</strong>
+              <div>{entriesError.message}</div>
+            </VmAlert.Content>
+          </Notice>
+        ) : null}
+
+        {cutRulesError ? (
+          <Notice status="danger">
+            <VmAlert.Content>
+              <strong>No se pudieron cargar las reglas de corte.</strong>
+              <div>{cutRulesError.message}</div>
+            </VmAlert.Content>
+          </Notice>
+        ) : null}
+
         <SummaryGrid>
           <SummaryItem>
             <SummaryLabel>Cortes</SummaryLabel>
@@ -315,6 +667,14 @@ export default function HrCommissionPeriodsPage() {
           </SummaryItem>
         </SummaryGrid>
 
+        <HrCommissionCutRulesPanel
+          actionKey={actionKey}
+          loading={cutRulesLoading}
+          rules={cutRules}
+          onSave={handleSaveCutRule}
+          onSetActive={handleSetCutRuleActive}
+        />
+
         <PeriodsContent>
           <HrDataTable<HrCommissionPeriodRecord>
             ariaLabel="Cortes y pagos de comisiones"
@@ -330,14 +690,24 @@ export default function HrCommissionPeriodsPage() {
 
           <DetailSection>
             <DetailHeader>
-              <DetailTitle>Detalle del corte seleccionado</DetailTitle>
-              {selectedPeriod ? (
-                <DetailDescription>
-                  {`${selectedPeriodLabel} - ${formatMoney(
-                      selectedPeriod.totalCommissionAmount,
+              <DetailHeadingStack>
+                <DetailTitle>Detalle del corte seleccionado</DetailTitle>
+                {selectedPeriod ? (
+                  <DetailDescription>
+                    {`${selectedPeriodLabel} - ${formatMoney(
+                      getPeriodPayableAmount(selectedPeriod),
                       selectedPeriod.currency,
                     )}`}
-                </DetailDescription>
+                  </DetailDescription>
+                ) : null}
+              </DetailHeadingStack>
+              {selectedPeriod ? (
+                <PeriodActionButtons
+                  actionKey={actionKey}
+                  layout="toolbar"
+                  period={selectedPeriod}
+                  onAction={handleAction}
+                />
               ) : null}
             </DetailHeader>
 
@@ -364,7 +734,7 @@ export default function HrCommissionPeriodsPage() {
                       rows={employeeLines}
                       loading={linesLoading}
                       emptyText="Sin lineas para este corte"
-                      minTableWidth={760}
+                      minTableWidth={860}
                       pageSize={8}
                     />
                   </DetailPanelContent>
@@ -403,6 +773,15 @@ export default function HrCommissionPeriodsPage() {
           line={paymentLine}
           onCancel={() => setPaymentLine(null)}
           onFinish={handleRecordPayment}
+        />
+      ) : null}
+      {adjustmentLine ? (
+        <EditHrPayableAmountModal
+          key={adjustmentLine.id}
+          actionKey={adjustmentActionKey}
+          line={adjustmentLine}
+          onCancel={() => setAdjustmentLine(null)}
+          onFinish={handleAdjustPayableAmount}
         />
       ) : null}
     </>

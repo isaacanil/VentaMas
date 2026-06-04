@@ -129,6 +129,13 @@ export const ACCOUNTING_EVENT_DEFINITIONS: AccountingEventDefinition[] = [
     description: 'Movimiento entre caja y banco o entre cuentas internas.',
   },
   {
+    eventType: 'inventory.cogs.recorded',
+    moduleKey: 'sales',
+    label: 'Costo de venta registrado',
+    description:
+      'Salida de inventario valorizada para reconocer costo de venta.',
+  },
+  {
     eventType: 'manual.entry.recorded',
     moduleKey: 'general_ledger',
     label: 'Asiento manual registrado',
@@ -139,6 +146,12 @@ export const ACCOUNTING_EVENT_DEFINITIONS: AccountingEventDefinition[] = [
     moduleKey: 'fx',
     label: 'Settlement FX registrado',
     description: 'Cierre de diferencia cambiaria o liquidacion monetaria.',
+  },
+  {
+    eventType: 'fx_settlement.voided',
+    moduleKey: 'fx',
+    label: 'Settlement FX anulado',
+    description: 'Reversa contable de una diferencia cambiaria liquidada.',
   },
   {
     eventType: 'hr_commission.accrued',

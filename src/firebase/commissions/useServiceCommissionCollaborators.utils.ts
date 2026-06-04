@@ -43,6 +43,7 @@ export const normalizeServiceCommissionCollaboratorRecord = (
     partyId: collaborator.partyId,
     defaultType: normalizeServiceCommissionType(data.defaultType),
     defaultRate,
+    serviceCommissionRules: collaborator.serviceCommissionRules,
     active: data.active !== false,
     notes: cleanCommissionString(data.notes),
   };

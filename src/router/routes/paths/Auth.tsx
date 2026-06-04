@@ -1,5 +1,6 @@
 import ROUTES_NAME from '@/router/routes/routesName';
 import FrontendFeatureRouteGate from '@/components/availability/FrontendFeatureRouteGate';
+import { CLAIM_BUSINESS_BLOCKED_COPY } from '@/components/availability/FrontendFeatureRouteGate.config';
 import { redirectAuthenticatedToDefaultLoader } from '@/router/routes/loaders/accessLoaders';
 import { Login } from '@/modules/auth/pages/Login/Login';
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
@@ -39,16 +40,7 @@ const Routes: AppRoute[] = [
     element: (
       <FrontendFeatureRouteGate
         feature="businessCreation"
-        blockedView={{
-          eyebrow: 'Reclamo pausado',
-          title: 'El reclamo de propiedad no está disponible en producción.',
-          description:
-            'Este flujo todavía está en preparación y por ahora solo está habilitado en staging y localhost.',
-          primaryTo: '/login',
-          primaryLabel: 'Ir a iniciar sesión',
-          secondaryTo: '/',
-          secondaryLabel: 'Volver al inicio',
-        }}
+        blockedView={CLAIM_BUSINESS_BLOCKED_COPY}
       >
         <ClaimBusinessPage />
       </FrontendFeatureRouteGate>

@@ -1,5 +1,5 @@
-import type { Key } from 'react';
-import { useMemo } from 'react';
+import { message } from 'antd';
+import { useMemo, type Key } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import {
@@ -21,10 +21,7 @@ import type {
 } from '@/features/cart/types';
 import { selectUser } from '@/features/auth/userSlice';
 import { useServiceCommissionCollaborators } from '@/firebase/commissions/useServiceCommissionCollaborators';
-import type {
-  ServiceCommissionCollaboratorSnapshot,
-  ServiceCommissionType,
-} from '@/types/commissions';
+import type { ServiceCommissionCollaboratorSnapshot } from '@/types/commissions';
 import type { SupportedDocumentCurrency } from '@/types/products';
 import type { UserIdentity } from '@/types/users';
 import {
@@ -38,8 +35,10 @@ import {
   calculateServiceCommissionAmount,
   cleanCommissionString as toCleanString,
   getServiceCommissionCollaboratorLabel,
+  isServiceCommissionCollaboratorEligible,
   normalizeCommissionCollaborator,
   normalizeServiceCommissionSettings,
+  resolveServiceCommissionRuleForProduct,
   resolveServiceCommissionBaseAmount,
   toFiniteCommissionNumber as toFiniteNumber,
 } from '@/utils/commissions/serviceCommissions';
@@ -79,6 +78,9 @@ const getBusinessId = (user: UserIdentity | null): string | null =>
 const getLineId = (product: CartProduct | null): string | null =>
   toCleanString(product?.cid) ?? toCleanString(product?.id);
 
+const INELIGIBLE_COLLABORATOR_MESSAGE =
+  'Este colaborador no tiene una comision configurada. Configuralo en RRHH antes de asignarlo a una venta.';
+
 const buildCurrentCollaborator = (
   commission: CartProduct['serviceCommission'],
 ): ServiceCommissionCollaboratorSnapshot | null => {
@@ -91,6 +93,7 @@ const buildCurrentCollaborator = (
     hrEmployeeId:
       commission.hrEmployeeId ?? commission.collaborator?.hrEmployeeId,
     partyId: commission.partyId ?? commission.collaborator?.partyId,
+    serviceCommissionRules: commission.collaborator?.serviceCommissionRules,
     defaultRate: commission.rateValue,
     defaultType: commission.type,
   });
@@ -165,12 +168,28 @@ export const ServiceCommissionModal = ({
     collaboratorOptions.find((option) => option.value === selectedKey) ?? null;
   const selectedCollaborator =
     selectedOption?.collaborator ?? currentCollaborator ?? null;
+  const selectedServiceRule =
+    selectedCollaborator && product
+      ? resolveServiceCommissionRuleForProduct({
+          collaborator: selectedCollaborator,
+          product,
+        })
+      : null;
+  const currentManualCommission =
+    currentCommission?.source === 'manual' || currentCommission?.source == null
+      ? currentCommission
+      : null;
   const commissionType =
+    currentManualCommission?.type ??
+    selectedServiceRule?.type ??
     currentCommission?.type ??
     selectedCollaborator?.defaultType ??
     commissionSettings.defaultType;
   const rateValue = toFiniteNumber(
-    currentCommission?.rateValue ?? selectedCollaborator?.defaultRate,
+    currentManualCommission?.rateValue ??
+      selectedServiceRule?.rateValue ??
+      currentCommission?.rateValue ??
+      selectedCollaborator?.defaultRate,
     commissionSettings.defaultRate,
   );
   const baseAmount = product ? resolveServiceCommissionBaseAmount(product) : 0;
@@ -186,12 +205,10 @@ export const ServiceCommissionModal = ({
 
   const persistCommission = ({
     collaborator,
-    nextRateValue,
-    nextType,
+    current = currentCommission,
   }: {
     collaborator: ServiceCommissionCollaboratorSnapshot;
-    nextRateValue?: number;
-    nextType?: ServiceCommissionType;
+    current?: CartProduct['serviceCommission'];
   }) => {
     if (!lineId || !product) return;
     dispatch(
@@ -200,12 +217,10 @@ export const ServiceCommissionModal = ({
         data: {
           serviceCommission: buildServiceCommissionLineSnapshot({
             collaborator,
-            current: currentCommission,
+            current,
             defaultRate: commissionSettings.defaultRate,
             defaultType: commissionSettings.defaultType,
             product,
-            rateValue: nextRateValue,
-            type: nextType,
           }),
         },
       }),
@@ -224,27 +239,19 @@ export const ServiceCommissionModal = ({
 
   const handleCollaboratorChange = (key: Key | null) => {
     if (!key) return;
+    const selectedValue = String(key);
+    if (selectedValue === selectedKey) return;
     const selected = collaboratorOptions.find(
-      (option) => option.value === String(key),
+      (option) => option.value === selectedValue,
     );
     if (!selected) return;
-    persistCommission({ collaborator: selected.collaborator });
-  };
-
-  const handleTypeChange = (key: Key | null) => {
-    if (!key || !selectedCollaborator) return;
-    persistCommission({
-      collaborator: selectedCollaborator,
-      nextType: String(key) as ServiceCommissionType,
-    });
-  };
-
-  const handleRateChange = (value: number | string | null) => {
-    if (!selectedCollaborator) return;
-    persistCommission({
-      collaborator: selectedCollaborator,
-      nextRateValue: Math.max(0, toFiniteNumber(value)),
-    });
+    if (
+      !isServiceCommissionCollaboratorEligible(selected.collaborator, product)
+    ) {
+      void message.warning(INELIGIBLE_COLLABORATOR_MESSAGE);
+      return;
+    }
+    persistCommission({ collaborator: selected.collaborator, current: null });
   };
 
   return (
@@ -324,10 +331,9 @@ export const ServiceCommissionModal = ({
             <FieldLabel>Tipo</FieldLabel>
             <TypeSelect
               fullWidth
-              aria-label="Tipo de comision"
+              aria-label="Tipo de comision solo lectura"
               selectedKey={commissionType}
-              isDisabled={!selectedCollaborator}
-              onSelectionChange={handleTypeChange}
+              isDisabled
             >
               <VmSelect.Trigger>
                 <VmSelect.Value />
@@ -352,12 +358,11 @@ export const ServiceCommissionModal = ({
             <FieldLabel>Tasa</FieldLabel>
             <RateField
               fullWidth
-              aria-label="Tasa de comision"
+              aria-label="Tasa de comision solo lectura"
               minValue={0}
               step={0.01}
               value={rateValue}
-              isDisabled={!selectedCollaborator}
-              onChange={handleRateChange}
+              isDisabled
             >
               <RateGroup>
                 <RateInput />

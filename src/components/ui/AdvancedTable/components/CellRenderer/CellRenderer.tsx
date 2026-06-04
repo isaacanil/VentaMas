@@ -3,14 +3,16 @@ import styled from 'styled-components';
 import { DateTime } from 'luxon';
 
 import { formatPrice } from '@/utils/format';
+import { toMillis } from '@/utils/date/dateUtils';
 import { Badge } from '@/components/common/Badge/Badge';
 import { BadgeDate } from '@/components/common/Badge/BadgeDate';
 import { EnhancedDateDisplay } from '@/components/common/Badge/BadgeDateStatus';
-import { StatusBadge } from '@/components/common/Badge/StatusBadge';
 import { NoteButton } from '@/components/common/NoteViewButton/NoteViewButton';
 import { ShowFiles } from '@/components/common/ShowFileButton/ShowFileButton';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 
 import type { CellType } from '@/components/ui/AdvancedTable/types/ColumnTypes';
+import type { TimestampLike } from '@/utils/date/types';
 import type { ImgHTMLAttributes, ReactNode } from 'react';
 
 type FormatOption = 'price' | 'percentage' | 'currency';
@@ -63,14 +65,8 @@ const formatValue = (value: unknown, format?: FormatOption): string => {
   }
 };
 
-const parseTimestamp = (value: unknown): number | undefined => {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string') {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : undefined;
-  }
-  return undefined;
-};
+const resolveTimestamp = (value: unknown): number | undefined =>
+  toMillis(value as TimestampLike);
 
 export const CellRenderer: React.FC<CellRendererProps> = ({
   type = 'text',
@@ -93,6 +89,9 @@ export const CellRenderer: React.FC<CellRendererProps> = ({
       return <span>{toNumber(value).toLocaleString(locale)}</span>;
     }
 
+    case 'price':
+      return <span>{formatPrice(toNumber(value))}</span>;
+
     case 'status':
       return <StatusBadge status={toText(value)} />;
 
@@ -107,15 +106,14 @@ export const CellRenderer: React.FC<CellRendererProps> = ({
       );
 
     case 'date': {
-      const timestamp = parseTimestamp(value);
+      const timestamp = resolveTimestamp(value);
       const dateTime =
         typeof timestamp === 'number' ? DateTime.fromMillis(timestamp) : null;
       return <BadgeDate dateTime={dateTime ?? null} />;
     }
 
     case 'dateStatus': {
-      const timestamp = parseTimestamp(value);
-      return <EnhancedDateDisplay timestamp={timestamp} />;
+      return <EnhancedDateDisplay timestamp={value as TimestampLike} />;
     }
 
     case 'note':

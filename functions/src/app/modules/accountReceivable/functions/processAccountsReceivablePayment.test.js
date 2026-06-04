@@ -197,14 +197,19 @@ vi.mock('../utils/receivableMonetary.util.js', () => ({
   shouldTrackFxSettlement: vi.fn(() => false),
 }));
 
-vi.mock('nanoid', () => ({
-  nanoid: vi
-    .fn()
-    .mockReturnValueOnce('payment-1')
-    .mockReturnValueOnce('receipt-1'),
-}));
+vi.mock('nanoid', () => {
+  let callCount = 0;
+  return {
+    nanoid: vi.fn(() => {
+      callCount += 1;
+      return callCount % 2 === 1 ? 'payment-1' : 'receipt-1';
+    }),
+  };
+});
 
 import { processAccountsReceivablePayment } from './processAccountsReceivablePayment.js';
+import * as receivablePaymentPlanUtil from '../utils/receivablePaymentPlan.util.js';
+import * as receivableMonetaryUtil from '../utils/receivableMonetary.util.js';
 
 describe('processAccountsReceivablePayment', () => {
   beforeEach(() => {
@@ -221,6 +226,33 @@ describe('processAccountsReceivablePayment', () => {
     });
     isAccountingRolloutEnabledForBusinessMock.mockReturnValue(true);
     resolvePilotMonetarySnapshotForBusinessMock.mockResolvedValue(null);
+    receivablePaymentPlanUtil.applyReceivablePaymentToContext.mockReturnValue({
+      remainingAmount: 0,
+      accountUpdate: null,
+      installmentUpdates: [],
+      installmentPaymentWrites: [],
+      invoiceAggregate: null,
+      accountEntry: {
+        arId: 'ar-1',
+        invoiceId: 'invoice-1',
+        accountType: 'normal',
+        totalPaid: 100,
+        historicalFunctionalSettled: 100,
+        monetaryBefore: null,
+        monetaryAfter: null,
+      },
+    });
+    receivableMonetaryUtil.allocateFunctionalAmountsByDocument.mockReturnValue([
+      100,
+    ]);
+    receivableMonetaryUtil.buildReceivableFxSettlementRecord.mockReset();
+    receivableMonetaryUtil.resolvePaymentAppliedDocumentAmount.mockImplementation(
+      ({ fallbackAmount }) => fallbackAmount,
+    );
+    receivableMonetaryUtil.resolvePaymentCollectedFunctionalAmount.mockImplementation(
+      ({ fallbackAmount }) => fallbackAmount,
+    );
+    receivableMonetaryUtil.shouldTrackFxSettlement.mockReturnValue(false);
 
     collectionMock.mockImplementation((path) => {
       if (path === 'businesses/business-1/cashCounts') {
@@ -230,12 +262,31 @@ describe('processAccountsReceivablePayment', () => {
           })),
         };
       }
+      if (path === 'businesses/business-1/accountsReceivableInstallments') {
+        return {
+          where: vi.fn((_field, _operator, arId) => ({
+            orderBy: vi.fn(() => ({
+              kind: 'installments-by-ar',
+              arId,
+            })),
+          })),
+        };
+      }
       throw new Error(`Unexpected collection path: ${path}`);
     });
 
-    transactionGetMock.mockImplementation(async (ref) =>
-      toSnapshot(ref.path, transactionSnapshots.get(ref.path)),
-    );
+    transactionGetMock.mockImplementation(async (ref) => {
+      if (ref?.kind === 'installments-by-ar') {
+        const docs = (transactionSnapshots.get(`installments:${ref.arId}`) || [])
+          .map((entry) => ({
+            id: entry.id,
+            data: () => entry,
+          }));
+        return { docs };
+      }
+
+      return toSnapshot(ref.path, transactionSnapshots.get(ref.path));
+    });
     runTransactionMock.mockImplementation(async (callback) =>
       callback({
         get: transactionGetMock,
@@ -272,6 +323,188 @@ describe('processAccountsReceivablePayment', () => {
       message:
         'Los pagos con tarjeta o transferencia requieren una cuenta bancaria activa en este negocio piloto.',
     });
+  });
+
+  it('emits FX settlement accounting events without treating exchange losses as withholding', async () => {
+    documentSnapshots.set('users/user-1', {
+      displayName: 'Usuario Demo',
+    });
+    documentSnapshots.set('businesses/business-1/clients/client-1', {
+      client: {
+        id: 'client-1',
+        name: 'Cliente Demo',
+      },
+    });
+    transactionSnapshots.set('businesses/business-1/settings/accounting', {
+      generalAccountingEnabled: true,
+    });
+    transactionSnapshots.set(
+      'businesses/business-1/accountsReceivable/ar-1',
+      {
+        id: 'ar-1',
+        clientId: 'client-1',
+        invoiceId: 'invoice-1',
+        arBalance: 100,
+        isClosed: false,
+        paymentState: {
+          balance: 100,
+        },
+      },
+    );
+    transactionSnapshots.set('installments:ar-1', [
+      {
+        id: 'installment-1',
+        installmentBalance: 100,
+      },
+    ]);
+    transactionSnapshots.set('businesses/business-1/invoices/invoice-1', {
+      id: 'invoice-1',
+      accumulatedPaid: 0,
+      balanceDue: 100,
+    });
+    transactionSnapshots.set('businesses/business-1/clients/client-1', {
+      client: {
+        id: 'client-1',
+      },
+    });
+
+    const monetarySnapshot = {
+      documentCurrency: { code: 'USD' },
+      functionalCurrency: { code: 'DOP' },
+      documentTotals: {
+        total: 100,
+        paid: 100,
+      },
+      functionalTotals: {
+        total: 6000,
+        paid: 5900,
+      },
+    };
+    resolvePilotMonetarySnapshotForBusinessMock.mockResolvedValue(
+      monetarySnapshot,
+    );
+    receivableMonetaryUtil.resolvePaymentAppliedDocumentAmount.mockReturnValue(
+      100,
+    );
+    receivableMonetaryUtil.resolvePaymentCollectedFunctionalAmount.mockReturnValue(
+      5900,
+    );
+    receivableMonetaryUtil.allocateFunctionalAmountsByDocument.mockReturnValue([
+      5900,
+    ]);
+    receivableMonetaryUtil.shouldTrackFxSettlement.mockReturnValue(true);
+    receivablePaymentPlanUtil.applyReceivablePaymentToContext.mockReturnValue({
+      remainingAmount: 0,
+      accountUpdate: null,
+      installmentUpdates: [],
+      installmentPaymentWrites: [],
+      invoiceAggregate: null,
+      accountEntry: {
+        arId: 'ar-1',
+        invoiceId: 'invoice-1',
+        accountType: 'normal',
+        totalPaid: 100,
+        historicalFunctionalSettled: 6000,
+        monetaryBefore: {
+          documentCurrency: { code: 'USD' },
+          functionalCurrency: { code: 'DOP' },
+        },
+        monetaryAfter: {
+          documentCurrency: { code: 'USD' },
+          functionalCurrency: { code: 'DOP' },
+        },
+      },
+    });
+    receivableMonetaryUtil.buildReceivableFxSettlementRecord.mockReturnValue({
+      id: 'payment-1_ar-1',
+      businessId: 'business-1',
+      paymentId: 'payment-1',
+      arId: 'ar-1',
+      invoiceId: 'invoice-1',
+      clientId: 'client-1',
+      status: 'posted',
+      documentCurrency: 'USD',
+      functionalCurrency: 'DOP',
+      appliedDocumentAmount: 100,
+      historicalFunctionalAmount: 6000,
+      settlementFunctionalAmount: 5900,
+      fxGainLossAmount: -100,
+      fxDirection: 'loss',
+      occurredAt: '2026-04-13T09:00:00.000Z',
+      createdAt: '2026-04-13T09:00:00.000Z',
+      updatedAt: '2026-04-13T09:00:00.000Z',
+      createdBy: 'user-1',
+      updatedBy: 'user-1',
+    });
+
+    await processAccountsReceivablePayment({
+      data: {
+        businessId: 'business-1',
+        idempotencyKey: 'idem-fx-1',
+        paymentDetails: {
+          paymentScope: 'account',
+          paymentOption: 'partial',
+          clientId: 'client-1',
+          arId: 'ar-1',
+          totalPaid: 100,
+          monetary: monetarySnapshot,
+          paymentMethods: [
+            {
+              method: 'transfer',
+              value: 5900,
+              status: true,
+              bankAccountId: 'bank-1',
+            },
+          ],
+        },
+      },
+    });
+
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/accountingEvents/accounts_receivable.payment.recorded__payment-1',
+      }),
+      expect.objectContaining({
+        eventType: 'accounts_receivable.payment.recorded',
+        monetary: expect.objectContaining({
+          functionalAmount: 5900,
+        }),
+        payload: expect.objectContaining({
+          functionalAppliedAmount: 5900,
+          historicalFunctionalAppliedAmount: 6000,
+          functionalWithholdingAmount: 0,
+          fxSettlementCount: 1,
+        }),
+      }),
+    );
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/accountingEvents/fx_settlement.recorded__payment-1_ar-1',
+      }),
+      expect.objectContaining({
+        eventType: 'fx_settlement.recorded',
+        sourceType: 'accountsReceivableFxSettlement',
+        sourceId: 'payment-1_ar-1',
+        monetary: expect.objectContaining({
+          amount: -100,
+          functionalAmount: -100,
+        }),
+        payload: expect.objectContaining({
+          historicalFunctionalAmount: 6000,
+          settlementFunctionalAmount: 5900,
+          fxGainLossAmount: -100,
+          fxDirection: 'loss',
+        }),
+      }),
+    );
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/accountsReceivableFxSettlements/payment-1_ar-1',
+      }),
+      expect.objectContaining({
+        fxGainLossAmount: -100,
+      }),
+    );
   });
 
   it('reuses an idempotent accounts receivable payment before rebuilding the flow', async () => {

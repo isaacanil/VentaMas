@@ -318,11 +318,18 @@ export const processInvoiceOutbox = onDocumentCreated(
             ? payload.products
             : [];
           let inventoryPrereqs = [];
+          let accountingSettings = null;
           if (products.length > 0) {
             inventoryPrereqs = await collectInventoryPrereqs(tx, {
               user,
               products,
             });
+            const accountingSettingsSnap = await tx.get(
+              db.doc(`businesses/${businessId}/settings/accounting`),
+            );
+            accountingSettings = accountingSettingsSnap.exists
+              ? accountingSettingsSnap.data() || {}
+              : null;
           }
           ensureTaskStart();
           if (products.length > 0) {
@@ -331,6 +338,7 @@ export const processInvoiceOutbox = onDocumentCreated(
               products,
               sale: { id: invoiceId },
               inventoryPrevreqs: inventoryPrereqs,
+              accountingSettings,
             });
           }
           tx.update(invoiceRef, {

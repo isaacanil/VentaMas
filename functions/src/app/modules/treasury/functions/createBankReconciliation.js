@@ -493,6 +493,12 @@ export const createBankReconciliation = onCall(async (request) => {
       statementBalance,
       transaction,
     });
+    if (preview.status !== 'balanced') {
+      throw new HttpsError(
+        'failed-precondition',
+        `La conciliacion tiene una diferencia de ${preview.variance}. Resuelve la diferencia con un ajuste/write-off antes de cerrar el periodo.`,
+      );
+    }
 
     const reconciliationRef = db
       .collection(`businesses/${businessId}/bankReconciliations`)

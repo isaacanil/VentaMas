@@ -1,4 +1,10 @@
-import { Timestamp, collection, doc, onSnapshot, setDoc } from 'firebase/firestore';
+import {
+  Timestamp,
+  collection,
+  doc,
+  onSnapshot,
+  setDoc,
+} from 'firebase/firestore';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { db } from '@/firebase/firebaseconfig';
@@ -12,10 +18,12 @@ interface UseModulesConfigArgs {
 }
 
 interface ModulesSnapshotState {
+  businessId: string | null;
   accountingEnabled: boolean;
   bankAccountsEnabled: boolean;
   bankAccountsTotal: number;
   generalAccountingEnabled: boolean;
+  settingsLoaded: boolean;
   treasuryEnabled: boolean;
 }
 
@@ -29,12 +37,25 @@ export interface ModuleCardState {
 }
 
 const DEFAULT_MODULES_STATE: ModulesSnapshotState = {
+  businessId: null,
   accountingEnabled: false,
   bankAccountsEnabled: true,
   bankAccountsTotal: 0,
   generalAccountingEnabled: false,
+  settingsLoaded: false,
   treasuryEnabled: true,
 };
+
+const getStateForBusiness = (
+  current: ModulesSnapshotState,
+  businessId: string,
+): ModulesSnapshotState =>
+  current.businessId === businessId
+    ? current
+    : {
+        ...DEFAULT_MODULES_STATE,
+        businessId,
+      };
 
 const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value)
@@ -87,38 +108,58 @@ export const useModulesConfig = ({
   userId,
 }: UseModulesConfigArgs) => {
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [savingAccounting, setSavingAccounting] = useState(false);
   const [savingTreasury, setSavingTreasury] = useState(false);
-  const [state, setState] = useState<ModulesSnapshotState>(DEFAULT_MODULES_STATE);
+  const [state, setState] = useState<ModulesSnapshotState>(
+    DEFAULT_MODULES_STATE,
+  );
+  const activeState =
+    businessId && state.businessId === businessId
+      ? state
+      : DEFAULT_MODULES_STATE;
+  const loading = Boolean(businessId) && !activeState.settingsLoaded;
 
   useEffect(() => {
     if (!businessId) {
-      setState(DEFAULT_MODULES_STATE);
-      setLoading(false);
       return undefined;
     }
 
-    setLoading(true);
-    const settingsRef = doc(db, 'businesses', businessId, 'settings', 'accounting');
+    const settingsRef = doc(
+      db,
+      'businesses',
+      businessId,
+      'settings',
+      'accounting',
+    );
 
     const unsubscribe = onSnapshot(
       settingsRef,
       (snapshot) => {
         const data = snapshot.exists() ? snapshot.data() : null;
-        setState((current) => ({
-          ...current,
-          accountingEnabled: isAccountingRolloutEnabledForBusiness(businessId, data),
-          generalAccountingEnabled: toGeneralAccountingEnabled(data),
-          bankAccountsEnabled: toBankAccountsEnabled(data),
-          treasuryEnabled: toTreasuryEnabled(data),
-        }));
-        setLoading(false);
+        setState((current) => {
+          const next = getStateForBusiness(current, businessId);
+          return {
+            ...next,
+            accountingEnabled: isAccountingRolloutEnabledForBusiness(
+              businessId,
+              data,
+            ),
+            generalAccountingEnabled: toGeneralAccountingEnabled(data),
+            bankAccountsEnabled: toBankAccountsEnabled(data),
+            settingsLoaded: true,
+            treasuryEnabled: toTreasuryEnabled(data),
+          };
+        });
         setError(null);
       },
       (cause) => {
-        setLoading(false);
-        setError(cause.message || 'No se pudo cargar el estado de los módulos.');
+        setState((current) => ({
+          ...getStateForBusiness(current, businessId),
+          settingsLoaded: true,
+        }));
+        setError(
+          cause.message || 'No se pudo cargar el estado de los módulos.',
+        );
       },
     );
 
@@ -130,20 +171,28 @@ export const useModulesConfig = ({
       return undefined;
     }
 
-    const bankAccountsRef = collection(db, 'businesses', businessId, 'bankAccounts');
+    const bankAccountsRef = collection(
+      db,
+      'businesses',
+      businessId,
+      'bankAccounts',
+    );
     const unsubscribe = onSnapshot(
       bankAccountsRef,
       (snapshot) => {
-        setState((current) => ({
-          ...current,
-          bankAccountsTotal: snapshot.docs.filter(
-            (item) => asRecord(item.data()).status !== 'inactive',
-          ).length,
-        }));
+        setState((current) => {
+          const next = getStateForBusiness(current, businessId);
+          return {
+            ...next,
+            bankAccountsTotal: snapshot.docs.filter(
+              (item) => asRecord(item.data()).status !== 'inactive',
+            ).length,
+          };
+        });
       },
       () => {
         setState((current) => ({
-          ...current,
+          ...getStateForBusiness(current, businessId),
           bankAccountsTotal: 0,
         }));
       },
@@ -156,7 +205,13 @@ export const useModulesConfig = ({
     async (patch: Record<string, unknown>) => {
       if (!businessId) return;
 
-      const settingsRef = doc(db, 'businesses', businessId, 'settings', 'accounting');
+      const settingsRef = doc(
+        db,
+        'businesses',
+        businessId,
+        'settings',
+        'accounting',
+      );
       await setDoc(
         settingsRef,
         {
@@ -203,7 +258,9 @@ export const useModulesConfig = ({
         });
       } catch (cause) {
         setError(
-          cause instanceof Error ? cause.message : 'No se pudo actualizar Tesorería.',
+          cause instanceof Error
+            ? cause.message
+            : 'No se pudo actualizar Tesorería.',
         );
       } finally {
         setSavingTreasury(false);
@@ -214,58 +271,60 @@ export const useModulesConfig = ({
 
   const accountingModule = useMemo<ModuleCardState>(
     () => ({
-      checked: state.accountingEnabled,
-      helperText: state.accountingEnabled
+      checked: activeState.accountingEnabled,
+      helperText: activeState.accountingEnabled
         ? 'Activa catálogo, perfiles y las rutas protegidas de contabilidad.'
         : 'Mantiene ocultas las rutas y configuraciones contables del negocio.',
       loading: loading || savingAccounting,
-      status: getAccountingModuleStatus(state),
+      status: getAccountingModuleStatus(activeState),
       summary: [
         {
           label: 'Estado',
-          value: state.accountingEnabled ? 'Habilitado' : 'Deshabilitado',
+          value: activeState.accountingEnabled ? 'Habilitado' : 'Deshabilitado',
         },
         {
           label: 'Contabilidad general',
-          value: state.generalAccountingEnabled ? 'Configurada' : 'Pendiente',
+          value: activeState.generalAccountingEnabled
+            ? 'Configurada'
+            : 'Pendiente',
         },
         {
           label: 'Tesorería dependiente',
-          value: state.treasuryEnabled ? 'Sí' : 'No',
+          value: activeState.treasuryEnabled ? 'Sí' : 'No',
         },
       ],
     }),
-    [loading, savingAccounting, state],
+    [activeState, loading, savingAccounting],
   );
 
   const treasuryModule = useMemo<ModuleCardState>(
     () => ({
-      checked: state.treasuryEnabled,
-      configureDisabled: !state.accountingEnabled,
-      helperText: state.accountingEnabled
+      checked: activeState.treasuryEnabled,
+      configureDisabled: !activeState.accountingEnabled,
+      helperText: activeState.accountingEnabled
         ? 'Hoy la configuración bancaria reutiliza la base contable existente.'
         : 'Primero activa Contabilidad para abrir la configuración bancaria actual.',
       loading: loading || savingTreasury,
-      status: getTreasuryModuleStatus(state),
+      status: getTreasuryModuleStatus(activeState),
       summary: [
         {
           label: 'Estado',
-          value: state.treasuryEnabled ? 'Habilitada' : 'Deshabilitada',
+          value: activeState.treasuryEnabled ? 'Habilitada' : 'Deshabilitada',
         },
         {
           label: 'Cuentas bancarias',
           value:
-            state.bankAccountsTotal > 0
-              ? `${state.bankAccountsTotal} configurada(s)`
+            activeState.bankAccountsTotal > 0
+              ? `${activeState.bankAccountsTotal} configurada(s)`
               : 'Pendiente',
         },
         {
           label: 'Resolución bancaria',
-          value: state.bankAccountsEnabled ? 'Activa' : 'Desactivada',
+          value: activeState.bankAccountsEnabled ? 'Activa' : 'Desactivada',
         },
       ],
     }),
-    [loading, savingTreasury, state],
+    [activeState, loading, savingTreasury],
   );
 
   return {

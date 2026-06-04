@@ -21,25 +21,6 @@ export const FullWidthField = styled(Field)`
   grid-column: 1 / -1;
 `;
 
-export const SwitchField = styled.div`
-  grid-column: 1 / -1;
-  display: flex;
-  gap: var(--ds-space-3);
-  align-items: center;
-  justify-content: space-between;
-  min-width: 0;
-  padding: var(--ds-space-3);
-  border: 1px solid var(--ds-color-border-subtle);
-  border-radius: 8px;
-  background: var(--ds-color-bg-subtle);
-`;
-
-export const SwitchCopy = styled.div`
-  display: grid;
-  gap: var(--ds-space-1);
-  min-width: 0;
-`;
-
 export const FieldLabel = styled.span`
   color: var(--ds-color-text-primary);
   font-size: var(--ds-font-size-sm);

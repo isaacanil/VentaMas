@@ -24,137 +24,19 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from 'react';
 import { useDispatch } from 'react-redux';
-import styled from 'styled-components';
 
+import type { AppDispatch } from '@/app/store';
 import { openModal } from '@/features/doctors/doctorsSlice';
 import type { DoctorRecord } from '@/types/doctors';
 import { normalizeText } from '@/utils/text';
-
-const Wrapper = styled.div`
-  display: grid;
-  grid-template-rows: min-content 1fr;
-  gap: 8px;
-  height: 100%;
-  overflow: hidden;
-`;
-
-const Header = styled.div`
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  padding: 0 1em;
-
-  & .search-container {
-    flex: 1;
-  }
-`;
-
-const DoctorsContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 12px;
-  align-content: start;
-  padding: 0 1em;
-  overflow-y: auto;
-`;
-
-interface DoctorCardProps {
-  $isSelected?: boolean;
-}
-
-const DoctorCard = styled.div<DoctorCardProps>`
-  padding: 12px;
-  cursor: pointer;
-  background-color: ${(props: DoctorCardProps) =>
-    props.$isSelected ? '#e6f7ff' : 'white'};
-  border: 1px solid
-    ${(props: DoctorCardProps) => (props.$isSelected ? '#1890ff' : '#e8e8e8')};
-  border-radius: 8px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
-  }
-
-  & .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 4px;
-  }
-
-  & .actions {
-    padding: 4px;
-    color: #8c8c8c;
-    border-radius: 4px;
-
-    &:hover {
-      background-color: rgb(0 0 0 / 4%);
-    }
-  }
-
-  & .name {
-    font-size: 14px;
-    font-weight: 500;
-    color: #262626;
-  }
-
-  & .specialty {
-    font-size: 12px;
-    color: #8c8c8c;
-  }
-`;
-
-const DoctorInfo = styled.div`
-  padding: 0.4em 0.6em 0.6em;
-  cursor: pointer;
-  border: 1px solid #d9d9d9;
-  border-radius: 8px;
-  transition: all 0.2s;
-
-  &:hover {
-    border-color: #40a9ff;
-  }
-
-  &.empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100px;
-    color: #8c8c8c;
-  }
-
-  & .doctor-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 4px;
-  }
-
-  & .doctor-name {
-    font-size: 16px;
-    font-weight: 500;
-    color: #262626;
-  }
-
-  & .doctor-details {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 1.3em;
-    font-size: 14px;
-    line-height: 1.1pc;
-    color: #595959;
-  }
-
-  & .detail-item {
-    gap: 4px;
-  }
-
-  & .detail-label {
-    font-size: 12px;
-    color: #40a9ff;
-  }
-`;
+import {
+  DoctorCard,
+  DoctorInfo,
+  DoctorsContainer,
+  Header,
+  Wrapper,
+  doctorDrawerStyles,
+} from './DoctorSelector.styles';
 
 interface DoctorSelectorProps {
   doctors?: DoctorRecord[];
@@ -176,8 +58,9 @@ const DoctorSelector = ({
   const [visible, setVisible] = useState(false);
   const [search, setSearch] = useState('');
   const searchInputRef = useRef<InputRef | null>(null);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
+  const normalizedSearch = normalizeText(search);
   useEffect(() => {
     if (visible && searchInputRef.current) {
       const focusTimer = window.setTimeout(() => {
@@ -191,8 +74,8 @@ const DoctorSelector = ({
   const filteredDoctors = search
     ? doctors.filter(
         (doctor) =>
-          normalizeText(doctor.name || '').includes(normalizeText(search)) ||
-          normalizeText(doctor.specialty || '').includes(normalizeText(search)),
+          normalizeText(doctor.name || '').includes(normalizedSearch) ||
+          normalizeText(doctor.specialty || '').includes(normalizedSearch),
       )
     : doctors;
 
@@ -260,7 +143,7 @@ const DoctorSelector = ({
       >
         {!selectedDoctor ? (
           <div>
-            <MedicineBoxOutlined style={{ marginRight: '8px' }} />
+            <MedicineBoxOutlined className="selector-icon" />
             Seleccionar Médico
           </div>
         ) : (
@@ -269,7 +152,7 @@ const DoctorSelector = ({
               <span className="doctor-name">{selectedDoctor.name}</span>
               <CloseOutlined
                 onClick={handleClearDoctor}
-                style={{ cursor: 'pointer', color: '#8c8c8c' }}
+                className="clear-icon"
               />
             </div>
             <div className="doctor-details">
@@ -288,9 +171,7 @@ const DoctorSelector = ({
         onClose={() => setVisible(false)}
         open={visible}
         height={'80%'}
-        styles={{
-          body: { padding: '1em' },
-        }}
+        styles={doctorDrawerStyles}
       >
         <Wrapper>
           <Header>

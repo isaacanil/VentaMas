@@ -1,13 +1,23 @@
-import {
-  faArrowTrendUp,
-  faBolt,
-  faChartLine,
-  faLock,
-  faStar,
-} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Modal, Typography } from 'antd';
-import styled from 'styled-components';
+
+import {
+  DEFAULT_BENEFITS,
+  UPGRADE_MODAL_ICONS,
+  getBenefitIcon,
+} from './UpgradeModal.config';
+import {
+  ActionRow,
+  BenefitCard,
+  BenefitIcon,
+  BenefitsGrid,
+  HeroCard,
+  HeroGlow,
+  HeroHeader,
+  LockBadge,
+  ModalBody,
+  ReasonPill,
+} from './UpgradeModal.styles';
 
 interface UpgradeModalProps {
   open: boolean;
@@ -21,12 +31,6 @@ interface UpgradeModalProps {
   cancelLabel?: string;
   benefits?: string[];
 }
-
-const DEFAULT_BENEFITS = [
-  'Desbloquea mas capacidad operativa sin perder el contexto de trabajo.',
-  'Amplia limites para usuarios, facturas y crecimiento del negocio.',
-  'Gestiona upgrade y cobros desde el centro de suscripcion.',
-];
 
 export const UpgradeModal = ({
   open,
@@ -63,7 +67,7 @@ export const UpgradeModal = ({
           <HeroGlow />
           <HeroHeader>
             <LockBadge>
-              <FontAwesomeIcon icon={faLock} />
+              <FontAwesomeIcon icon={UPGRADE_MODAL_ICONS.lock} />
             </LockBadge>
             <Typography.Text type="secondary">
               Acceso condicionado por plan
@@ -72,7 +76,7 @@ export const UpgradeModal = ({
           <Typography.Title level={2}>{resolvedTitle}</Typography.Title>
           <Typography.Paragraph>{resolvedDescription}</Typography.Paragraph>
           <ReasonPill>
-            <FontAwesomeIcon icon={faStar} />
+            <FontAwesomeIcon icon={UPGRADE_MODAL_ICONS.reason} />
             {limitReason}
           </ReasonPill>
         </HeroCard>
@@ -80,15 +84,7 @@ export const UpgradeModal = ({
         <BenefitsGrid>
           {benefits.slice(0, 3).map((benefit, index) => (
             <BenefitCard key={benefit}>
-              <BenefitIcon
-                icon={
-                  index === 0
-                    ? faBolt
-                    : index === 1
-                      ? faChartLine
-                      : faArrowTrendUp
-                }
-              />
+              <BenefitIcon icon={getBenefitIcon(index)} />
               <Typography.Text>{benefit}</Typography.Text>
             </BenefitCard>
           ))}
@@ -108,96 +104,3 @@ export const UpgradeModal = ({
 };
 
 export default UpgradeModal;
-
-const ModalBody = styled.div`
-  display: grid;
-  gap: 18px;
-`;
-
-const HeroCard = styled.section`
-  position: relative;
-  overflow: hidden;
-  display: grid;
-  gap: 12px;
-  padding: 24px;
-  border: 1px solid rgb(14 116 144 / 12%);
-  border-radius: 24px;
-  background:
-    radial-gradient(circle at top left, rgb(251 191 36 / 24%), transparent 36%),
-    linear-gradient(145deg, #fff8e7 0%, #f8fafc 46%, #eff6ff 100%);
-
-  .ant-typography {
-    position: relative;
-    margin-bottom: 0;
-  }
-`;
-
-const HeroGlow = styled.div`
-  position: absolute;
-  inset: auto -52px -74px auto;
-  width: 180px;
-  height: 180px;
-  border-radius: 999px;
-  background: rgb(14 165 233 / 12%);
-  filter: blur(8px);
-`;
-
-const HeroHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-
-const LockBadge = styled.div`
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  display: grid;
-  place-items: center;
-  color: #075985;
-  background: rgb(255 255 255 / 82%);
-  box-shadow: 0 12px 34px rgb(14 116 144 / 10%);
-`;
-
-const ReasonPill = styled.div`
-  width: fit-content;
-  max-width: 100%;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  color: #7c2d12;
-  font-size: 13px;
-  font-weight: 700;
-  background: rgb(255 237 213 / 88%);
-`;
-
-const BenefitsGrid = styled.div`
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-`;
-
-const BenefitCard = styled.div`
-  display: grid;
-  gap: 10px;
-  min-height: 132px;
-  padding: 18px;
-  border: 1px solid rgb(148 163 184 / 22%);
-  border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 14px 40px rgb(15 23 42 / 6%);
-`;
-
-const BenefitIcon = styled(FontAwesomeIcon)`
-  font-size: 18px;
-  color: #0f766e;
-`;
-
-const ActionRow = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  flex-wrap: wrap;
-`;

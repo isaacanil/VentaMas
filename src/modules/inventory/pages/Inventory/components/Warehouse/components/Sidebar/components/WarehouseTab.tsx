@@ -3,14 +3,15 @@ import { Tree, Button, Tooltip } from 'antd';
 import type { DataNode } from 'antd/es/tree';
 import { AnimatePresence } from 'framer-motion';
 import { useState, useMemo, useCallback, memo } from 'react';
+import { useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
+import { openWarehouseForm } from '@/features/warehouse/warehouseModalSlice';
 import { useTransformedWarehouseData } from '@/firebase/warehouse/warehouseNestedServise';
 import RowForm from '@/modules/inventory/pages/Inventory/components/Warehouse/forms/RowShelfForm/RowShelfForm';
 import SegmentForm from '@/modules/inventory/pages/Inventory/components/Warehouse/forms/SegmentForm/SegmentForm';
 import { ShelfForm } from '@/modules/inventory/pages/Inventory/components/Warehouse/forms/ShelfForm/ShelfForm';
-import { WarehouseForm } from '@/modules/inventory/pages/Inventory/components/Warehouse/forms/WarehouseForm/WarehouseForm';
 
 const TabContent = styled.div`
   display: flex;
@@ -55,6 +56,7 @@ type WarehouseTreeNode = {
 type TreeNode = DataNode;
 
 const WarehouseTab = memo(() => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { warehouseId, shelfId, rowId, segmentId } = useParams<{
     warehouseId?: string;
@@ -63,7 +65,6 @@ const WarehouseTab = memo(() => {
     segmentId?: string;
   }>();
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
-  const [isWarehouseFormVisible, setIsWarehouseFormVisible] = useState(false);
   const [isShelfFormVisible, setIsShelfFormVisible] = useState(false);
   const [isRowFormVisible, setIsRowFormVisible] = useState(false);
   const [isSegmentFormVisible, setIsSegmentFormVisible] = useState(false);
@@ -131,12 +132,16 @@ const WarehouseTab = memo(() => {
     [navigate, warehouseId, shelfId, rowId, segmentId],
   );
 
+  const handleAddWarehouse = useCallback(() => {
+    dispatch(openWarehouseForm(undefined));
+  }, [dispatch]);
+
   return (
     <TabContent>
       <ActionButton
         type="dashed"
         icon={<PlusOutlined />}
-        onClick={() => setIsWarehouseFormVisible(true)}
+        onClick={handleAddWarehouse}
       >
         Agregar Almacén
       </ActionButton>
@@ -151,12 +156,6 @@ const WarehouseTab = memo(() => {
       </TreeContainer>
 
       <AnimatePresence>
-        {isWarehouseFormVisible && (
-          <WarehouseForm
-            visible={isWarehouseFormVisible}
-            onClose={() => setIsWarehouseFormVisible(false)}
-          />
-        )}
         {isShelfFormVisible && (
           <ShelfForm
             visible={isShelfFormVisible}

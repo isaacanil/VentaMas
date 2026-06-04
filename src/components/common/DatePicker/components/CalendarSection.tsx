@@ -3,11 +3,14 @@ import { DateTime } from 'luxon';
 import React from 'react';
 import styled from 'styled-components';
 
+import {
+  DATE_LOCALE,
+  getLocalizedNow,
+} from '@/components/common/DatePicker/constants/dateLocale';
 import { WEEK_DAYS } from '@/components/common/DatePicker/constants/presets';
 import { renderCalendarGrid } from '@/components/common/DatePicker/utils/dateUtils';
 import type { DatePickerMode, DatePickerValue } from '../types';
 
-const DATE_LOCALE = 'es';
 const DAYS_PER_WEEK = 7;
 
 interface RangeSegment {
@@ -43,13 +46,16 @@ const buildRangeSegments = ({
   for (let row = 0; row < rowCount; row += 1) {
     const rowStartIndex = row * DAYS_PER_WEEK;
     const rowDays = days.slice(rowStartIndex, rowStartIndex + DAYS_PER_WEEK);
-    const selectedColumns = rowDays.reduce<number[]>((columns, date, column) => {
-      const day = date.startOf('day');
-      if (day >= startOfRange && day <= endOfRange) {
-        columns.push(column);
-      }
-      return columns;
-    }, []);
+    const selectedColumns = rowDays.reduce<number[]>(
+      (columns, date, column) => {
+        const day = date.startOf('day');
+        if (day >= startOfRange && day <= endOfRange) {
+          columns.push(column);
+        }
+        return columns;
+      },
+      [],
+    );
 
     if (!selectedColumns.length) continue;
 
@@ -206,7 +212,7 @@ const DayNumber = styled.span<CalendarDayProps>`
   ${(props: CalendarDayProps) =>
     props.$isSelected &&
     !props.$isInRange &&
-      `
+    `
       ${CalendarDay}:hover & {
         color: var(--ds-color-text-inverse);
         background: var(--ds-color-action-primary-hover);
@@ -246,7 +252,7 @@ export const CalendarSection = ({
     hoverDate,
     mode,
   });
-  const today = DateTime.local().setLocale(DATE_LOCALE);
+  const today = getLocalizedNow();
   const isDateInRange = (date: DateTime) => {
     if (mode !== 'range') return false;
 

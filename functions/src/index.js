@@ -34,7 +34,9 @@ import { backfillJournalEntryAccountIds } from './app/modules/accounting/functio
 import { replayAccountingEventProjection } from './app/modules/accounting/functions/replayAccountingEventProjection.js';
 import { reverseJournalEntry } from './app/modules/accounting/functions/reverseJournalEntry.js';
 import {
+  backfillBankAccountChartLinks,
   createAccountingPostingProfile,
+  createBankAccount,
   createChartOfAccount,
   disableAccountingPostingProfile,
   disableChartOfAccount,
@@ -210,7 +212,9 @@ export {
   backfillJournalEntryAccountIds,
   replayAccountingEventProjection,
   reverseJournalEntry,
+  backfillBankAccountChartLinks,
   createAccountingPostingProfile,
+  createBankAccount,
   createChartOfAccount,
   disableAccountingPostingProfile,
   disableChartOfAccount,

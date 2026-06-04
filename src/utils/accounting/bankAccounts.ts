@@ -221,6 +221,7 @@ export const normalizeBankAccountRecord = (
     countryCode,
     isCustomBank,
     accountNumberLast4: toCleanString(record.accountNumberLast4 ?? record.last4),
+    chartOfAccountId: toCleanString(record.chartOfAccountId),
     openingBalance: safeNumber(record.openingBalance),
     openingBalanceDate: record.openingBalanceDate ?? null,
     createdAt: (record.createdAt as BankAccount['createdAt']) ?? null,

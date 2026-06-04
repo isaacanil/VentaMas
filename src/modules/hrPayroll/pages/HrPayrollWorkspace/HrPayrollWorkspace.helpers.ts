@@ -26,9 +26,11 @@ export const DEFAULT_FORM_VALUES: HrEmployeeFormValues = {
   hourlyRateAmount: 0,
   currency: 'DOP',
   paymentMethod: 'bank_transfer',
+  salaryDeductions: [],
   commissionEnabled: false,
   defaultCommissionType: 'percentage',
   defaultCommissionRate: null,
+  serviceCommissionRules: [],
 };
 
 export const getUserId = (user: BusinessUser): string | null =>
@@ -109,9 +111,11 @@ export const buildInitialValues = (
     currency: employee.currency,
     paymentMethod: employee.paymentMethod,
     paymentDestination: employee.paymentDestination,
+    salaryDeductions: employee.salaryDeductions,
     commissionEnabled: employee.commissionEnabled,
     defaultCommissionType: employee.defaultCommissionType,
     defaultCommissionRate: employee.defaultCommissionRate,
+    serviceCommissionRules: employee.serviceCommissionRules,
     notes: employee.notes,
   };
 };

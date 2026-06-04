@@ -71,9 +71,7 @@ type InsuranceAuthData = {
   [key: string]: unknown;
 };
 
-const hasBusinessId = (
-  value: UserIdentity | null,
-): value is UserWithBusiness =>
+const hasBusinessId = (value: UserIdentity | null): value is UserWithBusiness =>
   typeof value?.businessID === 'string' && value.businessID.trim().length > 0;
 
 type InsuranceFormValues = Omit<
@@ -133,7 +131,10 @@ const persistClientInsurance = async ({
   formattedValues: InsuranceAuthData;
 }): Promise<SaveClientInsuranceResult> => {
   try {
-    const existingInsurance = await getClientInsuranceByClientId(user, clientId);
+    const existingInsurance = await getClientInsuranceByClientId(
+      user,
+      clientId,
+    );
     const specificInsuranceData = {
       clientId,
       insuranceId: formattedValues.insuranceId,
@@ -146,7 +147,8 @@ const persistClientInsurance = async ({
     if (existingInsurance) {
       const hasChanges =
         existingInsurance.insuranceId !== specificInsuranceData.insuranceId ||
-        existingInsurance.insuranceType !== specificInsuranceData.insuranceType ||
+        existingInsurance.insuranceType !==
+          specificInsuranceData.insuranceType ||
         existingInsurance.birthDate !== specificInsuranceData.birthDate;
 
       success = hasChanges
@@ -240,7 +242,19 @@ const LoadingContainer = styled.div`
   padding: 20px;
 `;
 
-// Nuevo componente para los encabezados de sección
+const InsuranceDisabledNotice = styled.div`
+  padding: 10px;
+  margin-bottom: 20px;
+  background-color: #fffbe6;
+  border: 1px solid #ffe58f;
+  border-radius: 4px;
+`;
+
+const SpinPlaceholder = styled.div`
+  width: 100%;
+  min-height: 160px;
+`;
+
 const SectionHeader = styled.h3`
   padding-bottom: 8px;
   margin-top: 10px;
@@ -308,9 +322,7 @@ export const InsuranceAuthModal = () => {
       loading: boolean;
     };
   // Escuchamos los médicos disponibles
-  const { doctors = [] } = useFbGetDoctors() as {
-    doctors?: DoctorRecord[];
-  };
+  const { doctors = [] } = useFbGetDoctors();
   const selectedInsurance =
     typeof watchedInsuranceId === 'string' ? watchedInsuranceId : null;
 
@@ -411,9 +423,14 @@ export const InsuranceAuthModal = () => {
     }
 
     return (
-      [selectedInsurance, watchedInsuranceType, watchedAffiliateNumber, watchedAuthNumber]
-        .every((value) => value !== undefined && value !== null && value !== '') &&
-      selectedDoctor !== null
+      [
+        selectedInsurance,
+        watchedInsuranceType,
+        watchedAffiliateNumber,
+        watchedAuthNumber,
+      ].every(
+        (value) => value !== undefined && value !== null && value !== '',
+      ) && selectedDoctor !== null
     );
   }, [
     insuranceEnabled,
@@ -650,32 +667,20 @@ export const InsuranceAuthModal = () => {
       </ClientInfoWidget>
 
       {!insuranceEnabled && (
-        <div
-          style={{
-            marginBottom: '20px',
-            padding: '10px',
-            backgroundColor: '#fffbe6',
-            border: '1px solid #ffe58f',
-            borderRadius: '4px',
-          }}
-        >
+        <InsuranceDisabledNotice>
           <strong>Seguro no disponible:</strong> El seguro no está habilitado.
           Verifique su tipo de negocio o active el seguro en la configuración.
-        </div>
+        </InsuranceDisabledNotice>
       )}
 
       {isLoading ? (
         <LoadingContainer>
           <Spin tip="Cargando datos de autorización...">
-            <div style={{ width: '100%', minHeight: 160 }} />
+            <SpinPlaceholder />
           </Spin>
         </LoadingContainer>
       ) : (
-        <Form
-          form={form}
-          layout="vertical"
-          disabled={isFormDisabled}
-        >
+        <Form form={form} layout="vertical" disabled={isFormDisabled}>
           {/* SECCIÓN 1: INFORMACIÓN DEL SEGURO */}
           <SectionHeader>Información del Seguro</SectionHeader>
 

@@ -133,6 +133,22 @@ describe('receivableMonetary.util', () => {
     ).toBe(true);
   });
 
+  it('prioritizes the paid functional amount for collected A/R cash', () => {
+    const paymentMonetary = {
+      documentCurrency: { code: 'DOP' },
+      functionalCurrency: { code: 'DOP' },
+      documentTotals: { total: 118, paid: 100, balance: 0 },
+      functionalTotals: { total: 118, paid: 100, balance: 0 },
+    };
+
+    expect(
+      resolvePaymentCollectedFunctionalAmount({
+        pilotMonetarySnapshot: paymentMonetary,
+        fallbackAmount: 118,
+      }),
+    ).toBe(100);
+  });
+
   it('builds the FX settlement event with gain or loss amount', () => {
     expect(
       buildReceivableFxSettlementRecord({

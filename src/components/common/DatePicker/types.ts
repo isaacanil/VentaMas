@@ -2,6 +2,7 @@ import type { DateTime } from 'luxon';
 import type { CSSProperties, MouseEvent, RefObject } from 'react';
 
 export type DatePickerMode = 'single' | 'range';
+export type DatePickerPresetLayout = 'grid' | 'sidebar';
 
 export type DatePickerSingleValue = DateTime | null;
 export type DatePickerRangeValue = Array<DateTime | null>;
@@ -36,14 +37,9 @@ export interface DatePickerProps extends Omit<
   mode?: DatePickerMode;
   value?: DatePickerValue;
   onChange: (value: DatePickerValue) => void;
-  placeholder?: string;
   format?: string;
   allowClear?: boolean;
-  size?: 'small' | 'middle' | 'large';
-  disabled?: boolean;
   presets?: DatePickerPreset[];
-  className?: string;
-  style?: CSSProperties;
 }
 
 export interface UseDatePickerArgs {
@@ -62,5 +58,5 @@ export interface PresetsSectionProps {
   showPresetsDropdown?: boolean;
   setShowPresetsDropdown?: (value: boolean) => void;
   presetsDropdownRef?: RefObject<HTMLDivElement>;
-  layout?: string;
+  layout?: DatePickerPresetLayout;
 }
