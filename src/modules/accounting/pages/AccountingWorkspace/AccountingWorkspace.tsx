@@ -15,6 +15,7 @@ import { ManualEntriesPanel } from './components/ManualEntriesPanel';
 import { PeriodClosePanel } from './components/PeriodClosePanel';
 import { useAccountingOriginNavigation } from './hooks/useAccountingOriginNavigation';
 import { useAccountingWorkspace } from './hooks/useAccountingWorkspace';
+import { useFiscalMonthlyComplianceAvailability } from './hooks/useFiscalMonthlyComplianceAvailability';
 import {
   findAccountingLedgerRecord,
   getAccountingEntryLocatorFromSearch,
@@ -46,7 +47,13 @@ export default function AccountingWorkspace() {
     [requestedEntryLocator],
   );
   const shouldLoadLedgerRecords =
-    activePanel !== 'general-ledger' && activePanel !== 'financial-reports';
+    activePanel !== 'general-ledger' &&
+    activePanel !== 'financial-reports' &&
+    activePanel !== 'fiscal-compliance';
+  const shouldLoadAccountingSetup =
+    activePanel !== 'general-ledger' &&
+    activePanel !== 'financial-reports' &&
+    activePanel !== 'fiscal-compliance';
   const {
     accountingEnabled,
     businessId,
@@ -72,10 +79,20 @@ export default function AccountingWorkspace() {
     savingManualEntry,
     reversingEntryId,
   } = useAccountingWorkspace({
+    includeAccountingSetup: shouldLoadAccountingSetup,
     includeLedgerRecords: shouldLoadLedgerRecords,
   });
   const { openingOriginRecordId, openRecordOrigin } =
     useAccountingOriginNavigation();
+  const fiscalMonthlyComplianceAvailability =
+    useFiscalMonthlyComplianceAvailability({
+      businessId,
+      enabled: accountingEnabled && activePanel === 'fiscal-compliance',
+    });
+  const fiscalCompliancePeriodKeys = useMemo(
+    () => periodOptions.map((option) => option.periodKey),
+    [periodOptions],
+  );
   const requestedJournalRecord = useMemo(
     () =>
       activePanel === 'journal-book'
@@ -121,6 +138,7 @@ export default function AccountingWorkspace() {
   const setupLoaded =
     !chartLoading && !postingProfilesLoading && !configLoading;
   const setupIncomplete =
+    shouldLoadAccountingSetup &&
     accountingEnabled &&
     setupLoaded &&
     (chartOfAccounts.length === 0 || postingProfiles.length === 0);
@@ -222,7 +240,14 @@ export default function AccountingWorkspace() {
           <FiscalCompliancePanel
             businessId={businessId}
             enabled={accountingEnabled}
-            periods={periodOptions.map((option) => option.periodKey)}
+            monthlyComplianceAvailable={
+              fiscalMonthlyComplianceAvailability.enabled
+            }
+            monthlyComplianceError={fiscalMonthlyComplianceAvailability.error}
+            monthlyComplianceResolved={
+              fiscalMonthlyComplianceAvailability.resolved
+            }
+            periods={fiscalCompliancePeriodKeys}
             defaultPeriodKey={periodOptions[0]?.periodKey ?? null}
           />
         );

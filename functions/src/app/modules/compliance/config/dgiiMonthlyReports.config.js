@@ -132,7 +132,7 @@ export const DGII_MONTHLY_REPORTS = Object.freeze({
         requiredFields: Object.freeze([
           'invoiceId',
           'ncf',
-          'createdAt',
+          'voidedAt',
           'status',
           'voidReasonCode',
         ]),

@@ -1,4 +1,9 @@
-import type { BusinessMetadata } from '../types';
+export interface BusinessMetadata {
+  name: string | null;
+  subscriptionStatus: string | null;
+  subscriptionPlanId: string | null;
+  ownerUid: string | null;
+}
 
 const toCleanString = (value: unknown): string | null => {
   if (typeof value !== 'string') return null;

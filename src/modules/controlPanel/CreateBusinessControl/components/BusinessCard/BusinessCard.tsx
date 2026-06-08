@@ -5,6 +5,7 @@ import {
   faIdCard,
   faCalendarAlt,
   faFileInvoiceDollar,
+  faReceipt,
   faUserShield,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -22,6 +23,7 @@ interface BusinessCardProps {
   business: BusinessInfo;
   onEditBusiness: (business: BusinessInfo) => void;
   onOpenAccessActions?: (business: BusinessInfo) => void;
+  onOpenFiscalActions?: (business: BusinessInfo) => void;
 }
 
 const SUBSCRIPTION_LABELS: Record<string, string> = {
@@ -89,6 +91,7 @@ export const BusinessCard: FC<BusinessCardProps> = ({
   business,
   onEditBusiness,
   onOpenAccessActions,
+  onOpenFiscalActions,
 }) => {
   const formatTimeAgo = (createdAt?: BusinessCreatedAt) => {
     if (!createdAt) return 'Fecha no disponible';
@@ -157,6 +160,13 @@ export const BusinessCard: FC<BusinessCardProps> = ({
         : typeof business.status === 'string'
           ? business.status.toLowerCase()
           : 'active';
+    const fiscalRollout = business.fiscalRollout;
+    const monthlyComplianceReady =
+      fiscalRollout.reportingEnabled &&
+      fiscalRollout.monthlyComplianceEnabled;
+    const fiscalPartiallyEnabled =
+      fiscalRollout.reportingEnabled ||
+      fiscalRollout.monthlyComplianceEnabled;
 
     return {
       address: business.address || 'Sin dirección proporcionada',
@@ -178,6 +188,16 @@ export const BusinessCard: FC<BusinessCardProps> = ({
       accessLabel: getAccessStatusLabel(accessStatus),
       subscriptionTone: getSubscriptionTone(subscriptionStatus),
       subscriptionLabel: getSubscriptionLabel(subscriptionStatus),
+      fiscalTone: monthlyComplianceReady
+        ? ('ok' as StatusTone)
+        : fiscalPartiallyEnabled
+          ? ('warn' as StatusTone)
+          : ('neutral' as StatusTone),
+      fiscalLabel: monthlyComplianceReady
+        ? 'DGII mensual'
+        : fiscalPartiallyEnabled
+          ? 'Fiscal parcial'
+          : 'Fiscal apagado',
     };
   }, [business]);
 
@@ -189,6 +209,11 @@ export const BusinessCard: FC<BusinessCardProps> = ({
   const openAccessActions = (event: SyntheticEvent<HTMLElement>) => {
     event.stopPropagation();
     onOpenAccessActions?.(business);
+  };
+
+  const openFiscalActions = (event: SyntheticEvent<HTMLElement>) => {
+    event.stopPropagation();
+    onOpenFiscalActions?.(business);
   };
 
   return (
@@ -213,6 +238,17 @@ export const BusinessCard: FC<BusinessCardProps> = ({
                 aria-label="Acciones de acceso"
                 icon={<FontAwesomeIcon icon={faUserShield} />}
                 onClick={openAccessActions}
+                size="small"
+                type="text"
+              />
+            </Tooltip>
+          ) : null}
+          {onOpenFiscalActions ? (
+            <Tooltip title="Configurar DGII mensual">
+              <IconActionButton
+                aria-label="Configurar DGII mensual"
+                icon={<FontAwesomeIcon icon={faReceipt} />}
+                onClick={openFiscalActions}
                 size="small"
                 type="text"
               />
@@ -277,6 +313,15 @@ export const BusinessCard: FC<BusinessCardProps> = ({
               ? `Plan ${businessData.subscriptionPlanId}`
               : 'Sin plan'}
           </InlineMeta>
+        </InfoItem>
+        <InfoItem>
+          <IconWrapper>
+            <FontAwesomeIcon icon={faReceipt} />
+          </IconWrapper>
+          <StatusPill $tone={businessData.fiscalTone}>
+            {businessData.fiscalLabel}
+          </StatusPill>
+          <InlineMeta>Compliance</InlineMeta>
         </InfoItem>
         <InfoItem className="time-ago-item">
           <IconWrapper>

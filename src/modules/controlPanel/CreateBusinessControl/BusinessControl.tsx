@@ -21,6 +21,7 @@ import { BusinessCard } from './components/BusinessCard/BusinessCard';
 import FiltersDrawer from './components/FiltersDrawer/FiltersDrawer';
 import { useBusinessFeed } from './hooks/useBusinessFeed';
 import { useBusinessControlUiState } from './hooks/useBusinessControlUiState';
+import { BusinessFiscalRolloutModal } from './components/BusinessFiscalRolloutModal/BusinessFiscalRolloutModal';
 import {
   collectSortedBusinessFieldValues,
   DEV_ONLY_ERROR,
@@ -47,14 +48,17 @@ export const BusinessControl: React.FC = () => {
     debouncedSearchTerm,
     editModalOpen,
     filters,
+    fiscalActionsModalOpen,
     filtersVisible,
     goToNextPage,
     goToPrevPage,
     handleCloseAccessActions,
+    handleCloseFiscalActions,
     handleCloseModal,
     handleEditBusiness,
     handleFilterChange,
     handleOpenAccessActions,
+    handleOpenFiscalActions,
     resetFilters,
     searchTerm,
     selectedBusiness,
@@ -226,6 +230,7 @@ export const BusinessControl: React.FC = () => {
                 business={item.business}
                 onEditBusiness={handleEditBusiness}
                 onOpenAccessActions={handleOpenAccessActions}
+                onOpenFiscalActions={handleOpenFiscalActions}
               />
             );
           })
@@ -260,6 +265,14 @@ export const BusinessControl: React.FC = () => {
         business={selectedBusiness}
         onClose={handleCloseAccessActions}
       />
+      {selectedBusiness ? (
+        <BusinessFiscalRolloutModal
+          key={selectedBusiness.id}
+          isOpen={fiscalActionsModalOpen}
+          business={selectedBusiness}
+          onClose={handleCloseFiscalActions}
+        />
+      ) : null}
     </Container>
   );
 };

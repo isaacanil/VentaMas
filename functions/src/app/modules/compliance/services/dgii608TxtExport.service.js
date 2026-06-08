@@ -1,3 +1,5 @@
+import { isValidDgiiNcf } from './dgiiNcf.util.js';
+
 const PERIOD_KEY_REGEX = /^\d{4}-\d{2}$/;
 
 const toCleanString = (value) => {
@@ -40,23 +42,23 @@ export const assertValidDgii608Header = ({
   if (!PERIOD_KEY_REGEX.test(toCleanString(periodKey) ?? '')) {
     throw new Error('Periodo invalido. Use AAAA-MM.');
   }
-  if (!Number.isInteger(rowCount) || rowCount < 0 || rowCount > 999999) {
-    throw new Error('Cantidad de registros inválida para el encabezado 608.');
+  if (!Number.isInteger(rowCount) || rowCount < 0 || rowCount > 4999) {
+    throw new Error(
+      'Cantidad de registros invalida para el encabezado 608. Debe estar entre 0 y 4,999.',
+    );
   }
 };
 
 export const buildDgii608TxtRow = (record) => {
   const fiscalNumber =
     toCleanString(record?.data?.NCF) ?? toCleanString(record?.ncf) ?? '';
-  if (!/^[A-Z0-9]{11,19}$/i.test(fiscalNumber)) {
+  if (!isValidDgiiNcf(fiscalNumber)) {
     throw new Error(
       `NCF inválido para exportar 608: ${fiscalNumber || 'sin valor'}.`,
     );
   }
 
-  const cancellationDate = formatDate(
-    record?.voidedAt ?? record?.createdAt ?? record?.issuedAt,
-  );
+  const cancellationDate = formatDate(record?.voidedAt);
   if (!cancellationDate) {
     throw new Error(
       `Fecha de anulación faltante para exportar el NCF ${fiscalNumber}.`,

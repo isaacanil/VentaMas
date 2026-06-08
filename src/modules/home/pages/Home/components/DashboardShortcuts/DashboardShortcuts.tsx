@@ -24,9 +24,10 @@ const SHORTCUT_CATEGORY_ORDER: Record<string, number> = {
   Inventario: 20,
   Contabilidad: 30,
   'Compras y gastos': 40,
-  Contactos: 50,
-  Tesorería: 60,
-  Administración: 70,
+  'RRHH y nomina': 50,
+  Contactos: 60,
+  Tesorería: 70,
+  Administración: 80,
 };
 
 const isFeatureCardData = (card: unknown): card is FeatureCardData => {

@@ -1,4 +1,5 @@
 import type {
+  HrCommissionCutRuleFrequency,
   HrCommissionCutRuleRecord,
   HrCommissionPeriodRecord,
 } from '@/types/hrPayroll';
@@ -15,6 +16,62 @@ export interface HrCommissionCutRuleRange {
 
 const getDaysInMonth = (year: number, monthIndex: number): number =>
   new Date(year, monthIndex + 1, 0).getDate();
+
+const addDays = (date: Date, days: number): Date =>
+  new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate() + days,
+    0,
+    0,
+    0,
+    0,
+  );
+
+const toStartOfWeek = (date: Date): Date => {
+  const anchor = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    0,
+    0,
+    0,
+    0,
+  );
+  const day = anchor.getDay();
+  const daysSinceMonday = day === 0 ? 6 : day - 1;
+  return addDays(anchor, -daysSinceMonday);
+};
+
+const toEndOfDay = (date: Date): Date =>
+  new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    23,
+    59,
+    59,
+    999,
+  );
+
+const isLegacyBiweeklyCutRuleRange = (
+  startDay: number,
+  endDay: number,
+): boolean =>
+  (startDay === 1 && endDay === 15) || (startDay === 16 && endDay >= 28);
+
+export const normalizeHrCommissionCutRuleFrequency = (
+  rule: Pick<HrCommissionCutRuleRecord, 'endDay' | 'frequency' | 'startDay'>,
+): HrCommissionCutRuleFrequency => {
+  if (
+    rule.frequency === 'monthly' &&
+    isLegacyBiweeklyCutRuleRange(rule.startDay, rule.endDay)
+  ) {
+    return 'biweekly';
+  }
+
+  return rule.frequency;
+};
 
 const toDate = (value: unknown): Date | null => {
   if (!value) return null;
@@ -55,11 +112,32 @@ export const resolveHrCommissionCutRuleRange = ({
 }): HrCommissionCutRuleRange | null => {
   if (!rule.id || !rule.label || rule.startDay > rule.endDay) return null;
 
+  const frequency = normalizeHrCommissionCutRuleFrequency(rule);
+
+  if (frequency === 'weekly') {
+    const start = toStartOfWeek(anchorDate);
+    const end = toEndOfDay(addDays(start, 6));
+    const startKey = toHrDateKey(start);
+    const endKey = toHrDateKey(end);
+
+    return {
+      start,
+      end,
+      startKey,
+      endKey,
+      label: `${rule.label} ${startKey} - ${endKey}`,
+    };
+  }
+
   const year = anchorDate.getFullYear();
   const monthIndex = anchorDate.getMonth();
   const daysInMonth = getDaysInMonth(year, monthIndex);
-  const startDay = clampRuleDay(rule.startDay, daysInMonth);
-  const endDay = clampRuleDay(rule.endDay, daysInMonth);
+  const startDay =
+    frequency === 'biweekly' ? (anchorDate.getDate() <= 15 ? 1 : 16) : 1;
+  const endDay =
+    frequency === 'biweekly' && startDay === 1
+      ? 15
+      : clampRuleDay(31, daysInMonth);
   const start = new Date(year, monthIndex, startDay, 0, 0, 0, 0);
   const end = new Date(year, monthIndex, endDay, 23, 59, 59, 999);
   const startKey = toHrDateKey(start);
@@ -90,10 +168,7 @@ export const resolveNextHrCommissionCutRuleRange = ({
     .map((period) => toDate(period.endDate))
     .filter((date): date is Date => Boolean(date))
     .sort((left, right) => right.getTime() - left.getTime())[0];
-  const anchorDate = latestEndDate
-    ? new Date(latestEndDate.getFullYear(), latestEndDate.getMonth() + 1, 1)
-    : referenceDate;
+  const anchorDate = latestEndDate ? addDays(latestEndDate, 1) : referenceDate;
 
   return resolveHrCommissionCutRuleRange({ anchorDate, rule });
 };
-

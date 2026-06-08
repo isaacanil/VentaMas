@@ -18,7 +18,7 @@ const buildBaseRecord = (overrides = {}) => ({
     dgii606ExpenseType: '09',
   },
   taxReceipt: {
-    ncf: 'B01000000015',
+    ncf: 'B0100000015',
   },
   issuedAt: '2026-04-05T13:20:00.000Z',
   paymentAt: '2026-04-10T13:20:00.000Z',
@@ -49,7 +49,7 @@ describe('dgii606TxtExport.service', () => {
       '101010101',
       '1',
       '09',
-      'B01000000015',
+      'B0100000015',
       '',
       '20260405',
       '20260410',

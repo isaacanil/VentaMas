@@ -9,6 +9,7 @@ export interface ExportDgiiTxtReportInput {
   businessId: string;
   periodKey: string;
   reportCode: MonthlyComplianceReportCode;
+  reportRunId: string;
 }
 
 export interface ExportDgiiTxtReportResult {
@@ -22,6 +23,7 @@ export const fbExportDgiiTxtReport = async ({
   businessId,
   periodKey,
   reportCode,
+  reportRunId,
 }: ExportDgiiTxtReportInput): Promise<ExportDgiiTxtReportResult> => {
   const { sessionToken } = getStoredSession();
   const callable = httpsCallable<
@@ -33,6 +35,7 @@ export const fbExportDgiiTxtReport = async ({
     businessId,
     periodKey,
     reportCode,
+    reportRunId,
     ...(sessionToken ? { sessionToken } : {}),
   });
 

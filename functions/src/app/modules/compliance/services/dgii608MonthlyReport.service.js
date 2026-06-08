@@ -74,6 +74,11 @@ const isVoidedStatus = (status) => {
   return DGII_608_VOID_STATUSES.has(normalizedStatus);
 };
 
+const resolveDgii608Status = (...values) => {
+  const statuses = values.map((value) => toCleanString(value)).filter(Boolean);
+  return statuses.find((status) => isVoidedStatus(status)) ?? statuses[0] ?? null;
+};
+
 const resolveMonthlyPeriodRange = (periodKey) => {
   const normalizedPeriodKey = toCleanString(periodKey);
   if (!normalizedPeriodKey || !PERIOD_KEY_REGEX.test(normalizedPeriodKey)) {
@@ -124,13 +129,40 @@ const buildSourceRecordsSnapshot = (records = []) =>
     documentNumber: record?.documentNumber ?? null,
     documentFiscalNumber: record?.data?.NCF ?? record?.ncf ?? null,
     invoiceId: record?.invoiceId ?? null,
-    issuedAt:
-      record?.voidedAt ?? record?.createdAt ?? record?.issuedAt ?? null,
+    voidedAt: record?.voidedAt ?? null,
+    issuedAt: record?.voidedAt ?? record?.issuedAt ?? null,
+    createdAt: record?.createdAt ?? null,
     reason: record?.voidReason ?? record?.reason ?? null,
     reasonCode: record?.voidReasonCode ?? null,
     reasonLabel: record?.voidReasonLabel ?? null,
     status: record?.status ?? null,
   }));
+
+const isWithinRange = ({ value, start, endExclusive }) => {
+  const date = toDate(value);
+  return Boolean(date && date >= start && date < endExclusive);
+};
+
+const runDateRangeQueries = async ({ ref, fieldPaths, start, endExclusive }) =>
+  Promise.all(
+    fieldPaths.map((fieldPath) =>
+      ref
+        .where(fieldPath, '>=', start)
+        .where(fieldPath, '<', endExclusive)
+        .orderBy(fieldPath, 'asc')
+        .get(),
+    ),
+  );
+
+const dedupeDocsById = (snapshots = []) => {
+  const docsById = new Map();
+  snapshots.forEach((snapshot) => {
+    snapshot.docs.forEach((doc) => {
+      docsById.set(doc.id, doc);
+    });
+  });
+  return Array.from(docsById.values());
+};
 
 const enrichIssues = (issues, datasets) =>
   issues.map((issue) => {
@@ -157,30 +189,42 @@ export const mapInvoiceDocToDgii608Record = ({
   invoiceId,
   invoiceDoc,
 }) => {
-  const invoiceData = isRecord(invoiceDoc?.data) ? invoiceDoc.data : invoiceDoc;
+  const invoiceRoot = isRecord(invoiceDoc) ? invoiceDoc : {};
+  const invoiceData = isRecord(invoiceDoc?.data) ? invoiceDoc.data : invoiceRoot;
   const cancelData = isRecord(invoiceData?.cancel) ? invoiceData.cancel : {};
+  const rootCancelData = isRecord(invoiceRoot?.cancel) ? invoiceRoot.cancel : {};
   const voidedAt = toDate(
-    invoiceData?.voidedAt ??
+    invoiceRoot?.voidedAt ??
+      invoiceData?.voidedAt ??
+      rootCancelData?.cancelledAt ??
       cancelData?.cancelledAt ??
+      invoiceRoot?.cancelledAt ??
       invoiceData?.cancelledAt,
   );
-  const status =
-    toCleanString(invoiceData?.status) ??
-    toCleanString(invoiceDoc?.status) ??
-    null;
+  const status = resolveDgii608Status(invoiceRoot?.status, invoiceData?.status);
   const reason = resolveDgii608Reason({
     reasonCode:
       invoiceData?.voidReasonCode ??
+      invoiceRoot?.voidReasonCode ??
+      rootCancelData?.reasonCode ??
       cancelData?.reasonCode ??
+      invoiceRoot?.cancelReasonCode ??
       invoiceData?.cancelReasonCode,
     reasonLabel:
       invoiceData?.voidReasonLabel ??
+      invoiceRoot?.voidReasonLabel ??
+      rootCancelData?.reasonLabel ??
       cancelData?.reasonLabel ??
+      invoiceRoot?.cancelReasonLabel ??
       invoiceData?.cancelReasonLabel,
     reasonText:
       invoiceData?.voidReason ??
+      invoiceRoot?.voidReason ??
+      rootCancelData?.reason ??
       cancelData?.reason ??
+      invoiceRoot?.reason ??
       invoiceData?.reason ??
+      invoiceRoot?.cancelReason ??
       invoiceData?.cancelReason,
   });
 
@@ -213,23 +257,56 @@ export const mapCreditNoteDocToDgii608Record = ({
   creditNoteId,
   creditNoteDoc,
 }) => {
+  const creditNoteRoot = isRecord(creditNoteDoc) ? creditNoteDoc : {};
   const creditNoteData = isRecord(creditNoteDoc?.data)
     ? creditNoteDoc.data
-    : creditNoteDoc;
-  const createdAt = toDate(creditNoteData?.createdAt);
-  const status = toCleanString(creditNoteData?.status) ?? null;
+    : creditNoteRoot;
+  const cancelData = isRecord(creditNoteData?.cancel)
+    ? creditNoteData.cancel
+    : {};
+  const rootCancelData = isRecord(creditNoteRoot?.cancel)
+    ? creditNoteRoot.cancel
+    : {};
+  const createdAt = toDate(creditNoteRoot?.createdAt ?? creditNoteData?.createdAt);
+  const voidedAt = toDate(
+    creditNoteRoot?.voidedAt ??
+      creditNoteData?.voidedAt ??
+      creditNoteRoot?.cancelledAt ??
+      creditNoteData?.cancelledAt ??
+      rootCancelData?.cancelledAt ??
+      cancelData?.cancelledAt,
+  );
+  const status = resolveDgii608Status(
+    creditNoteRoot?.status,
+    creditNoteData?.status,
+  );
   const reason = resolveDgii608Reason({
     reasonCode:
+      creditNoteRoot?.voidReasonCode ??
       creditNoteData?.voidReasonCode ??
+      rootCancelData?.reasonCode ??
+      cancelData?.reasonCode ??
+      creditNoteRoot?.reasonCode ??
       creditNoteData?.reasonCode ??
+      creditNoteRoot?.cancelReasonCode ??
       creditNoteData?.cancelReasonCode,
     reasonLabel:
+      creditNoteRoot?.voidReasonLabel ??
       creditNoteData?.voidReasonLabel ??
+      rootCancelData?.reasonLabel ??
+      cancelData?.reasonLabel ??
+      creditNoteRoot?.reasonLabel ??
       creditNoteData?.reasonLabel ??
+      creditNoteRoot?.cancelReasonLabel ??
       creditNoteData?.cancelReasonLabel,
     reasonText:
+      creditNoteRoot?.reason ??
       creditNoteData?.reason ??
+      creditNoteRoot?.voidReason ??
       creditNoteData?.voidReason ??
+      rootCancelData?.reason ??
+      cancelData?.reason ??
+      creditNoteRoot?.cancelReason ??
       creditNoteData?.cancelReason,
   });
 
@@ -239,6 +316,7 @@ export const mapCreditNoteDocToDgii608Record = ({
       toCleanString(creditNoteData?.sourceInvoiceId) ??
       null,
     ncf: toCleanString(creditNoteData?.ncf) ?? null,
+    voidedAt: voidedAt?.toISOString() ?? null,
     createdAt: createdAt?.toISOString() ?? null,
     status,
     reason: reason.rawReason ?? null,
@@ -277,28 +355,29 @@ export const loadDgii608Datasets = async ({
     `businesses/${normalizedBusinessId}/creditNotes`,
   );
 
-  const [invoicesSnap, legacyInvoicesSnap, creditNotesSnap] = await Promise.all([
-    invoicesRef
-      .where('voidedAt', '>=', start)
-      .where('voidedAt', '<', endExclusive)
-      .orderBy('voidedAt', 'asc')
-      .get(),
-    invoicesRef
-      .where('data.cancel.cancelledAt', '>=', start)
-      .where('data.cancel.cancelledAt', '<', endExclusive)
-      .orderBy('data.cancel.cancelledAt', 'asc')
-      .get(),
-    creditNotesRef
-      .where('createdAt', '>=', start)
-      .where('createdAt', '<', endExclusive)
-      .orderBy('createdAt', 'asc')
-      .get(),
+  const [
+    invoiceSnapshots,
+    creditNoteSnapshots,
+  ] = await Promise.all([
+    runDateRangeQueries({
+      ref: invoicesRef,
+      fieldPaths: ['voidedAt', 'data.voidedAt', 'data.cancel.cancelledAt'],
+      start,
+      endExclusive,
+    }),
+    runDateRangeQueries({
+      ref: creditNotesRef,
+      fieldPaths: [
+        'voidedAt',
+        'cancelledAt',
+        'cancel.cancelledAt',
+        'data.voidedAt',
+        'data.cancel.cancelledAt',
+      ],
+      start,
+      endExclusive,
+    }),
   ]);
-
-  const invoiceDocsById = new Map();
-  [...invoicesSnap.docs, ...legacyInvoicesSnap.docs].forEach((doc) => {
-    invoiceDocsById.set(doc.id, doc);
-  });
 
   return {
     businessId: normalizedBusinessId,
@@ -306,7 +385,7 @@ export const loadDgii608Datasets = async ({
     start,
     endExclusive,
     datasets: {
-      invoices: Array.from(invoiceDocsById.values())
+      invoices: dedupeDocsById(invoiceSnapshots)
         .map((doc) =>
           mapInvoiceDocToDgii608Record({
             businessId: normalizedBusinessId,
@@ -314,8 +393,12 @@ export const loadDgii608Datasets = async ({
             invoiceDoc: doc.data(),
           }),
         )
-        .filter((record) => isVoidedStatus(record.status)),
-      creditNotes: creditNotesSnap.docs
+        .filter(
+          (record) =>
+            isVoidedStatus(record.status) &&
+            isWithinRange({ value: record.voidedAt, start, endExclusive }),
+        ),
+      creditNotes: dedupeDocsById(creditNoteSnapshots)
         .map((doc) =>
           mapCreditNoteDocToDgii608Record({
             businessId: normalizedBusinessId,
@@ -323,7 +406,15 @@ export const loadDgii608Datasets = async ({
             creditNoteDoc: doc.data(),
           }),
         )
-        .filter((record) => isVoidedStatus(record.status)),
+        .filter(
+          (record) =>
+            isVoidedStatus(record.status) &&
+            isWithinRange({
+              value: record.voidedAt,
+              start,
+              endExclusive,
+            }),
+        ),
     },
   };
 };

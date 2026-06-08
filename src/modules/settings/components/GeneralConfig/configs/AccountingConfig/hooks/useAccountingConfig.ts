@@ -17,6 +17,7 @@ import { createBankAccountConfig } from '@/firebase/accounting/accountingConfigu
 import { db } from '@/firebase/firebaseconfig';
 import {
   DEFAULT_BANK_INSTITUTION_COUNTRY_CODE,
+  type BankInstitutionCatalogEntry,
 } from '@/domain/banking/bankInstitutionCatalog';
 import { useBankInstitutionCatalog } from '@/domain/banking/useBankInstitutionCatalog';
 import { useAccountingRolloutEnabled } from '@/hooks/useAccountingRolloutEnabled';
@@ -51,6 +52,9 @@ import {
 
 interface UseAccountingConfigArgs {
   businessId: string | null;
+  includeBankingDetails?: boolean;
+  includeExchangeRateReference?: boolean;
+  includeHistory?: boolean;
   userId: string | null;
 }
 
@@ -216,6 +220,14 @@ const serializeGeneralAccountingSettingsForComparison = (
     generalAccountingEnabled: config?.generalAccountingEnabled === true,
   });
 
+const serializeBankInstitutionCatalogForEffect = (
+  entries: readonly BankInstitutionCatalogEntry[],
+): string =>
+  entries
+    .map((entry) => [entry.countryCode, entry.code, entry.name].join(':'))
+    .sort()
+    .join('|');
+
 const mergeConfigWithDirtySections = ({
   currentConfig,
   dirtySections,
@@ -235,6 +247,9 @@ const mergeConfigWithDirtySections = ({
 
 export const useAccountingConfig = ({
   businessId,
+  includeBankingDetails = true,
+  includeExchangeRateReference = true,
+  includeHistory = true,
   userId,
 }: UseAccountingConfigArgs) => {
   const isAccountingRolloutBusiness = useAccountingRolloutEnabled(businessId);
@@ -253,7 +268,11 @@ export const useAccountingConfig = ({
     entries: bankInstitutionCatalog,
     error: bankInstitutionCatalogError,
     loading: bankInstitutionCatalogLoading,
-  } = useBankInstitutionCatalog(DEFAULT_BANK_INSTITUTION_COUNTRY_CODE);
+  } = useBankInstitutionCatalog(
+    DEFAULT_BANK_INSTITUTION_COUNTRY_CODE,
+    includeBankingDetails,
+  );
+  const bankInstitutionCatalogRef = useRef(bankInstitutionCatalog);
   const [marketExchangeRateReference, setMarketExchangeRateReference] =
     useState<ExchangeRateProviderSnapshot | null>(null);
   const [lastPersistedConfig, setLastPersistedConfig] =
@@ -303,6 +322,15 @@ export const useAccountingConfig = ({
     hasUnsavedExchangeChanges,
     hasUnsavedGeneralAccountingChanges,
   ]);
+
+  const bankInstitutionCatalogSignature = useMemo(
+    () => serializeBankInstitutionCatalogForEffect(bankInstitutionCatalog),
+    [bankInstitutionCatalog],
+  );
+
+  useEffect(() => {
+    bankInstitutionCatalogRef.current = bankInstitutionCatalog;
+  }, [bankInstitutionCatalog]);
 
   useEffect(() => {
     if (!businessId) {
@@ -360,9 +388,7 @@ export const useAccountingConfig = ({
   }, [businessId, userId]);
 
   useEffect(() => {
-    if (!businessId) {
-      setBankAccounts([]);
-      setBankAccountsLoading(false);
+    if (!includeBankingDetails || !businessId) {
       return;
     }
 
@@ -384,7 +410,7 @@ export const useAccountingConfig = ({
               businessId,
               bankAccountDoc.data(),
               {
-                bankInstitutionCatalog,
+                bankInstitutionCatalog: bankInstitutionCatalogRef.current,
               },
             ),
           )
@@ -406,9 +432,13 @@ export const useAccountingConfig = ({
     );
 
     return unsubscribe;
-  }, [bankInstitutionCatalog, businessId]);
+  }, [bankInstitutionCatalogSignature, businessId, includeBankingDetails]);
 
   useEffect(() => {
+    if (!includeExchangeRateReference) {
+      return undefined;
+    }
+
     const latestRef = doc(
       db,
       'system',
@@ -432,11 +462,10 @@ export const useAccountingConfig = ({
     );
 
     return unsubscribe;
-  }, []);
+  }, [includeExchangeRateReference]);
 
   useEffect(() => {
-    if (!businessId) {
-      setHistory([]);
+    if (!includeHistory || !businessId) {
       return;
     }
 
@@ -476,7 +505,7 @@ export const useAccountingConfig = ({
     );
 
     return unsubscribe;
-  }, [businessId, userId]);
+  }, [businessId, includeHistory, userId]);
 
   const updateCurrencyConfiguration = useCallback(
     ({
@@ -1123,18 +1152,26 @@ export const useAccountingConfig = ({
 
   return {
     addBankAccount,
-    bankAccounts,
-    bankInstitutionCatalog,
-    bankInstitutionCatalogError,
-    bankInstitutionCatalogLoading,
-    bankAccountsLoading,
+    bankAccounts: includeBankingDetails ? bankAccounts : [],
+    bankInstitutionCatalog: includeBankingDetails
+      ? bankInstitutionCatalog
+      : [],
+    bankInstitutionCatalogError: includeBankingDetails
+      ? bankInstitutionCatalogError
+      : null,
+    bankInstitutionCatalogLoading: includeBankingDetails
+      ? bankInstitutionCatalogLoading
+      : false,
+    bankAccountsLoading: includeBankingDetails ? bankAccountsLoading : false,
     config,
     enabledForeignCurrencies,
     error,
-    exchangeRateReference,
+    exchangeRateReference: includeExchangeRateReference
+      ? exchangeRateReference
+      : null,
     hasUnsavedBankingChanges,
     hasUnsavedExchangeChanges,
-    history,
+    history: includeHistory ? history : [],
     isAccountingRolloutBusiness,
     loading,
     saveExchangeSettings,

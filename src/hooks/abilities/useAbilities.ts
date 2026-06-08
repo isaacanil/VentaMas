@@ -44,6 +44,7 @@ export const useLoadUserAbilities = () => {
   >(selectAbilitiesLoading);
   const dispatch = useDispatch<AppDispatch>();
   const lastRequestedSessionKeyRef = useRef<string | null>(null);
+  const latestUserRef = useRef(user);
 
   const userId =
     typeof (user as { uid?: unknown } | null)?.uid === 'string'
@@ -68,6 +69,10 @@ export const useLoadUserAbilities = () => {
     userId && businessId ? `${userId}|${businessId}|${role || ''}` : null;
 
   useEffect(() => {
+    latestUserRef.current = user;
+  }, [user]);
+
+  useEffect(() => {
     if (!sessionAbilitiesKey) {
       lastRequestedSessionKeyRef.current = null;
       dispatch(clearAbilities());
@@ -78,8 +83,8 @@ export const useLoadUserAbilities = () => {
     if (lastRequestedSessionKeyRef.current === sessionAbilitiesKey) return;
 
     lastRequestedSessionKeyRef.current = sessionAbilitiesKey;
-    dispatch(loadUserAbilities(user));
-  }, [sessionAbilitiesKey, dispatch, loading, user]);
+    dispatch(loadUserAbilities(latestUserRef.current));
+  }, [sessionAbilitiesKey, dispatch, loading]);
 };
 
 export function useUserAccess() {

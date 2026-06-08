@@ -34,7 +34,7 @@ export type HrEmployeeGender = 'male' | 'female' | 'other';
 
 export type HrReadyToPayStatus = 'ready' | 'needs_review';
 
-export type HrCommissionCutRuleFrequency = 'monthly';
+export type HrCommissionCutRuleFrequency = 'weekly' | 'biweekly' | 'monthly';
 
 export type HrCommissionPeriodStatus =
   | 'draft'
@@ -232,6 +232,9 @@ export interface HrCommissionPeriodRecord extends Record<string, unknown> {
   lastAdjustmentComment?: string | null;
   payrollRunId?: string | null;
   accountingEventId?: string | null;
+  paidAmount?: number;
+  paidLinesCount?: number;
+  lastPaymentId?: string | null;
   createdAt?: unknown;
   updatedAt?: unknown;
 }

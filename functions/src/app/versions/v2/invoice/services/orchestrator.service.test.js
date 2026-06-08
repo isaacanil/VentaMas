@@ -314,6 +314,68 @@ describe('orchestrator.service', () => {
     ).rejects.toThrow('ncfType requerido cuando ncf.enabled=true');
   });
 
+  it('rejects fiscal credit invoices without an identified client', async () => {
+    await expect(
+      createPendingInvoice({
+        businessId: 'business-1',
+        userId: 'user-1',
+        idempotencyKey: 'idem-1',
+        payload: {
+          cart: {
+            id: 'cart-fiscal-credit',
+            products: [{ id: 'p1', name: 'Producto A', amountToBuy: 1 }],
+            payment: { value: 118 },
+            totalPurchaseWithoutTaxes: { value: 100 },
+            totalTaxes: { value: 18 },
+            totalPurchase: { value: 118 },
+          },
+          client: { id: 'GC-0000', name: 'Cliente Generico' },
+          taxReceiptEnabled: true,
+          ncf: {
+            enabled: true,
+            type: 'CREDITO FISCAL',
+          },
+        },
+      }),
+    ).rejects.toThrow(
+      'Selecciona un cliente con RNC o cedula para este comprobante fiscal.',
+    );
+
+    expect(reserveNcfMock).not.toHaveBeenCalled();
+    expect(tx.set).not.toHaveBeenCalled();
+  });
+
+  it('rejects consumer final invoices at the 607 detail threshold without an identified client', async () => {
+    await expect(
+      createPendingInvoice({
+        businessId: 'business-1',
+        userId: 'user-1',
+        idempotencyKey: 'idem-1',
+        payload: {
+          cart: {
+            id: 'cart-consumer-high',
+            products: [{ id: 'p1', name: 'Producto A', amountToBuy: 1 }],
+            payment: { value: 250000 },
+            totalPurchaseWithoutTaxes: { value: 211864.41 },
+            totalTaxes: { value: 38135.59 },
+            totalPurchase: { value: 250000 },
+          },
+          client: null,
+          taxReceiptEnabled: true,
+          ncf: {
+            enabled: true,
+            type: 'fiscal-consumer',
+          },
+        },
+      }),
+    ).rejects.toThrow(
+      'Selecciona un cliente con RNC o cedula para este comprobante fiscal.',
+    );
+
+    expect(reserveNcfMock).not.toHaveBeenCalled();
+    expect(tx.set).not.toHaveBeenCalled();
+  });
+
   it('schedules an electronic receipt shadow task without reserving legacy NCF', async () => {
     nanoidMock
       .mockReset()

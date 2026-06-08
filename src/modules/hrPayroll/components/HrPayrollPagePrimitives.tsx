@@ -1,5 +1,5 @@
 import { parseDate } from '@internationalized/date';
-import type { ReactNode } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 
 import {
@@ -10,7 +10,10 @@ import {
   VmSpinner,
   VmTable,
 } from '@/components/heroui';
-import { fromHrDateKey, toHrDateKey } from '@/modules/hrPayroll/utils/hrDateRange';
+import {
+  fromHrDateKey,
+  toHrDateKey,
+} from '@/modules/hrPayroll/utils/hrDateRange';
 
 import {
   DateInputContainer,
@@ -78,8 +81,7 @@ interface HrDataTableProps<T> {
 const getDefaultRowId = <T extends { id?: HrRowKey }>(
   row: T,
   index: number,
-): HrRowKey =>
-  row.id ?? index;
+): HrRowKey => row.id ?? index;
 
 export function HrDataTable<T extends { id?: HrRowKey }>({
   ariaLabel,
@@ -96,7 +98,9 @@ export function HrDataTable<T extends { id?: HrRowKey }>({
 }: HrDataTableProps<T>) {
   const [page, setPage] = useState(1);
   const hasRows = rows.length > 0;
-  const totalPages = pageSize ? Math.max(1, Math.ceil(rows.length / pageSize)) : 1;
+  const totalPages = pageSize
+    ? Math.max(1, Math.ceil(rows.length / pageSize))
+    : 1;
   const safePage = Math.min(page, totalPages);
   const visibleRows = useMemo(() => {
     if (!pageSize) return rows;
@@ -105,6 +109,12 @@ export function HrDataTable<T extends { id?: HrRowKey }>({
   }, [pageSize, rows, safePage]);
   const resolveRowId = (row: T, index: number) =>
     getRowId ? getRowId(row) : getDefaultRowId(row, index);
+  const handleRowKeyDown = (event: KeyboardEvent<HTMLElement>, row: T) => {
+    if (!onRowClick) return;
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    onRowClick(row);
+  };
 
   return (
     <HrTableFrame variant="primary">
@@ -147,13 +157,24 @@ export function HrDataTable<T extends { id?: HrRowKey }>({
             ) : (
               visibleRows.map((row, index) => {
                 const rowId = resolveRowId(row, index);
-                const selected = selectedRowId != null && rowId === selectedRowId;
+                const selected =
+                  selectedRowId != null && rowId === selectedRowId;
+                const rowInteractionProps = onRowClick
+                  ? ({
+                      'aria-selected': selected,
+                      'data-clickable': 'true',
+                      onClick: () => onRowClick(row),
+                      onKeyDown: (event: KeyboardEvent<HTMLElement>) =>
+                        handleRowKeyDown(event, row),
+                      tabIndex: 0,
+                    } as Record<string, unknown>)
+                  : {};
                 return (
                   <VmTable.Row
                     key={rowId}
                     id={rowId}
                     data-selected={selected ? 'true' : undefined}
-                    onClick={onRowClick ? () => onRowClick(row) : undefined}
+                    {...rowInteractionProps}
                     style={{
                       background: selected
                         ? 'var(--ds-color-bg-subtle)'
@@ -264,9 +285,7 @@ export function HrDateRangeField({
           <VmRangeCalendar.Grid>
             <VmRangeCalendar.GridHeader>
               {(day) => (
-                <VmRangeCalendar.HeaderCell>
-                  {day}
-                </VmRangeCalendar.HeaderCell>
+                <VmRangeCalendar.HeaderCell>{day}</VmRangeCalendar.HeaderCell>
               )}
             </VmRangeCalendar.GridHeader>
             <VmRangeCalendar.GridBody>

@@ -54,12 +54,11 @@ describe('hrCommissionPeriods.service', () => {
     ).toBe('commission_2026-05-01_2026-05-31');
   });
 
-  it('normalizes monthly cut rules and constrains month-end ranges', () => {
+  it('normalizes cut rules by frequency and constrains generated ranges', () => {
     const normalized = normalizeHrCommissionCutRule(
       {
-        label: 'Segunda quincena',
-        startDay: 16,
-        endDay: 31,
+        label: 'Quincenal',
+        frequency: 'biweekly',
       },
       { businessId: 'business-1' },
     );
@@ -67,9 +66,10 @@ describe('hrCommissionPeriods.service', () => {
     expect(normalized).toMatchObject({
       ok: true,
       rule: {
-        label: 'Segunda quincena',
-        startDay: 16,
-        endDay: 31,
+        label: 'Quincenal',
+        frequency: 'biweekly',
+        startDay: 1,
+        endDay: 15,
         active: true,
       },
     });
@@ -81,7 +81,39 @@ describe('hrCommissionPeriods.service', () => {
 
     expect(range).toMatchObject({
       ok: true,
-      startKey: '2026-02-16',
+      startKey: '2026-02-01',
+      endKey: '2026-02-15',
+    });
+
+    expect(
+      resolveHrCommissionCutRuleRange({
+        rule: {
+          ...normalized.rule,
+          frequency: 'weekly',
+          label: 'Semanal',
+        },
+        anchorDate: new Date('2026-06-10T00:00:00.000Z'),
+      }),
+    ).toMatchObject({
+      ok: true,
+      startKey: '2026-06-08',
+      endKey: '2026-06-14',
+    });
+
+    expect(
+      resolveHrCommissionCutRuleRange({
+        rule: {
+          ...normalized.rule,
+          frequency: 'monthly',
+          label: 'Mensual',
+          startDay: 1,
+          endDay: 31,
+        },
+        anchorDate: new Date('2026-02-03T00:00:00.000Z'),
+      }),
+    ).toMatchObject({
+      ok: true,
+      startKey: '2026-02-01',
       endKey: '2026-02-28',
     });
   });
@@ -91,8 +123,8 @@ describe('hrCommissionPeriods.service', () => {
       rule: {
         id: 'cut_01_15_primera',
         businessId: 'business-1',
-        label: 'Primera quincena',
-        frequency: 'monthly',
+        label: 'Quincenal',
+        frequency: 'biweekly',
         startDay: 1,
         endDay: 15,
         active: true,
@@ -114,8 +146,8 @@ describe('hrCommissionPeriods.service', () => {
 
     expect(range).toMatchObject({
       ok: true,
-      startKey: '2026-06-01',
-      endKey: '2026-06-15',
+      startKey: '2026-05-16',
+      endKey: '2026-05-31',
     });
   });
 

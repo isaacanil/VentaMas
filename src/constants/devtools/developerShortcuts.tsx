@@ -1,5 +1,4 @@
 import {
-  ApartmentOutlined,
   ApiOutlined,
   AppstoreOutlined,
   BugOutlined,
@@ -105,13 +104,6 @@ export const developerShortcuts = [
     title: 'Cambiar Negocio',
     icon: icons.operationModes.add,
     route: ROUTES_NAME.DEV_VIEW_TERM.SWITCH_BUSINESS,
-    category: 'Negocio',
-  },
-  {
-    id: 'business-selector-ui',
-    title: 'Hub de Negocio (UI)',
-    icon: <ApartmentOutlined />,
-    route: ROUTES_NAME.DEV_VIEW_TERM.SELECT_BUSINESS_TEST,
     category: 'Negocio',
   },
   {

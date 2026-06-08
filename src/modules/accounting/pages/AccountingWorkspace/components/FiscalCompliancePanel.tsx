@@ -1,21 +1,17 @@
 import {
   DownloadOutlined,
   HistoryOutlined,
-  MoreOutlined,
 } from '@ant-design/icons';
 import {
   Alert as HeroAlert,
   Button as HeroButton,
   Card as HeroCard,
   Chip as HeroChip,
-  Dropdown as HeroDropdown,
-  ListBox,
   Modal as HeroModal,
-  Select as HeroSelect,
   Table as HeroTable,
 } from '@heroui/react';
 import { message } from 'antd';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import { fbExportDgiiTxtReport } from '@/firebase/accounting/fbExportDgiiTxtReport';
@@ -45,6 +41,9 @@ import {
 interface FiscalCompliancePanelProps {
   businessId: string | null;
   enabled: boolean;
+  monthlyComplianceAvailable: boolean;
+  monthlyComplianceError: string | null;
+  monthlyComplianceResolved: boolean;
   periods: string[];
   defaultPeriodKey: string | null;
 }
@@ -375,6 +374,9 @@ const getFiscalCalendarItems = (periodKey: string) => {
 export const FiscalCompliancePanel = ({
   businessId,
   enabled,
+  monthlyComplianceAvailable,
+  monthlyComplianceError,
+  monthlyComplianceResolved,
   periods,
   defaultPeriodKey,
 }: FiscalCompliancePanelProps) => {
@@ -391,25 +393,30 @@ export const FiscalCompliancePanel = ({
   const [running, setRunning] = useState(false);
   const [exportingReportCode, setExportingReportCode] =
     useState<MonthlyComplianceReportCode | null>(null);
-  const { error, runs } = useMonthlyComplianceRuns({
-    businessId,
-    enabled,
-  });
 
   const effectivePeriodKey =
     requestedPeriodKey ||
     defaultPeriodKey ||
     buildMonthlyComplianceDefaultPeriodKey();
+  const {
+    error,
+    periodKeys: runPeriodKeys,
+    runs,
+  } = useMonthlyComplianceRuns({
+    businessId,
+    enabled,
+    periodKey: effectivePeriodKey,
+  });
   const periodOptions = useMemo(() => {
     const uniquePeriods = Array.from(
-      new Set([effectivePeriodKey, ...periods].filter(Boolean)),
+      new Set([effectivePeriodKey, ...periods, ...runPeriodKeys].filter(Boolean)),
     );
 
     return uniquePeriods.map((period) => ({
       label: formatAccountingPeriod(period),
       value: period,
     }));
-  }, [effectivePeriodKey, periods]);
+  }, [effectivePeriodKey, periods, runPeriodKeys]);
 
   const currentPeriodRuns = useMemo(
     () => runs.filter((run) => run.periodKey === effectivePeriodKey),
@@ -431,8 +438,7 @@ export const FiscalCompliancePanel = ({
   );
 
   const selectedOverviewRun =
-    selectedOverviewRunId &&
-    currentPeriodRuns.some((run) => run.id === selectedOverviewRunId)
+    selectedOverviewRunId !== null
       ? (currentPeriodRuns.find((run) => run.id === selectedOverviewRunId) ??
         null)
       : (currentPeriodRuns[0] ?? null);
@@ -460,10 +466,36 @@ export const FiscalCompliancePanel = ({
   const fiscalDueDate = buildFiscalDate(effectivePeriodKey, 1, 15);
   const itbisPaymentDate = buildFiscalDate(effectivePeriodKey, 1, 20);
   const recentHistoryRuns = runs.slice(0, 4);
+  const monthlyComplianceActionsDisabled =
+    !monthlyComplianceResolved || !monthlyComplianceAvailable;
+  const monthlyComplianceUnavailableMessage =
+    monthlyComplianceError ??
+    'El piloto de compliance mensual DGII no esta habilitado para este negocio.';
+
+  const resolveSelectedRunForReport = (
+    reportCode: MonthlyComplianceReportCode,
+  ) => {
+    const reportRuns = reportRunsByCode[reportCode];
+    const selectedRunId = selectedRunIds[reportCode];
+
+    if (selectedRunId) {
+      return reportRuns.find((run) => run.id === selectedRunId) ?? null;
+    }
+
+    return reportRuns[0] ?? null;
+  };
 
   const handleRun = async (reportCode: MonthlyComplianceReportCode) => {
     if (!businessId) {
       message.error('No hay negocio activo para correr cumplimiento fiscal.');
+      return;
+    }
+    if (!monthlyComplianceResolved) {
+      message.info('Validando habilitacion de compliance mensual DGII.');
+      return;
+    }
+    if (!monthlyComplianceAvailable) {
+      message.error(monthlyComplianceUnavailableMessage);
       return;
     }
 
@@ -478,6 +510,11 @@ export const FiscalCompliancePanel = ({
       message.success(
         `Corrida ${resolveReportOptionLabel(result.reportCode)} v${result.version} creada. Issues: ${result.issueSummary.total}.`,
       );
+      setSelectedRunIds((currentValue) => ({
+        ...currentValue,
+        [result.reportCode]: result.reportRunId,
+      }));
+      setSelectedOverviewRunId(result.reportRunId);
       setActiveTab(reportCode);
     } catch (error) {
       console.error('Error ejecutando compliance mensual:', error);
@@ -496,6 +533,20 @@ export const FiscalCompliancePanel = ({
       void message.error('No hay negocio activo para exportar.');
       return;
     }
+    if (!monthlyComplianceResolved) {
+      void message.info('Validando habilitacion de compliance mensual DGII.');
+      return;
+    }
+    if (!monthlyComplianceAvailable) {
+      void message.error(monthlyComplianceUnavailableMessage);
+      return;
+    }
+
+    const selectedRun = resolveSelectedRunForReport(reportCode);
+    if (!selectedRun) {
+      void message.error('Genera una corrida fiscal antes de exportar el TXT.');
+      return;
+    }
 
     setExportingReportCode(reportCode);
     try {
@@ -503,6 +554,7 @@ export const FiscalCompliancePanel = ({
         businessId,
         periodKey: effectivePeriodKey,
         reportCode,
+        reportRunId: selectedRun.id,
       });
 
       const blob = new Blob([result.content], {
@@ -571,6 +623,12 @@ export const FiscalCompliancePanel = ({
     );
     setRunsModalOpen(true);
   };
+
+  const handleRunsModalOpenChange = useCallback((open: boolean) => {
+    setRunsModalOpen((currentValue) =>
+      currentValue === open ? currentValue : open,
+    );
+  }, []);
 
   const handleSelectOverviewRun = (run: MonthlyComplianceRun) => {
     setSelectedOverviewRunId(run.id);
@@ -664,63 +722,38 @@ export const FiscalCompliancePanel = ({
         </div>
 
         <Toolbar>
-          <PeriodSelect
+          <ToolbarSelect
             aria-label="Periodo fiscal"
-            selectedKey={effectivePeriodKey}
-            variant="secondary"
-            onSelectionChange={(key) => {
-              if (key) setRequestedPeriodKey(String(key));
+            value={effectivePeriodKey}
+            onChange={(event) => {
+              setRequestedPeriodKey(event.target.value);
             }}
           >
-            <HeroSelect.Trigger>
-              <HeroSelect.Value />
-              <HeroSelect.Indicator />
-            </HeroSelect.Trigger>
-            <HeroSelect.Popover>
-              <ListBox>
-                {periodOptions.map((option) => (
-                  <ListBox.Item
-                    key={option.value}
-                    id={option.value}
-                    textValue={option.label}
-                  >
-                    {option.label}
-                  </ListBox.Item>
-                ))}
-              </ListBox>
-            </HeroSelect.Popover>
-          </PeriodSelect>
+            {periodOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </ToolbarSelect>
 
-          <ReportSelect
+          <ToolbarSelect
             aria-label="Tipo de reporte"
-            selectedKey={activeTab}
-            variant="secondary"
-            onSelectionChange={(key) => {
-              if (key) setActiveTab(key as FiscalComplianceTabKey);
+            value={activeTab}
+            onChange={(event) => {
+              setActiveTab(event.target.value as FiscalComplianceTabKey);
             }}
           >
-            <HeroSelect.Trigger>
-              <HeroSelect.Value />
-              <HeroSelect.Indicator />
-            </HeroSelect.Trigger>
-            <HeroSelect.Popover>
-              <ListBox>
-                {REPORT_CODES.map((reportCode) => (
-                  <ListBox.Item
-                    key={reportCode}
-                    id={reportCode}
-                    textValue={REPORT_LABELS[reportCode]}
-                  >
-                    DGII {REPORT_LABELS[reportCode]}
-                  </ListBox.Item>
-                ))}
-              </ListBox>
-            </HeroSelect.Popover>
-          </ReportSelect>
+            {REPORT_CODES.map((reportCode) => (
+              <option key={reportCode} value={reportCode}>
+                DGII {REPORT_LABELS[reportCode]}
+              </option>
+            ))}
+          </ToolbarSelect>
 
           <HeroButton
             size="sm"
             variant="primary"
+            isDisabled={monthlyComplianceActionsDisabled}
             isPending={running}
             onPress={() => void handleRun(activeTab)}
           >
@@ -729,41 +762,25 @@ export const FiscalCompliancePanel = ({
           <HeroButton
             size="sm"
             variant="secondary"
+            isDisabled={
+              monthlyComplianceActionsDisabled ||
+              !resolveSelectedRunForReport(activeTab)
+            }
             isPending={exportingReportCode === activeTab}
             onPress={() => void handleExportTxt(activeTab)}
           >
             <DownloadOutlined />
             Exportar TXT
           </HeroButton>
-          <HeroDropdown>
-            <HeroButton
-              isIconOnly
-              aria-label="Mas acciones de cumplimiento fiscal"
-              size="sm"
-              variant="secondary"
-            >
-              <MoreOutlined />
-            </HeroButton>
-            <HeroDropdown.Popover placement="bottom end">
-              <HeroDropdown.Menu
-                aria-label="Acciones de cumplimiento fiscal"
-                onAction={(key) => {
-                  if (key === 'runs') handleOpenRunsModal();
-                }}
-              >
-                <HeroDropdown.Item
-                  id="runs"
-                  key="runs"
-                  textValue="Ver corridas e issues"
-                >
-                  <span data-slot="label">
-                    <HistoryOutlined />
-                    Ver corridas e issues
-                  </span>
-                </HeroDropdown.Item>
-              </HeroDropdown.Menu>
-            </HeroDropdown.Popover>
-          </HeroDropdown>
+          <HeroButton
+            isIconOnly
+            aria-label="Ver corridas e issues"
+            size="sm"
+            variant="secondary"
+            onPress={handleOpenRunsModal}
+          >
+            <HistoryOutlined />
+          </HeroButton>
         </Toolbar>
       </SectionHeader>
 
@@ -830,32 +847,60 @@ export const FiscalCompliancePanel = ({
         </ComplianceAlert>
       ) : null}
 
+      {!monthlyComplianceResolved ? (
+        <ComplianceAlert status="accent">
+          <HeroAlert.Content>
+            <HeroAlert.Title>
+              Validando habilitacion de compliance mensual DGII.
+            </HeroAlert.Title>
+            <HeroAlert.Description>
+              Las acciones de generar y exportar se activaran cuando el estado
+              fiscal del negocio este confirmado.
+            </HeroAlert.Description>
+          </HeroAlert.Content>
+        </ComplianceAlert>
+      ) : !monthlyComplianceAvailable ? (
+        <ComplianceAlert status="warning">
+          <HeroAlert.Content>
+            <HeroAlert.Title>
+              Compliance mensual DGII no habilitado.
+            </HeroAlert.Title>
+            <HeroAlert.Description>
+              {monthlyComplianceUnavailableMessage}
+            </HeroAlert.Description>
+          </HeroAlert.Content>
+        </ComplianceAlert>
+      ) : null}
+
       <WorkspaceWrapper>{renderReportWorkspace(activeTab)}</WorkspaceWrapper>
 
-      <HeroModal.Backdrop
-        isOpen={runsModalOpen}
-        onOpenChange={(open) => setRunsModalOpen(open)}
-        className="z-[350]"
-      >
-        <HeroModal.Container
-          placement="top"
-          scroll="inside"
-          size="cover"
-          className="max-w-[1040px] mt-4"
+      {runsModalOpen ? (
+        <HeroModal.Backdrop
+          isOpen={runsModalOpen}
+          onOpenChange={handleRunsModalOpenChange}
+          className="z-[350]"
         >
-          <HeroModal.Dialog>
-            <HeroModal.Header>
-              <HeroModal.Heading>
-                Corridas e issues · {formatAccountingPeriod(effectivePeriodKey)}
-              </HeroModal.Heading>
-              <HeroModal.CloseTrigger />
-            </HeroModal.Header>
-            <HeroModal.Body>
-              <ModalBody>{renderRunsWorkspace()}</ModalBody>
-            </HeroModal.Body>
-          </HeroModal.Dialog>
-        </HeroModal.Container>
-      </HeroModal.Backdrop>
+          <HeroModal.Container
+            placement="top"
+            scroll="inside"
+            size="cover"
+            className="max-w-[1040px] mt-4"
+          >
+            <HeroModal.Dialog>
+              <HeroModal.Header>
+                <HeroModal.Heading>
+                  Corridas e issues ·{' '}
+                  {formatAccountingPeriod(effectivePeriodKey)}
+                </HeroModal.Heading>
+                <HeroModal.CloseTrigger />
+              </HeroModal.Header>
+              <HeroModal.Body>
+                <ModalBody>{renderRunsWorkspace()}</ModalBody>
+              </HeroModal.Body>
+            </HeroModal.Dialog>
+          </HeroModal.Container>
+        </HeroModal.Backdrop>
+      ) : null}
 
       <SupportGrid>
         <HeroCard>
@@ -863,61 +908,37 @@ export const FiscalCompliancePanel = ({
             <DetailTitle>Calendario fiscal</DetailTitle>
           </HeroCard.Header>
           <HeroCard.Content>
-            <HeroTable>
-              <HeroTable.ScrollContainer>
-                <HeroTable.Content aria-label="Calendario fiscal">
-                  <HeroTable.Header>
-                    <HeroTable.Column isRowHeader>Fecha</HeroTable.Column>
-                    <HeroTable.Column>Evento</HeroTable.Column>
-                    <HeroTable.Column>Plazo</HeroTable.Column>
-                    <HeroTable.Column>Estado</HeroTable.Column>
-                  </HeroTable.Header>
-                  <HeroTable.Body items={fiscalCalendarItems}>
-                    {(item) => {
-                      const daysUntil = getDaysUntil(item.date);
-                      return (
-                        <HeroTable.Row
-                          id={`${item.label}-${formatFiscalDate(item.date)}`}
-                        >
-                          <HeroTable.Cell>
-                            <span className="tabular-nums text-sm text-[var(--ds-color-text-secondary)]">
-                              {formatFiscalDate(item.date)}
-                            </span>
-                          </HeroTable.Cell>
-                          <HeroTable.Cell>
-                            <span className="font-medium text-[var(--ds-color-text-primary)]">
-                              {item.label}
-                            </span>
-                          </HeroTable.Cell>
-                          <HeroTable.Cell>
-                            <span className="text-sm text-[var(--ds-color-text-secondary)]">
-                              {daysUntil >= 0
-                                ? `en ${daysUntil} días`
-                                : 'vencido'}
-                            </span>
-                          </HeroTable.Cell>
-                          <HeroTable.Cell>
-                            <HeroChip
-                              color={
-                                item.tone === 'warning' ? 'warning' : 'success'
-                              }
-                              size="sm"
-                              variant="soft"
-                            >
-                              <HeroChip.Label>
-                                {item.tone === 'warning'
-                                  ? 'Próximo'
-                                  : 'Programado'}
-                              </HeroChip.Label>
-                            </HeroChip>
-                          </HeroTable.Cell>
-                        </HeroTable.Row>
-                      );
-                    }}
-                  </HeroTable.Body>
-                </HeroTable.Content>
-              </HeroTable.ScrollContainer>
-            </HeroTable>
+            <NativeTableWrap>
+              <NativeTable aria-label="Calendario fiscal">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Evento</th>
+                    <th>Plazo</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {fiscalCalendarItems.map((item) => {
+                    const daysUntil = getDaysUntil(item.date);
+                    return (
+                      <tr key={`${item.label}-${formatFiscalDate(item.date)}`}>
+                        <td>{formatFiscalDate(item.date)}</td>
+                        <td>{item.label}</td>
+                        <td>
+                          {daysUntil >= 0 ? `en ${daysUntil} dias` : 'vencido'}
+                        </td>
+                        <td>
+                          <StatusPill $tone={item.tone}>
+                            {item.tone === 'warning' ? 'Proximo' : 'Programado'}
+                          </StatusPill>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </NativeTable>
+            </NativeTableWrap>
           </HeroCard.Content>
         </HeroCard>
 
@@ -929,70 +950,53 @@ export const FiscalCompliancePanel = ({
             {!recentHistoryRuns.length ? (
               <EmptyText className="p-4">Sin corridas registradas.</EmptyText>
             ) : (
-              <HeroTable>
-                <HeroTable.ScrollContainer>
-                  <HeroTable.Content aria-label="Historial de corridas DGII">
-                    <HeroTable.Header>
-                      <HeroTable.Column isRowHeader>
-                        Fecha corrida
-                      </HeroTable.Column>
-                      <HeroTable.Column>Periodo / Reporte</HeroTable.Column>
-                      <HeroTable.Column>Resultado</HeroTable.Column>
-                      <HeroTable.Column>Estado</HeroTable.Column>
-                    </HeroTable.Header>
-                    <HeroTable.Body items={recentHistoryRuns}>
-                      {(run) => (
-                        <HeroTable.Row id={run.id}>
-                          <HeroTable.Cell>
-                            <span className="tabular-nums text-sm text-[var(--ds-color-text-secondary)]">
-                              {formatMonthlyComplianceRunDate(run.createdAt)}
-                            </span>
-                          </HeroTable.Cell>
-                          <HeroTable.Cell>
-                            <div className="flex flex-col">
-                              <span className="font-medium text-[var(--ds-color-text-primary)]">
-                                {formatAccountingPeriod(run.periodKey)}
-                              </span>
-                              <span className="text-xs text-[var(--ds-color-text-secondary)]">
-                                {REPORT_LABELS[run.reportCode]} · v{run.version}
-                              </span>
-                            </div>
-                          </HeroTable.Cell>
-                          <HeroTable.Cell>
-                            <span className="text-sm text-[var(--ds-color-text-secondary)]">
-                              {run.validationSummary.totalIssues} issues
-                            </span>
-                          </HeroTable.Cell>
-                          <HeroTable.Cell>
-                            <HeroChip
-                              color={getStatusChipColor(run.status)}
-                              size="sm"
-                              variant="soft"
-                            >
-                              <HeroChip.Label>
-                                {resolveMonthlyComplianceStatusLabel(
-                                  run.status,
-                                )}
-                              </HeroChip.Label>
-                            </HeroChip>
-                          </HeroTable.Cell>
-                        </HeroTable.Row>
-                      )}
-                    </HeroTable.Body>
-                  </HeroTable.Content>
-                </HeroTable.ScrollContainer>
-              </HeroTable>
+              <NativeTableWrap>
+                <NativeTable aria-label="Historial de corridas DGII">
+                  <thead>
+                    <tr>
+                      <th>Fecha corrida</th>
+                      <th>Periodo / Reporte</th>
+                      <th>Resultado</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentHistoryRuns.map((run) => (
+                      <tr key={run.id}>
+                        <td>{formatMonthlyComplianceRunDate(run.createdAt)}</td>
+                        <td>
+                          {formatAccountingPeriod(run.periodKey)}
+                          <SmallMeta>
+                            {REPORT_LABELS[run.reportCode]} v{run.version}
+                          </SmallMeta>
+                        </td>
+                        <td>{run.validationSummary.totalIssues} issues</td>
+                        <td>
+                          <StatusPill
+                            $tone={resolveMonthlyComplianceStatusTone(
+                              run.status,
+                            )}
+                          >
+                            {resolveMonthlyComplianceStatusLabel(run.status)}
+                          </StatusPill>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </NativeTable>
+              </NativeTableWrap>
             )}
           </HeroCard.Content>
         </HeroCard>
       </SupportGrid>
+
     </Panel>
   );
 };
 
 const Dgii606Preview = ({ run }: { run: MonthlyComplianceRun }) => {
-  const rows = getDgii606Rows(run);
-  const excludedRows = getDgii606ExcludedRows(run);
+  const rows = useMemo(() => getDgii606Rows(run), [run]);
+  const excludedRows = useMemo(() => getDgii606ExcludedRows(run), [run]);
 
   return (
     <PreviewPanel>
@@ -1117,8 +1121,8 @@ const Dgii606Preview = ({ run }: { run: MonthlyComplianceRun }) => {
 };
 
 const Dgii607Preview = ({ run }: { run: MonthlyComplianceRun }) => {
-  const rows = getDgii607Rows(run);
-  const excludedRows = getDgii607ExcludedRows(run);
+  const rows = useMemo(() => getDgii607Rows(run), [run]);
+  const excludedRows = useMemo(() => getDgii607ExcludedRows(run), [run]);
 
   return (
     <PreviewPanel>
@@ -1248,7 +1252,7 @@ const Dgii607Preview = ({ run }: { run: MonthlyComplianceRun }) => {
 };
 
 const Dgii608Preview = ({ run }: { run: MonthlyComplianceRun }) => {
-  const rows = getDgii608Rows(run);
+  const rows = useMemo(() => getDgii608Rows(run), [run]);
 
   return (
     <PreviewPanel>
@@ -1593,16 +1597,27 @@ const Toolbar = styled.div`
   gap: var(--ds-space-3);
 `;
 
-const PeriodSelect = styled(HeroSelect)`
-  width: 196px;
-  min-width: 196px;
+const ToolbarSelect = styled.select`
   flex: 0 0 auto;
-`;
-
-const ReportSelect = styled(HeroSelect)`
-  width: 140px;
   min-width: 140px;
-  flex: 0 0 auto;
+  height: 36px;
+  padding: 0 var(--ds-space-7) 0 var(--ds-space-3);
+  border: 1px solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-color-text-primary);
+  background: var(--ds-color-bg-surface);
+  font-size: var(--ds-font-size-sm);
+  outline: none;
+
+  &:first-of-type {
+    width: 196px;
+    min-width: 196px;
+  }
+
+  &:focus {
+    border-color: var(--ds-color-accent);
+    box-shadow: 0 0 0 2px var(--ds-color-accent-subtle);
+  }
 `;
 
 const WorkspaceWrapper = styled.div`
@@ -1761,6 +1776,59 @@ const SupportGrid = styled.div`
   @media (max-width: 960px) {
     grid-template-columns: 1fr;
   }
+`;
+
+const NativeTableWrap = styled.div`
+  overflow-x: auto;
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-lg);
+`;
+
+const NativeTable = styled.table`
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-size: var(--ds-font-size-sm);
+  color: var(--ds-color-text-primary);
+
+  th,
+  td {
+    padding: var(--ds-space-3) var(--ds-space-4);
+    text-align: left;
+    border-top: 1px solid var(--ds-color-border-subtle);
+  }
+
+  th {
+    border-top: 0;
+    color: var(--ds-color-text-secondary);
+    background: var(--ds-color-bg-subtle);
+    font-weight: var(--ds-font-weight-semibold);
+  }
+`;
+
+const StatusPill = styled.span<{ $tone?: string }>`
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 2px 8px;
+  border-radius: var(--ds-radius-full);
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-semibold);
+  color: ${({ $tone }) =>
+    $tone === 'warning'
+      ? 'var(--ds-color-state-warning-text)'
+      : 'var(--ds-color-state-success-text)'};
+  background: ${({ $tone }) =>
+    $tone === 'warning'
+      ? 'var(--ds-color-state-warning-subtle)'
+      : 'var(--ds-color-state-success-subtle)'};
+`;
+
+const SmallMeta = styled.span`
+  display: block;
+  margin-top: 2px;
+  font-size: var(--ds-font-size-xs);
+  color: var(--ds-color-text-secondary);
 `;
 
 const PreviewPanel = styled(HeroCard)`

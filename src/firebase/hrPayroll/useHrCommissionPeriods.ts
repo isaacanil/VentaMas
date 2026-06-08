@@ -13,6 +13,7 @@ import { db } from '@/firebase/firebaseconfig';
 import { createFirebaseCallable } from '@/firebase/functions/callable';
 import type {
   HrCommissionCutRuleInput,
+  HrCommissionCutRuleFrequency,
   HrCommissionCutRuleRecord,
   HrCommissionEntryRecord,
   HrEmployeePaymentRecord,
@@ -275,6 +276,12 @@ const PAYMENT_METHOD_VALUES = new Set<HrPaymentMethod>([
   'other',
 ]);
 
+const CUT_RULE_FREQUENCY_VALUES = new Set<HrCommissionCutRuleFrequency>([
+  'weekly',
+  'biweekly',
+  'monthly',
+]);
+
 const isNonNullableString = (value: string | null): value is string =>
   Boolean(value);
 
@@ -321,6 +328,33 @@ const toDayNumber = (value: unknown, fallback: number): number => {
   return parsed >= 1 && parsed <= 31 ? parsed : fallback;
 };
 
+const isLegacyBiweeklyCutRuleRange = (
+  startDay: number,
+  endDay: number,
+): boolean =>
+  (startDay === 1 && endDay === 15) || (startDay === 16 && endDay >= 28);
+
+const normalizeCutRuleFrequency = (
+  data: Record<string, unknown>,
+): HrCommissionCutRuleFrequency => {
+  const startDay = toDayNumber(data.startDay, 1);
+  const endDay = toDayNumber(data.endDay, 31);
+  const normalized = toCleanString(data.frequency)?.toLowerCase() as
+    | HrCommissionCutRuleFrequency
+    | undefined;
+
+  if (
+    normalized === 'monthly' &&
+    isLegacyBiweeklyCutRuleRange(startDay, endDay)
+  ) {
+    return 'biweekly';
+  }
+
+  return normalized && CUT_RULE_FREQUENCY_VALUES.has(normalized)
+    ? normalized
+    : 'monthly';
+};
+
 const normalizeEnum = <T extends string>(
   value: unknown,
   allowedValues: Set<T>,
@@ -359,7 +393,7 @@ const normalizeCutRuleRecord = (
   id,
   businessId: toCleanString(data.businessId) ?? '',
   label: toCleanString(data.label) ?? 'Corte',
-  frequency: 'monthly',
+  frequency: normalizeCutRuleFrequency(data),
   startDay: toDayNumber(data.startDay, 1),
   endDay: toDayNumber(data.endDay, 31),
   active: data.active !== false,

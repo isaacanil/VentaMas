@@ -16,8 +16,11 @@ interface BankInstitutionCatalogState {
   key: string | null;
 }
 
+const EMPTY_CATALOG_ENTRIES: BankInstitutionCatalogEntry[] = [];
+
 export const useBankInstitutionCatalog = (
   countryCode: string | null | undefined = DEFAULT_BANK_INSTITUTION_COUNTRY_CODE,
+  enabled = true,
 ) => {
   const normalizedCountryCode =
     normalizeBankInstitutionCountryCode(countryCode);
@@ -28,6 +31,10 @@ export const useBankInstitutionCatalog = (
   });
 
   useEffect(() => {
+    if (!enabled) {
+      return undefined;
+    }
+
     const catalogQuery = query(
       collection(db, 'bankInstitutionCatalog'),
       where('countryCode', '==', normalizedCountryCode),
@@ -67,18 +74,24 @@ export const useBankInstitutionCatalog = (
     );
 
     return unsubscribe;
-  }, [normalizedCountryCode]);
+  }, [enabled, normalizedCountryCode]);
 
   return useMemo(
     () => ({
       countryCode: normalizedCountryCode,
       entries:
-        state.key === normalizedCountryCode ? state.entries : [],
-      error: state.key === normalizedCountryCode ? state.error : null,
+        enabled && state.key === normalizedCountryCode
+          ? state.entries
+          : EMPTY_CATALOG_ENTRIES,
+      error:
+        enabled && state.key === normalizedCountryCode ? state.error : null,
       hasEntries:
-        (state.key === normalizedCountryCode ? state.entries : []).length > 0,
-      loading: state.key !== normalizedCountryCode,
+        (enabled && state.key === normalizedCountryCode
+          ? state.entries
+          : EMPTY_CATALOG_ENTRIES
+        ).length > 0,
+      loading: enabled ? state.key !== normalizedCountryCode : false,
     }),
-    [normalizedCountryCode, state.entries, state.error, state.key],
+    [enabled, normalizedCountryCode, state.entries, state.error, state.key],
   );
 };

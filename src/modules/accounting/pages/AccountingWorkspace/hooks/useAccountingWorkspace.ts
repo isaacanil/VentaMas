@@ -73,10 +73,12 @@ const normalizePeriodClosure = (
 };
 
 interface UseAccountingWorkspaceArgs {
+  includeAccountingSetup?: boolean;
   includeLedgerRecords?: boolean;
 }
 
 export const useAccountingWorkspace = ({
+  includeAccountingSetup = true,
   includeLedgerRecords = true,
 }: UseAccountingWorkspaceArgs = {}) => {
   const user = useSelector(selectUser);
@@ -91,6 +93,9 @@ export const useAccountingWorkspace = ({
     loading: configLoading,
   } = useAccountingConfig({
     businessId,
+    includeBankingDetails: includeAccountingSetup,
+    includeExchangeRateReference: includeAccountingSetup,
+    includeHistory: includeAccountingSetup,
     userId,
   });
   const {
@@ -99,7 +104,7 @@ export const useAccountingWorkspace = ({
     loading: chartLoading,
   } = useChartOfAccounts({
     businessId,
-    enabled: config.generalAccountingEnabled,
+    enabled: includeAccountingSetup && config.generalAccountingEnabled,
     functionalCurrency: config.functionalCurrency,
     userId,
   });
@@ -110,7 +115,7 @@ export const useAccountingWorkspace = ({
   } = useAccountingPostingProfiles({
     businessId,
     chartOfAccounts,
-    enabled: config.generalAccountingEnabled,
+    enabled: includeAccountingSetup && config.generalAccountingEnabled,
     userId,
   });
   const [accountingEvents, setAccountingEvents] = useState<AccountingEvent[]>([]);
@@ -231,7 +236,9 @@ export const useAccountingWorkspace = ({
 
   useEffect(() => {
     if (!includeLedgerRecords || !businessId || !config.generalAccountingEnabled) {
-      setUserNamesById({});
+      setUserNamesById((currentValue) =>
+        Object.keys(currentValue).length > 0 ? {} : currentValue,
+      );
       return;
     }
 

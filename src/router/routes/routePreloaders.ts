@@ -114,6 +114,7 @@ export const routePreloaders: Record<string, RoutePreloader> = {
   [HR_PAYROLL_TERM.HR_EMPLOYEES]: preloadHrPayrollWorkspace,
   [HR_PAYROLL_TERM.HR_COMMISSIONS]: preloadHrCommissionsPage,
   [HR_PAYROLL_TERM.HR_COMMISSION_PERIODS]: preloadHrCommissionPeriodsPage,
+  [HR_PAYROLL_TERM.HR_COMMISSION_PERIOD_DETAIL]: preloadHrCommissionPeriodsPage,
 
   [INVENTORY_TERM.INVENTORY_ITEMS]: () =>
     import('@/modules/inventory/pages/Inventario/pages/ItemsManager/Inventario'),
@@ -270,6 +271,4 @@ export const routePreloaders: Record<string, RoutePreloader> = {
       import('@/modules/settings/pages/subscription/DeveloperSubscriptionMaintenancePlansPage'),
     ]);
   },
-  [DEV_VIEW_TERM.SELECT_BUSINESS_TEST]: () =>
-    import('@/modules/auth/pages/BusinessSelectorPage/BusinessSelectorPage'),
 };

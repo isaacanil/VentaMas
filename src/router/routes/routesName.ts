@@ -46,7 +46,6 @@ const DEV_VIEW_TERM = {
   SYNC_DIAGNOSTICS: '/dev/tools/sync-diagnostics',
   PRICE_LIST_AUDIT: '/dev/tools/price-list-audit',
   CASH_COUNT_AUDIT: '/dev/tools/cash-count-audit',
-  SELECT_BUSINESS_TEST: '/dev/tools/hub',
   CHANGELOG_CREATE: CHANGELOG_TERM.CHANGELOG_CREATE,
   CHANGELOG_MANAGE: CHANGELOG_TERM.CHANGELOG_MANAGE,
   APP_CONFIG: {
@@ -85,7 +84,6 @@ const LAB_TERM = {
 const AUTH_TERM = {
   LOGIN: '/login',
   SIGNUP: '/signup',
-  SELECT_BUSINESS: '/hub',
   CLAIM_BUSINESS: '/claim-business',
 } as const;
 
@@ -209,6 +207,7 @@ const HR_PAYROLL_TERM = {
   HR_EMPLOYEES: '/hr/employees',
   HR_COMMISSIONS: '/hr/commissions',
   HR_COMMISSION_PERIODS: '/hr/commission-periods',
+  HR_COMMISSION_PERIOD_DETAIL: '/hr/commission-periods/:periodId',
 } as const;
 
 const ACCOUNT_RECEIVABLE_TERM = {

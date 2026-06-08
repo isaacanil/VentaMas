@@ -1,5 +1,10 @@
 import { VmButton } from '@/components/heroui';
-import { DollarOutlined, EditOutlined } from '@/constants/icons/antd';
+import {
+  CheckCircleOutlined,
+  DollarOutlined,
+  EditOutlined,
+  EyeOutlined,
+} from '@/constants/icons/antd';
 import {
   HrActionGroup as ActionGroup,
   HrAmountText as AmountText,
@@ -23,8 +28,7 @@ import type {
   HrPayrollEmployeeLineRecord,
   HrPayrollRunStatus,
 } from '@/types/hrPayroll';
-
-import { PeriodActionButtons } from './components/PeriodActionButtons';
+import { DetailLinkButton } from './HrCommissionPeriodsPage.styles';
 
 const PERIOD_STATUS_TONES: Record<
   HrCommissionPeriodStatus,
@@ -54,16 +58,11 @@ const getPeriodAdjustmentAmount = (period: HrCommissionPeriodRecord): number =>
   period.manualAdjustmentAmount ?? 0;
 
 interface PeriodColumnsOptions {
-  actionKey: string | null;
-  onAction: (
-    action: 'close' | 'approve',
-    period: HrCommissionPeriodRecord,
-  ) => void;
+  getDetailPath: (period: HrCommissionPeriodRecord) => string;
 }
 
 export const buildPeriodColumns = ({
-  actionKey,
-  onAction,
+  getDetailPath,
 }: PeriodColumnsOptions): HrTableColumn<HrCommissionPeriodRecord>[] => [
   {
     title: 'Corte',
@@ -131,16 +130,20 @@ export const buildPeriodColumns = ({
     },
   },
   {
-    title: '',
+    title: 'Accion',
     key: 'actions',
     align: 'right',
-    width: 260,
+    width: 130,
     render: (period) => (
-      <PeriodActionButtons
-        actionKey={actionKey}
-        period={period}
-        onAction={onAction}
-      />
+      <ActionGroup>
+        <DetailLinkButton
+          to={getDetailPath(period)}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <EyeOutlined />
+          Ver detalle
+        </DetailLinkButton>
+      </ActionGroup>
     ),
   },
 ];
@@ -231,35 +234,58 @@ export const buildLineColumns = ({
     },
   },
   {
-    title: '',
+    title: 'Accion',
     key: 'payment',
     align: 'right',
-    width: 220,
-    render: (line) => (
-      <ActionGroup>
-        <VmButton
-          variant="secondary"
-          isDisabled={
-            !isLineAdjustable(line) ||
-            adjustmentActionKey === `adjust:${line.id}`
-          }
-          onPress={() => onOpenAdjustment(line)}
-        >
-          <EditOutlined />
-          Editar
-        </VmButton>
-        <VmButton
-          variant={line.status === 'paid' ? 'secondary' : 'primary'}
-          isDisabled={
-            line.status !== 'approved' || paymentActionKey === `pay:${line.id}`
-          }
-          onPress={() => onOpenPayment(line)}
-        >
-          <DollarOutlined />
-          {line.status === 'paid' ? 'Pagado' : 'Pagar'}
-        </VmButton>
-      </ActionGroup>
-    ),
+    width: 180,
+    render: (line) => {
+      if (line.status === 'paid') {
+        return (
+          <ActionGroup>
+            <StatusTag $tone="success">
+              <CheckCircleOutlined />
+              Pagado
+            </StatusTag>
+          </ActionGroup>
+        );
+      }
+
+      if (line.status === 'approved') {
+        return (
+          <ActionGroup>
+            <VmButton
+              variant="primary"
+              isDisabled={paymentActionKey === `pay:${line.id}`}
+              onPress={() => onOpenPayment(line)}
+            >
+              <DollarOutlined />
+              Pagar
+            </VmButton>
+          </ActionGroup>
+        );
+      }
+
+      if (isLineAdjustable(line)) {
+        return (
+          <ActionGroup>
+            <VmButton
+              variant="secondary"
+              isDisabled={adjustmentActionKey === `adjust:${line.id}`}
+              onPress={() => onOpenAdjustment(line)}
+            >
+              <EditOutlined />
+              Editar
+            </VmButton>
+          </ActionGroup>
+        );
+      }
+
+      return (
+        <ActionGroup>
+          <MutedText>Sin acciones</MutedText>
+        </ActionGroup>
+      );
+    },
   },
 ];
 

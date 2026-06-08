@@ -35,8 +35,7 @@ const notificationVariants: Variants = {
   },
 };
 
-const NotificationCenter = () => {
-  const { isOpen } = useSelector(selectNotificationCenter);
+const NotificationCenterPanel = ({ isOpen }: { isOpen: boolean }) => {
   const dispatch = useDispatch();
 
   // Usar el hook personalizado para obtener datos reales de comprobantes fiscales
@@ -71,6 +70,16 @@ const NotificationCenter = () => {
       </Container>
     </>
   );
+};
+
+const NotificationCenter = () => {
+  const { isOpen } = useSelector(selectNotificationCenter);
+
+  if (!isOpen) {
+    return null;
+  }
+
+  return <NotificationCenterPanel isOpen={isOpen} />;
 };
 
 const Backdrop = styled.div<{ $isOpen: boolean }>`

@@ -42,7 +42,12 @@ vi.mock('./validateInvoiceSubmissionGuards', () => ({
 const baseArgs = () => ({
   accountsReceivable: {},
   business: { id: 'business-1' },
-  cart: { id: 'cart-1', products: [{ id: 'product-1', amountToBuy: 1 }] },
+  cart: {
+    id: 'cart-1',
+    products: [{ id: 'product-1', amountToBuy: 1 }],
+    totalPurchase: { value: 118 },
+    payment: { value: 118 },
+  },
   client: null,
   dispatch: vi.fn(),
   duePeriod: null,
@@ -122,5 +127,78 @@ describe('submitInvoicePanel', () => {
         ncfType: 'CONSUMIDOR FINAL',
       }),
     );
+  });
+
+  it('bloquea comprobante fiscal detallado sin cliente identificado', async () => {
+    const args = baseArgs();
+    args.business = {
+      id: 'business-1',
+      features: {
+        fiscal: {
+          electronicModelEnabled: true,
+          electronicTransportEnabled: true,
+        },
+      },
+    };
+    args.ncfType = 'CREDITO FISCAL';
+
+    await submitInvoicePanel(args as never);
+
+    expect(notificationMock.warning).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Cliente fiscal requerido',
+      }),
+    );
+    expect(args.runInvoice).not.toHaveBeenCalled();
+  });
+
+  it('permite consumidor final menor a RD$250,000 con cliente generico', async () => {
+    const args = baseArgs();
+    args.business = {
+      id: 'business-1',
+      features: {
+        fiscal: {
+          electronicModelEnabled: true,
+          electronicTransportEnabled: true,
+        },
+      },
+    };
+    args.client = { id: 'GC-0000', name: 'Cliente Generico' };
+
+    await submitInvoicePanel(args as never);
+
+    expect(args.runInvoice).toHaveBeenCalledWith(
+      expect.objectContaining({
+        taxReceiptEnabled: true,
+        ncfType: 'CONSUMIDOR FINAL',
+      }),
+    );
+  });
+
+  it('bloquea consumidor final desde RD$250,000 sin cliente identificado', async () => {
+    const args = baseArgs();
+    args.business = {
+      id: 'business-1',
+      features: {
+        fiscal: {
+          electronicModelEnabled: true,
+          electronicTransportEnabled: true,
+        },
+      },
+    };
+    args.cart = {
+      ...args.cart,
+      totalPurchase: { value: 250000 },
+      payment: { value: 250000 },
+    };
+
+    await submitInvoicePanel(args as never);
+
+    expect(notificationMock.warning).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Cliente fiscal requerido',
+      }),
+    );
+    expect(args.runInvoice).not.toHaveBeenCalled();
   });
 });

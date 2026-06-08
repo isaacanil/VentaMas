@@ -1,3 +1,8 @@
+import {
+  isDgiiConsumerFinalNcf,
+  isValidDgiiNcf,
+} from './dgiiNcf.util.js';
+
 const PERIOD_KEY_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/;
 const DATE_YYYYMMDD_REGEX = /^\d{8}$/;
 const AMOUNT_TOLERANCE = 0.01;
@@ -99,6 +104,16 @@ const CREDIT_METHODS = new Set([
   'receivable',
   'credit_sale',
 ]);
+const GIFT_CERTIFICATE_METHODS = new Set([
+  'gift',
+  'gift_certificate',
+  'gift_certificates',
+  'bono',
+  'bonos',
+  'certificado_regalo',
+  'certificados_regalo',
+]);
+const BARTER_METHODS = new Set(['barter', 'permuta']);
 
 const toCleanString = (value) => {
   if (typeof value === 'number' && Number.isFinite(value)) {
@@ -136,9 +151,6 @@ const parseAmount = (value) => {
 const appendIssue = (issues, fieldKey, code, message, severity = 'error') => {
   issues.push({ fieldKey, code, message, severity });
 };
-
-const isValidNcfStructure = (value) =>
-  /^[A-Z0-9]{11,19}$/i.test(value);
 
 const resolveFieldLabel = (fieldKey) =>
   DGII_607_FIELD_DEFINITIONS.find((field) => field.key === fieldKey)?.label ??
@@ -209,6 +221,9 @@ export const resolvePaymentAmounts = (firestoreDoc, grossTotal) => {
     else if (CARD_METHODS.has(type)) result.card += amount;
     else if (TRANSFER_METHODS.has(type)) result.bank += amount;
     else if (CREDIT_METHODS.has(type)) result.creditSale += amount;
+    else if (GIFT_CERTIFICATE_METHODS.has(type)) {
+      result.giftCertificates += amount;
+    } else if (BARTER_METHODS.has(type)) result.barter += amount;
     else result.otherSales += amount;
   }
 
@@ -250,7 +265,7 @@ export const resolveIdentType = (rncOrCedula) => {
 };
 
 export const isConsumerFinalNcf = (ncf) =>
-  (toCleanString(ncf)?.toUpperCase() ?? '').startsWith('B02');
+  isDgiiConsumerFinalNcf(ncf);
 
 export const buildDgii607Draft = ({
   record,
@@ -411,7 +426,7 @@ export const validateDgii607Draft = (draft) => {
 
   if (!ncf) {
     appendIssue(issues, 'ncf', 'missing-ncf', 'Numero de comprobante fiscal requerido.');
-  } else if (!isValidNcfStructure(ncf)) {
+  } else if (!isValidDgiiNcf(ncf)) {
     appendIssue(
       issues,
       'ncf',
@@ -427,7 +442,7 @@ export const validateDgii607Draft = (draft) => {
       'missing-modified-ncf',
       'Las notas de credito requieren el NCF modificado.',
     );
-  } else if (modifiedNcf && !isValidNcfStructure(modifiedNcf)) {
+  } else if (modifiedNcf && !isValidDgiiNcf(modifiedNcf)) {
     appendIssue(
       issues,
       'modifiedNcf',

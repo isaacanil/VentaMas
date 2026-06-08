@@ -21,6 +21,17 @@ const createQueryMock = (docs) => {
   return query;
 };
 
+const createFieldAwareQueryMock = (docsByFieldPath) => ({
+  where: vi.fn((fieldPath) => createQueryMock(docsByFieldPath[fieldPath] ?? [])),
+  orderBy: vi.fn(),
+  get: vi.fn(async () => ({ docs: [] })),
+});
+
+const createCollectionQueryMock = (docsConfig) =>
+  Array.isArray(docsConfig)
+    ? createQueryMock(docsConfig)
+    : createFieldAwareQueryMock(docsConfig);
+
 const createDocSnap = (data) => {
   if (data) {
     return {
@@ -42,7 +53,7 @@ const createFirestoreMock = ({
   const queries = Object.fromEntries(
     Object.entries(docsByCollectionPath).map(([collectionPath, docs]) => [
       collectionPath,
-      createQueryMock(docs),
+      createCollectionQueryMock(docs),
     ]),
   );
 
@@ -80,7 +91,7 @@ describe('dgii606MonthlyReport.service', () => {
         },
         documentType: 'goods',
         taxReceipt: {
-          ncf: 'B01000000015',
+          ncf: 'B0100000015',
         },
         totalAmount: 1180,
         taxBreakdown: {
@@ -108,7 +119,7 @@ describe('dgii606MonthlyReport.service', () => {
       supplierId: 'supplier-1',
       documentType: 'goods',
       taxReceipt: {
-        ncf: 'B01000000015',
+        ncf: 'B0100000015',
         modifiedNcf: null,
       },
       totals: {
@@ -154,7 +165,7 @@ describe('dgii606MonthlyReport.service', () => {
         provider: {
           rnc: '101010101',
         },
-        proofOfPurchase: 'B01000000016',
+        proofOfPurchase: 'B0100000016',
         totalAmount: 590,
         taxBreakdown: {
           itbisTotal: 90,
@@ -167,7 +178,7 @@ describe('dgii606MonthlyReport.service', () => {
       },
     });
 
-    expect(result.taxReceipt.ncf).toBe('B01000000016');
+    expect(result.taxReceipt.ncf).toBe('B0100000016');
     expect(result.documentType).toBe('inventory');
   });
 
@@ -185,7 +196,7 @@ describe('dgii606MonthlyReport.service', () => {
               },
               provider: 'provider-1',
               taxReceipt: {
-                ncf: 'B01000000015',
+                ncf: 'B0100000015',
               },
               totalAmount: 1180,
               taxBreakdown: {
@@ -250,7 +261,7 @@ describe('dgii606MonthlyReport.service', () => {
         },
         expenseType: '02',
         taxReceipt: {
-          ncf: 'B13000000001',
+          ncf: 'B1300000001',
         },
         paymentMethods: [{ method: 'transfer', amount: 400 }],
         status: 'posted',
@@ -295,6 +306,158 @@ describe('dgii606MonthlyReport.service', () => {
     });
   });
 
+  it('normaliza gasto guardado bajo expense con fecha, NCF y pago anidados', () => {
+    const expense = mapExpenseDocToDgii606Record({
+      businessId: 'business-1',
+      expenseId: 'expense-nested',
+      expenseDoc: {
+        expense: {
+          id: 'expense-nested',
+          numberId: 44,
+          dates: {
+            expenseDate: {
+              toDate: () => new Date('2026-04-12T09:00:00.000Z'),
+            },
+          },
+          providerId: 'supplier-nested',
+          provider: {
+            rnc: '404040404',
+          },
+          amount: 590,
+          taxBreakdown: {
+            itbisTotal: 90,
+          },
+          classification: {
+            dgii606ExpenseType: '02',
+          },
+          invoice: {
+            ncf: 'B13000000002',
+          },
+          payment: {
+            method: 'bank_transfer',
+            reference: 'TR-44',
+          },
+          status: 'active',
+        },
+      },
+    });
+
+    expect(expense).toMatchObject({
+      issuedAt: '2026-04-12T09:00:00.000Z',
+      documentNumber: '44',
+      taxReceipt: {
+        ncf: 'B13000000002',
+      },
+      paymentInfo: {
+        formCode: '02',
+        methods: [{ method: 'bank_transfer', reference: 'TR-44' }],
+      },
+      classification: {
+        dgii606ExpenseType: '02',
+      },
+    });
+  });
+
+  it('carga gastos legacy y anidados del periodo sin duplicar por id', async () => {
+    const legacyExpense = {
+      id: 'expense-legacy',
+      data: () => ({
+        id: 'expense-legacy',
+        number: 'EXP-LEG',
+        expenseDate: {
+          toDate: () => new Date('2026-04-10T09:00:00.000Z'),
+        },
+        providerId: 'supplier-legacy',
+        provider: {
+          rnc: '303030303',
+        },
+        amount: 400,
+        taxBreakdown: {
+          itbisTotal: 61.02,
+        },
+        classification: {
+          dgii606ExpenseType: '03',
+        },
+        taxReceipt: {
+          ncf: 'B1300000001',
+        },
+        paymentMethods: [{ method: 'cash', amount: 400 }],
+        status: 'posted',
+      }),
+    };
+    const nestedExpense = {
+      id: 'expense-nested',
+      data: () => ({
+        expense: {
+          id: 'expense-nested',
+          numberId: 44,
+          dates: {
+            expenseDate: {
+              toDate: () => new Date('2026-04-12T09:00:00.000Z'),
+            },
+          },
+          providerId: 'supplier-nested',
+          provider: {
+            rnc: '404040404',
+          },
+          amount: 590,
+          taxBreakdown: {
+            itbisTotal: 90,
+          },
+          classification: {
+            dgii606ExpenseType: '02',
+          },
+          invoice: {
+            ncf: 'B13000000002',
+          },
+          payment: {
+            method: 'bank_transfer',
+          },
+          status: 'active',
+        },
+      }),
+    };
+    const { collection, doc, queries } = createFirestoreMock({
+      docsByCollectionPath: {
+        'businesses/business-1/purchases': [],
+        'businesses/business-1/expenses': {
+          expenseDate: [legacyExpense],
+          'dates.expenseDate': [nestedExpense],
+          'expense.dates.expenseDate': [nestedExpense],
+        },
+        'businesses/business-1/accountsPayablePayments': [],
+      },
+    });
+
+    const result = await buildDgii606ValidationPreview({
+      businessId: 'business-1',
+      periodKey: '2026-04',
+      firestore: { collection, doc },
+    });
+
+    expect(
+      queries['businesses/business-1/expenses'].where,
+    ).toHaveBeenCalledTimes(3);
+    expect(result.ok).toBe(true);
+    expect(result.sourceSnapshots.expenses.recordsLoaded).toBe(2);
+    expect(result.sourceRecords.expenses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          recordId: 'expense-legacy',
+          documentFiscalNumber: 'B1300000001',
+          issuedAt: '2026-04-10T09:00:00.000Z',
+          paymentFormCode: '01',
+        }),
+        expect.objectContaining({
+          recordId: 'expense-nested',
+          documentFiscalNumber: 'B13000000002',
+          issuedAt: '2026-04-12T09:00:00.000Z',
+          paymentFormCode: '02',
+        }),
+      ]),
+    );
+  });
+
   it('carga compras, gastos y pagos del período; excluye void/draft y cruza pagos con compra', async () => {
     const { collection, doc, queries } = createFirestoreMock({
       docsByCollectionPath: {
@@ -313,7 +476,7 @@ describe('dgii606MonthlyReport.service', () => {
               },
               documentType: 'goods',
               taxReceipt: {
-                ncf: 'B01000000015',
+                ncf: 'B0100000015',
               },
               totalAmount: 1180,
               taxBreakdown: {
@@ -340,7 +503,7 @@ describe('dgii606MonthlyReport.service', () => {
               },
               documentType: 'goods',
               taxReceipt: {
-                ncf: 'B01000000016',
+                ncf: 'B0100000016',
               },
               totalAmount: 500,
               taxBreakdown: {
@@ -373,7 +536,7 @@ describe('dgii606MonthlyReport.service', () => {
               },
               expenseType: '03',
               taxReceipt: {
-                ncf: 'B13000000001',
+                ncf: 'B1300000001',
               },
               paymentMethods: [{ method: 'cash', amount: 400 }],
               status: 'posted',
@@ -432,7 +595,7 @@ describe('dgii606MonthlyReport.service', () => {
           },
           documentType: 'goods',
           taxReceipt: {
-            ncf: 'B01000000015',
+            ncf: 'B0100000015',
           },
           totalAmount: 1180,
           taxBreakdown: {
@@ -480,7 +643,7 @@ describe('dgii606MonthlyReport.service', () => {
         recordId: 'purchase-void',
         sourcePath: 'businesses/business-1/purchases/purchase-void',
         documentNumber: 'PUR-002',
-        documentFiscalNumber: 'B01000000016',
+        documentFiscalNumber: 'B0100000016',
         purchaseId: null,
         supplierId: 'supplier-2',
         counterpartyIdentificationNumber: '202020202',
@@ -488,11 +651,13 @@ describe('dgii606MonthlyReport.service', () => {
         expenseType: '02',
         total: 500,
         itbisTotal: 76.27,
+        itbisToAdvance: 76.27,
         issuedAt: '2026-04-06T13:20:00.000Z',
         paymentAt: null,
         paymentFormCode: '01',
         serviceAmount: 0,
         goodsAmount: 423.73,
+        fiscalTotalAmount: 423.73,
         status: 'canceled',
       },
     ]);
@@ -512,8 +677,14 @@ describe('dgii606MonthlyReport.service', () => {
         total: null,
         itbisTotal: null,
         issuedAt: '2026-04-16T10:00:00.000Z',
+        occurredAt: '2026-04-16T10:00:00.000Z',
         paymentAt: null,
         paymentFormCode: null,
+        paymentMethods: [{ method: 'cash', amount: 20 }],
+        paymentStateSnapshot: {
+          paid: 60,
+          balance: 40,
+        },
         serviceAmount: null,
         goodsAmount: null,
         status: 'void',
@@ -560,7 +731,7 @@ describe('dgii606MonthlyReport.service', () => {
           },
           documentType: 'goods',
           taxReceipt: {
-            ncf: 'B01000000990',
+            ncf: 'B0100000990',
           },
           totalAmount: 1180,
           taxBreakdown: {

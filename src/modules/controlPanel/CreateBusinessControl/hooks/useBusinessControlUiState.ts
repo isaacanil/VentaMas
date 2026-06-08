@@ -8,6 +8,7 @@ interface BusinessControlUiState {
   currentPage: number;
   editModalOpen: boolean;
   filters: BusinessFilters;
+  fiscalActionsModalOpen: boolean;
   filtersVisible: boolean;
   searchTerm: string;
   selectedBusiness: BusinessInfo | null;
@@ -17,10 +18,12 @@ type BusinessControlUiAction =
   | { type: 'closeAccessActionsModal' }
   | { type: 'closeEditModal' }
   | { type: 'closeFiltersDrawer' }
+  | { type: 'closeFiscalActionsModal' }
   | { type: 'goToNextPage'; totalPages: number }
   | { type: 'goToPrevPage' }
   | { type: 'openAccessActionsModal'; business: BusinessInfo }
   | { type: 'openEditModal'; business: BusinessInfo }
+  | { type: 'openFiscalActionsModal'; business: BusinessInfo }
   | { type: 'resetFilters' }
   | {
       type: 'setFilter';
@@ -35,6 +38,7 @@ const initialState: BusinessControlUiState = {
   currentPage: 1,
   editModalOpen: false,
   filters: INITIAL_BUSINESS_FILTERS,
+  fiscalActionsModalOpen: false,
   filtersVisible: false,
   searchTerm: '',
   selectedBusiness: null,
@@ -90,6 +94,7 @@ const businessControlUiReducer = (
         ...state,
         accessActionsModalOpen: false,
         editModalOpen: true,
+        fiscalActionsModalOpen: false,
         selectedBusiness: action.business,
       };
     case 'closeEditModal':
@@ -103,12 +108,27 @@ const businessControlUiReducer = (
         ...state,
         accessActionsModalOpen: true,
         editModalOpen: false,
+        fiscalActionsModalOpen: false,
         selectedBusiness: action.business,
       };
     case 'closeAccessActionsModal':
       return {
         ...state,
         accessActionsModalOpen: false,
+        selectedBusiness: null,
+      };
+    case 'openFiscalActionsModal':
+      return {
+        ...state,
+        accessActionsModalOpen: false,
+        editModalOpen: false,
+        fiscalActionsModalOpen: true,
+        selectedBusiness: action.business,
+      };
+    case 'closeFiscalActionsModal':
+      return {
+        ...state,
+        fiscalActionsModalOpen: false,
         selectedBusiness: null,
       };
     default:
@@ -186,6 +206,17 @@ export const useBusinessControlUiState = () => {
     dispatch({ type: 'closeAccessActionsModal' });
   }, []);
 
+  const handleOpenFiscalActions = useCallback((business: BusinessInfo) => {
+    dispatch({
+      type: 'openFiscalActionsModal',
+      business,
+    });
+  }, []);
+
+  const handleCloseFiscalActions = useCallback(() => {
+    dispatch({ type: 'closeFiscalActionsModal' });
+  }, []);
+
   return {
     accessActionsModalOpen: state.accessActionsModalOpen,
     handleCloseAccessActions,
@@ -195,12 +226,15 @@ export const useBusinessControlUiState = () => {
     debouncedSearchTerm,
     editModalOpen: state.editModalOpen,
     filters: state.filters,
+    fiscalActionsModalOpen: state.fiscalActionsModalOpen,
     filtersVisible: state.filtersVisible,
     goToNextPage,
     goToPrevPage,
+    handleCloseFiscalActions,
     handleCloseModal,
     handleEditBusiness,
     handleFilterChange,
+    handleOpenFiscalActions,
     resetFilters,
     searchTerm: state.searchTerm,
     selectedBusiness: state.selectedBusiness,

@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { getRoleLabelById } from '@/abilities/roles';
 import { addUserData, selectUser } from '@/features/auth/userSlice';
-import { useBusinessMetadata } from '@/modules/auth/pages/BusinessSelectorPage/useBusinessMetadata';
+import { useBusinessMetadata } from '@/modules/auth/hooks/useBusinessMetadata';
 import {
   buildAccessControlFromBusinesses,
   normalizeAvailableBusinesses,

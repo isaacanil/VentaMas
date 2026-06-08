@@ -68,7 +68,7 @@ describe('dgii607MonthlyReport.service', () => {
         data: {
           id: 'invoice-1',
           numberID: 15,
-          NCF: 'B01000000015',
+          NCF: 'B0100000015',
           date: {
             toDate: () => new Date('2026-04-05T13:20:00.000Z'),
           },
@@ -99,7 +99,7 @@ describe('dgii607MonthlyReport.service', () => {
       },
       clientId: 'client-1',
       data: {
-        NCF: 'B01000000015',
+        NCF: 'B0100000015',
       },
       totals: {
         total: 1180,
@@ -131,7 +131,7 @@ describe('dgii607MonthlyReport.service', () => {
         id: 'credit-note-1',
         numberID: 9,
         number: 'NC-2026-000009',
-        ncf: 'B04000000009',
+        ncf: 'B0400000009',
         createdAt: {
           toDate: () => new Date('2026-04-11T09:30:00.000Z'),
         },
@@ -141,7 +141,7 @@ describe('dgii607MonthlyReport.service', () => {
         },
         totalAmount: 350,
         invoiceId: 'invoice-1',
-        invoiceNcf: 'B01000000015',
+        invoiceNcf: 'B0100000015',
         status: 'issued',
       },
     });
@@ -160,11 +160,12 @@ describe('dgii607MonthlyReport.service', () => {
       },
       clientId: 'client-1',
       data: {
-        NCF: 'B04000000009',
+        NCF: 'B0400000009',
       },
-      ncf: 'B04000000009',
+      ncf: 'B0400000009',
       totals: {
         total: 350,
+        tax: null,
       },
       status: 'issued',
       metadata: {
@@ -172,9 +173,156 @@ describe('dgii607MonthlyReport.service', () => {
         sourcePath: 'businesses/business-1/creditNotes/credit-note-1',
         issuedAtSource: '2026-04-11T09:30:00.000Z',
         invoiceId: 'invoice-1',
-        invoiceNcf: 'B01000000015',
+        invoiceNcf: 'B0100000015',
       },
     });
+  });
+
+  it('fusiona retenciones de terceros con su factura para evitar duplicados 607', async () => {
+    const { collection, doc } = createFirestoreMock({
+      docsByCollectionPath: {
+        'businesses/business-1/invoices': [
+          {
+            id: 'invoice-1',
+            data: () => ({
+              data: {
+                id: 'invoice-1',
+                numberID: 'INV-001',
+                NCF: 'B0100000015',
+                date: {
+                  toDate: () => new Date('2026-04-10T14:00:00.000Z'),
+                },
+                client: {
+                  id: 'client-1',
+                  rnc: '101010101',
+                },
+                totalPurchase: { value: 1180 },
+                totalTaxes: { value: 180 },
+                status: 'completed',
+              },
+            }),
+          },
+        ],
+        'businesses/business-1/creditNotes': [],
+        'businesses/business-1/salesThirdPartyWithholdings': [
+          {
+            id: 'withholding-1',
+            data: () => ({
+              invoiceId: 'invoice-1',
+              retentionDate: {
+                toDate: () => new Date('2026-04-18T09:00:00.000Z'),
+              },
+              itbisWithheld: 54,
+              incomeTaxWithheld: 100,
+              status: 'recorded',
+            }),
+          },
+        ],
+      },
+    });
+
+    const result = await buildDgii607ValidationPreview({
+      businessId: 'business-1',
+      periodKey: '2026-04',
+      firestore: { collection, doc },
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.issues).toEqual([]);
+    expect(result.sourceSnapshots.thirdPartyWithholdings).toMatchObject({
+      recordsLoaded: 0,
+      recordsExcluded: 0,
+      recordsMerged: 1,
+    });
+    expect(result.sourceRecords.invoices).toEqual([
+      expect.objectContaining({
+        recordId: 'invoice-1',
+        documentFiscalNumber: 'B0100000015',
+        retentionDate: '2026-04-18T09:00:00.000Z',
+        itbisWithheld: 54,
+        incomeTaxWithheld: 100,
+        mergedWithholdingIds: ['withholding-1'],
+      }),
+    ]);
+    expect(result.sourceRecords.thirdPartyWithholdings).toEqual([]);
+    expect(result.sourceRecords.mergedThirdPartyWithholdings).toEqual([
+      expect.objectContaining({
+        recordId: 'withholding-1',
+        mergedIntoInvoiceId: 'invoice-1',
+        itbisWithheld: 54,
+        incomeTaxWithheld: 100,
+      }),
+    ]);
+  });
+
+  it('hidrata NCF de factura ligada y conserva ITBIS en notas de credito', async () => {
+    const { collection, doc } = createFirestoreMock({
+      docsByCollectionPath: {
+        'businesses/business-1/invoices': [],
+        'businesses/business-1/creditNotes': [
+          {
+            id: 'credit-note-1',
+            data: () => ({
+              id: 'credit-note-1',
+              number: 'NC-2026-000003',
+              ncf: 'B0400000003',
+              createdAt: {
+                toDate: () => new Date('2026-04-14T10:00:00.000Z'),
+              },
+              client: {
+                id: 'client-1',
+                rnc: '101010101',
+              },
+              totals: {
+                total: 590,
+                tax: 90,
+              },
+              invoiceId: 'invoice-1',
+              status: 'issued',
+            }),
+          },
+        ],
+        'businesses/business-1/salesThirdPartyWithholdings': [],
+      },
+      docsByDocumentPath: {
+        'businesses/business-1/invoices/invoice-1': {
+          data: {
+            id: 'invoice-1',
+            numberID: 'INV-001',
+            NCF: 'B0100000015',
+            date: {
+              toDate: () => new Date('2026-04-10T14:00:00.000Z'),
+            },
+            client: {
+              id: 'client-1',
+              rnc: '101010101',
+            },
+            totalPurchase: { value: 1180 },
+            totalTaxes: { value: 180 },
+            status: 'completed',
+          },
+        },
+      },
+    });
+
+    const result = await buildDgii607ValidationPreview({
+      businessId: 'business-1',
+      periodKey: '2026-04',
+      firestore: { collection, doc },
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.issues).toEqual([]);
+    expect(result.sourceRecords.creditNotes).toEqual([
+      expect.objectContaining({
+        recordId: 'credit-note-1',
+        documentFiscalNumber: 'B0400000003',
+        invoiceId: 'invoice-1',
+        invoiceNcf: 'B0100000015',
+        total: 590,
+        itbisTotal: 90,
+      }),
+    ]);
   });
 
   it('carga invoices y creditNotes del período, valida faltantes y resume fuentes', async () => {
@@ -287,6 +435,9 @@ describe('dgii607MonthlyReport.service', () => {
         checkTransfer: null,
         card: null,
         creditSale: null,
+        giftCertificates: null,
+        barter: null,
+        otherSales: 1180,
         status: 'completed',
       },
     ]);
@@ -310,6 +461,9 @@ describe('dgii607MonthlyReport.service', () => {
         checkTransfer: null,
         card: null,
         creditSale: null,
+        giftCertificates: null,
+        barter: null,
+        otherSales: null,
         status: 'issued',
       },
     ]);
@@ -319,6 +473,117 @@ describe('dgii607MonthlyReport.service', () => {
       bySource: {},
       byCode: {},
     });
+  });
+
+  it('excluye consumidor final menor a RD$250,000 del detalle 607', async () => {
+    const { collection, doc } = createFirestoreMock({
+      docsByCollectionPath: {
+        'businesses/business-1/invoices': [
+          {
+            id: 'invoice-cf-low',
+            data: () => ({
+              data: {
+                id: 'invoice-cf-low',
+                numberID: 'INV-CF-LOW',
+                NCF: 'B0200000771',
+                date: {
+                  toDate: () => new Date('2026-04-10T14:00:00.000Z'),
+                },
+                client: null,
+                totalPurchase: { value: 118 },
+                totalTaxes: { value: 18 },
+                status: 'completed',
+              },
+            }),
+          },
+        ],
+        'businesses/business-1/creditNotes': [],
+        'businesses/business-1/salesThirdPartyWithholdings': [],
+      },
+    });
+
+    const result = await buildDgii607ValidationPreview({
+      businessId: 'business-1',
+      periodKey: '2026-04',
+      firestore: { collection, doc },
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.issues).toEqual([]);
+    expect(result.sourceSnapshots.invoices).toMatchObject({
+      recordsLoaded: 0,
+      recordsExcluded: 1,
+    });
+    expect(result.sourceRecords.invoices).toEqual([]);
+    expect(result.sourceRecords.excludedInvoices).toEqual([
+      expect.objectContaining({
+        recordId: 'invoice-cf-low',
+        documentFiscalNumber: 'B0200000771',
+        counterpartyIdentificationNumber: null,
+        total: 118,
+        itbisTotal: 18,
+      }),
+    ]);
+  });
+
+  it('mantiene consumidor final desde RD$250,000 y exige cliente fiscal', async () => {
+    const { collection, doc } = createFirestoreMock({
+      docsByCollectionPath: {
+        'businesses/business-1/invoices': [
+          {
+            id: 'invoice-cf-high',
+            data: () => ({
+              data: {
+                id: 'invoice-cf-high',
+                numberID: 'INV-CF-HIGH',
+                NCF: 'E320000000771',
+                date: {
+                  toDate: () => new Date('2026-04-11T14:00:00.000Z'),
+                },
+                client: null,
+                totalPurchase: { value: 250000 },
+                totalTaxes: { value: 38135.59 },
+                status: 'completed',
+              },
+            }),
+          },
+        ],
+        'businesses/business-1/creditNotes': [],
+        'businesses/business-1/salesThirdPartyWithholdings': [],
+      },
+    });
+
+    const result = await buildDgii607ValidationPreview({
+      businessId: 'business-1',
+      periodKey: '2026-04',
+      firestore: { collection, doc },
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.sourceSnapshots.invoices).toMatchObject({
+      recordsLoaded: 1,
+      recordsExcluded: 0,
+    });
+    expect(result.sourceRecords.excludedInvoices).toEqual([]);
+    expect(result.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sourceId: 'invoices',
+          fieldPath: 'counterparty.id',
+          code: 'missing-required-field',
+        }),
+        expect.objectContaining({
+          sourceId: 'invoices',
+          fieldPath: 'counterparty.identification.number',
+          code: 'missing-required-field',
+        }),
+        expect.objectContaining({
+          sourceId: 'invoices',
+          fieldPath: 'clientId',
+          code: 'missing-required-field',
+        }),
+      ]),
+    );
   });
 
   it('marca nota de credito con factura fuera de período y NCF referenciado inconsistente', async () => {
@@ -331,7 +596,7 @@ describe('dgii607MonthlyReport.service', () => {
             data: () => ({
               id: 'credit-note-1',
               number: 'NC-2026-000002',
-              ncf: 'B04000000002',
+              ncf: 'B0400000002',
               createdAt: {
                 toDate: () => new Date('2026-04-18T15:00:00.000Z'),
               },
@@ -340,7 +605,7 @@ describe('dgii607MonthlyReport.service', () => {
               },
               totalAmount: 500,
               invoiceId: 'invoice-prev',
-              invoiceNcf: 'B01000000999',
+              invoiceNcf: 'B0100000999',
               status: 'issued',
             }),
           },
@@ -352,7 +617,7 @@ describe('dgii607MonthlyReport.service', () => {
           data: {
             id: 'invoice-prev',
             numberID: 'INV-090',
-            NCF: 'B01000000015',
+            NCF: 'B0100000015',
             date: {
               toDate: () => new Date('2026-03-30T11:00:00.000Z'),
             },
@@ -385,7 +650,7 @@ describe('dgii607MonthlyReport.service', () => {
         invoiceId: 'invoice-prev',
         sourcePath: 'businesses/business-1/invoices/invoice-prev',
         documentNumber: 'INV-090',
-        documentFiscalNumber: 'B01000000015',
+        documentFiscalNumber: 'B0100000015',
         issuedAt: '2026-03-30T11:00:00.000Z',
       },
     ]);
@@ -402,7 +667,7 @@ describe('dgii607MonthlyReport.service', () => {
         recordId: 'credit-note-1',
         sourcePath: 'businesses/business-1/creditNotes/credit-note-1',
         documentNumber: 'NC-2026-000002',
-        documentFiscalNumber: 'B04000000002',
+        documentFiscalNumber: 'B0400000002',
       },
       {
         sourceId: 'creditNotes',
@@ -412,12 +677,12 @@ describe('dgii607MonthlyReport.service', () => {
         severity: 'error',
         linkedRecordId: 'invoice-prev',
         linkedSourcePath: 'businesses/business-1/invoices/invoice-prev',
-        expectedValue: 'B01000000015',
-        actualValue: 'B01000000999',
+        expectedValue: 'B0100000015',
+        actualValue: 'B0100000999',
         recordId: 'credit-note-1',
         sourcePath: 'businesses/business-1/creditNotes/credit-note-1',
         documentNumber: 'NC-2026-000002',
-        documentFiscalNumber: 'B04000000002',
+        documentFiscalNumber: 'B0400000002',
       },
     ]);
     expect(result.issueSummary).toEqual({
@@ -441,7 +706,7 @@ describe('dgii607MonthlyReport.service', () => {
               data: {
                 id: 'invoice-active',
                 numberID: 'INV-001',
-                NCF: 'B01000000015',
+                NCF: 'B0100000015',
                 date: {
                   toDate: () => new Date('2026-04-10T14:00:00.000Z'),
                 },
@@ -461,7 +726,7 @@ describe('dgii607MonthlyReport.service', () => {
               data: {
                 id: 'invoice-cancelled',
                 numberID: 'INV-002',
-                NCF: 'B01000000016',
+                NCF: 'B0100000016',
                 date: {
                   toDate: () => new Date('2026-04-11T14:00:00.000Z'),
                 },
@@ -482,7 +747,7 @@ describe('dgii607MonthlyReport.service', () => {
             data: () => ({
               id: 'credit-note-issued',
               number: 'NC-2026-000001',
-              ncf: 'B04000000001',
+              ncf: 'B0400000001',
               createdAt: {
                 toDate: () => new Date('2026-04-12T10:00:00.000Z'),
               },
@@ -492,7 +757,7 @@ describe('dgii607MonthlyReport.service', () => {
               },
               totalAmount: 350,
               invoiceId: 'invoice-active',
-              invoiceNcf: 'B01000000015',
+              invoiceNcf: 'B0100000015',
               status: 'issued',
             }),
           },
@@ -501,7 +766,7 @@ describe('dgii607MonthlyReport.service', () => {
             data: () => ({
               id: 'credit-note-cancelled',
               number: 'NC-2026-000002',
-              ncf: 'B04000000002',
+              ncf: 'B0400000002',
               createdAt: {
                 toDate: () => new Date('2026-04-13T10:00:00.000Z'),
               },
@@ -511,7 +776,7 @@ describe('dgii607MonthlyReport.service', () => {
               },
               totalAmount: 90,
               invoiceId: 'invoice-active',
-              invoiceNcf: 'B01000000015',
+              invoiceNcf: 'B0100000015',
               status: 'cancelled',
             }),
           },
@@ -523,7 +788,7 @@ describe('dgii607MonthlyReport.service', () => {
           data: {
             id: 'invoice-active',
             numberID: 'INV-001',
-            NCF: 'B01000000015',
+            NCF: 'B0100000015',
             date: {
               toDate: () => new Date('2026-04-10T14:00:00.000Z'),
             },
@@ -559,7 +824,7 @@ describe('dgii607MonthlyReport.service', () => {
         recordId: 'invoice-cancelled',
         sourcePath: 'businesses/business-1/invoices/invoice-cancelled',
         documentNumber: 'INV-002',
-        documentFiscalNumber: 'B01000000016',
+        documentFiscalNumber: 'B0100000016',
         counterpartyIdentificationNumber: '101010101',
         invoiceId: null,
         invoiceNcf: null,
@@ -573,6 +838,9 @@ describe('dgii607MonthlyReport.service', () => {
         checkTransfer: null,
         card: null,
         creditSale: null,
+        giftCertificates: null,
+        barter: null,
+        otherSales: 500,
         status: 'cancelled',
       },
     ]);
@@ -582,10 +850,10 @@ describe('dgii607MonthlyReport.service', () => {
         recordId: 'credit-note-cancelled',
         sourcePath: 'businesses/business-1/creditNotes/credit-note-cancelled',
         documentNumber: 'NC-2026-000002',
-        documentFiscalNumber: 'B04000000002',
+        documentFiscalNumber: 'B0400000002',
         counterpartyIdentificationNumber: '101010101',
         invoiceId: 'invoice-active',
-        invoiceNcf: 'B01000000015',
+        invoiceNcf: 'B0100000015',
         issuedAt: '2026-04-13T10:00:00.000Z',
         retentionDate: null,
         total: 90,
@@ -596,6 +864,9 @@ describe('dgii607MonthlyReport.service', () => {
         checkTransfer: null,
         card: null,
         creditSale: null,
+        giftCertificates: null,
+        barter: null,
+        otherSales: null,
         status: 'cancelled',
       },
     ]);

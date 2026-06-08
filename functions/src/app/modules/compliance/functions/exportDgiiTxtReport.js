@@ -8,7 +8,6 @@ import {
   assertUserAccess,
 } from '../../../versions/v2/invoice/services/repairTasks.service.js';
 import { resolveBusinessFiscalRollout } from '../../taxReceipt/utils/fiscalRollout.util.js';
-import { loadDgii606Datasets } from '../services/dgii606MonthlyReport.service.js';
 import {
   assertValidDgii606Header,
   buildDgii606TxtContent,
@@ -16,7 +15,6 @@ import {
   buildDgii606TxtRow,
 } from '../services/dgii606TxtExport.service.js';
 import {
-  loadDgii607Datasets,
   resolveMonthlyPeriodRange,
 } from '../services/dgii607MonthlyReport.service.js';
 import {
@@ -26,7 +24,6 @@ import {
   buildDgii607TxtRow,
   shouldExcludeDgii607TxtRecord,
 } from '../services/dgii607TxtExport.service.js';
-import { loadDgii608Datasets } from '../services/dgii608MonthlyReport.service.js';
 import {
   assertValidDgii608Header,
   buildDgii608TxtContent,
@@ -40,6 +37,165 @@ const toCleanString = (value) => {
   return trimmed.length ? trimmed : null;
 };
 
+const assertTxtRowsAvailable = ({ reportCode, rows }) => {
+  if (rows.length > 0) return;
+
+  throw new HttpsError(
+    'failed-precondition',
+    `No hay registros para exportar TXT ${reportCode}. Presente el formato informativo/en cero desde la Oficina Virtual DGII.`,
+  );
+};
+
+const isRecord = (value) =>
+  value !== null && typeof value === 'object' && !Array.isArray(value);
+
+const toSourceRecordArray = (value) => (Array.isArray(value) ? value : []);
+
+const assertAuditableSourceRecords = ({ reportCode, reportRunData }) => {
+  const sourceRecords = reportRunData?.sourceSnapshot?.sourceRecords;
+  if (isRecord(sourceRecords)) return sourceRecords;
+
+  throw new HttpsError(
+    'failed-precondition',
+    `La corrida fiscal ${reportCode} seleccionada no tiene snapshot auditable. Genere una corrida nueva antes de exportar el TXT.`,
+  );
+};
+
+const buildDgii606RecordFromSnapshot = (row) => ({
+  counterparty: {
+    identification: {
+      number: row?.counterpartyIdentificationNumber ?? null,
+    },
+  },
+  classification: {
+    dgii606ExpenseType: row?.expenseType ?? null,
+  },
+  taxReceipt: {
+    ncf: row?.documentFiscalNumber ?? null,
+    modifiedNcf: row?.modifiedDocumentFiscalNumber ?? null,
+  },
+  issuedAt: row?.issuedAt ?? null,
+  paymentAt: row?.paymentAt ?? null,
+  paymentInfo: {
+    formCode: row?.paymentFormCode ?? null,
+  },
+  fiscalAmounts: {
+    serviceAmount: row?.serviceAmount ?? 0,
+    goodsAmount: row?.goodsAmount ?? 0,
+    totalAmount:
+      row?.fiscalTotalAmount ??
+      Number(row?.serviceAmount ?? 0) + Number(row?.goodsAmount ?? 0),
+    itbisToAdvance: row?.itbisToAdvance,
+  },
+  taxBreakdown: {
+    itbisTotal: row?.itbisTotal ?? 0,
+    itbisWithheld: row?.itbisWithheld ?? 0,
+    itbisProportionality: row?.itbisProportionality ?? 0,
+    itbisCost: row?.itbisCost ?? 0,
+    itbisReceived: row?.itbisReceived ?? 0,
+    isrRetentionType: row?.isrRetentionType ?? null,
+    incomeTaxWithheld: row?.incomeTaxWithheld ?? 0,
+    incomeTaxReceived: row?.incomeTaxReceived ?? 0,
+    selectiveTax: row?.selectiveTax ?? 0,
+    otherTaxes: row?.otherTaxes ?? 0,
+    legalTip: row?.legalTip ?? 0,
+  },
+  status: row?.status ?? null,
+  metadata: {
+    recordId: row?.recordId ?? null,
+    sourcePath: row?.sourcePath ?? null,
+  },
+});
+
+const buildDgii607RecordFromSnapshot = (row) => ({
+  data: {
+    NCF: row?.documentFiscalNumber ?? null,
+  },
+  ncf: row?.documentFiscalNumber ?? null,
+  counterparty: {
+    identification: {
+      number: row?.counterpartyIdentificationNumber ?? null,
+    },
+  },
+  invoiceId: row?.invoiceId ?? null,
+  issuedAt: row?.issuedAt ?? null,
+  createdAt: row?.issuedAt ?? null,
+  retentionDate: row?.retentionDate ?? null,
+  totals: {
+    total: row?.total ?? 0,
+    tax: row?.itbisTotal ?? 0,
+  },
+  itbisWithheld: row?.itbisWithheld ?? 0,
+  incomeTaxWithheld: row?.incomeTaxWithheld ?? 0,
+  paymentBreakdown: {
+    cash: row?.cash ?? 0,
+    bank: row?.checkTransfer ?? 0,
+    card: row?.card ?? 0,
+    creditSale: row?.creditSale ?? 0,
+    giftCertificates: row?.giftCertificates ?? 0,
+    barter: row?.barter ?? 0,
+    otherSales: row?.otherSales ?? 0,
+  },
+  status: row?.status ?? null,
+  metadata: {
+    recordId: row?.recordId ?? null,
+    sourcePath: row?.sourcePath ?? null,
+    invoiceId: row?.invoiceId ?? null,
+    invoiceNcf: row?.invoiceNcf ?? null,
+  },
+});
+
+const buildDgii608RecordFromSnapshot = (row) => ({
+  data: {
+    NCF: row?.documentFiscalNumber ?? null,
+  },
+  ncf: row?.documentFiscalNumber ?? null,
+  voidedAt: row?.voidedAt ?? null,
+  createdAt: row?.createdAt ?? null,
+  issuedAt: row?.issuedAt ?? null,
+  voidReasonCode: row?.reasonCode ?? null,
+  status: row?.status ?? null,
+  metadata: {
+    recordId: row?.recordId ?? null,
+    sourcePath: row?.sourcePath ?? null,
+  },
+});
+
+const assertMatchingReportRun = async ({
+  businessId,
+  periodKey,
+  reportCode,
+  reportRunId,
+}) => {
+  if (!reportRunId) {
+    throw new HttpsError(
+      'invalid-argument',
+      'reportRunId es requerido para exportar un TXT DGII auditable.',
+    );
+  }
+
+  const reportRunSnap = await db
+    .doc(`businesses/${businessId}/taxReportRuns/${reportRunId}`)
+    .get();
+  if (!reportRunSnap.exists) {
+    throw new HttpsError('not-found', 'Corrida fiscal no encontrada.');
+  }
+
+  const reportRunData = reportRunSnap.data() || {};
+  if (
+    reportRunData.businessId !== businessId ||
+    reportRunData.periodKey !== periodKey ||
+    reportRunData.reportCode !== reportCode
+  ) {
+    throw new HttpsError(
+      'failed-precondition',
+      'La corrida fiscal seleccionada no corresponde al negocio, periodo y reporte solicitados.',
+    );
+  }
+
+  return reportRunData;
+};
+
 export const exportDgiiTxtReport = onCall(
   { cors: true, invoker: 'public' },
   async (request) => {
@@ -51,6 +207,7 @@ export const exportDgiiTxtReport = onCall(
     const businessId = toCleanString(request?.data?.businessId) || null;
     const periodKey = toCleanString(request?.data?.periodKey) || null;
     const reportCode = toCleanString(request?.data?.reportCode) || 'DGII_607';
+    const reportRunId = toCleanString(request?.data?.reportRunId) || null;
 
     if (!businessId) {
       throw new HttpsError('invalid-argument', 'businessId es requerido');
@@ -96,34 +253,56 @@ export const exportDgiiTxtReport = onCall(
     const { periodKey: normalizedPeriodKey } =
       resolveMonthlyPeriodRange(periodKey);
 
+    const reportRunData = await assertMatchingReportRun({
+      businessId,
+      periodKey: normalizedPeriodKey,
+      reportCode,
+      reportRunId,
+    });
+    const sourceRecords = assertAuditableSourceRecords({
+      reportCode,
+      reportRunData,
+    });
+
     if (reportCode === 'DGII_606') {
-      const { datasets } = await loadDgii606Datasets({
-        businessId,
-        periodKey,
-        firestore: db,
-      });
+      const paymentsByPurchaseId = toSourceRecordArray(
+        sourceRecords.accountsPayablePayments,
+      ).reduce((accumulator, payment) => {
+        const purchaseId = toCleanString(payment?.purchaseId);
+        if (!purchaseId) return accumulator;
 
-      const paymentsByPurchaseId = datasets.accountsPayablePayments.reduce(
-        (accumulator, payment) => {
-          const purchaseId = toCleanString(payment?.purchaseId);
-          if (!purchaseId) return accumulator;
-
-          const existingPayments = accumulator.get(purchaseId) ?? [];
-          existingPayments.push(payment);
-          accumulator.set(purchaseId, existingPayments);
-          return accumulator;
-        },
-        new Map(),
+        const currentPayments = accumulator.get(purchaseId) ?? [];
+        currentPayments.push(payment);
+        accumulator.set(purchaseId, currentPayments);
+        return accumulator;
+      }, new Map());
+      const purchaseRows = toSourceRecordArray(sourceRecords.purchases);
+      const purchaseIds = new Set(
+        purchaseRows.map((record) => toCleanString(record?.recordId)).filter(Boolean),
       );
+      const linkedPurchaseRows = toSourceRecordArray(
+        sourceRecords.linkedPurchases,
+      ).filter((record) => {
+        const recordId = toCleanString(record?.recordId);
+        return recordId && !purchaseIds.has(recordId);
+      });
       const rowEntries = [
-        ...datasets.purchases.map((record) => ({
-          record,
+        ...purchaseRows.map((record) => ({
+          record: buildDgii606RecordFromSnapshot(record),
           sortKey: record?.issuedAt ?? '',
           payments:
-            paymentsByPurchaseId.get(record?.metadata?.recordId ?? '') ?? [],
+            paymentsByPurchaseId.get(toCleanString(record?.recordId) ?? '') ??
+            [],
         })),
-        ...datasets.expenses.map((record) => ({
-          record,
+        ...linkedPurchaseRows.map((record) => ({
+          record: buildDgii606RecordFromSnapshot(record),
+          sortKey: record?.issuedAt ?? '',
+          payments:
+            paymentsByPurchaseId.get(toCleanString(record?.recordId) ?? '') ??
+            [],
+        })),
+        ...toSourceRecordArray(sourceRecords.expenses).map((record) => ({
+          record: buildDgii606RecordFromSnapshot(record),
           sortKey: record?.issuedAt ?? '',
           payments: [],
         })),
@@ -147,6 +326,7 @@ export const exportDgiiTxtReport = onCall(
             : 'No se pudo construir el TXT 606 con los datos actuales.',
         );
       }
+      assertTxtRowsAvailable({ reportCode, rows });
 
       const content = buildDgii606TxtContent({
         businessRnc,
@@ -162,9 +342,14 @@ export const exportDgiiTxtReport = onCall(
         businessId,
         periodKey: normalizedPeriodKey,
         reportCode,
-        purchasesLoaded: datasets.purchases.length,
-        expensesLoaded: datasets.expenses.length,
-        accountsPayablePaymentsLoaded: datasets.accountsPayablePayments.length,
+        reportRunId,
+        source: 'taxReportRun.sourceSnapshot',
+        purchasesLoaded: toSourceRecordArray(sourceRecords.purchases).length,
+        linkedPurchasesLoaded: linkedPurchaseRows.length,
+        expensesLoaded: toSourceRecordArray(sourceRecords.expenses).length,
+        accountsPayablePaymentsLoaded: toSourceRecordArray(
+          sourceRecords.accountsPayablePayments,
+        ).length,
         rowCount: rows.length,
       });
 
@@ -172,39 +357,32 @@ export const exportDgiiTxtReport = onCall(
     }
 
     if (reportCode === 'DGII_607') {
-      const { datasets, rawSnapshots } = await loadDgii607Datasets({
-        businessId,
-        periodKey,
-        firestore: db,
-      });
-
-      const rowEntries = [
-        ...datasets.invoices.map((record) => ({
+      const sourceRowEntries = [
+        ...toSourceRecordArray(sourceRecords.invoices).map((snapshotRow) => ({
           isCredit: false,
-          firestoreDoc: record,
-          record,
+          record: buildDgii607RecordFromSnapshot(snapshotRow),
           sortKey:
-            record?.retentionDate ??
-            record?.issuedAt ??
-            record?.createdAt ??
+            snapshotRow?.retentionDate ??
+            snapshotRow?.issuedAt ??
             '',
           originalNcf: null,
         })),
-        ...datasets.creditNotes.map((record) => ({
+        ...toSourceRecordArray(sourceRecords.creditNotes).map((snapshotRow) => ({
           isCredit: true,
-          firestoreDoc: record,
-          record,
-          sortKey: record?.issuedAt ?? record?.createdAt ?? '',
-          originalNcf: record?.metadata?.invoiceNcf ?? '',
+          record: buildDgii607RecordFromSnapshot(snapshotRow),
+          sortKey: snapshotRow?.issuedAt ?? '',
+          originalNcf: snapshotRow?.invoiceNcf ?? '',
         })),
-        ...datasets.thirdPartyWithholdings.map((record) => ({
-          isCredit: false,
-          firestoreDoc: record,
-          record,
-          sortKey: record?.retentionDate ?? record?.issuedAt ?? '',
-          originalNcf: null,
-        })),
-      ]
+        ...toSourceRecordArray(sourceRecords.thirdPartyWithholdings).map(
+          (snapshotRow) => ({
+            isCredit: false,
+            record: buildDgii607RecordFromSnapshot(snapshotRow),
+            sortKey: snapshotRow?.retentionDate ?? snapshotRow?.issuedAt ?? '',
+            originalNcf: null,
+          }),
+        ),
+      ];
+      const rowEntries = sourceRowEntries
         .filter(
           ({ record, isCredit }) =>
             !shouldExcludeDgii607TxtRecord({ record, isCredit }),
@@ -213,14 +391,13 @@ export const exportDgiiTxtReport = onCall(
 
       let rows;
       try {
-        rows = rowEntries.map(
-          ({ record, firestoreDoc, isCredit, originalNcf }) =>
-            buildDgii607TxtRow({
-              record,
-              firestoreDoc,
-              isCredit,
-              originalNcf,
-            }),
+        rows = rowEntries.map(({ record, isCredit, originalNcf }) =>
+          buildDgii607TxtRow({
+            record,
+            firestoreDoc: record,
+            isCredit,
+            originalNcf,
+          }),
         );
         assertValidDgii607Header({
           businessRnc,
@@ -235,6 +412,13 @@ export const exportDgiiTxtReport = onCall(
             : 'No se pudo construir el TXT 607 con los datos actuales.',
         );
       }
+      if (rows.length === 0 && sourceRowEntries.length > 0) {
+        throw new HttpsError(
+          'failed-precondition',
+          'No hay filas detalladas para exportar TXT 607. Las facturas de consumidor final por debajo de RD$250,000 deben presentarse en el resumen general de facturas de consumo de la Oficina Virtual DGII.',
+        );
+      }
+      assertTxtRowsAvailable({ reportCode, rows });
 
       const content = buildDgii607TxtContent({
         businessRnc,
@@ -250,26 +434,29 @@ export const exportDgiiTxtReport = onCall(
         businessId,
         periodKey: normalizedPeriodKey,
         reportCode,
-        invoicesLoaded: rawSnapshots.invoices.size,
-        creditNotesLoaded: rawSnapshots.creditNotes.size,
-        thirdPartyWithholdingsLoaded: rawSnapshots.thirdPartyWithholdings.size,
+        reportRunId,
+        source: 'taxReportRun.sourceSnapshot',
+        invoicesLoaded: toSourceRecordArray(sourceRecords.invoices).length,
+        creditNotesLoaded: toSourceRecordArray(sourceRecords.creditNotes).length,
+        thirdPartyWithholdingsLoaded: toSourceRecordArray(
+          sourceRecords.thirdPartyWithholdings,
+        ).length,
         rowCount: rows.length,
       });
 
       return { ok: true, content, fileName, rowCount: rows.length };
     }
 
-    const { datasets } = await loadDgii608Datasets({
-      businessId,
-      periodKey,
-      firestore: db,
-    });
-    const orderedRecords = [...datasets.invoices, ...datasets.creditNotes].sort(
-      (a, b) =>
+    const orderedRecords = [
+      ...toSourceRecordArray(sourceRecords.invoices),
+      ...toSourceRecordArray(sourceRecords.creditNotes),
+    ]
+      .map((record) => buildDgii608RecordFromSnapshot(record))
+      .sort((a, b) =>
         (a?.voidedAt ?? a?.createdAt ?? '').localeCompare(
           b?.voidedAt ?? b?.createdAt ?? '',
         ),
-    );
+      );
 
     let rows;
     try {
@@ -287,6 +474,7 @@ export const exportDgiiTxtReport = onCall(
           : 'No se pudo construir el TXT 608 con los datos actuales.',
       );
     }
+    assertTxtRowsAvailable({ reportCode, rows });
 
     const content = buildDgii608TxtContent({
       businessRnc,
@@ -302,8 +490,10 @@ export const exportDgiiTxtReport = onCall(
       businessId,
       periodKey: normalizedPeriodKey,
       reportCode,
-      invoicesLoaded: datasets.invoices.length,
-      creditNotesLoaded: datasets.creditNotes.length,
+      reportRunId,
+      source: 'taxReportRun.sourceSnapshot',
+      invoicesLoaded: toSourceRecordArray(sourceRecords.invoices).length,
+      creditNotesLoaded: toSourceRecordArray(sourceRecords.creditNotes).length,
       rowCount: rows.length,
     });
 

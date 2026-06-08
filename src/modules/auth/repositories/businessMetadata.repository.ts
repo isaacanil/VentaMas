@@ -2,8 +2,10 @@ import { doc, getDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 
-import type { BusinessMetadata } from '../types';
-import { resolveBusinessMetadataFromSnapshot } from '../utils/businessMetadata';
+import {
+  resolveBusinessMetadataFromSnapshot,
+  type BusinessMetadata,
+} from '../utils/businessMetadata';
 
 const BUSINESSES_COLLECTION = 'businesses';
 

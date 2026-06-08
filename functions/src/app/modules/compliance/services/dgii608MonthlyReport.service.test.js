@@ -49,7 +49,7 @@ describe('dgii608MonthlyReport.service', () => {
         data: {
           id: 'invoice-1',
           numberID: 15,
-          NCF: 'B01000000015',
+          NCF: 'B0100000015',
           voidedAt: {
             toDate: () => new Date('2026-04-20T13:20:00.000Z'),
           },
@@ -61,7 +61,7 @@ describe('dgii608MonthlyReport.service', () => {
 
     expect(result).toEqual({
       data: {
-        NCF: 'B01000000015',
+        NCF: 'B0100000015',
       },
       voidedAt: '2026-04-20T13:20:00.000Z',
       voidReason: 'Cliente desistió',
@@ -84,7 +84,7 @@ describe('dgii608MonthlyReport.service', () => {
       creditNoteDoc: {
         id: 'credit-note-1',
         number: 'NC-2026-000009',
-        ncf: 'B04000000009',
+        ncf: 'B0400000009',
         createdAt: {
           toDate: () => new Date('2026-04-11T09:30:00.000Z'),
         },
@@ -96,7 +96,8 @@ describe('dgii608MonthlyReport.service', () => {
 
     expect(result).toEqual({
       invoiceId: 'invoice-1',
-      ncf: 'B04000000009',
+      ncf: 'B0400000009',
+      voidedAt: null,
       createdAt: '2026-04-11T09:30:00.000Z',
       status: 'cancelled',
       reason: 'Error en monto',
@@ -121,7 +122,7 @@ describe('dgii608MonthlyReport.service', () => {
               data: {
                 id: 'invoice-voided',
                 numberID: 'INV-001',
-                NCF: 'B01000000015',
+                NCF: 'B0100000015',
                 voidedAt: {
                   toDate: () => new Date('2026-04-20T13:20:00.000Z'),
                 },
@@ -137,7 +138,7 @@ describe('dgii608MonthlyReport.service', () => {
               data: {
                 id: 'invoice-completed',
                 numberID: 'INV-002',
-                NCF: 'B01000000016',
+                NCF: 'B0100000016',
                 voidedAt: {
                   toDate: () => new Date('2026-04-21T13:20:00.000Z'),
                 },
@@ -152,8 +153,11 @@ describe('dgii608MonthlyReport.service', () => {
             data: () => ({
               id: 'credit-note-cancelled',
               number: 'NC-2026-000001',
-              ncf: 'B04000000001',
+              ncf: 'B0400000001',
               createdAt: {
+                toDate: () => new Date('2026-04-11T09:30:00.000Z'),
+              },
+              voidedAt: {
                 toDate: () => new Date('2026-04-11T09:30:00.000Z'),
               },
               invoiceId: 'invoice-1',
@@ -167,7 +171,7 @@ describe('dgii608MonthlyReport.service', () => {
             data: () => ({
               id: 'credit-note-issued',
               number: 'NC-2026-000002',
-              ncf: 'B04000000002',
+              ncf: 'B0400000002',
               createdAt: {
                 toDate: () => new Date('2026-04-13T09:30:00.000Z'),
               },
@@ -191,11 +195,19 @@ describe('dgii608MonthlyReport.service', () => {
       'asc',
     );
     expect(queries['businesses/business-1/invoices'].orderBy).toHaveBeenCalledWith(
+      'data.voidedAt',
+      'asc',
+    );
+    expect(queries['businesses/business-1/invoices'].orderBy).toHaveBeenCalledWith(
       'data.cancel.cancelledAt',
       'asc',
     );
     expect(queries['businesses/business-1/creditNotes'].orderBy).toHaveBeenCalledWith(
-      'createdAt',
+      'voidedAt',
+      'asc',
+    );
+    expect(queries['businesses/business-1/creditNotes'].orderBy).toHaveBeenCalledWith(
+      'data.voidedAt',
       'asc',
     );
     expect(result.ok).toBe(true);
@@ -208,9 +220,11 @@ describe('dgii608MonthlyReport.service', () => {
         recordId: 'invoice-voided',
         sourcePath: 'businesses/business-1/invoices/invoice-voided',
         documentNumber: 'INV-001',
-        documentFiscalNumber: 'B01000000015',
+        documentFiscalNumber: 'B0100000015',
         invoiceId: null,
+        voidedAt: '2026-04-20T13:20:00.000Z',
         issuedAt: '2026-04-20T13:20:00.000Z',
+        createdAt: null,
         reason: 'Duplicada',
         reasonCode: '04',
         reasonLabel: 'Corrección de la información',
@@ -224,14 +238,127 @@ describe('dgii608MonthlyReport.service', () => {
         sourcePath:
           'businesses/business-1/creditNotes/credit-note-cancelled',
         documentNumber: 'NC-2026-000001',
-        documentFiscalNumber: 'B04000000001',
+        documentFiscalNumber: 'B0400000001',
         invoiceId: 'invoice-1',
+        voidedAt: '2026-04-11T09:30:00.000Z',
         issuedAt: '2026-04-11T09:30:00.000Z',
+        createdAt: '2026-04-11T09:30:00.000Z',
         reason: 'Error en monto',
         reasonCode: '04',
         reasonLabel: 'Corrección de la información',
         status: 'cancelled',
       },
+    ]);
+  });
+
+  it('usa fecha real de anulacion en notas de credito aunque hayan sido creadas en otro periodo', async () => {
+    const { collection } = createFirestoreMock({
+      docsByCollectionPath: {
+        'businesses/business-1/invoices': [],
+        'businesses/business-1/creditNotes': [
+          {
+            id: 'credit-note-may-void',
+            data: () => ({
+              id: 'credit-note-may-void',
+              number: 'NC-2026-000010',
+              ncf: 'B0400000010',
+              createdAt: {
+                toDate: () => new Date('2026-04-28T09:30:00.000Z'),
+              },
+              voidedAt: {
+                toDate: () => new Date('2026-05-02T11:00:00.000Z'),
+              },
+              invoiceId: 'invoice-1',
+              reasonCode: '04',
+              status: 'cancelled',
+            }),
+          },
+        ],
+      },
+    });
+
+    const april = await buildDgii608ValidationPreview({
+      businessId: 'business-1',
+      periodKey: '2026-04',
+      firestore: { collection },
+    });
+    const may = await buildDgii608ValidationPreview({
+      businessId: 'business-1',
+      periodKey: '2026-05',
+      firestore: { collection },
+    });
+
+    expect(april.sourceRecords.creditNotes).toEqual([]);
+    expect(may.sourceRecords.creditNotes).toEqual([
+      expect.objectContaining({
+        recordId: 'credit-note-may-void',
+        issuedAt: '2026-05-02T11:00:00.000Z',
+        documentFiscalNumber: 'B0400000010',
+      }),
+    ]);
+  });
+
+  it('lee anulaciones guardadas en rutas root y data.voidedAt', async () => {
+    const { collection, queries } = createFirestoreMock({
+      docsByCollectionPath: {
+        'businesses/business-1/invoices': [
+          {
+            id: 'invoice-root-voided',
+            data: () => ({
+              data: {
+                id: 'invoice-root-voided',
+                numberID: 'INV-ROOT',
+                NCF: 'B0100000020',
+                status: 'completed',
+              },
+              voidedAt: {
+                toDate: () => new Date('2026-04-23T12:00:00.000Z'),
+              },
+              voidReasonCode: '04',
+              status: 'voided',
+            }),
+          },
+          {
+            id: 'invoice-data-voided',
+            data: () => ({
+              data: {
+                id: 'invoice-data-voided',
+                numberID: 'INV-DATA',
+                NCF: 'B0100000021',
+                voidedAt: {
+                  toDate: () => new Date('2026-04-24T12:00:00.000Z'),
+                },
+                voidReasonCode: '06',
+                status: 'voided',
+              },
+            }),
+          },
+        ],
+        'businesses/business-1/creditNotes': [],
+      },
+    });
+
+    const result = await buildDgii608ValidationPreview({
+      businessId: 'business-1',
+      periodKey: '2026-04',
+      firestore: { collection },
+    });
+
+    expect(queries['businesses/business-1/invoices'].orderBy).toHaveBeenCalledWith(
+      'data.voidedAt',
+      'asc',
+    );
+    expect(result.sourceRecords.invoices).toEqual([
+      expect.objectContaining({
+        recordId: 'invoice-root-voided',
+        issuedAt: '2026-04-23T12:00:00.000Z',
+        documentFiscalNumber: 'B0100000020',
+      }),
+      expect.objectContaining({
+        recordId: 'invoice-data-voided',
+        issuedAt: '2026-04-24T12:00:00.000Z',
+        documentFiscalNumber: 'B0100000021',
+      }),
     ]);
   });
 
@@ -245,7 +372,7 @@ describe('dgii608MonthlyReport.service', () => {
               data: {
                 id: 'invoice-voided',
                 numberID: 'INV-001',
-                NCF: 'B01000000015',
+                NCF: 'B0100000015',
                 voidedAt: null,
                 cancel: {
                   cancelledAt: {
@@ -282,9 +409,11 @@ describe('dgii608MonthlyReport.service', () => {
         recordId: 'invoice-voided',
         sourcePath: 'businesses/business-1/invoices/invoice-voided',
         documentNumber: 'INV-001',
-        documentFiscalNumber: 'B01000000015',
+        documentFiscalNumber: 'B0100000015',
         invoiceId: null,
+        voidedAt: '2026-04-22T12:00:00.000Z',
         issuedAt: '2026-04-22T12:00:00.000Z',
+        createdAt: null,
         reason: 'Cliente desistió',
         reasonCode: '06',
         reasonLabel: 'Devolución de productos',

@@ -1,10 +1,11 @@
 import styled from 'styled-components';
+import { Link } from 'react-router-dom';
 
 import { VmTabs } from '@/components/heroui';
 
 export const PeriodsToolbar = styled.div`
   display: grid;
-  grid-template-columns: minmax(260px, 380px) repeat(3, max-content);
+  grid-template-columns: minmax(260px, 420px) repeat(2, max-content);
   gap: var(--ds-space-3);
   align-items: end;
   justify-content: start;
@@ -14,16 +15,187 @@ export const PeriodsToolbar = styled.div`
   }
 `;
 
+export const SummaryHint = styled.span`
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-xs);
+`;
+
+export const OperationalPanel = styled.section`
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(240px, 0.8fr);
+  gap: var(--ds-space-4);
+  align-items: center;
+  padding: var(--ds-space-4);
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: 8px;
+  background: var(--ds-color-bg-surface);
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const OperationalStack = styled.div`
+  display: grid;
+  gap: var(--ds-space-2);
+  min-width: 0;
+`;
+
+export const OperationalEyebrow = styled.span`
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-medium);
+`;
+
+export const OperationalTitle = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  align-items: center;
+  min-width: 0;
+`;
+
+export const OperationalName = styled.strong`
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-lg);
+  line-height: var(--ds-line-height-tight);
+`;
+
+export const OperationalDescription = styled.p`
+  max-width: 720px;
+  margin: 0;
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-sm);
+  line-height: var(--ds-line-height-normal);
+`;
+
+export const WorkflowSteps = styled.ol`
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--ds-space-2);
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+
+  @media (max-width: 560px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+`;
+
+export const WorkflowStep = styled.li`
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: var(--ds-space-2);
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: 8px;
+  background: var(--ds-color-bg-subtle);
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-xs);
+
+  &[data-active='true'] {
+    border-color: var(--ds-color-border-focus);
+    background: var(--ds-color-action-primary-subtle);
+    color: var(--ds-color-text-primary);
+    font-weight: var(--ds-font-weight-semibold);
+  }
+
+  &[data-complete='true'] {
+    color: #047857;
+    background: #ecfdf5;
+  }
+`;
+
+export const CutRulesSummary = styled.section`
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-3);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: 8px;
+  background: var(--ds-color-bg-surface);
+`;
+
+export const CutRulesSummaryText = styled.div`
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+`;
+
+export const CutRulesSummaryTitle = styled.strong`
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-sm);
+`;
+
+export const CutRulesSummaryMeta = styled.span`
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-xs);
+`;
+
 export const PeriodsContent = styled.div`
   display: grid;
   gap: var(--ds-space-4);
   min-width: 0;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 520px;
+
+  @supports not (content-visibility: auto) {
+    contain: layout style paint;
+  }
 `;
 
 export const DetailSection = styled.section`
   display: grid;
   gap: var(--ds-space-3);
   min-width: 0;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 360px;
+
+  @supports not (content-visibility: auto) {
+    contain: layout style paint;
+  }
+`;
+
+export const DetailLinkButton = styled(Link)`
+  display: inline-flex;
+  gap: var(--ds-space-1);
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 var(--ds-space-3);
+  color: var(--ds-color-action-primary);
+  text-decoration: none;
+  white-space: nowrap;
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-color-bg-subtle);
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-semibold);
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+
+  &:hover {
+    border-color: var(--ds-color-border-focus);
+    background: var(--ds-color-action-primary-subtle);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--ds-color-border-focus);
+    outline-offset: 2px;
+  }
+`;
+
+export const DetailScreenActions = styled.div`
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  align-items: center;
+  justify-content: flex-end;
 `;
 
 export const DetailHeader = styled.header`

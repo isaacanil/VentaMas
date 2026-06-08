@@ -1,5 +1,6 @@
 import type {
   HrCommissionEntryStatus,
+  HrCommissionCutRuleFrequency,
   HrCommissionPeriodStatus,
   HrCommissionType,
   HrEmployeeDocumentType,
@@ -52,6 +53,15 @@ export const HR_PAYMENT_METHOD_LABELS: Record<HrPaymentMethod, string> = {
 export const HR_COMMISSION_TYPE_LABELS: Record<HrCommissionType, string> = {
   percentage: 'Porcentaje',
   fixed: 'Monto fijo',
+};
+
+export const HR_COMMISSION_CUT_RULE_FREQUENCY_LABELS: Record<
+  HrCommissionCutRuleFrequency,
+  string
+> = {
+  weekly: 'Semanal',
+  biweekly: 'Quincenal',
+  monthly: 'Mensual',
 };
 
 export const HR_COMMISSION_ENTRY_STATUS_LABELS: Record<

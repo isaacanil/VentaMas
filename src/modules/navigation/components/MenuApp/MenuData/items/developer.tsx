@@ -40,12 +40,6 @@ const developer: MenuItem[] = [
         group: 'core',
       },
       {
-        title: 'Hub de Negocio (UI)',
-        route: dev.SELECT_BUSINESS_TEST,
-        icon: <ApartmentOutlined />,
-        group: 'core',
-      },
-      {
         title: 'Negocios',
         route: dev.BUSINESSES,
         icon: <ApartmentOutlined />,

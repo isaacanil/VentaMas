@@ -39,7 +39,7 @@ describe('dgii607ValidationEngine.service', () => {
           },
         },
         data: {
-          NCF: 'B01000000015',
+          NCF: 'B0100000015',
         },
         issuedAt: '2026-04-07T10:00:00.000Z',
         totals: {
@@ -65,7 +65,7 @@ describe('dgii607ValidationEngine.service', () => {
           },
         },
         data: {
-          NCF: 'B01000000015',
+          NCF: 'B0100000015',
         },
         issuedAt: '2026-04-07T10:00:00.000Z',
         totals: {
@@ -99,7 +99,7 @@ describe('dgii607ValidationEngine.service', () => {
           },
         },
         data: {
-          NCF: 'B04000000009',
+          NCF: 'B0400000009',
         },
         issuedAt: '2026-04-10T09:30:00.000Z',
         totals: {

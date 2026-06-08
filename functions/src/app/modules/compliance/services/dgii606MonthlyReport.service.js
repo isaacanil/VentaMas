@@ -103,6 +103,45 @@ const splitDgii606Records = (records = []) =>
     { included: [], excluded: [] },
   );
 
+const dedupeDocsById = (docs = []) => {
+  const deduped = new Map();
+
+  docs.forEach((doc, index) => {
+    const key =
+      toCleanString(doc?.id) ??
+      toCleanString(doc?.ref?.id) ??
+      `anonymous-${index}`;
+    if (!deduped.has(key)) {
+      deduped.set(key, doc);
+    }
+  });
+
+  return Array.from(deduped.values());
+};
+
+const loadExpenseDocsForDgii606 = async ({
+  expensesRef,
+  start,
+  endExclusive,
+}) => {
+  const expenseDateFieldPaths = [
+    'expenseDate',
+    'dates.expenseDate',
+    'expense.dates.expenseDate',
+  ];
+  const snapshots = await Promise.all(
+    expenseDateFieldPaths.map((fieldPath) =>
+      expensesRef
+        .where(fieldPath, '>=', start)
+        .where(fieldPath, '<', endExclusive)
+        .orderBy(fieldPath, 'asc')
+        .get(),
+    ),
+  );
+
+  return dedupeDocsById(snapshots.flatMap((snapshot) => snapshot.docs));
+};
+
 const resolveMonthlyPeriodRange = (periodKey) => {
   const normalizedPeriodKey = toCleanString(periodKey);
   if (!normalizedPeriodKey || !PERIOD_KEY_REGEX.test(normalizedPeriodKey)) {
@@ -152,6 +191,9 @@ const buildSourceRecordsSnapshot = (records = []) =>
     sourcePath: record?.metadata?.sourcePath ?? null,
     documentNumber: record?.documentNumber ?? null,
     documentFiscalNumber: record?.taxReceipt?.ncf ?? null,
+    ...(record?.taxReceipt?.modifiedNcf
+      ? { modifiedDocumentFiscalNumber: record.taxReceipt.modifiedNcf }
+      : {}),
     purchaseId: record?.purchaseId ?? null,
     supplierId: record?.supplierId ?? record?.counterparty?.id ?? null,
     counterpartyIdentificationNumber:
@@ -161,11 +203,54 @@ const buildSourceRecordsSnapshot = (records = []) =>
       record?.classification?.dgii606ExpenseType ?? record?.expenseType ?? null,
     total: record?.totals?.total ?? null,
     itbisTotal: record?.taxBreakdown?.itbisTotal ?? null,
+    ...(record?.taxBreakdown?.itbisWithheld != null
+      ? { itbisWithheld: record.taxBreakdown.itbisWithheld }
+      : {}),
+    ...(record?.taxBreakdown?.itbisProportionality != null
+      ? { itbisProportionality: record.taxBreakdown.itbisProportionality }
+      : {}),
+    ...(record?.taxBreakdown?.itbisCost != null
+      ? { itbisCost: record.taxBreakdown.itbisCost }
+      : {}),
+    ...(record?.taxBreakdown?.itbisReceived != null
+      ? { itbisReceived: record.taxBreakdown.itbisReceived }
+      : {}),
+    ...(record?.taxBreakdown?.isrRetentionType
+      ? { isrRetentionType: record.taxBreakdown.isrRetentionType }
+      : {}),
+    ...(record?.taxBreakdown?.incomeTaxWithheld != null
+      ? { incomeTaxWithheld: record.taxBreakdown.incomeTaxWithheld }
+      : {}),
+    ...(record?.taxBreakdown?.incomeTaxReceived != null
+      ? { incomeTaxReceived: record.taxBreakdown.incomeTaxReceived }
+      : {}),
+    ...(record?.taxBreakdown?.selectiveTax != null
+      ? { selectiveTax: record.taxBreakdown.selectiveTax }
+      : {}),
+    ...(record?.taxBreakdown?.otherTaxes != null
+      ? { otherTaxes: record.taxBreakdown.otherTaxes }
+      : {}),
+    ...(record?.taxBreakdown?.legalTip != null
+      ? { legalTip: record.taxBreakdown.legalTip }
+      : {}),
+    ...(record?.fiscalAmounts?.itbisToAdvance != null
+      ? { itbisToAdvance: record.fiscalAmounts.itbisToAdvance }
+      : {}),
     issuedAt: record?.issuedAt ?? record?.occurredAt ?? null,
     paymentAt: record?.paymentAt ?? null,
     paymentFormCode: record?.paymentInfo?.formCode ?? null,
     serviceAmount: record?.fiscalAmounts?.serviceAmount ?? null,
     goodsAmount: record?.fiscalAmounts?.goodsAmount ?? null,
+    ...(record?.fiscalAmounts?.totalAmount != null
+      ? { fiscalTotalAmount: record.fiscalAmounts.totalAmount }
+      : {}),
+    ...(record?.occurredAt ? { occurredAt: record.occurredAt } : {}),
+    ...(Array.isArray(record?.paymentMethods)
+      ? { paymentMethods: record.paymentMethods }
+      : {}),
+    ...(record?.paymentStateSnapshot
+      ? { paymentStateSnapshot: record.paymentStateSnapshot }
+      : {}),
     status: record?.status ?? null,
   }));
 
@@ -191,8 +276,17 @@ const enrichIssues = (issues, datasets) =>
 const resolvePurchasePayload = (purchaseDoc) =>
   isRecord(purchaseDoc?.data) ? purchaseDoc.data : purchaseDoc;
 
-const resolveExpensePayload = (expenseDoc) =>
-  isRecord(expenseDoc?.data) ? expenseDoc.data : expenseDoc;
+const resolveExpensePayload = (expenseDoc) => {
+  const expenseData = isRecord(expenseDoc?.data) ? expenseDoc.data : expenseDoc;
+  if (!isRecord(expenseData) || !isRecord(expenseData.expense)) {
+    return expenseData;
+  }
+
+  return {
+    ...expenseData,
+    ...expenseData.expense,
+  };
+};
 
 const resolvePaymentPayload = (paymentDoc) =>
   isRecord(paymentDoc?.data) ? paymentDoc.data : paymentDoc;
@@ -382,6 +476,18 @@ const resolvePaymentMethods = (record) => {
   }
   if (Array.isArray(record?.payment?.paymentMethod)) {
     return record.payment.paymentMethod;
+  }
+  if (
+    isRecord(record?.payment) &&
+    (toCleanString(record.payment.method) ?? toCleanString(record.payment.type))
+  ) {
+    return [record.payment];
+  }
+  if (toCleanString(record?.paymentMethod)) {
+    return [{ method: record.paymentMethod }];
+  }
+  if (toCleanString(record?.payment?.paymentMethod)) {
+    return [{ method: record.payment.paymentMethod }];
   }
   return [];
 };
@@ -935,17 +1041,13 @@ export const loadDgii606Datasets = async ({
     `businesses/${normalizedBusinessId}/accountsPayablePayments`,
   );
 
-  const [purchasesSnap, expensesSnap, paymentsSnap] = await Promise.all([
+  const [purchasesSnap, expenseDocs, paymentsSnap] = await Promise.all([
     purchasesRef
       .where('completedAt', '>=', start)
       .where('completedAt', '<', endExclusive)
       .orderBy('completedAt', 'asc')
       .get(),
-    expensesRef
-      .where('expenseDate', '>=', start)
-      .where('expenseDate', '<', endExclusive)
-      .orderBy('expenseDate', 'asc')
-      .get(),
+    loadExpenseDocsForDgii606({ expensesRef, start, endExclusive }),
     paymentsRef
       .where('occurredAt', '>=', start)
       .where('occurredAt', '<', endExclusive)
@@ -963,7 +1065,7 @@ export const loadDgii606Datasets = async ({
     ),
   );
   const expenseRecords = splitDgii606Records(
-    expensesSnap.docs.map((doc) =>
+    expenseDocs.map((doc) =>
       mapExpenseDocToDgii606Record({
         businessId: normalizedBusinessId,
         expenseId: doc.id,
@@ -1116,13 +1218,7 @@ export const buildDgii606ValidationPreview = async ({
       ),
       linkedPurchases: Object.values(linkedPurchasesById)
         .filter((entry) => entry?.exists && entry.record)
-        .map((entry) => ({
-          purchaseId: entry.purchaseId,
-          sourcePath: entry.sourcePath,
-          documentNumber: entry.record.documentNumber,
-          documentFiscalNumber: entry.record.taxReceipt?.ncf ?? null,
-          issuedAt: entry.record.issuedAt ?? null,
-        })),
+        .flatMap((entry) => buildSourceRecordsSnapshot([entry.record])),
     },
     issues,
     issueSummary: buildIssueSummary(issues),

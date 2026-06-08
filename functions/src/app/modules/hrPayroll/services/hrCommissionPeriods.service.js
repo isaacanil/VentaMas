@@ -3,7 +3,7 @@ import { buildAccountingEvent } from '../../../versions/v2/accounting/utils/acco
 import { calculateSalaryDeductions } from './hrSalaryDeductions.service.js';
 
 const ELIGIBLE_ENTRY_STATUSES = new Set(['calculated', 'eligible']);
-const CUT_RULE_FREQUENCIES = new Set(['monthly']);
+const CUT_RULE_FREQUENCIES = new Set(['weekly', 'biweekly', 'monthly']);
 const PERIOD_STATUSES = new Set([
   'draft',
   'closed',
@@ -159,6 +159,57 @@ const toUtcMonthAnchor = (dateLike) => {
   );
 };
 
+const toUtcDateAnchor = (dateLike) => {
+  const dateValue = toDateFromTimestampLike(dateLike) ?? new Date();
+  return new Date(
+    Date.UTC(
+      dateValue.getUTCFullYear(),
+      dateValue.getUTCMonth(),
+      dateValue.getUTCDate(),
+    ),
+  );
+};
+
+const addUtcDays = (date, days) =>
+  new Date(
+    Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate() + days,
+    ),
+  );
+
+const toUtcWeekStart = (dateLike) => {
+  const anchor = toUtcDateAnchor(dateLike);
+  const day = anchor.getUTCDay();
+  const daysSinceMonday = day === 0 ? 6 : day - 1;
+  return addUtcDays(anchor, -daysSinceMonday);
+};
+
+const isLegacyBiweeklyCutRuleRange = (startDay, endDay) =>
+  (startDay === 1 && endDay === 15) || (startDay === 16 && endDay >= 28);
+
+const normalizeCutRuleFrequency = ({ endDay, frequency, startDay } = {}) => {
+  const normalized = toCleanString(frequency)?.toLowerCase();
+  if (
+    normalized === 'monthly' &&
+    isLegacyBiweeklyCutRuleRange(startDay, endDay)
+  ) {
+    return 'biweekly';
+  }
+  return CUT_RULE_FREQUENCIES.has(normalized) ? normalized : 'monthly';
+};
+
+const getCutRuleDayDefaults = (frequency) => {
+  if (frequency === 'weekly') {
+    return { startDay: 1, endDay: 7 };
+  }
+  if (frequency === 'biweekly') {
+    return { startDay: 1, endDay: 15 };
+  }
+  return { startDay: 1, endDay: 31 };
+};
+
 export const normalizeHrCommissionPeriodStatus = (value) => {
   const status = toCleanString(value)?.toLowerCase();
   return PERIOD_STATUSES.has(status) ? status : 'draft';
@@ -166,6 +217,7 @@ export const normalizeHrCommissionPeriodStatus = (value) => {
 
 export const resolveHrCommissionCutRuleId = ({
   endDay,
+  frequency = 'monthly',
   label,
   ruleId = null,
   startDay,
@@ -174,11 +226,17 @@ export const resolveHrCommissionCutRuleId = ({
   if (explicitId) return explicitId;
 
   const fallbackLabel = toCleanString(label) || 'corte';
+  const normalizedFrequency = CUT_RULE_FREQUENCIES.has(frequency)
+    ? frequency
+    : 'monthly';
+  if (normalizedFrequency !== 'monthly') {
+    return sanitizeDocId(`cut_${normalizedFrequency}_${fallbackLabel}`);
+  }
+
   return sanitizeDocId(
-    `cut_${String(startDay).padStart(2, '0')}_${String(endDay).padStart(
-      2,
-      '0',
-    )}_${fallbackLabel}`,
+    `cut_${normalizedFrequency}_${String(startDay).padStart(2, '0')}_${String(
+      endDay,
+    ).padStart(2, '0')}_${fallbackLabel}`,
   );
 };
 
@@ -198,12 +256,20 @@ export const normalizeHrCommissionCutRule = (
     min: 1,
     max: 31,
   });
-  const frequency = toCleanString(rule.frequency)?.toLowerCase() || 'monthly';
+  const requestedFrequency = toCleanString(rule.frequency)?.toLowerCase();
+  const frequency = normalizeCutRuleFrequency({
+    endDay,
+    frequency: requestedFrequency,
+    startDay,
+  });
+  const defaultDays = getCutRuleDayDefaults(frequency);
+  const resolvedStartDay = defaultDays.startDay;
+  const resolvedEndDay = defaultDays.endDay;
 
   if (!label) {
     return { ok: false, error: 'La regla requiere un nombre.' };
   }
-  if (!CUT_RULE_FREQUENCIES.has(frequency)) {
+  if (requestedFrequency && !CUT_RULE_FREQUENCIES.has(requestedFrequency)) {
     return { ok: false, error: 'La frecuencia del corte no es valida.' };
   }
   if (!startDay || !endDay) {
@@ -217,10 +283,11 @@ export const normalizeHrCommissionCutRule = (
   }
 
   const resolvedRuleId = resolveHrCommissionCutRuleId({
-    endDay,
+    endDay: resolvedEndDay,
+    frequency,
     label,
     ruleId: ruleId || rule.ruleId || rule.id,
-    startDay,
+    startDay: resolvedStartDay,
   });
   if (!resolvedRuleId) {
     return { ok: false, error: 'No se pudo generar la regla de corte.' };
@@ -233,10 +300,10 @@ export const normalizeHrCommissionCutRule = (
       businessId: toCleanString(rule.businessId) || toCleanString(businessId),
       label,
       frequency,
-      startDay,
-      endDay,
+      startDay: resolvedStartDay,
+      endDay: resolvedEndDay,
       active: rule.active === false ? false : true,
-      sortOrder: safeNumber(rule.sortOrder, startDay),
+      sortOrder: safeNumber(rule.sortOrder, resolvedStartDay),
     }),
   };
 };
@@ -248,12 +315,33 @@ export const resolveHrCommissionCutRuleRange = ({
   const normalizedRule = normalizeHrCommissionCutRule(rule);
   if (!normalizedRule.ok) return normalizedRule;
 
+  const frequency = normalizedRule.rule.frequency;
+  if (frequency === 'weekly') {
+    const start = toUtcWeekStart(anchorDate);
+    const end = toEndOfDay(addUtcDays(start, 6));
+
+    return {
+      ok: true,
+      rule: normalizedRule.rule,
+      start,
+      end,
+      startKey: toDateKey(start),
+      endKey: toDateKey(end),
+    };
+  }
+
   const anchor = toUtcMonthAnchor(anchorDate);
   const year = anchor.getUTCFullYear();
   const month = anchor.getUTCMonth();
   const daysInMonth = getUtcDaysInMonth(year, month);
-  const startDay = Math.min(normalizedRule.rule.startDay, daysInMonth);
-  const endDay = Math.min(normalizedRule.rule.endDay, daysInMonth);
+
+  const startDay =
+    frequency === 'biweekly'
+      ? toUtcDateAnchor(anchorDate).getUTCDate() <= 15
+        ? 1
+        : 16
+      : 1;
+  const endDay = frequency === 'biweekly' && startDay === 1 ? 15 : daysInMonth;
   const start = new Date(Date.UTC(year, month, startDay, 0, 0, 0, 0));
   const end = new Date(Date.UTC(year, month, endDay, 23, 59, 59, 999));
 
@@ -284,13 +372,7 @@ export const resolveNextHrCommissionCutRuleRange = ({
     .filter(Boolean)
     .sort((left, right) => right.getTime() - left.getTime())[0];
   const anchorDate = latestEndDate
-    ? new Date(
-        Date.UTC(
-          latestEndDate.getUTCFullYear(),
-          latestEndDate.getUTCMonth() + 1,
-          1,
-        ),
-      )
+    ? addUtcDays(latestEndDate, 1)
     : referenceDate;
 
   return resolveHrCommissionCutRuleRange({
@@ -857,7 +939,9 @@ const summarizePayrollDeductionLines = (employeeLines = []) => {
           return;
         }
 
-        const amount = roundMoney(deduction.calculatedAmount ?? deduction.amount);
+        const amount = roundMoney(
+          deduction.calculatedAmount ?? deduction.amount,
+        );
         if (amount <= THRESHOLD) {
           return;
         }
@@ -924,8 +1008,9 @@ export const buildHrCommissionAccrualAccountingEvent = ({
       0,
     ),
   );
-  const payrollDeductionSummary =
-    summarizePayrollDeductionLines(normalizedEmployeeLines);
+  const payrollDeductionSummary = summarizePayrollDeductionLines(
+    normalizedEmployeeLines,
+  );
   const fallbackGrossAmount = roundMoney(
     periodRecord.grossAmount ?? periodRecord.totalCommissionAmount,
   );

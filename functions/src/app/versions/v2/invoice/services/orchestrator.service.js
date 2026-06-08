@@ -32,8 +32,15 @@ import { getIdempotencyRef } from './idempotency.service.js';
 import { reserveNcf } from './ncf.service.js';
 
 const STRICT_LIMIT_PLANS = new Set(['demo', 'plus']);
+const DGII_CONSUMER_FINAL_DETAIL_THRESHOLD = 250000;
+const GENERIC_CLIENT_IDS = new Set(['GC-0000']);
+const GENERIC_CLIENT_NAMES = new Set(['GENERIC CLIENT', 'CLIENTE GENERICO']);
 
 const toCleanString = (value) => {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return String(value);
+  }
+
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
   return trimmed.length ? trimmed : null;
@@ -41,6 +48,87 @@ const toCleanString = (value) => {
 
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+
+const stripAccents = (value) =>
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+const normalizeClientToken = (value) =>
+  stripAccents(value)
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, ' ');
+
+const resolveCartTotal = (cart) =>
+  safeNumber(cart?.totalPurchase?.value) ??
+  safeNumber(cart?.totalPurchase) ??
+  safeNumber(cart?.totalAmount?.value) ??
+  safeNumber(cart?.totalAmount) ??
+  safeNumber(cart?.payment?.value) ??
+  safeNumber(cart?.payment) ??
+  null;
+
+const resolveClientIdentificationNumber = (client) => {
+  const clientRecord = asRecord(client);
+  const identification = asRecord(clientRecord.identification);
+
+  return (
+    toCleanString(clientRecord.rnc) ??
+    toCleanString(clientRecord.RNC) ??
+    toCleanString(clientRecord.personalID) ??
+    toCleanString(clientRecord.personalId) ??
+    toCleanString(clientRecord.cedula) ??
+    toCleanString(clientRecord.identificationNumber) ??
+    toCleanString(clientRecord.taxId) ??
+    toCleanString(identification.number) ??
+    null
+  );
+};
+
+const hasFiscalClientIdentity = (client) => {
+  const clientRecord = asRecord(client);
+  const clientId = toCleanString(clientRecord.id);
+  if (!clientId || GENERIC_CLIENT_IDS.has(clientId.toUpperCase())) {
+    return false;
+  }
+
+  const clientName = normalizeClientToken(clientRecord.name);
+  if (GENERIC_CLIENT_NAMES.has(clientName)) {
+    return false;
+  }
+
+  return Boolean(resolveClientIdentificationNumber(clientRecord));
+};
+
+const requiresFiscalClientIdentity = ({
+  ncfEnabled,
+  ncfType,
+  ncf,
+  cart,
+  documentType,
+}) => {
+  if (!ncfEnabled) return false;
+
+  const resolvedDocumentType =
+    documentType ??
+    resolveGisysDocumentType({
+      ncfType,
+      ncf,
+      cart,
+    });
+
+  const total = resolveCartTotal(cart);
+  if (
+    resolvedDocumentType === 'E32' &&
+    total !== null &&
+    total < DGII_CONSUMER_FINAL_DETAIL_THRESHOLD
+  ) {
+    return false;
+  }
+
+  return true;
+};
 
 const resolveSubscriptionFromBusinessData = (businessData) => {
   const root = asRecord(businessData);
@@ -322,6 +410,27 @@ export async function createPendingInvoice({
           'invalid-argument',
           'ncfType requerido cuando ncf.enabled=true',
           { reason: 'missing-ncf-type' },
+        );
+      }
+
+      const fiscalClientIdentityRequired = requiresFiscalClientIdentity({
+        ncfEnabled,
+        ncfType,
+        ncf: payload?.ncf,
+        cart: canonicalCartPayload,
+        documentType: null,
+      });
+      if (
+        fiscalClientIdentityRequired &&
+        !hasFiscalClientIdentity(payload?.client)
+      ) {
+        throw new https.HttpsError(
+          'invalid-argument',
+          'Selecciona un cliente con RNC o cedula para este comprobante fiscal.',
+          {
+            reason: 'fiscal-client-required',
+            ncfType,
+          },
         );
       }
 

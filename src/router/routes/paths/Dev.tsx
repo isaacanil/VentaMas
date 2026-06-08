@@ -63,11 +63,6 @@ const ElectronicTaxReceiptProviderConfigPage = lazy(
   () =>
     import('@/modules/dev/pages/DevTools/ElectronicTaxReceiptProvider/ElectronicTaxReceiptProviderConfigPage'),
 );
-const BusinessSelectorPage = lazy(() =>
-  import('@/modules/auth/pages/BusinessSelectorPage/BusinessSelectorPage').then(
-    (module) => ({ default: module.BusinessSelectorPage }),
-  ),
-);
 const CheckProductPriceAudit = lazy(
   () =>
     import('@/modules/dev/pages/test/pages/checkProductPriceField/CheckProductPriceAudit'),
@@ -114,7 +109,6 @@ const {
   ERROR_REPORTS,
   AI_BUSINESS_SEEDING,
   CASH_COUNT_AUDIT,
-  SELECT_BUSINESS_TEST,
   PRODUCT_FORM_V2_TEST,
   ACCOUNTING_PILOT_AUDIT,
   FINANCE_READINESS_AUDIT,
@@ -200,12 +194,6 @@ const Routes: AppRoute[] = [
     path: ERROR_REPORTS,
     element: <ErrorReports />,
     requiresDevAccess: true,
-    status: ROUTE_STATUS.BETA,
-  },
-  {
-    path: SELECT_BUSINESS_TEST,
-    element: <BusinessSelectorPage />,
-    devOnly: true,
     status: ROUTE_STATUS.BETA,
   },
   {

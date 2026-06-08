@@ -1,8 +1,16 @@
 import { VmAlertDialog, VmButton } from '@/components/heroui';
-import { CheckCircleOutlined, LockOutlined } from '@/constants/icons/antd';
+import {
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  DollarOutlined,
+  LockOutlined,
+} from '@/constants/icons/antd';
 import type { HrCommissionPeriodRecord } from '@/types/hrPayroll';
 
-import { PeriodActionGroup } from './PeriodActionButtons.styles';
+import {
+  PeriodActionGroup,
+  PeriodActionStatus,
+} from './PeriodActionButtons.styles';
 
 type PeriodAction = 'close' | 'approve';
 
@@ -23,56 +31,119 @@ export function PeriodActionButtons({
   const approveActionKey = `approve:${period.id}`;
   const isClosing = actionKey === closeActionKey;
   const isApproving = actionKey === approveActionKey;
+  const periodName = period.label || period.periodKey || 'corte';
+
+  if (period.status === 'paid') {
+    return (
+      <PeriodActionGroup
+        aria-label={`Acciones del corte ${periodName}`}
+        data-layout={layout}
+        role="group"
+      >
+        <PeriodActionStatus $tone="success">
+          <CheckCircleOutlined />
+          Corte pagado
+        </PeriodActionStatus>
+      </PeriodActionGroup>
+    );
+  }
+
+  if (period.status === 'partially_paid') {
+    return (
+      <PeriodActionGroup
+        aria-label={`Acciones del corte ${periodName}`}
+        data-layout={layout}
+        role="group"
+      >
+        <PeriodActionStatus $tone="accent">
+          <DollarOutlined />
+          Pago parcial
+        </PeriodActionStatus>
+      </PeriodActionGroup>
+    );
+  }
+
+  if (period.status === 'approved') {
+    return (
+      <PeriodActionGroup
+        aria-label={`Acciones del corte ${periodName}`}
+        data-layout={layout}
+        role="group"
+      >
+        <PeriodActionStatus $tone="success">
+          <DollarOutlined />
+          Listo para pagos
+        </PeriodActionStatus>
+      </PeriodActionGroup>
+    );
+  }
+
+  if (period.status === 'cancelled') {
+    return (
+      <PeriodActionGroup
+        aria-label={`Acciones del corte ${periodName}`}
+        data-layout={layout}
+        role="group"
+      >
+        <PeriodActionStatus $tone="default">
+          <ClockCircleOutlined />
+          Cancelado
+        </PeriodActionStatus>
+      </PeriodActionGroup>
+    );
+  }
 
   return (
     <PeriodActionGroup
-      aria-label={`Acciones del corte ${period.label || period.periodKey}`}
+      aria-label={`Acciones del corte ${periodName}`}
       data-layout={layout}
       role="group"
     >
-      <VmButton
-        variant="secondary"
-        isDisabled={period.status !== 'draft' || isClosing}
-        onPress={() => onAction('close', period)}
-      >
-        <LockOutlined />
-        {isClosing ? 'Generando...' : 'Generar corte'}
-      </VmButton>
-
-      <VmAlertDialog>
+      {period.status === 'draft' ? (
         <VmButton
-          variant="primary"
-          isDisabled={period.status !== 'closed' || isApproving}
+          variant="secondary"
+          isDisabled={isClosing}
+          onPress={() => onAction('close', period)}
         >
-          <CheckCircleOutlined />
-          {isApproving ? 'Aprobando...' : 'Aprobar'}
+          <LockOutlined />
+          {isClosing ? 'Cerrando...' : 'Cerrar para revision'}
         </VmButton>
-        <VmAlertDialog.Backdrop>
-          <VmAlertDialog.Container>
-            <VmAlertDialog.Dialog>
-              <VmAlertDialog.Header>
-                <VmAlertDialog.Heading>Aprobar corte</VmAlertDialog.Heading>
-              </VmAlertDialog.Header>
-              <VmAlertDialog.Body>
-                Se marcara el corte como aprobado y se emitira el evento
-                contable.
-              </VmAlertDialog.Body>
-              <VmAlertDialog.Footer>
-                <VmButton slot="close" variant="secondary">
-                  Cancelar
-                </VmButton>
-                <VmButton
-                  slot="close"
-                  variant="primary"
-                  onPress={() => onAction('approve', period)}
-                >
-                  Aprobar
-                </VmButton>
-              </VmAlertDialog.Footer>
-            </VmAlertDialog.Dialog>
-          </VmAlertDialog.Container>
-        </VmAlertDialog.Backdrop>
-      </VmAlertDialog>
+      ) : null}
+
+      {period.status === 'closed' ? (
+        <VmAlertDialog>
+          <VmButton variant="primary" isDisabled={isApproving}>
+            <CheckCircleOutlined />
+            {isApproving ? 'Aprobando...' : 'Aprobar corte'}
+          </VmButton>
+          <VmAlertDialog.Backdrop>
+            <VmAlertDialog.Container>
+              <VmAlertDialog.Dialog>
+                <VmAlertDialog.Header>
+                  <VmAlertDialog.Heading>Aprobar corte</VmAlertDialog.Heading>
+                </VmAlertDialog.Header>
+                <VmAlertDialog.Body>
+                  Se marcara el corte como aprobado y se emitira el evento
+                  contable.
+                </VmAlertDialog.Body>
+                <VmAlertDialog.Footer>
+                  <VmButton slot="close" variant="secondary">
+                    Cancelar
+                  </VmButton>
+                  <VmButton
+                    slot="close"
+                    variant="primary"
+                    isDisabled={isApproving}
+                    onPress={() => onAction('approve', period)}
+                  >
+                    {isApproving ? 'Aprobando...' : 'Aprobar corte'}
+                  </VmButton>
+                </VmAlertDialog.Footer>
+              </VmAlertDialog.Dialog>
+            </VmAlertDialog.Container>
+          </VmAlertDialog.Backdrop>
+        </VmAlertDialog>
+      ) : null}
     </PeriodActionGroup>
   );
 }

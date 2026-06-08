@@ -2,12 +2,8 @@ import {
   Alert,
   Button,
   Card,
-  ListBox,
   SearchField,
-  Select,
   Surface,
-  Table,
-  Tooltip,
 } from '@heroui/react';
 import { message } from 'antd';
 import { useState } from 'react';
@@ -87,34 +83,20 @@ export const FinancialReportsPanel = ({
             className="flex flex-wrap items-center justify-between gap-3 rounded-xl p-4 shadow-sm"
           >
             <div className="flex flex-wrap items-center gap-3">
-              <Select
-                variant="secondary"
-                className="min-w-[220px]"
-                placeholder="Seleccionar periodo"
+              <select
+                aria-label="Periodo de reporte financiero"
+                className="min-w-[220px] rounded-lg border border-subtle bg-surface px-3 py-2 text-sm text-primary shadow-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
                 value={selectedPeriodKey}
-                onChange={(key) => {
-                  if (key) setPeriodKey(key as string);
+                onChange={(event) => {
+                  setPeriodKey(event.target.value);
                 }}
               >
-                <Select.Trigger>
-                  <Select.Value />
-                  <Select.Indicator />
-                </Select.Trigger>
-                <Select.Popover>
-                  <ListBox>
-                    {periods.map((period) => (
-                      <ListBox.Item
-                        key={period}
-                        id={period}
-                        textValue={formatAccountingPeriod(period)}
-                      >
-                        {formatAccountingPeriod(period)}
-                        <ListBox.ItemIndicator />
-                      </ListBox.Item>
-                    ))}
-                  </ListBox>
-                </Select.Popover>
-              </Select>
+                {periods.map((period) => (
+                  <option key={period} value={period}>
+                    {formatAccountingPeriod(period)}
+                  </option>
+                ))}
+              </select>
 
               <SearchField
                 variant="secondary"
@@ -168,19 +150,26 @@ export const FinancialReportsPanel = ({
             <h3 className="m-0 text-md font-semibold text-primary">
               Balanza de comprobación
             </h3>
-            <Table aria-label="Balanza de comprobación">
-              <Table.ScrollContainer>
-                <Table.Content>
-                  <Table.Header>
-                    <Table.Column>Cuenta</Table.Column>
-                    <Table.Column>Debito</Table.Column>
-                    <Table.Column>Credito</Table.Column>
-                    <Table.Column>Balance</Table.Column>
-                  </Table.Header>
-                  <Table.Body>
-                    {(filteredTrialBalance ?? []).map((row) => (
-                      <Table.Row key={row.accountId} id={row.accountId}>
-                        <Table.Cell>
+            <div className="overflow-x-auto rounded-lg border border-subtle">
+              <table
+                aria-label="Balanza de comprobacion"
+                className="min-w-full border-collapse text-left text-sm"
+              >
+                <thead className="bg-surface-subtle text-secondary">
+                  <tr>
+                    <th className="px-4 py-3 font-medium">Cuenta</th>
+                    <th className="px-4 py-3 font-medium">Debito</th>
+                    <th className="px-4 py-3 font-medium">Credito</th>
+                    <th className="px-4 py-3 font-medium">Balance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(filteredTrialBalance ?? []).map((row) => (
+                    <tr
+                      key={row.accountId}
+                      className="border-t border-subtle"
+                    >
+                      <td className="px-4 py-3">
                           <div className="flex flex-col gap-0.5">
                             <strong className="font-semibold text-primary">
                               {row.code}
@@ -189,28 +178,27 @@ export const FinancialReportsPanel = ({
                               {row.name}
                             </span>
                           </div>
-                        </Table.Cell>
-                        <Table.Cell>
+                      </td>
+                      <td className="px-4 py-3">
                           <span className="tabular-nums text-right">
                             {formatAccountingMoney(row.debit)}
                           </span>
-                        </Table.Cell>
-                        <Table.Cell>
+                      </td>
+                      <td className="px-4 py-3">
                           <span className="tabular-nums text-right">
                             {formatAccountingMoney(row.credit)}
                           </span>
-                        </Table.Cell>
-                        <Table.Cell>
+                      </td>
+                      <td className="px-4 py-3">
                           <span className="tabular-nums text-right">
                             {formatAccountingMoney(row.balance)}
                           </span>
-                        </Table.Cell>
-                      </Table.Row>
-                    ))}
-                  </Table.Body>
-                </Table.Content>
-              </Table.ScrollContainer>
-            </Table>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </Card>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -311,15 +299,10 @@ const SummaryCard = ({
       <span className="text-xs font-medium uppercase tracking-wide text-secondary">
         {label}
       </span>
-      <Tooltip delay={0}>
-        <Tooltip.Trigger>
-          <InfoCircleOutlined className="cursor-default text-sm text-muted" />
-        </Tooltip.Trigger>
-        <Tooltip.Content showArrow placement="top">
-          <Tooltip.Arrow />
-          <div className="px-1 py-0.5 text-sm">{tooltip}</div>
-        </Tooltip.Content>
-      </Tooltip>
+      <InfoCircleOutlined
+        className="cursor-help text-sm text-muted"
+        title={tooltip}
+      />
     </div>
     <strong
       className={`text-md tabular-nums leading-tight ${

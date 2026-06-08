@@ -1,3 +1,8 @@
+import {
+  isDgiiCreditOrDebitNoteNcf,
+  isValidDgiiNcf,
+} from './dgiiNcf.util.js';
+
 const PERIOD_KEY_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/;
 const DATE_YYYYMMDD_REGEX = /^\d{8}$/;
 const AMOUNT_TOLERANCE = 0.01;
@@ -188,13 +193,6 @@ const parseAmount = (value) => {
 
 const appendIssue = (issues, fieldKey, code, message, severity = 'error') => {
   issues.push({ fieldKey, code, message, severity });
-};
-
-const isValidNcfStructure = (value) => /^[A-Z0-9]{11,19}$/i.test(value);
-
-const isCreditOrDebitNoteNcf = (value) => {
-  const ncf = toCleanString(value)?.toUpperCase() ?? '';
-  return ncf.startsWith('B03') || ncf.startsWith('B04');
 };
 
 const resolveFieldLabel = (fieldKey) =>
@@ -429,7 +427,7 @@ export const validateDgii606Draft = (draft) => {
       'missing-ncf',
       'Numero de comprobante fiscal requerido.',
     );
-  } else if (!isValidNcfStructure(ncf)) {
+  } else if (!isValidDgiiNcf(ncf)) {
     appendIssue(
       issues,
       'ncf',
@@ -438,14 +436,14 @@ export const validateDgii606Draft = (draft) => {
     );
   }
 
-  if (isCreditOrDebitNoteNcf(ncf) && !modifiedNcf) {
+  if (isDgiiCreditOrDebitNoteNcf(ncf) && !modifiedNcf) {
     appendIssue(
       issues,
       'modifiedNcf',
       'missing-modified-ncf',
       'Notas de crédito o débito requieren el NCF o documento modificado.',
     );
-  } else if (modifiedNcf && !isValidNcfStructure(modifiedNcf)) {
+  } else if (modifiedNcf && !isValidDgiiNcf(modifiedNcf)) {
     appendIssue(
       issues,
       'modifiedNcf',

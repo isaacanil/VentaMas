@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 
 import type { AvailableBusinessContext } from '@/utils/auth-adapter';
 
-import { fetchBusinessMetadataMap } from './repositories/businessMetadata.repository';
-import type { BusinessMetadata } from './types';
+import { fetchBusinessMetadataMap } from '../repositories/businessMetadata.repository';
+import type { BusinessMetadata } from '../utils/businessMetadata';
 
 export const useBusinessMetadata = (
   businesses: AvailableBusinessContext[],

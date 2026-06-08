@@ -89,14 +89,14 @@ describe('hrEmployees.service', () => {
         kind: 'afp',
         rate: 2.87,
         payableObligation: true,
-        accountSystemKey: 'accounts_payable',
+        accountSystemKey: 'payroll_withholdings_payable',
       }),
       expect.objectContaining({
         id: 'tss',
         kind: 'tss',
         rate: 3.04,
         payableObligation: true,
-        accountSystemKey: 'accounts_payable',
+        accountSystemKey: 'payroll_withholdings_payable',
       }),
       expect.objectContaining({
         id: 'salary_itbis',

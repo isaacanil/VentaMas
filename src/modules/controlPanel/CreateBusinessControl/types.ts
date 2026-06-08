@@ -4,6 +4,13 @@ export type SortBy = 'newest' | 'oldest';
 export type OwnerStateFilter = 'all' | 'with_owner' | 'without_owner';
 export type OwnerSource = 'ownerUid' | 'legacyOwners' | 'none';
 
+export interface BusinessFiscalRolloutInfo {
+  reportingEnabled: boolean;
+  monthlyComplianceEnabled: boolean;
+  electronicModelEnabled: boolean;
+  electronicTransportEnabled: boolean;
+}
+
 export interface BusinessInfo {
   id: string;
   name?: string;
@@ -23,6 +30,7 @@ export interface BusinessInfo {
   accessStatus?: string | null;
   subscriptionStatus?: string | null;
   subscriptionPlanId?: string | null;
+  fiscalRollout: BusinessFiscalRolloutInfo;
 }
 
 export interface BusinessDoc {

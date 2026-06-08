@@ -1,10 +1,6 @@
 import styled, { css } from 'styled-components';
 
-import {
-  VmAlert,
-  VmDateField,
-  VmTable,
-} from '@/components/heroui';
+import { VmAlert, VmDateField, VmTable } from '@/components/heroui';
 import { PageShell } from '@/components/layout/PageShell';
 
 export const HrPage = styled(PageShell)`
@@ -87,6 +83,25 @@ export const HrTableFrame = styled(VmTable)`
   width: 100%;
   min-width: 0;
   overflow: hidden;
+
+  [data-clickable='true'] {
+    transition:
+      background-color 0.16s ease,
+      box-shadow 0.16s ease;
+  }
+
+  [data-clickable='true']:hover {
+    background: var(--ds-color-bg-subtle);
+  }
+
+  [data-clickable='true']:focus-visible {
+    outline: 3px solid var(--ds-color-border-focus);
+    outline-offset: -3px;
+  }
+
+  [data-clickable='true'][data-selected='true'] {
+    box-shadow: inset 3px 0 0 var(--ds-color-action-primary);
+  }
 `;
 
 export const HrTableTitle = styled.div`

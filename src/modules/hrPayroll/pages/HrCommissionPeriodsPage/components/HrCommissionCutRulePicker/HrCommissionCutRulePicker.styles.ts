@@ -2,7 +2,7 @@ import styled from 'styled-components';
 
 import { VmListBox, VmSelect } from '@/components/heroui';
 
-export const PickerField = styled.label`
+export const PickerField = styled.div`
   display: grid;
   gap: var(--ds-space-1);
   min-width: 0;
@@ -32,3 +32,14 @@ export const RangePreview = styled.span`
   white-space: nowrap;
 `;
 
+export const PendingCutField = styled.div`
+  display: grid;
+  gap: var(--ds-space-1);
+  min-width: 0;
+  padding-top: var(--ds-space-1);
+`;
+
+export const PendingCutPreview = styled.span`
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-xs);
+`;

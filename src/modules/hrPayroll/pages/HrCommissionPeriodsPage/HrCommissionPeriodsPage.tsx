@@ -1,17 +1,19 @@
 import { useCallback, useMemo, useState } from 'react';
 import { message } from 'antd';
 import { useSelector } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
 
-import { VmAlert, VmButton, VmDropdown, VmTabs } from '@/components/heroui';
+import { VmAlert, VmButton, VmDropdown } from '@/components/heroui';
 import {
+  ArrowLeftOutlined,
   DownOutlined,
   FileExcelOutlined,
   FilePdfOutlined,
+  SettingOutlined,
   SyncOutlined,
 } from '@/constants/icons/antd';
 import {
   adjustHrPayrollLinePayable,
-  deactivateHrCommissionCutRule,
   manageHrCommissionPeriod,
   recordHrPayrollPayment,
   saveHrCommissionCutRule,
@@ -29,6 +31,7 @@ import {
   HrNotice as Notice,
   HrPage as Page,
   HrPageHeader as Header,
+  HrStatusTag as StatusTag,
   HrSummaryGrid as SummaryGrid,
   HrSummaryItem as SummaryItem,
   HrSummaryLabel as SummaryLabel,
@@ -37,36 +40,40 @@ import {
   HrTitleBlock as TitleBlock,
 } from '@/modules/hrPayroll/components/HrPayrollPagePrimitives';
 import {
+  HR_COMMISSION_CUT_RULE_FREQUENCY_LABELS as FREQUENCY_LABELS,
   formatHrMoney as formatMoney,
   HR_COMMISSION_PERIOD_STATUS_LABELS as STATUS_LABELS,
 } from '@/modules/hrPayroll/utils/hrPayrollDisplay';
 import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import ROUTES_NAME from '@/router/routes/routesName';
 import type {
   HrCommissionCutRuleInput,
-  HrCommissionCutRuleRecord,
-  HrEmployeePaymentRecord,
+  HrCommissionPeriodStatus,
   HrCommissionPeriodRecord,
   HrPayrollEmployeeLineRecord,
 } from '@/types/hrPayroll';
 import {
   buildLineColumns,
   buildPeriodColumns,
-  paymentColumns,
 } from './HrCommissionPeriodsPage.columns';
 import { getErrorMessage } from './HrCommissionPeriodsPage.helpers';
 import {
-  DetailDescription,
-  DetailEmptyState,
-  DetailEmptyText,
-  DetailEmptyTitle,
-  DetailHeader,
-  DetailHeadingStack,
-  DetailPanelContent,
-  DetailSection,
-  DetailTabs,
-  DetailTitle,
+  CutRulesSummary,
+  CutRulesSummaryMeta,
+  CutRulesSummaryText,
+  CutRulesSummaryTitle,
+  DetailScreenActions,
+  OperationalDescription,
+  OperationalEyebrow,
+  OperationalName,
+  OperationalPanel,
+  OperationalStack,
+  OperationalTitle,
   PeriodsContent,
   PeriodsToolbar,
+  SummaryHint,
+  WorkflowStep,
+  WorkflowSteps,
 } from './HrCommissionPeriodsPage.styles';
 import {
   EditHrPayableAmountModal,
@@ -76,10 +83,11 @@ import {
   RecordHrPaymentModal,
   type PaymentFormValues,
 } from './components/RecordHrPaymentModal';
-import { PeriodActionButtons } from './components/PeriodActionButtons';
+import { HrCommissionPeriodDetailPanel } from './components/HrCommissionPeriodDetailPanel';
 import { HrCommissionCutRulePicker } from './components/HrCommissionCutRulePicker/HrCommissionCutRulePicker';
-import { HrCommissionCutRulesPanel } from './components/HrCommissionCutRulesPanel/HrCommissionCutRulesPanel';
+import { HrCommissionCutRulesModal } from './components/HrCommissionCutRulesModal/HrCommissionCutRulesModal';
 import { resolveNextHrCommissionCutRuleRange } from './utils/hrCommissionCutRules';
+import { buildHrCommissionPeriodDetailPath } from './utils/hrCommissionPeriodRoutes';
 import {
   exportHrCommissionPeriodsPdf,
   exportHrCommissionPeriodsWorkbook,
@@ -97,6 +105,93 @@ type PeriodActionResult = Awaited<ReturnType<typeof manageHrCommissionPeriod>>;
 
 const getPeriodPayableAmount = (period: HrCommissionPeriodRecord): number =>
   period.netAmount ?? period.totalPayableAmount ?? period.totalCommissionAmount;
+
+const getPeriodPaidAmount = (period: HrCommissionPeriodRecord): number => {
+  const paidAmount = period.paidAmount ?? 0;
+  if (paidAmount > 0) return paidAmount;
+  return period.status === 'paid' ? getPeriodPayableAmount(period) : 0;
+};
+
+const isPeriodUnpaid = (period: HrCommissionPeriodRecord): boolean =>
+  !['cancelled', 'paid'].includes(period.status);
+
+const getPeriodPendingAmount = (period: HrCommissionPeriodRecord): number => {
+  if (!isPeriodUnpaid(period)) return 0;
+  return Math.max(
+    0,
+    getPeriodPayableAmount(period) - getPeriodPaidAmount(period),
+  );
+};
+
+const toPeriodEndMillis = (period: HrCommissionPeriodRecord): number => {
+  const value = period.endDate;
+  if (value instanceof Date) return value.getTime();
+  if (value && typeof value === 'object' && 'toMillis' in value) {
+    return Number((value as { toMillis: () => unknown }).toMillis()) || 0;
+  }
+  if (value && typeof value === 'object' && 'toDate' in value) {
+    const date = (value as { toDate: () => unknown }).toDate();
+    return date instanceof Date ? date.getTime() : 0;
+  }
+  const parsed = new Date(String(value)).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const getPeriodStatusTone = (
+  status: HrCommissionPeriodStatus,
+): 'default' | 'info' | 'success' | 'warning' | 'danger' | 'accent' => {
+  if (status === 'draft') return 'info';
+  if (status === 'closed') return 'warning';
+  if (status === 'partially_paid') return 'accent';
+  if (status === 'cancelled') return 'default';
+  return 'success';
+};
+
+const PERIOD_WORKFLOW_STEPS: Array<{
+  label: string;
+  statuses: HrCommissionPeriodStatus[];
+}> = [
+  { label: 'Borrador', statuses: ['draft'] },
+  { label: 'Cerrado', statuses: ['closed'] },
+  { label: 'Aprobado', statuses: ['approved', 'partially_paid'] },
+  { label: 'Pagado', statuses: ['paid'] },
+];
+
+const getWorkflowStepState = (
+  period: HrCommissionPeriodRecord | null,
+  index: number,
+) => {
+  if (!period) return { active: false, complete: false };
+  const activeIndex = PERIOD_WORKFLOW_STEPS.findIndex((step) =>
+    step.statuses.includes(period.status),
+  );
+  return {
+    active: activeIndex === index,
+    complete: activeIndex > index,
+  };
+};
+
+const getSelectedPeriodGuidance = (
+  period: HrCommissionPeriodRecord | null,
+): string => {
+  if (!period) return 'Selecciona o genera un corte para revisar el detalle.';
+  if (period.status === 'draft') {
+    return 'Revisa colaboradores y cierra el corte cuando este listo para aprobar.';
+  }
+  if (period.status === 'closed') {
+    return 'El corte esta cerrado para revision. Aprobalo para habilitar pagos.';
+  }
+  if (period.status === 'approved') {
+    return 'El corte esta aprobado. Registra pagos desde las lineas del detalle.';
+  }
+  if (period.status === 'partially_paid') {
+    return 'Hay pagos parciales. Revisa las lineas pendientes antes de cerrar el ciclo.';
+  }
+  if (period.status === 'paid') {
+    return 'Este corte ya fue pagado. Usa el detalle y los exportes como soporte.';
+  }
+  return 'Este corte no admite acciones operativas.';
+};
 
 const getActionSuccessTitle = (
   action: PeriodAction,
@@ -121,12 +216,16 @@ const getActionSuccessTitle = (
 
 export default function HrCommissionPeriodsPage() {
   const currentUser = useSelector(selectUser);
+  const navigate = useNavigate();
+  const { periodId: routePeriodId } = useParams<{ periodId?: string }>();
   const businessId = currentUser?.businessID ?? null;
+  const isDetailRoute = Boolean(routePeriodId);
   const [notice, setNotice] = useState<NoticeState | null>(null);
   const [selectedCutRuleId, setSelectedCutRuleId] = useState<string | null>(
     null,
   );
   const [selectedPeriodId, setSelectedPeriodId] = useState<string | null>(null);
+  const [cutRulesModalOpen, setCutRulesModalOpen] = useState(false);
   const [actionKey, setActionKey] = useState<string | null>(null);
   const [paymentLine, setPaymentLine] =
     useState<HrPayrollEmployeeLineRecord | null>(null);
@@ -173,10 +272,10 @@ export default function HrCommissionPeriodsPage() {
       }),
     [periods, selectedCutRule],
   );
+  const selectedPeriodKey = routePeriodId ?? selectedPeriodId;
   const selectedPeriod =
-    periods.find((period) => period.id === selectedPeriodId) ??
-    periods[0] ??
-    null;
+    periods.find((period) => period.id === selectedPeriodKey) ??
+    (isDetailRoute ? null : (periods[0] ?? null));
   const {
     rows: employeeLines,
     loading: linesLoading,
@@ -205,14 +304,20 @@ export default function HrCommissionPeriodsPage() {
   const summary = useMemo(
     () => ({
       periods: periods.length,
-      amount: periods.reduce(
+      generatedAmount: periods.reduce(
         (sum, period) => sum + getPeriodPayableAmount(period),
         0,
       ),
-      approved: periods.filter((period) => period.status === 'approved').length,
-      pending: periods.filter((period) =>
-        ['approved', 'partially_paid'].includes(period.status),
-      ).length,
+      paidAmount: periods.reduce(
+        (sum, period) => sum + getPeriodPaidAmount(period),
+        0,
+      ),
+      paidPeriods: periods.filter((period) => period.status === 'paid').length,
+      pendingAmount: periods.reduce(
+        (sum, period) => sum + getPeriodPendingAmount(period),
+        0,
+      ),
+      pendingPeriods: periods.filter((period) => isPeriodUnpaid(period)).length,
     }),
     [periods],
   );
@@ -283,49 +388,6 @@ export default function HrCommissionPeriodsPage() {
       }
     },
     [businessId],
-  );
-
-  const handleSetCutRuleActive = useCallback(
-    async (rule: HrCommissionCutRuleRecord, active: boolean) => {
-      if (!businessId) return false;
-
-      const key = `cut-rule:active:${rule.id}`;
-      setActionKey(key);
-      try {
-        if (active) {
-          const result = await saveHrCommissionCutRule({
-            businessId,
-            rule: { ...rule, active: true },
-          });
-          setSelectedCutRuleId(result.ruleId);
-        } else {
-          await deactivateHrCommissionCutRule({
-            businessId,
-            ruleId: rule.id,
-          });
-          if (effectiveSelectedCutRuleId === rule.id) {
-            setSelectedCutRuleId(null);
-          }
-        }
-        setNotice({
-          status: 'success',
-          title: active
-            ? 'Regla de corte reactivada.'
-            : 'Regla de corte desactivada.',
-        });
-        return true;
-      } catch (ruleError) {
-        setNotice({
-          status: 'danger',
-          title: 'No se pudo actualizar la regla.',
-          description: getErrorMessage(ruleError),
-        });
-        return false;
-      } finally {
-        setActionKey(null);
-      }
-    },
-    [businessId, effectiveSelectedCutRuleId],
   );
 
   const handleOpenPayment = useCallback((line: HrPayrollEmployeeLineRecord) => {
@@ -470,13 +532,36 @@ export default function HrCommissionPeriodsPage() {
     [commissionEntries, employeeLines, selectedPeriod],
   );
 
+  const handleExportAction = useCallback(
+    (key: string | number) => {
+      const action = String(key);
+      if (action === 'excel') {
+        void handleExportExcel();
+        return;
+      }
+
+      void handleExportPdf(action as HrCommissionPeriodsPdfMode);
+    },
+    [handleExportExcel, handleExportPdf],
+  );
+
+  const handleBackToPeriods = useCallback(() => {
+    navigate(ROUTES_NAME.HR_PAYROLL_TERM.HR_COMMISSION_PERIODS);
+  }, [navigate]);
+
+  const handleOpenPeriodDetail = useCallback(
+    (period: HrCommissionPeriodRecord) => {
+      navigate(buildHrCommissionPeriodDetailPath(period.id));
+    },
+    [navigate],
+  );
+
   const periodColumns = useMemo(
     () =>
       buildPeriodColumns({
-        actionKey,
-        onAction: handleAction,
+        getDetailPath: (period) => buildHrCommissionPeriodDetailPath(period.id),
       }),
-    [actionKey, handleAction],
+    [],
   );
 
   const lineColumns = useMemo(
@@ -495,95 +580,204 @@ export default function HrCommissionPeriodsPage() {
     ],
   );
   const selectedPeriodLabel =
-    selectedPeriod?.label || selectedPeriod?.periodKey || 'Corte seleccionado';
+    selectedPeriod?.label ||
+    selectedPeriod?.periodKey ||
+    (isDetailRoute ? 'Corte no encontrado' : 'Corte seleccionado');
+  const pendingPeriodsForSelectedRule = useMemo(
+    () =>
+      selectedCutRule
+        ? periods
+            .filter(
+              (period) =>
+                period.cutRuleId === selectedCutRule.id &&
+                isPeriodUnpaid(period),
+            )
+            .sort(
+              (left, right) =>
+                toPeriodEndMillis(right) - toPeriodEndMillis(left),
+            )
+        : [],
+    [periods, selectedCutRule],
+  );
+  const selectedPendingPeriodId = pendingPeriodsForSelectedRule.some(
+    (period) => period.id === selectedPeriod?.id,
+  )
+    ? (selectedPeriod?.id ?? null)
+    : null;
+  const selectedPeriodAmount = selectedPeriod
+    ? getPeriodPayableAmount(selectedPeriod)
+    : 0;
+  const selectedPeriodCurrency = selectedPeriod?.currency ?? 'DOP';
+  const activeRuleMeta = selectedCutRule
+    ? `${selectedCutRule.label} - ${FREQUENCY_LABELS[selectedCutRule.frequency]}`
+    : 'Sin regla activa';
+  const nextRangeMeta = selectedCutRuleRange
+    ? `${selectedCutRuleRange.startKey} - ${selectedCutRuleRange.endKey}`
+    : 'Configura una regla para generar cortes.';
+  const createActionLabel =
+    actionKey === 'create'
+      ? 'Generando corte...'
+      : pendingPeriodsForSelectedRule.length
+        ? 'Generar siguiente'
+        : 'Generar corte';
+  const exportDisabled =
+    !businessId ||
+    loading ||
+    linesLoading ||
+    entriesLoading ||
+    exporting ||
+    Boolean(exportingPdfMode) ||
+    periods.length === 0 ||
+    (isDetailRoute && !selectedPeriod);
+  const exportLabel =
+    exporting || exportingPdfMode ? 'Exportando...' : 'Exportar';
+  const detailPeriodDescription = selectedPeriod
+    ? `${selectedPeriodLabel} - ${formatMoney(
+        getPeriodPayableAmount(selectedPeriod),
+        selectedPeriod.currency,
+      )}`
+    : null;
+  const detailNotFound =
+    isDetailRoute && !loading && Boolean(routePeriodId) && !selectedPeriod;
+  const operationalPanel = (
+    <OperationalPanel>
+      <OperationalStack>
+        <OperationalEyebrow>Corte seleccionado</OperationalEyebrow>
+        <OperationalTitle>
+          <OperationalName>{selectedPeriodLabel}</OperationalName>
+          {selectedPeriod ? (
+            <StatusTag $tone={getPeriodStatusTone(selectedPeriod.status)}>
+              {STATUS_LABELS[selectedPeriod.status]}
+            </StatusTag>
+          ) : null}
+        </OperationalTitle>
+        <OperationalDescription>
+          {selectedPeriod
+            ? `${formatMoney(
+                selectedPeriodAmount,
+                selectedPeriodCurrency,
+              )} - ${getSelectedPeriodGuidance(selectedPeriod)}`
+            : getSelectedPeriodGuidance(null)}
+        </OperationalDescription>
+        <OperationalDescription>
+          Regla activa: {activeRuleMeta}. Proximo rango: {nextRangeMeta}
+        </OperationalDescription>
+      </OperationalStack>
+      <WorkflowSteps aria-label="Progreso del corte seleccionado">
+        {PERIOD_WORKFLOW_STEPS.map((step, index) => {
+          const state = getWorkflowStepState(selectedPeriod, index);
+          return (
+            <WorkflowStep
+              key={step.label}
+              data-active={state.active ? 'true' : undefined}
+              data-complete={state.complete ? 'true' : undefined}
+            >
+              <span>{`Paso ${index + 1}`}</span>
+              <strong>{step.label}</strong>
+            </WorkflowStep>
+          );
+        })}
+      </WorkflowSteps>
+    </OperationalPanel>
+  );
+  const exportMenu = (
+    <VmDropdown>
+      <VmDropdown.Button
+        aria-label="Exportar cortes RRHH"
+        isDisabled={exportDisabled}
+      >
+        {exportLabel}
+        <DownOutlined />
+      </VmDropdown.Button>
+      <VmDropdown.Popover placement="bottom end">
+        <VmDropdown.Menu
+          aria-label="Opciones de exportacion del corte"
+          onAction={handleExportAction}
+        >
+          <VmDropdown.Item id="excel" textValue="Exportar Excel">
+            <InlineStack>
+              <FileExcelOutlined />
+              <span>Excel completo</span>
+            </InlineStack>
+          </VmDropdown.Item>
+          <VmDropdown.Item id="general" textValue="Resumen general">
+            <InlineStack>
+              <FilePdfOutlined />
+              <span>PDF resumen</span>
+            </InlineStack>
+          </VmDropdown.Item>
+          <VmDropdown.Item id="detail" textValue="Detalle por empleado">
+            <InlineStack>
+              <FilePdfOutlined />
+              <span>PDF detalle</span>
+            </InlineStack>
+          </VmDropdown.Item>
+        </VmDropdown.Menu>
+      </VmDropdown.Popover>
+    </VmDropdown>
+  );
+
   return (
     <>
-      <MenuApp sectionName="Cortes y pagos RRHH" />
+      <MenuApp
+        sectionName={
+          isDetailRoute ? 'Detalle corte RRHH' : 'Cortes y pagos RRHH'
+        }
+        onBackClick={isDetailRoute ? handleBackToPeriods : undefined}
+      />
       <Page>
         <Header>
           <TitleBlock>
-            <Title>Cortes y pagos de comisiones</Title>
+            <Title>
+              {isDetailRoute
+                ? 'Detalle del corte de comisiones'
+                : 'Cortes y pagos de comisiones'}
+            </Title>
             <Description>
-              Agrupa comisiones por periodo, aprueba el corte y registra pagos a
-              colaboradores.
+              {isDetailRoute
+                ? 'Revisa colaboradores, pagos y acciones del corte seleccionado.'
+                : 'Agrupa comisiones por periodo, aprueba el corte y registra pagos a colaboradores.'}
             </Description>
           </TitleBlock>
-          <PeriodsToolbar>
-            <HrCommissionCutRulePicker
-              disabled={!businessId}
-              loading={cutRulesLoading}
-              range={selectedCutRuleRange}
-              rules={activeCutRules}
-              selectedRuleId={effectiveSelectedCutRuleId}
-              onSelect={setSelectedCutRuleId}
-            />
-            <VmButton
-              variant="secondary"
-              isDisabled={
-                !businessId ||
-                loading ||
-                linesLoading ||
-                paymentsLoading ||
-                exporting ||
-                periods.length === 0
-              }
-              onPress={() => void handleExportExcel()}
-            >
-              <FileExcelOutlined />
-              {exporting ? 'Exportando...' : 'Exportar Excel'}
-            </VmButton>
-            <VmDropdown>
-              <VmDropdown.Button
-                aria-label="Exportar corte a PDF"
+          {isDetailRoute ? (
+            <DetailScreenActions>
+              <VmButton variant="secondary" onPress={handleBackToPeriods}>
+                <ArrowLeftOutlined />
+                Volver a cortes
+              </VmButton>
+              {exportMenu}
+            </DetailScreenActions>
+          ) : (
+            <PeriodsToolbar>
+              <HrCommissionCutRulePicker
+                disabled={!businessId}
+                loading={cutRulesLoading}
+                pendingPeriods={pendingPeriodsForSelectedRule}
+                range={selectedCutRuleRange}
+                rules={activeCutRules}
+                selectedPendingPeriodId={selectedPendingPeriodId}
+                selectedRuleId={effectiveSelectedCutRuleId}
+                onSelectPendingPeriod={(periodId) => {
+                  if (periodId) setSelectedPeriodId(periodId);
+                }}
+                onSelect={setSelectedCutRuleId}
+              />
+              <VmButton
+                variant="primary"
+                aria-label={`Generar corte ${activeRuleMeta}`}
                 isDisabled={
                   !businessId ||
-                  loading ||
-                  linesLoading ||
-                  entriesLoading ||
-                  exporting ||
-                  Boolean(exportingPdfMode) ||
-                  periods.length === 0
+                  !effectiveSelectedCutRuleId ||
+                  actionKey === 'create'
                 }
+                onPress={() => handleAction('create')}
               >
-                <FilePdfOutlined />
-                {exportingPdfMode ? 'Exportando PDF...' : 'Exportar PDF'}
-                <DownOutlined />
-              </VmDropdown.Button>
-              <VmDropdown.Popover placement="bottom end">
-                <VmDropdown.Menu
-                  aria-label="Opciones de PDF del corte"
-                  onAction={(key) =>
-                    void handleExportPdf(key as HrCommissionPeriodsPdfMode)
-                  }
-                >
-                  <VmDropdown.Item id="general" textValue="Resumen general">
-                    <InlineStack>
-                      <FilePdfOutlined />
-                      <span>Resumen general</span>
-                    </InlineStack>
-                  </VmDropdown.Item>
-                  <VmDropdown.Item id="detail" textValue="Detalle por empleado">
-                    <InlineStack>
-                      <FilePdfOutlined />
-                      <span>Detalle por empleado</span>
-                    </InlineStack>
-                  </VmDropdown.Item>
-                </VmDropdown.Menu>
-              </VmDropdown.Popover>
-            </VmDropdown>
-            <VmButton
-              variant="primary"
-              isDisabled={
-                !businessId ||
-                !effectiveSelectedCutRuleId ||
-                actionKey === 'create'
-              }
-              onPress={() => handleAction('create')}
-            >
-              <SyncOutlined />
-              {actionKey === 'create' ? 'Generando...' : 'Generar/Actualizar'}
-            </VmButton>
-          </PeriodsToolbar>
+                <SyncOutlined />
+                {createActionLabel}
+              </VmButton>
+              {exportMenu}
+            </PeriodsToolbar>
+          )}
         </Header>
 
         {notice ? (
@@ -612,7 +806,7 @@ export default function HrCommissionPeriodsPage() {
           </Notice>
         ) : null}
 
-        {linesError ? (
+        {isDetailRoute && linesError ? (
           <Notice status="danger">
             <VmAlert.Content>
               <strong>No se pudieron cargar las lineas del corte.</strong>
@@ -621,7 +815,7 @@ export default function HrCommissionPeriodsPage() {
           </Notice>
         ) : null}
 
-        {paymentsError ? (
+        {isDetailRoute && paymentsError ? (
           <Notice status="danger">
             <VmAlert.Content>
               <strong>No se pudieron cargar los pagos del corte.</strong>
@@ -630,7 +824,7 @@ export default function HrCommissionPeriodsPage() {
           </Notice>
         ) : null}
 
-        {entriesError ? (
+        {isDetailRoute && entriesError ? (
           <Notice status="danger">
             <VmAlert.Content>
               <strong>No se pudo cargar el detalle de comisiones.</strong>
@@ -648,122 +842,141 @@ export default function HrCommissionPeriodsPage() {
           </Notice>
         ) : null}
 
-        <SummaryGrid>
-          <SummaryItem>
-            <SummaryLabel>Cortes</SummaryLabel>
-            <SummaryValue>{summary.periods}</SummaryValue>
-          </SummaryItem>
-          <SummaryItem>
-            <SummaryLabel>Total reciente</SummaryLabel>
-            <SummaryValue>{formatMoney(summary.amount)}</SummaryValue>
-          </SummaryItem>
-          <SummaryItem>
-            <SummaryLabel>Aprobados</SummaryLabel>
-            <SummaryValue>{summary.approved}</SummaryValue>
-          </SummaryItem>
-          <SummaryItem>
-            <SummaryLabel>Por pagar</SummaryLabel>
-            <SummaryValue>{summary.pending}</SummaryValue>
-          </SummaryItem>
-        </SummaryGrid>
+        {detailNotFound ? (
+          <Notice status="warning">
+            <VmAlert.Content>
+              <strong>No encontramos este corte.</strong>
+              <div>Vuelve a cortes y abre un periodo disponible.</div>
+            </VmAlert.Content>
+          </Notice>
+        ) : null}
 
-        <HrCommissionCutRulesPanel
-          actionKey={actionKey}
-          loading={cutRulesLoading}
-          rules={cutRules}
-          onSave={handleSaveCutRule}
-          onSetActive={handleSetCutRuleActive}
-        />
+        {isDetailRoute ? (
+          <>
+            {selectedPeriod ? operationalPanel : null}
+            <HrCommissionPeriodDetailPanel
+              actionKey={actionKey}
+              employeeLines={employeeLines}
+              lineColumns={lineColumns}
+              linesLoading={linesLoading}
+              payments={payments}
+              paymentsLoading={paymentsLoading}
+              period={selectedPeriod}
+              periodDescription={detailPeriodDescription}
+              periodLabel={selectedPeriodLabel}
+              onAction={handleAction}
+            />
+          </>
+        ) : (
+          <>
+            <OperationalPanel>
+              <OperationalStack>
+                <OperationalEyebrow>Corte seleccionado</OperationalEyebrow>
+                <OperationalTitle>
+                  <OperationalName>{selectedPeriodLabel}</OperationalName>
+                  {selectedPeriod ? (
+                    <StatusTag
+                      $tone={getPeriodStatusTone(selectedPeriod.status)}
+                    >
+                      {STATUS_LABELS[selectedPeriod.status]}
+                    </StatusTag>
+                  ) : null}
+                </OperationalTitle>
+                <OperationalDescription>
+                  {selectedPeriod
+                    ? `${formatMoney(
+                        selectedPeriodAmount,
+                        selectedPeriodCurrency,
+                      )} - ${getSelectedPeriodGuidance(selectedPeriod)}`
+                    : getSelectedPeriodGuidance(null)}
+                </OperationalDescription>
+                <OperationalDescription>
+                  Regla activa: {activeRuleMeta}. Proximo rango: {nextRangeMeta}
+                </OperationalDescription>
+              </OperationalStack>
+              <WorkflowSteps aria-label="Progreso del corte seleccionado">
+                {PERIOD_WORKFLOW_STEPS.map((step, index) => {
+                  const state = getWorkflowStepState(selectedPeriod, index);
+                  return (
+                    <WorkflowStep
+                      key={step.label}
+                      data-active={state.active ? 'true' : undefined}
+                      data-complete={state.complete ? 'true' : undefined}
+                    >
+                      <span>{`Paso ${index + 1}`}</span>
+                      <strong>{step.label}</strong>
+                    </WorkflowStep>
+                  );
+                })}
+              </WorkflowSteps>
+            </OperationalPanel>
 
-        <PeriodsContent>
-          <HrDataTable<HrCommissionPeriodRecord>
-            ariaLabel="Cortes y pagos de comisiones"
-            title="Cortes del periodo"
-            columns={periodColumns}
-            rows={periods}
-            loading={loading}
-            minTableWidth={920}
-            pageSize={10}
-            selectedRowId={selectedPeriod?.id}
-            onRowClick={(period) => setSelectedPeriodId(period.id)}
-          />
+            <SummaryGrid>
+              <SummaryItem>
+                <SummaryLabel>Cortes</SummaryLabel>
+                <SummaryValue>{summary.periods}</SummaryValue>
+                <SummaryHint>{summary.paidPeriods} pagados</SummaryHint>
+              </SummaryItem>
+              <SummaryItem>
+                <SummaryLabel>Monto generado</SummaryLabel>
+                <SummaryValue>
+                  {formatMoney(summary.generatedAmount)}
+                </SummaryValue>
+                <SummaryHint>Total en cortes cargados</SummaryHint>
+              </SummaryItem>
+              <SummaryItem>
+                <SummaryLabel>Pendiente</SummaryLabel>
+                <SummaryValue>
+                  {formatMoney(summary.pendingAmount)}
+                </SummaryValue>
+                <SummaryHint>
+                  {summary.pendingPeriods} cortes por pagar
+                </SummaryHint>
+              </SummaryItem>
+              <SummaryItem>
+                <SummaryLabel>Pagado</SummaryLabel>
+                <SummaryValue>{formatMoney(summary.paidAmount)}</SummaryValue>
+                <SummaryHint>Soporte en la pestaña Pagos</SummaryHint>
+              </SummaryItem>
+            </SummaryGrid>
 
-          <DetailSection>
-            <DetailHeader>
-              <DetailHeadingStack>
-                <DetailTitle>Detalle del corte seleccionado</DetailTitle>
-                {selectedPeriod ? (
-                  <DetailDescription>
-                    {`${selectedPeriodLabel} - ${formatMoney(
-                      getPeriodPayableAmount(selectedPeriod),
-                      selectedPeriod.currency,
-                    )}`}
-                  </DetailDescription>
-                ) : null}
-              </DetailHeadingStack>
-              {selectedPeriod ? (
-                <PeriodActionButtons
-                  actionKey={actionKey}
-                  layout="toolbar"
-                  period={selectedPeriod}
-                  onAction={handleAction}
-                />
-              ) : null}
-            </DetailHeader>
+            <CutRulesSummary>
+              <CutRulesSummaryText>
+                <CutRulesSummaryTitle>
+                  Configuracion de cortes
+                </CutRulesSummaryTitle>
+                <CutRulesSummaryMeta>
+                  {activeCutRules.length
+                    ? `${activeCutRules.length} activas. Usando ${activeRuleMeta}.`
+                    : 'Configura una regla activa para generar cortes.'}
+                </CutRulesSummaryMeta>
+              </CutRulesSummaryText>
+              <VmButton
+                aria-haspopup="dialog"
+                variant="secondary"
+                isDisabled={!businessId}
+                onPress={() => setCutRulesModalOpen(true)}
+              >
+                <SettingOutlined />
+                Configurar
+              </VmButton>
+            </CutRulesSummary>
 
-            {selectedPeriod ? (
-              <DetailTabs defaultSelectedKey="collaborators">
-                <VmTabs.ListContainer>
-                  <VmTabs.List aria-label="Detalle del corte seleccionado">
-                    <VmTabs.Tab id="collaborators">
-                      <VmTabs.Indicator />
-                      Colaboradores ({employeeLines.length})
-                    </VmTabs.Tab>
-                    <VmTabs.Tab id="payments">
-                      <VmTabs.Indicator />
-                      Pagos ({payments.length})
-                    </VmTabs.Tab>
-                  </VmTabs.List>
-                </VmTabs.ListContainer>
-
-                <VmTabs.Panel id="collaborators">
-                  <DetailPanelContent>
-                    <HrDataTable<HrPayrollEmployeeLineRecord>
-                      ariaLabel="Lineas por colaborador"
-                      columns={lineColumns}
-                      rows={employeeLines}
-                      loading={linesLoading}
-                      emptyText="Sin lineas para este corte"
-                      minTableWidth={860}
-                      pageSize={8}
-                    />
-                  </DetailPanelContent>
-                </VmTabs.Panel>
-
-                <VmTabs.Panel id="payments">
-                  <DetailPanelContent>
-                    <HrDataTable<HrEmployeePaymentRecord>
-                      ariaLabel="Pagos registrados"
-                      columns={paymentColumns}
-                      rows={payments}
-                      loading={paymentsLoading}
-                      emptyText="Sin pagos para este corte"
-                      minTableWidth={560}
-                      pageSize={5}
-                    />
-                  </DetailPanelContent>
-                </VmTabs.Panel>
-              </DetailTabs>
-            ) : (
-              <DetailEmptyState>
-                <DetailEmptyTitle>Sin corte seleccionado</DetailEmptyTitle>
-                <DetailEmptyText>
-                  Crea un corte del periodo para revisar colaboradores y pagos.
-                </DetailEmptyText>
-              </DetailEmptyState>
-            )}
-          </DetailSection>
-        </PeriodsContent>
+            <PeriodsContent>
+              <HrDataTable<HrCommissionPeriodRecord>
+                ariaLabel="Cortes y pagos de comisiones"
+                title="Cortes del periodo"
+                columns={periodColumns}
+                rows={periods}
+                loading={loading}
+                minTableWidth={760}
+                pageSize={10}
+                selectedRowId={selectedPeriod?.id}
+                onRowClick={handleOpenPeriodDetail}
+              />
+            </PeriodsContent>
+          </>
+        )}
       </Page>
 
       {paymentLine ? (
@@ -784,6 +997,14 @@ export default function HrCommissionPeriodsPage() {
           onFinish={handleAdjustPayableAmount}
         />
       ) : null}
+      <HrCommissionCutRulesModal
+        actionKey={actionKey}
+        isOpen={cutRulesModalOpen}
+        loading={cutRulesLoading}
+        rules={cutRules}
+        onCancel={() => setCutRulesModalOpen(false)}
+        onSave={handleSaveCutRule}
+      />
     </>
   );
 }

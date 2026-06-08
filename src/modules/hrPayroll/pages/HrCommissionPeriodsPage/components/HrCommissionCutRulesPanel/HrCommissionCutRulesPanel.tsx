@@ -1,268 +1,187 @@
-import type { FormEvent } from 'react';
+import type { FormEvent, Key } from 'react';
 import { useState } from 'react';
 
-import { VmButton, VmForm, VmInput, VmSwitch } from '@/components/heroui';
-import {
-  CheckCircleOutlined,
-  EditOutlined,
-  PlusOutlined,
-  SaveOutlined,
-  StopOutlined,
-} from '@/constants/icons/antd';
+import { VmForm, VmListBox, VmSelect } from '@/components/heroui';
+import { HR_COMMISSION_CUT_RULE_FREQUENCY_LABELS as FREQUENCY_LABELS } from '@/modules/hrPayroll/utils/hrPayrollDisplay';
 import type {
+  HrCommissionCutRuleFrequency,
   HrCommissionCutRuleInput,
   HrCommissionCutRuleRecord,
 } from '@/types/hrPayroll';
 
-import { formatHrCommissionCutRuleDayRange } from '../../utils/hrCommissionCutRules';
 import {
-  DayField,
-  DayGroup,
-  DayInput,
-  EmptyState,
   Field,
   FieldLabel,
-  FormActions,
   FormGrid,
+  FrequencyHelp,
+  FrequencyListBox,
   Panel,
   PanelHeader,
   PanelTitle,
-  RuleActions,
-  RuleDetail,
-  RuleList,
-  RuleMeta,
-  RuleName,
-  RuleRow,
-  StatusPill,
-  SwitchField,
 } from './HrCommissionCutRulesPanel.styles';
 
 type RuleDraft = {
-  active: boolean;
   endDay: number;
+  frequency: HrCommissionCutRuleFrequency;
   id: string | null;
-  label: string;
   sortOrder: number;
   startDay: number;
 };
+
+const DEFAULT_RULE_LABELS: Record<HrCommissionCutRuleFrequency, string> = {
+  weekly: 'Corte semanal',
+  biweekly: 'Corte quincenal',
+  monthly: 'Corte mensual',
+};
+
+const DEFAULT_FREQUENCY_OPTION = {
+  frequency: 'biweekly' as const,
+  startDay: 1,
+  endDay: 15,
+  description: '1-15 y 16-fin de mes',
+};
+
+const FREQUENCY_OPTIONS: Array<{
+  description: string;
+  endDay: number;
+  frequency: HrCommissionCutRuleFrequency;
+  startDay: number;
+}> = [
+  {
+    frequency: 'weekly',
+    startDay: 1,
+    endDay: 7,
+    description: 'Lunes a domingo',
+  },
+  DEFAULT_FREQUENCY_OPTION,
+  {
+    frequency: 'monthly',
+    startDay: 1,
+    endDay: 31,
+    description: 'Mes completo',
+  },
+];
+
+const getFrequencyOption = (frequency: HrCommissionCutRuleFrequency) =>
+  FREQUENCY_OPTIONS.find((option) => option.frequency === frequency) ??
+  DEFAULT_FREQUENCY_OPTION;
 
 interface HrCommissionCutRulesPanelProps {
   actionKey: string | null;
   loading?: boolean;
   onSave: (rule: HrCommissionCutRuleInput) => Promise<boolean>;
-  onSetActive: (
-    rule: HrCommissionCutRuleRecord,
-    active: boolean,
-  ) => Promise<boolean>;
   rules: HrCommissionCutRuleRecord[];
+  variant?: 'standalone' | 'embedded';
 }
-
-const toDay = (value: number | string | null | undefined, fallback: number) => {
-  const parsed = Math.trunc(Number(value));
-  return Number.isFinite(parsed) && parsed >= 1 && parsed <= 31
-    ? parsed
-    : fallback;
-};
 
 const createEmptyDraft = (sortOrder = 1): RuleDraft => ({
   id: null,
-  label: '',
-  startDay: 1,
-  endDay: 15,
-  active: true,
+  frequency: 'biweekly',
+  startDay: getFrequencyOption('biweekly').startDay,
+  endDay: getFrequencyOption('biweekly').endDay,
   sortOrder,
 });
 
 const createDraftFromRule = (rule: HrCommissionCutRuleRecord): RuleDraft => ({
   id: rule.id,
-  label: rule.label,
-  startDay: rule.startDay,
-  endDay: rule.endDay,
-  active: rule.active,
+  frequency: rule.frequency,
+  startDay: getFrequencyOption(rule.frequency).startDay,
+  endDay: getFrequencyOption(rule.frequency).endDay,
   sortOrder: rule.sortOrder,
 });
+
+const resolveConfigurationRule = (rules: HrCommissionCutRuleRecord[]) =>
+  rules.find((rule) => rule.active) ?? rules[0] ?? null;
 
 export function HrCommissionCutRulesPanel({
   actionKey,
   loading = false,
   onSave,
-  onSetActive,
   rules,
+  variant = 'standalone',
 }: HrCommissionCutRulesPanelProps) {
-  const [draft, setDraft] = useState<RuleDraft>(() => createEmptyDraft());
+  const configurationRule = resolveConfigurationRule(rules);
+  const [draft, setDraft] = useState<RuleDraft>(() =>
+    configurationRule
+      ? createDraftFromRule(configurationRule)
+      : createEmptyDraft(),
+  );
   const saveKey = `cut-rule:save:${draft.id ?? 'new'}`;
   const saving = actionKey === saveKey;
   const formDisabled = loading || saving;
-  const startDay = toDay(draft.startDay, 1);
-  const endDay = toDay(draft.endDay, 31);
-  const formInvalid = !draft.label.trim() || startDay > endDay;
+  const frequencyOption = getFrequencyOption(draft.frequency);
 
-  const updateDraft = <K extends keyof RuleDraft>(
-    field: K,
-    value: RuleDraft[K],
-  ) => {
-    setDraft((current) => ({ ...current, [field]: value }));
-  };
+  const handleFrequencyChange = (key: Key | null) => {
+    const frequency = String(key ?? 'biweekly') as HrCommissionCutRuleFrequency;
+    const option = getFrequencyOption(frequency);
 
-  const resetDraft = () => {
-    setDraft(createEmptyDraft(rules.length + 1));
+    setDraft((current) => ({
+      ...current,
+      frequency: option.frequency,
+      startDay: option.startDay,
+      endDay: option.endDay,
+    }));
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (formInvalid) return;
 
-    const saved = await onSave({
+    await onSave({
       id: draft.id,
-      label: draft.label,
-      frequency: 'monthly',
-      startDay,
-      endDay,
-      active: draft.active,
-      sortOrder: draft.sortOrder || startDay,
+      label: DEFAULT_RULE_LABELS[frequencyOption.frequency],
+      frequency: frequencyOption.frequency,
+      startDay: frequencyOption.startDay,
+      endDay: frequencyOption.endDay,
+      active: true,
+      sortOrder: draft.sortOrder || frequencyOption.startDay,
     });
-    if (saved) resetDraft();
   };
 
   return (
-    <Panel>
-      <PanelHeader>
-        <PanelTitle>Reglas de corte</PanelTitle>
-        <VmButton
-          size="sm"
-          variant="secondary"
-          isDisabled={formDisabled}
-          onPress={resetDraft}
-        >
-          <PlusOutlined />
-          Nueva
-        </VmButton>
-      </PanelHeader>
+    <Panel $variant={variant}>
+      {variant === 'embedded' ? null : (
+        <PanelHeader>
+          <PanelTitle>Configuracion del corte</PanelTitle>
+        </PanelHeader>
+      )}
 
       <VmForm id="hr-cut-rule-form" onSubmit={handleSubmit}>
         <FormGrid>
           <Field>
-            <FieldLabel>Nombre</FieldLabel>
-            <VmInput
-              aria-label="Nombre de regla"
-              value={draft.label}
-              disabled={formDisabled}
-              placeholder="Primera quincena"
-              onChange={(event) => updateDraft('label', event.target.value)}
-            />
-          </Field>
-
-          <Field>
-            <FieldLabel>Dia inicial</FieldLabel>
-            <DayField
-              aria-label="Dia inicial"
-              minValue={1}
-              maxValue={31}
-              step={1}
-              value={startDay}
+            <FieldLabel>Frecuencia</FieldLabel>
+            <VmSelect
+              aria-label="Frecuencia de corte"
+              selectedKey={frequencyOption.frequency}
               isDisabled={formDisabled}
-              onChange={(value) => updateDraft('startDay', toDay(value, 1))}
+              onSelectionChange={handleFrequencyChange}
             >
-              <DayGroup>
-                <DayInput />
-              </DayGroup>
-            </DayField>
+              <VmSelect.Trigger>
+                <VmSelect.Value>
+                  {FREQUENCY_LABELS[frequencyOption.frequency]}
+                </VmSelect.Value>
+                <VmSelect.Indicator />
+              </VmSelect.Trigger>
+              <VmSelect.Popover>
+                <FrequencyListBox aria-label="Frecuencias de corte">
+                  {FREQUENCY_OPTIONS.map((option) => (
+                    <VmListBox.Item
+                      key={option.frequency}
+                      id={option.frequency}
+                      textValue={FREQUENCY_LABELS[option.frequency]}
+                    >
+                      {FREQUENCY_LABELS[option.frequency]}
+                      <VmListBox.ItemIndicator />
+                    </VmListBox.Item>
+                  ))}
+                </FrequencyListBox>
+              </VmSelect.Popover>
+            </VmSelect>
+            <FrequencyHelp>{frequencyOption.description}</FrequencyHelp>
           </Field>
-
-          <Field>
-            <FieldLabel>Dia final</FieldLabel>
-            <DayField
-              aria-label="Dia final"
-              minValue={1}
-              maxValue={31}
-              step={1}
-              value={endDay}
-              isDisabled={formDisabled}
-              onChange={(value) => updateDraft('endDay', toDay(value, 31))}
-            >
-              <DayGroup>
-                <DayInput />
-              </DayGroup>
-            </DayField>
-          </Field>
-
-          <SwitchField>
-            <VmSwitch
-              aria-label="Regla activa"
-              isSelected={draft.active}
-              isDisabled={formDisabled}
-              onChange={(active) => updateDraft('active', active)}
-            />
-            Activa
-          </SwitchField>
-
-          <FormActions>
-            <VmButton
-              type="submit"
-              form="hr-cut-rule-form"
-              variant="primary"
-              isDisabled={formDisabled || formInvalid}
-            >
-              <SaveOutlined />
-              {saving ? 'Guardando...' : 'Guardar'}
-            </VmButton>
-          </FormActions>
         </FormGrid>
       </VmForm>
-
-      {rules.length === 0 ? (
-        <EmptyState>
-          {loading ? 'Cargando reglas...' : 'Sin reglas configuradas'}
-        </EmptyState>
-      ) : (
-        <RuleList>
-          {rules.map((rule) => {
-            const statusKey = `cut-rule:active:${rule.id}`;
-            const toggling = actionKey === statusKey;
-
-            return (
-              <RuleRow key={rule.id}>
-                <RuleMeta>
-                  <RuleName>{rule.label}</RuleName>
-                  <RuleDetail>
-                    Rango mensual: {formatHrCommissionCutRuleDayRange(rule)}
-                  </RuleDetail>
-                </RuleMeta>
-                <StatusPill $active={rule.active}>
-                  {rule.active ? 'Activa' : 'Inactiva'}
-                </StatusPill>
-                <RuleActions>
-                  <VmButton
-                    size="sm"
-                    variant="secondary"
-                    isDisabled={formDisabled || toggling}
-                    onPress={() => setDraft(createDraftFromRule(rule))}
-                  >
-                    <EditOutlined />
-                    Editar
-                  </VmButton>
-                  <VmButton
-                    size="sm"
-                    variant={rule.active ? 'secondary' : 'primary'}
-                    isDisabled={formDisabled || toggling}
-                    onPress={() => void onSetActive(rule, !rule.active)}
-                  >
-                    {rule.active ? <StopOutlined /> : <CheckCircleOutlined />}
-                    {toggling
-                      ? 'Guardando...'
-                      : rule.active
-                        ? 'Desactivar'
-                        : 'Reactivar'}
-                  </VmButton>
-                </RuleActions>
-              </RuleRow>
-            );
-          })}
-        </RuleList>
-      )}
     </Panel>
   );
 }
 
 export default HrCommissionCutRulesPanel;
-

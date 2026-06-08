@@ -48,9 +48,129 @@ type InvoiceSubmissionGuardFailure = Extract<
   { ok: false }
 >;
 
+const DGII_CONSUMER_FINAL_DETAIL_THRESHOLD = 250000;
+const GENERIC_CLIENT_IDS = new Set(['GC-0000']);
+const GENERIC_CLIENT_NAMES = new Set(['GENERIC CLIENT', 'CLIENTE GENERICO']);
+
 const isInvoiceSubmissionGuardFailure = (
   result: InvoiceSubmissionGuardsResult,
 ): result is InvoiceSubmissionGuardFailure => result.ok === false;
+
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+
+const toCleanString = (value: unknown): string | null => {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return String(value);
+  }
+
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length ? trimmed : null;
+};
+
+const safeNumber = (value: unknown): number | null => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const stripAccents = (value: unknown) =>
+  String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+const normalizeToken = (value: unknown) =>
+  stripAccents(value)
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, ' ');
+
+const resolveFiscalDocumentType = (value: unknown): string | null => {
+  const token = normalizeToken(value);
+  if (!token) return null;
+
+  const compact = token.replace(/\s+/g, '');
+  if (compact.startsWith('B01') || compact.startsWith('E31')) return 'E31';
+  if (compact.startsWith('B02') || compact.startsWith('E32')) return 'E32';
+  if (compact.startsWith('B15') || compact.startsWith('E45')) return 'E45';
+  if (token.includes('CONSUMIDOR') || token.includes('CONSUMER')) return 'E32';
+  if (token.includes('CREDITO FISCAL') || token.includes('TAX CREDIT')) {
+    return 'E31';
+  }
+  if (token.includes('GUBERNAMENTAL') || token.includes('GOVERNMENT')) {
+    return 'E45';
+  }
+
+  return null;
+};
+
+const resolveNumberFromValue = (value: unknown): number | null => {
+  const direct = safeNumber(value);
+  if (direct !== null) return direct;
+  return safeNumber(asRecord(value).value);
+};
+
+const resolveCartTotal = (cart: Record<string, unknown>): number | null =>
+  resolveNumberFromValue(cart.totalPurchase) ??
+  resolveNumberFromValue(cart.totalAmount) ??
+  resolveNumberFromValue(cart.payment);
+
+const resolveClientIdentificationNumber = (
+  client: Record<string, unknown> | null,
+): string | null => {
+  const clientRecord = asRecord(client);
+  const identification = asRecord(clientRecord.identification);
+
+  return (
+    toCleanString(clientRecord.rnc) ??
+    toCleanString(clientRecord.RNC) ??
+    toCleanString(clientRecord.personalID) ??
+    toCleanString(clientRecord.personalId) ??
+    toCleanString(clientRecord.cedula) ??
+    toCleanString(clientRecord.identificationNumber) ??
+    toCleanString(clientRecord.taxId) ??
+    toCleanString(identification.number) ??
+    null
+  );
+};
+
+const hasFiscalClientIdentity = (
+  client: Record<string, unknown> | null,
+): boolean => {
+  const clientRecord = asRecord(client);
+  const clientId = toCleanString(clientRecord.id);
+  if (!clientId || GENERIC_CLIENT_IDS.has(clientId.toUpperCase())) {
+    return false;
+  }
+
+  const clientName = normalizeToken(clientRecord.name);
+  if (GENERIC_CLIENT_NAMES.has(clientName)) return false;
+
+  return Boolean(resolveClientIdentificationNumber(client));
+};
+
+const requiresFiscalClientIdentity = ({
+  cart,
+  ncfType,
+}: {
+  cart: Record<string, unknown>;
+  ncfType: string;
+}): boolean => {
+  const documentType = resolveFiscalDocumentType(ncfType);
+  const total = resolveCartTotal(cart);
+
+  if (
+    documentType === 'E32' &&
+    total !== null &&
+    total < DGII_CONSUMER_FINAL_DETAIL_THRESHOLD
+  ) {
+    return false;
+  }
+
+  return true;
+};
 
 const toInvoiceRecord = (
   value: unknown,
@@ -134,6 +254,23 @@ export const submitInvoicePanel = async ({
           message: 'Comprobante requerido',
           description:
             'Selecciona el tipo de comprobante fiscal antes de completar la venta.',
+          duration: 6,
+        });
+        dispatch(unlockTaxReceiptType());
+        return;
+      }
+
+      if (
+        requiresFiscalClientIdentity({
+          cart,
+          ncfType: selectedNcfType,
+        }) &&
+        !hasFiscalClientIdentity(client)
+      ) {
+        notification.warning({
+          message: 'Cliente fiscal requerido',
+          description:
+            'Selecciona o crea un cliente con RNC o cedula antes de completar este comprobante.',
           duration: 6,
         });
         dispatch(unlockTaxReceiptType());

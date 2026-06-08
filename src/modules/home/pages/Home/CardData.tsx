@@ -10,6 +10,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
+import { TeamOutlined } from '@/constants/icons/antd';
 import { developerShortcuts } from '@/constants/devtools/developerShortcuts';
 import { icons } from '@/constants/icons/icons';
 import ROUTES_NAME from '@/router/routes/routesName';
@@ -41,6 +42,7 @@ const {
   ACCOUNTING_TERM,
   ACCOUNT_PAYABLE,
   TREASURY_TERM,
+  HR_PAYROLL_TERM,
 } = ROUTES_NAME;
 const { UTILITY_REPORT } = UTILITY_TERM;
 const { USERS, USERS_LIST, USERS_SESSION_LOGS, SETTING } = SETTING_TERM;
@@ -55,6 +57,7 @@ const {
 } = ACCOUNTING_TERM;
 const { ACCOUNT_PAYABLE_LIST } = ACCOUNT_PAYABLE;
 const { TREASURY_BANK_ACCOUNTS } = TREASURY_TERM;
+const { HR_PAYROLL, HR_COMMISSIONS, HR_COMMISSION_PERIODS } = HR_PAYROLL_TERM;
 
 const menuItems = createMenuItems([
   {
@@ -92,6 +95,24 @@ const menuItems = createMenuItems([
     icon: icons.menu.unSelected.order,
     route: ROUTES_NAME.ORDER_TERM.ORDERS,
     category: 'Compras y gastos',
+  },
+  {
+    title: 'Colaboradores',
+    icon: <TeamOutlined />,
+    route: HR_PAYROLL,
+    category: 'RRHH y nomina',
+  },
+  {
+    title: 'Comisiones RRHH',
+    icon: <TeamOutlined />,
+    route: HR_COMMISSIONS,
+    category: 'RRHH y nomina',
+  },
+  {
+    title: 'Cortes y pagos',
+    icon: icons.finances.money,
+    route: HR_COMMISSION_PERIODS,
+    category: 'RRHH y nomina',
   },
   {
     title: 'BackOrders',

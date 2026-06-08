@@ -7,6 +7,7 @@ import type {
   SortBy,
   UnknownRecord,
 } from '../types';
+import { resolveBusinessFiscalRollout } from '@/utils/fiscal/fiscalRollout';
 
 export const EMPTY_BUSINESSES: BusinessDoc[] = [];
 
@@ -157,6 +158,7 @@ export const normalizeBusinessDoc = (value: unknown): BusinessDoc | null => {
   if (!id) return null;
 
   const ownerData = resolveOwnerData(root, businessNode, nestedBusinessNode);
+  const fiscalRollout = resolveBusinessFiscalRollout(root);
   const createdAt =
     (root.createdAt as BusinessCreatedAt | undefined) ??
     (businessNode.createdAt as BusinessCreatedAt | undefined) ??
@@ -228,6 +230,12 @@ export const normalizeBusinessDoc = (value: unknown): BusinessDoc | null => {
       subscriptionPlanId:
         resolveString(rootSubscription.planId, nestedSubscription.planId) ||
         null,
+      fiscalRollout: {
+        reportingEnabled: fiscalRollout.reportingEnabled,
+        monthlyComplianceEnabled: fiscalRollout.monthlyComplianceEnabled,
+        electronicModelEnabled: fiscalRollout.electronicModelEnabled,
+        electronicTransportEnabled: fiscalRollout.electronicTransportEnabled,
+      },
     },
   };
 };
