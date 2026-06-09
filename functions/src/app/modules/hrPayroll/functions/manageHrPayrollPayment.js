@@ -104,7 +104,7 @@ const recordHrPayrollPayment = async ({
       transaction.get(paymentRef),
     ]);
     if (!lineSnap.exists) {
-      throw new HttpsError('not-found', 'La linea de nomina no existe.');
+      throw new HttpsError('not-found', 'La línea de nómina no existe.');
     }
 
     const line = { id: lineSnap.id, ...lineSnap.data() };
@@ -118,7 +118,7 @@ const recordHrPayrollPayment = async ({
       }
       throw new HttpsError(
         'already-exists',
-        'Ya existe un pago de nomina para esta linea.',
+        'Ya existe un pago de nómina para esta línea.',
       );
     }
 
@@ -178,16 +178,37 @@ const recordHrPayrollPayment = async ({
       );
     });
     transaction.set(lineRef, documents.linePatch, { merge: true });
-    (Array.isArray(line.commissionEntryIds) ? line.commissionEntryIds : [])
-      .map(toCleanString)
-      .filter(Boolean)
-      .forEach((entryId) => {
-        transaction.set(
-          db.doc(`businesses/${businessId}/hrCommissionEntries/${entryId}`),
-          documents.entryPatch,
-          { merge: true },
-        );
-      });
+    const regularEntryIds = new Set(
+      (Array.isArray(line.commissionEntryIds) ? line.commissionEntryIds : [])
+        .map(toCleanString)
+        .filter(Boolean),
+    );
+    const retroactiveEntryIds = new Set(
+      (Array.isArray(line.retroactiveEntryIds) ? line.retroactiveEntryIds : [])
+        .map(toCleanString)
+        .filter(Boolean),
+    );
+    regularEntryIds.forEach((entryId) => {
+      transaction.set(
+        db.doc(`businesses/${businessId}/hrCommissionEntries/${entryId}`),
+        documents.entryPatch,
+        { merge: true },
+      );
+    });
+    retroactiveEntryIds.forEach((entryId) => {
+      transaction.set(
+        db.doc(`businesses/${businessId}/hrCommissionEntries/${entryId}`),
+        {
+          ...documents.entryPatch,
+          isRetroactive: true,
+          retroactiveResolutionStatus: 'paid',
+          retroactiveTargetPeriodId: periodId,
+          retroactiveTargetPayrollRunId: payrollRunId,
+          retroactiveTargetLineId: line.id,
+        },
+        { merge: true },
+      );
+    });
 
     if (payrollRunRef) {
       transaction.set(payrollRunRef, aggregatePatch, { merge: true });
@@ -224,7 +245,7 @@ export const manageHrPayrollPayment = onCall(async (request) => {
 
     const action = normalizeAction(payload.action);
     if (action !== 'record') {
-      throw new HttpsError('invalid-argument', 'Accion de pago no soportada.');
+      throw new HttpsError('invalid-argument', 'Acción de pago no soportada.');
     }
 
     return recordHrPayrollPayment({
@@ -243,6 +264,6 @@ export const manageHrPayrollPayment = onCall(async (request) => {
       stack: error instanceof Error ? error.stack : null,
       data: request?.data || null,
     });
-    throw new HttpsError('internal', 'No se pudo registrar el pago de nomina.');
+    throw new HttpsError('internal', 'No se pudo registrar el pago de nómina.');
   }
 });

@@ -12,6 +12,7 @@ import {
 export interface FilterState {
   criterio: string;
   orden: string;
+  itemType: string;
   inventariable: string;
   itbis: string;
   priceStatus: string;
@@ -26,6 +27,7 @@ export interface FilterState {
 export const DEFAULT_FILTERS: FilterState = {
   criterio: 'nombre',
   orden: 'asc',
+  itemType: 'todos',
   inventariable: 'todos',
   itbis: 'todos',
   priceStatus: 'todos',
@@ -66,6 +68,7 @@ export type FilterRootState = { filterProducts: FilterProductsState };
 const STORAGE_KEYS = {
   criterio: 'filterCriterio',
   orden: 'filterOrden',
+  itemType: 'filterItemType',
   inventariable: 'filterInventariable',
   itbis: 'filterItbis',
   priceStatus: 'filterPriceStatus',
@@ -341,6 +344,17 @@ export const filterProductsSlice = createSlice({
       persistContextField(context, 'inventariable', value);
       markContextDirty(state, context);
     },
+    setItemType: (
+      state: FilterProductsState,
+      action: PayloadAction<FilterPayload<FilterState['itemType']>>,
+    ) => {
+      const { context, value } = extractPayload(action.payload);
+      if (value === undefined) return;
+      const contextState = ensureContextState(state, context);
+      contextState.itemType = value;
+      persistContextField(context, 'itemType', value);
+      markContextDirty(state, context);
+    },
     setItbis: (
       state: FilterProductsState,
       action: PayloadAction<FilterPayload<FilterState['itbis']>>,
@@ -590,6 +604,7 @@ export const filterProductsSlice = createSlice({
 export const {
   setCriterio,
   setOrden,
+  setItemType,
   setInventariable,
   setItbis,
   setPriceStatus,
@@ -620,6 +635,10 @@ export const selectCriterio = (
 ) => selectContextFilters(state, context).criterio;
 export const selectOrden = (state: FilterRootState, context?: FilterContext) =>
   selectContextFilters(state, context).orden;
+export const selectItemType = (
+  state: FilterRootState,
+  context?: FilterContext,
+) => selectContextFilters(state, context).itemType;
 export const selectInventariable = (
   state: FilterRootState,
   context?: FilterContext,

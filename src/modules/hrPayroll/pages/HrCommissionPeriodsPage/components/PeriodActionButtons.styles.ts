@@ -31,7 +31,7 @@ export const PeriodActionGroup = styled.div`
     min-width: 0;
   }
 
-  @media (max-width: 640px) {
+  @media (width <= 640px) {
     &[data-layout='toolbar'] {
       width: 100%;
       justify-content: stretch;

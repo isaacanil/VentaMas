@@ -16,6 +16,11 @@ import type {
   HrCommissionCutRuleFrequency,
   HrCommissionCutRuleRecord,
   HrCommissionEntryRecord,
+  HrCommissionNextCutPreview,
+  HrCommissionRetroactiveEntriesResponse,
+  HrCommissionRetroactiveEntryAction,
+  HrCommissionRetroactiveEntryRecord,
+  HrRetroactiveResolutionStatus,
   HrEmployeePaymentRecord,
   HrEmployeePaymentStatus,
   HrPaymentMethod,
@@ -28,9 +33,14 @@ import { normalizeSalaryDeductionLines } from '@/utils/hrPayroll/salaryDeduction
 import { normalizeHrCommissionEntryRecord } from './useHrCommissionEntries';
 
 type ManageHrCommissionPeriodAction =
+  | 'preview_next'
+  | 'list_retroactive_entries'
+  | 'resolve_retroactive_entries'
+  | 'unresolve_retroactive_entries'
   | 'create'
   | 'close'
   | 'approve'
+  | 'revert_approval'
   | 'adjust_line';
 type ManageHrCommissionCutRuleAction =
   | 'upsert_cut_rule'
@@ -45,6 +55,18 @@ interface UseHrCommissionCutRulesArgs {
 interface UseHrCommissionPeriodsArgs {
   businessId?: string | null;
   pageSize?: number;
+}
+
+interface UseHrCommissionNextCutPreviewArgs {
+  businessId?: string | null;
+  refreshKey?: number | string;
+  ruleId?: string | null;
+}
+
+interface UseHrCommissionRetroactiveEntriesArgs {
+  businessId?: string | null;
+  refreshKey?: number | string;
+  ruleId?: string | null;
 }
 
 interface UseHrPayrollEmployeeLinesArgs {
@@ -69,6 +91,18 @@ interface HookState<T> {
   rows: T[];
 }
 
+interface PreviewHookState {
+  error: Error | null;
+  key: string;
+  preview: HrCommissionNextCutPreview | null;
+}
+
+interface RetroactiveEntriesHookState {
+  error: Error | null;
+  key: string;
+  result: HrCommissionRetroactiveEntriesResponse | null;
+}
+
 interface UseHrCommissionCutRulesResult {
   error: Error | null;
   loading: boolean;
@@ -79,6 +113,18 @@ interface UseHrCommissionPeriodsResult {
   error: Error | null;
   loading: boolean;
   rows: HrCommissionPeriodRecord[];
+}
+
+interface UseHrCommissionNextCutPreviewResult {
+  error: Error | null;
+  loading: boolean;
+  preview: HrCommissionNextCutPreview | null;
+}
+
+interface UseHrCommissionRetroactiveEntriesResult {
+  error: Error | null;
+  loading: boolean;
+  result: HrCommissionRetroactiveEntriesResponse | null;
 }
 
 interface UseHrPayrollEmployeeLinesResult {
@@ -105,6 +151,7 @@ interface ManageHrCommissionPeriodArgs {
   comment?: string | null;
   cutRuleId?: string | null;
   endDate?: Date | string | null;
+  entryIds?: string[];
   periodId?: string | null;
   payrollLineId?: string | null;
   ruleId?: string | null;
@@ -151,6 +198,7 @@ type ManageHrCommissionPeriodPayload = {
   comment?: string | null;
   cutRuleId?: string | null;
   endDate?: string | null;
+  entryIds?: string[];
   periodId?: string | null;
   payrollLineId?: string | null;
   ruleId?: string | null;
@@ -206,6 +254,21 @@ export interface ManageHrCommissionPeriodResponse {
   payrollLineId?: string | null;
 }
 
+export interface ManageHrCommissionRetroactiveResolutionResponse {
+  ok: boolean;
+  businessId: string;
+  targetPeriodId?: string | null;
+  resolvedCount?: number;
+  unresolvedCount?: number;
+  entryIds: string[];
+}
+
+type ManageHrCommissionPeriodCallableResponse =
+  | ManageHrCommissionPeriodResponse
+  | HrCommissionNextCutPreview
+  | HrCommissionRetroactiveEntriesResponse
+  | ManageHrCommissionRetroactiveResolutionResponse;
+
 export interface ManageHrCommissionCutRuleResponse {
   ok: boolean;
   businessId: string;
@@ -231,7 +294,7 @@ export interface ManageHrPayrollPaymentResponse {
 
 const manageHrCommissionPeriodCallable = createFirebaseCallable<
   ManageHrCommissionPeriodPayload,
-  ManageHrCommissionPeriodResponse
+  ManageHrCommissionPeriodCallableResponse
 >('manageHrCommissionPeriod');
 
 const manageHrCommissionCutRuleCallable = createFirebaseCallable<
@@ -281,6 +344,25 @@ const CUT_RULE_FREQUENCY_VALUES = new Set<HrCommissionCutRuleFrequency>([
   'biweekly',
   'monthly',
 ]);
+
+const RETROACTIVE_ENTRY_ACTION_VALUES =
+  new Set<HrCommissionRetroactiveEntryAction>([
+    'adjustment_required',
+    'recalculable',
+    'selected_for_next_cut',
+    'selected_for_other_cut',
+    'included_in_cut',
+    'paid',
+    'review_required',
+  ]);
+
+const RETROACTIVE_RESOLUTION_STATUS_VALUES =
+  new Set<HrRetroactiveResolutionStatus>([
+    'selected_for_next_cut',
+    'included_in_cut',
+    'paid',
+    'cancelled',
+  ]);
 
 const isNonNullableString = (value: string | null): value is string =>
   Boolean(value);
@@ -396,6 +478,8 @@ const normalizeCutRuleRecord = (
   frequency: normalizeCutRuleFrequency(data),
   startDay: toDayNumber(data.startDay, 1),
   endDay: toDayNumber(data.endDay, 31),
+  businessTimeZone:
+    toCleanString(data.businessTimeZone) ?? 'America/Santo_Domingo',
   active: data.active !== false,
   sortOrder: toFiniteNumber(data.sortOrder, toDayNumber(data.startDay, 1)),
   createdAt: data.createdAt,
@@ -428,6 +512,10 @@ const normalizePeriodRecord = (
   periodKey: toCleanString(data.periodKey),
   label: toCleanString(data.label),
   status: normalizeEnum(data.status, PERIOD_STATUS_VALUES, 'draft'),
+  startDateKey: toCleanString(data.startDateKey),
+  endDateKey: toCleanString(data.endDateKey),
+  businessTimeZone:
+    toCleanString(data.businessTimeZone) ?? 'America/Santo_Domingo',
   startDate: data.startDate,
   endDate: data.endDate,
   cutRuleId: toCleanString(data.cutRuleId),
@@ -443,6 +531,19 @@ const normalizePeriodRecord = (
     0,
     toFiniteNumber(data.totalCommissionAmount),
   ),
+  normalEntriesCount: Math.max(0, toFiniteNumber(data.normalEntriesCount)),
+  retroactiveAdjustmentAmount: toMoneyNumber(data.retroactiveAdjustmentAmount),
+  retroactiveAdjustmentsCount: Math.max(
+    0,
+    toFiniteNumber(data.retroactiveAdjustmentsCount),
+  ),
+  retroactiveSourcePeriods: Array.isArray(data.retroactiveSourcePeriods)
+    ? data.retroactiveSourcePeriods.filter(
+        (entry): entry is Record<string, unknown> =>
+          Boolean(entry) && typeof entry === 'object',
+      )
+    : [],
+  hasRetroactiveAdjustments: Boolean(data.hasRetroactiveAdjustments),
   grossAmount: resolveGrossAmount(data),
   deductionsAmount: resolveDeductionsAmount(data),
   netAmount: resolveNetAmount(data),
@@ -482,6 +583,21 @@ const normalizePayrollEmployeeLineRecord = (
   netAmount: resolveNetAmount(data),
   totalPayableAmount: resolveNetAmount(data),
   commissionAmount: Math.max(0, toFiniteNumber(data.commissionAmount)),
+  retroactiveAdjustmentAmount: toMoneyNumber(data.retroactiveAdjustmentAmount),
+  retroactiveAdjustmentsCount: Math.max(
+    0,
+    toFiniteNumber(data.retroactiveAdjustmentsCount),
+  ),
+  retroactiveEntryIds: Array.isArray(data.retroactiveEntryIds)
+    ? data.retroactiveEntryIds.map(toCleanString).filter(isNonNullableString)
+    : [],
+  retroactiveSourcePeriods: Array.isArray(data.retroactiveSourcePeriods)
+    ? data.retroactiveSourcePeriods.filter(
+        (entry): entry is Record<string, unknown> =>
+          Boolean(entry) && typeof entry === 'object',
+      )
+    : [],
+  hasRetroactiveAdjustments: Boolean(data.hasRetroactiveAdjustments),
   deductionLines: normalizeSalaryDeductionLines(
     data.deductionLines ?? data.salaryDeductions,
   ),
@@ -544,12 +660,181 @@ const normalizeHrEmployeePaymentRecord = (
   createdBy: toCleanString(data.createdBy),
 });
 
+const normalizeNextCutPreview = (
+  data: ManageHrCommissionPeriodCallableResponse,
+): HrCommissionNextCutPreview => {
+  const record = data as Record<string, unknown>;
+  const blockedReason = toCleanString(record.blockedReason);
+  const exceedsMaxCutEntries = Boolean(record.exceedsMaxCutEntries);
+  const retroactiveEntriesCount = Math.max(
+    0,
+    toFiniteNumber(record.retroactiveEntriesCount),
+  );
+  const pendingRetroactiveEntriesCount = Math.max(
+    0,
+    toFiniteNumber(record.pendingRetroactiveEntriesCount),
+  );
+  const incompatibleRetroactiveEntriesCount = Math.max(
+    0,
+    toFiniteNumber(record.incompatibleRetroactiveEntriesCount),
+  );
+  const reviewRequiredRetroactiveEntriesCount = Math.max(
+    0,
+    toFiniteNumber(record.reviewRequiredRetroactiveEntriesCount),
+  );
+  const hasBlockingRetroactiveEntries =
+    Boolean(record.hasRetroactiveEntries) ||
+    pendingRetroactiveEntriesCount > 0 ||
+    incompatibleRetroactiveEntriesCount > 0 ||
+    reviewRequiredRetroactiveEntriesCount > 0;
+  const blocked =
+    Boolean(record.blocked) ||
+    Boolean(blockedReason) ||
+    exceedsMaxCutEntries ||
+    hasBlockingRetroactiveEntries;
+
+  return {
+    ...record,
+    ok: record.ok !== false,
+    preview: true,
+    blocked,
+    blockedReason,
+    businessId: toCleanString(record.businessId),
+    ruleId: toCleanString(record.ruleId),
+    ruleLabel: toCleanString(record.ruleLabel),
+    frequency: normalizeCutRuleFrequency(record),
+    startDateKey: toCleanString(record.startDateKey),
+    endDateKey: toCleanString(record.endDateKey),
+    businessTimeZone:
+      toCleanString(record.businessTimeZone) ?? 'America/Santo_Domingo',
+    employeesCount: Math.max(0, toFiniteNumber(record.employeesCount)),
+    entriesCount: Math.max(0, toFiniteNumber(record.entriesCount)),
+    normalEntriesCount: Math.max(0, toFiniteNumber(record.normalEntriesCount)),
+    totalEstimatedAmount: Math.max(
+      0,
+      toFiniteNumber(record.totalEstimatedAmount),
+    ),
+    currency: toCleanString(record.currency)?.toUpperCase() ?? 'DOP',
+    exceedsMaxCutEntries,
+    maxCutEntries: Math.max(0, toFiniteNumber(record.maxCutEntries, 450)),
+    retroactiveEntriesCount,
+    selectedRetroactiveEntriesCount: Math.max(
+      0,
+      toFiniteNumber(record.selectedRetroactiveEntriesCount),
+    ),
+    pendingRetroactiveEntriesCount,
+    recalculableRetroactiveEntriesCount: Math.max(
+      0,
+      toFiniteNumber(record.recalculableRetroactiveEntriesCount),
+    ),
+    incompatibleRetroactiveEntriesCount,
+    reviewRequiredRetroactiveEntriesCount,
+    retroactiveAdjustmentAmount: toMoneyNumber(
+      record.retroactiveAdjustmentAmount,
+    ),
+    hasRetroactiveEntries: hasBlockingRetroactiveEntries,
+    hasRetroactiveAdjustments: Boolean(record.hasRetroactiveAdjustments),
+    canCreate: Boolean(record.canCreate) && !blocked,
+  };
+};
+
+const normalizeRetroactiveEntryRecord = (
+  data: Record<string, unknown>,
+): HrCommissionRetroactiveEntryRecord => ({
+  ...data,
+  id: toCleanString(data.id) ?? toCleanString(data.entryId) ?? '',
+  entryId: toCleanString(data.entryId) ?? toCleanString(data.id) ?? '',
+  dateKey: toCleanString(data.dateKey),
+  employeeId: toCleanString(data.employeeId),
+  employeeCode: toCleanString(data.employeeCode),
+  employeeNameSnapshot: toCleanString(data.employeeNameSnapshot),
+  invoiceId: toCleanString(data.invoiceId),
+  invoiceNumber: toCleanString(data.invoiceNumber),
+  serviceId: toCleanString(data.serviceId),
+  serviceName: toCleanString(data.serviceName),
+  commissionAmount: toMoneyNumber(data.commissionAmount),
+  currency: toCleanString(data.currency)?.toUpperCase() ?? 'DOP',
+  originalPeriodId: toCleanString(data.originalPeriodId),
+  originalPeriodLabel: toCleanString(data.originalPeriodLabel),
+  originalStartDateKey: toCleanString(data.originalStartDateKey),
+  originalEndDateKey: toCleanString(data.originalEndDateKey),
+  originalPeriodStatus: normalizeEnum(
+    data.originalPeriodStatus,
+    PERIOD_STATUS_VALUES,
+    'draft',
+  ),
+  retroactiveResolutionStatus: data.retroactiveResolutionStatus
+    ? normalizeEnum(
+        data.retroactiveResolutionStatus,
+        RETROACTIVE_RESOLUTION_STATUS_VALUES,
+        'selected_for_next_cut',
+      )
+    : null,
+  retroactiveTargetPeriodId: toCleanString(data.retroactiveTargetPeriodId),
+  selectedForCurrentCut: Boolean(data.selectedForCurrentCut),
+  action: normalizeEnum(
+    data.action,
+    RETROACTIVE_ENTRY_ACTION_VALUES,
+    'review_required',
+  ),
+});
+
+const normalizeRetroactiveEntriesResponse = (
+  data: ManageHrCommissionPeriodCallableResponse,
+): HrCommissionRetroactiveEntriesResponse => {
+  const record = data as Record<string, unknown>;
+  const entries = Array.isArray(record.entries)
+    ? record.entries
+        .filter(
+          (entry): entry is Record<string, unknown> =>
+            Boolean(entry) && typeof entry === 'object',
+        )
+        .map(normalizeRetroactiveEntryRecord)
+    : [];
+
+  return {
+    ...record,
+    ok: record.ok !== false,
+    businessId: toCleanString(record.businessId),
+    ruleId: toCleanString(record.ruleId),
+    ruleLabel: toCleanString(record.ruleLabel),
+    targetPeriodId: toCleanString(record.targetPeriodId),
+    startDateKey: toCleanString(record.startDateKey),
+    endDateKey: toCleanString(record.endDateKey),
+    businessTimeZone:
+      toCleanString(record.businessTimeZone) ?? 'America/Santo_Domingo',
+    totalCount: Math.max(0, toFiniteNumber(record.totalCount)),
+    selectedForTargetCount: Math.max(
+      0,
+      toFiniteNumber(record.selectedForTargetCount),
+    ),
+    adjustmentRequiredCount: Math.max(
+      0,
+      toFiniteNumber(record.adjustmentRequiredCount),
+    ),
+    recalculableCount: Math.max(0, toFiniteNumber(record.recalculableCount)),
+    selectedForOtherTargetCount: Math.max(
+      0,
+      toFiniteNumber(record.selectedForOtherTargetCount),
+    ),
+    reviewRequiredCount: Math.max(
+      0,
+      toFiniteNumber(record.reviewRequiredCount),
+    ),
+    retroactiveAdjustmentAmount: toMoneyNumber(
+      record.retroactiveAdjustmentAmount,
+    ),
+    entries,
+  };
+};
+
 export const manageHrCommissionPeriod = async ({
   action,
   businessId,
   comment,
   cutRuleId,
   endDate,
+  entryIds,
   periodId,
   payrollLineId,
   ruleId,
@@ -561,12 +846,13 @@ export const manageHrCommissionPeriod = async ({
   }
 
   const { sessionToken } = getStoredSession();
-  return manageHrCommissionPeriodCallable({
+  const result = await manageHrCommissionPeriodCallable({
     action,
     businessId,
     comment: toCleanString(comment),
     cutRuleId: toCleanString(cutRuleId),
     endDate: toCallableDate(endDate),
+    entryIds,
     periodId: toCleanString(periodId),
     payrollLineId: toCleanString(payrollLineId),
     ruleId: toCleanString(ruleId),
@@ -574,6 +860,102 @@ export const manageHrCommissionPeriod = async ({
     totalToPay,
     ...(sessionToken ? { sessionToken } : {}),
   });
+
+  return result as ManageHrCommissionPeriodResponse;
+};
+
+export const previewHrCommissionPeriod = async ({
+  businessId,
+  ruleId,
+}: {
+  businessId: string;
+  ruleId: string;
+}): Promise<HrCommissionNextCutPreview> => {
+  if (!businessId || !ruleId) {
+    throw new Error('Falta la regla activa para previsualizar el corte.');
+  }
+
+  const { sessionToken } = getStoredSession();
+  const result = await manageHrCommissionPeriodCallable({
+    action: 'preview_next',
+    businessId,
+    ruleId: toCleanString(ruleId),
+    ...(sessionToken ? { sessionToken } : {}),
+  });
+
+  return normalizeNextCutPreview(result);
+};
+
+export const listHrCommissionRetroactiveEntries = async ({
+  businessId,
+  ruleId,
+}: {
+  businessId: string;
+  ruleId: string;
+}): Promise<HrCommissionRetroactiveEntriesResponse> => {
+  if (!businessId || !ruleId) {
+    throw new Error('Falta la regla activa para revisar retroactivas.');
+  }
+
+  const { sessionToken } = getStoredSession();
+  const result = await manageHrCommissionPeriodCallable({
+    action: 'list_retroactive_entries',
+    businessId,
+    ruleId: toCleanString(ruleId),
+    ...(sessionToken ? { sessionToken } : {}),
+  });
+
+  return normalizeRetroactiveEntriesResponse(result);
+};
+
+export const resolveHrCommissionRetroactiveEntries = async ({
+  businessId,
+  entryIds,
+  ruleId,
+}: {
+  businessId: string;
+  entryIds: string[];
+  ruleId: string;
+}): Promise<ManageHrCommissionRetroactiveResolutionResponse> => {
+  if (!businessId || !ruleId || !entryIds.length) {
+    throw new Error('Faltan datos para incluir retroactivas.');
+  }
+
+  const { sessionToken } = getStoredSession();
+  const result = await manageHrCommissionPeriodCallable({
+    action: 'resolve_retroactive_entries',
+    businessId,
+    entryIds,
+    ruleId,
+    ...(sessionToken ? { sessionToken } : {}),
+  });
+
+  return result as ManageHrCommissionRetroactiveResolutionResponse;
+};
+
+export const unresolveHrCommissionRetroactiveEntries = async ({
+  businessId,
+  entryIds,
+  ruleId,
+}: {
+  businessId: string;
+  entryIds: string[];
+  ruleId: string;
+}): Promise<ManageHrCommissionRetroactiveResolutionResponse> => {
+  if (!businessId || !ruleId || !entryIds.length) {
+    throw new Error('Faltan datos para quitar retroactivas.');
+  }
+
+  const { sessionToken } = getStoredSession();
+  const result = await manageHrCommissionPeriodCallable({
+    action: 'unresolve_retroactive_entries',
+    businessId,
+    entryIds,
+    ruleId,
+    ...(sessionToken ? { sessionToken } : {}),
+  });
+
+  return result as ManageHrCommissionRetroactiveResolutionResponse;
 };
 
 export const adjustHrPayrollLinePayable = async ({
@@ -787,6 +1169,104 @@ export const useHrCommissionPeriods = ({
   }
 
   return state;
+};
+
+export const useHrCommissionNextCutPreview = ({
+  businessId,
+  refreshKey = 0,
+  ruleId,
+}: UseHrCommissionNextCutPreviewArgs): UseHrCommissionNextCutPreviewResult => {
+  const [state, setState] = useState<PreviewHookState>({
+    key: '',
+    preview: null,
+    error: null,
+  });
+  const previewKey = useMemo(
+    () =>
+      [businessId ?? 'no-business', ruleId ?? 'no-rule', refreshKey].join('|'),
+    [businessId, refreshKey, ruleId],
+  );
+
+  useEffect(() => {
+    if (!businessId || !ruleId) return undefined;
+
+    let active = true;
+    void previewHrCommissionPeriod({ businessId, ruleId })
+      .then((preview) => {
+        if (!active) return;
+        setState({ key: previewKey, preview, error: null });
+      })
+      .catch((error) => {
+        if (!active) return;
+        setState({
+          key: previewKey,
+          preview: null,
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [businessId, previewKey, ruleId]);
+
+  if (!businessId || !ruleId) {
+    return { preview: null, loading: false, error: null };
+  }
+  if (state.key !== previewKey) {
+    return { preview: null, loading: true, error: null };
+  }
+
+  return { preview: state.preview, loading: false, error: state.error };
+};
+
+export const useHrCommissionRetroactiveEntries = ({
+  businessId,
+  refreshKey = 0,
+  ruleId,
+}: UseHrCommissionRetroactiveEntriesArgs): UseHrCommissionRetroactiveEntriesResult => {
+  const [state, setState] = useState<RetroactiveEntriesHookState>({
+    key: '',
+    result: null,
+    error: null,
+  });
+  const reportKey = useMemo(
+    () =>
+      [businessId ?? 'no-business', ruleId ?? 'no-rule', refreshKey].join('|'),
+    [businessId, refreshKey, ruleId],
+  );
+
+  useEffect(() => {
+    if (!businessId || !ruleId) return undefined;
+
+    let active = true;
+    void listHrCommissionRetroactiveEntries({ businessId, ruleId })
+      .then((result) => {
+        if (!active) return;
+        setState({ key: reportKey, result, error: null });
+      })
+      .catch((error) => {
+        if (!active) return;
+        setState({
+          key: reportKey,
+          result: null,
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [businessId, reportKey, ruleId]);
+
+  if (!businessId || !ruleId) {
+    return { result: null, loading: false, error: null };
+  }
+  if (state.key !== reportKey) {
+    return { result: null, loading: true, error: null };
+  }
+
+  return { result: state.result, loading: false, error: state.error };
 };
 
 export const useHrPayrollEmployeeLines = ({

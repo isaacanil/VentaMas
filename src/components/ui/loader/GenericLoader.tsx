@@ -223,6 +223,10 @@ const VentamaxSystemLoader = ({
 
   const isError = status === 'error';
 
+  if (!active && !isError) {
+    return null;
+  }
+
   return (
     <SystemOverlay $active={active}>
       {isError ? (
@@ -433,7 +437,7 @@ const VentamaxSplashLoader = ({
     >
       <img ref={logoRef} src={logo} alt="Ventamax logo" width={120} />
       <Title ref={titleRef}>Ventamax</Title>
-      <Subtitle ref={subRef}>by&nbsp;gysys</Subtitle>
+      <Subtitle ref={subRef}>by&nbsp;Gisys</Subtitle>
       {statusMessage && <SplashMessage>{statusMessage}</SplashMessage>}
     </SplashWrapper>
   );

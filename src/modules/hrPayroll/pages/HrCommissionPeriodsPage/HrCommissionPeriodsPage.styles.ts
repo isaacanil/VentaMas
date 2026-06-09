@@ -5,14 +5,87 @@ import { VmTabs } from '@/components/heroui';
 
 export const PeriodsToolbar = styled.div`
   display: grid;
-  grid-template-columns: minmax(260px, 420px) repeat(2, max-content);
+  grid-template-columns: max-content;
   gap: var(--ds-space-3);
   align-items: end;
   justify-content: start;
 
-  @media (max-width: 640px) {
+  @media (width <= 640px) {
     grid-template-columns: 1fr;
   }
+`;
+
+export const NextCutPanel = styled.section`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: var(--ds-space-3);
+  align-items: center;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border: 1px solid var(--ds-color-border-subtle);
+  border-left: 3px solid var(--ds-color-action-primary);
+  border-radius: 8px;
+  background: var(--ds-color-bg-surface);
+  box-shadow: var(--ds-shadow-xs, 0 1px 2px rgb(15 23 42 / 6%));
+
+  &[data-blocked='true'] {
+    border-left-color: var(--ds-color-state-warning);
+  }
+
+  @media (width <= 760px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const NextCutStack = styled.div`
+  display: grid;
+  gap: var(--ds-space-1);
+  min-width: 0;
+`;
+
+export const NextCutActions = styled.div`
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  align-items: center;
+  justify-content: flex-end;
+  margin-inline-start: auto;
+
+  @media (width <= 760px) {
+    justify-content: flex-start;
+    margin-inline-start: 0;
+  }
+`;
+
+export const NextCutInlineMeta = styled.span`
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  align-items: center;
+  min-width: 0;
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-sm);
+  line-height: var(--ds-line-height-normal);
+`;
+
+export const NextCutAmountBadge = styled.strong`
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 2px var(--ds-space-2);
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-pill, 999px);
+  background: var(--ds-color-action-primary-subtle);
+  color: var(--ds-color-action-primary);
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-semibold);
+  line-height: var(--ds-line-height-tight);
+`;
+
+export const NextCutMessage = styled.p`
+  margin: 0;
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-sm);
+  line-height: var(--ds-line-height-normal);
 `;
 
 export const SummaryHint = styled.span`
@@ -30,7 +103,7 @@ export const OperationalPanel = styled.section`
   border-radius: 8px;
   background: var(--ds-color-bg-surface);
 
-  @media (max-width: 860px) {
+  @media (width <= 860px) {
     grid-template-columns: 1fr;
   }
 `;
@@ -78,7 +151,7 @@ export const WorkflowSteps = styled.ol`
   margin: 0;
   list-style: none;
 
-  @media (max-width: 560px) {
+  @media (width <= 560px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 `;
@@ -105,34 +178,6 @@ export const WorkflowStep = styled.li`
     color: #047857;
     background: #ecfdf5;
   }
-`;
-
-export const CutRulesSummary = styled.section`
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ds-space-3);
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--ds-space-3) var(--ds-space-4);
-  border: 1px solid var(--ds-color-border-subtle);
-  border-radius: 8px;
-  background: var(--ds-color-bg-surface);
-`;
-
-export const CutRulesSummaryText = styled.div`
-  display: grid;
-  gap: 2px;
-  min-width: 0;
-`;
-
-export const CutRulesSummaryTitle = styled.strong`
-  color: var(--ds-color-text-primary);
-  font-size: var(--ds-font-size-sm);
-`;
-
-export const CutRulesSummaryMeta = styled.span`
-  color: var(--ds-color-text-secondary);
-  font-size: var(--ds-font-size-xs);
 `;
 
 export const PeriodsContent = styled.div`

@@ -64,6 +64,21 @@ export type HrCommissionEntryStatus =
   | 'cancelled'
   | 'requires_adjustment';
 
+export type HrRetroactiveResolutionStatus =
+  | 'selected_for_next_cut'
+  | 'included_in_cut'
+  | 'paid'
+  | 'cancelled';
+
+export type HrCommissionRetroactiveEntryAction =
+  | 'adjustment_required'
+  | 'recalculable'
+  | 'selected_for_next_cut'
+  | 'selected_for_other_cut'
+  | 'included_in_cut'
+  | 'paid'
+  | 'review_required';
+
 export interface HrEmployeeInput {
   id?: string | null;
   employeeId?: string | null;
@@ -174,6 +189,19 @@ export interface HrCommissionEntryRecord extends Record<string, unknown> {
   payrollRunId?: string | null;
   payrollEmployeeLineId?: string | null;
   employeePaymentId?: string | null;
+  isRetroactive?: boolean;
+  originalPeriodId?: string | null;
+  originalPeriodLabel?: string | null;
+  originalStartDateKey?: string | null;
+  originalEndDateKey?: string | null;
+  originalPeriodStatus?: HrCommissionPeriodStatus | null;
+  retroactiveResolutionStatus?: HrRetroactiveResolutionStatus | null;
+  retroactiveTargetPeriodId?: string | null;
+  retroactiveTargetStartDateKey?: string | null;
+  retroactiveTargetEndDateKey?: string | null;
+  retroactiveTargetRuleId?: string | null;
+  retroactiveTargetPayrollRunId?: string | null;
+  retroactiveTargetLineId?: string | null;
   accountingEventId?: string | null;
   paymentAccountingEventId?: string | null;
   journalEntryId?: string | null;
@@ -190,6 +218,7 @@ export interface HrCommissionCutRuleInput {
   frequency?: HrCommissionCutRuleFrequency | null;
   startDay?: number | string | null;
   endDay?: number | string | null;
+  businessTimeZone?: string | null;
   active?: boolean | null;
   sortOrder?: number | string | null;
 }
@@ -201,6 +230,7 @@ export interface HrCommissionCutRuleRecord extends Record<string, unknown> {
   frequency: HrCommissionCutRuleFrequency;
   startDay: number;
   endDay: number;
+  businessTimeZone?: string | null;
   active: boolean;
   sortOrder: number;
   createdAt?: unknown;
@@ -214,6 +244,9 @@ export interface HrCommissionPeriodRecord extends Record<string, unknown> {
   periodKey?: string | null;
   label?: string | null;
   status: HrCommissionPeriodStatus;
+  startDateKey?: string | null;
+  endDateKey?: string | null;
+  businessTimeZone?: string | null;
   startDate?: unknown;
   endDate?: unknown;
   cutRuleId?: string | null;
@@ -223,6 +256,11 @@ export interface HrCommissionPeriodRecord extends Record<string, unknown> {
   entriesCount: number;
   employeesCount: number;
   totalCommissionAmount: number;
+  normalEntriesCount?: number;
+  retroactiveAdjustmentAmount?: number;
+  retroactiveAdjustmentsCount?: number;
+  retroactiveSourcePeriods?: Array<Record<string, unknown>>;
+  hasRetroactiveAdjustments?: boolean;
   grossAmount?: number;
   deductionsAmount?: number;
   netAmount?: number;
@@ -239,6 +277,86 @@ export interface HrCommissionPeriodRecord extends Record<string, unknown> {
   updatedAt?: unknown;
 }
 
+export interface HrCommissionNextCutPreview extends Record<string, unknown> {
+  ok: boolean;
+  preview: boolean;
+  blocked: boolean;
+  blockedReason?: string | null;
+  businessId?: string | null;
+  ruleId?: string | null;
+  ruleLabel?: string | null;
+  frequency: HrCommissionCutRuleFrequency;
+  startDateKey?: string | null;
+  endDateKey?: string | null;
+  businessTimeZone?: string | null;
+  employeesCount: number;
+  entriesCount: number;
+  normalEntriesCount?: number;
+  totalEstimatedAmount: number;
+  currency: string;
+  exceedsMaxCutEntries: boolean;
+  maxCutEntries: number;
+  retroactiveEntriesCount: number;
+  selectedRetroactiveEntriesCount?: number;
+  pendingRetroactiveEntriesCount?: number;
+  recalculableRetroactiveEntriesCount?: number;
+  incompatibleRetroactiveEntriesCount?: number;
+  reviewRequiredRetroactiveEntriesCount?: number;
+  retroactiveAdjustmentAmount?: number;
+  hasRetroactiveEntries: boolean;
+  hasRetroactiveAdjustments?: boolean;
+  canCreate: boolean;
+}
+
+export interface HrCommissionRetroactiveEntryRecord extends Record<
+  string,
+  unknown
+> {
+  id: string;
+  entryId: string;
+  dateKey?: string | null;
+  employeeId?: string | null;
+  employeeCode?: string | null;
+  employeeNameSnapshot?: string | null;
+  invoiceId?: string | null;
+  invoiceNumber?: string | null;
+  serviceId?: string | null;
+  serviceName?: string | null;
+  commissionAmount: number;
+  currency: string;
+  originalPeriodId?: string | null;
+  originalPeriodLabel?: string | null;
+  originalStartDateKey?: string | null;
+  originalEndDateKey?: string | null;
+  originalPeriodStatus: HrCommissionPeriodStatus;
+  retroactiveResolutionStatus?: HrRetroactiveResolutionStatus | null;
+  retroactiveTargetPeriodId?: string | null;
+  selectedForCurrentCut: boolean;
+  action: HrCommissionRetroactiveEntryAction;
+}
+
+export interface HrCommissionRetroactiveEntriesResponse extends Record<
+  string,
+  unknown
+> {
+  ok: boolean;
+  businessId?: string | null;
+  ruleId?: string | null;
+  ruleLabel?: string | null;
+  targetPeriodId?: string | null;
+  startDateKey?: string | null;
+  endDateKey?: string | null;
+  businessTimeZone?: string | null;
+  totalCount: number;
+  selectedForTargetCount: number;
+  adjustmentRequiredCount: number;
+  recalculableCount: number;
+  selectedForOtherTargetCount: number;
+  reviewRequiredCount: number;
+  retroactiveAdjustmentAmount: number;
+  entries: HrCommissionRetroactiveEntryRecord[];
+}
+
 export interface HrPayrollRunRecord extends Record<string, unknown> {
   id: string;
   businessId: string;
@@ -246,6 +364,9 @@ export interface HrPayrollRunRecord extends Record<string, unknown> {
   sourcePeriodId?: string | null;
   status: HrPayrollRunStatus;
   periodKey?: string | null;
+  startDateKey?: string | null;
+  endDateKey?: string | null;
+  businessTimeZone?: string | null;
   startDate?: unknown;
   endDate?: unknown;
   currency: string;
@@ -255,6 +376,13 @@ export interface HrPayrollRunRecord extends Record<string, unknown> {
   deductionsAmount: number;
   netAmount: number;
   totalPayableAmount?: number;
+  entriesCount?: number;
+  normalEntriesCount?: number;
+  totalCommissionAmount?: number;
+  retroactiveAdjustmentAmount?: number;
+  retroactiveAdjustmentsCount?: number;
+  retroactiveSourcePeriods?: Array<Record<string, unknown>>;
+  hasRetroactiveAdjustments?: boolean;
   accountingEventId?: string | null;
   paidAmount?: number;
   paidLinesCount?: number;
@@ -279,6 +407,11 @@ export interface HrPayrollEmployeeLineRecord extends Record<string, unknown> {
   netAmount: number;
   totalPayableAmount?: number;
   commissionAmount: number;
+  retroactiveAdjustmentAmount?: number;
+  retroactiveAdjustmentsCount?: number;
+  retroactiveEntryIds?: string[];
+  retroactiveSourcePeriods?: Array<Record<string, unknown>>;
+  hasRetroactiveAdjustments?: boolean;
   deductionLines: HrSalaryDeductionLine[];
   commissionEntryIds: string[];
   entriesCount: number;

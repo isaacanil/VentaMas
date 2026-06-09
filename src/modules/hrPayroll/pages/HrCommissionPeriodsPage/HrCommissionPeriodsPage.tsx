@@ -9,16 +9,19 @@ import {
   DownOutlined,
   FileExcelOutlined,
   FilePdfOutlined,
-  SettingOutlined,
   SyncOutlined,
 } from '@/constants/icons/antd';
 import {
   adjustHrPayrollLinePayable,
   manageHrCommissionPeriod,
   recordHrPayrollPayment,
+  resolveHrCommissionRetroactiveEntries,
   saveHrCommissionCutRule,
+  unresolveHrCommissionRetroactiveEntries,
   useHrCommissionCutRules,
+  useHrCommissionNextCutPreview,
   useHrCommissionPeriodEntries,
+  useHrCommissionRetroactiveEntries,
   useHrEmployeePayments,
   useHrCommissionPeriods,
   useHrPayrollEmployeeLines,
@@ -40,7 +43,8 @@ import {
   HrTitleBlock as TitleBlock,
 } from '@/modules/hrPayroll/components/HrPayrollPagePrimitives';
 import {
-  HR_COMMISSION_CUT_RULE_FREQUENCY_LABELS as FREQUENCY_LABELS,
+  formatHrDateKey,
+  formatHrPeriodDate,
   formatHrMoney as formatMoney,
   HR_COMMISSION_PERIOD_STATUS_LABELS as STATUS_LABELS,
 } from '@/modules/hrPayroll/utils/hrPayrollDisplay';
@@ -50,19 +54,28 @@ import type {
   HrCommissionCutRuleInput,
   HrCommissionPeriodStatus,
   HrCommissionPeriodRecord,
+  HrCommissionRetroactiveEntryRecord,
   HrPayrollEmployeeLineRecord,
 } from '@/types/hrPayroll';
 import {
   buildLineColumns,
   buildPeriodColumns,
 } from './HrCommissionPeriodsPage.columns';
-import { getErrorMessage } from './HrCommissionPeriodsPage.helpers';
 import {
-  CutRulesSummary,
-  CutRulesSummaryMeta,
-  CutRulesSummaryText,
-  CutRulesSummaryTitle,
+  formatActiveCutRulesSummary,
+  formatCutRuleMeta,
+  getErrorMessage,
+  getNextCutActionLabel,
+  getPeriodCutRuleMeta,
+} from './HrCommissionPeriodsPage.helpers';
+import {
   DetailScreenActions,
+  NextCutAmountBadge,
+  NextCutActions,
+  NextCutInlineMeta,
+  NextCutMessage,
+  NextCutPanel,
+  NextCutStack,
   OperationalDescription,
   OperationalEyebrow,
   OperationalName,
@@ -84,9 +97,13 @@ import {
   type PaymentFormValues,
 } from './components/RecordHrPaymentModal';
 import { HrCommissionPeriodDetailPanel } from './components/HrCommissionPeriodDetailPanel';
-import { HrCommissionCutRulePicker } from './components/HrCommissionCutRulePicker/HrCommissionCutRulePicker';
 import { HrCommissionCutRulesModal } from './components/HrCommissionCutRulesModal/HrCommissionCutRulesModal';
-import { resolveNextHrCommissionCutRuleRange } from './utils/hrCommissionCutRules';
+import { HrCommissionNextCutPreviewModal } from './components/HrCommissionNextCutPreviewModal/HrCommissionNextCutPreviewModal';
+import { HrCommissionRetroactiveEntriesModal } from './components/HrCommissionRetroactiveEntriesModal/HrCommissionRetroactiveEntriesModal';
+import {
+  RevertHrCommissionApprovalModal,
+  type RevertHrCommissionApprovalValues,
+} from './components/RevertHrCommissionApprovalModal';
 import { buildHrCommissionPeriodDetailPath } from './utils/hrCommissionPeriodRoutes';
 import {
   exportHrCommissionPeriodsPdf,
@@ -100,7 +117,7 @@ type NoticeState = {
   title: string;
 };
 
-type PeriodAction = 'create' | 'close' | 'approve';
+type PeriodAction = 'create' | 'close' | 'approve' | 'revert_approval';
 type PeriodActionResult = Awaited<ReturnType<typeof manageHrCommissionPeriod>>;
 
 const getPeriodPayableAmount = (period: HrCommissionPeriodRecord): number =>
@@ -121,20 +138,6 @@ const getPeriodPendingAmount = (period: HrCommissionPeriodRecord): number => {
     0,
     getPeriodPayableAmount(period) - getPeriodPaidAmount(period),
   );
-};
-
-const toPeriodEndMillis = (period: HrCommissionPeriodRecord): number => {
-  const value = period.endDate;
-  if (value instanceof Date) return value.getTime();
-  if (value && typeof value === 'object' && 'toMillis' in value) {
-    return Number((value as { toMillis: () => unknown }).toMillis()) || 0;
-  }
-  if (value && typeof value === 'object' && 'toDate' in value) {
-    const date = (value as { toDate: () => unknown }).toDate();
-    return date instanceof Date ? date.getTime() : 0;
-  }
-  const parsed = new Date(String(value)).getTime();
-  return Number.isFinite(parsed) ? parsed : 0;
 };
 
 const getPeriodStatusTone = (
@@ -176,16 +179,16 @@ const getSelectedPeriodGuidance = (
 ): string => {
   if (!period) return 'Selecciona o genera un corte para revisar el detalle.';
   if (period.status === 'draft') {
-    return 'Revisa colaboradores y cierra el corte cuando este listo para aprobar.';
+    return 'Revisa colaboradores y cierra el corte cuando esté listo para aprobar.';
   }
   if (period.status === 'closed') {
-    return 'El corte esta cerrado para revision. Aprobalo para habilitar pagos.';
+    return 'El corte está cerrado para revisión. Apruébalo para habilitar pagos.';
   }
   if (period.status === 'approved') {
-    return 'El corte esta aprobado. Registra pagos desde las lineas del detalle.';
+    return 'El corte está aprobado. Registra pagos desde las líneas del detalle.';
   }
   if (period.status === 'partially_paid') {
-    return 'Hay pagos parciales. Revisa las lineas pendientes antes de cerrar el ciclo.';
+    return 'Hay pagos parciales. Revisa las líneas pendientes antes de cerrar el ciclo.';
   }
   if (period.status === 'paid') {
     return 'Este corte ya fue pagado. Usa el detalle y los exportes como soporte.';
@@ -209,6 +212,12 @@ const getActionSuccessTitle = (
       : 'Corte generado para aprobar.';
   }
 
+  if (action === 'revert_approval') {
+    return result.reused
+      ? `Corte ya ${STATUS_LABELS[result.status].toLowerCase()}.`
+      : 'Aprobación revertida.';
+  }
+
   return result.reused
     ? `Corte ya ${STATUS_LABELS[result.status].toLowerCase()}.`
     : 'Corte aprobado.';
@@ -226,12 +235,21 @@ export default function HrCommissionPeriodsPage() {
   );
   const [selectedPeriodId, setSelectedPeriodId] = useState<string | null>(null);
   const [cutRulesModalOpen, setCutRulesModalOpen] = useState(false);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [retroactiveModalOpen, setRetroactiveModalOpen] = useState(false);
+  const [previewRefreshKey, setPreviewRefreshKey] = useState(0);
+  const [retroactiveRefreshKey, setRetroactiveRefreshKey] = useState(0);
   const [actionKey, setActionKey] = useState<string | null>(null);
+  const [retroactiveActionKey, setRetroactiveActionKey] = useState<
+    string | null
+  >(null);
   const [paymentLine, setPaymentLine] =
     useState<HrPayrollEmployeeLineRecord | null>(null);
   const [paymentActionKey, setPaymentActionKey] = useState<string | null>(null);
   const [adjustmentLine, setAdjustmentLine] =
     useState<HrPayrollEmployeeLineRecord | null>(null);
+  const [approvalReversalPeriod, setApprovalReversalPeriod] =
+    useState<HrCommissionPeriodRecord | null>(null);
   const [adjustmentActionKey, setAdjustmentActionKey] = useState<string | null>(
     null,
   );
@@ -264,14 +282,24 @@ export default function HrCommissionPeriodsPage() {
   const selectedCutRule =
     activeCutRules.find((rule) => rule.id === effectiveSelectedCutRuleId) ??
     null;
-  const selectedCutRuleRange = useMemo(
-    () =>
-      resolveNextHrCommissionCutRuleRange({
-        periods,
-        rule: selectedCutRule,
-      }),
-    [periods, selectedCutRule],
-  );
+  const {
+    error: previewError,
+    loading: previewLoading,
+    preview: nextCutPreview,
+  } = useHrCommissionNextCutPreview({
+    businessId,
+    refreshKey: previewRefreshKey,
+    ruleId: isDetailRoute ? null : effectiveSelectedCutRuleId,
+  });
+  const {
+    error: retroactiveError,
+    loading: retroactiveLoading,
+    result: retroactiveResult,
+  } = useHrCommissionRetroactiveEntries({
+    businessId,
+    refreshKey: `${previewRefreshKey}:${retroactiveRefreshKey}`,
+    ruleId: isDetailRoute ? null : effectiveSelectedCutRuleId,
+  });
   const selectedPeriodKey = routePeriodId ?? selectedPeriodId;
   const selectedPeriod =
     periods.find((period) => period.id === selectedPeriodKey) ??
@@ -323,8 +351,12 @@ export default function HrCommissionPeriodsPage() {
   );
 
   const handleAction = useCallback(
-    async (action: PeriodAction, period?: HrCommissionPeriodRecord) => {
-      if (!businessId) return;
+    async (
+      action: PeriodAction,
+      period?: HrCommissionPeriodRecord,
+      options: { comment?: string | null } = {},
+    ) => {
+      if (!businessId) return false;
       const key =
         action === 'create' ? 'create' : `${action}:${period?.id ?? 'none'}`;
       setActionKey(key);
@@ -336,6 +368,7 @@ export default function HrCommissionPeriodsPage() {
         const result = await manageHrCommissionPeriod({
           action,
           businessId,
+          comment: options.comment,
           periodId: period?.id,
           ruleId: action === 'create' ? effectiveSelectedCutRuleId : undefined,
         });
@@ -344,12 +377,14 @@ export default function HrCommissionPeriodsPage() {
           status: 'success',
           title: getActionSuccessTitle(action, result),
         });
+        return true;
       } catch (actionError) {
         setNotice({
           status: 'danger',
-          title: 'No se pudo completar la accion.',
+          title: 'No se pudo completar la acción.',
           description: getErrorMessage(actionError),
         });
+        return false;
       } finally {
         setActionKey(null);
       }
@@ -375,6 +410,7 @@ export default function HrCommissionPeriodsPage() {
           status: 'success',
           title: 'Regla de corte guardada.',
         });
+        setPreviewRefreshKey((current) => current + 1);
         return true;
       } catch (ruleError) {
         setNotice({
@@ -390,6 +426,78 @@ export default function HrCommissionPeriodsPage() {
     [businessId],
   );
 
+  const handleConfirmCreatePeriod = useCallback(async () => {
+    const created = await handleAction('create');
+    if (created) {
+      setPreviewModalOpen(false);
+      setPreviewRefreshKey((current) => current + 1);
+      setRetroactiveRefreshKey((current) => current + 1);
+    }
+  }, [handleAction]);
+
+  const refreshRetroactiveState = useCallback(() => {
+    setPreviewRefreshKey((current) => current + 1);
+    setRetroactiveRefreshKey((current) => current + 1);
+  }, []);
+
+  const handleResolveRetroactiveEntry = useCallback(
+    async (entry: HrCommissionRetroactiveEntryRecord) => {
+      if (!businessId || !effectiveSelectedCutRuleId) return;
+      const key = `retro:resolve:${entry.id}`;
+      setRetroactiveActionKey(key);
+      try {
+        await resolveHrCommissionRetroactiveEntries({
+          businessId,
+          entryIds: [entry.id],
+          ruleId: effectiveSelectedCutRuleId,
+        });
+        setNotice({
+          status: 'success',
+          title: 'Retroactiva incluida en el próximo corte.',
+        });
+        refreshRetroactiveState();
+      } catch (retroactiveActionError) {
+        setNotice({
+          status: 'danger',
+          title: 'No se pudo incluir la retroactiva.',
+          description: getErrorMessage(retroactiveActionError),
+        });
+      } finally {
+        setRetroactiveActionKey(null);
+      }
+    },
+    [businessId, effectiveSelectedCutRuleId, refreshRetroactiveState],
+  );
+
+  const handleUnresolveRetroactiveEntry = useCallback(
+    async (entry: HrCommissionRetroactiveEntryRecord) => {
+      if (!businessId || !effectiveSelectedCutRuleId) return;
+      const key = `retro:unresolve:${entry.id}`;
+      setRetroactiveActionKey(key);
+      try {
+        await unresolveHrCommissionRetroactiveEntries({
+          businessId,
+          entryIds: [entry.id],
+          ruleId: effectiveSelectedCutRuleId,
+        });
+        setNotice({
+          status: 'success',
+          title: 'Retroactiva quitada del próximo corte.',
+        });
+        refreshRetroactiveState();
+      } catch (retroactiveActionError) {
+        setNotice({
+          status: 'danger',
+          title: 'No se pudo quitar la retroactiva.',
+          description: getErrorMessage(retroactiveActionError),
+        });
+      } finally {
+        setRetroactiveActionKey(null);
+      }
+    },
+    [businessId, effectiveSelectedCutRuleId, refreshRetroactiveState],
+  );
+
   const handleOpenPayment = useCallback((line: HrPayrollEmployeeLineRecord) => {
     setPaymentLine(line);
   }, []);
@@ -400,6 +508,25 @@ export default function HrCommissionPeriodsPage() {
     },
     [],
   );
+
+  const handleOpenApprovalReversal = useCallback(
+    (period: HrCommissionPeriodRecord) => {
+      setApprovalReversalPeriod(period);
+    },
+    [],
+  );
+
+  const handleRevertApproval = async (
+    values: RevertHrCommissionApprovalValues,
+  ) => {
+    if (!approvalReversalPeriod) return;
+    const reverted = await handleAction('revert_approval', approvalReversalPeriod, {
+      comment: values.reason,
+    });
+    if (reverted) {
+      setApprovalReversalPeriod(null);
+    }
+  };
 
   const handleAdjustPayableAmount = async (values: PayableAmountFormValues) => {
     if (!businessId || !adjustmentLine) return;
@@ -451,7 +578,7 @@ export default function HrCommissionPeriodsPage() {
         status: 'success',
         title: result.reused
           ? 'Pago ya registrado.'
-          : 'Pago de nomina registrado.',
+          : 'Pago de nómina registrado.',
       });
       setPaymentLine(null);
     } catch (paymentError) {
@@ -479,7 +606,7 @@ export default function HrCommissionPeriodsPage() {
         periods,
         selectedPeriod,
       });
-      message.success('Cortes exportados a Excel.');
+      message.success('Descarga de Excel iniciada.');
     } catch (exportError) {
       console.error(
         '[HrCommissionPeriodsPage] excel export failed',
@@ -512,6 +639,7 @@ export default function HrCommissionPeriodsPage() {
           employeeLines,
           entries: commissionEntries,
           mode,
+          payments,
           selectedPeriod,
         });
         message.success(
@@ -529,7 +657,7 @@ export default function HrCommissionPeriodsPage() {
         setExportingPdfMode(null);
       }
     },
-    [commissionEntries, employeeLines, selectedPeriod],
+    [commissionEntries, employeeLines, payments, selectedPeriod],
   );
 
   const handleExportAction = useCallback(
@@ -568,58 +696,68 @@ export default function HrCommissionPeriodsPage() {
     () =>
       buildLineColumns({
         adjustmentActionKey,
+        canRecordPayments: Boolean(currentUser && businessId),
         onOpenAdjustment: handleOpenAdjustment,
         paymentActionKey,
+        periodStatus: selectedPeriod?.status ?? null,
         onOpenPayment: handleOpenPayment,
       }),
     [
       adjustmentActionKey,
+      businessId,
+      currentUser,
       handleOpenAdjustment,
       handleOpenPayment,
       paymentActionKey,
+      selectedPeriod?.status,
     ],
   );
   const selectedPeriodLabel =
     selectedPeriod?.label ||
     selectedPeriod?.periodKey ||
     (isDetailRoute ? 'Corte no encontrado' : 'Corte seleccionado');
-  const pendingPeriodsForSelectedRule = useMemo(
-    () =>
-      selectedCutRule
-        ? periods
-            .filter(
-              (period) =>
-                period.cutRuleId === selectedCutRule.id &&
-                isPeriodUnpaid(period),
-            )
-            .sort(
-              (left, right) =>
-                toPeriodEndMillis(right) - toPeriodEndMillis(left),
-            )
-        : [],
-    [periods, selectedCutRule],
-  );
-  const selectedPendingPeriodId = pendingPeriodsForSelectedRule.some(
-    (period) => period.id === selectedPeriod?.id,
-  )
-    ? (selectedPeriod?.id ?? null)
-    : null;
   const selectedPeriodAmount = selectedPeriod
     ? getPeriodPayableAmount(selectedPeriod)
     : 0;
   const selectedPeriodCurrency = selectedPeriod?.currency ?? 'DOP';
   const activeRuleMeta = selectedCutRule
-    ? `${selectedCutRule.label} - ${FREQUENCY_LABELS[selectedCutRule.frequency]}`
+    ? formatCutRuleMeta({
+        frequency: selectedCutRule.frequency,
+        label: selectedCutRule.label,
+      })
     : 'Sin regla activa';
-  const nextRangeMeta = selectedCutRuleRange
-    ? `${selectedCutRuleRange.startKey} - ${selectedCutRuleRange.endKey}`
-    : 'Configura una regla para generar cortes.';
-  const createActionLabel =
-    actionKey === 'create'
-      ? 'Generando corte...'
-      : pendingPeriodsForSelectedRule.length
-        ? 'Generar siguiente'
-        : 'Generar corte';
+  const selectedPeriodCutRuleMeta = getPeriodCutRuleMeta(selectedPeriod);
+  const selectedPeriodRangeMeta = selectedPeriod
+    ? `${formatHrPeriodDate(selectedPeriod, 'start')} - ${formatHrPeriodDate(
+        selectedPeriod,
+        'end',
+      )}`
+    : 'Selecciona un corte para ver su rango.';
+  const createActionLabel = getNextCutActionLabel({
+    actionKey,
+    blocked: nextCutPreview?.blocked,
+  });
+  const paidLinesCount =
+    selectedPeriod?.paidLinesCount ??
+    employeeLines.filter((line) => line.status === 'paid').length;
+  const totalLinesCount =
+    employeeLines.length || selectedPeriod?.employeesCount || 0;
+  const activeCutRulesSummary = formatActiveCutRulesSummary({
+    activeCount: activeCutRules.length,
+    activeRuleMeta,
+  });
+  const hasRetroactiveReviewItems = Boolean(
+    (retroactiveResult?.totalCount ?? 0) > 0 ||
+    (nextCutPreview?.retroactiveEntriesCount ?? 0) > 0,
+  );
+  const nextCutRangeLabel = nextCutPreview
+    ? `${formatHrDateKey(nextCutPreview.startDateKey)} - ${formatHrDateKey(
+        nextCutPreview.endDateKey,
+      )}`
+    : previewLoading
+      ? 'Calculando rango...'
+      : 'Sin rango estimado';
+  const nextCutBlockedMessage = nextCutPreview?.blockedReason;
   const exportDisabled =
     !businessId ||
     loading ||
@@ -660,8 +798,25 @@ export default function HrCommissionPeriodsPage() {
             : getSelectedPeriodGuidance(null)}
         </OperationalDescription>
         <OperationalDescription>
-          Regla activa: {activeRuleMeta}. Proximo rango: {nextRangeMeta}
+          Regla del corte: {selectedPeriodCutRuleMeta}. Rango cubierto:{' '}
+          {selectedPeriodRangeMeta}
         </OperationalDescription>
+        {selectedPeriod?.hasRetroactiveAdjustments ? (
+          <OperationalDescription>
+            Ajustes retroactivos:{' '}
+            {selectedPeriod.retroactiveAdjustmentsCount ?? 0} por{' '}
+            {formatMoney(
+              selectedPeriod.retroactiveAdjustmentAmount ?? 0,
+              selectedPeriod.currency,
+            )}
+          </OperationalDescription>
+        ) : null}
+        {selectedPeriod?.status === 'partially_paid' ? (
+          <OperationalDescription>
+            Parcialmente pagado: {paidLinesCount} de {totalLinesCount} líneas
+            pagadas.
+          </OperationalDescription>
+        ) : null}
       </OperationalStack>
       <WorkflowSteps aria-label="Progreso del corte seleccionado">
         {PERIOD_WORKFLOW_STEPS.map((step, index) => {
@@ -691,7 +846,7 @@ export default function HrCommissionPeriodsPage() {
       </VmDropdown.Button>
       <VmDropdown.Popover placement="bottom end">
         <VmDropdown.Menu
-          aria-label="Opciones de exportacion del corte"
+          aria-label="Opciones de exportación del corte"
           onAction={handleExportAction}
         >
           <VmDropdown.Item id="excel" textValue="Exportar Excel">
@@ -724,6 +879,15 @@ export default function HrCommissionPeriodsPage() {
           isDetailRoute ? 'Detalle corte RRHH' : 'Cortes y pagos RRHH'
         }
         onBackClick={isDetailRoute ? handleBackToPeriods : undefined}
+        toolbarProps={
+          isDetailRoute
+            ? undefined
+            : {
+                cutRulesSummary: activeCutRulesSummary,
+                isCutRulesConfigDisabled: !businessId,
+                onConfigureCutRules: () => setCutRulesModalOpen(true),
+              }
+        }
       />
       <Page>
         <Header>
@@ -748,35 +912,7 @@ export default function HrCommissionPeriodsPage() {
               {exportMenu}
             </DetailScreenActions>
           ) : (
-            <PeriodsToolbar>
-              <HrCommissionCutRulePicker
-                disabled={!businessId}
-                loading={cutRulesLoading}
-                pendingPeriods={pendingPeriodsForSelectedRule}
-                range={selectedCutRuleRange}
-                rules={activeCutRules}
-                selectedPendingPeriodId={selectedPendingPeriodId}
-                selectedRuleId={effectiveSelectedCutRuleId}
-                onSelectPendingPeriod={(periodId) => {
-                  if (periodId) setSelectedPeriodId(periodId);
-                }}
-                onSelect={setSelectedCutRuleId}
-              />
-              <VmButton
-                variant="primary"
-                aria-label={`Generar corte ${activeRuleMeta}`}
-                isDisabled={
-                  !businessId ||
-                  !effectiveSelectedCutRuleId ||
-                  actionKey === 'create'
-                }
-                onPress={() => handleAction('create')}
-              >
-                <SyncOutlined />
-                {createActionLabel}
-              </VmButton>
-              {exportMenu}
-            </PeriodsToolbar>
+            <PeriodsToolbar>{exportMenu}</PeriodsToolbar>
           )}
         </Header>
 
@@ -809,7 +945,7 @@ export default function HrCommissionPeriodsPage() {
         {isDetailRoute && linesError ? (
           <Notice status="danger">
             <VmAlert.Content>
-              <strong>No se pudieron cargar las lineas del corte.</strong>
+              <strong>No se pudieron cargar las líneas del corte.</strong>
               <div>{linesError.message}</div>
             </VmAlert.Content>
           </Notice>
@@ -856,7 +992,9 @@ export default function HrCommissionPeriodsPage() {
             {selectedPeriod ? operationalPanel : null}
             <HrCommissionPeriodDetailPanel
               actionKey={actionKey}
+              commissionEntries={commissionEntries}
               employeeLines={employeeLines}
+              entriesLoading={entriesLoading}
               lineColumns={lineColumns}
               linesLoading={linesLoading}
               payments={payments}
@@ -865,52 +1003,11 @@ export default function HrCommissionPeriodsPage() {
               periodDescription={detailPeriodDescription}
               periodLabel={selectedPeriodLabel}
               onAction={handleAction}
+              onRequestRevertApproval={handleOpenApprovalReversal}
             />
           </>
         ) : (
           <>
-            <OperationalPanel>
-              <OperationalStack>
-                <OperationalEyebrow>Corte seleccionado</OperationalEyebrow>
-                <OperationalTitle>
-                  <OperationalName>{selectedPeriodLabel}</OperationalName>
-                  {selectedPeriod ? (
-                    <StatusTag
-                      $tone={getPeriodStatusTone(selectedPeriod.status)}
-                    >
-                      {STATUS_LABELS[selectedPeriod.status]}
-                    </StatusTag>
-                  ) : null}
-                </OperationalTitle>
-                <OperationalDescription>
-                  {selectedPeriod
-                    ? `${formatMoney(
-                        selectedPeriodAmount,
-                        selectedPeriodCurrency,
-                      )} - ${getSelectedPeriodGuidance(selectedPeriod)}`
-                    : getSelectedPeriodGuidance(null)}
-                </OperationalDescription>
-                <OperationalDescription>
-                  Regla activa: {activeRuleMeta}. Proximo rango: {nextRangeMeta}
-                </OperationalDescription>
-              </OperationalStack>
-              <WorkflowSteps aria-label="Progreso del corte seleccionado">
-                {PERIOD_WORKFLOW_STEPS.map((step, index) => {
-                  const state = getWorkflowStepState(selectedPeriod, index);
-                  return (
-                    <WorkflowStep
-                      key={step.label}
-                      data-active={state.active ? 'true' : undefined}
-                      data-complete={state.complete ? 'true' : undefined}
-                    >
-                      <span>{`Paso ${index + 1}`}</span>
-                      <strong>{step.label}</strong>
-                    </WorkflowStep>
-                  );
-                })}
-              </WorkflowSteps>
-            </OperationalPanel>
-
             <SummaryGrid>
               <SummaryItem>
                 <SummaryLabel>Cortes</SummaryLabel>
@@ -940,27 +1037,66 @@ export default function HrCommissionPeriodsPage() {
               </SummaryItem>
             </SummaryGrid>
 
-            <CutRulesSummary>
-              <CutRulesSummaryText>
-                <CutRulesSummaryTitle>
-                  Configuracion de cortes
-                </CutRulesSummaryTitle>
-                <CutRulesSummaryMeta>
-                  {activeCutRules.length
-                    ? `${activeCutRules.length} activas. Usando ${activeRuleMeta}.`
-                    : 'Configura una regla activa para generar cortes.'}
-                </CutRulesSummaryMeta>
-              </CutRulesSummaryText>
-              <VmButton
-                aria-haspopup="dialog"
-                variant="secondary"
-                isDisabled={!businessId}
-                onPress={() => setCutRulesModalOpen(true)}
-              >
-                <SettingOutlined />
-                Configurar
-              </VmButton>
-            </CutRulesSummary>
+            <NextCutPanel
+              data-blocked={nextCutPreview?.blocked ? 'true' : undefined}
+            >
+              <NextCutStack>
+                <OperationalEyebrow>Próximo corte</OperationalEyebrow>
+                <OperationalTitle>
+                  <OperationalName>{activeRuleMeta}</OperationalName>
+                  {nextCutPreview?.blocked ? (
+                    <StatusTag $tone="warning">Bloqueado</StatusTag>
+                  ) : null}
+                </OperationalTitle>
+                <NextCutInlineMeta>
+                  <span>{nextCutRangeLabel}</span>
+                  {nextCutPreview && !nextCutPreview.blocked ? (
+                    <NextCutAmountBadge>
+                      {formatMoney(
+                        nextCutPreview.totalEstimatedAmount,
+                        nextCutPreview.currency,
+                      )}{' '}
+                      neto estimado
+                    </NextCutAmountBadge>
+                  ) : null}
+                </NextCutInlineMeta>
+                {previewError ? (
+                  <NextCutMessage>
+                    No se pudo calcular el próximo corte: {previewError.message}
+                  </NextCutMessage>
+                ) : null}
+                {retroactiveError ? (
+                  <NextCutMessage>
+                    No se pudieron revisar retroactivas:{' '}
+                    {retroactiveError.message}
+                  </NextCutMessage>
+                ) : null}
+                {nextCutBlockedMessage ? (
+                  <NextCutMessage>{nextCutBlockedMessage}</NextCutMessage>
+                ) : null}
+              </NextCutStack>
+              <NextCutActions>
+                {hasRetroactiveReviewItems || retroactiveLoading ? (
+                  <VmButton
+                    variant="secondary"
+                    aria-haspopup="dialog"
+                    isDisabled={!businessId || !effectiveSelectedCutRuleId}
+                    onPress={() => setRetroactiveModalOpen(true)}
+                  >
+                    Revisar retroactivas
+                  </VmButton>
+                ) : null}
+                <VmButton
+                  variant="primary"
+                  aria-label={`${createActionLabel} ${activeRuleMeta}`}
+                  isDisabled={!businessId || !effectiveSelectedCutRuleId}
+                  onPress={() => setPreviewModalOpen(true)}
+                >
+                  <SyncOutlined />
+                  {createActionLabel}
+                </VmButton>
+              </NextCutActions>
+            </NextCutPanel>
 
             <PeriodsContent>
               <HrDataTable<HrCommissionPeriodRecord>
@@ -969,7 +1105,7 @@ export default function HrCommissionPeriodsPage() {
                 columns={periodColumns}
                 rows={periods}
                 loading={loading}
-                minTableWidth={760}
+                minTableWidth={1080}
                 pageSize={10}
                 selectedRowId={selectedPeriod?.id}
                 onRowClick={handleOpenPeriodDetail}
@@ -984,6 +1120,7 @@ export default function HrCommissionPeriodsPage() {
           key={paymentLine.id}
           actionKey={paymentActionKey}
           line={paymentLine}
+          period={selectedPeriod}
           onCancel={() => setPaymentLine(null)}
           onFinish={handleRecordPayment}
         />
@@ -997,6 +1134,15 @@ export default function HrCommissionPeriodsPage() {
           onFinish={handleAdjustPayableAmount}
         />
       ) : null}
+      {approvalReversalPeriod ? (
+        <RevertHrCommissionApprovalModal
+          key={approvalReversalPeriod.id}
+          actionKey={actionKey}
+          period={approvalReversalPeriod}
+          onCancel={() => setApprovalReversalPeriod(null)}
+          onFinish={handleRevertApproval}
+        />
+      ) : null}
       <HrCommissionCutRulesModal
         actionKey={actionKey}
         isOpen={cutRulesModalOpen}
@@ -1004,6 +1150,29 @@ export default function HrCommissionPeriodsPage() {
         rules={cutRules}
         onCancel={() => setCutRulesModalOpen(false)}
         onSave={handleSaveCutRule}
+      />
+      <HrCommissionNextCutPreviewModal
+        actionKey={actionKey}
+        error={previewError}
+        isOpen={previewModalOpen}
+        loading={previewLoading}
+        preview={nextCutPreview}
+        onCancel={() => setPreviewModalOpen(false)}
+        onConfirm={handleConfirmCreatePeriod}
+        onReviewRetroactives={() => {
+          setPreviewModalOpen(false);
+          setRetroactiveModalOpen(true);
+        }}
+      />
+      <HrCommissionRetroactiveEntriesModal
+        actionKey={retroactiveActionKey}
+        error={retroactiveError}
+        isOpen={retroactiveModalOpen}
+        loading={retroactiveLoading}
+        result={retroactiveResult}
+        onCancel={() => setRetroactiveModalOpen(false)}
+        onResolve={handleResolveRetroactiveEntry}
+        onUnresolve={handleUnresolveRetroactiveEntry}
       />
     </>
   );

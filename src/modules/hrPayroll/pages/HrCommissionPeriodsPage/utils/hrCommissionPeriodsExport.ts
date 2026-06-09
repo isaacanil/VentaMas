@@ -10,6 +10,7 @@ import {
 } from '@/hooks/exportToExcel/exportConfig';
 import {
   formatHrDate,
+  formatHrPeriodDate,
   formatHrMoney,
   HR_COMMISSION_PERIOD_STATUS_LABELS,
   HR_PAYMENT_METHOD_LABELS,
@@ -24,6 +25,7 @@ import type {
 } from '@/types/hrPayroll';
 
 type HrCommissionPeriodExportRow = {
+  AjusteRetroactivo: number;
   Colaboradores: number;
   Comisiones: number;
   Corte: string;
@@ -32,42 +34,47 @@ type HrCommissionPeriodExportRow = {
   Estado: string;
   Hasta: string;
   Moneda: string;
-  Nomina: string;
+  Nómina: string;
+  Retroactivas: number;
   Total: number;
 };
 
 type HrCommissionLineExportRow = {
   Ajuste: number;
-  Codigo: string;
+  AjusteRetroactivo: number;
+  Código: string;
   Colaborador: string;
-  Comision: number;
+  Comisión: number;
   Comentario: string;
   Deducciones: number;
   Entradas: number;
   Estado: string;
-  Metodo: string;
+  Método: string;
   Moneda: string;
   Neto: number;
   PagadoEl: string;
 };
 
 type HrEmployeePaymentExportRow = {
-  Codigo: string;
+  CuentaCaja: string;
+  Código: string;
   Colaborador: string;
   Estado: string;
   Fecha: string;
-  Metodo: string;
+  Método: string;
   Moneda: string;
   Monto: number;
   Referencia: string;
+  Usuario: string;
 };
 
 export type HrCommissionPeriodsPdfMode = 'detail' | 'general';
 
 export type HrCommissionPeriodGeneralPdfRow = {
-  Codigo: string;
+  AjusteRetroactivo: string;
+  Código: string;
   Colaborador: string;
-  Comision: string;
+  Comisión: string;
   Comentario: string;
   Deducciones: string;
   Entradas: string;
@@ -77,7 +84,7 @@ export type HrCommissionPeriodGeneralPdfRow = {
 
 export type HrCommissionPeriodDetailPdfRow = {
   Cliente: string;
-  Comision: string;
+  Comisión: string;
   Factura: string;
   Neto: string;
   Porcentaje: string;
@@ -85,9 +92,10 @@ export type HrCommissionPeriodDetailPdfRow = {
 };
 
 export type HrCommissionPeriodEmployeePdfGroup = {
-  Codigo: string;
+  AjusteRetroactivo: string;
+  Código: string;
   Colaborador: string;
-  Comision: string;
+  Comisión: string;
   Comentario: string;
   Entradas: string;
   Neto: string;
@@ -109,36 +117,41 @@ const PERIOD_COLUMNS = [
   'Estado',
   'Colaboradores',
   'Comisiones',
+  'Retroactivas',
+  'AjusteRetroactivo',
   'Deducciones',
   'Total',
   'Moneda',
-  'Nomina',
+  'Nómina',
 ];
 
 const LINE_COLUMNS = [
   'Colaborador',
-  'Codigo',
+  'Código',
   'Entradas',
   'Estado',
-  'Comision',
+  'Comisión',
+  'AjusteRetroactivo',
   'Deducciones',
   'Ajuste',
   'Neto',
   'Moneda',
-  'Metodo',
+  'Método',
   'PagadoEl',
   'Comentario',
 ];
 
 const PAYMENT_COLUMNS = [
   'Colaborador',
-  'Codigo',
+  'Código',
   'Fecha',
-  'Metodo',
+  'Método',
+  'CuentaCaja',
   'Monto',
   'Moneda',
   'Referencia',
   'Estado',
+  'Usuario',
 ];
 
 const getEmployeeName = (
@@ -158,6 +171,14 @@ const getPaymentReference = (payment: HrEmployeePaymentRecord): string =>
   payment.cashAccountId ||
   '-';
 
+const getPaymentAccountReference = (
+  payment: HrEmployeePaymentRecord,
+): string =>
+  payment.bankAccountId ||
+  payment.cashAccountId ||
+  payment.cashCountId ||
+  '-';
+
 const getPeriodLabel = (period: HrCommissionPeriodRecord | null): string =>
   period?.label || period?.periodKey || period?.id || 'Corte seleccionado';
 
@@ -174,6 +195,10 @@ const getLineDeductionAmount = (line: HrPayrollEmployeeLineRecord): number =>
 
 const getLineAdjustmentAmount = (line: HrPayrollEmployeeLineRecord): number =>
   line.manualAdjustmentAmount ?? 0;
+
+const getLineRetroactiveAdjustmentAmount = (
+  line: HrPayrollEmployeeLineRecord,
+): number => line.retroactiveAdjustmentAmount ?? 0;
 
 const getLineAdjustmentComment = (line: HrPayrollEmployeeLineRecord): string =>
   line.manualAdjustmentComment || '-';
@@ -236,7 +261,7 @@ const addPdfFooter = (doc: import('jspdf').jsPDF) => {
   doc.setTextColor(107, 114, 128);
   for (let page = 1; page <= pageCount; page += 1) {
     doc.setPage(page);
-    doc.text(`Pagina ${page} de ${pageCount}`, width / 2, height - 8, {
+    doc.text(`Página ${page} de ${pageCount}`, width / 2, height - 8, {
       align: 'center',
     });
   }
@@ -256,12 +281,63 @@ const addSummaryTable = (
   });
 };
 
+const addPaymentsPdfTable = (
+  doc: Awaited<ReturnType<typeof createPdfDocument>>,
+  payments: HrEmployeePaymentRecord[],
+  startY: number,
+): number => {
+  if (!payments.length) return startY;
+
+  const pageHeight = doc.internal.pageSize.getHeight();
+  let safeStartY = startY;
+  if (safeStartY > pageHeight - 60) {
+    doc.addPage();
+    safeStartY = 16;
+  }
+
+  doc.setFontSize(10);
+  doc.setTextColor(17, 24, 39);
+  doc.text('Pagos registrados', 14, safeStartY);
+  doc.autoTable({
+    body: payments.map((payment) => [
+      getEmployeeName(payment),
+      getEmployeeCode(payment),
+      formatHrDate(payment.paymentDate),
+      formatPaymentMethod(payment.paymentMethod),
+      getPaymentAccountReference(payment),
+      getPaymentReference(payment),
+      PAYMENT_STATUS_LABELS[payment.status],
+      formatPdfMoney(payment.amount, payment.currency),
+    ]),
+    head: [
+      [
+        'Colaborador',
+        'Código',
+        'Fecha',
+        'Método',
+        'Cuenta/Caja',
+        'Referencia',
+        'Estado',
+        'Monto',
+      ],
+    ],
+    headStyles: { fillColor: [31, 41, 55], textColor: 255 },
+    margin: { left: 14, right: 14 },
+    startY: safeStartY + 5,
+    styles: { cellPadding: 2, fontSize: 7 },
+    theme: 'striped',
+  });
+
+  return (doc.lastAutoTable?.finalY ?? safeStartY) + 10;
+};
+
 const getEntryMatchesLine = (
   entry: HrCommissionEntryRecord,
   line: HrPayrollEmployeeLineRecord,
 ): boolean =>
   entry.payrollEmployeeLineId === line.id ||
   line.commissionEntryIds.includes(entry.id) ||
+  (line.retroactiveEntryIds ?? []).includes(entry.id) ||
   (entry.periodId === line.periodId && entry.employeeId === line.employeeId);
 
 const mapDetailEntryRow = (
@@ -272,7 +348,7 @@ const mapDetailEntryRow = (
   Servicio: entry.serviceName || entry.invoiceItemId || '-',
   Neto: formatPdfMoney(entry.baseAmount, entry.currency),
   Porcentaje: formatRate(entry),
-  Comision: formatPdfMoney(entry.commissionAmount, entry.currency),
+  Comisión: formatPdfMoney(entry.commissionAmount, entry.currency),
 });
 
 const configureSheet = <T extends Record<string, unknown>>({
@@ -303,8 +379,14 @@ const configureSheet = <T extends Record<string, unknown>>({
   formatNumberColumns(sheet, columns, numberColumns);
 };
 
-export const buildHrCommissionPeriodsFileName = (): string =>
-  'cortes_comisiones_rrhh.xlsx';
+export const buildHrCommissionPeriodsFileName = (
+  selectedPeriod: HrCommissionPeriodRecord | null = null,
+): string => {
+  if (!selectedPeriod) return 'cortes_comisiones_rrhh.xlsx';
+  return `cortes_comisiones_rrhh_${sanitizeFileNamePart(
+    getPeriodLabel(selectedPeriod),
+  )}.xlsx`;
+};
 
 export const buildHrCommissionPeriodsPdfFileName = ({
   mode,
@@ -322,15 +404,17 @@ export const buildHrCommissionPeriodExportRows = (
 ): HrCommissionPeriodExportRow[] =>
   periods.map((period) => ({
     Corte: period.label || period.periodKey || period.id,
-    Desde: formatHrDate(period.startDate),
-    Hasta: formatHrDate(period.endDate),
+    Desde: formatHrPeriodDate(period, 'start'),
+    Hasta: formatHrPeriodDate(period, 'end'),
     Estado: HR_COMMISSION_PERIOD_STATUS_LABELS[period.status],
     Colaboradores: period.employeesCount,
     Comisiones: period.entriesCount,
+    Retroactivas: period.retroactiveAdjustmentsCount ?? 0,
+    AjusteRetroactivo: period.retroactiveAdjustmentAmount ?? 0,
     Deducciones: period.deductionsAmount ?? 0,
     Total: getPeriodPayableAmount(period),
     Moneda: period.currency,
-    Nomina: period.payrollRunId || '-',
+    Nómina: period.payrollRunId || '-',
   }));
 
 export const buildHrCommissionLineExportRows = (
@@ -338,15 +422,16 @@ export const buildHrCommissionLineExportRows = (
 ): HrCommissionLineExportRow[] =>
   lines.map((line) => ({
     Colaborador: getEmployeeName(line),
-    Codigo: getEmployeeCode(line),
+    Código: getEmployeeCode(line),
     Entradas: line.entriesCount,
     Estado: HR_PAYROLL_RUN_STATUS_LABELS[line.status],
-    Comision: line.commissionAmount,
+    Comisión: line.commissionAmount,
+    AjusteRetroactivo: getLineRetroactiveAdjustmentAmount(line),
     Deducciones: getLineDeductionAmount(line),
     Ajuste: getLineAdjustmentAmount(line),
     Neto: line.netAmount,
     Moneda: line.currency,
-    Metodo: formatPaymentMethod(line.paymentMethod),
+    Método: formatPaymentMethod(line.paymentMethod),
     PagadoEl: formatHrDate(line.paidAt),
     Comentario: getLineAdjustmentComment(line),
   }));
@@ -356,13 +441,15 @@ export const buildHrEmployeePaymentExportRows = (
 ): HrEmployeePaymentExportRow[] =>
   payments.map((payment) => ({
     Colaborador: getEmployeeName(payment),
-    Codigo: getEmployeeCode(payment),
+    Código: getEmployeeCode(payment),
     Fecha: formatHrDate(payment.paymentDate),
-    Metodo: formatPaymentMethod(payment.paymentMethod),
+    Método: formatPaymentMethod(payment.paymentMethod),
+    CuentaCaja: getPaymentAccountReference(payment),
     Monto: payment.amount,
     Moneda: payment.currency,
     Referencia: getPaymentReference(payment),
     Estado: PAYMENT_STATUS_LABELS[payment.status],
+    Usuario: payment.createdBy || '-',
   }));
 
 export const buildHrCommissionPeriodGeneralPdfRows = (
@@ -370,10 +457,14 @@ export const buildHrCommissionPeriodGeneralPdfRows = (
 ): HrCommissionPeriodGeneralPdfRow[] =>
   lines.map((line) => ({
     Colaborador: getEmployeeName(line),
-    Codigo: getEmployeeCode(line),
+    Código: getEmployeeCode(line),
     Entradas: String(line.entriesCount),
     Estado: HR_PAYROLL_RUN_STATUS_LABELS[line.status],
-    Comision: formatPdfMoney(line.commissionAmount, line.currency),
+    Comisión: formatPdfMoney(line.commissionAmount, line.currency),
+    AjusteRetroactivo: formatPdfMoney(
+      getLineRetroactiveAdjustmentAmount(line),
+      line.currency,
+    ),
     Deducciones: formatPdfMoney(getLineDeductionAmount(line), line.currency),
     Neto: formatPdfMoney(line.netAmount, line.currency),
     Comentario: getLineAdjustmentComment(line),
@@ -394,9 +485,13 @@ export const buildHrCommissionPeriodEmployeePdfGroups = ({
     lineEntries.forEach((entry) => usedEntryIds.add(entry.id));
     return {
       Colaborador: getEmployeeName(line),
-      Codigo: getEmployeeCode(line),
+      Código: getEmployeeCode(line),
       Entradas: String(lineEntries.length || line.entriesCount),
-      Comision: formatPdfMoney(line.commissionAmount, line.currency),
+      Comisión: formatPdfMoney(line.commissionAmount, line.currency),
+      AjusteRetroactivo: formatPdfMoney(
+        getLineRetroactiveAdjustmentAmount(line),
+        line.currency,
+      ),
       Neto: formatPdfMoney(line.netAmount, line.currency),
       Comentario: getLineAdjustmentComment(line),
       rows: lineEntries.map(mapDetailEntryRow),
@@ -412,9 +507,10 @@ export const buildHrCommissionPeriodEmployeePdfGroups = ({
           entry.employeeCode ||
           entry.employeeId ||
           'N/A',
-        Codigo: entry.employeeCode || entry.employeeId || 'N/A',
+        Código: entry.employeeCode || entry.employeeId || 'N/A',
         Entradas: '1',
-        Comision: formatPdfMoney(entry.commissionAmount, entry.currency),
+        Comisión: formatPdfMoney(entry.commissionAmount, entry.currency),
+        AjusteRetroactivo: '-',
         Neto: formatPdfMoney(entry.commissionAmount, entry.currency),
         Comentario: '-',
         rows: [mapDetailEntryRow(entry)],
@@ -444,8 +540,8 @@ export const exportHrCommissionPeriodsWorkbook = async ({
 
   configureSheet({
     columns: PERIOD_COLUMNS,
-    currencyColumns: ['Deducciones', 'Total'],
-    numberColumns: ['Colaboradores', 'Comisiones'],
+    currencyColumns: ['AjusteRetroactivo', 'Deducciones', 'Total'],
+    numberColumns: ['Colaboradores', 'Comisiones', 'Retroactivas'],
     rows: buildHrCommissionPeriodExportRows(periods),
     sheet: workbook.addWorksheet('Cortes'),
     title: 'Cortes de comisiones RRHH',
@@ -453,7 +549,13 @@ export const exportHrCommissionPeriodsWorkbook = async ({
 
   configureSheet({
     columns: LINE_COLUMNS,
-    currencyColumns: ['Comision', 'Deducciones', 'Ajuste', 'Neto'],
+    currencyColumns: [
+      'Comisión',
+      'AjusteRetroactivo',
+      'Deducciones',
+      'Ajuste',
+      'Neto',
+    ],
     numberColumns: ['Entradas'],
     rows: selectedPeriod ? buildHrCommissionLineExportRows(employeeLines) : [],
     sheet: workbook.addWorksheet('Colaboradores'),
@@ -475,15 +577,17 @@ export const exportHrCommissionPeriodsWorkbook = async ({
   const buffer = await workbook.xlsx.writeBuffer();
   saveAs(
     new Blob([buffer], { type: XLSX_MIME_TYPE }),
-    buildHrCommissionPeriodsFileName(),
+    buildHrCommissionPeriodsFileName(selectedPeriod),
   );
 };
 
 const exportHrCommissionPeriodGeneralPdf = async ({
   employeeLines,
+  payments,
   selectedPeriod,
 }: {
   employeeLines: HrPayrollEmployeeLineRecord[];
+  payments: HrEmployeePaymentRecord[];
   selectedPeriod: HrCommissionPeriodRecord;
 }) => {
   const doc = await createPdfDocument('general');
@@ -498,11 +602,18 @@ const exportHrCommissionPeriodGeneralPdf = async ({
   addSummaryTable(
     doc,
     [
-      ['Desde', formatHrDate(selectedPeriod.startDate)],
-      ['Hasta', formatHrDate(selectedPeriod.endDate)],
+      ['Desde', formatHrPeriodDate(selectedPeriod, 'start')],
+      ['Hasta', formatHrPeriodDate(selectedPeriod, 'end')],
       ['Estado', HR_COMMISSION_PERIOD_STATUS_LABELS[selectedPeriod.status]],
       ['Colaboradores', String(selectedPeriod.employeesCount)],
       ['Comisiones', String(selectedPeriod.entriesCount)],
+      [
+        'Ajustes retroactivos',
+        formatPdfMoney(
+          selectedPeriod.retroactiveAdjustmentAmount ?? 0,
+          selectedPeriod.currency,
+        ),
+      ],
       [
         'Total corte',
         formatPdfMoney(
@@ -516,10 +627,11 @@ const exportHrCommissionPeriodGeneralPdf = async ({
   doc.autoTable({
     body: rows.map((row) => [
       row.Colaborador,
-      row.Codigo,
+      row.Código,
       row.Entradas,
       row.Estado,
-      row.Comision,
+      row.Comisión,
+      row.AjusteRetroactivo,
       row.Deducciones,
       row.Comentario,
       row.Neto,
@@ -527,10 +639,11 @@ const exportHrCommissionPeriodGeneralPdf = async ({
     head: [
       [
         'Colaborador',
-        'Codigo',
+        'Código',
         'Entradas',
         'Estado',
-        'Comision',
+        'Comisión',
+        'Retroactiva',
         'Deducciones',
         'Comentario',
         'Neto',
@@ -542,6 +655,11 @@ const exportHrCommissionPeriodGeneralPdf = async ({
     styles: { cellPadding: 2, fontSize: 7 },
     theme: 'striped',
   });
+  addPaymentsPdfTable(
+    doc,
+    payments,
+    (doc.lastAutoTable?.finalY ?? 46) + 10,
+  );
   addPdfFooter(doc);
   doc.save(
     buildHrCommissionPeriodsPdfFileName({
@@ -554,10 +672,12 @@ const exportHrCommissionPeriodGeneralPdf = async ({
 const exportHrCommissionPeriodDetailPdf = async ({
   employeeLines,
   entries,
+  payments,
   selectedPeriod,
 }: {
   employeeLines: HrPayrollEmployeeLineRecord[];
   entries: HrCommissionEntryRecord[];
+  payments: HrEmployeePaymentRecord[];
   selectedPeriod: HrCommissionPeriodRecord;
 }) => {
   const doc = await createPdfDocument('detail');
@@ -576,11 +696,18 @@ const exportHrCommissionPeriodDetailPdf = async ({
   addSummaryTable(
     doc,
     [
-      ['Desde', formatHrDate(selectedPeriod.startDate)],
-      ['Hasta', formatHrDate(selectedPeriod.endDate)],
+      ['Desde', formatHrPeriodDate(selectedPeriod, 'start')],
+      ['Hasta', formatHrPeriodDate(selectedPeriod, 'end')],
       ['Estado', HR_COMMISSION_PERIOD_STATUS_LABELS[selectedPeriod.status]],
       ['Colaboradores', String(groups.length)],
       ['Comisiones', String(entries.length || selectedPeriod.entriesCount)],
+      [
+        'Ajustes retroactivos',
+        formatPdfMoney(
+          selectedPeriod.retroactiveAdjustmentAmount ?? 0,
+          selectedPeriod.currency,
+        ),
+      ],
       [
         'Total corte',
         formatPdfMoney(
@@ -601,11 +728,11 @@ const exportHrCommissionPeriodDetailPdf = async ({
 
     doc.setFontSize(10);
     doc.setTextColor(17, 24, 39);
-    doc.text(`${group.Colaborador} (${group.Codigo})`, 14, nextY);
+    doc.text(`${group.Colaborador} (${group.Código})`, 14, nextY);
     doc.setFontSize(8);
     doc.setTextColor(75, 85, 99);
     doc.text(
-      `Entradas: ${group.Entradas} | Comision: ${group.Comision} | Neto: ${group.Neto}`,
+      `Entradas: ${group.Entradas} | Comisión: ${group.Comisión} | Retroactiva: ${group.AjusteRetroactivo} | Neto: ${group.Neto}`,
       14,
       nextY + 5,
     );
@@ -620,10 +747,10 @@ const exportHrCommissionPeriodDetailPdf = async ({
         row.Servicio,
         row.Neto,
         row.Porcentaje,
-        row.Comision,
+        row.Comisión,
       ]),
       head: [
-        ['Numero factura', 'Cliente', 'Servicio', 'Neto', '%', 'Comision'],
+        ['Número factura', 'Cliente', 'Servicio', 'Neto', '%', 'Comisión'],
       ],
       headStyles: { fillColor: [31, 41, 55], textColor: 255 },
       margin: { left: 14, right: 14 },
@@ -634,6 +761,7 @@ const exportHrCommissionPeriodDetailPdf = async ({
     nextY = (doc.lastAutoTable?.finalY ?? nextY) + 10;
   });
 
+  addPaymentsPdfTable(doc, payments, nextY);
   addPdfFooter(doc);
   doc.save(
     buildHrCommissionPeriodsPdfFileName({
@@ -647,11 +775,13 @@ export const exportHrCommissionPeriodsPdf = async ({
   employeeLines,
   entries,
   mode,
+  payments = [],
   selectedPeriod,
 }: {
   employeeLines: HrPayrollEmployeeLineRecord[];
   entries: HrCommissionEntryRecord[];
   mode: HrCommissionPeriodsPdfMode;
+  payments?: HrEmployeePaymentRecord[];
   selectedPeriod: HrCommissionPeriodRecord | null;
 }) => {
   if (!selectedPeriod) {
@@ -659,13 +789,18 @@ export const exportHrCommissionPeriodsPdf = async ({
   }
 
   if (mode === 'general') {
-    await exportHrCommissionPeriodGeneralPdf({ employeeLines, selectedPeriod });
+    await exportHrCommissionPeriodGeneralPdf({
+      employeeLines,
+      payments,
+      selectedPeriod,
+    });
     return;
   }
 
   await exportHrCommissionPeriodDetailPdf({
     employeeLines,
     entries,
+    payments,
     selectedPeriod,
   });
 };

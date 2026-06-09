@@ -36,6 +36,7 @@ import {
   buildHrCommissionAccrualAccountingEvent,
   buildHrCommissionCutDocuments,
   buildHrPayrollEmployeeLinePayableAdjustment,
+  detectHrCommissionRetroactiveEntries,
   groupHrCommissionEntriesByEmployee,
   isHrCommissionEntryEligibleForCut,
   normalizeHrCommissionCutRule,
@@ -76,7 +77,7 @@ describe('hrCommissionPeriods.service', () => {
 
     const range = resolveHrCommissionCutRuleRange({
       rule: normalized.rule,
-      anchorDate: new Date('2026-02-01T00:00:00.000Z'),
+      anchorDate: '2026-02-01',
     });
 
     expect(range).toMatchObject({
@@ -302,6 +303,210 @@ describe('hrCommissionPeriods.service', () => {
         patch: expect.objectContaining({ status: 'included_in_cut' }),
       }),
     ]);
+  });
+
+  it('builds retroactive adjustments separately from manual adjustments', () => {
+    const result = buildHrCommissionCutDocuments({
+      businessId: 'business-1',
+      cutRule: {
+        id: 'cut_01_15_quincenal',
+        businessId: 'business-1',
+        label: 'Quincenal',
+        frequency: 'biweekly',
+        startDay: 1,
+        endDay: 15,
+        active: true,
+      },
+      startDateKey: '2026-06-16',
+      endDateKey: '2026-06-30',
+      entries: [
+        {
+          id: 'entry-normal',
+          employeeId: 'emp-1',
+          employeeNameSnapshot: 'Ana Perez',
+          commissionAmount: 100,
+          currency: 'DOP',
+          status: 'calculated',
+          date: new Date('2026-06-20T12:00:00.000Z'),
+        },
+      ],
+      retroactiveEntries: [
+        {
+          id: 'entry-retro',
+          employeeId: 'emp-1',
+          employeeNameSnapshot: 'Ana Perez',
+          commissionAmount: 25,
+          currency: 'DOP',
+          status: 'eligible',
+          periodId: null,
+          payrollRunId: null,
+          originalPeriodId: 'commission_2026-06-01_2026-06-15',
+          originalPeriodLabel: 'Primera quincena',
+          originalStartDateKey: '2026-06-01',
+          originalEndDateKey: '2026-06-15',
+          originalPeriodStatus: 'approved',
+          retroactiveResolutionStatus: 'selected_for_next_cut',
+          retroactiveTargetPeriodId: 'commission_2026-06-16_2026-06-30',
+          date: new Date('2026-06-10T12:00:00.000Z'),
+        },
+      ],
+      timestamp: 'now',
+      userId: 'admin-1',
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.period).toMatchObject({
+      entriesCount: 2,
+      normalEntriesCount: 1,
+      totalCommissionAmount: 100,
+      retroactiveAdjustmentAmount: 25,
+      retroactiveAdjustmentsCount: 1,
+      manualAdjustmentAmount: 0,
+      grossAmount: 125,
+      netAmount: 125,
+      hasRetroactiveAdjustments: true,
+    });
+    expect(result.employeeLines[0]).toMatchObject({
+      commissionAmount: 100,
+      retroactiveAdjustmentAmount: 25,
+      retroactiveEntryIds: ['entry-retro'],
+      manualAdjustmentAmount: 0,
+      grossAmount: 125,
+      netAmount: 125,
+    });
+    expect(result.entryPatches).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          entryId: 'entry-retro',
+          patch: expect.objectContaining({
+            status: 'included_in_cut',
+            isRetroactive: true,
+            retroactiveResolutionStatus: 'included_in_cut',
+            retroactiveTargetStartDateKey: '2026-06-16',
+            retroactiveTargetEndDateKey: '2026-06-30',
+          }),
+        }),
+      ]),
+    );
+  });
+
+  it('stores business date keys without shifting Dominican Republic dates', () => {
+    const result = buildHrCommissionCutDocuments({
+      businessId: 'business-1',
+      cutRule: {
+        id: 'cut_01_15_quincenal',
+        businessId: 'business-1',
+        label: 'Primera quincena',
+        frequency: 'biweekly',
+        startDay: 1,
+        endDay: 15,
+        active: true,
+      },
+      startDateKey: '2026-06-01',
+      endDateKey: '2026-06-15',
+      entries: [
+        {
+          id: 'entry-1',
+          employeeId: 'emp-1',
+          employeeNameSnapshot: 'Ana Perez',
+          commissionAmount: 100,
+          currency: 'DOP',
+          status: 'calculated',
+          date: new Date('2026-06-10T12:00:00.000Z'),
+        },
+      ],
+      timestamp: 'now',
+      userId: 'admin-1',
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.period).toMatchObject({
+      id: 'commission_2026-06-01_2026-06-15',
+      startDateKey: '2026-06-01',
+      endDateKey: '2026-06-15',
+      businessTimeZone: 'America/Santo_Domingo',
+      label: 'Primera quincena 2026-06-01 - 2026-06-15',
+    });
+    expect(result.period.startDate.toDate().toISOString()).toBe(
+      '2026-06-01T04:00:00.000Z',
+    );
+    expect(result.period.endDate.toDate().toISOString()).toBe(
+      '2026-06-16T03:59:59.999Z',
+    );
+  });
+
+  it('detects retroactive unassigned entries inside generated cut ranges', () => {
+    const result = detectHrCommissionRetroactiveEntries({
+      periods: [
+        {
+          id: 'commission_2026-06-01_2026-06-15',
+          cutRuleId: 'cut_01_15_quincenal',
+          status: 'approved',
+          startDateKey: '2026-06-01',
+          endDateKey: '2026-06-15',
+        },
+      ],
+      entries: [
+        {
+          id: 'entry-late',
+          employeeId: 'emp-1',
+          commissionAmount: 100,
+          status: 'calculated',
+          periodId: null,
+          payrollRunId: null,
+          date: new Date('2026-06-10T14:00:00.000Z'),
+        },
+        {
+          id: 'entry-next',
+          employeeId: 'emp-1',
+          commissionAmount: 100,
+          status: 'calculated',
+          periodId: null,
+          payrollRunId: null,
+          date: new Date('2026-06-20T14:00:00.000Z'),
+        },
+      ],
+    });
+
+    expect(result.count).toBe(1);
+    expect(result.entries[0]).toMatchObject({ id: 'entry-late' });
+  });
+
+  it('does not list entries already linked to payroll lines as retroactive', () => {
+    const result = detectHrCommissionRetroactiveEntries({
+      periods: [
+        {
+          id: 'commission_2026-06-01_2026-06-15',
+          status: 'approved',
+          startDateKey: '2026-06-01',
+          endDateKey: '2026-06-15',
+        },
+      ],
+      entries: [
+        {
+          id: 'entry-linked',
+          employeeId: 'emp-1',
+          commissionAmount: 100,
+          status: 'calculated',
+          periodId: null,
+          payrollRunId: null,
+          payrollEmployeeLineId: 'line-1',
+          date: new Date('2026-06-10T14:00:00.000Z'),
+        },
+        {
+          id: 'entry-paid',
+          employeeId: 'emp-1',
+          commissionAmount: 100,
+          status: 'calculated',
+          periodId: null,
+          payrollRunId: null,
+          employeePaymentId: 'payment-1',
+          date: new Date('2026-06-10T14:00:00.000Z'),
+        },
+      ],
+    });
+
+    expect(result.count).toBe(0);
   });
 
   it('applies configured salary deductions to payroll lines', () => {
@@ -657,7 +862,7 @@ describe('hrCommissionPeriods.service', () => {
       }),
     ).toMatchObject({
       ok: false,
-      error: 'Agrega un comentario sobre la modificacion del total a pagar.',
+      error: 'Agrega un comentario sobre la modificación del total a pagar.',
     });
 
     expect(
@@ -675,7 +880,7 @@ describe('hrCommissionPeriods.service', () => {
       buildHrPayrollEmployeeLinePayableAdjustment({
         line: { ...line, status: 'approved' },
         totalToPay: 100,
-        comment: 'Ajuste tardio',
+        comment: 'Ajuste tardío',
       }),
     ).toMatchObject({
       ok: false,

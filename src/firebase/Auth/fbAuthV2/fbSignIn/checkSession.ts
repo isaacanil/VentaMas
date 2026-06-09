@@ -178,6 +178,7 @@ const isTransientSessionError = (error: unknown): boolean => {
   const transientMessageHints = [
     'network',
     'conexion',
+    'conexión',
     'timeout',
     'unavailable',
     'temporarily',
@@ -192,14 +193,14 @@ const ensureFirebaseAuthSession = async (
   firebaseCustomToken: unknown,
 ): Promise<void> => {
   if (!userId) {
-    throw new Error('Sesion inválida: faltó userId.');
+    throw new Error('Sesión inválida: faltó userId.');
   }
 
   const currentUser = auth.currentUser;
   if (currentUser?.uid === userId) return;
 
   if (typeof firebaseCustomToken !== 'string' || !firebaseCustomToken.trim()) {
-    throw new Error('Sesion inválida: faltó firebaseCustomToken.');
+    throw new Error('Sesión inválida: faltó firebaseCustomToken.');
   }
 
   if (currentUser) {
@@ -222,11 +223,13 @@ export function useAutomaticLogin() {
   const userIdRef = useRef<string | null>(null);
   const isMountedRef = useRef(true);
   const refreshLockRef = useRef(false);
+  const refreshPromiseRef = useRef<Promise<RefreshResult> | null>(null);
   const retryCountRef = useRef(0);
   const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const retryWarningShownRef = useRef(false);
   const refreshSessionRef = useRef<
-    ((source?: string, options?: RefreshOptions) => Promise<RefreshResult>) | null
+    | ((source?: string, options?: RefreshOptions) => Promise<RefreshResult>)
+    | null
   >(null);
   const [status, setStatus] = useState<SessionStatus>('checking');
   const [error, setError] = useState<Error | null>(null);
@@ -273,7 +276,7 @@ export function useAutomaticLogin() {
       } else if (!retryWarningShownRef.current) {
         retryWarningShownRef.current = true;
         console.warn(
-          'Sin conexion. Mantendremos tu sesion local mientras reintentamos.',
+          'Sin conexión. Mantendremos tu sesión local mientras reintentamos.',
         );
       }
 
@@ -344,7 +347,9 @@ export function useAutomaticLogin() {
           userIdRef.current = userId;
         }
       } catch (loadError) {
-        if (getErrorCode(loadError).toLowerCase().includes('permission-denied')) {
+        if (
+          getErrorCode(loadError).toLowerCase().includes('permission-denied')
+        ) {
           return;
         }
         console.error(
@@ -374,132 +379,151 @@ export function useAutomaticLogin() {
       source = 'auto',
       options: RefreshOptions = {},
     ): Promise<RefreshResult> => {
-      if (refreshLockRef.current) {
-        return { ok: false, reason: 'locked' };
-      }
-      refreshLockRef.current = true;
-      try {
-        const { sessionToken } = getStoredSession();
-        if (!sessionToken) {
+      if (refreshPromiseRef.current) return refreshPromiseRef.current;
+
+      const refreshPromise = (async (): Promise<RefreshResult> => {
+        refreshLockRef.current = true;
+        try {
+          const { sessionToken } = getStoredSession();
+          if (!sessionToken) {
+            if (isLogoutInProgress() || Date.now() - getLastLogoutAt() < 3000) {
+              if (isMountedRef.current) {
+                setStatus('ready');
+                setError(null);
+              }
+              userIdRef.current = null;
+              return { ok: false, reason: 'logout-in-progress' };
+            }
+
+            await handleLogout({ redirect: false });
+            return { ok: false, reason: 'missing-token' };
+          }
+
+          const refreshSessionCallable = httpsCallable<
+            RefreshSessionRequest,
+            SessionCallableResponse
+          >(functions, 'clientRefreshSession');
+          const response = await refreshSessionCallable({
+            sessionToken,
+            extend: options.extend !== false,
+            sessionInfo: buildSessionInfo({
+              metadata: {
+                refreshSource: source,
+                lastActivityMs: Date.now() - lastActivityRef.current,
+              },
+            }),
+          });
+
+          const data = response?.data || {};
+          if (!data.ok || !data.session) {
+            throw new Error(data?.message || 'Sesión inválida');
+          }
+
+          const { session } = data;
+          storeSessionLocally({
+            sessionToken,
+            sessionExpiresAt: session.expiresAt,
+            sessionId: session.id,
+          });
+
+          if (typeof data.businessHasOwners === 'boolean') {
+            dispatch(
+              addUserData({ businessHasOwners: data.businessHasOwners }),
+            );
+          }
+
+          if (isMountedRef.current) {
+            setError(null);
+          }
+
+          await ensureFirebaseAuthSession(
+            session.userId,
+            data.firebaseCustomToken,
+          );
+
+          await loadUserData(
+            session.userId,
+            data.user && typeof data.user === 'object'
+              ? (data.user as SessionUserPayload)
+              : undefined,
+          );
+
+          const remaining =
+            typeof session.expiresAt === 'number'
+              ? session.expiresAt - Date.now()
+              : null;
+          if (
+            remaining !== null &&
+            remaining > 0 &&
+            remaining < EXPIRY_WARNING_WINDOW_MS
+          ) {
+            showSessionExpiringWarningRef.current?.();
+          }
+
+          lastActivityRef.current = Date.now();
+          resetRetryState();
+          return { ok: true, session };
+        } catch (refreshError) {
+          const logSessionRefreshError = isTransientSessionError(refreshError)
+            ? console.warn
+            : console.error;
+          logSessionRefreshError(
+            'session refresh error:',
+            getErrorMessage(refreshError) || refreshError,
+          );
+
           if (isLogoutInProgress() || Date.now() - getLastLogoutAt() < 3000) {
             if (isMountedRef.current) {
               setStatus('ready');
               setError(null);
             }
-            userIdRef.current = null;
-            return { ok: false, reason: 'logout-in-progress' };
+            return {
+              ok: false,
+              reason: 'logout-in-progress',
+              error: refreshError,
+            };
           }
 
-          await handleLogout({ redirect: false });
-          return { ok: false, reason: 'missing-token' };
-        }
+          if (isAuthError(refreshError)) {
+            showSessionExpiredModal();
+            await handleLogout({ redirect: true });
+            return {
+              ok: false,
+              reason: 'invalid-session',
+              error: refreshError,
+            };
+          }
 
-        const refreshSessionCallable = httpsCallable<
-          RefreshSessionRequest,
-          SessionCallableResponse
-        >(functions, 'clientRefreshSession');
-        const response = await refreshSessionCallable({
-          sessionToken,
-          extend: options.extend !== false,
-          sessionInfo: buildSessionInfo({
-            metadata: {
-              refreshSource: source,
-              lastActivityMs: Date.now() - lastActivityRef.current,
-            },
-          }),
-        });
-
-        const data = response?.data || {};
-        if (!data.ok || !data.session) {
-          throw new Error(data?.message || 'Sesion invalida');
-        }
-
-        const { session } = data;
-        storeSessionLocally({
-          sessionToken,
-          sessionExpiresAt: session.expiresAt,
-          sessionId: session.id,
-        });
-
-        if (typeof data.businessHasOwners === 'boolean') {
-          dispatch(addUserData({ businessHasOwners: data.businessHasOwners }));
-        }
-
-        if (isMountedRef.current) {
-          setError(null);
-        }
-
-        await ensureFirebaseAuthSession(session.userId, data.firebaseCustomToken);
-
-        await loadUserData(
-          session.userId,
-          data.user && typeof data.user === 'object'
-            ? (data.user as SessionUserPayload)
-            : undefined,
-        );
-
-        const remaining =
-          typeof session.expiresAt === 'number'
-            ? session.expiresAt - Date.now()
-            : null;
-        if (
-          remaining !== null &&
-          remaining > 0 &&
-          remaining < EXPIRY_WARNING_WINDOW_MS
-        ) {
-          showSessionExpiringWarningRef.current?.();
-        }
-
-        lastActivityRef.current = Date.now();
-        resetRetryState();
-        return { ok: true, session };
-      } catch (refreshError) {
-        const logSessionRefreshError = isTransientSessionError(refreshError)
-          ? console.warn
-          : console.error;
-        logSessionRefreshError(
-          'session refresh error:',
-          getErrorMessage(refreshError) || refreshError,
-        );
-
-        if (isLogoutInProgress() || Date.now() - getLastLogoutAt() < 3000) {
           if (isMountedRef.current) {
+            const message = isTransientSessionError(refreshError)
+              ? 'No se pudo renovar la sesión. Reintentaremos pronto.'
+              : 'No se pudo renovar la sesión.';
+            setError(
+              refreshError instanceof Error ? refreshError : new Error(message),
+            );
             setStatus('ready');
-            setError(null);
           }
+
+          scheduleRetry(source);
           return {
             ok: false,
-            reason: 'logout-in-progress',
+            reason: isTransientSessionError(refreshError)
+              ? 'transient-error'
+              : 'error',
             error: refreshError,
           };
+        } finally {
+          refreshLockRef.current = false;
         }
+      })();
 
-        if (isAuthError(refreshError)) {
-          showSessionExpiredModal();
-          await handleLogout({ redirect: true });
-          return { ok: false, reason: 'invalid-session', error: refreshError };
-        }
-
-        if (isMountedRef.current) {
-          const message = isTransientSessionError(refreshError)
-            ? 'No se pudo renovar la sesion. Reintentaremos pronto.'
-            : 'No se pudo renovar la sesion.';
-          setError(
-            refreshError instanceof Error ? refreshError : new Error(message),
-          );
-          setStatus('ready');
-        }
-
-        scheduleRetry(source);
-        return {
-          ok: false,
-          reason: isTransientSessionError(refreshError)
-            ? 'transient-error'
-            : 'error',
-          error: refreshError,
-        };
+      refreshPromiseRef.current = refreshPromise;
+      try {
+        return await refreshPromise;
       } finally {
-        refreshLockRef.current = false;
+        if (refreshPromiseRef.current === refreshPromise) {
+          refreshPromiseRef.current = null;
+        }
       }
     },
     [
@@ -517,10 +541,10 @@ export function useAutomaticLogin() {
   const showSessionExpiringWarning = useCallback(() => {
     openModalOnce('session-expiring', (reset) => {
       Modal.confirm({
-        title: 'Sesion por expirar',
-        content: 'Tu sesion expirara pronto. Deseas mantenerla activa?',
+        title: 'Sesión por expirar',
+        content: 'Tu sesión expirará pronto. ¿Deseas mantenerla activa?',
         okText: 'Mantener activa',
-        cancelText: 'Cerrar sesion',
+        cancelText: 'Cerrar sesión',
         centered: true,
         onOk: () => refreshSession('manual-renew'),
         onCancel: () => handleLogout({ redirect: true }),
@@ -534,9 +558,9 @@ export function useAutomaticLogin() {
       Modal.confirm({
         title: 'Inactividad prolongada',
         content:
-          'Deseas mantener tu sesion activa? Se cerrara por inactividad.',
-        okText: 'Si, mantener activa',
-        cancelText: 'Cerrar sesion',
+          '¿Deseas mantener tu sesión activa? Se cerrará por inactividad.',
+        okText: 'Sí, mantener activa',
+        cancelText: 'Cerrar sesión',
         centered: true,
         onOk: () => refreshSession('inactivity-extend'),
         onCancel: () => handleLogout({ redirect: true }),
@@ -576,10 +600,6 @@ export function useAutomaticLogin() {
         if (!isMountedRef.current) return;
 
         if (!result?.ok) {
-          // Si está locked, otra llamada init ya está en progreso y se encargará
-          // de despachar setAuthReady cuando termine. No hacer nada aquí.
-          if (result?.reason === 'locked') return;
-
           if (
             ['error', 'transient-error'].includes(result?.reason || '') &&
             result.error
@@ -587,7 +607,7 @@ export function useAutomaticLogin() {
             const err =
               result.error instanceof Error
                 ? result.error
-                : new Error(getErrorMessage(result.error) || 'Error de sesion');
+                : new Error(getErrorMessage(result.error) || 'Error de sesión');
             setErrorSafe(err);
           }
           dispatch(setAuthReady());
@@ -603,7 +623,7 @@ export function useAutomaticLogin() {
         setErrorSafe(
           initError instanceof Error
             ? initError
-            : new Error('Error de sesion desconocido'),
+            : new Error('Error de sesión desconocido'),
         );
         dispatch(setAuthReady());
         setStatusSafe('ready');
@@ -630,6 +650,7 @@ export function useAutomaticLogin() {
     return () => {
       isMountedRef.current = false;
       refreshLockRef.current = false;
+      refreshPromiseRef.current = null;
       clearRetryTimer();
       clearInterval(refreshInterval);
       clearInterval(inactivityInterval);

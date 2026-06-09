@@ -10,6 +10,13 @@ const ENTRY_STATUSES = new Set([
   'cancelled',
   'requires_adjustment',
 ]);
+const RESYNC_LOCKED_STATUSES = new Set([
+  'included_in_cut',
+  'approved',
+  'paid',
+  'cancelled',
+  'reversed',
+]);
 
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -44,6 +51,21 @@ const readCollaboratorSnapshot = (serviceCommission) =>
 
 const readServiceSnapshot = (serviceCommission) =>
   asRecord(serviceCommission.service);
+
+const hasLifecycleLink = (entry) =>
+  Boolean(
+    toCleanString(entry?.periodId) ||
+      toCleanString(entry?.payrollRunId) ||
+      toCleanString(entry?.payrollEmployeeLineId) ||
+      toCleanString(entry?.employeePaymentId) ||
+      toCleanString(entry?.accountingEventId) ||
+      toCleanString(entry?.journalEntryId),
+  );
+
+export const isHrCommissionEntryLockedForResync = (entry) => {
+  const status = toCleanString(entry?.status)?.toLowerCase();
+  return hasLifecycleLink(entry) || RESYNC_LOCKED_STATUSES.has(status);
+};
 
 const resolveSourceCommissionId = (serviceCommission) =>
   toCleanString(serviceCommission.id) ||
@@ -211,7 +233,7 @@ export const buildHrCommissionEntryFromServiceCommission = ({
       toCleanString(source.commissionRuleId) || 'service_default',
     commissionRuleNameSnapshot:
       toCleanString(source.commissionRuleNameSnapshot) ||
-      'Comision de servicio',
+      'Comisión de servicio',
     calculationBase:
       toCleanString(commission.calculationBase) || 'netSubtotalWithoutTax',
     baseAmount: roundMoney(source.billedAmount ?? source.amountFactured),
@@ -305,6 +327,46 @@ export const syncHrCommissionEntriesFromServiceCommissionRecordsTx = (
 
   return entries;
 };
+
+export const syncRecalculableHrCommissionEntriesFromServiceCommissionRecordsTx =
+  async (
+    transaction,
+    {
+      businessId,
+      employeeIndex = new Map(),
+      records = [],
+      timestamp = FieldValue.serverTimestamp(),
+      userId = null,
+    },
+  ) => {
+    const entries = buildHrCommissionEntriesFromServiceCommissions({
+      businessId,
+      employeeIndex,
+      serviceCommissions: records,
+      timestamp,
+      userId,
+    });
+    const candidates = entries.map((entry) => ({
+      entry,
+      ref: db.doc(`businesses/${businessId}/hrCommissionEntries/${entry.id}`),
+    }));
+    const snapshots = await Promise.all(
+      candidates.map(({ ref }) => transaction.get(ref)),
+    );
+    const writableEntries = [];
+
+    candidates.forEach(({ entry, ref }, index) => {
+      const existing = snapshots[index]?.exists
+        ? snapshots[index].data()
+        : null;
+      if (existing && isHrCommissionEntryLockedForResync(existing)) return;
+
+      transaction.set(ref, entry, { merge: true });
+      writableEntries.push(entry);
+    });
+
+    return writableEntries;
+  };
 
 export const voidHrCommissionEntriesForServiceCommissionDocsTx = (
   transaction,

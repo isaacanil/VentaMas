@@ -4,6 +4,7 @@ import {
   ClockCircleOutlined,
   DollarOutlined,
   LockOutlined,
+  RollbackOutlined,
 } from '@/constants/icons/antd';
 import type { HrCommissionPeriodRecord } from '@/types/hrPayroll';
 
@@ -18,6 +19,7 @@ interface PeriodActionButtonsProps {
   actionKey: string | null;
   layout?: 'inline' | 'toolbar';
   onAction: (action: PeriodAction, period: HrCommissionPeriodRecord) => void;
+  onRequestRevertApproval?: (period: HrCommissionPeriodRecord) => void;
   period: HrCommissionPeriodRecord;
 }
 
@@ -25,6 +27,7 @@ export function PeriodActionButtons({
   actionKey,
   layout = 'inline',
   onAction,
+  onRequestRevertApproval,
   period,
 }: PeriodActionButtonsProps) {
   const closeActionKey = `close:${period.id}`;
@@ -64,6 +67,11 @@ export function PeriodActionButtons({
   }
 
   if (period.status === 'approved') {
+    const canRequestRevert =
+      typeof onRequestRevertApproval === 'function' &&
+      (period.paidAmount ?? 0) <= 0 &&
+      (period.paidLinesCount ?? 0) <= 0;
+
     return (
       <PeriodActionGroup
         aria-label={`Acciones del corte ${periodName}`}
@@ -74,6 +82,16 @@ export function PeriodActionButtons({
           <DollarOutlined />
           Listo para pagos
         </PeriodActionStatus>
+        {canRequestRevert ? (
+          <VmButton
+            variant="secondary"
+            isDisabled={actionKey === `revert_approval:${period.id}`}
+            onPress={() => onRequestRevertApproval(period)}
+          >
+            <RollbackOutlined />
+            Revertir aprobación
+          </VmButton>
+        ) : null}
       </PeriodActionGroup>
     );
   }
@@ -106,7 +124,7 @@ export function PeriodActionButtons({
           onPress={() => onAction('close', period)}
         >
           <LockOutlined />
-          {isClosing ? 'Cerrando...' : 'Cerrar para revision'}
+          {isClosing ? 'Cerrando...' : 'Cerrar para revisión'}
         </VmButton>
       ) : null}
 
@@ -123,7 +141,7 @@ export function PeriodActionButtons({
                   <VmAlertDialog.Heading>Aprobar corte</VmAlertDialog.Heading>
                 </VmAlertDialog.Header>
                 <VmAlertDialog.Body>
-                  Se marcara el corte como aprobado y se emitira el evento
+                  Se marcará el corte como aprobado y se emitirá el evento
                   contable.
                 </VmAlertDialog.Body>
                 <VmAlertDialog.Footer>

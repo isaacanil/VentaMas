@@ -43,6 +43,8 @@ import {
 const databaseURL = import.meta.env.VITE_FIREBASE_DATABASE_URL;
 const hasRealtimeDatabase = Boolean(databaseURL);
 const appCheckSiteKey = import.meta.env.VITE_FIREBASE_APPCHECK_SITE_KEY || '';
+const appCheckDisabled =
+  import.meta.env.VITE_FIREBASE_APPCHECK_DISABLED === 'true';
 const appCheckDebugToken =
   import.meta.env.VITE_FIREBASE_APPCHECK_DEBUG_TOKEN || '';
 
@@ -61,7 +63,8 @@ const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 const useFirebaseEmulators = shouldUseFirebaseEmulators();
 const useMemoryFirestoreCache = import.meta.env.DEV || useFirebaseEmulators;
-const canInitializeAppCheck = Boolean(appCheckSiteKey) && !useFirebaseEmulators;
+const canInitializeAppCheck =
+  Boolean(appCheckSiteKey) && !useFirebaseEmulators && !appCheckDisabled;
 
 const configureAppCheckDebugToken = () => {
   if (!import.meta.env.DEV || !appCheckDebugToken) return;
@@ -97,7 +100,7 @@ export const appCheck = initializeAppCheckOnce();
 
 export const db = initializeFirestore(app, {
   // Evita cache persistente en desarrollo para no mezclar sesiones,
-  // HMR y datos efimeros de emuladores durante pruebas locales.
+  // HMR y datos efímeros de emuladores durante pruebas locales.
   localCache: useMemoryFirestoreCache
     ? memoryLocalCache()
     : persistentLocalCache({

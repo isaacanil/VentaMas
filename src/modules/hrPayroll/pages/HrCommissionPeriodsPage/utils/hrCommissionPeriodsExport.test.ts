@@ -25,10 +25,15 @@ const periods: HrCommissionPeriodRecord[] = [
     periodKey: '2026-06',
     label: 'Junio 2026',
     status: 'approved',
+    startDateKey: '2026-06-01',
+    endDateKey: '2026-06-15',
     currency: 'DOP',
     entriesCount: 8,
     employeesCount: 2,
     totalCommissionAmount: 15000,
+    retroactiveAdjustmentAmount: 250,
+    retroactiveAdjustmentsCount: 1,
+    hasRetroactiveAdjustments: true,
     payrollRunId: 'run-1',
   },
 ];
@@ -49,9 +54,13 @@ const lines: HrPayrollEmployeeLineRecord[] = [
     deductionsAmount: 500,
     netAmount: 7500,
     commissionAmount: 8000,
+    retroactiveAdjustmentAmount: 250,
+    retroactiveAdjustmentsCount: 1,
+    retroactiveEntryIds: ['entry-retro'],
+    hasRetroactiveAdjustments: true,
     deductionLines: [],
     commissionEntryIds: ['entry-1'],
-    entriesCount: 4,
+    entriesCount: 5,
     manualAdjustmentAmount: 500,
     manualAdjustmentComment: 'Ajuste autorizado por gerencia',
     paymentMethod: 'bank_transfer',
@@ -109,6 +118,9 @@ describe('hrCommissionPeriodsExport', () => {
     expect(buildHrCommissionPeriodsFileName()).toBe(
       'cortes_comisiones_rrhh.xlsx',
     );
+    expect(buildHrCommissionPeriodsFileName(periods[0])).toBe(
+      'cortes_comisiones_rrhh_junio_2026.xlsx',
+    );
     expect(
       buildHrCommissionPeriodsPdfFileName({
         mode: 'general',
@@ -121,30 +133,33 @@ describe('hrCommissionPeriodsExport', () => {
     expect(buildHrCommissionPeriodExportRows(periods)).toEqual([
       {
         Corte: 'Junio 2026',
-        Desde: '-',
-        Hasta: '-',
+        Desde: '1 jun 2026',
+        Hasta: '15 jun 2026',
         Estado: 'Aprobado',
         Colaboradores: 2,
         Comisiones: 8,
+        Retroactivas: 1,
+        AjusteRetroactivo: 250,
         Deducciones: 0,
         Total: 15000,
         Moneda: 'DOP',
-        Nomina: 'run-1',
+        Nómina: 'run-1',
       },
     ]);
 
     expect(buildHrCommissionLineExportRows(lines)).toEqual([
       {
         Colaborador: 'Ana Perez',
-        Codigo: 'EMP-1',
-        Entradas: 4,
+        Código: 'EMP-1',
+        Entradas: 5,
         Estado: 'Aprobado',
-        Comision: 8000,
+        Comisión: 8000,
+        AjusteRetroactivo: 250,
         Deducciones: 500,
         Ajuste: 500,
         Neto: 7500,
         Moneda: 'DOP',
-        Metodo: 'Transferencia',
+        Método: 'Transferencia',
         PagadoEl: '-',
         Comentario: 'Ajuste autorizado por gerencia',
       },
@@ -153,13 +168,15 @@ describe('hrCommissionPeriodsExport', () => {
     expect(buildHrEmployeePaymentExportRows(payments)).toEqual([
       {
         Colaborador: 'Ana Perez',
-        Codigo: 'EMP-1',
+        Código: 'EMP-1',
         Fecha: '-',
-        Metodo: 'Transferencia',
+        Método: 'Transferencia',
+        CuentaCaja: '-',
         Monto: 7500,
         Moneda: 'DOP',
         Referencia: 'TRX-001',
         Estado: 'Confirmado',
+        Usuario: '-',
       },
     ]);
   });
@@ -168,10 +185,11 @@ describe('hrCommissionPeriodsExport', () => {
     expect(buildHrCommissionPeriodGeneralPdfRows(lines)).toEqual([
       {
         Colaborador: 'Ana Perez',
-        Codigo: 'EMP-1',
-        Entradas: '4',
+        Código: 'EMP-1',
+        Entradas: '5',
         Estado: 'Aprobado',
-        Comision: 'RD$8,000.00',
+        Comisión: 'RD$8,000.00',
+        AjusteRetroactivo: 'RD$250.00',
         Deducciones: 'RD$500.00',
         Comentario: 'Ajuste autorizado por gerencia',
         Neto: 'RD$7,500.00',
@@ -188,9 +206,10 @@ describe('hrCommissionPeriodsExport', () => {
     ).toEqual([
       {
         Colaborador: 'Ana Perez',
-        Codigo: 'EMP-1',
+        Código: 'EMP-1',
         Entradas: '1',
-        Comision: 'RD$8,000.00',
+        Comisión: 'RD$8,000.00',
+        AjusteRetroactivo: 'RD$250.00',
         Neto: 'RD$7,500.00',
         Comentario: 'Ajuste autorizado por gerencia',
         rows: [
@@ -200,7 +219,7 @@ describe('hrCommissionPeriodsExport', () => {
             Servicio: 'Consulta',
             Neto: 'RD$5,000.00',
             Porcentaje: '10%',
-            Comision: 'RD$500.00',
+            Comisión: 'RD$500.00',
           },
         ],
       },

@@ -8,6 +8,7 @@ import type { InventoryUser, WarehouseRecord } from '@/utils/inventory/types';
 import {
   DEFAULT_FILTER_CONTEXT,
   DEFAULT_FILTERS,
+  selectItemType,
   selectInventariable,
   selectItbis,
   selectPriceStatus,
@@ -23,6 +24,7 @@ import {
   selectStockRequirement,
   selectStockLocations,
   resetInventoryDerivedFilters,
+  setItemType,
   setStockAvailability,
   setStockAlertLevel,
   setStockRequirement,
@@ -33,6 +35,7 @@ import { getWarehousesStockAggregates } from '@/firebase/warehouse/productStockS
 import { useListenWarehouses } from '@/firebase/warehouse/warehouseService';
 import { LabelWithStatus } from '@/modules/inventory/pages/Inventario/pages/ItemsManager/components/InventoryFilterAndSort/components/Body/components/SortPanel/SortPanel';
 import {
+  opcionesItemType,
   opcionesInventariable,
   opcionesItbis,
 } from '@/modules/inventory/pages/Inventario/pages/ItemsManager/components/InventoryFilterAndSort/InventoryFilterAndSortMetadata';
@@ -166,6 +169,9 @@ type FilterPanelProps = {
 export const FilterPanel = ({
   contextKey = DEFAULT_FILTER_CONTEXT,
 }: FilterPanelProps) => {
+  const itemType = useSelector((state: FilterRootState) =>
+    selectItemType(state, contextKey),
+  ) as string;
   const inventariable = useSelector((state: FilterRootState) =>
     selectInventariable(state, contextKey),
   ) as string;
@@ -272,6 +278,9 @@ export const FilterPanel = ({
       setInventariable({ context: contextKey, value: newInventariable }),
     );
   };
+  const handleItemTypeChange = (newItemType: any) => {
+    dispatch(setItemType({ context: contextKey, value: newItemType }));
+  };
   const handleInventoryStatusChange = (value: string) => {
     const option = INVENTORY_STATUS_OPTIONS.find((opt) => opt.value === value);
     if (!option) return;
@@ -287,6 +296,10 @@ export const FilterPanel = ({
     dispatch(setStockLocations({ context: contextKey, value: values }));
   };
   const inventariableOptions = opcionesInventariable.map((o) => ({
+    value: o.valor,
+    label: o.etiqueta,
+  }));
+  const itemTypeOptions = opcionesItemType.map((o) => ({
     value: o.valor,
     label: o.etiqueta,
   }));
@@ -319,7 +332,11 @@ export const FilterPanel = ({
       })
       .filter(Boolean) as InventoryLocationOption[];
     return options;
-  }, [warehouses, warehouseSummaryState.loading, warehouseSummaryState.summaries]);
+  }, [
+    warehouses,
+    warehouseSummaryState.loading,
+    warehouseSummaryState.summaries,
+  ]);
 
   const showInventoryFilters = inventariable !== 'no';
   const inventoryStatusValue = useMemo(() => {
@@ -363,6 +380,7 @@ export const FilterPanel = ({
 
   const modificationStatus = useMemo(
     () => ({
+      itemType: !isDefaultFilterValue('itemType', itemType),
       inventariable: !isDefaultFilterValue('inventariable', inventariable),
       stockLocations: !isDefaultFilterValue('stockLocations', stockLocations),
       inventoryStatus:
@@ -381,6 +399,7 @@ export const FilterPanel = ({
       ),
     }),
     [
+      itemType,
       inventariable,
       stockLocations,
       stockAvailability,
@@ -395,6 +414,21 @@ export const FilterPanel = ({
 
   return (
     <Container>
+      <Section>
+        <SectionTitle>Tipo</SectionTitle>
+        <GroupContainer>
+          <LabelWithStatus modified={modificationStatus.itemType}>
+            Tipo de item:
+          </LabelWithStatus>
+          <Segmented
+            block
+            size="middle"
+            value={itemType}
+            options={itemTypeOptions as any}
+            onChange={handleItemTypeChange}
+          />
+        </GroupContainer>
+      </Section>
       <Section>
         <SectionTitle>Inventario</SectionTitle>
         <GroupContainer>

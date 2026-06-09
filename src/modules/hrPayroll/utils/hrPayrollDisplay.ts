@@ -21,7 +21,7 @@ export const HR_EMPLOYEE_STATUS_LABELS: Record<HrEmployeeStatus, string> = {
 export const HR_EMPLOYEE_PAY_TYPE_LABELS: Record<HrEmployeePayType, string> = {
   salary: 'Salario',
   hourly: 'Por hora',
-  commission_only: 'Solo comision',
+  commission_only: 'Solo comisión',
   mixed: 'Mixto',
 };
 
@@ -29,7 +29,7 @@ export const HR_EMPLOYEE_DOCUMENT_TYPE_LABELS: Record<
   HrEmployeeDocumentType,
   string
 > = {
-  cedula: 'Cedula',
+  cedula: 'Cédula',
   passport: 'Pasaporte',
   rnc: 'RNC',
   other: 'Otro',
@@ -128,6 +128,67 @@ export const cleanString = (value: unknown): string | null => {
   const trimmed = value.trim();
   return trimmed.length ? trimmed : null;
 };
+
+const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+export const cleanHrDateKey = (value: unknown): string | null => {
+  const text = cleanString(value);
+  return text && DATE_KEY_PATTERN.test(text) ? text : null;
+};
+
+const getUtcDateKey = (date: Date): string => {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const extractDateKeysFromText = (value: unknown): string[] =>
+  cleanString(value)?.match(/\d{4}-\d{2}-\d{2}/g) ?? [];
+
+export const resolveHrPeriodDateKey = (
+  periodLike: Record<string, unknown> | null | undefined,
+  boundary: 'start' | 'end',
+): string | null => {
+  if (!periodLike) return null;
+
+  const explicitKey =
+    boundary === 'start'
+      ? cleanHrDateKey(periodLike.startDateKey)
+      : cleanHrDateKey(periodLike.endDateKey);
+  if (explicitKey) return explicitKey;
+
+  const extractedKeys = [
+    ...extractDateKeysFromText(periodLike.periodKey),
+    ...extractDateKeysFromText(periodLike.label),
+    ...extractDateKeysFromText(periodLike.id),
+  ];
+  const extractedKey =
+    boundary === 'start' ? extractedKeys[0] : extractedKeys[1];
+  if (cleanHrDateKey(extractedKey)) return extractedKey;
+
+  const fallbackDate = toHrDate(
+    boundary === 'start' ? periodLike.startDate : periodLike.endDate,
+  );
+  return fallbackDate ? getUtcDateKey(fallbackDate) : null;
+};
+
+export const formatHrDateKey = (value: unknown): string => {
+  const dateKey = cleanHrDateKey(value);
+  if (!dateKey) return '-';
+
+  const [year, month, day] = dateKey.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0));
+  return new Intl.DateTimeFormat('es-DO', {
+    dateStyle: 'medium',
+    timeZone: 'UTC',
+  }).format(date);
+};
+
+export const formatHrPeriodDate = (
+  periodLike: Record<string, unknown> | null | undefined,
+  boundary: 'start' | 'end',
+): string => formatHrDateKey(resolveHrPeriodDateKey(periodLike, boundary));
 
 export const toHrDate = (value: unknown): Date | null => {
   if (!value) return null;

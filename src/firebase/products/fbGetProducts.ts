@@ -18,6 +18,7 @@ import {
 import {
   DEFAULT_FILTER_CONTEXT,
   selectCriterio,
+  selectItemType,
   selectInventariable,
   selectItbis,
   selectPriceStatus,
@@ -48,8 +49,30 @@ const normalizeTaxValue = (value: unknown): number | null => {
   return Math.round(scaled * 100) / 100;
 };
 
+const normalizeItemTypeValue = (product: ProductRecord): string => {
+  const itemType =
+    typeof product.itemType === 'string'
+      ? product.itemType.trim().toLowerCase()
+      : '';
+  if (
+    itemType === 'product' ||
+    itemType === 'service' ||
+    itemType === 'combo'
+  ) {
+    return itemType;
+  }
+
+  const type =
+    typeof product.type === 'string' ? product.type.trim().toLowerCase() : '';
+  if (type.includes('serv')) return 'service';
+  if (type.includes('combo') || type.includes('kit')) return 'combo';
+
+  return 'product';
+};
+
 function filterProducts(
   productsArray: ProductRecord[],
+  itemType: string | null | undefined,
   inventariable: string | null | undefined,
   itbis: string | null | undefined,
   priceStatus: string | null | undefined,
@@ -64,6 +87,12 @@ function filterProducts(
   categoriesStatus: boolean | null | undefined,
   serverApplied: ServerAppliedFilters = {},
 ): ProductRecord[] {
+  if (itemType && itemType !== 'todos') {
+    productsArray = productsArray.filter(
+      (product) => normalizeItemTypeValue(product) === itemType,
+    );
+  }
+
   // Filtro por Inventariable
   if (!serverApplied.inventariable) {
     if (inventariable === 'si') {
@@ -186,7 +215,7 @@ function filterProducts(
     });
   }
 
-  // Filtro por Categoria
+  // Filtro por categoría
   if (categories.length > 0 && categoriesStatus) {
     const categoriesNameArray = categories.map((item) => item.name);
     productsArray = productsArray.filter((product) =>
@@ -353,6 +382,9 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
   );
   const stockFilterActive = selectedWarehouses.length > 0;
   const currentBusinessId = user?.businessID ? String(user.businessID) : null;
+  const itemType = useSelector((state: FilterRootState) =>
+    selectItemType(state, contextKey),
+  );
   const currentStockScopeKey = useMemo(
     () =>
       `${currentBusinessId ?? 'no-business'}::${stockFilterActive ? selectedWarehouses.join('|') : 'all'}`,
@@ -497,13 +529,15 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
     stockFilterActive,
   ]);
 
-  const hasCurrentWarehouseStock = warehouseStockState.scopeKey === currentStockScopeKey;
+  const hasCurrentWarehouseStock =
+    warehouseStockState.scopeKey === currentStockScopeKey;
   const warehouseStockIndex = useMemo(
     () => (hasCurrentWarehouseStock ? warehouseStockState.index : {}),
     [hasCurrentWarehouseStock, warehouseStockState.index],
   );
   const stockIndexReady =
-    !stockFilterActive || (hasCurrentWarehouseStock && warehouseStockState.ready);
+    !stockFilterActive ||
+    (hasCurrentWarehouseStock && warehouseStockState.ready);
 
   const applyLocationFilter = useCallback(
     (sourceProducts: ProductRecord[] = []): ProductRecord[] | null => {
@@ -651,6 +685,7 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
     // Aplicar filtros de negocio
     processed = filterProducts(
       processed,
+      itemType,
       inventariable,
       itbis,
       priceStatus,
@@ -685,6 +720,7 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
     return { products: processed, total };
   }, [
     currentBusinessId,
+    itemType,
     scopedRawProducts,
     hasCurrentBusinessProducts,
     loading,

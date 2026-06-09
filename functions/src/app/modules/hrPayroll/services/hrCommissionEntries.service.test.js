@@ -12,9 +12,11 @@ vi.mock('../../../core/config/firebase.js', () => ({
 import {
   buildHrCommissionEntryFromServiceCommission,
   buildHrEmployeeLookupIndex,
+  isHrCommissionEntryLockedForResync,
   resolveEmployeeForServiceCommission,
   resolveHrCommissionEntryId,
   syncHrCommissionEntriesFromServiceCommissionRecordsTx,
+  syncRecalculableHrCommissionEntriesFromServiceCommissionRecordsTx,
   voidHrCommissionEntriesForServiceCommissionDocsTx,
 } from './hrCommissionEntries.service.js';
 
@@ -155,6 +157,60 @@ describe('hrCommissionEntries.service', () => {
     );
   });
 
+  it('detects entries linked to payroll lifecycle as locked for recalculation', () => {
+    expect(
+      isHrCommissionEntryLockedForResync({
+        status: 'calculated',
+        payrollEmployeeLineId: 'line-1',
+      }),
+    ).toBe(true);
+    expect(
+      isHrCommissionEntryLockedForResync({
+        status: 'approved',
+      }),
+    ).toBe(true);
+    expect(
+      isHrCommissionEntryLockedForResync({
+        status: 'calculated',
+      }),
+    ).toBe(false);
+  });
+
+  it('does not overwrite existing entries already linked to a payroll line when recalculating', async () => {
+    const transaction = {
+      get: vi.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({
+          status: 'approved',
+          payrollEmployeeLineId: 'line-1',
+        }),
+      }),
+      set: vi.fn(),
+    };
+
+    const entries =
+      await syncRecalculableHrCommissionEntriesFromServiceCommissionRecordsTx(
+        transaction,
+        {
+          businessId: 'business-1',
+          records: [
+            {
+              id: 'commission-1',
+              invoiceId: 'invoice-1',
+              lineId: 'line-1',
+              billedAmount: 100,
+              commissionAmount: 5,
+              commission: { type: 'percentage', rateValue: 5 },
+            },
+          ],
+          timestamp: 'now',
+        },
+      );
+
+    expect(entries).toHaveLength(0);
+    expect(transaction.set).not.toHaveBeenCalled();
+  });
+
   it('marks the matching HR entry cancelled when a service commission is voided', () => {
     const transaction = { set: vi.fn() };
     voidHrCommissionEntriesForServiceCommissionDocsTx(transaction, {
@@ -166,7 +222,7 @@ describe('hrCommissionEntries.service', () => {
           data: () => ({ invoiceId: 'invoice-1', lineId: 'line-1' }),
         },
       ],
-      reasonLabel: 'Anulacion',
+      reasonLabel: 'Anulación',
       voidedAt: 'now',
     });
 

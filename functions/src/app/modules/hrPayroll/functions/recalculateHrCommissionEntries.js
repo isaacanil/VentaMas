@@ -10,7 +10,7 @@ import {
 import { toCleanString } from '../../../versions/v2/billing/utils/billingCommon.util.js';
 import {
   buildHrEmployeeLookupIndex,
-  syncHrCommissionEntriesFromServiceCommissionRecordsTx,
+  syncRecalculableHrCommissionEntriesFromServiceCommissionRecordsTx,
 } from '../services/hrCommissionEntries.service.js';
 
 const asRecord = (value) =>
@@ -101,7 +101,7 @@ export const recalculateHrCommissionEntries = onCall(async (request) => {
     let entries = [];
 
     await db.runTransaction(async (transaction) => {
-      entries = syncHrCommissionEntriesFromServiceCommissionRecordsTx(
+      entries = await syncRecalculableHrCommissionEntriesFromServiceCommissionRecordsTx(
         transaction,
         {
           businessId,

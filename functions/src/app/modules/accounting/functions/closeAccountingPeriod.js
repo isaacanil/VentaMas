@@ -15,6 +15,7 @@ import { isJournalEntryBalanced } from '../../../versions/v2/accounting/utils/jo
 import { parseSchemaOrThrow } from '../utils/zodHttps.util.js';
 
 const MAX_BLOCKER_EXAMPLES = 10;
+const VOIDED_ACCOUNTING_EVENT_STATUSES = new Set(['voided']);
 
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -74,7 +75,9 @@ const loadPeriodClosureBlockers = async ({ businessId, periodKey }) => {
       .get(),
   ]);
 
-  const accountingEvents = mapSnapshotDocs(eventsSnap);
+  const accountingEvents = mapSnapshotDocs(eventsSnap).filter(
+    (event) => !VOIDED_ACCOUNTING_EVENT_STATUSES.has(toCleanString(event.status)),
+  );
   const journalEntries = mapSnapshotDocs(journalEntriesSnap);
   const unresolvedEvents = accountingEvents.filter((event) => {
     const projectionStatus = resolveEventProjectionStatus(event);

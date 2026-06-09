@@ -25,6 +25,10 @@ const TAXABLE_BILLING_INDICATORS = new Set([
   BILLING_INDICATOR.ITBIS_16,
   BILLING_INDICATOR.ITBIS_0,
 ]);
+const ITEM_KIND = Object.freeze({
+  GOOD: '1',
+  SERVICE: '2',
+});
 const DOMINICAN_PROVINCE_CODES = new Map(
   [
     ['Distrito Nacional', '010000'],
@@ -167,6 +171,65 @@ const normalizeBillingIndicator = (value) => {
 
   return normalizeBillingIndicatorCode(value);
 };
+
+const normalizeItemKindCode = (value) => {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return normalizeItemKindCode(
+      value.itemKind ??
+        value.indicadorBienoServicio ??
+        value.goodsOrServicesIndicator ??
+        value.value ??
+        value.ref ??
+        value.code ??
+        value.type ??
+        value.label ??
+        value.name,
+    );
+  }
+
+  if (typeof value !== 'string' && typeof value !== 'number') return null;
+  const raw = String(value).trim();
+  if (!raw) return null;
+  if (raw === ITEM_KIND.GOOD || raw === ITEM_KIND.SERVICE) return raw;
+
+  const normalized = toAsciiUpperKey(raw).replace(/[_-]+/g, ' ');
+  if (
+    normalized.includes('SERV') ||
+    normalized.includes('EVENT') ||
+    normalized.includes('EVENTO')
+  ) {
+    return ITEM_KIND.SERVICE;
+  }
+  if (
+    normalized.includes('BIEN') ||
+    normalized.includes('GOOD') ||
+    normalized.includes('PRODUCT') ||
+    normalized.includes('PRODUCTO') ||
+    normalized.includes('COMBO') ||
+    normalized.includes('KIT') ||
+    normalized.includes('BUNDLE')
+  ) {
+    return ITEM_KIND.GOOD;
+  }
+
+  return null;
+};
+
+const resolveItemKind = (product) =>
+  normalizeItemKindCode(
+    product?.itemKind ??
+      product?.indicadorBienoServicio ??
+      product?.goodsOrServicesIndicator ??
+      product?.itemType ??
+      product?.productType ??
+      product?.kind ??
+      product?.type ??
+      product?.selectedSaleUnit?.itemKind ??
+      product?.selectedSaleUnit?.indicadorBienoServicio ??
+      product?.selectedSaleUnit?.goodsOrServicesIndicator ??
+      product?.selectedSaleUnit?.itemType ??
+      product?.selectedSaleUnit?.type,
+  ) ?? ITEM_KIND.GOOD;
 
 const resolveExplicitBillingIndicator = (product) =>
   normalizeBillingIndicator(
@@ -426,6 +489,7 @@ const buildItems = (cart) => {
         ? [{ type: 'internal', value: String(product.id) }]
         : undefined,
       name: pickString(product.name, product.productName, product.description),
+      itemKind: resolveItemKind(product),
       description: pickString(product.description, product.comment),
       billingIndicator,
       quantity: roundAmount(quantity),
@@ -480,11 +544,11 @@ const buildTotals = (cart, items) => {
     ? roundAmount(taxableAmount2 * 0.16)
     : undefined;
   const totalItbis3 = hasTaxableAmount3 ? 0 : undefined;
-  const taxAmount = hasAnyTaxableAmount
-    ? roundAmount((totalItbis1 || 0) + (totalItbis2 || 0) + (totalItbis3 || 0))
-    : undefined;
+  const taxAmount = roundAmount(
+    (totalItbis1 || 0) + (totalItbis2 || 0) + (totalItbis3 || 0),
+  );
   const netAmount = roundAmount(taxableAmountTotal + exemptAmount);
-  const grandTotal = roundAmount(netAmount + (taxAmount || 0));
+  const grandTotal = roundAmount(netAmount + taxAmount);
   const periodAmount = roundAmount(grandTotal + nonBillableAmount);
 
   return pruneUndefined({
@@ -497,7 +561,7 @@ const buildTotals = (cart, items) => {
     itbisRate1: hasTaxableAmount1 ? 18 : undefined,
     itbisRate2: hasTaxableAmount2 ? 16 : undefined,
     itbisRate3: hasTaxableAmount3 ? 0 : undefined,
-    taxAmount: whenPresent(hasAnyTaxableAmount, taxAmount),
+    taxAmount,
     totalItbis1,
     totalItbis2,
     totalItbis3,

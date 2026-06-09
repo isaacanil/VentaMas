@@ -14,6 +14,8 @@ import { createFirebaseCallable } from '@/firebase/functions/callable';
 import type {
   HrCommissionEntryRecord,
   HrCommissionEntryStatus,
+  HrCommissionPeriodStatus,
+  HrRetroactiveResolutionStatus,
   HrCommissionType,
 } from '@/types/hrPayroll';
 
@@ -73,6 +75,23 @@ const STATUS_VALUES = new Set<HrCommissionEntryStatus>([
   'cancelled',
   'requires_adjustment',
 ]);
+
+const PERIOD_STATUS_VALUES = new Set<HrCommissionPeriodStatus>([
+  'draft',
+  'closed',
+  'approved',
+  'partially_paid',
+  'paid',
+  'cancelled',
+]);
+
+const RETROACTIVE_RESOLUTION_STATUS_VALUES =
+  new Set<HrRetroactiveResolutionStatus>([
+    'selected_for_next_cut',
+    'included_in_cut',
+    'paid',
+    'cancelled',
+  ]);
 
 const COMMISSION_TYPE_VALUES = new Set<HrCommissionType>([
   'percentage',
@@ -151,6 +170,31 @@ export const normalizeHrCommissionEntryRecord = (
   payrollRunId: toCleanString(data.payrollRunId),
   payrollEmployeeLineId: toCleanString(data.payrollEmployeeLineId),
   employeePaymentId: toCleanString(data.employeePaymentId),
+  isRetroactive: Boolean(data.isRetroactive),
+  originalPeriodId: toCleanString(data.originalPeriodId),
+  originalPeriodLabel: toCleanString(data.originalPeriodLabel),
+  originalStartDateKey: toCleanString(data.originalStartDateKey),
+  originalEndDateKey: toCleanString(data.originalEndDateKey),
+  originalPeriodStatus: data.originalPeriodStatus
+    ? normalizeEnum(data.originalPeriodStatus, PERIOD_STATUS_VALUES, 'draft')
+    : null,
+  retroactiveResolutionStatus: data.retroactiveResolutionStatus
+    ? normalizeEnum(
+        data.retroactiveResolutionStatus,
+        RETROACTIVE_RESOLUTION_STATUS_VALUES,
+        'selected_for_next_cut',
+      )
+    : null,
+  retroactiveTargetPeriodId: toCleanString(data.retroactiveTargetPeriodId),
+  retroactiveTargetStartDateKey: toCleanString(
+    data.retroactiveTargetStartDateKey,
+  ),
+  retroactiveTargetEndDateKey: toCleanString(data.retroactiveTargetEndDateKey),
+  retroactiveTargetRuleId: toCleanString(data.retroactiveTargetRuleId),
+  retroactiveTargetPayrollRunId: toCleanString(
+    data.retroactiveTargetPayrollRunId,
+  ),
+  retroactiveTargetLineId: toCleanString(data.retroactiveTargetLineId),
   accountingEventId: toCleanString(data.accountingEventId),
   paymentAccountingEventId: toCleanString(data.paymentAccountingEventId),
   journalEntryId: toCleanString(data.journalEntryId),

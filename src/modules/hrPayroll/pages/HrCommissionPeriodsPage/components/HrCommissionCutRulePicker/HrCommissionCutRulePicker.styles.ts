@@ -23,8 +23,7 @@ export const CutRuleListBox = styled(VmListBox)`
   min-width: min(320px, calc(100vw - var(--ds-space-6)));
 `;
 
-export const RangePreview = styled.span`
-  min-height: var(--ds-font-size-sm);
+export const PendingCutPreview = styled.span`
   overflow: hidden;
   color: var(--ds-color-text-secondary);
   font-size: var(--ds-font-size-xs);
@@ -32,14 +31,25 @@ export const RangePreview = styled.span`
   white-space: nowrap;
 `;
 
-export const PendingCutField = styled.div`
+export const PendingCutOption = styled.div`
   display: grid;
-  gap: var(--ds-space-1);
+  gap: 2px;
   min-width: 0;
-  padding-top: var(--ds-space-1);
 `;
 
-export const PendingCutPreview = styled.span`
+export const PendingCutOptionTitle = styled.span`
+  overflow: hidden;
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+export const PendingCutOptionMeta = styled.span`
+  overflow: hidden;
   color: var(--ds-color-text-secondary);
   font-size: var(--ds-font-size-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;

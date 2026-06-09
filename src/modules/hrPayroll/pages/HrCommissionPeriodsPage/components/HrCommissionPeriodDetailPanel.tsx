@@ -4,6 +4,7 @@ import {
   type HrTableColumn,
 } from '@/modules/hrPayroll/components/HrPayrollPagePrimitives';
 import type {
+  HrCommissionEntryRecord,
   HrCommissionPeriodRecord,
   HrEmployeePaymentRecord,
   HrPayrollEmployeeLineRecord,
@@ -21,13 +22,16 @@ import {
   DetailTabs,
   DetailTitle,
 } from '../HrCommissionPeriodsPage.styles';
+import { HrCommissionPeriodLineBreakdown } from './HrCommissionPeriodLineBreakdown/HrCommissionPeriodLineBreakdown';
 import { PeriodActionButtons } from './PeriodActionButtons';
 
 type PeriodAction = 'close' | 'approve';
 
 interface HrCommissionPeriodDetailPanelProps {
   actionKey: string | null;
+  commissionEntries: HrCommissionEntryRecord[];
   employeeLines: HrPayrollEmployeeLineRecord[];
+  entriesLoading: boolean;
   lineColumns: HrTableColumn<HrPayrollEmployeeLineRecord>[];
   linesLoading: boolean;
   payments: HrEmployeePaymentRecord[];
@@ -36,14 +40,18 @@ interface HrCommissionPeriodDetailPanelProps {
   periodDescription: string | null;
   periodLabel: string;
   onAction: (action: PeriodAction, period: HrCommissionPeriodRecord) => void;
+  onRequestRevertApproval: (period: HrCommissionPeriodRecord) => void;
 }
 
 export function HrCommissionPeriodDetailPanel({
   actionKey,
+  commissionEntries,
   employeeLines,
+  entriesLoading,
   lineColumns,
   linesLoading,
   onAction,
+  onRequestRevertApproval,
   payments,
   paymentsLoading,
   period,
@@ -65,6 +73,7 @@ export function HrCommissionPeriodDetailPanel({
             layout="toolbar"
             period={period}
             onAction={onAction}
+            onRequestRevertApproval={onRequestRevertApproval}
           />
         ) : null}
       </DetailHeader>
@@ -92,8 +101,13 @@ export function HrCommissionPeriodDetailPanel({
                 rows={employeeLines}
                 loading={linesLoading}
                 emptyText="Sin lineas para este corte"
-                minTableWidth={720}
+                minTableWidth={860}
                 pageSize={8}
+              />
+              <HrCommissionPeriodLineBreakdown
+                entries={commissionEntries}
+                lines={employeeLines}
+                loading={entriesLoading}
               />
             </DetailPanelContent>
           </VmTabs.Panel>
@@ -105,8 +119,8 @@ export function HrCommissionPeriodDetailPanel({
                 columns={paymentColumns}
                 rows={payments}
                 loading={paymentsLoading}
-                emptyText="Sin pagos para este corte"
-                minTableWidth={560}
+                emptyText="Aun no se han registrado pagos para este corte."
+                minTableWidth={920}
                 pageSize={5}
               />
             </DetailPanelContent>

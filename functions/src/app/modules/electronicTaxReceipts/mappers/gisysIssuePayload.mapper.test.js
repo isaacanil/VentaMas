@@ -74,8 +74,8 @@ describe('gisysIssuePayload.mapper', () => {
     input.invoice.snapshot.client = {
       name: 'Cliente Prueba',
       province: 'inventada',
-      municipality: 'Santo Domingo de Guzman',
-      tel: 'telefono-no-valido',
+      municipality: 'Santo Domingo de Guzmán',
+      tel: 'teléfono-no-válido',
     };
 
     const payload = buildGisysIssuePayload(input).payload;
@@ -167,6 +167,11 @@ describe('gisysIssuePayload.mapper', () => {
       '2',
       '4',
     ]);
+    expect(payload.items.map((item) => item.itemKind)).toEqual([
+      '1',
+      '1',
+      '1',
+    ]);
     expect(payload.items[0]).toMatchObject({ taxRate: 18, taxAmount: 18 });
     expect(payload.items[1]).toMatchObject({ taxRate: 16, taxAmount: 16 });
     expect(payload.items[2].taxRate).toBeUndefined();
@@ -186,6 +191,40 @@ describe('gisysIssuePayload.mapper', () => {
       payableAmount: 334,
     });
     expect(payload.totals.taxableAmount3).toBeUndefined();
+  });
+
+  it('sends exempt event service sales with a numeric zero ITBIS total', () => {
+    const input = buildBaseInput('invoice-exempt-event-service');
+    input.invoice.snapshot.cart.products = [
+      {
+        id: 'event-ticket-exempt',
+        name: 'Entrada evento exenta',
+        itemType: 'service',
+        type: 'Eventos',
+        pricing: { price: 250, tax: { label: 'Exento', value: 0 } },
+        amountToBuy: 2,
+      },
+    ];
+
+    const payload = buildGisysIssuePayload(input).payload;
+
+    expect(payload.items[0]).toMatchObject({
+      billingIndicator: '4',
+      itemKind: '2',
+      quantity: 2,
+      unitPrice: 250,
+      lineAmount: 500,
+    });
+    expect(payload.items[0].taxRate).toBeUndefined();
+    expect(payload.items[0].taxAmount).toBeUndefined();
+    expect(payload.totals).toMatchObject({
+      netAmount: 500,
+      exemptAmount: 500,
+      taxAmount: 0,
+      grandTotal: 500,
+      payableAmount: 500,
+    });
+    expect(payload.totals.taxableAmountTotal).toBeUndefined();
   });
 
   it('uses explicit DGII tax type values before falling back to tax rate', () => {

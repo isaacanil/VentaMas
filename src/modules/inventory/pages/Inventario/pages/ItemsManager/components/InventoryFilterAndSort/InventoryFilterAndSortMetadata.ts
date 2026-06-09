@@ -46,6 +46,13 @@ export const opcionesInventariable: FilterOption[] = [
   { valor: 'no', etiqueta: 'No' },
 ];
 
+export const opcionesItemType: FilterOption[] = [
+  { valor: 'todos', etiqueta: 'Todos' },
+  { valor: 'product', etiqueta: 'Productos' },
+  { valor: 'service', etiqueta: 'Servicios' },
+  { valor: 'combo', etiqueta: 'Combos' },
+];
+
 export const opcionesItbis: FilterOption[] = [
   { valor: 'todos', etiqueta: 'Todos' },
   { valor: '0.18', etiqueta: '18%' },

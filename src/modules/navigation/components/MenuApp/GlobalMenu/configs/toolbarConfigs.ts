@@ -19,6 +19,7 @@ const {
   ACCOUNT_RECEIVABLE,
   UTILITY_TERM,
   ACCOUNTING_TERM,
+  HR_PAYROLL_TERM,
 } = ROUTES_NAME;
 
 const accountReceivableRoutes = [
@@ -171,5 +172,11 @@ export const toolbarConfigs: ToolbarRegistryEntry[] = [
     routes: { path: ACCOUNTING_TERM.ACCOUNTING, end: false },
     importFn: () => import('../Page/AccountingToolbar'),
     exportName: 'AccountingToolbar',
+  }),
+  registerToolbar({
+    id: 'hr-commission-periods-toolbar',
+    routes: HR_PAYROLL_TERM.HR_COMMISSION_PERIODS,
+    importFn: () => import('../Page/HrCommissionPeriodsToolbar'),
+    exportName: 'HrCommissionPeriodsToolbar',
   }),
 ];

@@ -215,4 +215,37 @@ describe('closeAccountingPeriod', () => {
 
     expect(transactionSetMock).not.toHaveBeenCalled();
   });
+
+  it('ignores voided accounting events when checking pending projections', async () => {
+    collectionSnapshots.set('businesses/business-1/accountingEvents', [
+      {
+        id: 'hr_commission.accrued__period-1',
+        data: {
+          eventType: 'hr_commission.accrued',
+          status: 'voided',
+          projection: {
+            status: 'pending',
+          },
+        },
+      },
+    ]);
+    transactionSnapshots.set(
+      'businesses/business-1/accountingPeriodClosures/2026-04',
+      null,
+    );
+
+    const result = await closeAccountingPeriod({
+      data: {
+        businessId: 'business-1',
+        periodKey: '2026-04',
+      },
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      periodKey: '2026-04',
+      reused: false,
+    });
+    expect(transactionSetMock).toHaveBeenCalledTimes(1);
+  });
 });

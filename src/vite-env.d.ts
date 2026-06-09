@@ -9,6 +9,7 @@ interface ImportMetaEnv {
   readonly VITE_FIREBASE_AI_REMOTE_LOCATION_KEY?: string;
   readonly VITE_FIREBASE_AI_REMOTE_MODEL_KEY?: string;
   readonly VITE_FIREBASE_APPCHECK_DEBUG_TOKEN?: string;
+  readonly VITE_FIREBASE_APPCHECK_DISABLED?: string;
   readonly VITE_FIREBASE_APPCHECK_SITE_KEY?: string;
   readonly VITE_ENABLE_DEV_ROUTES?: string;
   readonly VITE_ENABLE_REACT_SCAN?: string;
