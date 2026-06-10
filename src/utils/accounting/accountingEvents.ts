@@ -136,6 +136,13 @@ export const ACCOUNTING_EVENT_DEFINITIONS: AccountingEventDefinition[] = [
       'Salida de inventario valorizada para reconocer costo de venta.',
   },
   {
+    eventType: 'inventory.cogs.voided',
+    moduleKey: 'sales',
+    label: 'Costo de venta anulado',
+    description:
+      'Reversa del costo de venta y del inventario al anular una factura.',
+  },
+  {
     eventType: 'manual.entry.recorded',
     moduleKey: 'general_ledger',
     label: 'Asiento manual registrado',
@@ -316,9 +323,15 @@ export const normalizeAccountingEventProjection = (
     ),
     projectorVersion: normalizeAccountingEventVersion(record.projectorVersion),
     journalEntryId: toCleanString(record.journalEntryId),
+    attemptCount: Math.max(0, Math.trunc(Number(record.attemptCount) || 0)),
+    replayCount: Math.max(0, Math.trunc(Number(record.replayCount) || 0)),
     lastAttemptAt:
       (record.lastAttemptAt as AccountingEventProjection['lastAttemptAt']) ??
       null,
+    lastReplayRequestedAt:
+      (record.lastReplayRequestedAt as AccountingEventProjection['lastReplayRequestedAt']) ??
+      null,
+    lastReplayRequestedBy: toCleanString(record.lastReplayRequestedBy),
     projectedAt:
       (record.projectedAt as AccountingEventProjection['projectedAt']) ?? null,
     lastError:

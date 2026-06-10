@@ -199,6 +199,7 @@ const ACCOUNTING_TERM = {
   ACCOUNTING_MANUAL_ENTRIES: '/accounting/manual-entries',
   ACCOUNTING_REPORTS: '/accounting/reports',
   ACCOUNTING_FISCAL_COMPLIANCE: '/accounting/fiscal-compliance',
+  ACCOUNTING_MONITOR: '/accounting/monitor',
   ACCOUNTING_PERIOD_CLOSE: '/accounting/period-close',
 } as const;
 

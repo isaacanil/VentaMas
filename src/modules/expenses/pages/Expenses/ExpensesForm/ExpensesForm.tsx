@@ -10,6 +10,10 @@ import { useCategoryState } from '@/Context/CategoryContext/useCategoryState';
 import { useFbGetExpensesCategories } from '@/firebase/expenses/categories/fbGetExpensesCategories';
 import { toMillis } from '@/utils/date/toMillis';
 import { EXPENSE_PAYMENT_METHODS } from '@/utils/expenses/constants';
+import {
+  resolveExpenseFiscalTotals,
+  toExpenseFiscalNumber,
+} from '@/utils/expenses/fiscal';
 import type { ExpenseCategoryDoc } from '@/utils/expenses/types';
 import type { EvidenceFile } from '@/components/common/EvidenceUpload/types';
 import EvidenceUpload from '@/components/common/EvidenceUpload/EvidenceUpload';
@@ -26,6 +30,16 @@ const CategorySelectContainer = styled.div`
   gap: 10px;
   align-items: center;
   justify-content: space-between;
+`;
+
+const FiscalFieldsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+
+  @media (max-width: 540px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const ExpensesForm = () => {
@@ -78,6 +92,25 @@ const ExpensesForm = () => {
   );
 
   const expenseDateValue = toMillis(expense.dates?.expenseDate);
+  const fiscalTotals = useMemo(
+    () => resolveExpenseFiscalTotals(expense),
+    [expense],
+  );
+  const updateFiscalField = (field: string, rawValue: unknown) => {
+    const value = toExpenseFiscalNumber(rawValue) ?? 0;
+    const nextExpense = {
+      ...expense,
+      [field]: value,
+    };
+    const nextTotals = resolveExpenseFiscalTotals(nextExpense);
+    updateField('', field, value);
+    if (field === 'taxAmount') {
+      updateField('', 'itbisAmount', value);
+    }
+    updateField('', 'total', nextTotals.total);
+    updateField('', 'amount', nextTotals.total);
+    updateField('', 'netPayableAmount', nextTotals.netPayableAmount);
+  };
 
   return (
     <Modal
@@ -189,21 +222,70 @@ const ExpensesForm = () => {
           />
         </Form.Item>
         <Form.Item
-          label="Importe"
+          label="Montos fiscales"
           required
           validateStatus={errors.amount ? 'error' : ''}
           help={errors.amount}
         >
-          <Input
-            id="amount"
-            type="number"
-            value={expense.amount || ''}
-            style={{ width: '200px' }}
-            prefix="$"
-            placeholder="0.00"
-            allowClear
-            onChange={(e) => updateField('', 'amount', Number(e.target.value))}
-          />
+          <FiscalFieldsGrid>
+            <Input
+              id="expense-subtotal"
+              type="number"
+              value={expense.subtotal ?? fiscalTotals.subtotal}
+              prefix="RD$"
+              placeholder="Subtotal"
+              allowClear
+              onChange={(e) => updateFiscalField('subtotal', e.target.value)}
+            />
+            <Input
+              id="expense-tax-amount"
+              type="number"
+              value={expense.taxAmount ?? expense.itbisAmount ?? ''}
+              prefix="RD$"
+              placeholder="ITBIS"
+              allowClear
+              onChange={(e) => updateFiscalField('taxAmount', e.target.value)}
+            />
+            <Input
+              id="expense-withholding-itbis"
+              type="number"
+              value={expense.withholdingITBISAmount ?? ''}
+              prefix="RD$"
+              placeholder="Retención ITBIS"
+              allowClear
+              onChange={(e) =>
+                updateFiscalField('withholdingITBISAmount', e.target.value)
+              }
+            />
+            <Input
+              id="expense-withholding-isr"
+              type="number"
+              value={expense.withholdingISRAmount ?? ''}
+              prefix="RD$"
+              placeholder="Retención ISR"
+              allowClear
+              onChange={(e) =>
+                updateFiscalField('withholdingISRAmount', e.target.value)
+              }
+            />
+            <Input
+              id="amount"
+              type="number"
+              value={expense.total ?? expense.amount ?? fiscalTotals.total}
+              prefix="RD$"
+              placeholder="Total"
+              allowClear
+              onChange={(e) => updateFiscalField('total', e.target.value)}
+            />
+            <Input
+              id="expense-net-payable"
+              type="number"
+              value={expense.netPayableAmount ?? fiscalTotals.netPayableAmount}
+              prefix="RD$"
+              placeholder="Neto a pagar"
+              disabled
+            />
+          </FiscalFieldsGrid>
         </Form.Item>
 
         <Form.Item label="NCF (Número de Comprobante Fiscal)">

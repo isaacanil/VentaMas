@@ -198,15 +198,15 @@ export default function HrPayrollWorkspace() {
 
   return (
     <>
-      <MenuApp sectionName="RRHH y nomina" />
+      <MenuApp sectionName="RRHH y nómina" />
       <Page>
         <Header>
           <TitleBlock>
-            <Title>Colaboradores y nomina</Title>
+            <Title>Colaboradores y nómina</Title>
             <Description>
-              Catalogo de colaboradores vinculable a usuarios operativos, con
+              Catálogo de colaboradores vinculable a usuarios operativos, con
               datos de pago y comisiones listos para alimentar corridas de
-              nomina.
+              nómina.
             </Description>
           </TitleBlock>
           <VmButton variant="primary" onPress={handleCreate}>
@@ -268,7 +268,7 @@ export default function HrPayrollWorkspace() {
           >
             <VmSearchField.Group>
               <VmSearchField.SearchIcon />
-              <VmSearchField.Input placeholder="Buscar por codigo, nombre, documento o contacto" />
+              <VmSearchField.Input placeholder="Buscar por código, nombre, documento o contacto" />
               <VmSearchField.ClearButton />
             </VmSearchField.Group>
           </VmSearchField>

@@ -148,9 +148,9 @@ export const validateInvoiceSubmissionGuards = async ({
         return {
           ok: false,
           code: 'service-commission-collaborator-ineligible',
-          message: 'Configura la comision del colaborador',
+          message: 'Configura la comisión del colaborador',
           description:
-            'El colaborador asignado no tiene una comision configurada y no es elegible para comisiones. Configuralo en RRHH antes de facturar.',
+            'El colaborador asignado no tiene una comisión configurada y no es elegible para comisiones. Configúralo en RRHH antes de facturar.',
           product: serviceWithIneligibleCollaborator,
         };
       }
@@ -170,7 +170,7 @@ export const validateInvoiceSubmissionGuards = async ({
           code: 'service-commission-collaborator',
           message: 'Asigna un colaborador al servicio',
           description:
-            'La configuracion de comisiones exige un colaborador en cada servicio antes de facturar.',
+            'La configuración de comisiones exige un colaborador en cada servicio antes de facturar.',
           product: serviceWithoutCollaborator,
         };
       }

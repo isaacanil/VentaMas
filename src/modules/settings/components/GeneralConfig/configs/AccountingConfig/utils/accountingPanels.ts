@@ -31,8 +31,8 @@ export const ACCOUNTING_PANEL_ITEMS: AccountingPanelItem[] = [
   },
   {
     key: 'posting-profiles',
-    label: 'Perfiles contables',
-    description: 'Cobertura por evento y reglas.',
+    label: 'Reglas de contabilización',
+    description: 'Cobertura por evento y asientos automáticos.',
     route: GENERAL_CONFIG_ACCOUNTING_POSTING_PROFILES,
   },
   {

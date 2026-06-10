@@ -36,6 +36,20 @@ export const PaymentSummaryValue = styled.strong`
   font-size: var(--ds-font-size-sm);
 `;
 
+export const PaymentFormula = styled.div`
+  padding: var(--ds-space-2);
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-sm);
+  line-height: var(--ds-line-height-normal);
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: 8px;
+  background: var(--ds-color-bg-subtle);
+
+  strong {
+    font-weight: var(--ds-font-weight-semibold);
+  }
+`;
+
 export const PaymentWarning = styled.p`
   margin: 0;
   padding: var(--ds-space-2);

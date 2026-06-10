@@ -96,6 +96,62 @@ const getProductQuantity = (product) => {
   return safeNumber(amount.total ?? amount.unit ?? product?.quantity);
 };
 
+const resolveInventoryCogsLines = (eventData) => {
+  const payload = asRecord(eventData?.payload);
+  return Array.isArray(payload.lines)
+    ? payload.lines
+        .map((line) => {
+          const record = asRecord(line);
+          const quantity = safeNumber(record.quantity);
+          const totalCost = safeNumber(record.totalCost);
+          return {
+            productId: toCleanString(record.productId),
+            productStockId: toCleanString(record.productStockId),
+            batchId: toCleanString(record.batchId),
+            quantity,
+            totalCost,
+          };
+        })
+        .filter((line) => line.quantity > 0)
+    : [];
+};
+
+const restoreDetailedInventoryFromCogsLinesTx = ({
+  authUid,
+  businessId,
+  lines,
+  now,
+  transaction,
+}) => {
+  lines.forEach((line) => {
+    if (line.productStockId) {
+      transaction.set(
+        db.doc(`businesses/${businessId}/productsStock/${line.productStockId}`),
+        {
+          quantity: FieldValue.increment(line.quantity),
+          status: 'active',
+          updatedAt: now,
+          updatedBy: authUid,
+        },
+        { merge: true },
+      );
+    }
+
+    if (line.batchId) {
+      transaction.set(
+        db.doc(`businesses/${businessId}/batches/${line.batchId}`),
+        {
+          quantity: FieldValue.increment(line.quantity),
+          status: 'active',
+          updatedAt: now,
+          updatedBy: authUid,
+        },
+        { merge: true },
+      );
+    }
+  });
+};
+
 const buildUpdatedInvoiceData = ({ invoice, updates, now, authUid }) => ({
   ...invoice,
   ...updates,
@@ -286,6 +342,18 @@ export const voidInvoiceFinancialDocument = onCall(
     const voidEntryRef = db.doc(
       `businesses/${businessId}/journalEntries/invoice.voided__${invoiceId}`,
     );
+    const cogsEventRef = db.doc(
+      `businesses/${businessId}/accountingEvents/inventory.cogs.recorded__${invoiceId}`,
+    );
+    const cogsEntryRef = db.doc(
+      `businesses/${businessId}/journalEntries/inventory.cogs.recorded__${invoiceId}`,
+    );
+    const cogsVoidEventRef = db.doc(
+      `businesses/${businessId}/accountingEvents/inventory.cogs.voided__${invoiceId}`,
+    );
+    const cogsVoidEntryRef = db.doc(
+      `businesses/${businessId}/journalEntries/inventory.cogs.voided__${invoiceId}`,
+    );
     const arQuery = db
       .collection(`businesses/${businessId}/accountsReceivable`)
       .where('invoiceId', '==', invoiceId)
@@ -316,6 +384,9 @@ export const voidInvoiceFinancialDocument = onCall(
         committedEventSnap,
         committedEntrySnap,
         voidEntrySnap,
+        cogsEventSnap,
+        cogsEntrySnap,
+        cogsVoidEntrySnap,
         arSnap,
         cashMovementSnap,
         commissionsSnap,
@@ -326,6 +397,9 @@ export const voidInvoiceFinancialDocument = onCall(
         transaction.get(committedEventRef),
         transaction.get(committedEntryRef),
         transaction.get(voidEntryRef),
+        transaction.get(cogsEventRef),
+        transaction.get(cogsEntryRef),
+        transaction.get(cogsVoidEntryRef),
         transaction.get(arQuery),
         transaction.get(cashMovementQuery),
         transaction.get(commissionsQuery),
@@ -401,8 +475,15 @@ export const voidInvoiceFinancialDocument = onCall(
         );
       }
 
+      if (cogsEventSnap.exists && !cogsEntrySnap.exists) {
+        throw new HttpsError(
+          'failed-precondition',
+          'La factura tiene COGS contable pendiente o fallido sin asiento posteado. Resuelva la proyección antes de anular.',
+        );
+      }
+
       const now = Timestamp.now();
-      if (committedEntrySnap.exists) {
+      if (committedEntrySnap.exists || cogsEntrySnap.exists) {
         await assertAccountingPeriodOpenInTransaction({
           transaction,
           businessId,
@@ -478,6 +559,18 @@ export const voidInvoiceFinancialDocument = onCall(
           { 'product.stock': FieldValue.increment(quantity) },
         );
       });
+
+      const cogsEvent = cogsEventSnap.exists ? asRecord(cogsEventSnap.data()) : {};
+      const cogsLines = resolveInventoryCogsLines(cogsEvent);
+      if (cogsEntrySnap.exists && !cogsVoidEntrySnap.exists) {
+        restoreDetailedInventoryFromCogsLinesTx({
+          authUid,
+          businessId,
+          lines: cogsLines,
+          now,
+          transaction,
+        });
+      }
 
       arRecords.forEach((entry) => {
         const paymentState = asRecord(entry.data.paymentState);
@@ -656,6 +749,123 @@ export const voidInvoiceFinancialDocument = onCall(
         reversalEntryId = voidEntryRef.id;
       }
 
+      let cogsReversalEntryId = null;
+      if (cogsEntrySnap.exists && !cogsVoidEntrySnap.exists) {
+        const originalCogsEntry = asRecord(cogsEntrySnap.data());
+        const originalCogsLines = Array.isArray(originalCogsEntry.lines)
+          ? originalCogsEntry.lines.map((line, index) =>
+              normalizeJournalEntryLine(line, index),
+            )
+          : [];
+
+        if (!originalCogsLines.length) {
+          throw new HttpsError(
+            'failed-precondition',
+            'El asiento COGS original no tiene líneas válidas para revertir.',
+          );
+        }
+
+        const originalCogsEventId =
+          toCleanString(originalCogsEntry.eventId) || cogsEventRef.id;
+        const cogsTotal = roundAccountingAmount(
+          originalCogsEntry.totals?.debit || originalCogsEntry.totals?.credit,
+        );
+        const cogsVoidEvent = buildAccountingEvent({
+          businessId,
+          eventType: 'inventory.cogs.voided',
+          status: 'projected',
+          sourceType: 'invoice_inventory',
+          sourceId: invoiceId,
+          sourceDocumentType: 'invoice',
+          sourceDocumentId: invoiceId,
+          currency: toCleanString(originalCogsEntry.currency),
+          functionalCurrency: toCleanString(originalCogsEntry.functionalCurrency),
+          monetary: {
+            amount: cogsTotal,
+            functionalAmount: cogsTotal,
+          },
+          payload: {
+            documentNature: 'inventory',
+            lineCount: cogsLines.length,
+            lines: cogsLines,
+            inventoryMovementSource: 'invoice_void',
+            reasonCode: paddedReasonCode,
+            reasonLabel,
+          },
+          projection: {
+            status: 'projected',
+            journalEntryId: cogsVoidEntryRef.id,
+            projectedAt: now,
+            lastAttemptAt: now,
+          },
+          occurredAt: now,
+          recordedAt: now,
+          reversalOfEventId: originalCogsEventId,
+          createdAt: now,
+          createdBy: authUid,
+          metadata: {
+            source: 'voidInvoiceFinancialDocument',
+            originalJournalEntryId: cogsEntryRef.id,
+          },
+        });
+
+        const cogsReversalLines = originalCogsLines.map((line, index) => ({
+          ...line,
+          lineNumber: index + 1,
+          debit: safeNumber(line.credit),
+          credit: safeNumber(line.debit),
+          description:
+            toCleanString(line.description) ||
+            `Reverso COGS de linea ${index + 1}`,
+          reference: reasonLabel,
+        }));
+
+        const cogsReversalEntry = buildJournalEntry({
+          businessId,
+          entryId: cogsVoidEventRef.id,
+          event: cogsVoidEvent,
+          entryDate: now,
+          description: `Reversa COGS de factura ${
+            toCleanString(invoice.numberID) || invoiceId
+          }`,
+          currency: toCleanString(originalCogsEntry.currency),
+          functionalCurrency: toCleanString(originalCogsEntry.functionalCurrency),
+          sourceType: 'invoice_inventory',
+          sourceId: invoiceId,
+          reversalOfEntryId: cogsEntryRef.id,
+          reversalOfEventId: originalCogsEventId,
+          lines: cogsReversalLines,
+          createdAt: now,
+          createdBy: authUid,
+          metadata: {
+            entryOrigin: 'invoice_cogs_void',
+            reversedEntryId: cogsEntryRef.id,
+            reversedEventId: originalCogsEventId,
+            reversalReason: reasonLabel,
+          },
+        });
+
+        transaction.set(cogsVoidEventRef, cogsVoidEvent);
+        transaction.set(cogsVoidEntryRef, cogsReversalEntry);
+        transaction.set(
+          cogsEntryRef,
+          {
+            status: 'reversed',
+            metadata: {
+              ...asRecord(originalCogsEntry.metadata),
+              reversedAt: now,
+              reversedBy: authUid,
+              reversedByEntryId: cogsVoidEntryRef.id,
+              reversalReason: reasonLabel,
+            },
+          },
+          { merge: true },
+        );
+        cogsReversalEntryId = cogsVoidEntryRef.id;
+      } else if (cogsVoidEntrySnap.exists) {
+        cogsReversalEntryId = cogsVoidEntryRef.id;
+      }
+
       auditTx(transaction, {
         businessId,
         invoiceId,
@@ -665,6 +875,7 @@ export const voidInvoiceFinancialDocument = onCall(
           reasonLabel,
           serviceCommissionsVoided: voidedCommissionsCount,
           accountingReversalCreated: Boolean(reversalEntryId),
+          cogsAccountingReversalCreated: Boolean(cogsReversalEntryId),
         },
       });
 
@@ -674,6 +885,7 @@ export const voidInvoiceFinancialDocument = onCall(
         status: 'cancelled',
         reused: false,
         reversalEntryId,
+        cogsReversalEntryId,
       };
     });
 

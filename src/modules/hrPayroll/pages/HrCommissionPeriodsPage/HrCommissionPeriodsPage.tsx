@@ -30,7 +30,6 @@ import { selectUser } from '@/features/auth/userSlice';
 import {
   HrDescription as Description,
   HrDataTable,
-  HrInlineStack as InlineStack,
   HrNotice as Notice,
   HrPage as Page,
   HrPageHeader as Header,
@@ -52,12 +51,14 @@ import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 import ROUTES_NAME from '@/router/routes/routesName';
 import type {
   HrCommissionCutRuleInput,
+  HrCommissionNextCutPreview,
   HrCommissionPeriodStatus,
   HrCommissionPeriodRecord,
   HrCommissionRetroactiveEntryRecord,
   HrPayrollEmployeeLineRecord,
 } from '@/types/hrPayroll';
 import {
+  type HrCommissionLineExportFormat,
   buildLineColumns,
   buildPeriodColumns,
 } from './HrCommissionPeriodsPage.columns';
@@ -70,6 +71,9 @@ import {
 } from './HrCommissionPeriodsPage.helpers';
 import {
   DetailScreenActions,
+  ExportMenuItemContent,
+  ExportMenuItemDescription,
+  ExportMenuItemTitle,
   NextCutAmountBadge,
   NextCutActions,
   NextCutInlineMeta,
@@ -106,6 +110,7 @@ import {
 } from './components/RevertHrCommissionApprovalModal';
 import { buildHrCommissionPeriodDetailPath } from './utils/hrCommissionPeriodRoutes';
 import {
+  exportHrCommissionLineSupportWorkbook,
   exportHrCommissionPeriodsPdf,
   exportHrCommissionPeriodsWorkbook,
   type HrCommissionPeriodsPdfMode,
@@ -191,7 +196,7 @@ const getSelectedPeriodGuidance = (
     return 'Hay pagos parciales. Revisa las líneas pendientes antes de cerrar el ciclo.';
   }
   if (period.status === 'paid') {
-    return 'Este corte ya fue pagado. Usa el detalle y los exportes como soporte.';
+    return 'Este corte ya fue pagado. Usa el detalle y los exportes como respaldo.';
   }
   return 'Este corte no admite acciones operativas.';
 };
@@ -222,6 +227,34 @@ const getActionSuccessTitle = (
     ? `Corte ya ${STATUS_LABELS[result.status].toLowerCase()}.`
     : 'Corte aprobado.';
 };
+
+const getNextCutBlockedMessage = (
+  preview: HrCommissionNextCutPreview | null,
+): string | null => {
+  if (!preview?.blocked) return null;
+  if (preview.hasRetroactiveEntries) {
+    const count = preview.retroactiveEntriesCount ?? 0;
+    const amount = preview.retroactiveAdjustmentAmount ?? 0;
+    const retroactiveText =
+      count > 0
+        ? `${count} retroactiva${count === 1 ? '' : 's'} pendiente${
+            count === 1 ? '' : 's'
+          }`
+        : 'las retroactivas pendientes';
+    const amountText =
+      amount > 0
+        ? ` Impacto pendiente: ${formatMoney(amount, preview.currency)}.`
+        : '';
+    return `No puedes crear el próximo corte hasta resolver ${retroactiveText}.${amountText}`;
+  }
+  return preview.blockedReason ?? null;
+};
+
+const getHumanPeriodLabel = (period: HrCommissionPeriodRecord): string =>
+  (period.label || period.periodKey || 'Corte').replace(
+    /\s+\d{4}-\d{2}-\d{2}\s+-\s+\d{4}-\d{2}-\d{2}$/,
+    '',
+  );
 
 export default function HrCommissionPeriodsPage() {
   const currentUser = useSelector(selectUser);
@@ -256,6 +289,11 @@ export default function HrCommissionPeriodsPage() {
   const [exporting, setExporting] = useState(false);
   const [exportingPdfMode, setExportingPdfMode] =
     useState<HrCommissionPeriodsPdfMode | null>(null);
+  const [exportingEmployeeLineId, setExportingEmployeeLineId] = useState<
+    string | null
+  >(null);
+  const [exportingEmployeeExcelLineId, setExportingEmployeeExcelLineId] =
+    useState<string | null>(null);
   const {
     rows: periods,
     loading,
@@ -520,9 +558,13 @@ export default function HrCommissionPeriodsPage() {
     values: RevertHrCommissionApprovalValues,
   ) => {
     if (!approvalReversalPeriod) return;
-    const reverted = await handleAction('revert_approval', approvalReversalPeriod, {
-      comment: values.reason,
-    });
+    const reverted = await handleAction(
+      'revert_approval',
+      approvalReversalPeriod,
+      {
+        comment: values.reason,
+      },
+    );
     if (reverted) {
       setApprovalReversalPeriod(null);
     }
@@ -619,7 +661,10 @@ export default function HrCommissionPeriodsPage() {
   }, [employeeLines, payments, periods, selectedPeriod]);
 
   const handleExportPdf = useCallback(
-    async (mode: HrCommissionPeriodsPdfMode) => {
+    async (
+      mode: HrCommissionPeriodsPdfMode,
+      options: { employeeLineId?: string } = {},
+    ) => {
       if (!selectedPeriod) {
         message.warning('Selecciona un corte para exportar.');
         return;
@@ -632,10 +677,18 @@ export default function HrCommissionPeriodsPage() {
         message.warning('No hay detalle de comisiones para exportar.');
         return;
       }
+      if (mode === 'employee' && !options.employeeLineId) {
+        message.warning('Selecciona una comisión individual para exportar.');
+        return;
+      }
 
       setExportingPdfMode(mode);
+      if (mode === 'employee') {
+        setExportingEmployeeLineId(options.employeeLineId ?? null);
+      }
       try {
         await exportHrCommissionPeriodsPdf({
+          employeeLineId: options.employeeLineId,
           employeeLines,
           entries: commissionEntries,
           mode,
@@ -645,7 +698,9 @@ export default function HrCommissionPeriodsPage() {
         message.success(
           mode === 'general'
             ? 'Resumen general exportado a PDF.'
-            : 'Detalle por empleado exportado a PDF.',
+            : mode === 'employee'
+              ? 'Comisión individual exportada a PDF.'
+              : 'Detalle auditable del corte exportado a PDF.',
         );
       } catch (exportError) {
         console.error(
@@ -655,9 +710,55 @@ export default function HrCommissionPeriodsPage() {
         message.error('No se pudo exportar el PDF del corte.');
       } finally {
         setExportingPdfMode(null);
+        setExportingEmployeeLineId(null);
       }
     },
     [commissionEntries, employeeLines, payments, selectedPeriod],
+  );
+
+  const handleExportEmployeeLineExcel = useCallback(
+    async (line: HrPayrollEmployeeLineRecord) => {
+      if (!selectedPeriod) {
+        message.warning('Selecciona un corte para exportar.');
+        return;
+      }
+
+      setExportingEmployeeExcelLineId(line.id);
+      try {
+        await exportHrCommissionLineSupportWorkbook({
+          employeeLineId: line.id,
+          employeeLines,
+          entries: commissionEntries,
+          payments,
+          selectedPeriod,
+        });
+        message.success('Comisión individual exportada a Excel.');
+      } catch (exportError) {
+        console.error(
+          '[HrCommissionPeriodsPage] line excel export failed',
+          exportError,
+        );
+        message.error('No se pudo exportar el Excel de la comisión.');
+      } finally {
+        setExportingEmployeeExcelLineId(null);
+      }
+    },
+    [commissionEntries, employeeLines, payments, selectedPeriod],
+  );
+
+  const handleExportEmployeeLine = useCallback(
+    (
+      line: HrPayrollEmployeeLineRecord,
+      format: HrCommissionLineExportFormat,
+    ) => {
+      if (format === 'excel') {
+        void handleExportEmployeeLineExcel(line);
+        return;
+      }
+
+      void handleExportPdf('employee', { employeeLineId: line.id });
+    },
+    [handleExportEmployeeLineExcel, handleExportPdf],
   );
 
   const handleExportAction = useCallback(
@@ -697,6 +798,14 @@ export default function HrCommissionPeriodsPage() {
       buildLineColumns({
         adjustmentActionKey,
         canRecordPayments: Boolean(currentUser && businessId),
+        exportLineDisabled:
+          entriesLoading ||
+          exporting ||
+          Boolean(exportingPdfMode) ||
+          Boolean(exportingEmployeeExcelLineId),
+        exportingLineId:
+          exportingEmployeeLineId ?? exportingEmployeeExcelLineId,
+        onExportLine: isDetailRoute ? handleExportEmployeeLine : undefined,
         onOpenAdjustment: handleOpenAdjustment,
         paymentActionKey,
         periodStatus: selectedPeriod?.status ?? null,
@@ -706,16 +815,24 @@ export default function HrCommissionPeriodsPage() {
       adjustmentActionKey,
       businessId,
       currentUser,
+      entriesLoading,
+      exporting,
+      exportingEmployeeExcelLineId,
+      exportingEmployeeLineId,
+      exportingPdfMode,
+      handleExportEmployeeLine,
       handleOpenAdjustment,
       handleOpenPayment,
+      isDetailRoute,
       paymentActionKey,
       selectedPeriod?.status,
     ],
   );
-  const selectedPeriodLabel =
-    selectedPeriod?.label ||
-    selectedPeriod?.periodKey ||
-    (isDetailRoute ? 'Corte no encontrado' : 'Corte seleccionado');
+  const selectedPeriodLabel = selectedPeriod
+    ? getHumanPeriodLabel(selectedPeriod)
+    : isDetailRoute
+      ? 'Corte no encontrado'
+      : 'Corte seleccionado';
   const selectedPeriodAmount = selectedPeriod
     ? getPeriodPayableAmount(selectedPeriod)
     : 0;
@@ -750,6 +867,7 @@ export default function HrCommissionPeriodsPage() {
     (retroactiveResult?.totalCount ?? 0) > 0 ||
     (nextCutPreview?.retroactiveEntriesCount ?? 0) > 0,
   );
+  const summaryLoading = loading && periods.length === 0;
   const nextCutRangeLabel = nextCutPreview
     ? `${formatHrDateKey(nextCutPreview.startDateKey)} - ${formatHrDateKey(
         nextCutPreview.endDateKey,
@@ -757,7 +875,12 @@ export default function HrCommissionPeriodsPage() {
     : previewLoading
       ? 'Calculando rango...'
       : 'Sin rango estimado';
-  const nextCutBlockedMessage = nextCutPreview?.blockedReason;
+  const nextCutBlockedMessage = getNextCutBlockedMessage(nextCutPreview);
+  const nextCutActionsDisabled =
+    !businessId ||
+    !effectiveSelectedCutRuleId ||
+    previewLoading ||
+    cutRulesLoading;
   const exportDisabled =
     !businessId ||
     loading ||
@@ -770,7 +893,7 @@ export default function HrCommissionPeriodsPage() {
   const exportLabel =
     exporting || exportingPdfMode ? 'Exportando...' : 'Exportar';
   const detailPeriodDescription = selectedPeriod
-    ? `${selectedPeriodLabel} - ${formatMoney(
+    ? `${selectedPeriodLabel} · ${selectedPeriodRangeMeta} · ${formatMoney(
         getPeriodPayableAmount(selectedPeriod),
         selectedPeriod.currency,
       )}`
@@ -850,22 +973,37 @@ export default function HrCommissionPeriodsPage() {
           onAction={handleExportAction}
         >
           <VmDropdown.Item id="excel" textValue="Exportar Excel">
-            <InlineStack>
-              <FileExcelOutlined />
-              <span>Excel completo</span>
-            </InlineStack>
+            <ExportMenuItemContent>
+              <ExportMenuItemTitle>
+                <FileExcelOutlined />
+                Excel completo
+              </ExportMenuItemTitle>
+              <ExportMenuItemDescription>
+                Datos editables para nómina y conciliación.
+              </ExportMenuItemDescription>
+            </ExportMenuItemContent>
           </VmDropdown.Item>
           <VmDropdown.Item id="general" textValue="Resumen general">
-            <InlineStack>
-              <FilePdfOutlined />
-              <span>PDF resumen</span>
-            </InlineStack>
+            <ExportMenuItemContent>
+              <ExportMenuItemTitle>
+                <FilePdfOutlined />
+                PDF resumen
+              </ExportMenuItemTitle>
+              <ExportMenuItemDescription>
+                Para aprobación gerencial del corte.
+              </ExportMenuItemDescription>
+            </ExportMenuItemContent>
           </VmDropdown.Item>
-          <VmDropdown.Item id="detail" textValue="Detalle por empleado">
-            <InlineStack>
-              <FilePdfOutlined />
-              <span>PDF detalle</span>
-            </InlineStack>
+          <VmDropdown.Item id="detail" textValue="Detalle auditable del corte">
+            <ExportMenuItemContent>
+              <ExportMenuItemTitle>
+                <FilePdfOutlined />
+                PDF detalle del corte
+              </ExportMenuItemTitle>
+              <ExportMenuItemDescription>
+                Base, tasa, regla, retroactivas, pagos y neto por colaborador.
+              </ExportMenuItemDescription>
+            </ExportMenuItemContent>
           </VmDropdown.Item>
         </VmDropdown.Menu>
       </VmDropdown.Popover>
@@ -1011,34 +1149,61 @@ export default function HrCommissionPeriodsPage() {
             <SummaryGrid>
               <SummaryItem>
                 <SummaryLabel>Cortes</SummaryLabel>
-                <SummaryValue>{summary.periods}</SummaryValue>
-                <SummaryHint>{summary.paidPeriods} pagados</SummaryHint>
+                <SummaryValue>
+                  {summaryLoading ? 'Cargando...' : summary.periods}
+                </SummaryValue>
+                <SummaryHint>
+                  {summaryLoading
+                    ? 'Recuperando cortes del negocio'
+                    : `${summary.paidPeriods} pagados`}
+                </SummaryHint>
               </SummaryItem>
               <SummaryItem>
                 <SummaryLabel>Monto generado</SummaryLabel>
                 <SummaryValue>
-                  {formatMoney(summary.generatedAmount)}
+                  {summaryLoading
+                    ? 'Cargando...'
+                    : formatMoney(summary.generatedAmount)}
                 </SummaryValue>
-                <SummaryHint>Total en cortes cargados</SummaryHint>
+                <SummaryHint>
+                  {summaryLoading
+                    ? 'Sin mostrar totales parciales'
+                    : 'Total en cortes cargados'}
+                </SummaryHint>
               </SummaryItem>
               <SummaryItem>
                 <SummaryLabel>Pendiente</SummaryLabel>
                 <SummaryValue>
-                  {formatMoney(summary.pendingAmount)}
+                  {summaryLoading
+                    ? 'Cargando...'
+                    : formatMoney(summary.pendingAmount)}
                 </SummaryValue>
                 <SummaryHint>
-                  {summary.pendingPeriods} cortes por pagar
+                  {summaryLoading
+                    ? 'Calculando estado de pagos'
+                    : `${summary.pendingPeriods} cortes por pagar`}
                 </SummaryHint>
               </SummaryItem>
               <SummaryItem>
                 <SummaryLabel>Pagado</SummaryLabel>
-                <SummaryValue>{formatMoney(summary.paidAmount)}</SummaryValue>
-                <SummaryHint>Soporte en la pestaña Pagos</SummaryHint>
+                <SummaryValue>
+                  {summaryLoading
+                    ? 'Cargando...'
+                    : formatMoney(summary.paidAmount)}
+                </SummaryValue>
+                <SummaryHint>
+                  {summaryLoading
+                    ? 'Esperando datos confirmados'
+                    : 'Pagos en la pestaña Pagos'}
+                </SummaryHint>
               </SummaryItem>
             </SummaryGrid>
 
             <NextCutPanel
               data-blocked={nextCutPreview?.blocked ? 'true' : undefined}
+              data-loading={
+                previewLoading && !nextCutPreview ? 'true' : undefined
+              }
             >
               <NextCutStack>
                 <OperationalEyebrow>Próximo corte</OperationalEyebrow>
@@ -1065,6 +1230,12 @@ export default function HrCommissionPeriodsPage() {
                     No se pudo calcular el próximo corte: {previewError.message}
                   </NextCutMessage>
                 ) : null}
+                {previewLoading && !nextCutPreview ? (
+                  <NextCutMessage>
+                    Estamos calculando el próximo corte. Las acciones estarán
+                    disponibles al terminar.
+                  </NextCutMessage>
+                ) : null}
                 {retroactiveError ? (
                   <NextCutMessage>
                     No se pudieron revisar retroactivas:{' '}
@@ -1080,7 +1251,7 @@ export default function HrCommissionPeriodsPage() {
                   <VmButton
                     variant="secondary"
                     aria-haspopup="dialog"
-                    isDisabled={!businessId || !effectiveSelectedCutRuleId}
+                    isDisabled={nextCutActionsDisabled}
                     onPress={() => setRetroactiveModalOpen(true)}
                   >
                     Revisar retroactivas
@@ -1089,7 +1260,7 @@ export default function HrCommissionPeriodsPage() {
                 <VmButton
                   variant="primary"
                   aria-label={`${createActionLabel} ${activeRuleMeta}`}
-                  isDisabled={!businessId || !effectiveSelectedCutRuleId}
+                  isDisabled={nextCutActionsDisabled}
                   onPress={() => setPreviewModalOpen(true)}
                 >
                   <SyncOutlined />

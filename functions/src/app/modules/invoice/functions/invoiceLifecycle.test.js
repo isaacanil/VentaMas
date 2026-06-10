@@ -133,10 +133,13 @@ vi.mock('../../../versions/v2/invoice/services/audit.service.js', () => ({
   auditTx: (...args) => auditTxMock(...args),
 }));
 
-vi.mock('../../../versions/v2/accounting/utils/accountingEvent.util.js', () => ({
-  buildAccountingEvent: (...args) => buildAccountingEventMock(...args),
-  roundAccountingAmount: (value) => Number(value || 0),
-}));
+vi.mock(
+  '../../../versions/v2/accounting/utils/accountingEvent.util.js',
+  () => ({
+    buildAccountingEvent: (...args) => buildAccountingEventMock(...args),
+    roundAccountingAmount: (value) => Number(value || 0),
+  }),
+);
 
 vi.mock('../../../versions/v2/accounting/utils/journalEntry.util.js', () => ({
   buildJournalEntry: (...args) => buildJournalEntryMock(...args),
@@ -146,10 +149,13 @@ vi.mock('../../../versions/v2/accounting/utils/journalEntry.util.js', () => ({
   }),
 }));
 
-vi.mock('../../../versions/v2/accounting/utils/accountingRollout.util.js', () => ({
-  getPilotAccountingSettingsForBusiness: vi.fn(async () => ({})),
-  isAccountingRolloutEnabledForBusiness: vi.fn(() => true),
-}));
+vi.mock(
+  '../../../versions/v2/accounting/utils/accountingRollout.util.js',
+  () => ({
+    getPilotAccountingSettingsForBusiness: vi.fn(async () => ({})),
+    isAccountingRolloutEnabledForBusiness: vi.fn(() => true),
+  }),
+);
 
 vi.mock('../../../versions/v2/accounting/utils/periodClosure.util.js', () => ({
   assertAccountingPeriodOpenInTransaction: (...args) =>
@@ -176,11 +182,11 @@ describe('invoiceLifecycle hardening', () => {
     assertUserAccessMock.mockResolvedValue(undefined);
     assertAccountingPeriodOpenInTransactionMock.mockResolvedValue(undefined);
     buildAccountingEventMock.mockImplementation((payload) => ({
-      id: 'invoice.voided__invoice-1',
+      id: `${payload.eventType}__invoice-1`,
       ...payload,
     }));
     buildJournalEntryMock.mockImplementation((payload) => ({
-      id: 'invoice.voided__invoice-1',
+      id: payload.entryId,
       status: 'posted',
       ...payload,
     }));
@@ -190,8 +196,9 @@ describe('invoiceLifecycle hardening', () => {
           if (ref.kind === 'query') {
             const filter = ref.filters[0];
             return (
-              querySnapshots.get(queryKey(ref.path, filter?.field, filter?.value)) ||
-              querySnapshot()
+              querySnapshots.get(
+                queryKey(ref.path, filter?.field, filter?.value),
+              ) || querySnapshot()
             );
           }
           return snapshot(ref.path, docSnapshots.get(ref.path) ?? null);
@@ -313,5 +320,205 @@ describe('invoiceLifecycle hardening', () => {
         event: 'invoice_voided',
       }),
     );
+  });
+
+  it('revierte COGS y restaura existencias detalladas al anular factura con inventario', async () => {
+    docSnapshots.set('businesses/business-1/invoices/invoice-1', {
+      data: {
+        id: 'invoice-1',
+        status: 'committed',
+        numberID: 'F-001',
+        totalPurchase: { value: 2360 },
+        totalTaxes: { value: 360 },
+        products: [{ id: 'product-1', amountToBuy: 1 }],
+      },
+    });
+    docSnapshots.set(
+      'businesses/business-1/accountingEvents/invoice.committed__invoice-1',
+      { id: 'invoice.committed__invoice-1' },
+    );
+    docSnapshots.set(
+      'businesses/business-1/journalEntries/invoice.committed__invoice-1',
+      {
+        id: 'invoice.committed__invoice-1',
+        eventId: 'invoice.committed__invoice-1',
+        currency: 'DOP',
+        functionalCurrency: 'DOP',
+        totals: { debit: 2360, credit: 2360 },
+        lines: [
+          { accountId: '1101', debit: 2360, credit: 0 },
+          { accountId: '4101', debit: 0, credit: 2000 },
+          { accountId: '2200', debit: 0, credit: 360 },
+        ],
+      },
+    );
+    docSnapshots.set(
+      'businesses/business-1/accountingEvents/inventory.cogs.recorded__invoice-1',
+      {
+        id: 'inventory.cogs.recorded__invoice-1',
+        payload: {
+          lines: [
+            {
+              productId: 'product-1',
+              productStockId: 'stock-1',
+              batchId: 'batch-1',
+              quantity: 1,
+              unitCost: 1200,
+              totalCost: 1200,
+            },
+          ],
+        },
+      },
+    );
+    docSnapshots.set(
+      'businesses/business-1/journalEntries/inventory.cogs.recorded__invoice-1',
+      {
+        id: 'inventory.cogs.recorded__invoice-1',
+        eventId: 'inventory.cogs.recorded__invoice-1',
+        currency: 'DOP',
+        functionalCurrency: 'DOP',
+        totals: { debit: 1200, credit: 1200 },
+        lines: [
+          {
+            accountId: '5101',
+            accountSystemKey: 'cost_of_goods_sold',
+            debit: 1200,
+            credit: 0,
+          },
+          {
+            accountId: '1130',
+            accountSystemKey: 'inventory',
+            debit: 0,
+            credit: 1200,
+          },
+        ],
+      },
+    );
+
+    const result = await voidInvoiceFinancialDocument({
+      data: {
+        businessId: 'business-1',
+        invoiceId: 'invoice-1',
+        cancellation: {
+          reasonCode: '1',
+          reasonLabel: 'Deterioro de factura pre-impresa',
+        },
+      },
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      cogsReversalEntryId: 'inventory.cogs.voided__invoice-1',
+    });
+    expect(buildAccountingEventMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: 'inventory.cogs.voided',
+        reversalOfEventId: 'inventory.cogs.recorded__invoice-1',
+        monetary: {
+          amount: 1200,
+          functionalAmount: 1200,
+        },
+      }),
+    );
+    expect(buildJournalEntryMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entryId: 'inventory.cogs.voided__invoice-1',
+        reversalOfEntryId: 'inventory.cogs.recorded__invoice-1',
+        lines: expect.arrayContaining([
+          expect.objectContaining({
+            accountSystemKey: 'cost_of_goods_sold',
+            debit: 0,
+            credit: 1200,
+          }),
+          expect.objectContaining({
+            accountSystemKey: 'inventory',
+            debit: 1200,
+            credit: 0,
+          }),
+        ]),
+      }),
+    );
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/productsStock/stock-1',
+      }),
+      expect.objectContaining({
+        quantity: { __op: 'increment', value: 1 },
+        status: 'active',
+      }),
+      { merge: true },
+    );
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/batches/batch-1',
+      }),
+      expect.objectContaining({
+        quantity: { __op: 'increment', value: 1 },
+        status: 'active',
+      }),
+      { merge: true },
+    );
+    expect(transactionUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/products/product-1',
+      }),
+      { 'product.stock': { __op: 'increment', value: 1 } },
+    );
+    expect(
+      transactionSetMock.mock.calls.filter(
+        ([ref]) => ref.path === 'businesses/business-1/productsStock/stock-1',
+      ),
+    ).toHaveLength(1);
+    expect(
+      transactionSetMock.mock.calls.filter(
+        ([ref]) => ref.path === 'businesses/business-1/batches/batch-1',
+      ),
+    ).toHaveLength(1);
+    expect(
+      transactionUpdateMock.mock.calls.filter(
+        ([ref]) => ref.path === 'businesses/business-1/products/product-1',
+      ),
+    ).toHaveLength(1);
+  });
+
+  it('no restaura stock ni duplica COGS cuando se reintenta anular una factura ya cancelada', async () => {
+    docSnapshots.set('businesses/business-1/invoices/invoice-1', {
+      data: {
+        id: 'invoice-1',
+        status: 'cancelled',
+        numberID: 'F-001',
+        products: [{ id: 'product-1', amountToBuy: 1 }],
+      },
+    });
+    docSnapshots.set(
+      'businesses/business-1/journalEntries/invoice.voided__invoice-1',
+      { id: 'invoice.voided__invoice-1' },
+    );
+    docSnapshots.set(
+      'businesses/business-1/journalEntries/inventory.cogs.voided__invoice-1',
+      { id: 'inventory.cogs.voided__invoice-1' },
+    );
+
+    const result = await voidInvoiceFinancialDocument({
+      data: {
+        businessId: 'business-1',
+        invoiceId: 'invoice-1',
+        cancellation: {
+          reasonCode: '1',
+          reasonLabel: 'Deterioro de factura pre-impresa',
+        },
+      },
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      reused: true,
+      reversalEntryId: 'invoice.voided__invoice-1',
+      status: 'cancelled',
+    });
+    expect(transactionUpdateMock).not.toHaveBeenCalled();
+    expect(transactionSetMock).not.toHaveBeenCalled();
+    expect(buildAccountingEventMock).not.toHaveBeenCalled();
+    expect(buildJournalEntryMock).not.toHaveBeenCalled();
   });
 });

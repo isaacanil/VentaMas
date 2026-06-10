@@ -23,12 +23,12 @@ export const ReportPagination = ({
   setCurrentPage,
   totalPages,
 }: ReportPaginationProps) => {
-  if (totalPages <= 1) return <FooterMeta>Pagina 1 de 1</FooterMeta>;
+  if (totalPages <= 1) return <FooterMeta>Página 1 de 1</FooterMeta>;
 
   const visiblePages = getVisiblePages(currentPage, totalPages);
 
   return (
-    <VmPagination aria-label="Paginacion del reporte de comisiones">
+    <VmPagination aria-label="Paginación del reporte de comisiones">
       <VmPagination.Content>
         <VmPagination.Item>
           <VmPagination.Previous

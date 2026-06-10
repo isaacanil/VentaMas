@@ -49,6 +49,7 @@ const ACCOUNTING_EVENT_MODULES = new Map([
   ['bank_statement_adjustment.recorded', 'banking'],
   ['internal_transfer.posted', 'cash'],
   ['inventory.cogs.recorded', 'sales'],
+  ['inventory.cogs.voided', 'sales'],
   ['manual.entry.recorded', 'general_ledger'],
   ['fx_settlement.recorded', 'fx'],
   ['fx_settlement.voided', 'fx'],
@@ -64,8 +65,18 @@ const AMOUNT_SOURCES = new Set([
   'sale_bank_received',
   'sale_other_received',
   'credit_note_net_total',
+  'purchase_subtotal',
+  'purchase_tax',
   'purchase_total',
+  'purchase_net_payable',
+  'purchase_withholding_itbis',
+  'purchase_withholding_isr',
+  'expense_subtotal',
+  'expense_tax',
   'expense_total',
+  'expense_net_payable',
+  'expense_withholding_itbis',
+  'expense_withholding_isr',
   'tax_total',
   'cash_over_short_gain',
   'cash_over_short_loss',
@@ -201,6 +212,14 @@ const normalizeConditions = (value) => {
       record.settlementTiming,
     )
       ? record.settlementTiming
+      : 'any',
+    transferDirection: [
+      'cash_to_bank',
+      'bank_to_cash',
+      'bank_to_bank',
+      'cash_to_cash',
+    ].includes(record.transferDirection)
+      ? record.transferDirection
       : 'any',
   };
 };
@@ -393,6 +412,7 @@ const serializeProfileStructure = (profile) => {
       amountSource: line.amountSource,
       description: line.description ?? null,
       omitIfZero: line.omitIfZero !== false,
+      metadata: asRecord(line.metadata),
     })),
   };
 };

@@ -35,7 +35,7 @@ export function HrCommissionCutRulesModal({
 
   return (
     <VmModal
-      title="Configuracion de cortes"
+      title="Configuración de cortes"
       ariaLabel="Configurar reglas de corte"
       isOpen={isOpen}
       onOpenChange={(open) => {
@@ -54,7 +54,7 @@ export function HrCommissionCutRulesModal({
             isDisabled={formDisabled}
           >
             <SaveOutlined />
-            {saving ? 'Guardando...' : 'Guardar configuracion'}
+            {saving ? 'Guardando...' : 'Guardar configuración'}
           </VmButton>
         </ModalActions>
       }

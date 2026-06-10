@@ -40,6 +40,16 @@ const safeNumber = (value) => {
 const roundToTwoDecimals = (value) =>
   Math.round((safeNumber(value) || 0) * 100) / 100;
 
+const resolveExpenseFiscalAmount = (expenseRecord, documentTotals, ...keys) => {
+  for (const key of keys) {
+    const direct = safeNumber(expenseRecord[key]);
+    if (direct != null) return direct;
+    const nested = safeNumber(documentTotals[key]);
+    if (nested != null) return nested;
+  }
+  return null;
+};
+
 const resolveExpenseStatus = (expenseRecord) =>
   toCleanString(expenseRecord?.status)?.toLowerCase() || null;
 
@@ -56,9 +66,71 @@ const resolveExpenseMonetarySnapshot = (expenseRecord) => {
   const amount = roundToTwoDecimals(
     safeNumber(documentTotals.total ?? monetary.amount ?? expenseRecord.amount) ?? 0,
   );
+  const taxAmount = roundToTwoDecimals(
+    resolveExpenseFiscalAmount(
+      expenseRecord,
+      documentTotals,
+      'taxAmount',
+      'itbisAmount',
+      'taxes',
+      'tax',
+    ) ?? 0,
+  );
+  const subtotalAmount = roundToTwoDecimals(
+    resolveExpenseFiscalAmount(
+      expenseRecord,
+      documentTotals,
+      'subtotal',
+      'subTotal',
+      'subtotalAmount',
+    ) ?? Math.max(amount - taxAmount, 0),
+  );
+  const withholdingITBISAmount = roundToTwoDecimals(
+    resolveExpenseFiscalAmount(
+      expenseRecord,
+      documentTotals,
+      'withholdingITBISAmount',
+      'itbisWithheld',
+    ) ?? 0,
+  );
+  const withholdingISRAmount = roundToTwoDecimals(
+    resolveExpenseFiscalAmount(
+      expenseRecord,
+      documentTotals,
+      'withholdingISRAmount',
+      'isrWithheld',
+    ) ?? 0,
+  );
+  const netPayableAmount = roundToTwoDecimals(
+    Math.max(amount - withholdingITBISAmount - withholdingISRAmount, 0),
+  );
   const functionalAmount = roundToTwoDecimals(
     safeNumber(functionalTotals.total ?? monetary.functionalAmount ?? amount) ??
       amount,
+  );
+  const functionalRate = amount > 0 && functionalAmount > 0 ? functionalAmount / amount : 1;
+  const functionalTaxAmount = roundToTwoDecimals(
+    safeNumber(functionalTotals.taxes ?? functionalTotals.tax) ??
+      taxAmount * functionalRate,
+  );
+  const functionalSubtotalAmount = roundToTwoDecimals(
+    safeNumber(
+      functionalTotals.subtotal ??
+        functionalTotals.subTotal ??
+        functionalTotals.subtotalAmount,
+    ) ?? subtotalAmount * functionalRate,
+  );
+  const functionalWithholdingITBISAmount = roundToTwoDecimals(
+    safeNumber(functionalTotals.withholdingITBISAmount) ??
+      withholdingITBISAmount * functionalRate,
+  );
+  const functionalWithholdingISRAmount = roundToTwoDecimals(
+    safeNumber(functionalTotals.withholdingISRAmount) ??
+      withholdingISRAmount * functionalRate,
+  );
+  const functionalNetPayableAmount = roundToTwoDecimals(
+    safeNumber(functionalTotals.netPayableAmount) ??
+      netPayableAmount * functionalRate,
   );
 
   return {
@@ -66,7 +138,17 @@ const resolveExpenseMonetarySnapshot = (expenseRecord) => {
     functionalCurrency: resolveCurrencyCode(monetary.functionalCurrency),
     monetary: {
       amount,
+      subtotalAmount,
+      taxAmount,
+      withholdingITBISAmount,
+      withholdingISRAmount,
+      netPayableAmount,
       functionalAmount,
+      functionalSubtotalAmount,
+      functionalTaxAmount,
+      functionalWithholdingITBISAmount,
+      functionalWithholdingISRAmount,
+      functionalNetPayableAmount,
     },
   };
 };
@@ -192,6 +274,15 @@ export const buildExpenseRecordedAccountingEvent = ({
         null,
       invoiceNcf: toCleanString(invoice.ncf),
       attachmentCount: attachments.length,
+      fiscalTotals: {
+        subtotal: monetarySnapshot.monetary.subtotalAmount,
+        taxAmount: monetarySnapshot.monetary.taxAmount,
+        withholdingITBISAmount:
+          monetarySnapshot.monetary.withholdingITBISAmount,
+        withholdingISRAmount: monetarySnapshot.monetary.withholdingISRAmount,
+        total: monetarySnapshot.monetary.amount,
+        netPayableAmount: monetarySnapshot.monetary.netPayableAmount,
+      },
     },
     occurredAt:
       dates.expenseDate ??

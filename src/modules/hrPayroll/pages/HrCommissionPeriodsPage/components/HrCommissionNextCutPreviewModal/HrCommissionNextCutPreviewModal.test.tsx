@@ -66,9 +66,7 @@ describe('HrCommissionNextCutPreviewModal', () => {
       />,
     );
 
-    expect(
-      screen.getByText(/comisiones retroactivas pendientes/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/retroactiva pendiente/i)).toBeInTheDocument();
     expect(
       screen.getByRole('dialog', { name: /revisar próximo corte/i }),
     ).toBeInTheDocument();

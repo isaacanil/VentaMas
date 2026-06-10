@@ -86,11 +86,11 @@ vi.mock('./MenuLink', () => ({
     item,
     onActionDone,
   }: {
-    item: { title: string };
+    item: { label?: string; title?: string };
     onActionDone?: () => void;
   }) => (
     <button onClick={onActionDone} type="button">
-      {item.title}
+      {item.title ?? item.label}
     </button>
   ),
 }));
@@ -198,5 +198,131 @@ describe('SideBar', () => {
     ).not.toContain('Encountered two children with the same key');
 
     consoleErrorSpy.mockRestore();
+  });
+
+  it('filters visible menu entries from the sidebar search', () => {
+    mockMenuData.splice(0, mockMenuData.length);
+    mockMenuData.push(
+      {
+        title: 'Inicio',
+        route: '/inicio',
+        group: 'general',
+      },
+      {
+        title: 'Facturas',
+        route: '/facturas',
+        group: 'sales',
+      },
+    );
+
+    const store = createStore();
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <ThemeProvider theme={testTheme}>
+            <SideBar isOpen={true} handleOpenMenu={vi.fn()} />
+          </ThemeProvider>
+        </MemoryRouter>
+      </Provider>,
+    );
+
+    fireEvent.change(
+      screen.getByRole('searchbox', { name: 'Buscar en el menú' }),
+      {
+        target: { value: 'factu' },
+      },
+    );
+
+    expect(
+      screen.getByRole('button', { name: 'Facturas' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Inicio' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('shows matching submenu entries as direct search results', () => {
+    mockMenuData.splice(0, mockMenuData.length);
+    mockMenuData.push(
+      {
+        title: 'Personal',
+        group: 'hr',
+        submenu: [
+          {
+            title: 'Nómina fija',
+            route: '/nomina-fija',
+          },
+        ],
+      },
+      {
+        title: 'Inventario',
+        route: '/inventario',
+        group: 'inventory',
+      },
+    );
+
+    const store = createStore();
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <ThemeProvider theme={testTheme}>
+            <SideBar isOpen={true} handleOpenMenu={vi.fn()} />
+          </ThemeProvider>
+        </MemoryRouter>
+      </Provider>,
+    );
+
+    fireEvent.change(
+      screen.getByRole('searchbox', { name: 'Buscar en el menú' }),
+      {
+        target: { value: 'nomina' },
+      },
+    );
+
+    expect(
+      screen.getByRole('button', { name: 'Nómina fija' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Personal')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Personal' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Inventario' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('restores the full menu when the sidebar search is cleared', () => {
+    const store = createStore();
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <ThemeProvider theme={testTheme}>
+            <SideBar isOpen={true} handleOpenMenu={vi.fn()} />
+          </ThemeProvider>
+        </MemoryRouter>
+      </Provider>,
+    );
+
+    const searchbox = screen.getByRole('searchbox', {
+      name: 'Buscar en el menú',
+    });
+
+    fireEvent.change(searchbox, {
+      target: { value: 'no-existe' },
+    });
+
+    expect(
+      screen.getByText('No hay opciones para esa búsqueda.'),
+    ).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Limpiar búsqueda del menú' }),
+    );
+
+    expect(searchbox).toHaveValue('');
+    expect(screen.getByRole('button', { name: 'Inicio' })).toBeInTheDocument();
   });
 });

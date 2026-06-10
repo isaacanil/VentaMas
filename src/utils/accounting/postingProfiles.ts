@@ -11,6 +11,7 @@ import type {
   AccountingPostingSettlementKind,
   AccountingPostingSettlementTiming,
   AccountingPostingTaxTreatment,
+  AccountingPostingTransferDirection,
   ChartOfAccount,
   ChartOfAccountNormalSide,
 } from '@/types/accounting';
@@ -43,9 +44,11 @@ export interface AccountingPostingLineDraft {
   id?: string;
   side: ChartOfAccountNormalSide;
   accountId?: string | null;
+  accountSystemKey?: string | null;
   amountSource: AccountingPostingAmountSource;
   description?: string | null;
   omitIfZero?: boolean;
+  metadata?: Record<string, unknown>;
 }
 
 export interface AccountingPostingProfileDraft {
@@ -66,6 +69,7 @@ interface DefaultPostingProfileSeedLine {
   amountSource: AccountingPostingAmountSource;
   description?: string;
   omitIfZero?: boolean;
+  metadata?: Record<string, unknown>;
 }
 
 interface DefaultPostingProfileSeed {
@@ -113,12 +117,27 @@ const buildImmediatePurchaseProfileSeed = ({
     {
       side: 'debit',
       accountSystemKey: debitAccountSystemKey,
-      amountSource: 'purchase_total',
+      amountSource: 'purchase_subtotal',
+    },
+    {
+      side: 'debit',
+      accountSystemKey: 'tax_receivable',
+      amountSource: 'purchase_tax',
     },
     {
       side: 'credit',
       accountSystemKey: creditAccountSystemKey,
-      amountSource: 'purchase_total',
+      amountSource: 'purchase_net_payable',
+    },
+    {
+      side: 'credit',
+      accountSystemKey: 'withholding_itbis_payable',
+      amountSource: 'purchase_withholding_itbis',
+    },
+    {
+      side: 'credit',
+      accountSystemKey: 'withholding_isr_payable',
+      amountSource: 'purchase_withholding_isr',
     },
   ],
 });
@@ -263,6 +282,17 @@ export const ACCOUNTING_POSTING_SETTLEMENT_TIMING_LABELS: Record<
   deferred: 'Pago diferido',
 };
 
+export const ACCOUNTING_POSTING_TRANSFER_DIRECTION_LABELS: Record<
+  AccountingPostingTransferDirection,
+  string
+> = {
+  any: 'Cualquiera',
+  cash_to_bank: 'Caja a banco',
+  bank_to_cash: 'Banco a caja',
+  bank_to_bank: 'Banco a banco',
+  cash_to_cash: 'Caja a caja',
+};
+
 export const ACCOUNTING_POSTING_AMOUNT_SOURCE_LABELS: Record<
   AccountingPostingAmountSource,
   string
@@ -275,8 +305,18 @@ export const ACCOUNTING_POSTING_AMOUNT_SOURCE_LABELS: Record<
   sale_bank_received: 'Monto cobrado por banco',
   sale_other_received: 'Monto cobrado por otro medio',
   credit_note_net_total: 'Nota de crédito sin impuesto',
+  purchase_subtotal: 'Subtotal de compra',
+  purchase_tax: 'ITBIS de compra',
   purchase_total: 'Total de compra',
+  purchase_net_payable: 'Neto a pagar de compra',
+  purchase_withholding_itbis: 'Retención ITBIS de compra',
+  purchase_withholding_isr: 'Retención ISR de compra',
+  expense_subtotal: 'Subtotal de gasto',
+  expense_tax: 'ITBIS de gasto',
   expense_total: 'Total de gasto',
+  expense_net_payable: 'Neto a pagar de gasto',
+  expense_withholding_itbis: 'Retención ITBIS de gasto',
+  expense_withholding_isr: 'Retención ISR de gasto',
   tax_total: 'Total de impuesto',
   cash_over_short_gain: 'Sobrante de caja',
   cash_over_short_loss: 'Faltante de caja',
@@ -368,6 +408,20 @@ export const normalizeAccountingPostingSettlementTiming = (
   }
 };
 
+export const normalizeAccountingPostingTransferDirection = (
+  value: unknown,
+): AccountingPostingTransferDirection => {
+  switch (value) {
+    case 'cash_to_bank':
+    case 'bank_to_cash':
+    case 'bank_to_bank':
+    case 'cash_to_cash':
+      return value;
+    default:
+      return 'any';
+  }
+};
+
 export const normalizeAccountingPostingAmountSource = (
   value: unknown,
   fallback: AccountingPostingAmountSource = 'document_total',
@@ -380,8 +434,18 @@ export const normalizeAccountingPostingAmountSource = (
     case 'sale_bank_received':
     case 'sale_other_received':
     case 'credit_note_net_total':
+    case 'purchase_subtotal':
+    case 'purchase_tax':
     case 'purchase_total':
+    case 'purchase_net_payable':
+    case 'purchase_withholding_itbis':
+    case 'purchase_withholding_isr':
+    case 'expense_subtotal':
+    case 'expense_tax':
     case 'expense_total':
+    case 'expense_net_payable':
+    case 'expense_withholding_itbis':
+    case 'expense_withholding_isr':
     case 'tax_total':
     case 'cash_over_short_gain':
     case 'cash_over_short_loss':
@@ -424,6 +488,9 @@ export const normalizeAccountingPostingCondition = (
     ),
     settlementTiming: normalizeAccountingPostingSettlementTiming(
       record.settlementTiming,
+    ),
+    transferDirection: normalizeAccountingPostingTransferDirection(
+      record.transferDirection,
     ),
   };
 };
@@ -510,7 +577,7 @@ export const normalizeAccountingPostingProfileRecord = (
   return {
     id,
     businessId,
-    name: draft.name || 'Perfil contable',
+    name: draft.name || 'Regla de contabilización',
     description: draft.description ?? null,
     eventType: draft.eventType,
     moduleKey: draft.moduleKey,
@@ -694,6 +761,30 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'credit',
         accountSystemKey: 'inventory',
+        amountSource: 'document_total',
+      },
+    ],
+  },
+  {
+    seedKey: 'inventory_cogs_voided',
+    name: 'Reversa de costo de venta por anulación',
+    description:
+      'Restituye inventario y revierte costo de venta al anular una factura.',
+    eventType: 'inventory.cogs.voided',
+    moduleKey: 'sales',
+    priority: 51,
+    conditions: {
+      documentNature: 'inventory',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'inventory',
+        amountSource: 'document_total',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'cost_of_goods_sold',
         amountSource: 'document_total',
       },
     ],
@@ -898,12 +989,27 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'debit',
         accountSystemKey: 'inventory',
-        amountSource: 'purchase_total',
+        amountSource: 'purchase_subtotal',
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'tax_receivable',
+        amountSource: 'purchase_tax',
       },
       {
         side: 'credit',
         accountSystemKey: 'accounts_payable',
-        amountSource: 'purchase_total',
+        amountSource: 'purchase_net_payable',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_itbis_payable',
+        amountSource: 'purchase_withholding_itbis',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_isr_payable',
+        amountSource: 'purchase_withholding_isr',
       },
     ],
   },
@@ -923,12 +1029,27 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'debit',
         accountSystemKey: 'operating_expenses',
-        amountSource: 'purchase_total',
+        amountSource: 'purchase_subtotal',
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'tax_receivable',
+        amountSource: 'purchase_tax',
       },
       {
         side: 'credit',
         accountSystemKey: 'accounts_payable',
-        amountSource: 'purchase_total',
+        amountSource: 'purchase_net_payable',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_itbis_payable',
+        amountSource: 'purchase_withholding_itbis',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_isr_payable',
+        amountSource: 'purchase_withholding_isr',
       },
     ],
   },
@@ -947,12 +1068,27 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'debit',
         accountSystemKey: 'fixed_assets',
-        amountSource: 'purchase_total',
+        amountSource: 'purchase_subtotal',
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'tax_receivable',
+        amountSource: 'purchase_tax',
       },
       {
         side: 'credit',
         accountSystemKey: 'accounts_payable',
-        amountSource: 'purchase_total',
+        amountSource: 'purchase_net_payable',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_itbis_payable',
+        amountSource: 'purchase_withholding_itbis',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_isr_payable',
+        amountSource: 'purchase_withholding_isr',
       },
     ],
   },
@@ -971,12 +1107,27 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'debit',
         accountSystemKey: 'operating_expenses',
-        amountSource: 'purchase_total',
+        amountSource: 'purchase_subtotal',
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'tax_receivable',
+        amountSource: 'purchase_tax',
       },
       {
         side: 'credit',
         accountSystemKey: 'accounts_payable',
-        amountSource: 'purchase_total',
+        amountSource: 'purchase_net_payable',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_itbis_payable',
+        amountSource: 'purchase_withholding_itbis',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_isr_payable',
+        amountSource: 'purchase_withholding_isr',
       },
     ],
   },
@@ -1208,12 +1359,27 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'debit',
         accountSystemKey: 'operating_expenses',
-        amountSource: 'expense_total',
+        amountSource: 'expense_subtotal',
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'tax_receivable',
+        amountSource: 'expense_tax',
       },
       {
         side: 'credit',
         accountSystemKey: 'cash',
-        amountSource: 'expense_total',
+        amountSource: 'expense_net_payable',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_itbis_payable',
+        amountSource: 'expense_withholding_itbis',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_isr_payable',
+        amountSource: 'expense_withholding_isr',
       },
     ],
   },
@@ -1231,12 +1397,27 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'debit',
         accountSystemKey: 'operating_expenses',
-        amountSource: 'expense_total',
+        amountSource: 'expense_subtotal',
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'tax_receivable',
+        amountSource: 'expense_tax',
       },
       {
         side: 'credit',
         accountSystemKey: 'bank',
-        amountSource: 'expense_total',
+        amountSource: 'expense_net_payable',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_itbis_payable',
+        amountSource: 'expense_withholding_itbis',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_isr_payable',
+        amountSource: 'expense_withholding_isr',
       },
     ],
   },
@@ -1254,12 +1435,27 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'debit',
         accountSystemKey: 'operating_expenses',
-        amountSource: 'expense_total',
+        amountSource: 'expense_subtotal',
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'tax_receivable',
+        amountSource: 'expense_tax',
       },
       {
         side: 'credit',
         accountSystemKey: 'accounts_payable',
-        amountSource: 'expense_total',
+        amountSource: 'expense_net_payable',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_itbis_payable',
+        amountSource: 'expense_withholding_itbis',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_isr_payable',
+        amountSource: 'expense_withholding_isr',
       },
     ],
   },
@@ -1488,22 +1684,106 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
     ],
   },
   {
-    seedKey: 'internal_transfer_cash_to_bank',
+    seedKey: 'internal_transfer_direction_cash_to_bank',
     name: 'Transferencia caja a banco',
-    description: 'Movimiento interno desde caja hacia banco.',
+    description: 'Movimiento interno desde una caja hacia una cuenta bancaria.',
     eventType: 'internal_transfer.posted',
     moduleKey: 'banking',
-    priority: 70,
+    priority: 60,
+    conditions: {
+      settlementKind: 'mixed',
+      transferDirection: 'cash_to_bank',
+    },
     linesTemplate: [
       {
         side: 'debit',
         accountSystemKey: 'bank',
         amountSource: 'transfer_amount',
+        metadata: { treasuryRole: 'destination' },
       },
       {
         side: 'credit',
         accountSystemKey: 'cash',
         amountSource: 'transfer_amount',
+        metadata: { treasuryRole: 'source' },
+      },
+    ],
+  },
+  {
+    seedKey: 'internal_transfer_direction_bank_to_cash',
+    name: 'Transferencia banco a caja',
+    description: 'Movimiento interno desde una cuenta bancaria hacia una caja.',
+    eventType: 'internal_transfer.posted',
+    moduleKey: 'banking',
+    priority: 61,
+    conditions: {
+      settlementKind: 'mixed',
+      transferDirection: 'bank_to_cash',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'cash',
+        amountSource: 'transfer_amount',
+        metadata: { treasuryRole: 'destination' },
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'bank',
+        amountSource: 'transfer_amount',
+        metadata: { treasuryRole: 'source' },
+      },
+    ],
+  },
+  {
+    seedKey: 'internal_transfer_direction_bank_to_bank',
+    name: 'Transferencia banco a banco',
+    description: 'Movimiento interno entre dos cuentas bancarias.',
+    eventType: 'internal_transfer.posted',
+    moduleKey: 'banking',
+    priority: 62,
+    conditions: {
+      settlementKind: 'bank',
+      transferDirection: 'bank_to_bank',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'bank',
+        amountSource: 'transfer_amount',
+        metadata: { treasuryRole: 'destination' },
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'bank',
+        amountSource: 'transfer_amount',
+        metadata: { treasuryRole: 'source' },
+      },
+    ],
+  },
+  {
+    seedKey: 'internal_transfer_direction_cash_to_cash',
+    name: 'Transferencia caja a caja',
+    description: 'Movimiento interno entre dos cajas.',
+    eventType: 'internal_transfer.posted',
+    moduleKey: 'cash',
+    priority: 63,
+    conditions: {
+      settlementKind: 'cash',
+      transferDirection: 'cash_to_cash',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'cash',
+        amountSource: 'transfer_amount',
+        metadata: { treasuryRole: 'destination' },
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'cash',
+        amountSource: 'transfer_amount',
+        metadata: { treasuryRole: 'source' },
       },
     ],
   },
@@ -1535,6 +1815,7 @@ export const buildDefaultAccountingPostingProfileTemplates = (
         accountCode: account.code,
         accountName: account.name,
         accountSystemKey: account.systemKey ?? null,
+        metadata: line.metadata ?? {},
       };
     });
 

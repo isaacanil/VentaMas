@@ -13,6 +13,7 @@ import {
   ACCOUNTING_POSTING_PAYMENT_TERM_LABELS,
   ACCOUNTING_POSTING_SETTLEMENT_KIND_LABELS,
   ACCOUNTING_POSTING_TAX_TREATMENT_LABELS,
+  ACCOUNTING_POSTING_TRANSFER_DIRECTION_LABELS,
 } from '@/utils/accounting/postingProfiles';
 import type { AccountingEventCoverageItem } from '../../AccountingEventCoverageList';
 
@@ -53,6 +54,14 @@ const buildProfileConditionsSummary = (
     );
   }
 
+  if (conditions.transferDirection && conditions.transferDirection !== 'any') {
+    summary.push(
+      ACCOUNTING_POSTING_TRANSFER_DIRECTION_LABELS[
+        conditions.transferDirection
+      ],
+    );
+  }
+
   return summary.length ? summary.join(' · ') : 'Sin filtros condicionales';
 };
 
@@ -77,7 +86,7 @@ export const PostingProfileInspector = ({
           </EmptyIcon>
           <EmptyTitle>{eventItem.label}</EmptyTitle>
           <EmptyCopy>
-            Selecciona un perfil existente o crea uno nuevo para revisar sus
+            Selecciona una regla existente o crea una nueva para revisar sus
             condiciones y líneas contables.
           </EmptyCopy>
           <Button
@@ -85,7 +94,7 @@ export const PostingProfileInspector = ({
             type="primary"
             onClick={onCreate}
           >
-            Nuevo perfil
+            Nueva regla
           </Button>
         </EmptyState>
       </Panel>
@@ -98,7 +107,7 @@ export const PostingProfileInspector = ({
   const moreMenuItems: MenuProps['items'] = [
     {
       key: 'toggle-status',
-      label: isActive ? 'Desactivar perfil' : 'Activar perfil',
+      label: isActive ? 'Desactivar regla' : 'Activar regla',
       danger: isActive,
       onClick: () =>
         void onToggleStatus(profile.id, isActive ? 'inactive' : 'active'),
@@ -119,14 +128,14 @@ export const PostingProfileInspector = ({
             {!isActive ? (
               <StatusNotice>
                 <AppIcon name="ban" sizeToken="xs" />
-                Perfil inactivo
+                Regla inactiva
               </StatusNotice>
             ) : null}
           </HeaderCopy>
 
           <HeaderActions>
             <Button disabled={loading} onClick={() => onEdit(profile)}>
-              Editar perfil
+              Editar regla
             </Button>
             <Dropdown
               disabled={loading}
@@ -157,7 +166,7 @@ export const PostingProfileInspector = ({
           <SectionHeader>
             <SectionHeading>
               <AppIcon name="circleInfo" sizeToken="sm" tone="muted" />
-              <SectionLabel>Ficha del perfil</SectionLabel>
+              <SectionLabel>Ficha de la regla</SectionLabel>
             </SectionHeading>
           </SectionHeader>
 

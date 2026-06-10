@@ -96,11 +96,11 @@ export function HrCommissionPeriodDetailPanel({
           <VmTabs.Panel id="collaborators">
             <DetailPanelContent>
               <HrDataTable<HrPayrollEmployeeLineRecord>
-                ariaLabel="Lineas por colaborador"
+                ariaLabel="Líneas por colaborador"
                 columns={lineColumns}
                 rows={employeeLines}
                 loading={linesLoading}
-                emptyText="Sin lineas para este corte"
+                emptyText="Sin líneas para este corte"
                 minTableWidth={860}
                 pageSize={8}
               />
@@ -119,7 +119,7 @@ export function HrCommissionPeriodDetailPanel({
                 columns={paymentColumns}
                 rows={payments}
                 loading={paymentsLoading}
-                emptyText="Aun no se han registrado pagos para este corte."
+                emptyText="Aún no se han registrado pagos para este corte."
                 minTableWidth={920}
                 pageSize={5}
               />

@@ -69,6 +69,20 @@ export const LineBreakdownNote = styled.p`
   line-height: var(--ds-line-height-normal);
 `;
 
+export const LineBreakdownFormula = styled.div`
+  padding: var(--ds-space-2) var(--ds-space-3);
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-sm);
+  line-height: var(--ds-line-height-normal);
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: 8px;
+  background: var(--ds-color-bg-subtle);
+
+  strong {
+    font-weight: var(--ds-font-weight-semibold);
+  }
+`;
+
 export const EntryTableScroll = styled.div`
   max-width: 100%;
   overflow-x: auto;
@@ -76,7 +90,7 @@ export const EntryTableScroll = styled.div`
 
 export const EntryTable = styled.table`
   width: 100%;
-  min-width: 1120px;
+  min-width: 1180px;
   border-collapse: collapse;
   color: var(--ds-color-text-primary);
   font-size: var(--ds-font-size-xs);
@@ -109,4 +123,21 @@ export const EmptyBreakdown = styled.div`
   border: 1px dashed var(--ds-color-border-default);
   border-radius: 8px;
   background: var(--ds-color-bg-subtle);
+`;
+
+export const TraceabilityWarning = styled.div`
+  display: grid;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-3);
+  color: #92400e;
+  font-size: var(--ds-font-size-sm);
+  line-height: var(--ds-line-height-normal);
+  border: 1px solid #fbbf24;
+  border-radius: 8px;
+  background: #fffbeb;
+`;
+
+export const TraceabilityWarningTitle = styled.strong`
+  color: #78350f;
+  font-weight: var(--ds-font-weight-semibold);
 `;

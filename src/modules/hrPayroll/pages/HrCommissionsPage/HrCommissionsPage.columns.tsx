@@ -82,7 +82,7 @@ export const commissionEntryColumns: HrTableColumn<HrCommissionEntryRecord>[] = 
       ),
     },
     {
-      title: 'Comision',
+      title: 'Comisión',
       key: 'commissionAmount',
       align: 'right',
       width: 140,
@@ -108,7 +108,8 @@ export const commissionEntryColumns: HrTableColumn<HrCommissionEntryRecord>[] = 
           <VmTooltip>
             <VmTooltip.Trigger>{tag}</VmTooltip.Trigger>
             <VmTooltip.Content>
-              Vincula el colaborador a un empleado de RRHH y recalcula.
+              Vincula el colaborador a un empleado de RRHH y actualiza las
+              comisiones.
             </VmTooltip.Content>
           </VmTooltip>
         );

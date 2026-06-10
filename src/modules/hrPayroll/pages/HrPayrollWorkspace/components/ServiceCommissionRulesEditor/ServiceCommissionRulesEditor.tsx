@@ -138,7 +138,7 @@ export const ServiceCommissionRulesEditor = ({
   return (
     <Section>
       <SectionHeader>
-        <SectionTitle>Comision por servicio</SectionTitle>
+        <SectionTitle>Comisión por servicio</SectionTitle>
         <VmButton
           size="sm"
           variant="secondary"
@@ -152,7 +152,7 @@ export const ServiceCommissionRulesEditor = ({
 
       {normalizedRules.length === 0 ? (
         <EmptyState>
-          {loading ? 'Cargando servicios...' : 'Sin servicios especificos'}
+          {loading ? 'Cargando servicios...' : 'Sin servicios específicos'}
         </EmptyState>
       ) : (
         <RuleList>
@@ -198,7 +198,7 @@ export const ServiceCommissionRulesEditor = ({
                 <RuleField>
                   <RuleLabel>Tipo</RuleLabel>
                   <TypeSelect
-                    aria-label={`Tipo de comision ${index + 1}`}
+                    aria-label={`Tipo de comisión ${index + 1}`}
                     selectedKey={type}
                     isDisabled={disabled}
                     onSelectionChange={(key) =>
@@ -214,7 +214,7 @@ export const ServiceCommissionRulesEditor = ({
                       <VmSelect.Indicator />
                     </VmSelect.Trigger>
                     <VmSelect.Popover>
-                      <TypeListBox aria-label="Tipos de comision">
+                      <TypeListBox aria-label="Tipos de comisión">
                         {Object.entries(COMMISSION_TYPE_LABELS).map(
                           ([value, label]) => (
                             <VmListBox.Item
@@ -235,7 +235,7 @@ export const ServiceCommissionRulesEditor = ({
                 <RuleField>
                   <RuleLabel>Valor</RuleLabel>
                   <RateField
-                    aria-label={`Valor de comision ${index + 1}`}
+                    aria-label={`Valor de comisión ${index + 1}`}
                     minValue={0}
                     step={0.01}
                     value={toFiniteCommissionNumber(rule.rateValue)}

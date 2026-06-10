@@ -21,6 +21,12 @@ describe('chartOfAccounts', () => {
     const payrollWithholdingsAccount = DEFAULT_CHART_OF_ACCOUNTS_TEMPLATE.find(
       (account) => account.systemKey === 'payroll_withholdings_payable',
     );
+    const itbisWithholdingsAccount = DEFAULT_CHART_OF_ACCOUNTS_TEMPLATE.find(
+      (account) => account.systemKey === 'withholding_itbis_payable',
+    );
+    const isrWithholdingsAccount = DEFAULT_CHART_OF_ACCOUNTS_TEMPLATE.find(
+      (account) => account.systemKey === 'withholding_isr_payable',
+    );
     const retainedEarningsAccount = DEFAULT_CHART_OF_ACCOUNTS_TEMPLATE.find(
       (account) => account.systemKey === 'retained_earnings',
     );
@@ -53,6 +59,16 @@ describe('chartOfAccounts', () => {
     });
     expect(payrollWithholdingsAccount).toMatchObject({
       code: '2120',
+      type: 'liability',
+      normalSide: 'credit',
+    });
+    expect(itbisWithholdingsAccount).toMatchObject({
+      code: '2210',
+      type: 'liability',
+      normalSide: 'credit',
+    });
+    expect(isrWithholdingsAccount).toMatchObject({
+      code: '2220',
       type: 'liability',
       normalSide: 'credit',
     });
@@ -119,9 +135,9 @@ describe('chartOfAccounts', () => {
       }),
     ];
 
-    expect(Array.from(collectChartOfAccountDescendantIds(accounts, 'root'))).toEqual(
-      ['child-a', 'child-b'],
-    );
+    expect(
+      Array.from(collectChartOfAccountDescendantIds(accounts, 'root')),
+    ).toEqual(['child-a', 'child-b']);
   });
 
   it('ordena el catalogo por jerarquia y codigo', () => {
@@ -150,8 +166,8 @@ describe('chartOfAccounts', () => {
       }),
     ];
 
-    expect(sortChartOfAccountsForDisplay(accounts).map((account) => account.id)).toEqual(
-      ['assets', 'cash', 'bank', 'income'],
-    );
+    expect(
+      sortChartOfAccountsForDisplay(accounts).map((account) => account.id),
+    ).toEqual(['assets', 'cash', 'bank', 'income']);
   });
 });

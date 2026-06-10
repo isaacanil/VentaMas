@@ -15,8 +15,10 @@ import {
   ModalActions,
   RetroactiveCellStack,
   RetroactiveEmpty,
+  RetroactiveGuidance,
   RetroactiveMutedText,
   RetroactivePrimaryText,
+  RetroactiveReasonText,
   RetroactiveStack,
   RetroactiveSummary,
   RetroactiveSummaryItem,
@@ -60,12 +62,23 @@ const getEntryName = (entry: HrCommissionRetroactiveEntryRecord): string =>
 const getEntryCode = (entry: HrCommissionRetroactiveEntryRecord): string =>
   entry.employeeCode || entry.employeeId || '-';
 
-const getOriginLabel = (entry: HrCommissionRetroactiveEntryRecord): string => {
-  if (entry.originalPeriodLabel) return entry.originalPeriodLabel;
-  if (entry.originalStartDateKey && entry.originalEndDateKey) {
-    return `${entry.originalStartDateKey} - ${entry.originalEndDateKey}`;
+const getOriginName = (entry: HrCommissionRetroactiveEntryRecord): string => {
+  if (entry.originalPeriodLabel) {
+    return entry.originalPeriodLabel.replace(
+      /\s+\d{4}-\d{2}-\d{2}\s+-\s+\d{4}-\d{2}-\d{2}$/,
+      '',
+    );
   }
   return entry.originalPeriodId || '-';
+};
+
+const getOriginRange = (
+  entry: HrCommissionRetroactiveEntryRecord,
+): string | null => {
+  if (!entry.originalStartDateKey || !entry.originalEndDateKey) return null;
+  return `${formatHrDateKey(entry.originalStartDateKey)} - ${formatHrDateKey(
+    entry.originalEndDateKey,
+  )}`;
 };
 
 const getStatusTone = (
@@ -119,6 +132,11 @@ export function HrCommissionRetroactiveEntriesModal({
           </VmAlert>
         ) : null}
 
+        <RetroactiveGuidance>
+          Revisa por qué cada comisión quedó fuera del corte original. Al
+          incluirla, se sumará como ajuste al próximo corte seleccionado.
+        </RetroactiveGuidance>
+
         <RetroactiveSummary>
           <RetroactiveSummaryItem>
             <RetroactiveSummaryLabel>Pendientes</RetroactiveSummaryLabel>
@@ -139,9 +157,13 @@ export function HrCommissionRetroactiveEntriesModal({
             </RetroactiveSummaryValue>
           </RetroactiveSummaryItem>
           <RetroactiveSummaryItem>
-            <RetroactiveSummaryLabel>Ajuste próximo</RetroactiveSummaryLabel>
+            <RetroactiveSummaryLabel>
+              Ajuste seleccionado
+            </RetroactiveSummaryLabel>
             <RetroactiveSummaryValue>
-              {result ? formatMoney(result.retroactiveAdjustmentAmount) : '-'}
+              {result && result.retroactiveAdjustmentAmount > 0
+                ? formatMoney(result.retroactiveAdjustmentAmount)
+                : 'Sin seleccionar'}
             </RetroactiveSummaryValue>
           </RetroactiveSummaryItem>
         </RetroactiveSummary>
@@ -167,6 +189,7 @@ export function HrCommissionRetroactiveEntriesModal({
                   const resolving = actionKey === `retro:resolve:${entry.id}`;
                   const unresolving =
                     actionKey === `retro:unresolve:${entry.id}`;
+                  const originRange = getOriginRange(entry);
                   return (
                     <tr key={entry.id}>
                       <td>{formatHrDateKey(entry.dateKey)}</td>
@@ -190,12 +213,22 @@ export function HrCommissionRetroactiveEntriesModal({
                             {entry.serviceName || entry.serviceId || '-'}
                           </RetroactivePrimaryText>
                           <RetroactiveMutedText>
-                            Corte: {getOriginLabel(entry)}
+                            Corte original: {getOriginName(entry)}
                           </RetroactiveMutedText>
+                          {originRange ? (
+                            <RetroactiveMutedText>
+                              Rango original: {originRange}
+                            </RetroactiveMutedText>
+                          ) : null}
                           <RetroactiveMutedText>
                             Estado:{' '}
                             {STATUS_LABELS[entry.originalPeriodStatus]}
                           </RetroactiveMutedText>
+                          <RetroactiveReasonText>
+                            Motivo: comisión detectada después de generar o
+                            aprobar el corte original; queda pendiente de
+                            incluir en un próximo corte.
+                          </RetroactiveReasonText>
                         </RetroactiveCellStack>
                       </td>
                       <td>

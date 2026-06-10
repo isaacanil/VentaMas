@@ -71,7 +71,7 @@ export const buildEmployeeColumns = ({
     },
   },
   {
-    title: 'Compensacion',
+    title: 'Compensación',
     key: 'compensation',
     width: 220,
     render: (employee) => {
@@ -85,7 +85,7 @@ export const buildEmployeeColumns = ({
             {employee.payType === 'hourly'
               ? formatMoney(employee.hourlyRateAmount, employee.currency)
               : formatMoney(employee.baseSalaryAmount, employee.currency)}
-            {employee.commissionEnabled ? ' + comision' : ''}
+            {employee.commissionEnabled ? ' + comisión' : ''}
           </MutedText>
           {deductionSummary ? <MutedText>{deductionSummary}</MutedText> : null}
         </CellStack>
@@ -164,11 +164,11 @@ export const buildEmployeeColumns = ({
             </VmDropdown.Item>
             <VmDropdown.Item
               id="service-commission"
-              textValue="Comision por servicio"
+              textValue="Comisión por servicio"
             >
               <InlineStack>
                 <PercentageOutlined />
-                <span>Comision por servicio</span>
+                <span>Comisión por servicio</span>
               </InlineStack>
             </VmDropdown.Item>
           </VmDropdown.Menu>

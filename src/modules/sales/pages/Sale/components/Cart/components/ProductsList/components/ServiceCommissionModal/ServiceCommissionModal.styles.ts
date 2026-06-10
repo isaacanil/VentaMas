@@ -38,6 +38,23 @@ export const StatusLine = styled.div`
   font-size: var(--ds-font-size-sm);
 `;
 
+export const CommissionNotice = styled.p`
+  margin: 0;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-xs);
+  line-height: var(--ds-line-height-normal);
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-color-bg-subtle);
+
+  &[data-tone='warning'] {
+    border-color: #fde68a;
+    background: #fffbeb;
+    color: #92400e;
+  }
+`;
+
 export const FieldsGrid = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(112px, 0.6fr);
@@ -85,6 +102,62 @@ export const LoadingItem = styled(VmListBox.Item)`
   align-items: center;
 `;
 
+export const CollaboratorOption = styled.div`
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+`;
+
+export const CollaboratorOptionTitle = styled.div`
+  display: flex;
+  gap: var(--ds-space-2);
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+`;
+
+export const CollaboratorOptionName = styled.span`
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+export const CollaboratorOptionBadge = styled.span`
+  flex: 0 0 auto;
+  padding: 1px var(--ds-space-2);
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-full);
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-medium);
+  background: var(--ds-color-bg-subtle);
+
+  &[data-tone='success'] {
+    border-color: #a7f3d0;
+    color: #047857;
+    background: #ecfdf5;
+  }
+
+  &[data-tone='warning'] {
+    border-color: #fde68a;
+    color: #92400e;
+    background: #fffbeb;
+  }
+`;
+
+export const CollaboratorOptionMeta = styled.span`
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
 export const RateField = styled(VmNumberField)`
   width: 100%;
   min-width: 0;
@@ -113,7 +186,7 @@ export const RateUnit = styled.span`
 
 export const Summary = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
   gap: var(--ds-space-2);
 
   @media (width <= 520px) {

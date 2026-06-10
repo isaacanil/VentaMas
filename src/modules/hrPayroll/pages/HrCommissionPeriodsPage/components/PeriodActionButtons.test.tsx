@@ -34,7 +34,7 @@ describe('PeriodActionButtons', () => {
     expect(screen.getByText('Pago parcial')).toBeInTheDocument();
   });
 
-  it('offers approval reversal only for approved unpaid periods', () => {
+  it('moves approval reversal into a secondary actions menu', () => {
     render(
       <PeriodActionButtons
         actionKey={null}
@@ -50,7 +50,10 @@ describe('PeriodActionButtons', () => {
 
     expect(screen.getByText('Listo para pagos')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /revertir aprobación/i }),
+      screen.getByRole('button', { name: /más acciones/i }),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /revertir aprobación/i }),
+    ).not.toBeInTheDocument();
   });
 });

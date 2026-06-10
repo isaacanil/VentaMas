@@ -116,9 +116,25 @@ const normalizeMonetarySnapshot = (value) => {
   const record = asRecord(value);
   return {
     amount: roundAccountingAmount(record.amount),
+    subtotalAmount: roundAccountingAmount(record.subtotalAmount),
     taxAmount: roundAccountingAmount(record.taxAmount),
+    withholdingITBISAmount: roundAccountingAmount(record.withholdingITBISAmount),
+    withholdingISRAmount: roundAccountingAmount(record.withholdingISRAmount),
+    netPayableAmount: roundAccountingAmount(record.netPayableAmount),
     functionalAmount: roundAccountingAmount(record.functionalAmount),
+    functionalSubtotalAmount: roundAccountingAmount(
+      record.functionalSubtotalAmount,
+    ),
     functionalTaxAmount: roundAccountingAmount(record.functionalTaxAmount),
+    functionalWithholdingITBISAmount: roundAccountingAmount(
+      record.functionalWithholdingITBISAmount,
+    ),
+    functionalWithholdingISRAmount: roundAccountingAmount(
+      record.functionalWithholdingISRAmount,
+    ),
+    functionalNetPayableAmount: roundAccountingAmount(
+      record.functionalNetPayableAmount,
+    ),
   };
 };
 

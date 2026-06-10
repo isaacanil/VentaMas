@@ -18,9 +18,15 @@ const {
   ACCOUNTING_MANUAL_ENTRIES,
   ACCOUNTING_REPORTS,
   ACCOUNTING_FISCAL_COMPLIANCE,
+  ACCOUNTING_MONITOR,
   ACCOUNTING_PERIOD_CLOSE,
 } = ROUTES_NAME.ACCOUNTING_TERM;
 const { HOME } = ROUTES_NAME.BASIC_TERM;
+
+const ACCOUNTING_ROUTE_ACCESS = {
+  requiredCapabilities: ['accountingRead'],
+  requiredCapabilitiesMode: 'any' as const,
+};
 
 const withAccountingGate = (element: JSX.Element) => (
   <BusinessFeatureRouteGate feature="accounting" fallbackTo={HOME}>
@@ -32,30 +38,42 @@ const Routes: AppRoute[] = [
   {
     path: ACCOUNTING,
     element: withAccountingGate(<AccountingWorkspace />),
+    ...ACCOUNTING_ROUTE_ACCESS,
   },
   {
     path: ACCOUNTING_JOURNAL_BOOK,
     element: withAccountingGate(<AccountingWorkspace />),
+    ...ACCOUNTING_ROUTE_ACCESS,
   },
   {
     path: ACCOUNTING_GENERAL_LEDGER,
     element: withAccountingGate(<AccountingWorkspace />),
+    ...ACCOUNTING_ROUTE_ACCESS,
   },
   {
     path: ACCOUNTING_MANUAL_ENTRIES,
     element: withAccountingGate(<AccountingWorkspace />),
+    ...ACCOUNTING_ROUTE_ACCESS,
   },
   {
     path: ACCOUNTING_REPORTS,
     element: withAccountingGate(<AccountingWorkspace />),
+    ...ACCOUNTING_ROUTE_ACCESS,
   },
   {
     path: ACCOUNTING_FISCAL_COMPLIANCE,
     element: withAccountingGate(<AccountingWorkspace />),
+    ...ACCOUNTING_ROUTE_ACCESS,
+  },
+  {
+    path: ACCOUNTING_MONITOR,
+    element: withAccountingGate(<AccountingWorkspace />),
+    ...ACCOUNTING_ROUTE_ACCESS,
   },
   {
     path: ACCOUNTING_PERIOD_CLOSE,
     element: withAccountingGate(<AccountingWorkspace />),
+    ...ACCOUNTING_ROUTE_ACCESS,
   },
   {
     path: '/contabilidad',
@@ -80,6 +98,10 @@ const Routes: AppRoute[] = [
   {
     path: '/contabilidad/compliance-fiscal',
     element: <Navigate to={ACCOUNTING_FISCAL_COMPLIANCE} replace />,
+  },
+  {
+    path: '/contabilidad/monitor',
+    element: <Navigate to={ACCOUNTING_MONITOR} replace />,
   },
   {
     path: '/contabilidad/cierre-periodo',

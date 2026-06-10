@@ -19,6 +19,7 @@ import {
   ACCOUNTING_POSTING_PROFILE_STATUS_LABELS,
   ACCOUNTING_POSTING_SETTLEMENT_KIND_LABELS,
   ACCOUNTING_POSTING_TAX_TREATMENT_LABELS,
+  ACCOUNTING_POSTING_TRANSFER_DIRECTION_LABELS,
   type AccountingPostingProfileDraft,
 } from '@/utils/accounting/postingProfiles';
 
@@ -118,6 +119,14 @@ const buildProfileConditionsSummary = (
   if (conditions.taxTreatment && conditions.taxTreatment !== 'any') {
     summary.push(
       ACCOUNTING_POSTING_TAX_TREATMENT_LABELS[conditions.taxTreatment],
+    );
+  }
+
+  if (conditions.transferDirection && conditions.transferDirection !== 'any') {
+    summary.push(
+      ACCOUNTING_POSTING_TRANSFER_DIRECTION_LABELS[
+        conditions.transferDirection
+      ],
     );
   }
 
@@ -256,7 +265,7 @@ export const PostingProfilesList = ({
     <Workspace>
       <HeaderBar>
         <HeaderCopy>
-          <Title>Perfiles contables</Title>
+          <Title>Reglas de contabilización</Title>
           <Subtitle>
             Plantillas de contabilización automática · {activeProfiles.length}{' '}
             activas de {postingProfiles.length}
@@ -266,7 +275,7 @@ export const PostingProfilesList = ({
         <HeaderActions>
           <Button
             onClick={() =>
-              void message.info('Exportación de perfiles aún no disponible.')
+              void message.info('Exportación de reglas aún no disponible.')
             }
           >
             Exportar
@@ -277,21 +286,21 @@ export const PostingProfilesList = ({
             icon={<PlusOutlined />}
             onClick={handleCreateProfile}
           >
-            Nuevo perfil
+            Nueva regla
           </Button>
         </HeaderActions>
       </HeaderBar>
 
       <MetricGrid>
         <MetricCard>
-          <MetricLabel>Perfiles activos</MetricLabel>
+          <MetricLabel>Reglas activas</MetricLabel>
           <MetricValue>{activeProfiles.length}</MetricValue>
           <MetricMeta>{inactiveProfilesCount} inactivos</MetricMeta>
         </MetricCard>
         <MetricCard>
           <MetricLabel>Líneas configuradas</MetricLabel>
           <MetricValue>{configuredLinesCount}</MetricValue>
-          <MetricMeta>{postingProfiles.length} perfiles</MetricMeta>
+          <MetricMeta>{postingProfiles.length} reglas</MetricMeta>
         </MetricCard>
         <MetricCard>
           <MetricLabel>Módulos conectados</MetricLabel>
@@ -319,7 +328,7 @@ export const PostingProfilesList = ({
       <FiltersBar>
         <Search
           allowClear
-          placeholder="Buscar perfil..."
+          placeholder="Buscar regla..."
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
@@ -359,14 +368,14 @@ export const PostingProfilesList = ({
       <ContentGrid>
         <ListPanel>
           <PanelHeader>
-            <PanelTitle>Perfiles</PanelTitle>
+            <PanelTitle>Reglas</PanelTitle>
             <PanelMeta>{filteredProfiles.length} resultados</PanelMeta>
           </PanelHeader>
 
           <ProfilesList aria-busy={loading}>
             {loading && postingProfiles.length === 0 ? (
               <LoadingState>
-                <Spin tip="Cargando perfiles contables..." />
+                <Spin tip="Cargando reglas de contabilización..." />
               </LoadingState>
             ) : filteredProfiles.length ? (
               filteredProfiles.map((profile) => {
@@ -412,7 +421,7 @@ export const PostingProfilesList = ({
               <EmptyState>
                 <Empty
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  description="No hay perfiles para los filtros actuales."
+                  description="No hay reglas para los filtros actuales."
                 />
               </EmptyState>
             )}
@@ -443,7 +452,7 @@ export const PostingProfilesList = ({
             <DetailEmpty>
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="Selecciona un perfil para ver la plantilla contable."
+                description="Selecciona una regla para ver la plantilla contable."
               />
             </DetailEmpty>
           )}
@@ -489,7 +498,7 @@ const ProfileDetail = ({
           </DetailTitle>
           <DetailDescription>
             {profile.description ??
-              'Perfil automático para generar el asiento desde el documento origen.'}
+              'Regla automática para generar el asiento desde el documento origen.'}
           </DetailDescription>
         </DetailTitleGroup>
         <DetailActions>
@@ -564,7 +573,7 @@ const ProfileDetail = ({
           </tbody>
         </TemplateTable>
         <TemplateNote>
-          Las variables se resuelven al ejecutar el perfil con datos del
+          Las variables se resuelven al ejecutar la regla con datos del
           documento origen.
         </TemplateNote>
       </TemplateSection>

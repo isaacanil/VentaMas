@@ -6,6 +6,7 @@ import type {
   AccountingPostingCondition,
   AccountingPostingProfile,
   BankAccount,
+  CashAccount,
   ChartOfAccount,
   ChartOfAccountNormalSide,
   ChartOfAccountType,
@@ -31,6 +32,7 @@ export type AccountingWorkspacePanelKey =
   | 'manual-entries'
   | 'financial-reports'
   | 'fiscal-compliance'
+  | 'accounting-monitor'
   | 'period-close';
 
 export interface AccountingPeriodClosure {
@@ -39,6 +41,31 @@ export interface AccountingPeriodClosure {
   closedAt: unknown;
   closedBy: string | null;
   note: string | null;
+}
+
+export interface AccountingProjectionDeadLetter {
+  id: string;
+  businessId: string | null;
+  eventId: string;
+  eventType: AccountingEventType | null;
+  sourceType: string | null;
+  sourceId: string | null;
+  sourceDocumentType: string | null;
+  sourceDocumentId: string | null;
+  projectionStatus: 'failed' | 'pending_account_mapping' | 'pending' | string;
+  journalEntryId: string | null;
+  attemptCount: number;
+  replayCount: number;
+  retryable: boolean;
+  lastAttemptAt: unknown;
+  lastReplayRequestedAt: unknown;
+  lastReplayRequestedBy: string | null;
+  lastError: {
+    code?: string | null;
+    message?: string | null;
+    details?: Record<string, unknown>;
+  } | null;
+  updatedAt: unknown;
 }
 
 export interface AccountingLedgerRecord {
@@ -270,6 +297,61 @@ const CASH_PAYMENT_METHODS = new Set(['cash']);
 const BANK_PAYMENT_METHODS = new Set(['card', 'transfer']);
 const OTHER_PAYMENT_METHODS = new Set(['creditNote', 'supplierCreditNote']);
 
+const normalizeTreasuryLedgerType = (value: unknown): 'cash' | 'bank' | null =>
+  value === 'cash' || value === 'bank' ? value : null;
+
+const resolveTreasuryLedgerRecord = (
+  event: AccountingEvent,
+  role: 'source' | 'destination',
+) => {
+  const payload = asRecord(event.payload);
+  const ledgerRecord = asRecord(role === 'source' ? payload.from : payload.to);
+  const type = normalizeTreasuryLedgerType(ledgerRecord.type);
+
+  if (!type) {
+    return null;
+  }
+
+  return {
+    type,
+    bankAccountId: toCleanString(ledgerRecord.bankAccountId),
+    cashAccountId:
+      toCleanString(ledgerRecord.cashAccountId) ??
+      toCleanString(ledgerRecord.cashCountId),
+  };
+};
+
+const resolveTransferDirectionFromLedgers = (
+  fromLedger: Record<string, unknown>,
+  toLedger: Record<string, unknown>,
+) => {
+  const fromType = normalizeTreasuryLedgerType(fromLedger.type);
+  const toType = normalizeTreasuryLedgerType(toLedger.type);
+  if (fromType === 'cash' && toType === 'bank') return 'cash_to_bank';
+  if (fromType === 'bank' && toType === 'cash') return 'bank_to_cash';
+  if (fromType === 'bank' && toType === 'bank') return 'bank_to_bank';
+  if (fromType === 'cash' && toType === 'cash') return 'cash_to_cash';
+  return 'any';
+};
+
+const resolveEventTransferDirection = (event: AccountingEvent) => {
+  const payload = asRecord(event.payload);
+  const explicitDirection = toCleanString(payload.transferDirection);
+  if (
+    explicitDirection === 'cash_to_bank' ||
+    explicitDirection === 'bank_to_cash' ||
+    explicitDirection === 'bank_to_bank' ||
+    explicitDirection === 'cash_to_cash'
+  ) {
+    return explicitDirection;
+  }
+
+  return resolveTransferDirectionFromLedgers(
+    asRecord(payload.from),
+    asRecord(payload.to),
+  );
+};
+
 const resolveSaleSettlementContext = (event: AccountingEvent) => {
   const payload = asRecord(event.payload);
   const monetary = asRecord(event.monetary);
@@ -318,7 +400,10 @@ const resolveSaleSettlementBreakdown = (event: AccountingEvent) => {
   const breakdown = paymentMethods.reduce(
     (accumulator, method) => {
       const methodRecord = asRecord(method);
-      const amount = resolvePaymentMethodFunctionalAmount(method, functionalRate);
+      const amount = resolvePaymentMethodFunctionalAmount(
+        method,
+        functionalRate,
+      );
       if (amount <= 0) {
         return accumulator;
       }
@@ -424,7 +509,10 @@ const resolvePayablePaymentBreakdown = (event: AccountingEvent) => {
   const breakdown = paymentMethods.reduce(
     (accumulator, method) => {
       const methodRecord = asRecord(method);
-      const amount = resolvePaymentMethodFunctionalAmount(method, functionalRate);
+      const amount = resolvePaymentMethodFunctionalAmount(
+        method,
+        functionalRate,
+      );
       if (amount <= 0) {
         return accumulator;
       }
@@ -542,7 +630,8 @@ const resolvePayrollAccrualAmounts = (event: AccountingEvent) => {
 };
 
 const resolveSaleBankSettlementAllocations = (event: AccountingEvent) => {
-  const { functionalRate, paymentMethods } = resolveSaleSettlementContext(event);
+  const { functionalRate, paymentMethods } =
+    resolveSaleSettlementContext(event);
   const allocationsByBankAccountId = new Map<string, number>();
   let unassignedAmount = 0;
 
@@ -682,6 +771,7 @@ const resolveEventContext = (event: AccountingEvent) => {
     settlementKind:
       settlementKindCandidate === 'cash' ||
       settlementKindCandidate === 'bank' ||
+      settlementKindCandidate === 'mixed' ||
       settlementKindCandidate === 'other'
         ? settlementKindCandidate
         : 'any',
@@ -698,6 +788,7 @@ const resolveEventContext = (event: AccountingEvent) => {
       settlementTimingCandidate === 'deferred'
         ? settlementTimingCandidate
         : 'any',
+    transferDirection: resolveEventTransferDirection(event),
   } satisfies Required<AccountingPostingCondition>;
 };
 
@@ -748,6 +839,14 @@ const matchesProfileConditions = (
     return false;
   }
 
+  if (
+    conditions.transferDirection &&
+    conditions.transferDirection !== 'any' &&
+    conditions.transferDirection !== eventContext.transferDirection
+  ) {
+    return false;
+  }
+
   return true;
 };
 
@@ -771,7 +870,9 @@ const resolveEventBankAccountId = (event: AccountingEvent): string | null => {
         return BANK_PAYMENT_METHODS.has(methodCode);
       })
       .map((method) => toCleanString(method?.bankAccountId))
-      .filter((bankAccountId): bankAccountId is string => Boolean(bankAccountId)),
+      .filter((bankAccountId): bankAccountId is string =>
+        Boolean(bankAccountId),
+      ),
   );
 
   return bankAccountIds.size === 1 ? Array.from(bankAccountIds)[0] : null;
@@ -783,17 +884,56 @@ const resolveAccountForProjectedLine = ({
   accountsById,
   accountsBySystemKey,
   bankAccountsById,
+  cashAccountsById,
   event,
+  line,
 }: {
   accountId?: string | null;
   accountSystemKey?: string | null;
   accountsById: Map<string, ChartOfAccount>;
   accountsBySystemKey: Map<string, ChartOfAccount>;
   bankAccountsById: Map<string, BankAccount>;
+  cashAccountsById: Map<string, CashAccount>;
   event: AccountingEvent;
+  line: AccountingPostingProfile['linesTemplate'][number];
 }): ChartOfAccount | null => {
   const account = accountId ? (accountsById.get(accountId) ?? null) : null;
   const effectiveSystemKey = accountSystemKey ?? account?.systemKey ?? null;
+  const treasuryRole = toCleanString(asRecord(line.metadata).treasuryRole);
+  if (treasuryRole === 'source' || treasuryRole === 'destination') {
+    const ledger = resolveTreasuryLedgerRecord(event, treasuryRole);
+    if (!ledger) {
+      return null;
+    }
+
+    if (ledger.type === 'bank') {
+      return effectiveSystemKey === 'bank'
+        ? resolveBankChartAccount({
+            accountsById,
+            bankAccountId: ledger.bankAccountId,
+            bankAccountsById,
+          })
+        : null;
+    }
+
+    if (ledger.type === 'cash') {
+      if (effectiveSystemKey !== 'cash') {
+        return null;
+      }
+
+      const cashChartAccount = resolveCashChartAccount({
+        accountsById,
+        cashAccountId: ledger.cashAccountId,
+        cashAccountsById,
+      });
+      if (cashChartAccount) {
+        return cashChartAccount;
+      }
+
+      return null;
+    }
+  }
+
   if (effectiveSystemKey === 'bank') {
     const bankAccountId = resolveEventBankAccountId(event);
     const bankAccount = bankAccountId
@@ -808,7 +948,12 @@ const resolveAccountForProjectedLine = ({
     }
   }
 
-  return account ?? (accountSystemKey ? (accountsBySystemKey.get(accountSystemKey) ?? null) : null);
+  return (
+    account ??
+    (accountSystemKey
+      ? (accountsBySystemKey.get(accountSystemKey) ?? null)
+      : null)
+  );
 };
 
 const resolveBankChartAccount = ({
@@ -830,6 +975,28 @@ const resolveBankChartAccount = ({
 
   return bankChartAccount && bankAccount?.status === 'active'
     ? bankChartAccount
+    : null;
+};
+
+const resolveCashChartAccount = ({
+  accountsById,
+  cashAccountId,
+  cashAccountsById,
+}: {
+  accountsById: Map<string, ChartOfAccount>;
+  cashAccountId: string | null;
+  cashAccountsById: Map<string, CashAccount>;
+}): ChartOfAccount | null => {
+  const cashAccount = cashAccountId
+    ? (cashAccountsById.get(cashAccountId) ?? null)
+    : null;
+  const cashChartAccountId = toCleanString(cashAccount?.chartOfAccountId);
+  const cashChartAccount = cashChartAccountId
+    ? (accountsById.get(cashChartAccountId) ?? null)
+    : null;
+
+  return cashChartAccount && cashAccount?.status === 'active'
+    ? cashChartAccount
     : null;
 };
 
@@ -890,6 +1057,20 @@ const resolveEventAmountSource = (
   const tax =
     toFiniteAmount(monetary.functionalTaxAmount) ||
     toFiniteAmount(monetary.taxAmount);
+  const subtotal =
+    toFiniteAmount(monetary.functionalSubtotalAmount) ||
+    toFiniteAmount(monetary.subtotalAmount) ||
+    Math.max(total - tax, 0);
+  const withholdingITBIS =
+    toFiniteAmount(monetary.functionalWithholdingITBISAmount) ||
+    toFiniteAmount(monetary.withholdingITBISAmount);
+  const withholdingISR =
+    toFiniteAmount(monetary.functionalWithholdingISRAmount) ||
+    toFiniteAmount(monetary.withholdingISRAmount);
+  const netPayable =
+    toFiniteAmount(monetary.functionalNetPayableAmount) ||
+    toFiniteAmount(monetary.netPayableAmount) ||
+    Math.max(total - withholdingITBIS - withholdingISR, 0);
   const netSales = Math.max(total - tax, 0);
   const saleSettlement = resolveSaleSettlementBreakdown(event);
   const receivablePayment = resolveReceivablePaymentAmounts(event);
@@ -915,6 +1096,21 @@ const resolveEventAmountSource = (
       return saleSettlement.other;
     case 'credit_note_net_total':
       return netSales;
+    case 'purchase_subtotal':
+    case 'expense_subtotal':
+      return subtotal;
+    case 'purchase_tax':
+    case 'expense_tax':
+      return tax;
+    case 'purchase_net_payable':
+    case 'expense_net_payable':
+      return netPayable;
+    case 'purchase_withholding_itbis':
+    case 'expense_withholding_itbis':
+      return withholdingITBIS;
+    case 'purchase_withholding_isr':
+    case 'expense_withholding_isr':
+      return withholdingISR;
     case 'accounts_receivable_applied_amount':
       return receivablePayment.applied;
     case 'accounts_receivable_collected_amount':
@@ -985,6 +1181,7 @@ const buildProjectedLine = ({
   amountSource: line.amountSource,
   reference: event.sourceDocumentId ?? event.sourceId ?? event.id,
   metadata: {
+    ...asRecord(line.metadata),
     projectedFromProfileId: profile.id,
     ...metadata,
   },
@@ -994,130 +1191,137 @@ const buildProjectedLines = ({
   accountsById,
   accountsBySystemKey,
   bankAccountsById,
+  cashAccountsById,
   event,
   profile,
 }: {
   accountsById: Map<string, ChartOfAccount>;
   accountsBySystemKey: Map<string, ChartOfAccount>;
   bankAccountsById: Map<string, BankAccount>;
+  cashAccountsById: Map<string, CashAccount>;
   event: AccountingEvent;
   profile: AccountingPostingProfile;
 }): JournalEntryLine[] =>
   profile.linesTemplate
     .flatMap((line, index) => {
-    const amount = resolveEventAmountSource(event, line.amountSource);
-    if (line.omitIfZero && amount === 0) {
-      return [];
-    }
-
-    const templateAccount = line.accountId
-      ? (accountsById.get(line.accountId) ?? null)
-      : null;
-    const effectiveSystemKey =
-      line.accountSystemKey ?? templateAccount?.systemKey ?? null;
-    if (
-      effectiveSystemKey === 'bank' &&
-      line.amountSource === 'sale_bank_received'
-    ) {
-      const bankSettlement = resolveSaleBankSettlementAllocations(event);
-      if (bankSettlement.allocations.length) {
-        const allocationLines = bankSettlement.allocations.flatMap(
-          (allocation) => {
-            const account = resolveBankChartAccount({
-              accountsById,
-              bankAccountId: allocation.bankAccountId,
-              bankAccountsById,
-            });
-            if (!account) {
-              return [];
-            }
-
-            return [
-              buildProjectedLine({
-                account,
-                amount: allocation.amount,
-                event,
-                line,
-                lineNumber: index + 1,
-                metadata: {
-                  bankAccountId: allocation.bankAccountId,
-                  splitFromAmountSource: line.amountSource,
-                },
-                profile,
-              }),
-            ];
-          },
-        );
-
-        if (bankSettlement.unassignedAmount <= 0) {
-          return allocationLines;
-        }
-
-        const fallbackAccount = resolveAccountForProjectedLine({
-          accountId: line.accountId,
-          accountSystemKey: line.accountSystemKey,
-          accountsById,
-          accountsBySystemKey,
-          bankAccountsById,
-          event,
-        });
-        if (!fallbackAccount) {
-          return allocationLines;
-        }
-
-        return [
-          ...allocationLines,
-          buildProjectedLine({
-            account: fallbackAccount,
-            amount: bankSettlement.unassignedAmount,
-            event,
-            line,
-            lineNumber: index + 1,
-            metadata: {
-              splitFromAmountSource: line.amountSource,
-              splitUnassignedBankAmount: true,
-            },
-            profile,
-          }),
-        ];
+      const amount = resolveEventAmountSource(event, line.amountSource);
+      if (line.omitIfZero && amount === 0) {
+        return [];
       }
-    }
 
-    const account = resolveAccountForProjectedLine({
-      accountId: line.accountId,
-      accountSystemKey: line.accountSystemKey,
-      accountsById,
-      accountsBySystemKey,
-      bankAccountsById,
-      event,
-    });
+      const templateAccount = line.accountId
+        ? (accountsById.get(line.accountId) ?? null)
+        : null;
+      const effectiveSystemKey =
+        line.accountSystemKey ?? templateAccount?.systemKey ?? null;
+      if (
+        effectiveSystemKey === 'bank' &&
+        line.amountSource === 'sale_bank_received'
+      ) {
+        const bankSettlement = resolveSaleBankSettlementAllocations(event);
+        if (bankSettlement.allocations.length) {
+          const allocationLines = bankSettlement.allocations.flatMap(
+            (allocation) => {
+              const account = resolveBankChartAccount({
+                accountsById,
+                bankAccountId: allocation.bankAccountId,
+                bankAccountsById,
+              });
+              if (!account) {
+                return [];
+              }
 
-    return [
-      account
-        ? buildProjectedLine({
-            account,
-            amount,
+              return [
+                buildProjectedLine({
+                  account,
+                  amount: allocation.amount,
+                  event,
+                  line,
+                  lineNumber: index + 1,
+                  metadata: {
+                    bankAccountId: allocation.bankAccountId,
+                    splitFromAmountSource: line.amountSource,
+                  },
+                  profile,
+                }),
+              ];
+            },
+          );
+
+          if (bankSettlement.unassignedAmount <= 0) {
+            return allocationLines;
+          }
+
+          const fallbackAccount = resolveAccountForProjectedLine({
+            accountId: line.accountId,
+            accountSystemKey: line.accountSystemKey,
+            accountsById,
+            accountsBySystemKey,
+            bankAccountsById,
+            cashAccountsById,
             event,
             line,
-            lineNumber: index + 1,
-            profile,
-          })
-        : {
-            lineNumber: index + 1,
-            accountId: line.accountId ?? `preview-${index + 1}`,
-            accountCode: line.accountCode ?? null,
-            accountName: line.accountName ?? null,
-            accountSystemKey: line.accountSystemKey ?? null,
-            description: line.description ?? profile.name,
-            debit: line.side === 'debit' ? amount : 0,
-            credit: line.side === 'credit' ? amount : 0,
-            amountSource: line.amountSource,
-            reference: event.sourceDocumentId ?? event.sourceId ?? event.id,
-            metadata: {
-              projectedFromProfileId: profile.id,
+          });
+          if (!fallbackAccount) {
+            return allocationLines;
+          }
+
+          return [
+            ...allocationLines,
+            buildProjectedLine({
+              account: fallbackAccount,
+              amount: bankSettlement.unassignedAmount,
+              event,
+              line,
+              lineNumber: index + 1,
+              metadata: {
+                splitFromAmountSource: line.amountSource,
+                splitUnassignedBankAmount: true,
+              },
+              profile,
+            }),
+          ];
+        }
+      }
+
+      const account = resolveAccountForProjectedLine({
+        accountId: line.accountId,
+        accountSystemKey: line.accountSystemKey,
+        accountsById,
+        accountsBySystemKey,
+        bankAccountsById,
+        cashAccountsById,
+        event,
+        line,
+      });
+
+      return [
+        account
+          ? buildProjectedLine({
+              account,
+              amount,
+              event,
+              line,
+              lineNumber: index + 1,
+              profile,
+            })
+          : {
+              lineNumber: index + 1,
+              accountId: line.accountId ?? `preview-${index + 1}`,
+              accountCode: line.accountCode ?? null,
+              accountName: line.accountName ?? null,
+              accountSystemKey: line.accountSystemKey ?? null,
+              description: line.description ?? profile.name,
+              debit: line.side === 'debit' ? amount : 0,
+              credit: line.side === 'credit' ? amount : 0,
+              amountSource: line.amountSource,
+              reference: event.sourceDocumentId ?? event.sourceId ?? event.id,
+              metadata: {
+                ...asRecord(line.metadata),
+                projectedFromProfileId: profile.id,
+              },
             },
-          },
-    ];
+      ];
     })
     .map((line, index) => ({
       ...line,
@@ -1190,6 +1394,45 @@ export const formatAccountingPeriod = (periodKey: string): string =>
 export const createManualLineId = (): string =>
   `manual-line-${Math.random().toString(36).slice(2, 10)}`;
 
+export const normalizeAccountingProjectionDeadLetterRecord = (
+  id: string,
+  businessId: string,
+  value: unknown,
+): AccountingProjectionDeadLetter => {
+  const record = asRecord(value);
+  const lastError = asRecord(record.lastError);
+
+  return {
+    id,
+    businessId: toCleanString(record.businessId) ?? businessId,
+    eventId: toCleanString(record.eventId) ?? id,
+    eventType: toCleanString(record.eventType) as AccountingEventType | null,
+    sourceType: toCleanString(record.sourceType),
+    sourceId: toCleanString(record.sourceId),
+    sourceDocumentType: toCleanString(record.sourceDocumentType),
+    sourceDocumentId: toCleanString(record.sourceDocumentId),
+    projectionStatus:
+      toCleanString(record.projectionStatus) ??
+      toCleanString(asRecord(record.projection).status) ??
+      'pending',
+    journalEntryId: toCleanString(record.journalEntryId),
+    attemptCount: Math.max(0, Math.trunc(toFiniteAmount(record.attemptCount))),
+    replayCount: Math.max(0, Math.trunc(toFiniteAmount(record.replayCount))),
+    retryable: record.retryable !== false,
+    lastAttemptAt: record.lastAttemptAt ?? null,
+    lastReplayRequestedAt: record.lastReplayRequestedAt ?? null,
+    lastReplayRequestedBy: toCleanString(record.lastReplayRequestedBy),
+    lastError: Object.keys(lastError).length
+      ? {
+          code: toCleanString(lastError.code),
+          message: toCleanString(lastError.message),
+          details: asRecord(lastError.details),
+        }
+      : null,
+    updatedAt: record.updatedAt ?? null,
+  };
+};
+
 export const buildWorkspaceSummary = (
   records: AccountingLedgerRecord[],
   closedPeriods: AccountingPeriodClosure[],
@@ -1208,6 +1451,7 @@ export const buildWorkspaceSummary = (
 export const buildLedgerRecords = ({
   accounts,
   bankAccounts = [],
+  cashAccounts = [],
   events,
   journalEntries,
   postingProfiles,
@@ -1215,6 +1459,7 @@ export const buildLedgerRecords = ({
 }: {
   accounts: ChartOfAccount[];
   bankAccounts?: BankAccount[];
+  cashAccounts?: CashAccount[];
   events: AccountingEvent[];
   journalEntries: JournalEntry[];
   postingProfiles: AccountingPostingProfile[];
@@ -1230,6 +1475,9 @@ export const buildLedgerRecords = ({
   );
   const bankAccountsById = new Map(
     bankAccounts.map((account) => [account.id, account]),
+  );
+  const cashAccountsById = new Map(
+    cashAccounts.map((account) => [account.id, account]),
   );
   const entriesById = new Map(
     journalEntries.map((entry) => [entry.id, entry] as const),
@@ -1255,6 +1503,7 @@ export const buildLedgerRecords = ({
             accountsById,
             accountsBySystemKey,
             bankAccountsById,
+            cashAccountsById,
             event,
             profile,
           })
@@ -1295,7 +1544,7 @@ export const buildLedgerRecords = ({
       entryDate: effectiveDate,
       periodKey,
       sourceKind: 'automatic',
-      sourceLabel: journalEntry ? 'Automatizado' : 'Perfil contable',
+      sourceLabel: journalEntry ? 'Automatizado' : 'Regla de contabilización',
       detailMode: journalEntry ? 'posted' : 'projected',
       eventType: event.eventType,
       moduleKey,

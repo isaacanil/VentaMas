@@ -57,18 +57,25 @@ import {
   ReportTableHeader,
   SummaryCard,
   SummaryGrid,
+  SummaryHint,
   SummaryLabel,
   SummaryValue,
   TableState,
   TableText,
+  TableTextStack,
   Title,
   TitleBlock,
+  SmallMutedText,
 } from './ServiceCommissionsReport.styles';
 import {
   type CollaboratorOption,
   formatReportDate as formatDate,
   formatReportMoney as formatMoney,
   fromDateKey,
+  getCommissionBaseLabel,
+  getCommissionFormulaLabel,
+  getCommissionRateLabel,
+  getCommissionRuleLabel,
   getBusinessId,
   getCollaboratorLabel,
   getInvoiceLabel,
@@ -107,6 +114,7 @@ export const ServiceCommissionsReport = () => {
     }).map(({ label, value }): CollaboratorOption => ({ label, value }));
   }, [collaborators]);
   const collaboratorFilterLoading = collaboratorsLoading;
+  const summaryLoading = loading && rows.length === 0;
 
   const summary = useMemo(
     () =>
@@ -183,8 +191,8 @@ export const ServiceCommissionsReport = () => {
           <TitleBlock>
             <Title>Comisiones de servicios</Title>
             <Description>
-              Consolidado interno por rango de fecha, colaborador y facturas
-              relacionadas.
+              Consolidado interno por rango de fecha, colaborador, base
+              comisionable y regla aplicada.
             </Description>
           </TitleBlock>
 
@@ -206,7 +214,7 @@ export const ServiceCommissionsReport = () => {
                 }
               >
                 <TeamOutlined />
-                Gestionar en RRHH
+                Configurar colaboradores
               </HeaderActionButton>
             </HeaderActions>
 
@@ -331,16 +339,27 @@ export const ServiceCommissionsReport = () => {
 
         <SummaryGrid>
           <SummaryCard>
-            <SummaryLabel>Total vendido</SummaryLabel>
-            <SummaryValue>{formatMoney(summary.totalSold)}</SummaryValue>
+            <SummaryLabel>Base comisionable</SummaryLabel>
+            <SummaryValue>
+              {summaryLoading ? 'Cargando...' : formatMoney(summary.totalSold)}
+            </SummaryValue>
+            <SummaryHint>Subtotal sin ITBIS y después de descuentos.</SummaryHint>
           </SummaryCard>
           <SummaryCard>
             <SummaryLabel>Total comisión</SummaryLabel>
-            <SummaryValue>{formatMoney(summary.totalCommission)}</SummaryValue>
+            <SummaryValue>
+              {summaryLoading
+                ? 'Cargando...'
+                : formatMoney(summary.totalCommission)}
+            </SummaryValue>
+            <SummaryHint>Suma de comisiones visibles en el reporte.</SummaryHint>
           </SummaryCard>
           <SummaryCard>
             <SummaryLabel>Servicios realizados</SummaryLabel>
-            <SummaryValue>{summary.services}</SummaryValue>
+            <SummaryValue>
+              {summaryLoading ? 'Cargando...' : summary.services}
+            </SummaryValue>
+            <SummaryHint>Servicios facturados dentro del rango.</SummaryHint>
           </SummaryCard>
         </SummaryGrid>
 
@@ -353,13 +372,15 @@ export const ServiceCommissionsReport = () => {
                   <VmTable.Column>Factura</VmTable.Column>
                   <VmTable.Column>Servicio</VmTable.Column>
                   <VmTable.Column>Colaborador</VmTable.Column>
-                  <VmTable.Column>Vendido</VmTable.Column>
+                  <VmTable.Column>Base</VmTable.Column>
+                  <VmTable.Column>Tasa</VmTable.Column>
+                  <VmTable.Column>Regla</VmTable.Column>
                   <VmTable.Column>Comisión</VmTable.Column>
                 </ReportTableHeader>
                 <VmTable.Body key={tableBodyStateKey}>
                   {loading ? (
                     <VmTable.Row key="loading" id="loading">
-                      <VmTable.Cell colSpan={6}>
+                      <VmTable.Cell colSpan={8}>
                         <TableState>
                           <VmSpinner size="sm" />
                           Cargando comisiones...
@@ -368,9 +389,11 @@ export const ServiceCommissionsReport = () => {
                     </VmTable.Row>
                   ) : pagedRows.length === 0 ? (
                     <VmTable.Row key="empty" id="empty">
-                      <VmTable.Cell colSpan={6}>
+                      <VmTable.Cell colSpan={8}>
                         <TableState>
-                          No hay comisiones para los filtros actuales.
+                          No hay comisiones para estos filtros. Revisa el
+                          rango, el colaborador, la configuración activa o las
+                          ventas facturadas.
                         </TableState>
                       </VmTable.Cell>
                     </VmTable.Row>
@@ -390,13 +413,29 @@ export const ServiceCommissionsReport = () => {
                           <MutedText>{getCollaboratorLabel(row)}</MutedText>
                         </VmTable.Cell>
                         <VmTable.Cell>
-                          <AmountCell>
-                            {formatMoney(
-                              Number(
-                                row.billedAmount ?? row.amountFactured ?? 0,
-                              ),
-                            )}
-                          </AmountCell>
+                          <TableTextStack>
+                            <AmountCell>
+                              {formatMoney(
+                                Number(
+                                  row.billedAmount ?? row.amountFactured ?? 0,
+                                ),
+                              )}
+                            </AmountCell>
+                            <SmallMutedText>
+                              {getCommissionBaseLabel(row)}
+                            </SmallMutedText>
+                          </TableTextStack>
+                        </VmTable.Cell>
+                        <VmTable.Cell>
+                          <TableText>{getCommissionRateLabel(row)}</TableText>
+                        </VmTable.Cell>
+                        <VmTable.Cell>
+                          <TableTextStack>
+                            <TableText>{getCommissionRuleLabel(row)}</TableText>
+                            <SmallMutedText>
+                              {getCommissionFormulaLabel(row)}
+                            </SmallMutedText>
+                          </TableTextStack>
                         </VmTable.Cell>
                         <VmTable.Cell>
                           <CommissionCell>

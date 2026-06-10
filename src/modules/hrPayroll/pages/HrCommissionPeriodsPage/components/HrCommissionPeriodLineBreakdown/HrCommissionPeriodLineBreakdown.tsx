@@ -14,10 +14,13 @@ import {
   EntryTable,
   EntryTableScroll,
   LineBreakdownBody,
+  LineBreakdownFormula,
   LineBreakdownItem,
   LineBreakdownNote,
   LineBreakdownStack,
   LineBreakdownSummary,
+  TraceabilityWarning,
+  TraceabilityWarningTitle,
   LineBreakdownTitle,
 } from './HrCommissionPeriodLineBreakdown.styles';
 
@@ -89,6 +92,35 @@ const getEntryTotal = (
   );
 };
 
+const getEntryRateLabel = (entry: HrCommissionEntryRecord): string =>
+  entry.rateType === 'fixed'
+    ? formatMoney(entry.rateValue, entry.currency)
+    : `${entry.rateValue}%`;
+
+const buildLineFormula = (
+  line: HrPayrollEmployeeLineRecord,
+  currency: string,
+  retroactiveAdjustmentAmount: number,
+  manualAdjustmentAmount: number,
+  deductionAmount: number,
+): string => {
+  const parts = [`Comisión normal ${formatMoney(line.commissionAmount, currency)}`];
+
+  if (retroactiveAdjustmentAmount > 0) {
+    parts.push(`retroactiva ${formatMoney(retroactiveAdjustmentAmount, currency)}`);
+  }
+
+  if (manualAdjustmentAmount > 0) {
+    parts.push(`ajuste manual ${formatMoney(manualAdjustmentAmount, currency)}`);
+  }
+
+  if (deductionAmount > 0) {
+    parts.push(`deducciones -${formatMoney(deductionAmount, currency)}`);
+  }
+
+  return `${parts.join(' + ')} = ${formatMoney(line.netAmount, currency)}`;
+};
+
 export function HrCommissionPeriodLineBreakdown({
   entries,
   lines,
@@ -119,7 +151,7 @@ export function HrCommissionPeriodLineBreakdown({
         const deductionAmount = getLineDeductionAmount(line);
 
         return (
-          <LineBreakdownItem key={line.id}>
+          <LineBreakdownItem key={line.id} open>
             <LineBreakdownSummary>
               <BreakdownMetric>
                 {getEmployeeLabel(line)}
@@ -130,20 +162,26 @@ export function HrCommissionPeriodLineBreakdown({
               </BreakdownMetric>
               <BreakdownMetric>
                 {formatMoney(line.commissionAmount, currency)}
-                <BreakdownMetricLabel>Comision normal</BreakdownMetricLabel>
+                <BreakdownMetricLabel>Comisión normal</BreakdownMetricLabel>
               </BreakdownMetric>
-              <BreakdownMetric>
-                {formatMoney(retroactiveAdjustmentAmount, currency)}
-                <BreakdownMetricLabel>Ajuste retroactivo</BreakdownMetricLabel>
-              </BreakdownMetric>
-              <BreakdownMetric>
-                {formatMoney(manualAdjustmentAmount, currency)}
-                <BreakdownMetricLabel>Ajuste manual</BreakdownMetricLabel>
-              </BreakdownMetric>
-              <BreakdownMetric>
-                {formatMoney(deductionAmount, currency)}
-                <BreakdownMetricLabel>Deducciones</BreakdownMetricLabel>
-              </BreakdownMetric>
+              {retroactiveAdjustmentAmount > 0 ? (
+                <BreakdownMetric>
+                  {formatMoney(retroactiveAdjustmentAmount, currency)}
+                  <BreakdownMetricLabel>Ajuste retroactivo</BreakdownMetricLabel>
+                </BreakdownMetric>
+              ) : null}
+              {manualAdjustmentAmount > 0 ? (
+                <BreakdownMetric>
+                  {formatMoney(manualAdjustmentAmount, currency)}
+                  <BreakdownMetricLabel>Ajuste manual</BreakdownMetricLabel>
+                </BreakdownMetric>
+              ) : null}
+              {deductionAmount > 0 ? (
+                <BreakdownMetric>
+                  {formatMoney(deductionAmount, currency)}
+                  <BreakdownMetricLabel>Deducciones</BreakdownMetricLabel>
+                </BreakdownMetric>
+              ) : null}
               <BreakdownMetric>
                 {formatMoney(line.netAmount, currency)}
                 <BreakdownMetricLabel>
@@ -153,6 +191,16 @@ export function HrCommissionPeriodLineBreakdown({
               </BreakdownMetric>
             </LineBreakdownSummary>
             <LineBreakdownBody>
+              <LineBreakdownFormula>
+                <strong>Cómo se calculó:</strong>{' '}
+                {buildLineFormula(
+                  line,
+                  currency,
+                  retroactiveAdjustmentAmount,
+                  manualAdjustmentAmount,
+                  deductionAmount,
+                )}
+              </LineBreakdownFormula>
               <LineBreakdownNote>
                 Retroactivas, ajustes manuales y deducciones se muestran como
                 conceptos separados para evitar mezclar el origen del monto.
@@ -168,10 +216,11 @@ export function HrCommissionPeriodLineBreakdown({
                         <th>Servicio</th>
                         <th>Referencia</th>
                         <th data-align="right">Base</th>
-                        <th data-align="right">Comision</th>
+                        <th data-align="right">Tasa</th>
+                        <th data-align="right">Comisión</th>
                         <th data-align="right">Retroactiva</th>
                         <th data-align="right">Ajuste manual</th>
-                        <th data-align="right">Deduccion</th>
+                        <th data-align="right">Deducción</th>
                         <th data-align="right">Total</th>
                         <th>Corte original</th>
                       </tr>
@@ -202,6 +251,9 @@ export function HrCommissionPeriodLineBreakdown({
                             <td>{getEntrySourceReference(entry)}</td>
                             <td data-align="right">
                               {formatMoney(entry.baseAmount, entry.currency)}
+                            </td>
+                            <td data-align="right">
+                              {getEntryRateLabel(entry)}
                             </td>
                             <td data-align="right">
                               {formatMoney(normalCommission, entry.currency)}
@@ -235,9 +287,16 @@ export function HrCommissionPeriodLineBreakdown({
                   </EntryTable>
                 </EntryTableScroll>
               ) : (
-                <EmptyBreakdown>
-                  No hay entradas detalladas enlazadas a esta linea.
-                </EmptyBreakdown>
+                <TraceabilityWarning role="note">
+                  <TraceabilityWarningTitle>
+                    Trazabilidad pendiente
+                  </TraceabilityWarningTitle>
+                  <span>
+                    No hay facturas enlazadas a esta comisión. Este monto viene
+                    del consolidado del corte; recalcula el corte para
+                    reconstruir factura, base y tasa.
+                  </span>
+                </TraceabilityWarning>
               )}
             </LineBreakdownBody>
           </LineBreakdownItem>

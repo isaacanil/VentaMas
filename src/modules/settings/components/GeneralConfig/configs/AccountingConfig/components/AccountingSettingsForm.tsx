@@ -293,7 +293,7 @@ export const AccountingSettingsForm = ({
           showIcon
           type="warning"
           message="Primero configura el catálogo de cuentas"
-          description="Los perfiles contables necesitan cuentas contables activas antes de poder mapear eventos."
+          description="Las reglas de contabilización necesitan cuentas contables activas antes de poder mapear eventos."
         />
       ) : (
         <>

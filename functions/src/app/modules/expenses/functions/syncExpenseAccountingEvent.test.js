@@ -144,10 +144,16 @@ describe('syncExpenseAccountingEvent', () => {
         sourceDocumentId: 'expense-1',
         currency: 'USD',
         functionalCurrency: 'DOP',
-        monetary: {
+        monetary: expect.objectContaining({
           amount: 100,
+          subtotalAmount: 100,
+          taxAmount: 0,
+          netPayableAmount: 100,
           functionalAmount: 6200,
-        },
+          functionalSubtotalAmount: 6200,
+          functionalTaxAmount: 0,
+          functionalNetPayableAmount: 6200,
+        }),
         treasury: {
           cashAccountId: null,
           cashCountId: null,
@@ -166,6 +172,14 @@ describe('syncExpenseAccountingEvent', () => {
           reference: 'TRX-1',
           invoiceNcf: 'B0100000001',
           attachmentCount: 1,
+          fiscalTotals: {
+            subtotal: 100,
+            taxAmount: 0,
+            withholdingITBISAmount: 0,
+            withholdingISRAmount: 0,
+            total: 100,
+            netPayableAmount: 100,
+          },
         }),
         createdBy: 'user-1',
       }),

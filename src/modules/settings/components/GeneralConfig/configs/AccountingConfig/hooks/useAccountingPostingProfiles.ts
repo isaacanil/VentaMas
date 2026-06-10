@@ -35,17 +35,17 @@ const buildValidationError = ({
   postingProfiles: AccountingPostingProfile[];
 }): string | null => {
   if (!draft.name.trim()) {
-    return 'El perfil contable requiere un nombre.';
+    return 'La regla de contabilización requiere un nombre.';
   }
 
   if (draft.linesTemplate.length < 2) {
-    return 'El perfil contable requiere al menos dos líneas.';
+    return 'La regla de contabilización requiere al menos dos líneas.';
   }
 
   const hasDebit = draft.linesTemplate.some((line) => line.side === 'debit');
   const hasCredit = draft.linesTemplate.some((line) => line.side === 'credit');
   if (!hasDebit || !hasCredit) {
-    return 'El perfil contable debe tener por lo menos una línea débito y una crédito.';
+    return 'La regla de contabilización debe tener por lo menos una línea débito y una crédito.';
   }
 
   const accountsById = new Map(
@@ -62,11 +62,11 @@ const buildValidationError = ({
     }
 
     if (account.status !== 'active') {
-      return 'Todas las cuentas usadas en perfiles contables deben estar activas.';
+      return 'Todas las cuentas usadas en reglas de contabilización deben estar activas.';
     }
 
     if (!account.postingAllowed) {
-      return 'Todas las cuentas usadas en perfiles contables deben permitir asientos directos.';
+      return 'Todas las cuentas usadas en reglas de contabilización deben permitir asientos directos.';
     }
   }
 
@@ -77,7 +77,7 @@ const buildValidationError = ({
       profile.priority === draft.priority,
   );
   if (duplicatePriority) {
-    return 'Ya existe otro perfil contable con esa prioridad para el mismo evento.';
+    return 'Ya existe otra regla de contabilización con esa prioridad para el mismo evento.';
   }
 
   return null;
@@ -91,6 +91,7 @@ const normalizeConditionsForComparison = (
   taxTreatment: conditions?.taxTreatment ?? 'any',
   documentNature: conditions?.documentNature ?? 'any',
   settlementTiming: conditions?.settlementTiming ?? 'any',
+  transferDirection: conditions?.transferDirection ?? 'any',
 });
 
 const serializeLinesTemplateForComparison = (
@@ -104,6 +105,7 @@ const serializeLinesTemplateForComparison = (
     amountSource: line.amountSource,
     description: line.description ?? null,
     omitIfZero: line.omitIfZero !== false,
+    metadata: line.metadata ?? {},
   }));
 
 const hasStructuralPostingProfileChanges = ({
@@ -185,7 +187,7 @@ export const useAccountingPostingProfiles = ({
       },
       (cause) => {
         console.error('Error cargando accountingPostingProfiles:', cause);
-        setError('No se pudieron cargar los perfiles contables.');
+        setError('No se pudieron cargar las reglas de contabilización.');
         setLoading(false);
       },
     );
@@ -197,7 +199,7 @@ export const useAccountingPostingProfiles = ({
     async (draftInput: Partial<AccountingPostingProfileDraft>) => {
       if (!businessId) {
         message.error(
-          'No se encontró un negocio activo para guardar el perfil contable.',
+          'No se encontró un negocio activo para guardar la regla de contabilización.',
         );
         return false;
       }
@@ -224,11 +226,11 @@ export const useAccountingPostingProfiles = ({
           clientUserId: userId,
         });
 
-        message.success('Perfil contable creado.');
+        message.success('Regla de contabilización creada.');
         return true;
       } catch (cause) {
-        console.error('Error creando perfil contable:', cause);
-        message.error('No se pudo crear el perfil contable.');
+        console.error('Error creando regla de contabilización:', cause);
+        message.error('No se pudo crear la regla de contabilización.');
         return false;
       } finally {
         setSaving(false);
@@ -244,7 +246,7 @@ export const useAccountingPostingProfiles = ({
     ) => {
       if (!businessId) {
         message.error(
-          'No se encontró un negocio activo para actualizar el perfil contable.',
+          'No se encontró un negocio activo para actualizar la regla de contabilización.',
         );
         return false;
       }
@@ -252,7 +254,7 @@ export const useAccountingPostingProfiles = ({
       const existingProfile =
         postingProfiles.find((profile) => profile.id === postingProfileId) ?? null;
       if (!existingProfile) {
-        message.error('El perfil contable ya no existe.');
+        message.error('La regla de contabilización ya no existe.');
         return false;
       }
 
@@ -297,13 +299,13 @@ export const useAccountingPostingProfiles = ({
 
         message.success(
           structuralChanges || result.versioned
-            ? 'Se creó una nueva versión del perfil contable.'
-            : 'Perfil contable actualizado.',
+            ? 'Se creó una nueva versión de la regla de contabilización.'
+            : 'Regla de contabilización actualizada.',
         );
         return true;
       } catch (cause) {
-        console.error('Error actualizando perfil contable:', cause);
-        message.error('No se pudo actualizar el perfil contable.');
+        console.error('Error actualizando regla de contabilización:', cause);
+        message.error('No se pudo actualizar la regla de contabilización.');
         return false;
       } finally {
         setSaving(false);
@@ -319,7 +321,7 @@ export const useAccountingPostingProfiles = ({
     ) => {
       if (!businessId) {
         message.error(
-          'No se encontró un negocio activo para actualizar el perfil contable.',
+          'No se encontró un negocio activo para actualizar la regla de contabilización.',
         );
         return false;
       }
@@ -327,7 +329,7 @@ export const useAccountingPostingProfiles = ({
       const existingProfile =
         postingProfiles.find((profile) => profile.id === postingProfileId) ?? null;
       if (!existingProfile) {
-        message.error('El perfil contable ya no existe.');
+        message.error('La regla de contabilización ya no existe.');
         return false;
       }
 
@@ -357,14 +359,14 @@ export const useAccountingPostingProfiles = ({
 
         message.success(
           status === 'active'
-            ? 'Perfil contable activado.'
-            : 'Perfil contable desactivado.',
+            ? 'Regla de contabilización activada.'
+            : 'Regla de contabilización desactivada.',
         );
         return true;
       } catch (cause) {
-        console.error('Error actualizando estado de perfil contable:', cause);
+        console.error('Error actualizando estado de regla de contabilización:', cause);
         message.error(
-          'No se pudo actualizar el estado del perfil contable.',
+          'No se pudo actualizar el estado de la regla de contabilización.',
         );
         return false;
       } finally {
@@ -377,14 +379,14 @@ export const useAccountingPostingProfiles = ({
   const seedDefaultPostingProfiles = useCallback(async () => {
     if (!businessId) {
       message.error(
-        'No se encontró un negocio activo para sembrar perfiles contables.',
+        'No se encontró un negocio activo para crear reglas de contabilización base.',
       );
       return false;
     }
 
     if (!chartOfAccounts.length) {
       message.error(
-        'Carga primero el catálogo de cuentas antes de sembrar perfiles contables.',
+        'Carga primero el catálogo de cuentas antes de crear reglas de contabilización base.',
       );
       return false;
     }
@@ -394,7 +396,7 @@ export const useAccountingPostingProfiles = ({
     );
     if (!draftTemplates.length) {
       message.error(
-        'No hay suficientes cuentas canónicas para sembrar perfiles contables base.',
+        'No hay suficientes cuentas canónicas para crear reglas de contabilización base.',
       );
       return false;
     }
@@ -413,7 +415,7 @@ export const useAccountingPostingProfiles = ({
     });
 
     if (!templatesToCreate.length) {
-      message.info('La plantilla base de perfiles contables ya está cargada.');
+      message.info('La plantilla base de reglas de contabilización ya está cargada.');
       return true;
     }
 
@@ -432,11 +434,11 @@ export const useAccountingPostingProfiles = ({
           clientUserId: userId,
         });
       }
-      message.success('Perfiles contables base creados.');
+      message.success('Reglas de contabilización base creadas.');
       return true;
     } catch (cause) {
-      console.error('Error sembrando perfiles contables:', cause);
-      message.error('No se pudieron cargar los perfiles contables base.');
+      console.error('Error creando reglas de contabilización base:', cause);
+      message.error('No se pudieron cargar las reglas de contabilización base.');
       return false;
     } finally {
       setSeeding(false);

@@ -273,7 +273,7 @@ export const useModulesConfig = ({
     () => ({
       checked: activeState.accountingEnabled,
       helperText: activeState.accountingEnabled
-        ? 'Activa catálogo, perfiles y las rutas protegidas de contabilidad.'
+        ? 'Activa catálogo, reglas y las rutas protegidas de contabilidad.'
         : 'Mantiene ocultas las rutas y configuraciones contables del negocio.',
       loading: loading || savingAccounting,
       status: getAccountingModuleStatus(activeState),

@@ -141,7 +141,7 @@ export function HrCommissionCutRulesPanel({
     <Panel $variant={variant}>
       {variant === 'embedded' ? null : (
         <PanelHeader>
-          <PanelTitle>Configuracion del corte</PanelTitle>
+          <PanelTitle>Configuración del corte</PanelTitle>
         </PanelHeader>
       )}
 

@@ -8,7 +8,7 @@ import {
   VmSearchField,
   VmSelect,
 } from '@/components/heroui';
-import { ReloadOutlined, TeamOutlined } from '@/constants/icons/antd';
+import { ReloadOutlined } from '@/constants/icons/antd';
 import {
   recalculateHrCommissionEntries,
   useHrCommissionEntries,
@@ -72,6 +72,7 @@ export default function HrCommissionsPage() {
     endDate: dateRange[1],
     status,
   });
+  const summaryLoading = loading && rows.length === 0;
 
   const filteredRows = useMemo(
     () => rows.filter((entry) => matchesCommissionSearch(entry, searchTerm)),
@@ -123,8 +124,8 @@ export default function HrCommissionsPage() {
           <TitleBlock>
             <Title>Comisiones de colaboradores</Title>
             <Description>
-              Proyeccion de las comisiones operacionales hacia RRHH para
-              preparar cortes y nomina sin duplicar el flujo de ventas.
+              Proyección de comisiones desde ventas para preparar cortes y
+              nómina sin duplicar el flujo operativo.
             </Description>
           </TitleBlock>
           <VmButton
@@ -133,7 +134,7 @@ export default function HrCommissionsPage() {
             onPress={handleRecalculate}
           >
             <ReloadOutlined />
-            {recalculating ? 'Recalculando...' : 'Recalcular'}
+            {recalculating ? 'Actualizando...' : 'Actualizar comisiones'}
           </VmButton>
         </Header>
 
@@ -166,19 +167,27 @@ export default function HrCommissionsPage() {
         <SummaryGrid>
           <SummaryItem>
             <SummaryLabel>Entradas</SummaryLabel>
-            <SummaryValue>{summary.total}</SummaryValue>
+            <SummaryValue>
+              {summaryLoading ? 'Cargando...' : summary.total}
+            </SummaryValue>
           </SummaryItem>
           <SummaryItem>
             <SummaryLabel>Total comisiones</SummaryLabel>
-            <SummaryValue>{formatMoney(summary.amount)}</SummaryValue>
+            <SummaryValue>
+              {summaryLoading ? 'Cargando...' : formatMoney(summary.amount)}
+            </SummaryValue>
           </SummaryItem>
           <SummaryItem>
             <SummaryLabel>Colaboradores</SummaryLabel>
-            <SummaryValue>{summary.employees}</SummaryValue>
+            <SummaryValue>
+              {summaryLoading ? 'Cargando...' : summary.employees}
+            </SummaryValue>
           </SummaryItem>
           <SummaryItem>
             <SummaryLabel>Por revisar</SummaryLabel>
-            <SummaryValue>{summary.unresolved}</SummaryValue>
+            <SummaryValue>
+              {summaryLoading ? 'Cargando...' : summary.unresolved}
+            </SummaryValue>
           </SummaryItem>
         </SummaryGrid>
 
@@ -200,7 +209,7 @@ export default function HrCommissionsPage() {
             onChange={setDateRange}
           />
           <VmSelect
-            aria-label="Estado de comision"
+            aria-label="Estado de comisión"
             selectedKey={status}
             onSelectionChange={(key) =>
               setStatus(String(key) as HrCommissionEntryStatus | 'all')
@@ -211,7 +220,7 @@ export default function HrCommissionsPage() {
               <VmSelect.Indicator />
             </VmSelect.Trigger>
             <VmSelect.Popover>
-              <VmListBox aria-label="Estados de comision">
+              <VmListBox aria-label="Estados de comisión">
                 <VmListBox.Item id="all" textValue="Todos los estados">
                   Todos los estados
                   <VmListBox.ItemIndicator />
@@ -225,20 +234,12 @@ export default function HrCommissionsPage() {
               </VmListBox>
             </VmSelect.Popover>
           </VmSelect>
-          <VmButton
-            variant="secondary"
-            isDisabled={recalculating}
-            onPress={handleRecalculate}
-          >
-            <TeamOutlined />
-            Sincronizar
-          </VmButton>
         </CommissionsToolbar>
 
         <HrDataTable<HrCommissionEntryRecord>
           ariaLabel="Comisiones de colaboradores"
           columns={commissionEntryColumns}
-          emptyText="No hay comisiones para los filtros actuales."
+          emptyText="No hay comisiones para estos filtros. Revisa el rango, el colaborador, la configuración activa o ventas facturadas."
           rows={filteredRows}
           loading={loading}
           pageSize={12}

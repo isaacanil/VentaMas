@@ -3,6 +3,13 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 interface Expense {
   description: string;
   amount: number;
+  subtotal?: number;
+  taxAmount?: number;
+  itbisAmount?: number;
+  withholdingITBISAmount?: number;
+  withholdingISRAmount?: number;
+  total?: number;
+  netPayableAmount?: number;
   dates: {
     expenseDate: number;
     createdAt: string;
@@ -29,6 +36,13 @@ const initialState: ExpenseManagementState = {
   expense: {
     description: '',
     amount: 0,
+    subtotal: 0,
+    taxAmount: 0,
+    itbisAmount: 0,
+    withholdingITBISAmount: 0,
+    withholdingISRAmount: 0,
+    total: 0,
+    netPayableAmount: 0,
     dates: {
       expenseDate: Date.now(),
       createdAt: '',

@@ -13,7 +13,10 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 
-import { createBankAccountConfig } from '@/firebase/accounting/accountingConfiguration';
+import {
+  backfillBankAccountChartLinksConfig,
+  createBankAccountConfig,
+} from '@/firebase/accounting/accountingConfiguration';
 import { db } from '@/firebase/firebaseconfig';
 import {
   DEFAULT_BANK_INSTITUTION_COUNTRY_CODE,
@@ -261,6 +264,10 @@ export const useAccountingConfig = ({
   const [savingBanking, setSavingBanking] = useState(false);
   const [savingExchange, setSavingExchange] = useState(false);
   const [savingGeneralAccounting, setSavingGeneralAccounting] = useState(false);
+  const [
+    backfillingBankAccountChartLinks,
+    setBackfillingBankAccountChartLinks,
+  ] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [bankAccountsLoading, setBankAccountsLoading] = useState(true);
@@ -283,9 +290,7 @@ export const useAccountingConfig = ({
     generalAccounting: false,
   });
   const syncDefaultBankAccountWithActiveAccountsRef = useRef<
-    (args: {
-      activeBankAccountIds: readonly string[];
-    }) => Promise<void>
+    (args: { activeBankAccountIds: readonly string[] }) => Promise<void>
   >(async () => {});
   const latestBankingSaveRequestIdRef = useRef(0);
   const latestGeneralAccountingSaveRequestIdRef = useRef(0);
@@ -589,7 +594,9 @@ export const useAccountingConfig = ({
         });
       } catch (cause) {
         const errorMessage =
-          cause instanceof Error ? cause.message : 'No se pudo normalizar el banco.';
+          cause instanceof Error
+            ? cause.message
+            : 'No se pudo normalizar el banco.';
         void message.error(errorMessage);
         return;
       }
@@ -616,7 +623,9 @@ export const useAccountingConfig = ({
           activeBankAccountIds: nextActiveBankAccountIds,
         });
 
-        void message.success('Cuenta bancaria guardada con subcuenta contable.');
+        void message.success(
+          'Cuenta bancaria guardada con subcuenta contable.',
+        );
       } catch (cause) {
         const errorMessage =
           cause instanceof Error
@@ -628,6 +637,46 @@ export const useAccountingConfig = ({
     },
     [bankAccounts, bankInstitutionCatalog, businessId, userId],
   );
+
+  const backfillBankAccountChartLinks = useCallback(async () => {
+    if (!businessId) return;
+
+    const missingChartLinks = bankAccounts.filter(
+      (bankAccount) => !bankAccount.chartOfAccountId,
+    ).length;
+    if (missingChartLinks === 0) {
+      void message.info('Las cuentas bancarias ya están en contabilidad.');
+      return;
+    }
+
+    setBackfillingBankAccountChartLinks(true);
+
+    try {
+      const result = await backfillBankAccountChartLinksConfig({
+        businessId,
+        clientUserId: userId ?? null,
+      });
+      const updatedCount = result.created + result.linkedExisting;
+
+      if (updatedCount > 0) {
+        void message.success(
+          `Contabilidad actualizada: ${result.created} subcuenta(s) creada(s) y ${result.linkedExisting} enlace(s) reutilizado(s).`,
+        );
+        return;
+      }
+
+      void message.info('No había cuentas bancarias pendientes por vincular.');
+    } catch (cause) {
+      const errorMessage =
+        cause instanceof Error
+          ? cause.message
+          : 'No se pudo agregar la cuenta bancaria a contabilidad.';
+      void message.error(errorMessage);
+      throw cause;
+    } finally {
+      setBackfillingBankAccountChartLinks(false);
+    }
+  }, [bankAccounts, businessId, userId]);
 
   const updateBankAccountStatus = useCallback(
     async (bankAccountId: string, status: BankAccount['status']) => {
@@ -710,7 +759,9 @@ export const useAccountingConfig = ({
         });
       } catch (cause) {
         const errorMessage =
-          cause instanceof Error ? cause.message : 'No se pudo normalizar el banco.';
+          cause instanceof Error
+            ? cause.message
+            : 'No se pudo normalizar el banco.';
         void message.error(errorMessage);
         return;
       }
@@ -1152,10 +1203,10 @@ export const useAccountingConfig = ({
 
   return {
     addBankAccount,
+    backfillBankAccountChartLinks,
+    backfillingBankAccountChartLinks,
     bankAccounts: includeBankingDetails ? bankAccounts : [],
-    bankInstitutionCatalog: includeBankingDetails
-      ? bankInstitutionCatalog
-      : [],
+    bankInstitutionCatalog: includeBankingDetails ? bankInstitutionCatalog : [],
     bankInstitutionCatalogError: includeBankingDetails
       ? bankInstitutionCatalogError
       : null,

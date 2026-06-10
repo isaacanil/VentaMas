@@ -183,8 +183,14 @@ export const runAccountingEventProjection = async ({
   );
   const now = Timestamp.now();
 
-  const [settingsSnap, entrySnap, profilesSnap, chartSnap, bankAccountsSnap] =
-    await Promise.all([
+  const [
+    settingsSnap,
+    entrySnap,
+    profilesSnap,
+    chartSnap,
+    bankAccountsSnap,
+    cashAccountsSnap,
+  ] = await Promise.all([
       settingsRef.get(),
       entryRef.get(),
       db
@@ -192,6 +198,7 @@ export const runAccountingEventProjection = async ({
         .get(),
       db.collection(`businesses/${normalizedBusinessId}/chartOfAccounts`).get(),
       db.collection(`businesses/${normalizedBusinessId}/bankAccounts`).get(),
+      db.collection(`businesses/${normalizedBusinessId}/cashAccounts`).get(),
     ]);
 
   if (entrySnap.exists) {
@@ -317,6 +324,7 @@ export const runAccountingEventProjection = async ({
   const postingProfiles = buildCollectionDocs(profilesSnap);
   const chartOfAccounts = buildCollectionDocs(chartSnap);
   const bankAccounts = buildCollectionDocs(bankAccountsSnap);
+  const cashAccounts = buildCollectionDocs(cashAccountsSnap);
   const profile = resolvePostingProfileForEvent(eventRecord, postingProfiles);
 
   if (!profile) {
@@ -363,6 +371,7 @@ export const runAccountingEventProjection = async ({
     event: eventRecord,
     profile,
     bankAccounts,
+    cashAccounts,
     chartOfAccounts,
   });
 

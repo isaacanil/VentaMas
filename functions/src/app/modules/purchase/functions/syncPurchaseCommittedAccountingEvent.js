@@ -101,11 +101,61 @@ const resolvePurchaseMonetarySnapshot = (purchaseRecord) => {
   const documentTaxes = roundToTwoDecimals(
     safeNumber(documentTotals.taxes ?? documentTotals.tax) ?? 0,
   );
+  const documentSubtotal = roundToTwoDecimals(
+    safeNumber(
+      documentTotals.subtotal ??
+        documentTotals.subTotal ??
+        documentTotals.subtotalAmount,
+    ) ?? Math.max(documentTotal - documentTaxes, 0),
+  );
+  const documentWithholdingITBIS = roundToTwoDecimals(
+    safeNumber(
+      documentTotals.withholdingITBISAmount ??
+        documentTotals.itbisWithheld ??
+        purchaseRecord.withholdingITBISAmount ??
+        purchaseRecord.itbisWithheld,
+    ) ?? 0,
+  );
+  const documentWithholdingISR = roundToTwoDecimals(
+    safeNumber(
+      documentTotals.withholdingISRAmount ??
+        documentTotals.isrWithheld ??
+        purchaseRecord.withholdingISRAmount ??
+        purchaseRecord.isrWithheld,
+    ) ?? 0,
+  );
+  const documentNetPayable = roundToTwoDecimals(
+    Math.max(documentTotal - documentWithholdingITBIS - documentWithholdingISR, 0),
+  );
   const functionalTotal = roundToTwoDecimals(
     safeNumber(functionalTotals.total) ?? documentTotal,
   );
   const functionalTaxes = roundToTwoDecimals(
     safeNumber(functionalTotals.taxes ?? functionalTotals.tax) ?? documentTaxes,
+  );
+  const functionalSubtotal = roundToTwoDecimals(
+    safeNumber(
+      functionalTotals.subtotal ??
+        functionalTotals.subTotal ??
+        functionalTotals.subtotalAmount,
+    ) ?? Math.max(functionalTotal - functionalTaxes, 0),
+  );
+  const functionalWithholdingITBIS = roundToTwoDecimals(
+    safeNumber(
+      functionalTotals.withholdingITBISAmount ??
+        functionalTotals.itbisWithheld,
+    ) ?? documentWithholdingITBIS,
+  );
+  const functionalWithholdingISR = roundToTwoDecimals(
+    safeNumber(
+      functionalTotals.withholdingISRAmount ?? functionalTotals.isrWithheld,
+    ) ?? documentWithholdingISR,
+  );
+  const functionalNetPayable = roundToTwoDecimals(
+    Math.max(
+      functionalTotal - functionalWithholdingITBIS - functionalWithholdingISR,
+      0,
+    ),
   );
 
   return {
@@ -113,9 +163,17 @@ const resolvePurchaseMonetarySnapshot = (purchaseRecord) => {
     functionalCurrency: resolveCurrencyCode(monetary.functionalCurrency),
     monetary: {
       amount: documentTotal,
+      subtotalAmount: documentSubtotal,
       taxAmount: documentTaxes,
+      withholdingITBISAmount: documentWithholdingITBIS,
+      withholdingISRAmount: documentWithholdingISR,
+      netPayableAmount: documentNetPayable,
       functionalAmount: functionalTotal,
+      functionalSubtotalAmount: functionalSubtotal,
       functionalTaxAmount: functionalTaxes,
+      functionalWithholdingITBISAmount: functionalWithholdingITBIS,
+      functionalWithholdingISRAmount: functionalWithholdingISR,
+      functionalNetPayableAmount: functionalNetPayable,
     },
   };
 };
@@ -198,6 +256,15 @@ export const syncPurchaseCommittedAccountingEvent = onDocumentWritten(
           null,
         documentNature: resolvePurchaseDocumentNature(afterPurchase),
         settlementTiming: resolvePurchaseSettlementTiming(afterPurchase),
+        fiscalTotals: {
+          subtotal: monetarySnapshot.monetary.subtotalAmount,
+          taxAmount: monetarySnapshot.monetary.taxAmount,
+          withholdingITBISAmount:
+            monetarySnapshot.monetary.withholdingITBISAmount,
+          withholdingISRAmount: monetarySnapshot.monetary.withholdingISRAmount,
+          total: monetarySnapshot.monetary.amount,
+          netPayableAmount: monetarySnapshot.monetary.netPayableAmount,
+        },
       },
       occurredAt,
       recordedAt,

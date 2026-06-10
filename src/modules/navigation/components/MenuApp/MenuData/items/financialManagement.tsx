@@ -4,6 +4,7 @@ import {
   faChartColumn,
   faClipboard,
   faClipboardCheck,
+  faLayerGroup,
   faLock,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -30,8 +31,14 @@ const {
   ACCOUNTING_MANUAL_ENTRIES,
   ACCOUNTING_PERIOD_CLOSE,
   ACCOUNTING_FISCAL_COMPLIANCE,
+  ACCOUNTING_MONITOR,
   ACCOUNTING_REPORTS,
 } = ROUTES_NAME.ACCOUNTING_TERM;
+const {
+  GENERAL_CONFIG_ACCOUNTING_CHART_OF_ACCOUNTS,
+  GENERAL_CONFIG_ACCOUNTING_POSTING_PROFILES,
+  GENERAL_CONFIG_EXCHANGE_RATES,
+} = ROUTES_NAME.SETTING_TERM;
 
 const ChevronRight = icons.arrows.chevronRight;
 const ChevronLeft = icons.arrows.chevronLeft;
@@ -119,6 +126,12 @@ const financialManagement: MenuItem[] = [
         group: 'accounting',
       },
       {
+        title: 'Catálogo de cuentas',
+        route: GENERAL_CONFIG_ACCOUNTING_CHART_OF_ACCOUNTS,
+        icon: <FontAwesomeIcon icon={faBookOpen} />,
+        group: 'accounting',
+      },
+      {
         title: 'Reportes',
         route: ACCOUNTING_REPORTS,
         icon: <FontAwesomeIcon icon={faChartColumn} />,
@@ -131,10 +144,37 @@ const financialManagement: MenuItem[] = [
         group: 'accounting',
       },
       {
+        title: 'Monitor contable',
+        route: ACCOUNTING_MONITOR,
+        icon: <FontAwesomeIcon icon={faClipboard} />,
+        group: 'accounting',
+      },
+      {
         title: 'Cierre de periodo',
         route: ACCOUNTING_PERIOD_CLOSE,
         icon: <FontAwesomeIcon icon={faLock} />,
         group: 'accounting',
+      },
+      {
+        title: 'Configuración contable',
+        icon: icons.operationModes.setting,
+        submenuIconOpen: ChevronLeft,
+        submenuIconClose: ChevronRight,
+        group: 'accounting',
+        submenu: [
+          {
+            title: 'Reglas de contabilización',
+            route: GENERAL_CONFIG_ACCOUNTING_POSTING_PROFILES,
+            icon: <FontAwesomeIcon icon={faLayerGroup} />,
+            group: 'accounting',
+          },
+          {
+            title: 'Tipos de cambio',
+            route: GENERAL_CONFIG_EXCHANGE_RATES,
+            icon: icons.finances.transfer,
+            group: 'accounting',
+          },
+        ],
       },
     ],
   },

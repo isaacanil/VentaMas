@@ -6,6 +6,7 @@ import { fbUploadFile } from '@/firebase/img/fbUploadFileAndGetURL';
 import type { UserIdentity } from '@/types/users';
 import { sanitizeFirebaseData } from '@/utils/firebase/sanitizeFirebaseData';
 import { toTimestamp } from '@/utils/firebase/toTimestamp';
+import { resolveExpenseFiscalTotals } from '@/utils/expenses/fiscal';
 import { normalizeExpensePayment } from '@/utils/expenses/payment';
 import type {
   Expense,
@@ -50,8 +51,17 @@ export const fbUpdateExpense = async (
       expense,
     });
 
+    const fiscalTotals = resolveExpenseFiscalTotals(expense);
     const modifiedExpense: Expense = {
       ...expense,
+      amount: fiscalTotals.total,
+      subtotal: fiscalTotals.subtotal,
+      taxAmount: fiscalTotals.taxAmount,
+      itbisAmount: fiscalTotals.taxAmount,
+      withholdingITBISAmount: fiscalTotals.withholdingITBISAmount,
+      withholdingISRAmount: fiscalTotals.withholdingISRAmount,
+      total: fiscalTotals.total,
+      netPayableAmount: fiscalTotals.netPayableAmount,
       payment: normalizeExpensePayment(expense.payment),
       dates: {
         ...expense.dates,

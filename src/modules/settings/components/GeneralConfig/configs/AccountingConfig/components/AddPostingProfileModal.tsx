@@ -32,6 +32,7 @@ import {
   ACCOUNTING_POSTING_PAYMENT_TERM_LABELS,
   ACCOUNTING_POSTING_SETTLEMENT_KIND_LABELS,
   ACCOUNTING_POSTING_TAX_TREATMENT_LABELS,
+  ACCOUNTING_POSTING_TRANSFER_DIRECTION_LABELS,
   normalizeAccountingPostingProfileDraft,
   type AccountingPostingProfileDraft,
 } from '@/utils/accounting/postingProfiles';
@@ -86,6 +87,13 @@ const SETTLEMENT_KIND_OPTIONS = Object.entries(
 
 const TAX_TREATMENT_OPTIONS = Object.entries(
   ACCOUNTING_POSTING_TAX_TREATMENT_LABELS,
+).map(([value, label]) => ({
+  label,
+  value,
+}));
+
+const TRANSFER_DIRECTION_OPTIONS = Object.entries(
+  ACCOUNTING_POSTING_TRANSFER_DIRECTION_LABELS,
 ).map(([value, label]) => ({
   label,
   value,
@@ -177,12 +185,14 @@ export const AddPostingProfileModal = ({
         amountSource: line.amountSource,
         description: line.description ?? undefined,
         omitIfZero: line.omitIfZero,
+        metadata: line.metadata ?? {},
       })),
     });
   }, [defaultFormValues, editingProfile, form, lockedEventType, open]);
 
   const handleSubmit = async () => {
-    const values = await form.validateFields();
+    await form.validateFields();
+    const values = form.getFieldsValue(true);
     const saved = await onSubmit(values, editingProfile?.id);
     if (saved) {
       form.resetFields();
@@ -226,9 +236,11 @@ export const AddPostingProfileModal = ({
       width={920}
       open={open}
       title={
-        editingProfile ? 'Editar perfil contable' : 'Agregar perfil contable'
+        editingProfile
+          ? 'Editar regla de contabilización'
+          : 'Agregar regla de contabilización'
       }
-      okText={editingProfile ? 'Guardar cambios' : 'Guardar perfil'}
+      okText={editingProfile ? 'Guardar cambios' : 'Guardar regla'}
       cancelText="Cancelar"
       confirmLoading={loading}
       onCancel={() => {
@@ -293,7 +305,7 @@ export const AddPostingProfileModal = ({
           <Form.Item
             label="Nombre"
             name="name"
-            rules={[{ required: true, message: 'Ingrese el nombre del perfil.' }]}
+            rules={[{ required: true, message: 'Ingrese el nombre de la regla.' }]}
           >
             <Input placeholder="Ej. Venta al contado" />
           </Form.Item>
@@ -301,11 +313,11 @@ export const AddPostingProfileModal = ({
           <Form.Item
             label="Prioridad"
             name="priority"
-            tooltip="Los perfiles con mayor prioridad (número menor) se evalúan primero."
+            tooltip="Las reglas con mayor prioridad (número menor) se evalúan primero."
             rules={[
               {
                 required: true,
-                message: 'Ingrese la prioridad del perfil.',
+                message: 'Ingrese la prioridad de la regla.',
               },
             ]}
           >
@@ -336,7 +348,7 @@ export const AddPostingProfileModal = ({
         <Form.Item label="Descripción" name="description">
           <Input.TextArea
             autoSize={{ minRows: 2, maxRows: 4 }}
-            placeholder="Describe cuándo aplica este perfil."
+            placeholder="Describe cuándo aplica esta regla."
           />
         </Form.Item>
 
@@ -364,6 +376,15 @@ export const AddPostingProfileModal = ({
             name={['conditions', 'taxTreatment']}
           >
             <Select allowClear options={TAX_TREATMENT_OPTIONS} />
+          </Form.Item>
+        </ThreeColumnGrid>
+
+        <ThreeColumnGrid>
+          <Form.Item
+            label="Dirección de transferencia"
+            name={['conditions', 'transferDirection']}
+          >
+            <Select allowClear options={TRANSFER_DIRECTION_OPTIONS} />
           </Form.Item>
         </ThreeColumnGrid>
 

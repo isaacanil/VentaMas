@@ -53,6 +53,12 @@ const InfoText = styled(VmAlert.Description)`
   line-height: var(--ds-line-height-normal);
 `;
 
+const InfoExample = styled.span`
+  display: block;
+  margin-top: var(--ds-space-1);
+  color: var(--ds-color-text-secondary);
+`;
+
 const ConfigRow = styled(VmCard)`
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -196,6 +202,10 @@ const ServiceCommissionSettingsSection = () => {
           <InfoText>
             Las comisiones se calculan sobre el subtotal neto del servicio, sin
             ITBIS y después de descuentos.
+            <InfoExample>
+              Ejemplo: venta RD$590 con ITBIS incluido -&gt; base RD$500 -&gt;
+              comisión RD$50 al 10%.
+            </InfoExample>
           </InfoText>
         </VmAlert.Content>
       </InfoBanner>
@@ -222,7 +232,7 @@ const ServiceCommissionSettingsSection = () => {
         <div>
           <Title>Colaborador requerido</Title>
           <Description>
-            Bloquea la facturacion si una linea de servicio no tiene colaborador
+            Bloquea la facturación si una línea de servicio no tiene colaborador
             asignado.
           </Description>
         </div>

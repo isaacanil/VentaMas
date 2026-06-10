@@ -75,6 +75,18 @@ describe('postingProfiles', () => {
       type: 'liability',
       systemKey: 'tax_payable',
     }),
+    normalizeChartOfAccountRecord('withholding-itbis-id', 'business-1', {
+      code: '2210',
+      name: 'Retenciones ITBIS por pagar',
+      type: 'liability',
+      systemKey: 'withholding_itbis_payable',
+    }),
+    normalizeChartOfAccountRecord('withholding-isr-id', 'business-1', {
+      code: '2220',
+      name: 'Retenciones ISR por pagar',
+      type: 'liability',
+      systemKey: 'withholding_isr_payable',
+    }),
     normalizeChartOfAccountRecord('cash-over-short-income-id', 'business-1', {
       code: '4150',
       name: 'Ingresos por sobrante de caja',
@@ -190,21 +202,17 @@ describe('postingProfiles', () => {
         'accounts_payable_credit_note_applied',
       ),
     ).toBe('accounts_payable_credit_note_applied');
-    expect(normalizeAccountingPostingAmountSource('payroll_accrual_amount')).toBe(
-      'payroll_accrual_amount',
-    );
+    expect(
+      normalizeAccountingPostingAmountSource('payroll_accrual_amount'),
+    ).toBe('payroll_accrual_amount');
     expect(
       normalizeAccountingPostingAmountSource('payroll_net_payable_amount'),
     ).toBe('payroll_net_payable_amount');
     expect(
-      normalizeAccountingPostingAmountSource(
-        'payroll_tax_deductions_amount',
-      ),
+      normalizeAccountingPostingAmountSource('payroll_tax_deductions_amount'),
     ).toBe('payroll_tax_deductions_amount');
     expect(
-      normalizeAccountingPostingAmountSource(
-        'payroll_other_deductions_amount',
-      ),
+      normalizeAccountingPostingAmountSource('payroll_other_deductions_amount'),
     ).toBe('payroll_other_deductions_amount');
     expect(
       normalizeAccountingPostingAmountSource('bank_statement_adjustment_loss'),

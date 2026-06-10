@@ -14,6 +14,7 @@ interface MenuLinkProps {
   item: MenuItem;
   onActionDone?: () => void;
   parentTitle?: string;
+  searchQuery?: string;
   submenuPortalElement?: HTMLElement | null;
 }
 
@@ -22,6 +23,7 @@ export const MenuLink = ({
   onActionDone,
   isSidebarOpen = false,
   parentTitle,
+  searchQuery = '',
   submenuPortalElement,
 }: MenuLinkProps) => {
   const dispatch = useDispatch();
@@ -117,7 +119,12 @@ export const MenuLink = ({
       >
         <Group>
           <Icon color={item.color}>{item.icon}</Icon>
-          <span>{item.title}</span>
+          <TitleText data-menu-title="true">
+            <HighlightedMenuTitle
+              searchQuery={searchQuery}
+              title={item.title ?? item.label ?? ''}
+            />
+          </TitleText>
         </Group>
         {item.tag && (
           <Tag color={item.tag.color} style={{ fontSize: 16 }}>
@@ -137,12 +144,101 @@ export const MenuLink = ({
           isOpen={isOpenSubMenu}
           item={item}
           parentTitle={parentTitle}
+          searchQuery={searchQuery}
           submenuPortalElement={submenuPortalElement}
         />
       )}
     </Fragment>
   );
 };
+
+const normalizeTitleSearchValue = (value: string) =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+const getSearchMatchRanges = (title: string, searchQuery: string) => {
+  const normalizedQuery = normalizeTitleSearchValue(searchQuery).trim();
+  if (!title || !normalizedQuery) return [];
+
+  const normalizedToOriginal: Array<{ end: number; start: number }> = [];
+  let normalizedTitle = '';
+  let originalOffset = 0;
+
+  Array.from(title).forEach((character) => {
+    const start = originalOffset;
+    const end = start + character.length;
+    const normalizedCharacter = normalizeTitleSearchValue(character);
+
+    Array.from(normalizedCharacter).forEach(() => {
+      normalizedToOriginal.push({ start, end });
+    });
+
+    normalizedTitle += normalizedCharacter;
+    originalOffset = end;
+  });
+
+  const ranges: Array<{ end: number; start: number }> = [];
+  let searchFrom = 0;
+
+  while (searchFrom < normalizedTitle.length) {
+    const matchIndex = normalizedTitle.indexOf(normalizedQuery, searchFrom);
+    if (matchIndex === -1) break;
+
+    const lastMatchIndex = matchIndex + normalizedQuery.length - 1;
+    const start = normalizedToOriginal[matchIndex]?.start;
+    const end = normalizedToOriginal[lastMatchIndex]?.end;
+
+    if (typeof start === 'number' && typeof end === 'number') {
+      ranges.push({ start, end });
+    }
+
+    searchFrom = matchIndex + normalizedQuery.length;
+  }
+
+  return ranges;
+};
+
+const HighlightedMenuTitle = ({
+  title,
+  searchQuery,
+}: {
+  searchQuery: string;
+  title: string;
+}) => {
+  const ranges = getSearchMatchRanges(title, searchQuery);
+  if (!ranges.length) return <>{title}</>;
+
+  const segments: React.ReactNode[] = [];
+  let lastIndex = 0;
+
+  ranges.forEach((range, index) => {
+    if (range.start > lastIndex) {
+      segments.push(
+        <React.Fragment key={`text-${index}`}>
+          {title.slice(lastIndex, range.start)}
+        </React.Fragment>,
+      );
+    }
+
+    segments.push(
+      <SearchMatch data-search-match="true" key={`match-${index}`}>
+        {title.slice(range.start, range.end)}
+      </SearchMatch>,
+    );
+    lastIndex = range.end;
+  });
+
+  if (lastIndex < title.length) {
+    segments.push(
+      <React.Fragment key="text-end">{title.slice(lastIndex)}</React.Fragment>,
+    );
+  }
+
+  return <>{segments}</>;
+};
+
 const commonStyles = css`
   display: flex;
   align-items: center;
@@ -201,7 +297,7 @@ const MenuItemLink = styled(NavLink).attrs({ end: true })`
       color: ${(props: any) => props.theme.bg.color};
     }
 
-    span {
+    [data-menu-title='true'] {
       color: currentcolor;
     }
   }
@@ -223,7 +319,7 @@ const MenuItemLink = styled(NavLink).attrs({ end: true })`
       color: white;
     }
 
-    span {
+    [data-menu-title='true'] {
       color: currentcolor;
     }
   }
@@ -238,14 +334,23 @@ const Group = styled.div`
   align-items: center;
   flex: 1;
   min-width: 0;
-
-  span {
-    color: currentcolor;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
 `;
+
+const TitleText = styled.span`
+  color: currentcolor;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const SearchMatch = styled.span`
+  font-weight: 650;
+  color: currentcolor;
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.12em;
+  text-underline-offset: 0.18em;
+`;
+
 const Icon = styled.div`
   display: flex;
   align-items: center;

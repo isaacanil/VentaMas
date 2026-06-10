@@ -62,7 +62,7 @@ export function HrEmployeeServiceCommissionModal({
     ),
   }));
   const commissionFieldsDisabled = saving || draft.commissionEnabled !== true;
-  const title = 'Comision por servicio';
+  const title = 'Comisión por servicio';
 
   const updateField = <K extends keyof HrEmployeeFormValues>(
     field: K,
@@ -156,7 +156,7 @@ export function HrEmployeeServiceCommissionModal({
                 <VmSelect.Indicator />
               </VmSelect.Trigger>
               <VmSelect.Popover>
-                <VmListBox aria-label="Tipos de comision">
+                <VmListBox aria-label="Tipos de comisión">
                   {Object.entries(COMMISSION_TYPE_LABELS).map(
                     ([value, label]) => (
                       <VmListBox.Item key={value} id={value} textValue={label}>

@@ -62,14 +62,15 @@ describe('RecordHrPaymentModal', () => {
 
     expect(onFinish).not.toHaveBeenCalled();
     expect(screen.getByText('Ana Perez')).toBeInTheDocument();
-    expect(screen.getByText('Total normal')).toBeInTheDocument();
-    expect(screen.getByText('Total retroactivo')).toBeInTheDocument();
-    expect(screen.getByText('Ajuste manual')).toBeInTheDocument();
+    expect(screen.getByText('Comisión normal')).toBeInTheDocument();
+    expect(screen.getByText('Retroactiva')).toBeInTheDocument();
+    expect(screen.queryByText('Ajuste manual')).not.toBeInTheDocument();
     expect(screen.getByText('Deducciones')).toBeInTheDocument();
     expect(screen.getByText('Total a pagar')).toBeInTheDocument();
     expect(
-      screen.getByText(/marcará como pagadas las entradas normales/i),
+      screen.getByText(/las comisiones normales y retroactivas/i),
     ).toBeInTheDocument();
+    expect(screen.getByText(/cómo se calculó/i)).toBeInTheDocument();
   });
 
   it('calls onFinish only after a valid confirmation submit', async () => {
@@ -87,7 +88,7 @@ describe('RecordHrPaymentModal', () => {
     );
 
     await user.click(
-      screen.getByRole('button', { name: /confirmar y registrar pago/i }),
+      screen.getByRole('button', { name: /registrar pago de rd\$120\.00/i }),
     );
 
     expect(onFinish).not.toHaveBeenCalled();
@@ -95,9 +96,9 @@ describe('RecordHrPaymentModal', () => {
       /cuenta bancaria operativa/i,
     );
 
-    await user.type(screen.getByLabelText('Cuenta bancaria'), 'bank-1');
+    await user.type(screen.getByLabelText('Cuenta bancaria operativa'), 'bank-1');
     await user.click(
-      screen.getByRole('button', { name: /confirmar y registrar pago/i }),
+      screen.getByRole('button', { name: /registrar pago de rd\$120\.00/i }),
     );
 
     expect(onFinish).toHaveBeenCalledTimes(1);

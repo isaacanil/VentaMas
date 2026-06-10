@@ -176,6 +176,9 @@ const formatPostingConditions = (value: unknown): string => {
     toCleanString(record.paymentTerm),
     toCleanString(record.settlementKind),
     toCleanString(record.taxTreatment),
+    toCleanString(record.documentNature),
+    toCleanString(record.settlementTiming),
+    toCleanString(record.transferDirection),
   ].filter((entry): entry is string => Boolean(entry) && entry !== 'any');
 
   return parts.length ? parts.join(' · ') : EMPTY_VALUE_LABEL;
@@ -382,7 +385,7 @@ const buildEntityLabelFromSnapshots = ({
       return name ?? 'Cuenta contable';
     }
     case 'posting_profile':
-      return toCleanString(source.name) ?? 'Perfil contable';
+      return toCleanString(source.name) ?? 'Regla de contabilización';
     default:
       return 'Configuracion contable';
   }
@@ -542,7 +545,7 @@ export const ACCOUNTING_AUDIT_SCOPE_LABELS: Record<
   settings: 'Settings',
   bank_account: 'Cuentas bancarias',
   chart_of_account: 'Catalogo',
-  posting_profile: 'Perfiles',
+  posting_profile: 'Reglas',
 };
 
 export const ACCOUNTING_AUDIT_CHANGE_TYPE_LABELS: Record<

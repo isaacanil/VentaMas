@@ -78,6 +78,8 @@ export const useTreasuryWorkspace = ({
   });
   const {
     addBankAccount,
+    backfillBankAccountChartLinks,
+    backfillingBankAccountChartLinks,
     bankAccounts,
     bankInstitutionCatalog,
     bankInstitutionCatalogError,
@@ -861,6 +863,8 @@ export const useTreasuryWorkspace = ({
   return {
     addBankAccount,
     addCashAccount,
+    backfillBankAccountChartLinks,
+    backfillingBankAccountChartLinks,
     bankAccounts,
     bankInstitutionCatalog,
     bankInstitutionCatalogError,

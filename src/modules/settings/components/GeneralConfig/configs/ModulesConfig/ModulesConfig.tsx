@@ -50,7 +50,7 @@ export default function ModulesConfig() {
         <div id="modules-accounting" data-config-section="modules-accounting">
           <ModuleCard
             checked={accountingModule.checked}
-            description="Gobierna catalogo de cuentas, perfiles contables y las rutas protegidas de contabilidad."
+            description="Gobierna catalogo de cuentas, reglas de contabilización y las rutas protegidas de contabilidad."
             helperText={accountingModule.helperText}
             icon={<FontAwesomeIcon icon={faBookOpen} />}
             loading={accountingModule.loading}

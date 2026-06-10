@@ -8,7 +8,6 @@ import {
 } from '@/hooks/exportToExcel/exportConfig';
 import type {
   ServiceCommissionRecord,
-  ServiceCommissionSource,
   ServiceCommissionType,
 } from '@/types/commissions';
 
@@ -16,22 +15,28 @@ import {
   formatReportDate,
   formatReportMoney,
   getCollaboratorLabel,
+  getCommissionBaseLabel,
+  getCommissionFormulaLabel,
+  getCommissionRateLabel,
+  getCommissionRuleLabel,
   getInvoiceLabel,
   getServiceLabel,
   toDateKey,
 } from './reportDisplay';
 
 type ServiceCommissionExportRow = {
+  'Base comisionable': number;
+  'Base de cálculo': string;
   Colaborador: string;
-  Comision: number;
+  Comisión: number;
   Estado: string;
   Factura: string;
   Fecha: string;
-  Origen: string;
+  Fórmula: string;
+  'Regla aplicada': string;
   Servicio: string;
   Tasa: string;
   Tipo: string;
-  Vendido: number;
 };
 
 const XLSX_MIME_TYPE =
@@ -40,16 +45,6 @@ const XLSX_MIME_TYPE =
 const SERVICE_COMMISSION_TYPE_LABELS: Record<ServiceCommissionType, string> = {
   fixed: 'Monto fijo',
   percentage: 'Porcentaje',
-};
-
-const SERVICE_COMMISSION_SOURCE_LABELS: Record<
-  ServiceCommissionSource,
-  string
-> = {
-  'business-default': 'Negocio',
-  collaborator: 'Colaborador',
-  manual: 'Manual',
-  service: 'Servicio',
 };
 
 const SERVICE_COMMISSION_STATUS_LABELS: Record<
@@ -65,11 +60,13 @@ const EXPORT_COLUMNS = [
   'Factura',
   'Servicio',
   'Colaborador',
-  'Vendido',
-  'Comision',
-  'Tipo',
+  'Base comisionable',
+  'Base de cálculo',
   'Tasa',
-  'Origen',
+  'Tipo',
+  'Regla aplicada',
+  'Fórmula',
+  'Comisión',
   'Estado',
 ];
 
@@ -80,14 +77,6 @@ const sanitizeFileNamePart = (value: string): string =>
     .replace(/\s+/g, '_')
     .replace(/[^a-z0-9_-]/g, '')
     .replace(/_+/g, '_') || 'actual';
-
-const formatCommissionRate = (
-  type?: ServiceCommissionType,
-  rateValue?: number | null,
-): string => {
-  const safeRate = Number.isFinite(Number(rateValue)) ? Number(rateValue) : 0;
-  return type === 'fixed' ? formatReportMoney(safeRate) : `${safeRate}%`;
-};
 
 export const buildServiceCommissionsReportFileName = ({
   endDate,
@@ -105,22 +94,21 @@ export const buildServiceCommissionsReportExportRows = (
 ): ServiceCommissionExportRow[] =>
   rows.map((row) => {
     const commissionType = row.commission?.type;
-    const commissionSource = row.commission?.source;
 
     return {
       Fecha: formatReportDate(row.date),
       Factura: getInvoiceLabel(row),
       Servicio: getServiceLabel(row),
       Colaborador: getCollaboratorLabel(row),
-      Vendido: Number(row.billedAmount ?? row.amountFactured ?? 0),
-      Comision: Number(row.commissionAmount || 0),
+      'Base comisionable': Number(row.billedAmount ?? row.amountFactured ?? 0),
+      'Base de cálculo': getCommissionBaseLabel(row),
+      Tasa: getCommissionRateLabel(row),
       Tipo: commissionType
         ? SERVICE_COMMISSION_TYPE_LABELS[commissionType]
-        : 'N/A',
-      Tasa: formatCommissionRate(commissionType, row.commission?.rateValue),
-      Origen: commissionSource
-        ? SERVICE_COMMISSION_SOURCE_LABELS[commissionSource]
-        : 'N/A',
+        : 'Sin tipo',
+      'Regla aplicada': getCommissionRuleLabel(row),
+      Fórmula: getCommissionFormulaLabel(row),
+      Comisión: Number(row.commissionAmount || 0),
       Estado: SERVICE_COMMISSION_STATUS_LABELS[row.status] ?? row.status,
     };
   });
@@ -144,25 +132,33 @@ export const exportServiceCommissionsReportWorkbook = async ({
     { header: 'Factura', key: 'Factura', width: 18 },
     { header: 'Servicio', key: 'Servicio', width: 28 },
     { header: 'Colaborador', key: 'Colaborador', width: 28 },
-    { header: 'Vendido', key: 'Vendido', width: 16 },
-    { header: 'Comision', key: 'Comision', width: 16 },
-    { header: 'Tipo', key: 'Tipo', width: 16 },
+    { header: 'Base comisionable', key: 'Base comisionable', width: 18 },
+    { header: 'Base de cálculo', key: 'Base de cálculo', width: 20 },
     { header: 'Tasa', key: 'Tasa', width: 14 },
-    { header: 'Origen', key: 'Origen', width: 18 },
+    { header: 'Tipo', key: 'Tipo', width: 16 },
+    { header: 'Regla aplicada', key: 'Regla aplicada', width: 22 },
+    { header: 'Fórmula', key: 'Fórmula', width: 32 },
+    { header: 'Comisión', key: 'Comisión', width: 16 },
     { header: 'Estado', key: 'Estado', width: 14 },
   ];
 
   exportRows.forEach((row) => worksheet.addRow(row));
 
   applyProfessionalStyling(worksheet, exportRows.length);
-  addTotalsRow(worksheet, exportRows, EXPORT_COLUMNS, ['Vendido', 'Comision']);
+  addTotalsRow(worksheet, exportRows, EXPORT_COLUMNS, [
+    'Base comisionable',
+    'Comisión',
+  ]);
   addReportHeader(
     worksheet,
     `Reporte de comisiones de servicios ${toDateKey(startDate)} a ${toDateKey(
       endDate,
     )}`,
   );
-  formatCurrencyColumns(worksheet, EXPORT_COLUMNS, ['Vendido', 'Comision']);
+  formatCurrencyColumns(worksheet, EXPORT_COLUMNS, [
+    'Base comisionable',
+    'Comisión',
+  ]);
 
   const buffer = await workbook.xlsx.writeBuffer();
   saveAs(

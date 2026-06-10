@@ -50,6 +50,13 @@ export interface Expense {
   category?: string;
   categoryId?: string;
   amount?: number | string;
+  subtotal?: number | string;
+  taxAmount?: number | string;
+  itbisAmount?: number | string;
+  withholdingITBISAmount?: number | string;
+  withholdingISRAmount?: number | string;
+  total?: number | string;
+  netPayableAmount?: number | string;
   dates?: ExpenseDates;
   payment?: ExpensePayment;
   invoice?: {

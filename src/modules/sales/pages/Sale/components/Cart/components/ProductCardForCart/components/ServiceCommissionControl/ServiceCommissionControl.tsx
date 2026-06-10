@@ -55,6 +55,9 @@ export const ServiceCommissionControl = ({
         type: commissionType,
       })
     : null;
+  const missingCommissionMeta = settings.requireCollaboratorOnService
+    ? 'Requerido'
+    : 'Sin comisión';
 
   return (
     <CommissionButton
@@ -63,8 +66,8 @@ export const ServiceCommissionControl = ({
       onClick={() => onOpen(item)}
       aria-label={
         label
-          ? `Editar comision de ${label}`
-          : 'Asignar colaborador de comision'
+          ? `Editar comisión de ${label}`
+          : 'Asignar colaborador de comisión'
       }
     >
       <TeamOutlined />
@@ -74,7 +77,15 @@ export const ServiceCommissionControl = ({
           <ButtonMeta>
             {formatPriceByCurrency(estimatedCommission, documentCurrency)}
           </ButtonMeta>
-        ) : null}
+        ) : (
+          <ButtonMeta
+            data-warning={
+              settings.requireCollaboratorOnService ? 'true' : undefined
+            }
+          >
+            {missingCommissionMeta}
+          </ButtonMeta>
+        )}
       </ButtonContent>
     </CommissionButton>
   );
@@ -123,6 +134,11 @@ const ButtonMeta = styled.span`
   font-size: var(--ds-font-size-xs);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+
+  &[data-warning='true'] {
+    color: #92400e;
+    font-weight: var(--ds-font-weight-semibold);
+  }
 `;
 
 export default ServiceCommissionControl;

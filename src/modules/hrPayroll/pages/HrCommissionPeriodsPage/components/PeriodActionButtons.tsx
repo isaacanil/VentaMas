@@ -1,7 +1,8 @@
-import { VmAlertDialog, VmButton } from '@/components/heroui';
+import { VmAlertDialog, VmButton, VmDropdown } from '@/components/heroui';
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
+  DownOutlined,
   DollarOutlined,
   LockOutlined,
   RollbackOutlined,
@@ -83,14 +84,33 @@ export function PeriodActionButtons({
           Listo para pagos
         </PeriodActionStatus>
         {canRequestRevert ? (
-          <VmButton
-            variant="secondary"
-            isDisabled={actionKey === `revert_approval:${period.id}`}
-            onPress={() => onRequestRevertApproval(period)}
-          >
-            <RollbackOutlined />
-            Revertir aprobación
-          </VmButton>
+          <VmDropdown>
+            <VmDropdown.Button
+              variant="secondary"
+              isDisabled={actionKey === `revert_approval:${period.id}`}
+            >
+              Más acciones
+              <DownOutlined />
+            </VmDropdown.Button>
+            <VmDropdown.Popover placement="bottom end">
+              <VmDropdown.Menu
+                aria-label={`Más acciones del corte ${periodName}`}
+                onAction={(key) => {
+                  if (key === 'revert-approval') {
+                    onRequestRevertApproval(period);
+                  }
+                }}
+              >
+                <VmDropdown.Item
+                  id="revert-approval"
+                  textValue="Revertir aprobación"
+                >
+                  <RollbackOutlined />
+                  Revertir aprobación
+                </VmDropdown.Item>
+              </VmDropdown.Menu>
+            </VmDropdown.Popover>
+          </VmDropdown>
         ) : null}
       </PeriodActionGroup>
     );

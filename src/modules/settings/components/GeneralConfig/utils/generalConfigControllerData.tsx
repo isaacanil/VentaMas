@@ -41,7 +41,7 @@ const ACCOUNTING_MENU_ITEMS: MenuItem[] = [
   {
     key: 'accounting-posting-profiles',
     icon: <FontAwesomeIcon icon={faLayerGroup} />,
-    label: 'Perfiles contables',
+    label: 'Reglas de contabilización',
   },
 ];
 
@@ -278,11 +278,17 @@ const GENERAL_CONFIG_SEARCH_INDEX: GeneralConfigSearchEntry[] = [
     key: 'accounting',
     label: 'Contabilidad',
     description:
-      'Ordena catalogo, perfiles y estructura base del esquema contable.',
+      'Ordena catalogo, reglas y estructura base del esquema contable.',
     tab: 'accounting',
     route: TAB_ROUTES.accounting,
     category: 'Pantalla',
-    extraTokens: ['catalogo', 'plan contable', 'perfiles', 'contabilidad'],
+    extraTokens: [
+      'catalogo',
+      'plan contable',
+      'reglas',
+      'perfiles',
+      'contabilidad',
+    ],
   },
   {
     key: 'accounting-chart-of-accounts',
@@ -296,13 +302,20 @@ const GENERAL_CONFIG_SEARCH_INDEX: GeneralConfigSearchEntry[] = [
   },
   {
     key: 'accounting-posting-profiles',
-    label: 'Contabilidad - Perfiles contables',
+    label: 'Contabilidad - Reglas de contabilización',
     description:
       'Configura la cobertura por evento y las reglas de contabilizacion.',
     tab: 'accounting',
     route: ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_ACCOUNTING_POSTING_PROFILES,
     category: 'Seccion',
-    extraTokens: ['perfiles contables', 'asientos', 'eventos', 'mapeo'],
+    extraTokens: [
+      'perfiles contables',
+      'reglas contables',
+      'reglas de contabilizacion',
+      'asientos',
+      'eventos',
+      'mapeo',
+    ],
   },
   {
     key: 'exchangeRates',

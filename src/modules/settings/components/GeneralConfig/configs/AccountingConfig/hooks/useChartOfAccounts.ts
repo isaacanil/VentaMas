@@ -85,7 +85,7 @@ const getProtectedAccountReason = ({
   }
 
   if (referencedAccountIds.has(account.id)) {
-    return 'La cuenta ya está referenciada por perfiles contables.';
+    return 'La cuenta ya está referenciada por reglas de contabilización.';
   }
 
   return null;

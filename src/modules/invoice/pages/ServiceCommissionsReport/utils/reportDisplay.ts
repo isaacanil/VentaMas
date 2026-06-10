@@ -1,6 +1,10 @@
 import dayjs from 'dayjs';
 
-import type { ServiceCommissionRecord } from '@/types/commissions';
+import type {
+  ServiceCommissionRecord,
+  ServiceCommissionSource,
+  ServiceCommissionType,
+} from '@/types/commissions';
 import type { UserIdentity } from '@/types/users';
 import { cleanCommissionString } from '@/utils/commissions/serviceCommissions';
 import { formatPriceByCurrency } from '@/utils/format';
@@ -74,3 +78,54 @@ export const getCollaboratorLabel = (row: ServiceCommissionRecord): string => {
 
 export const formatReportMoney = (amount: number): string =>
   formatPriceByCurrency(amount, 'DOP');
+
+const COMMISSION_SOURCE_LABELS: Record<ServiceCommissionSource, string> = {
+  'business-default': 'Regla general',
+  collaborator: 'Regla del colaborador',
+  manual: 'Regla manual',
+  service: 'Regla del servicio',
+};
+
+const formatRateValue = (
+  type: ServiceCommissionType | null | undefined,
+  value: number | null | undefined,
+): string => {
+  const safeValue = Number(value ?? 0);
+  if (type === 'fixed') return formatReportMoney(safeValue);
+  return `${safeValue}%`;
+};
+
+export const getCommissionRateLabel = (
+  row: ServiceCommissionRecord,
+): string => {
+  const type = row.commission?.type;
+  const value = row.commission?.rateValue;
+  return formatRateValue(type, value);
+};
+
+export const getCommissionRuleLabel = (
+  row: ServiceCommissionRecord,
+): string => {
+  const source = row.commission?.source;
+  return source ? COMMISSION_SOURCE_LABELS[source] : 'Regla no disponible';
+};
+
+export const getCommissionBaseLabel = (
+  row: ServiceCommissionRecord,
+): string => {
+  if (row.commission?.calculationBase === 'netSubtotalWithoutTax') {
+    return 'Subtotal sin ITBIS';
+  }
+
+  return 'Base comisionable';
+};
+
+export const getCommissionFormulaLabel = (
+  row: ServiceCommissionRecord,
+): string => {
+  const baseAmount = Number(row.billedAmount ?? row.amountFactured ?? 0);
+  const commissionAmount = Number(row.commissionAmount || 0);
+  return `${formatReportMoney(baseAmount)} x ${getCommissionRateLabel(
+    row,
+  )} = ${formatReportMoney(commissionAmount)}`;
+};

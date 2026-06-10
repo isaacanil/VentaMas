@@ -22,12 +22,17 @@ import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import ROUTES_PATH from '@/router/routes/routesName';
 import { useHasDeveloperAccess } from '@/utils/menuAccess';
 import { useMenuData } from '@/modules/navigation/components/MenuApp/MenuData/MenuData';
+import {
+  filterGroupedMenuByQuery,
+  type MenuSearchItem,
+} from '@/modules/navigation/components/MenuApp/utils/menuSearch';
 import { UserSection } from '@/modules/navigation/components/MenuApp/UserSection';
 import { ButtonIconMenu } from '@/components/ui/Button/ButtonIconMenu';
 import { OpenMenuButton } from '@/components/ui/Button/OpenMenuButton';
 import { WebName } from '@/components/ui/WebName/WebName';
 
 import { MenuLink } from './MenuLink';
+import { SidebarSearch } from './SidebarSearch/SidebarSearch';
 
 const SIDEBAR_VARIANTS = {
   open: {
@@ -60,6 +65,7 @@ const DEV_PREFETCH_ROUTES = new Set<string>([
   ACCOUNTING_TERM.ACCOUNTING_MANUAL_ENTRIES,
   ACCOUNTING_TERM.ACCOUNTING_REPORTS,
   ACCOUNTING_TERM.ACCOUNTING_FISCAL_COMPLIANCE,
+  ACCOUNTING_TERM.ACCOUNTING_MONITOR,
   ACCOUNTING_TERM.ACCOUNTING_PERIOD_CLOSE,
 ]);
 
@@ -91,6 +97,13 @@ const getMenuItemRenderKey = (
   item.route ||
   item.key ||
   `${group}-${item.label ?? item.title ?? 'item'}-${index}`;
+
+const getSearchContextTitle = (item: MenuSearchItem) => {
+  const contextTitle = item.searchContextTitle;
+  return typeof contextTitle === 'string' && contextTitle.trim()
+    ? contextTitle
+    : null;
+};
 
 const useMenuFiltering = () => {
   const settings = useSelector(SelectSettingCart) as CartSettings;
@@ -174,8 +187,17 @@ export const SideBar = ({ isOpen, handleOpenMenu }: SideBarProps) => {
   const didPrefetchRoutesRef = useRef(false);
   const [submenuPortalElement, setSubmenuPortalElement] =
     useState<HTMLDivElement | null>(null);
+  const [menuSearchValue, setMenuSearchValue] = useState('');
   const user = useSelector(selectUser) as UserIdentity | null;
   const groupedLinks = useMenuFiltering();
+  const visibleGroupedLinks = useMemo(
+    () => filterGroupedMenuByQuery(groupedLinks, menuSearchValue),
+    [groupedLinks, menuSearchValue],
+  );
+  const isSearchingMenu = menuSearchValue.trim().length > 0;
+  const hasMenuResults = Object.values(visibleGroupedLinks).some(
+    (items) => items.length > 0,
+  );
   const { abilities } = useUserAccess();
   const canAccessGeneralConfig =
     abilities.can('manage', 'Business') ||
@@ -236,7 +258,9 @@ export const SideBar = ({ isOpen, handleOpenMenu }: SideBarProps) => {
       });
     };
 
-    Object.values(groupedLinks).forEach((items) => collectPreloaders(items));
+    Object.values(visibleGroupedLinks).forEach((items) =>
+      collectPreloaders(items),
+    );
 
     if (!preloaders.length) return;
 
@@ -265,7 +289,7 @@ export const SideBar = ({ isOpen, handleOpenMenu }: SideBarProps) => {
 
     const timeoutId = setTimeout(runPreloads, 200);
     return () => clearTimeout(timeoutId);
-  }, [groupedLinks]);
+  }, [visibleGroupedLinks]);
 
   return (
     <Container
@@ -298,24 +322,55 @@ export const SideBar = ({ isOpen, handleOpenMenu }: SideBarProps) => {
           </ActionButtons>
         </Header>
         <UserSection user={user} />
+        <SidebarSearch value={menuSearchValue} onChange={setMenuSearchValue} />
         <NavigationBody>
-          <NavigationLinks>
-            {Object.entries(groupedLinks).map(([group, items]) => (
-              <MenuGroup key={group}>
-                <MenuContainer>
-                  {items.map((item, index) => (
-                    <MenuLink
-                      isSidebarOpen={isOpen}
-                      item={item}
-                      key={`${getMenuItemRenderKey(item, group, index)}-${isOpen ? 'open' : 'closed'}`}
-                      onActionDone={handleCloseSidebar}
-                      submenuPortalElement={submenuPortalElement}
-                    />
-                  ))}
-                </MenuContainer>
-              </MenuGroup>
-            ))}
-          </NavigationLinks>
+          {hasMenuResults ? (
+            <NavigationLinks>
+              {Object.entries(visibleGroupedLinks).map(([group, items]) => (
+                <MenuGroup key={group}>
+                  <MenuContainer>
+                    {items.map((item, index) => {
+                      const contextTitle = isSearchingMenu
+                        ? getSearchContextTitle(item)
+                        : null;
+                      const previousContextTitle =
+                        index > 0
+                          ? getSearchContextTitle(items[index - 1])
+                          : null;
+                      const shouldRenderContext =
+                        contextTitle &&
+                        contextTitle !== previousContextTitle;
+
+                      return (
+                        <React.Fragment
+                          key={`${getMenuItemRenderKey(item, group, index)}-${isOpen ? 'open' : 'closed'}`}
+                        >
+                          {shouldRenderContext && (
+                            <SearchContextHeader>
+                              {contextTitle}
+                            </SearchContextHeader>
+                          )}
+                          <MenuLink
+                            isSidebarOpen={isOpen}
+                            item={item}
+                            onActionDone={handleCloseSidebar}
+                            searchQuery={
+                              isSearchingMenu ? menuSearchValue : ''
+                            }
+                            submenuPortalElement={submenuPortalElement}
+                          />
+                        </React.Fragment>
+                      );
+                    })}
+                  </MenuContainer>
+                </MenuGroup>
+              ))}
+            </NavigationLinks>
+          ) : (
+            <EmptySearchState role="status" aria-live="polite">
+              No hay opciones para esa búsqueda.
+            </EmptySearchState>
+          )}
         </NavigationBody>
         <SubmenuLayer ref={handleSubmenuLayerRef} />
       </Wrapper>
@@ -350,7 +405,7 @@ const ActionButtons = styled.div`
 const Wrapper = styled.div`
   position: relative;
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto auto minmax(0, 1fr);
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -397,6 +452,28 @@ const MenuContainer = styled.div`
   border: 1px solid rgb(0 0 0 / 10%);
   border-radius: var(--border-radius, 8px);
 `;
+
+const EmptySearchState = styled.div`
+  padding: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--gray-6);
+  text-align: center;
+  background-color: ${(props: any) => props.theme.bg.shade};
+  border: 1px solid rgb(0 0 0 / 10%);
+  border-radius: var(--border-radius, 8px);
+`;
+
+const SearchContextHeader = styled.div`
+  padding: 0.55rem 0.8rem 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: rgb(85 85 85);
+  background-color: ${(props: any) => props.theme.bg.color2};
+  border-bottom: var(--border-primary);
+`;
+
 const Header = styled.div`
   position: sticky;
   top: 0;

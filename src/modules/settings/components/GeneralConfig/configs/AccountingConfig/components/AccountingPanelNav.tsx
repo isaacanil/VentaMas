@@ -26,7 +26,7 @@ export const AccountingPanelNav = ({
     <NavHeader>
       <NavTitle>Contabilidad</NavTitle>
       <NavDescription>
-        Empieza por catálogo y perfiles; luego ajusta bancos y moneda.
+        Empieza por catálogo y reglas; luego ajusta bancos y moneda.
       </NavDescription>
     </NavHeader>
 

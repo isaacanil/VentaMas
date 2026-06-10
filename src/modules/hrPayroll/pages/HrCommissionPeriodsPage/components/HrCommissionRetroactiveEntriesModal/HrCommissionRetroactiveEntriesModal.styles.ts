@@ -20,6 +20,17 @@ export const RetroactiveSummary = styled.div`
   }
 `;
 
+export const RetroactiveGuidance = styled.p`
+  margin: 0;
+  padding: var(--ds-space-3);
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-sm);
+  line-height: var(--ds-line-height-normal);
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  background: #fffbeb;
+`;
+
 export const RetroactiveSummaryItem = styled.div`
   display: grid;
   gap: 2px;
@@ -99,6 +110,10 @@ export const RetroactivePrimaryText = styled.span`
 export const RetroactiveMutedText = styled.span`
   color: var(--ds-color-text-secondary);
   font-size: var(--ds-font-size-xs);
+`;
+
+export const RetroactiveReasonText = styled(RetroactiveMutedText)`
+  color: #92400e;
 `;
 
 export const RetroactiveEmpty = styled.div`

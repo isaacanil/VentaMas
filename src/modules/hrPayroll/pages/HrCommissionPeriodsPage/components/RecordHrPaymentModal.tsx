@@ -36,6 +36,7 @@ import {
   FieldLabel,
   FormError,
   ModalActions,
+  PaymentFormula,
   PaymentSummary,
   PaymentSummaryGrid,
   PaymentSummaryItem,
@@ -81,6 +82,15 @@ const getPeriodRangeLabel = (
       )}`
     : 'Rango no disponible';
 
+const getPeriodName = (
+  period: HrCommissionPeriodRecord | null,
+  line: HrPayrollEmployeeLineRecord,
+): string =>
+  (period?.label || period?.periodKey || line.periodId || 'Corte').replace(
+    /\s+\d{4}-\d{2}-\d{2}\s+-\s+\d{4}-\d{2}-\d{2}$/,
+    '',
+  );
+
 const validatePaymentDraft = (draft: PaymentFormValues): string | null => {
   if (draft.paymentMethod === 'cash') {
     if (!draft.cashAccountId?.trim() || !draft.cashCountId?.trim()) {
@@ -103,6 +113,40 @@ const validatePaymentDraft = (draft: PaymentFormValues): string | null => {
   }
 
   return null;
+};
+
+const getPaymentFormula = ({
+  commissionAmount,
+  currency,
+  deductionAmount,
+  manualAdjustmentAmount,
+  netAmount,
+  retroactiveAdjustmentAmount,
+}: {
+  commissionAmount: number;
+  currency: string;
+  deductionAmount: number;
+  manualAdjustmentAmount: number;
+  netAmount: number;
+  retroactiveAdjustmentAmount: number;
+}): string => {
+  const parts = [`Comisión normal ${formatMoney(commissionAmount, currency)}`];
+
+  if (retroactiveAdjustmentAmount > 0) {
+    parts.push(
+      `retroactiva ${formatMoney(retroactiveAdjustmentAmount, currency)}`,
+    );
+  }
+
+  if (manualAdjustmentAmount > 0) {
+    parts.push(`ajuste manual ${formatMoney(manualAdjustmentAmount, currency)}`);
+  }
+
+  if (deductionAmount > 0) {
+    parts.push(`deducciones -${formatMoney(deductionAmount, currency)}`);
+  }
+
+  return `${parts.join(' + ')} = ${formatMoney(netAmount, currency)}`;
 };
 
 export function RecordHrPaymentModal({
@@ -148,10 +192,37 @@ export function RecordHrPaymentModal({
     void onFinish(draft);
   };
 
-  const periodLabel = period?.label || period?.periodKey || line.periodId;
+  const periodLabel = getPeriodName(period, line);
   const retroactiveAdjustmentAmount = line.retroactiveAdjustmentAmount ?? 0;
   const manualAdjustmentAmount = line.manualAdjustmentAmount ?? 0;
   const deductionAmount = getLineDeductionAmount(line);
+  const summaryItems = [
+    {
+      label: 'Comisión normal',
+      value: line.commissionAmount,
+      visible: true,
+    },
+    {
+      label: 'Retroactiva',
+      value: retroactiveAdjustmentAmount,
+      visible: retroactiveAdjustmentAmount > 0,
+    },
+    {
+      label: 'Ajuste manual',
+      value: manualAdjustmentAmount,
+      visible: manualAdjustmentAmount > 0,
+    },
+    {
+      label: 'Deducciones',
+      value: deductionAmount,
+      visible: deductionAmount > 0,
+    },
+    {
+      label: 'Total a pagar',
+      value: line.netAmount,
+      visible: true,
+    },
+  ];
 
   return (
     <VmModal
@@ -173,7 +244,9 @@ export function RecordHrPaymentModal({
             variant="primary"
             isDisabled={saving}
           >
-            {saving ? 'Registrando...' : 'Confirmar y registrar pago'}
+            {saving
+              ? 'Registrando...'
+              : `Registrar pago de ${formatMoney(line.netAmount, line.currency)}`}
           </VmButton>
         </ModalActions>
       }
@@ -187,41 +260,32 @@ export function RecordHrPaymentModal({
             {periodLabel} · {getPeriodRangeLabel(period)}
           </MutedText>
         </CellStack>
+        <PaymentFormula>
+          <strong>Cómo se calculó:</strong>{' '}
+          {getPaymentFormula({
+            commissionAmount: line.commissionAmount,
+            currency: line.currency,
+            deductionAmount,
+            manualAdjustmentAmount,
+            netAmount: line.netAmount,
+            retroactiveAdjustmentAmount,
+          })}
+        </PaymentFormula>
         <PaymentSummaryGrid>
-          <PaymentSummaryItem>
-            <PaymentSummaryLabel>Total normal</PaymentSummaryLabel>
-            <PaymentSummaryValue>
-              {formatMoney(line.commissionAmount, line.currency)}
-            </PaymentSummaryValue>
-          </PaymentSummaryItem>
-          <PaymentSummaryItem>
-            <PaymentSummaryLabel>Total retroactivo</PaymentSummaryLabel>
-            <PaymentSummaryValue>
-              {formatMoney(retroactiveAdjustmentAmount, line.currency)}
-            </PaymentSummaryValue>
-          </PaymentSummaryItem>
-          <PaymentSummaryItem>
-            <PaymentSummaryLabel>Ajuste manual</PaymentSummaryLabel>
-            <PaymentSummaryValue>
-              {formatMoney(manualAdjustmentAmount, line.currency)}
-            </PaymentSummaryValue>
-          </PaymentSummaryItem>
-          <PaymentSummaryItem>
-            <PaymentSummaryLabel>Deducciones</PaymentSummaryLabel>
-            <PaymentSummaryValue>
-              {formatMoney(deductionAmount, line.currency)}
-            </PaymentSummaryValue>
-          </PaymentSummaryItem>
-          <PaymentSummaryItem>
-            <PaymentSummaryLabel>Total a pagar</PaymentSummaryLabel>
-            <PaymentSummaryValue>
-              {formatMoney(line.netAmount, line.currency)}
-            </PaymentSummaryValue>
-          </PaymentSummaryItem>
+          {summaryItems
+            .filter((item) => item.visible)
+            .map((item) => (
+              <PaymentSummaryItem key={item.label}>
+                <PaymentSummaryLabel>{item.label}</PaymentSummaryLabel>
+                <PaymentSummaryValue>
+                  {formatMoney(item.value, line.currency)}
+                </PaymentSummaryValue>
+              </PaymentSummaryItem>
+            ))}
         </PaymentSummaryGrid>
         <PaymentWarning>
-          Al confirmar, el sistema marcará como pagadas las entradas normales y
-          retroactivas enlazadas a esta línea.
+          Al registrar este pago, las comisiones normales y retroactivas
+          enlazadas a esta línea quedarán marcadas como pagadas.
         </PaymentWarning>
       </PaymentSummary>
 
@@ -283,13 +347,13 @@ export function RecordHrPaymentModal({
                   aria-label="Caja operativa"
                   value={draft.cashAccountId ?? ''}
                   disabled={saving}
-                  placeholder="Ej. caja-principal"
+                  placeholder="Ej. Caja principal · sucursal central"
                   onChange={(event) =>
                     updateField('cashAccountId', event.target.value)
                   }
                 />
                 <FieldHint>
-                  Referencia interna de la caja que recibirá la salida.
+                  Usa el nombre visible de la caja registrada en Tesorería.
                 </FieldHint>
               </Field>
               <Field>
@@ -298,13 +362,13 @@ export function RecordHrPaymentModal({
                   aria-label="Cuadre de caja"
                   value={draft.cashCountId ?? ''}
                   disabled={saving}
-                  placeholder="Ej. cuadre-2026-06-08"
+                  placeholder="Ej. Cuadre caja central · 10/06/2026"
                   onChange={(event) =>
                     updateField('cashCountId', event.target.value)
                   }
                 />
                 <FieldHint>
-                  Referencia del cuadre operativo asociado a este pago.
+                  Indica el cuadre abierto que soporta la salida de efectivo.
                 </FieldHint>
               </Field>
             </>
@@ -312,18 +376,19 @@ export function RecordHrPaymentModal({
 
           {draft.paymentMethod !== 'cash' ? (
             <Field>
-              <FieldLabel>Cuenta bancaria</FieldLabel>
+              <FieldLabel>Cuenta bancaria operativa</FieldLabel>
               <VmInput
-                aria-label="Cuenta bancaria"
+                aria-label="Cuenta bancaria operativa"
                 value={draft.bankAccountId ?? ''}
                 disabled={saving}
-                placeholder="Ej. banco-operativo"
+                placeholder="Ej. Banco Popular · Operativa 1234"
                 onChange={(event) =>
                   updateField('bankAccountId', event.target.value)
                 }
               />
               <FieldHint>
-                Referencia interna de la cuenta bancaria que soporta el pago.
+                Usa el nombre visible de la cuenta bancaria; evita escribir
+                códigos técnicos si Finanzas no los reconoce.
               </FieldHint>
             </Field>
           ) : null}
@@ -349,7 +414,7 @@ export function RecordHrPaymentModal({
               aria-label="Referencia bancaria"
               value={draft.transferReference ?? ''}
               disabled={saving}
-              placeholder="Ej. confirmación bancaria"
+              placeholder="Ej. confirmación bancaria o número de transacción"
               onChange={(event) =>
                 updateField('transferReference', event.target.value)
               }
@@ -362,7 +427,7 @@ export function RecordHrPaymentModal({
               aria-label="Referencia interna"
               value={draft.reference ?? ''}
               disabled={saving}
-              placeholder="Ej. pago-comisiones-junio"
+              placeholder="Ej. pago comisiones primera quincena junio"
               onChange={(event) => updateField('reference', event.target.value)}
             />
           </Field>

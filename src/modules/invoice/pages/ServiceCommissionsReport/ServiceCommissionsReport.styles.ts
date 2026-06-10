@@ -152,6 +152,13 @@ export const SummaryValue = styled.div`
   line-height: var(--ds-line-height-tight);
 `;
 
+export const SummaryHint = styled.div`
+  margin-top: var(--ds-space-1);
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-xs);
+  line-height: var(--ds-line-height-normal);
+`;
+
 export const ReportTableFrame = styled(VmCard)`
   min-width: 0;
   overflow: hidden;
@@ -174,9 +181,20 @@ export const TableText = styled.span`
   font-size: var(--ds-font-size-sm);
 `;
 
+export const TableTextStack = styled.span`
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+`;
+
 export const MutedText = styled.span`
   color: var(--ds-color-text-secondary);
   font-size: var(--ds-font-size-sm);
+`;
+
+export const SmallMutedText = styled(MutedText)`
+  font-size: var(--ds-font-size-xs);
+  line-height: var(--ds-line-height-normal);
 `;
 
 export const AmountCell = styled.span`

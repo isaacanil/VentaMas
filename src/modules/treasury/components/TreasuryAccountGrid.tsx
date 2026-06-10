@@ -3,6 +3,7 @@ import {
   CheckCircleOutlined,
   EditOutlined,
   EyeOutlined,
+  LinkOutlined,
   PoweroffOutlined,
   RetweetOutlined,
 } from '@ant-design/icons';
@@ -30,6 +31,8 @@ interface TreasuryAccountGridProps {
     BankReconciliationRecord
   >;
   ledgerEntriesByAccountKey: Record<string, LiquidityLedgerEntry[]>;
+  linkingBankAccountsToAccounting?: boolean;
+  onAddBankAccountsToAccounting: () => void;
   onConfigureAccount: (account: TreasuryLiquidityAccount) => void;
   onOpenReconciliation: (account: TreasuryLiquidityAccount) => void;
   onOpenTransfer: (account: TreasuryLiquidityAccount) => void;
@@ -127,6 +130,8 @@ export const TreasuryAccountGrid = ({
   currentBalancesByAccountKey,
   latestReconciliationsByBankAccountId,
   ledgerEntriesByAccountKey,
+  linkingBankAccountsToAccounting = false,
+  onAddBankAccountsToAccounting,
   onConfigureAccount,
   onOpenReconciliation,
   onOpenTransfer,
@@ -165,6 +170,7 @@ export const TreasuryAccountGrid = ({
                 <HeaderCell $align="right">Saldo actual</HeaderCell>
                 <HeaderCell>Último mov.</HeaderCell>
                 <HeaderCell>Conciliada</HeaderCell>
+                <HeaderCell>Contabilidad</HeaderCell>
                 <HeaderCell>Estado</HeaderCell>
                 <HeaderCell $align="right">Acciones</HeaderCell>
               </tr>
@@ -200,6 +206,7 @@ export const TreasuryAccountGrid = ({
                   : null;
               const bankAccount = account.source as BankAccount;
               const cashAccount = account.source as CashAccount;
+              const hasAccountingLink = Boolean(bankAccount.chartOfAccountId);
 
               return (
                 <AccountRow
@@ -262,6 +269,16 @@ export const TreasuryAccountGrid = ({
                           {reconciliationStatus === 'reconciled'
                             ? 'Conciliada'
                             : 'Pendiente'}
+                        </StatusPill>
+                      </BodyCell>
+                      <BodyCell>
+                        <StatusPill
+                          $tone={hasAccountingLink ? 'success' : 'warning'}
+                        >
+                          <StatusDot
+                            $tone={hasAccountingLink ? 'success' : 'warning'}
+                          />
+                          {hasAccountingLink ? 'Vinculada' : 'Sin contabilidad'}
                         </StatusPill>
                       </BodyCell>
                     </>
@@ -366,6 +383,22 @@ export const TreasuryAccountGrid = ({
                           />
                         </Tooltip>
                       ) : null}
+                      {view === 'bank' && !hasAccountingLink ? (
+                        <Tooltip title="Agregar a contabilidad">
+                          <Button
+                            aria-label="Agregar a contabilidad"
+                            disabled={linkingBankAccountsToAccounting}
+                            icon={<LinkOutlined />}
+                            loading={linkingBankAccountsToAccounting}
+                            size="small"
+                            type="text"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              onAddBankAccountsToAccounting();
+                            }}
+                          />
+                        </Tooltip>
+                      ) : null}
                       <Tooltip title="Configurar">
                         <Button
                           aria-label="Configurar"
@@ -429,7 +462,7 @@ const TableViewport = styled.div`
 
 const AccountsTable = styled.table<{ $view: TreasuryAccountView }>`
   width: 100%;
-  min-width: ${({ $view }) => ($view === 'bank' ? '1080px' : '980px')};
+  min-width: ${({ $view }) => ($view === 'bank' ? '1180px' : '980px')};
   border-collapse: collapse;
 `;
 

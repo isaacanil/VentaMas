@@ -33,7 +33,19 @@ const getPreviewBlockedMessage = (
 ): string | null => {
   if (!preview) return null;
   if (preview.hasRetroactiveEntries) {
-    return 'Hay comisiones retroactivas pendientes para cortes ya generados. Resuélvelas antes de crear el próximo corte.';
+    const count = preview.retroactiveEntriesCount ?? 0;
+    const amount = preview.retroactiveAdjustmentAmount ?? 0;
+    const retroactiveText =
+      count > 0
+        ? `${count} retroactiva${count === 1 ? '' : 's'} pendiente${
+            count === 1 ? '' : 's'
+          }`
+        : 'las retroactivas pendientes';
+    const amountText =
+      amount > 0
+        ? ` Impacto pendiente: ${formatMoney(amount, preview.currency)}.`
+        : '';
+    return `No puedes crear este corte hasta resolver ${retroactiveText}.${amountText}`;
   }
   if (preview.exceedsMaxCutEntries) {
     return `El corte supera el máximo de ${preview.maxCutEntries} entradas elegibles. Divide o depura las entradas antes de crear el corte.`;
@@ -128,6 +140,7 @@ export function HrCommissionNextCutPreviewModal({
           </VmAlert>
         ) : null}
 
+        {!loading || preview ? (
         <PreviewGrid>
           <PreviewItem>
             <PreviewLabel>Rango</PreviewLabel>
@@ -141,12 +154,25 @@ export function HrCommissionNextCutPreviewModal({
             </PreviewValue>
           </PreviewItem>
           {isBlocked ? (
-            <PreviewItem>
-              <PreviewLabel>Retroactivas pendientes</PreviewLabel>
-              <PreviewValue>
-                {preview?.retroactiveEntriesCount ?? '-'}
-              </PreviewValue>
-            </PreviewItem>
+            <>
+              <PreviewItem>
+                <PreviewLabel>Retroactivas pendientes</PreviewLabel>
+                <PreviewValue>
+                  {preview?.retroactiveEntriesCount ?? '-'}
+                </PreviewValue>
+              </PreviewItem>
+              {(preview?.retroactiveAdjustmentAmount ?? 0) > 0 ? (
+                <PreviewItem>
+                  <PreviewLabel>Monto retroactivo</PreviewLabel>
+                  <PreviewValue>
+                    {formatMoney(
+                      preview?.retroactiveAdjustmentAmount ?? 0,
+                      preview?.currency,
+                    )}
+                  </PreviewValue>
+                </PreviewItem>
+              ) : null}
+            </>
           ) : (
             <>
               <PreviewItem>
@@ -177,6 +203,7 @@ export function HrCommissionNextCutPreviewModal({
             </PreviewValue>
           </PreviewItem>
         </PreviewGrid>
+        ) : null}
       </PreviewStack>
     </VmModal>
   );

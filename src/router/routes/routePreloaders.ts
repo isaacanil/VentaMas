@@ -55,6 +55,7 @@ const {
   ACCOUNTING_MANUAL_ENTRIES,
   ACCOUNTING_REPORTS,
   ACCOUNTING_FISCAL_COMPLIANCE,
+  ACCOUNTING_MONITOR,
   ACCOUNTING_PERIOD_CLOSE,
 } = ACCOUNTING_TERM;
 
@@ -109,6 +110,7 @@ export const routePreloaders: Record<string, RoutePreloader> = {
   [ACCOUNTING_MANUAL_ENTRIES]: preloadAccountingWorkspace,
   [ACCOUNTING_REPORTS]: preloadAccountingWorkspace,
   [ACCOUNTING_FISCAL_COMPLIANCE]: preloadAccountingWorkspace,
+  [ACCOUNTING_MONITOR]: preloadAccountingWorkspace,
   [ACCOUNTING_PERIOD_CLOSE]: preloadAccountingWorkspace,
   [HR_PAYROLL_TERM.HR_PAYROLL]: preloadHrPayrollWorkspace,
   [HR_PAYROLL_TERM.HR_EMPLOYEES]: preloadHrPayrollWorkspace,

@@ -153,6 +153,22 @@ const resolveTransferPaymentChannel = (fromLedger, toLedger) => {
   return null;
 };
 
+const resolveTransferDirection = (fromLedger, toLedger) => {
+  if (fromLedger?.type === 'cash' && toLedger?.type === 'bank') {
+    return 'cash_to_bank';
+  }
+  if (fromLedger?.type === 'bank' && toLedger?.type === 'cash') {
+    return 'bank_to_cash';
+  }
+  if (fromLedger?.type === 'bank' && toLedger?.type === 'bank') {
+    return 'bank_to_bank';
+  }
+  if (fromLedger?.type === 'cash' && toLedger?.type === 'cash') {
+    return 'cash_to_cash';
+  }
+  return null;
+};
+
 const assertValidLedger = (ledger, role) => {
   if (!ledger) {
     throw new HttpsError(
@@ -487,6 +503,7 @@ export const createInternalTransfer = onCall(async (request) => {
       payload: {
         reference,
         note,
+        transferDirection: resolveTransferDirection(fromLedger, toLedger),
         from: fromLedger,
         to: toLedger,
       },

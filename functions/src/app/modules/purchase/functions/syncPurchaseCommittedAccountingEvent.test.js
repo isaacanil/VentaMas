@@ -161,12 +161,26 @@ describe('syncPurchaseCommittedAccountingEvent', () => {
         counterpartyId: 'supplier-1',
         currency: 'USD',
         functionalCurrency: 'DOP',
-        monetary: {
+        monetary: expect.objectContaining({
           amount: 100,
+          subtotalAmount: 82,
           taxAmount: 18,
+          netPayableAmount: 100,
           functionalAmount: 6200,
+          functionalSubtotalAmount: 5084,
           functionalTaxAmount: 1116,
-        },
+          functionalNetPayableAmount: 6200,
+        }),
+        payload: expect.objectContaining({
+          fiscalTotals: {
+            subtotal: 82,
+            taxAmount: 18,
+            withholdingITBISAmount: 0,
+            withholdingISRAmount: 0,
+            total: 100,
+            netPayableAmount: 100,
+          },
+        }),
       }),
     );
 

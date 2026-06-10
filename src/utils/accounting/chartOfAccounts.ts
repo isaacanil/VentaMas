@@ -174,7 +174,9 @@ export const collectChartOfAccountDescendantIds = (
 export const sortChartOfAccountsForDisplay = (
   accounts: ChartOfAccount[],
 ): ChartOfAccount[] => {
-  const accountsById = new Map(accounts.map((account) => [account.id, account]));
+  const accountsById = new Map(
+    accounts.map((account) => [account.id, account]),
+  );
   const childrenByParent = accounts.reduce<Map<string, ChartOfAccount[]>>(
     (accumulator, account) => {
       if (!account.parentId || !accountsById.has(account.parentId)) {
@@ -193,7 +195,9 @@ export const sortChartOfAccountsForDisplay = (
 
   const flattenBranch = (account: ChartOfAccount): ChartOfAccount[] => [
     account,
-    ...sortAccounts(childrenByParent.get(account.id) ?? []).flatMap(flattenBranch),
+    ...sortAccounts(childrenByParent.get(account.id) ?? []).flatMap(
+      flattenBranch,
+    ),
   ];
 
   const rootAccounts = sortAccounts(
@@ -367,6 +371,26 @@ export const DEFAULT_CHART_OF_ACCOUNTS_TEMPLATE: ChartOfAccountTemplate[] = [
     normalSide: 'credit',
     currencyMode: 'functional_only',
     systemKey: 'tax_payable',
+    parentCode: '2000',
+  },
+  {
+    code: '2210',
+    name: 'Retenciones ITBIS por pagar',
+    type: 'liability',
+    postingAllowed: true,
+    normalSide: 'credit',
+    currencyMode: 'functional_only',
+    systemKey: 'withholding_itbis_payable',
+    parentCode: '2000',
+  },
+  {
+    code: '2220',
+    name: 'Retenciones ISR por pagar',
+    type: 'liability',
+    postingAllowed: true,
+    normalSide: 'credit',
+    currencyMode: 'functional_only',
+    systemKey: 'withholding_isr_payable',
     parentCode: '2000',
   },
   {

@@ -386,7 +386,7 @@ describe('validateInvoiceSubmissionGuards', () => {
       expect.objectContaining({
         ok: false,
         code: 'service-commission-collaborator-ineligible',
-        message: 'Configura la comision del colaborador',
+        message: 'Configura la comisión del colaborador',
       }),
     );
     expect(getProductStockByProductId).not.toHaveBeenCalled();

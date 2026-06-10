@@ -40,6 +40,9 @@ import {
   FieldGrid,
   FieldHint,
   FieldLabel,
+  FieldSection,
+  FieldSectionTitle,
+  FormSections,
   FullWidthField,
   ModalActions,
 } from './HrEmployeeEditorModal.styles';
@@ -100,7 +103,7 @@ export function HrEmployeeEditorModal({
     const code = draft.code?.trim();
     const fullName = draft.fullName?.trim();
     if (!code || !fullName) {
-      setValidationMessage('Codigo y nombre son requeridos.');
+      setValidationMessage('Código y nombre son requeridos.');
       return;
     }
     const normalizedPhone = normalizePhoneToE164(draft.phone);
@@ -162,368 +165,425 @@ export function HrEmployeeEditorModal({
           </VmAlert>
         ) : null}
 
-        <FieldGrid>
-          <Field>
-            <FieldLabel>Codigo</FieldLabel>
-            <VmInput
-              aria-label="Codigo"
-              value={draft.code ?? ''}
-              disabled={saving}
-              placeholder="EMP-001"
-              onChange={(event) => updateField('code', event.target.value)}
-            />
-          </Field>
+        <FormSections>
+          <FieldSection>
+            <FieldSectionTitle>Datos básicos</FieldSectionTitle>
+            <FieldGrid>
+              <Field>
+                <FieldLabel>Código</FieldLabel>
+                <VmInput
+                  aria-label="Código"
+                  value={draft.code ?? ''}
+                  disabled={saving}
+                  placeholder="EMP-001"
+                  onChange={(event) => updateField('code', event.target.value)}
+                />
+              </Field>
 
-          <Field>
-            <FieldLabel>Estado</FieldLabel>
-            <VmSelect
-              aria-label="Estado"
-              selectedKey={draft.status ?? 'active'}
-              isDisabled={saving}
-              onSelectionChange={(key) =>
-                updateField('status', String(key) as HrEmployeeInput['status'])
-              }
-            >
-              <VmSelect.Trigger>
-                <VmSelect.Value>
-                  {getOptionLabel(STATUS_LABELS, draft.status)}
-                </VmSelect.Value>
-                <VmSelect.Indicator />
-              </VmSelect.Trigger>
-              <VmSelect.Popover>
-                <VmListBox aria-label="Estados">
-                  {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                    <VmListBox.Item key={value} id={value} textValue={label}>
-                      {label}
-                      <VmListBox.ItemIndicator />
-                    </VmListBox.Item>
-                  ))}
-                </VmListBox>
-              </VmSelect.Popover>
-            </VmSelect>
-          </Field>
-
-          <Field>
-            <FieldLabel>Nombre</FieldLabel>
-            <VmInput
-              aria-label="Nombre"
-              value={draft.fullName ?? ''}
-              disabled={saving}
-              placeholder="Nombre del colaborador"
-              onChange={(event) => updateField('fullName', event.target.value)}
-            />
-          </Field>
-
-          <Field>
-            <FieldLabel>Genero</FieldLabel>
-            <VmSelect
-              aria-label="Genero"
-              selectedKey={draft.gender ?? UNSPECIFIED_GENDER_KEY}
-              isDisabled={saving}
-              onSelectionChange={(key) => {
-                const nextGender =
-                  key && String(key) !== UNSPECIFIED_GENDER_KEY
-                    ? (String(key) as HrEmployeeInput['gender'])
-                    : null;
-                updateField('gender', nextGender);
-              }}
-            >
-              <VmSelect.Trigger>
-                <VmSelect.Value>
-                  {draft.gender
-                    ? getOptionLabel(GENDER_LABELS, draft.gender)
-                    : 'Sin especificar'}
-                </VmSelect.Value>
-                <VmSelect.Indicator />
-              </VmSelect.Trigger>
-              <VmSelect.Popover>
-                <VmListBox aria-label="Generos">
-                  <VmListBox.Item
-                    id={UNSPECIFIED_GENDER_KEY}
-                    textValue="Sin especificar"
-                  >
-                    Sin especificar
-                    <VmListBox.ItemIndicator />
-                  </VmListBox.Item>
-                  {Object.entries(GENDER_LABELS).map(([value, label]) => (
-                    <VmListBox.Item key={value} id={value} textValue={label}>
-                      {label}
-                      <VmListBox.ItemIndicator />
-                    </VmListBox.Item>
-                  ))}
-                </VmListBox>
-              </VmSelect.Popover>
-            </VmSelect>
-          </Field>
-
-          <Field>
-            <FieldLabel>Tipo de documento</FieldLabel>
-            <VmSelect
-              aria-label="Tipo de documento"
-              selectedKey={draft.documentType ?? 'cedula'}
-              isDisabled={saving}
-              onSelectionChange={(key) => {
-                const nextDocumentType = (
-                  key ? String(key) : 'cedula'
-                ) as HrEmployeeInput['documentType'];
-                updateField('documentType', nextDocumentType);
-              }}
-            >
-              <VmSelect.Trigger>
-                <VmSelect.Value>
-                  {getOptionLabel(DOCUMENT_TYPE_LABELS, draft.documentType)}
-                </VmSelect.Value>
-                <VmSelect.Indicator />
-              </VmSelect.Trigger>
-              <VmSelect.Popover>
-                <VmListBox aria-label="Tipos de documento">
-                  {Object.entries(DOCUMENT_TYPE_LABELS).map(
-                    ([value, label]) => (
-                      <VmListBox.Item key={value} id={value} textValue={label}>
-                        {label}
-                        <VmListBox.ItemIndicator />
-                      </VmListBox.Item>
-                    ),
-                  )}
-                </VmListBox>
-              </VmSelect.Popover>
-            </VmSelect>
-          </Field>
-
-          <Field>
-            <FieldLabel>Documento</FieldLabel>
-            <VmInput
-              aria-label="Documento"
-              value={draft.documentId ?? ''}
-              disabled={saving}
-              placeholder={
-                DOCUMENT_PLACEHOLDERS[draft.documentType ?? 'cedula']
-              }
-              onChange={(event) =>
-                updateField('documentId', event.target.value)
-              }
-            />
-          </Field>
-
-          <FullWidthField>
-            <FieldLabel>Usuario vinculado</FieldLabel>
-            <VmSelect
-              aria-label="Usuario vinculado"
-              selectedKey={draft.linkedUserId ?? null}
-              isDisabled={saving}
-              onSelectionChange={handleLinkedUserChange}
-            >
-              <VmSelect.Trigger>
-                <VmSelect.Value>
-                  {userOptions.find(
-                    (option) => option.value === draft.linkedUserId,
-                  )?.label ?? 'Sin usuario'}
-                </VmSelect.Value>
-                <VmSelect.Indicator />
-              </VmSelect.Trigger>
-              <VmSelect.Popover>
-                <VmListBox aria-label="Usuarios del negocio">
-                  <VmListBox.Item id="" textValue="Sin usuario">
-                    Sin usuario
-                    <VmListBox.ItemIndicator />
-                  </VmListBox.Item>
-                  {userOptions.map((option) => (
-                    <VmListBox.Item
-                      key={option.value}
-                      id={option.value}
-                      textValue={option.label}
-                    >
-                      {option.label}
-                      <VmListBox.ItemIndicator />
-                    </VmListBox.Item>
-                  ))}
-                </VmListBox>
-              </VmSelect.Popover>
-            </VmSelect>
-            <FieldHint>
-              Usa datos del usuario para completar campos vacios; puedes editar
-              el colaborador manualmente.
-            </FieldHint>
-          </FullWidthField>
-
-          <Field>
-            <FieldLabel>Correo</FieldLabel>
-            <VmInput
-              aria-label="Correo"
-              type="email"
-              value={draft.email ?? ''}
-              disabled={saving}
-              placeholder="correo@empresa.com"
-              onChange={(event) => updateField('email', event.target.value)}
-            />
-          </Field>
-
-          <Field>
-            <FieldLabel>Telefono</FieldLabel>
-            <VmPhoneField
-              id="hr-employee-phone"
-              ariaLabel="Telefono"
-              value={draft.phone ?? ''}
-              disabled={saving}
-              onValueChange={(phone) => updateField('phone', phone)}
-            />
-          </Field>
-
-          <Field>
-            <FieldLabel>Tipo de pago</FieldLabel>
-            <VmSelect
-              aria-label="Tipo de pago"
-              selectedKey={draft.payType ?? 'salary'}
-              isDisabled={saving}
-              onSelectionChange={(key) =>
-                updateField(
-                  'payType',
-                  String(key) as HrEmployeeInput['payType'],
-                )
-              }
-            >
-              <VmSelect.Trigger>
-                <VmSelect.Value>
-                  {getOptionLabel(PAY_TYPE_LABELS, draft.payType)}
-                </VmSelect.Value>
-                <VmSelect.Indicator />
-              </VmSelect.Trigger>
-              <VmSelect.Popover>
-                <VmListBox aria-label="Tipos de pago">
-                  {Object.entries(PAY_TYPE_LABELS).map(([value, label]) => (
-                    <VmListBox.Item key={value} id={value} textValue={label}>
-                      {label}
-                      <VmListBox.ItemIndicator />
-                    </VmListBox.Item>
-                  ))}
-                </VmListBox>
-              </VmSelect.Popover>
-            </VmSelect>
-          </Field>
-
-          <Field>
-            <FieldLabel>Metodo de pago</FieldLabel>
-            <VmSelect
-              aria-label="Metodo de pago"
-              selectedKey={draft.paymentMethod ?? 'bank_transfer'}
-              isDisabled={saving}
-              onSelectionChange={(key) =>
-                updateField(
-                  'paymentMethod',
-                  String(key) as HrEmployeeInput['paymentMethod'],
-                )
-              }
-            >
-              <VmSelect.Trigger>
-                <VmSelect.Value>
-                  {getOptionLabel(PAYMENT_METHOD_LABELS, draft.paymentMethod)}
-                </VmSelect.Value>
-                <VmSelect.Indicator />
-              </VmSelect.Trigger>
-              <VmSelect.Popover>
-                <VmListBox aria-label="Metodos de pago">
-                  {Object.entries(PAYMENT_METHOD_LABELS)
-                    .filter(
-                      ([value]) => value !== 'transfer' && value !== 'card',
+              <Field>
+                <FieldLabel>Estado</FieldLabel>
+                <VmSelect
+                  aria-label="Estado"
+                  selectedKey={draft.status ?? 'active'}
+                  isDisabled={saving}
+                  onSelectionChange={(key) =>
+                    updateField(
+                      'status',
+                      String(key) as HrEmployeeInput['status'],
                     )
-                    .map(([value, label]) => (
-                      <VmListBox.Item key={value} id={value} textValue={label}>
-                        {label}
+                  }
+                >
+                  <VmSelect.Trigger>
+                    <VmSelect.Value>
+                      {getOptionLabel(STATUS_LABELS, draft.status)}
+                    </VmSelect.Value>
+                    <VmSelect.Indicator />
+                  </VmSelect.Trigger>
+                  <VmSelect.Popover>
+                    <VmListBox aria-label="Estados">
+                      {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                        <VmListBox.Item
+                          key={value}
+                          id={value}
+                          textValue={label}
+                        >
+                          {label}
+                          <VmListBox.ItemIndicator />
+                        </VmListBox.Item>
+                      ))}
+                    </VmListBox>
+                  </VmSelect.Popover>
+                </VmSelect>
+              </Field>
+
+              <Field>
+                <FieldLabel>Nombre</FieldLabel>
+                <VmInput
+                  aria-label="Nombre"
+                  value={draft.fullName ?? ''}
+                  disabled={saving}
+                  placeholder="Nombre del colaborador"
+                  onChange={(event) =>
+                    updateField('fullName', event.target.value)
+                  }
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel>Genero</FieldLabel>
+                <VmSelect
+                  aria-label="Genero"
+                  selectedKey={draft.gender ?? UNSPECIFIED_GENDER_KEY}
+                  isDisabled={saving}
+                  onSelectionChange={(key) => {
+                    const nextGender =
+                      key && String(key) !== UNSPECIFIED_GENDER_KEY
+                        ? (String(key) as HrEmployeeInput['gender'])
+                        : null;
+                    updateField('gender', nextGender);
+                  }}
+                >
+                  <VmSelect.Trigger>
+                    <VmSelect.Value>
+                      {draft.gender
+                        ? getOptionLabel(GENDER_LABELS, draft.gender)
+                        : 'Sin especificar'}
+                    </VmSelect.Value>
+                    <VmSelect.Indicator />
+                  </VmSelect.Trigger>
+                  <VmSelect.Popover>
+                    <VmListBox aria-label="Generos">
+                      <VmListBox.Item
+                        id={UNSPECIFIED_GENDER_KEY}
+                        textValue="Sin especificar"
+                      >
+                        Sin especificar
                         <VmListBox.ItemIndicator />
                       </VmListBox.Item>
-                    ))}
-                </VmListBox>
-              </VmSelect.Popover>
-            </VmSelect>
-          </Field>
+                      {Object.entries(GENDER_LABELS).map(([value, label]) => (
+                        <VmListBox.Item
+                          key={value}
+                          id={value}
+                          textValue={label}
+                        >
+                          {label}
+                          <VmListBox.ItemIndicator />
+                        </VmListBox.Item>
+                      ))}
+                    </VmListBox>
+                  </VmSelect.Popover>
+                </VmSelect>
+              </Field>
+            </FieldGrid>
+          </FieldSection>
 
-          <Field>
-            <FieldLabel>Salario base</FieldLabel>
-            <VmNumberField
-              aria-label="Salario base"
-              minValue={0}
-              value={toFiniteNumber(draft.baseSalaryAmount)}
-              isDisabled={saving}
-              onChange={(value) => updateField('baseSalaryAmount', value)}
-            >
-              <VmNumberField.Group>
-                <VmNumberField.Input />
-              </VmNumberField.Group>
-            </VmNumberField>
-          </Field>
+          <FieldSection>
+            <FieldSectionTitle>Documento y vinculación</FieldSectionTitle>
+            <FieldGrid>
+              <Field>
+                <FieldLabel>Tipo de documento</FieldLabel>
+                <VmSelect
+                  aria-label="Tipo de documento"
+                  selectedKey={draft.documentType ?? 'cedula'}
+                  isDisabled={saving}
+                  onSelectionChange={(key) => {
+                    const nextDocumentType = (
+                      key ? String(key) : 'cedula'
+                    ) as HrEmployeeInput['documentType'];
+                    updateField('documentType', nextDocumentType);
+                  }}
+                >
+                  <VmSelect.Trigger>
+                    <VmSelect.Value>
+                      {getOptionLabel(DOCUMENT_TYPE_LABELS, draft.documentType)}
+                    </VmSelect.Value>
+                    <VmSelect.Indicator />
+                  </VmSelect.Trigger>
+                  <VmSelect.Popover>
+                    <VmListBox aria-label="Tipos de documento">
+                      {Object.entries(DOCUMENT_TYPE_LABELS).map(
+                        ([value, label]) => (
+                          <VmListBox.Item
+                            key={value}
+                            id={value}
+                            textValue={label}
+                          >
+                            {label}
+                            <VmListBox.ItemIndicator />
+                          </VmListBox.Item>
+                        ),
+                      )}
+                    </VmListBox>
+                  </VmSelect.Popover>
+                </VmSelect>
+              </Field>
 
-          <SalaryDeductionsSection
-            baseSalaryAmount={toFiniteNumber(draft.baseSalaryAmount)}
-            disabled={saving}
-            value={draft.salaryDeductions}
-            onChange={(salaryDeductions) =>
-              updateField('salaryDeductions', salaryDeductions)
-            }
-          />
+              <Field>
+                <FieldLabel>Documento</FieldLabel>
+                <VmInput
+                  aria-label="Documento"
+                  value={draft.documentId ?? ''}
+                  disabled={saving}
+                  placeholder={
+                    DOCUMENT_PLACEHOLDERS[draft.documentType ?? 'cedula']
+                  }
+                  onChange={(event) =>
+                    updateField('documentId', event.target.value)
+                  }
+                />
+              </Field>
 
-          <Field>
-            <FieldLabel>Tarifa por hora</FieldLabel>
-            <VmNumberField
-              aria-label="Tarifa por hora"
-              minValue={0}
-              value={toFiniteNumber(draft.hourlyRateAmount)}
-              isDisabled={saving}
-              onChange={(value) => updateField('hourlyRateAmount', value)}
-            >
-              <VmNumberField.Group>
-                <VmNumberField.Input />
-              </VmNumberField.Group>
-            </VmNumberField>
-          </Field>
+              <FullWidthField>
+                <FieldLabel>Usuario vinculado</FieldLabel>
+                <VmSelect
+                  aria-label="Usuario vinculado"
+                  selectedKey={draft.linkedUserId ?? null}
+                  isDisabled={saving}
+                  onSelectionChange={handleLinkedUserChange}
+                >
+                  <VmSelect.Trigger>
+                    <VmSelect.Value>
+                      {userOptions.find(
+                        (option) => option.value === draft.linkedUserId,
+                      )?.label ?? 'Sin usuario'}
+                    </VmSelect.Value>
+                    <VmSelect.Indicator />
+                  </VmSelect.Trigger>
+                  <VmSelect.Popover>
+                    <VmListBox aria-label="Usuarios del negocio">
+                      <VmListBox.Item id="" textValue="Sin usuario">
+                        Sin usuario
+                        <VmListBox.ItemIndicator />
+                      </VmListBox.Item>
+                      {userOptions.map((option) => (
+                        <VmListBox.Item
+                          key={option.value}
+                          id={option.value}
+                          textValue={option.label}
+                        >
+                          {option.label}
+                          <VmListBox.ItemIndicator />
+                        </VmListBox.Item>
+                      ))}
+                    </VmListBox>
+                  </VmSelect.Popover>
+                </VmSelect>
+                <FieldHint>
+                  Usa datos del usuario para completar campos vacios; puedes
+                  editar el colaborador manualmente.
+                </FieldHint>
+              </FullWidthField>
+            </FieldGrid>
+          </FieldSection>
 
-          <Field>
-            <FieldLabel>Moneda</FieldLabel>
-            <VmInput
-              aria-label="Moneda"
-              value={draft.currency ?? 'DOP'}
-              disabled={saving}
-              maxLength={3}
-              placeholder="DOP"
-              onChange={(event) => updateField('currency', event.target.value)}
-            />
-          </Field>
+          <FieldSection>
+            <FieldSectionTitle>Contacto</FieldSectionTitle>
+            <FieldGrid>
+              <Field>
+                <FieldLabel>Correo</FieldLabel>
+                <VmInput
+                  aria-label="Correo"
+                  type="email"
+                  value={draft.email ?? ''}
+                  disabled={saving}
+                  placeholder="correo@empresa.com"
+                  onChange={(event) => updateField('email', event.target.value)}
+                />
+              </Field>
 
-          <Field>
-            <FieldLabel>Destino de pago</FieldLabel>
-            <VmInput
-              aria-label="Destino de pago"
-              value={draft.paymentDestination ?? ''}
-              disabled={saving}
-              placeholder="Cuenta, banco o referencia"
-              onChange={(event) =>
-                updateField('paymentDestination', event.target.value)
-              }
-            />
-          </Field>
+              <Field>
+                <FieldLabel>Telefono</FieldLabel>
+                <VmPhoneField
+                  id="hr-employee-phone"
+                  ariaLabel="Telefono"
+                  value={draft.phone ?? ''}
+                  disabled={saving}
+                  onValueChange={(phone) => updateField('phone', phone)}
+                />
+              </Field>
 
-          <FullWidthField>
-            <FieldLabel>Direccion</FieldLabel>
-            <VmInput
-              aria-label="Direccion"
-              value={draft.address ?? ''}
-              disabled={saving}
-              placeholder="Direccion"
-              onChange={(event) => updateField('address', event.target.value)}
-            />
-          </FullWidthField>
+              <FullWidthField>
+                <FieldLabel>Direccion</FieldLabel>
+                <VmInput
+                  aria-label="Direccion"
+                  value={draft.address ?? ''}
+                  disabled={saving}
+                  placeholder="Direccion"
+                  onChange={(event) =>
+                    updateField('address', event.target.value)
+                  }
+                />
+              </FullWidthField>
+            </FieldGrid>
+          </FieldSection>
 
-          <FullWidthField>
-            <FieldLabel>Notas</FieldLabel>
-            <VmTextArea
-              aria-label="Notas"
-              value={draft.notes ?? ''}
-              disabled={saving}
-              rows={3}
-              placeholder="Notas internas"
-              onChange={(event) => updateField('notes', event.target.value)}
-            />
-          </FullWidthField>
-        </FieldGrid>
+          <FieldSection>
+            <FieldSectionTitle>Pago y nómina</FieldSectionTitle>
+            <FieldGrid>
+              <Field>
+                <FieldLabel>Tipo de pago</FieldLabel>
+                <VmSelect
+                  aria-label="Tipo de pago"
+                  selectedKey={draft.payType ?? 'salary'}
+                  isDisabled={saving}
+                  onSelectionChange={(key) =>
+                    updateField(
+                      'payType',
+                      String(key) as HrEmployeeInput['payType'],
+                    )
+                  }
+                >
+                  <VmSelect.Trigger>
+                    <VmSelect.Value>
+                      {getOptionLabel(PAY_TYPE_LABELS, draft.payType)}
+                    </VmSelect.Value>
+                    <VmSelect.Indicator />
+                  </VmSelect.Trigger>
+                  <VmSelect.Popover>
+                    <VmListBox aria-label="Tipos de pago">
+                      {Object.entries(PAY_TYPE_LABELS).map(([value, label]) => (
+                        <VmListBox.Item
+                          key={value}
+                          id={value}
+                          textValue={label}
+                        >
+                          {label}
+                          <VmListBox.ItemIndicator />
+                        </VmListBox.Item>
+                      ))}
+                    </VmListBox>
+                  </VmSelect.Popover>
+                </VmSelect>
+              </Field>
+
+              <Field>
+                <FieldLabel>Metodo de pago</FieldLabel>
+                <VmSelect
+                  aria-label="Metodo de pago"
+                  selectedKey={draft.paymentMethod ?? 'bank_transfer'}
+                  isDisabled={saving}
+                  onSelectionChange={(key) =>
+                    updateField(
+                      'paymentMethod',
+                      String(key) as HrEmployeeInput['paymentMethod'],
+                    )
+                  }
+                >
+                  <VmSelect.Trigger>
+                    <VmSelect.Value>
+                      {getOptionLabel(
+                        PAYMENT_METHOD_LABELS,
+                        draft.paymentMethod,
+                      )}
+                    </VmSelect.Value>
+                    <VmSelect.Indicator />
+                  </VmSelect.Trigger>
+                  <VmSelect.Popover>
+                    <VmListBox aria-label="Metodos de pago">
+                      {Object.entries(PAYMENT_METHOD_LABELS)
+                        .filter(
+                          ([value]) => value !== 'transfer' && value !== 'card',
+                        )
+                        .map(([value, label]) => (
+                          <VmListBox.Item
+                            key={value}
+                            id={value}
+                            textValue={label}
+                          >
+                            {label}
+                            <VmListBox.ItemIndicator />
+                          </VmListBox.Item>
+                        ))}
+                    </VmListBox>
+                  </VmSelect.Popover>
+                </VmSelect>
+              </Field>
+
+              <Field>
+                <FieldLabel>Salario base</FieldLabel>
+                <VmNumberField
+                  aria-label="Salario base"
+                  minValue={0}
+                  value={toFiniteNumber(draft.baseSalaryAmount)}
+                  isDisabled={saving}
+                  onChange={(value) => updateField('baseSalaryAmount', value)}
+                >
+                  <VmNumberField.Group>
+                    <VmNumberField.Input />
+                  </VmNumberField.Group>
+                </VmNumberField>
+              </Field>
+
+              <SalaryDeductionsSection
+                baseSalaryAmount={toFiniteNumber(draft.baseSalaryAmount)}
+                disabled={saving}
+                value={draft.salaryDeductions}
+                onChange={(salaryDeductions) =>
+                  updateField('salaryDeductions', salaryDeductions)
+                }
+              />
+
+              <Field>
+                <FieldLabel>Tarifa por hora</FieldLabel>
+                <VmNumberField
+                  aria-label="Tarifa por hora"
+                  minValue={0}
+                  value={toFiniteNumber(draft.hourlyRateAmount)}
+                  isDisabled={saving}
+                  onChange={(value) => updateField('hourlyRateAmount', value)}
+                >
+                  <VmNumberField.Group>
+                    <VmNumberField.Input />
+                  </VmNumberField.Group>
+                </VmNumberField>
+              </Field>
+
+              <Field>
+                <FieldLabel>Moneda</FieldLabel>
+                <VmInput
+                  aria-label="Moneda"
+                  value={draft.currency ?? 'DOP'}
+                  disabled={saving}
+                  maxLength={3}
+                  placeholder="DOP"
+                  onChange={(event) =>
+                    updateField('currency', event.target.value)
+                  }
+                />
+              </Field>
+
+              <FullWidthField>
+                <FieldLabel>Destino de pago</FieldLabel>
+                <VmInput
+                  aria-label="Destino de pago"
+                  value={draft.paymentDestination ?? ''}
+                  disabled={saving}
+                  placeholder="Cuenta, banco o referencia"
+                  onChange={(event) =>
+                    updateField('paymentDestination', event.target.value)
+                  }
+                />
+              </FullWidthField>
+            </FieldGrid>
+          </FieldSection>
+
+          <FieldSection>
+            <FieldSectionTitle>Notas internas</FieldSectionTitle>
+            <FieldGrid>
+              <FullWidthField>
+                <FieldLabel>Notas</FieldLabel>
+                <VmTextArea
+                  aria-label="Notas"
+                  value={draft.notes ?? ''}
+                  disabled={saving}
+                  rows={3}
+                  placeholder="Notas internas"
+                  onChange={(event) => updateField('notes', event.target.value)}
+                />
+              </FullWidthField>
+            </FieldGrid>
+          </FieldSection>
+        </FormSections>
       </VmForm>
     </VmModal>
   );

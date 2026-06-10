@@ -28,7 +28,13 @@ export const NextCutPanel = styled.section`
   box-shadow: var(--ds-shadow-xs, 0 1px 2px rgb(15 23 42 / 6%));
 
   &[data-blocked='true'] {
+    border-color: #f59e0b;
     border-left-color: var(--ds-color-state-warning);
+    background: #fffbeb;
+  }
+
+  &[data-loading='true'] {
+    border-left-color: var(--ds-color-border-focus);
   }
 
   @media (width <= 760px) {
@@ -241,6 +247,27 @@ export const DetailScreenActions = styled.div`
   gap: var(--ds-space-2);
   align-items: center;
   justify-content: flex-end;
+`;
+
+export const ExportMenuItemContent = styled.span`
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+`;
+
+export const ExportMenuItemTitle = styled.span`
+  display: inline-flex;
+  gap: var(--ds-space-2);
+  align-items: center;
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-semibold);
+`;
+
+export const ExportMenuItemDescription = styled.span`
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-xs);
+  line-height: var(--ds-line-height-normal);
 `;
 
 export const DetailHeader = styled.header`

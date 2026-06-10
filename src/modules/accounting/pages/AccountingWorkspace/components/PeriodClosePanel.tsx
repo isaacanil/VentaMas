@@ -1,4 +1,4 @@
-import { Button, Input, Modal, Select, message } from 'antd';
+import { Button, Checkbox, Input, Modal, Select, message } from 'antd';
 import { useMemo, useState } from 'react';
 import styled, { css } from 'styled-components';
 
@@ -27,7 +27,11 @@ interface PeriodOption {
 interface PeriodClosePanelProps {
   closures: AccountingPeriodClosure[];
   closing: boolean;
-  onClosePeriod: (periodKey: string, note?: string) => Promise<boolean>;
+  onClosePeriod: (
+    periodKey: string,
+    note?: string,
+    options?: { confirmFiscalYearClose?: boolean },
+  ) => Promise<boolean>;
   periods: PeriodOption[];
 }
 
@@ -59,6 +63,7 @@ export const PeriodClosePanel = ({
   const [note, setNote] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [confirmFiscalYearClose, setConfirmFiscalYearClose] = useState(false);
 
   const sortedPeriods = useMemo(
     () =>
@@ -87,8 +92,9 @@ export const PeriodClosePanel = ({
 
   const selectedPeriodData = useMemo(
     () =>
-      sortedPeriods.find((period) => period.periodKey === resolvedSelectedPeriod) ??
-      null,
+      sortedPeriods.find(
+        (period) => period.periodKey === resolvedSelectedPeriod,
+      ) ?? null,
     [resolvedSelectedPeriod, sortedPeriods],
   );
   const openPeriods = useMemo(
@@ -100,6 +106,9 @@ export const PeriodClosePanel = ({
     [sortedPeriods],
   );
   const canCloseSelected = selectedPeriodData?.status === 'open';
+  const isFiscalYearEndSelected = resolvedSelectedPeriod.endsWith('-12');
+  const canConfirmClose =
+    canCloseSelected && (!isFiscalYearEndSelected || confirmFiscalYearClose);
 
   const handleClosePeriod = async () => {
     if (!resolvedSelectedPeriod) {
@@ -109,10 +118,15 @@ export const PeriodClosePanel = ({
     const closed = await onClosePeriod(
       resolvedSelectedPeriod,
       note.trim() || undefined,
+      {
+        confirmFiscalYearClose:
+          isFiscalYearEndSelected && confirmFiscalYearClose,
+      },
     );
 
     if (closed) {
       setNote('');
+      setConfirmFiscalYearClose(false);
       setModalOpen(false);
     }
   };
@@ -183,7 +197,9 @@ export const PeriodClosePanel = ({
                 </StripMetric>
                 <StripMetric>
                   <span>Acumulado</span>
-                  <strong>{formatAccountingMoney(selectedPeriodData.amount)}</strong>
+                  <strong>
+                    {formatAccountingMoney(selectedPeriodData.amount)}
+                  </strong>
                 </StripMetric>
                 <StripDivider />
                 <StripMetric>
@@ -265,7 +281,10 @@ export const PeriodClosePanel = ({
       <Modal
         open={modalOpen}
         title="Cerrar periodo"
-        onCancel={() => setModalOpen(false)}
+        onCancel={() => {
+          setConfirmFiscalYearClose(false);
+          setModalOpen(false);
+        }}
         footer={null}
         width={440}
         destroyOnClose
@@ -305,13 +324,35 @@ export const PeriodClosePanel = ({
             </ActionNotice>
           )}
 
+          {isFiscalYearEndSelected && canCloseSelected && (
+            <ActionNotice $tone="open">
+              <ActionNoticeTitle>
+                Cierre anual enero-diciembre
+              </ActionNoticeTitle>
+              <ActionNoticeText>
+                Este cierre genera el asiento anual de resultados para el
+                ejercicio terminado el 31 de diciembre.
+              </ActionNoticeText>
+              <Checkbox
+                checked={confirmFiscalYearClose}
+                onChange={(event) =>
+                  setConfirmFiscalYearClose(event.target.checked)
+                }
+              >
+                Confirmo que quiero cerrar el ejercicio fiscal anual.
+              </Checkbox>
+            </ActionNotice>
+          )}
+
           <ModalFooter>
             <Button onClick={() => setModalOpen(false)}>Cancelar</Button>
             <Button
               type="primary"
               loading={closing}
-              disabled={!canCloseSelected}
-              onClick={() => { void handleClosePeriod(); }}
+              disabled={!canConfirmClose}
+              onClick={() => {
+                void handleClosePeriod();
+              }}
             >
               Confirmar cierre
             </Button>

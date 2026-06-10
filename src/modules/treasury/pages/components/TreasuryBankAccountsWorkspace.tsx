@@ -83,6 +83,8 @@ export const TreasuryBankAccountsWorkspace = () => {
   const {
     addBankAccount,
     addCashAccount,
+    backfillBankAccountChartLinks,
+    backfillingBankAccountChartLinks,
     bankAccounts,
     bankInstitutionCatalog,
     bankInstitutionCatalogError,
@@ -665,8 +667,14 @@ export const TreasuryBankAccountsWorkspace = () => {
                   latestReconciliationsByBankAccountId
                 }
                 ledgerEntriesByAccountKey={ledgerEntriesByAccountKey}
+                linkingBankAccountsToAccounting={
+                  backfillingBankAccountChartLinks
+                }
                 selectedAccountKey={null}
                 view={activeAccountView}
+                onAddBankAccountsToAccounting={() => {
+                  void backfillBankAccountChartLinks();
+                }}
                 onConfigureAccount={handleConfigureAccount}
                 onOpenReconciliation={handleOpenReconciliation}
                 onOpenTransfer={handleOpenTransfer}

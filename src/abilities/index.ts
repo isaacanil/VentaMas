@@ -10,6 +10,8 @@ import { defineAbilitiesForOwner } from './roles/owner';
 
 const DEV_ACCESS_ACTION = 'developerAccess';
 const DEV_ACCESS_SUBJECT = 'all';
+const ACCOUNTING_READ_ACTION = 'accountingRead';
+const ACCOUNTING_READ_SUBJECT = 'all';
 
 const ROLE_ABILITIES = {
   ownerAbilities: defineAbilitiesForOwner, //dueño
@@ -93,10 +95,39 @@ function getBaseAbilitiesForRole(user: any) {
     case 'dev':
       return devAbilities(user);
     case 'manager':
-      return managerAbilities(user);
+      return withAccountingReadAccess(managerAbilities(user));
+    case 'accountant':
+    case 'controller':
+    case 'auditor':
+      return [
+        {
+          action: ACCOUNTING_READ_ACTION,
+          subject: ACCOUNTING_READ_SUBJECT,
+        },
+      ];
     default:
       return []; // si no se reconoce el rol, no se dan habilidades
   }
+}
+
+function withAccountingReadAccess(rules: any) {
+  const normalizedRules = normalizeRules(rules);
+  const alreadyHasAccountingRead = normalizedRules.some(
+    (rule: any) =>
+      rule?.action === ACCOUNTING_READ_ACTION &&
+      rule?.subject === ACCOUNTING_READ_SUBJECT &&
+      rule?.inverted !== true,
+  );
+
+  return alreadyHasAccountingRead
+    ? normalizedRules
+    : [
+        ...normalizedRules,
+        {
+          action: ACCOUNTING_READ_ACTION,
+          subject: ACCOUNTING_READ_SUBJECT,
+        },
+      ];
 }
 
 function combineAbilities(baseAbilities: any, dynamicPermissions: any) {

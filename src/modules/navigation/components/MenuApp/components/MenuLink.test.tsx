@@ -61,4 +61,26 @@ describe('MenuLink', () => {
 
     expect(screen.getByText('submenu:Contabilidad')).toBeInTheDocument();
   });
+
+  it('underlines the matching part of the title while searching without requiring accents', () => {
+    const item: MenuItem = {
+      title: 'Nómina fija',
+      route: '/nomina-fija',
+    };
+
+    const { container } = render(
+      <MemoryRouter initialEntries={['/inicio']}>
+        <ThemeProvider theme={testTheme}>
+          <MenuLink item={item} searchQuery="nomina" />
+        </ThemeProvider>
+      </MemoryRouter>,
+    );
+
+    expect(
+      screen.getByRole('link', { name: 'Nómina fija' }),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-search-match="true"]'),
+    ).toHaveTextContent('Nómina');
+  });
 });

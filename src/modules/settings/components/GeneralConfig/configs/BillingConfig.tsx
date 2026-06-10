@@ -65,8 +65,8 @@ const BillingConfig = () => {
         >
           <SettingCard
             icon={<DollarOutlined />}
-            title="Comisiones de Servicios"
-            description="Activa el colaborador por linea de servicio y define la tasa predeterminada para reportes internos."
+            title="Comisiones de servicios"
+            description="Activa el colaborador por línea de servicio y define la tasa predeterminada para reportes internos."
             summary={commissionsSummary}
             onConfigClick={() => setActiveModal('commissions')}
           />
@@ -101,8 +101,8 @@ const BillingConfig = () => {
         </Modal>
 
         <VmModal
-          title="Configuracion de Comisiones"
-          ariaLabel="Configuracion de Comisiones"
+          title="Configuración de comisiones"
+          ariaLabel="Configuración de comisiones"
           isOpen={activeModal === 'commissions'}
           onOpenChange={handleCommissionModalOpenChange}
           size="lg"

@@ -82,6 +82,7 @@ export const normalizeCashAccountRecord = (
     currency: String(record.currency ?? 'DOP').trim().toUpperCase() as SupportedDocumentCurrency,
     status: normalizeCashAccountStatus(record.status),
     type: normalizeCashAccountType(record.type),
+    chartOfAccountId: toCleanString(record.chartOfAccountId),
     location: toCleanString(record.location),
     openingBalance: safeNumber(record.openingBalance),
     openingBalanceDate: record.openingBalanceDate ?? null,

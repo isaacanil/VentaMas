@@ -1,25 +1,22 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { message } from 'antd';
-import {
-  collection,
-  onSnapshot,
-} from 'firebase/firestore';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { fbCloseAccountingPeriod } from '@/firebase/accounting/fbCloseAccountingPeriod';
 import { fbCreateManualJournalEntry } from '@/firebase/accounting/fbCreateManualJournalEntry';
+import { fbReplayAccountingEventProjection } from '@/firebase/accounting/fbReplayAccountingEventProjection';
 import { fbReverseJournalEntry } from '@/firebase/accounting/fbReverseJournalEntry';
 import { db } from '@/firebase/firebaseconfig';
 import { useAccountingConfig } from '@/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useAccountingConfig';
 import { useAccountingPostingProfiles } from '@/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useAccountingPostingProfiles';
 import { useChartOfAccounts } from '@/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useChartOfAccounts';
+import { useCashAccounts } from '@/modules/treasury/hooks/useCashAccounts';
 import type { AccountingEvent, JournalEntry } from '@/types/accounting';
 import { normalizeAccountingEventRecord } from '@/utils/accounting/accountingEvents';
 import { resolveUserDisplayNamesBatch } from '@/utils/users/resolveUserDisplayNamesBatch';
-import {
-  normalizeJournalEntryRecord,
-} from '@/utils/accounting/journalEntries';
+import { normalizeJournalEntryRecord } from '@/utils/accounting/journalEntries';
 import {
   isAccountingPeriodClosed,
   resolveAccountingPeriodStatus,
@@ -30,9 +27,13 @@ import {
   buildLedgerRecords,
   buildPeriodOptions,
   buildWorkspaceSummary,
+  normalizeAccountingProjectionDeadLetterRecord,
 } from '../utils/accountingWorkspace';
 
-import type { AccountingPeriodClosure } from '../utils/accountingWorkspace';
+import type {
+  AccountingPeriodClosure,
+  AccountingProjectionDeadLetter,
+} from '../utils/accountingWorkspace';
 
 interface ManualEntryInput {
   description: string;
@@ -98,6 +99,10 @@ export const useAccountingWorkspace = ({
     includeHistory: includeAccountingSetup,
     userId,
   });
+  const { cashAccounts } = useCashAccounts({
+    businessId,
+    userId,
+  });
   const {
     chartOfAccounts,
     error: chartError,
@@ -118,21 +123,34 @@ export const useAccountingWorkspace = ({
     enabled: includeAccountingSetup && config.generalAccountingEnabled,
     userId,
   });
-  const [accountingEvents, setAccountingEvents] = useState<AccountingEvent[]>([]);
-  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
-  const [periodClosures, setPeriodClosures] = useState<AccountingPeriodClosure[]>(
+  const [accountingEvents, setAccountingEvents] = useState<AccountingEvent[]>(
     [],
   );
+  const [projectionDeadLetters, setProjectionDeadLetters] = useState<
+    AccountingProjectionDeadLetter[]
+  >([]);
+  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
+  const [periodClosures, setPeriodClosures] = useState<
+    AccountingPeriodClosure[]
+  >([]);
   const [eventsLoading, setEventsLoading] = useState(true);
+  const [deadLettersLoading, setDeadLettersLoading] = useState(true);
   const [journalLoading, setJournalLoading] = useState(true);
   const [periodLoading, setPeriodLoading] = useState(true);
-  const [userNamesById, setUserNamesById] = useState<Record<string, string>>({});
+  const [userNamesById, setUserNamesById] = useState<Record<string, string>>(
+    {},
+  );
   const [savingManualEntry, setSavingManualEntry] = useState(false);
   const [closingPeriod, setClosingPeriod] = useState(false);
   const [reversingEntryId, setReversingEntryId] = useState<string | null>(null);
+  const [replayingEventId, setReplayingEventId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!includeLedgerRecords || !businessId || !config.generalAccountingEnabled) {
+    if (
+      !includeLedgerRecords ||
+      !businessId ||
+      !config.generalAccountingEnabled
+    ) {
       setAccountingEvents([]);
       setEventsLoading(false);
       return;
@@ -140,7 +158,12 @@ export const useAccountingWorkspace = ({
 
     setEventsLoading(true);
 
-    const eventsRef = collection(db, 'businesses', businessId, 'accountingEvents');
+    const eventsRef = collection(
+      db,
+      'businesses',
+      businessId,
+      'accountingEvents',
+    );
     const unsubscribe = onSnapshot(
       eventsRef,
       (snapshot) => {
@@ -166,7 +189,57 @@ export const useAccountingWorkspace = ({
   }, [businessId, config.generalAccountingEnabled, includeLedgerRecords]);
 
   useEffect(() => {
-    if (!includeLedgerRecords || !businessId || !config.generalAccountingEnabled) {
+    if (
+      !includeLedgerRecords ||
+      !businessId ||
+      !config.generalAccountingEnabled
+    ) {
+      setProjectionDeadLetters([]);
+      setDeadLettersLoading(false);
+      return;
+    }
+
+    setDeadLettersLoading(true);
+
+    const deadLettersRef = collection(
+      db,
+      'businesses',
+      businessId,
+      'accountingEventProjectionDeadLetters',
+    );
+    const unsubscribe = onSnapshot(
+      deadLettersRef,
+      (snapshot) => {
+        setProjectionDeadLetters(
+          snapshot.docs.map((docSnapshot) =>
+            normalizeAccountingProjectionDeadLetterRecord(
+              docSnapshot.id,
+              businessId,
+              docSnapshot.data(),
+            ),
+          ),
+        );
+        setDeadLettersLoading(false);
+      },
+      (cause) => {
+        console.error(
+          'Error cargando accountingEventProjectionDeadLetters:',
+          cause,
+        );
+        setProjectionDeadLetters([]);
+        setDeadLettersLoading(false);
+      },
+    );
+
+    return () => unsubscribe();
+  }, [businessId, config.generalAccountingEnabled, includeLedgerRecords]);
+
+  useEffect(() => {
+    if (
+      !includeLedgerRecords ||
+      !businessId ||
+      !config.generalAccountingEnabled
+    ) {
       setJournalEntries([]);
       setJournalLoading(false);
       return;
@@ -174,7 +247,12 @@ export const useAccountingWorkspace = ({
 
     setJournalLoading(true);
 
-    const journalRef = collection(db, 'businesses', businessId, 'journalEntries');
+    const journalRef = collection(
+      db,
+      'businesses',
+      businessId,
+      'journalEntries',
+    );
     const unsubscribe = onSnapshot(
       journalRef,
       (snapshot) => {
@@ -235,7 +313,11 @@ export const useAccountingWorkspace = ({
   }, [businessId, config.generalAccountingEnabled]);
 
   useEffect(() => {
-    if (!includeLedgerRecords || !businessId || !config.generalAccountingEnabled) {
+    if (
+      !includeLedgerRecords ||
+      !businessId ||
+      !config.generalAccountingEnabled
+    ) {
       setUserNamesById((currentValue) =>
         Object.keys(currentValue).length > 0 ? {} : currentValue,
       );
@@ -247,7 +329,10 @@ export const useAccountingWorkspace = ({
         [
           ...accountingEvents.map((event) => event.createdBy),
           ...journalEntries.map((entry) => entry.createdBy),
-        ].filter((value): value is string => typeof value === 'string' && value.trim().length > 0),
+        ].filter(
+          (value): value is string =>
+            typeof value === 'string' && value.trim().length > 0,
+        ),
       ),
     );
 
@@ -266,7 +351,10 @@ export const useAccountingWorkspace = ({
         }));
       })
       .catch((cause) => {
-        console.error('Error resolviendo nombres de usuarios contables:', cause);
+        console.error(
+          'Error resolviendo nombres de usuarios contables:',
+          cause,
+        );
       });
 
     return () => {
@@ -286,6 +374,7 @@ export const useAccountingWorkspace = ({
       buildLedgerRecords({
         accounts: chartOfAccounts,
         bankAccounts,
+        cashAccounts,
         events: accountingEvents,
         journalEntries,
         postingProfiles,
@@ -294,6 +383,7 @@ export const useAccountingWorkspace = ({
     [
       accountingEvents,
       bankAccounts,
+      cashAccounts,
       chartOfAccounts,
       journalEntries,
       postingProfiles,
@@ -358,7 +448,9 @@ export const useAccountingWorkspace = ({
         );
 
       if (sanitizedLines.length < 2) {
-        message.error('El asiento manual requiere al menos dos lineas validas.');
+        message.error(
+          'El asiento manual requiere al menos dos lineas validas.',
+        );
         return false;
       }
 
@@ -371,7 +463,9 @@ export const useAccountingWorkspace = ({
       );
 
       if (Math.abs(totals.debit - totals.credit) > 0.005) {
-        message.error('El asiento no cuadra. Debito y credito deben coincidir.');
+        message.error(
+          'El asiento no cuadra. Debito y credito deben coincidir.',
+        );
         return false;
       }
 
@@ -400,14 +494,15 @@ export const useAccountingWorkspace = ({
         setSavingManualEntry(false);
       }
     },
-    [
-      businessId,
-      periodClosures,
-    ],
+    [businessId, periodClosures],
   );
 
   const closePeriod = useCallback(
-    async (periodKey: string, note?: string) => {
+    async (
+      periodKey: string,
+      note?: string,
+      options?: { confirmFiscalYearClose?: boolean },
+    ) => {
       if (!businessId) {
         message.error('No se encontro el negocio activo.');
         return false;
@@ -420,12 +515,21 @@ export const useAccountingWorkspace = ({
 
       setClosingPeriod(true);
       try {
-        await fbCloseAccountingPeriod({
+        const result = await fbCloseAccountingPeriod({
           businessId,
+          ...(options?.confirmFiscalYearClose === true
+            ? { confirmFiscalYearClose: true }
+            : {}),
           periodKey,
           note: note?.trim() || undefined,
         });
-        message.success('Periodo cerrado.');
+        if (result.fiscalYearCloseCreated) {
+          message.success('Periodo cerrado y asiento anual generado.');
+        } else if (result.fiscalYearCloseReused) {
+          message.success('Periodo cerrado con asiento anual existente.');
+        } else {
+          message.success('Periodo cerrado.');
+        }
         return true;
       } catch (cause) {
         console.error('Error cerrando periodo contable:', cause);
@@ -474,6 +578,39 @@ export const useAccountingWorkspace = ({
     [businessId],
   );
 
+  const replayProjection = useCallback(
+    async (eventId: string) => {
+      if (!businessId) {
+        message.error('No se encontro el negocio activo.');
+        return false;
+      }
+
+      setReplayingEventId(eventId);
+      try {
+        const result = await fbReplayAccountingEventProjection({
+          businessId,
+          eventId,
+        });
+
+        if (result.ok) {
+          message.success('Evento contable reprocesado.');
+        } else if (result.status === 'pending_account_mapping') {
+          message.warning('El evento sigue sin mapeo contable.');
+        } else {
+          message.error('El evento no pudo reprocesarse.');
+        }
+        return result.ok;
+      } catch (cause) {
+        console.error('Error reprocesando evento contable:', cause);
+        message.error('No se pudo reprocesar el evento contable.');
+        return false;
+      } finally {
+        setReplayingEventId(null);
+      }
+    },
+    [businessId],
+  );
+
   return {
     accountingEnabled: config.generalAccountingEnabled,
     businessId,
@@ -484,15 +621,18 @@ export const useAccountingWorkspace = ({
     configLoading,
     functionalCurrency: config.functionalCurrency,
     isAccountingRolloutBusiness,
-    journalLoading: journalLoading || eventsLoading,
+    journalLoading: journalLoading || eventsLoading || deadLettersLoading,
     ledgerRecords,
     periodClosures,
     periodLoading,
     periodOptions,
     postingAccounts,
     postingProfiles,
+    projectionDeadLetters,
     postingProfilesError,
     postingProfilesLoading,
+    replayProjection,
+    replayingEventId,
     reversePostedEntry,
     saveManualEntry,
     savingManualEntry,

@@ -43,6 +43,24 @@ describe('firestore financial hardening rules', () => {
     );
   });
 
+  it('restricts accounting monitor sources to accounting read roles', () => {
+    expect(rules).toMatch(
+      /match \/businesses\/\{businessId\}\/journalEntries\/\{journalEntryId\} \{[\s\S]*?allow read: if hasAccountingReadAccess\(businessId\);/,
+    );
+    expect(rules).toMatch(
+      /match \/businesses\/\{businessId\}\/accountingEvents\/\{eventId\} \{[\s\S]*?allow read: if hasAccountingReadAccess\(businessId\);/,
+    );
+    expect(rules).toMatch(
+      /match \/businesses\/\{businessId\}\/accountingEventProjectionDeadLetters\/\{deadLetterId\} \{[\s\S]*?allow read: if hasAccountingReadAccess\(businessId\);/,
+    );
+  });
+
+  it('lets active users read the global bank institution catalog', () => {
+    expect(rules).toMatch(
+      /match \/bankInstitutionCatalog\/\{institutionId\} \{[\s\S]*?allow read: if currentUserIsActive\(\);[\s\S]*?allow write: if hasGlobalRole\(\);/,
+    );
+  });
+
   it('only lets legacy invoice writes create/update/delete drafts without posted footprint', () => {
     expect(rules).toMatch(
       /allow create: if hasBusinessWriteAccess\(businessId\)[\s\S]*?isSafeInvoiceDraftCreate\(request\.resource\.data\);/,

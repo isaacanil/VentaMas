@@ -7,6 +7,7 @@ import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 import ROUTES_NAME from '@/router/routes/routesName';
 
 import { AccountingWorkspaceShell } from './components/AccountingWorkspaceShell';
+import { AccountingMonitorPanel } from './components/AccountingMonitorPanel';
 import { FinancialReportsPanel } from './components/FinancialReportsPanel';
 import { FiscalCompliancePanel } from './components/FiscalCompliancePanel';
 import { GeneralLedgerPanel } from './components/GeneralLedgerPanel';
@@ -53,7 +54,8 @@ export default function AccountingWorkspace() {
   const shouldLoadAccountingSetup =
     activePanel !== 'general-ledger' &&
     activePanel !== 'financial-reports' &&
-    activePanel !== 'fiscal-compliance';
+    activePanel !== 'fiscal-compliance' &&
+    activePanel !== 'accounting-monitor';
   const {
     accountingEnabled,
     businessId,
@@ -74,6 +76,9 @@ export default function AccountingWorkspace() {
     postingProfiles,
     postingProfilesError,
     postingProfilesLoading,
+    projectionDeadLetters,
+    replayProjection,
+    replayingEventId,
     reversePostedEntry,
     saveManualEntry,
     savingManualEntry,
@@ -182,7 +187,7 @@ export default function AccountingWorkspace() {
             Contabilidad habilitada sin base contable completa.
           </Alert.Title>
           <Alert.Description>
-            Completa el catalogo de cuentas y los perfiles contables en
+            Completa el catalogo de cuentas y las reglas de contabilización en
             Configuracion &gt; Contabilidad. Mientras falte esta base, los
             documentos crean eventos, pero no generan asientos posteados para
             mayor y reportes.
@@ -203,7 +208,8 @@ export default function AccountingWorkspace() {
             </Alert.Title>
             <Alert.Description>
               Activa contabilidad desde Settings &gt; Accounting para usar libro
-              diario, reportes y cierres.            </Alert.Description>
+              diario, reportes y cierres.{' '}
+            </Alert.Description>
           </Alert.Content>
         </Alert>
       );
@@ -249,6 +255,15 @@ export default function AccountingWorkspace() {
             }
             periods={fiscalCompliancePeriodKeys}
             defaultPeriodKey={periodOptions[0]?.periodKey ?? null}
+          />
+        );
+      case 'accounting-monitor':
+        return (
+          <AccountingMonitorPanel
+            deadLetters={projectionDeadLetters}
+            records={ledgerRecords}
+            replayingEventId={replayingEventId}
+            onReplayIssue={replayProjection}
           />
         );
       case 'period-close':

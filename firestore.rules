@@ -396,6 +396,11 @@ service cloud.firestore {
       allow write: if hasGlobalRole();
     }
 
+    match /bankInstitutionCatalog/{institutionId} {
+      allow read: if currentUserIsActive();
+      allow write: if hasGlobalRole();
+    }
+
     match /businesses/{businessId} {
       allow read: if hasBusinessAccess(businessId);
       allow update: if hasBusinessWriteAccess(businessId);
@@ -412,19 +417,28 @@ service cloud.firestore {
     // estas colecciones ya deben mutarse desde backend/callables y no
     // deben seguir abiertas a escrituras arbitrarias desde cliente.
     match /businesses/{businessId}/journalEntries/{journalEntryId} {
-      allow read: if hasBusinessAccess(businessId);
+      allow read: if hasAccountingReadAccess(businessId);
       allow create, update, delete: if false;
       match /{document=**} {
-        allow read: if hasBusinessAccess(businessId);
+        allow read: if hasAccountingReadAccess(businessId);
         allow write: if false;
       }
     }
 
     match /businesses/{businessId}/accountingEvents/{eventId} {
-      allow read: if hasBusinessAccess(businessId);
+      allow read: if hasAccountingReadAccess(businessId);
       allow create, update, delete: if false;
       match /{document=**} {
-        allow read: if hasBusinessAccess(businessId);
+        allow read: if hasAccountingReadAccess(businessId);
+        allow write: if false;
+      }
+    }
+
+    match /businesses/{businessId}/accountingEventProjectionDeadLetters/{deadLetterId} {
+      allow read: if hasAccountingReadAccess(businessId);
+      allow create, update, delete: if false;
+      match /{document=**} {
+        allow read: if hasAccountingReadAccess(businessId);
         allow write: if false;
       }
     }

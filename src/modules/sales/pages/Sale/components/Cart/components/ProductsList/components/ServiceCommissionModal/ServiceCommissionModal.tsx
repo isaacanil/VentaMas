@@ -44,7 +44,13 @@ import {
 } from '@/utils/commissions/serviceCommissions';
 import { formatPriceByCurrency } from '@/utils/format';
 import {
+  CollaboratorOption,
+  CollaboratorOptionBadge,
+  CollaboratorOptionMeta,
+  CollaboratorOptionName,
+  CollaboratorOptionTitle,
   CollaboratorListBox,
+  CommissionNotice,
   CollaboratorSelect,
   Content,
   Field,
@@ -79,7 +85,7 @@ const getLineId = (product: CartProduct | null): string | null =>
   toCleanString(product?.cid) ?? toCleanString(product?.id);
 
 const INELIGIBLE_COLLABORATOR_MESSAGE =
-  'Este colaborador no tiene una comision configurada. Configuralo en RRHH antes de asignarlo a una venta.';
+  'Este colaborador no tiene una comisión configurada. Configúralo en RRHH antes de asignarlo a una venta.';
 
 const buildCurrentCollaborator = (
   commission: CartProduct['serviceCommission'],
@@ -122,6 +128,77 @@ const withCurrentCollaboratorOption = (
     },
     ...options,
   ];
+};
+
+const getRateLabel = ({
+  currency,
+  rateValue,
+  type,
+}: {
+  currency: SupportedDocumentCurrency;
+  rateValue: number;
+  type: ServiceCommissionCollaboratorSnapshot['defaultType'];
+}): string =>
+  type === 'fixed'
+    ? formatPriceByCurrency(rateValue, currency)
+    : `${new Intl.NumberFormat('es-DO', {
+        maximumFractionDigits: 2,
+        minimumFractionDigits: 0,
+      }).format(rateValue)}%`;
+
+const getCollaboratorOptionMeta = ({
+  currency,
+  option,
+  product,
+}: {
+  currency: SupportedDocumentCurrency;
+  option: ServiceCommissionCollaboratorOption;
+  product: CartProduct | null;
+}): { badge: string; eligible: boolean; meta: string } => {
+  const collaborator = option.collaborator;
+  const serviceRule = product
+    ? resolveServiceCommissionRuleForProduct({ collaborator, product })
+    : null;
+  const eligible = isServiceCommissionCollaboratorEligible(
+    collaborator,
+    product,
+  );
+
+  if (serviceRule && toFiniteNumber(serviceRule.rateValue) > 0) {
+    return {
+      badge: 'Elegible',
+      eligible,
+      meta: `Regla del servicio · ${getRateLabel({
+        currency,
+        rateValue: serviceRule.rateValue,
+        type: serviceRule.type,
+      })}`,
+    };
+  }
+
+  if (
+    collaborator.defaultType &&
+    collaborator.defaultRate != null &&
+    toFiniteNumber(collaborator.defaultRate) > 0
+  ) {
+    return {
+      badge: 'Elegible',
+      eligible,
+      meta: `Regla general · ${getRateLabel({
+        currency,
+        rateValue: collaborator.defaultRate,
+        type: collaborator.defaultType,
+      })}`,
+    };
+  }
+
+  return {
+    badge: 'Sin tasa',
+    eligible: false,
+    meta: product
+      ? 'No tiene comisión configurada para este servicio.'
+      : 'No tiene comisión configurada.',
+  };
 };
 
 export const ServiceCommissionModal = ({
@@ -200,8 +277,45 @@ export const ServiceCommissionModal = ({
         type: commissionType,
       })
     : null;
+  const estimatedCommissionIfAssigned = calculateServiceCommissionAmount({
+    baseAmount,
+    rateValue,
+    type: commissionType,
+  });
+  const estimatedCommissionLabel =
+    estimatedCommission === null
+      ? `Selecciona colaborador para registrar ${formatPriceByCurrency(
+          estimatedCommissionIfAssigned,
+          documentCurrency,
+        )}.`
+      : formatPriceByCurrency(estimatedCommission, documentCurrency);
+  const appliedRuleLabel = selectedCollaborator
+    ? currentManualCommission
+      ? `Manual · ${getRateLabel({
+          currency: documentCurrency,
+          rateValue,
+          type: commissionType,
+        })}`
+      : selectedServiceRule
+        ? `Regla del servicio · ${getRateLabel({
+            currency: documentCurrency,
+            rateValue: selectedServiceRule.rateValue,
+            type: selectedServiceRule.type,
+          })}`
+        : selectedCollaborator.defaultRate != null
+          ? `Regla general · ${getRateLabel({
+              currency: documentCurrency,
+              rateValue: selectedCollaborator.defaultRate,
+              type: selectedCollaborator.defaultType,
+            })}`
+          : 'Sin tasa configurada'
+    : 'Selecciona colaborador';
   const selectedLabel =
     getServiceCommissionCollaboratorLabel(currentCommission);
+  const missingCollaboratorNotice =
+    commissionSettings.requireCollaboratorOnService
+      ? 'Este servicio requiere colaborador antes de facturar.'
+      : 'Sin colaborador asignado: esta línea se facturará sin comisión registrada.';
 
   const persistCommission = ({
     collaborator,
@@ -256,8 +370,8 @@ export const ServiceCommissionModal = ({
 
   return (
     <VmModal
-      title="Comision del servicio"
-      ariaLabel="Configurar comision del servicio"
+      title="Comisión del servicio"
+      ariaLabel="Configurar comisión del servicio"
       isOpen={isOpen && Boolean(product)}
       onOpenChange={(open) => {
         if (!open) onClose();
@@ -286,6 +400,17 @@ export const ServiceCommissionModal = ({
             <TeamOutlined />
             {selectedLabel ?? 'Sin colaborador asignado'}
           </StatusLine>
+          {!selectedCollaborator ? (
+            <CommissionNotice
+              data-tone={
+                commissionSettings.requireCollaboratorOnService
+                  ? 'warning'
+                  : 'neutral'
+              }
+            >
+              {missingCollaboratorNotice}
+            </CommissionNotice>
+          ) : null}
         </HeaderBlock>
 
         <FieldsGrid>
@@ -293,8 +418,8 @@ export const ServiceCommissionModal = ({
             <FieldLabel>Colaborador</FieldLabel>
             <CollaboratorSelect
               fullWidth
-              aria-label="Colaborador de comision"
-              placeholder="Codigo o nombre"
+              aria-label="Colaborador de comisión"
+              placeholder="Código o nombre"
               selectedKey={selectedKey}
               isDisabled={loading}
               onSelectionChange={handleCollaboratorChange}
@@ -311,16 +436,41 @@ export const ServiceCommissionModal = ({
                       Cargando colaboradores...
                     </LoadingItem>
                   ) : (
-                    collaboratorOptions.map((option) => (
-                      <VmListBox.Item
-                        key={option.value}
-                        id={option.value}
-                        textValue={option.label}
-                      >
-                        {option.label}
-                        <VmListBox.ItemIndicator />
-                      </VmListBox.Item>
-                    ))
+                    collaboratorOptions.map((option) => {
+                      const optionMeta = getCollaboratorOptionMeta({
+                        currency: documentCurrency,
+                        option,
+                        product,
+                      });
+
+                      return (
+                        <VmListBox.Item
+                          key={option.value}
+                          id={option.value}
+                          textValue={`${option.label} ${optionMeta.meta}`}
+                          isDisabled={!optionMeta.eligible}
+                        >
+                          <CollaboratorOption>
+                            <CollaboratorOptionTitle>
+                              <CollaboratorOptionName>
+                                {option.label}
+                              </CollaboratorOptionName>
+                              <CollaboratorOptionBadge
+                                data-tone={
+                                  optionMeta.eligible ? 'success' : 'warning'
+                                }
+                              >
+                                {optionMeta.badge}
+                              </CollaboratorOptionBadge>
+                            </CollaboratorOptionTitle>
+                            <CollaboratorOptionMeta>
+                              {optionMeta.meta}
+                            </CollaboratorOptionMeta>
+                          </CollaboratorOption>
+                          <VmListBox.ItemIndicator />
+                        </VmListBox.Item>
+                      );
+                    })
                   )}
                 </CollaboratorListBox>
               </VmSelect.Popover>
@@ -331,7 +481,7 @@ export const ServiceCommissionModal = ({
             <FieldLabel>Tipo</FieldLabel>
             <TypeSelect
               fullWidth
-              aria-label="Tipo de comision solo lectura"
+              aria-label="Tipo de comisión solo lectura"
               selectedKey={commissionType}
               isDisabled
             >
@@ -340,7 +490,7 @@ export const ServiceCommissionModal = ({
                 <VmSelect.Indicator />
               </VmSelect.Trigger>
               <VmSelect.Popover>
-                <TypeListBox aria-label="Tipos de comision">
+                <TypeListBox aria-label="Tipos de comisión">
                   <VmListBox.Item id="percentage" textValue="Porcentaje">
                     Porcentaje
                     <VmListBox.ItemIndicator />
@@ -358,7 +508,7 @@ export const ServiceCommissionModal = ({
             <FieldLabel>Tasa</FieldLabel>
             <RateField
               fullWidth
-              aria-label="Tasa de comision solo lectura"
+              aria-label="Tasa de comisión solo lectura"
               minValue={0}
               step={0.01}
               value={rateValue}
@@ -382,12 +532,12 @@ export const ServiceCommissionModal = ({
             </strong>
           </SummaryItem>
           <SummaryItem>
-            <span>Comision estimada</span>
-            <strong>
-              {estimatedCommission === null
-                ? 'N/A'
-                : formatPriceByCurrency(estimatedCommission, documentCurrency)}
-            </strong>
+            <span>Comisión estimada</span>
+            <strong>{estimatedCommissionLabel}</strong>
+          </SummaryItem>
+          <SummaryItem>
+            <span>Regla aplicada</span>
+            <strong>{appliedRuleLabel}</strong>
           </SummaryItem>
         </Summary>
       </Content>

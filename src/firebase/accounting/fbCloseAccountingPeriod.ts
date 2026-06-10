@@ -9,11 +9,15 @@ import {
 
 export interface CloseAccountingPeriodInput {
   businessId: string;
+  confirmFiscalYearClose?: boolean;
   note?: string;
   periodKey: string;
 }
 
 export interface CloseAccountingPeriodResult {
+  fiscalYearCloseCreated?: boolean;
+  fiscalYearCloseEntryId?: string | null;
+  fiscalYearCloseReused?: boolean;
   ok: boolean;
   periodKey: string;
   reused: boolean;

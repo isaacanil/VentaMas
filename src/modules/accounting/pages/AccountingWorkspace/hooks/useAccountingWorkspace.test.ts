@@ -28,9 +28,11 @@ const messageMock = vi.hoisted(() => ({
   error: vi.fn(),
   info: vi.fn(),
   success: vi.fn(),
+  warning: vi.fn(),
 }));
 const fbCreateManualJournalEntryMock = vi.hoisted(() => vi.fn());
 const fbCloseAccountingPeriodMock = vi.hoisted(() => vi.fn());
+const fbReplayAccountingEventProjectionMock = vi.hoisted(() => vi.fn());
 const fbReverseJournalEntryMock = vi.hoisted(() => vi.fn());
 
 vi.mock('react-redux', () => ({
@@ -68,6 +70,11 @@ vi.mock('@/firebase/accounting/fbReverseJournalEntry', () => ({
     fbReverseJournalEntryMock(...args),
 }));
 
+vi.mock('@/firebase/accounting/fbReplayAccountingEventProjection', () => ({
+  fbReplayAccountingEventProjection: (...args: unknown[]) =>
+    fbReplayAccountingEventProjectionMock(...args),
+}));
+
 vi.mock(
   '@/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useAccountingConfig',
   () => ({
@@ -89,6 +96,14 @@ vi.mock(
   }),
 );
 
+vi.mock('@/modules/treasury/hooks/useCashAccounts', () => ({
+  useCashAccounts: () => ({
+    cashAccounts: [],
+    error: null,
+    loading: false,
+  }),
+}));
+
 import { useAccountingWorkspace } from './useAccountingWorkspace';
 
 describe('useAccountingWorkspace loading', () => {
@@ -97,8 +112,10 @@ describe('useAccountingWorkspace loading', () => {
     messageMock.error.mockReset();
     messageMock.info.mockReset();
     messageMock.success.mockReset();
+    messageMock.warning.mockReset();
     fbCreateManualJournalEntryMock.mockReset();
     fbCloseAccountingPeriodMock.mockReset();
+    fbReplayAccountingEventProjectionMock.mockReset();
     fbReverseJournalEntryMock.mockReset();
     onSnapshotMock.mockReset();
     useSelectorMock.mockReset();
@@ -116,26 +133,28 @@ describe('useAccountingWorkspace loading', () => {
 
     useSelectorMock.mockImplementation(() => currentUser);
     onSnapshotMock.mockImplementation(
-      (
-        ref: { path: string },
-        onNext: (snapshot: any) => void,
-      ) => {
+      (ref: { path: string }, onNext: (snapshot: any) => void) => {
         listeners.set(ref.path, onNext);
         return vi.fn();
       },
     );
 
-    const { result, rerender, unmount } = renderHook(() => useAccountingWorkspace());
+    const { result, rerender, unmount } = renderHook(() =>
+      useAccountingWorkspace(),
+    );
 
     expect(result.current.journalLoading).toBe(true);
     expect(result.current.periodLoading).toBe(true);
 
     act(() => {
       listeners.get('businesses/business-1/accountingEvents')?.({ docs: [] });
+      listeners.get(
+        'businesses/business-1/accountingEventProjectionDeadLetters',
+      )?.({ docs: [] });
       listeners.get('businesses/business-1/journalEntries')?.({ docs: [] });
-      listeners
-        .get('businesses/business-1/accountingPeriodClosures')
-        ?.({ docs: [] });
+      listeners.get('businesses/business-1/accountingPeriodClosures')?.({
+        docs: [],
+      });
     });
 
     await waitFor(() => {
@@ -153,10 +172,13 @@ describe('useAccountingWorkspace loading', () => {
 
     act(() => {
       listeners.get('businesses/business-2/accountingEvents')?.({ docs: [] });
+      listeners.get(
+        'businesses/business-2/accountingEventProjectionDeadLetters',
+      )?.({ docs: [] });
       listeners.get('businesses/business-2/journalEntries')?.({ docs: [] });
-      listeners
-        .get('businesses/business-2/accountingPeriodClosures')
-        ?.({ docs: [] });
+      listeners.get('businesses/business-2/accountingPeriodClosures')?.({
+        docs: [],
+      });
     });
 
     await waitFor(() => {
@@ -173,11 +195,14 @@ describe('useAccountingWorkspace loading', () => {
       uid: 'user-1',
     }));
     onSnapshotMock.mockImplementation(
-      (
-        ref: { path: string },
-        onNext: (snapshot: any) => void,
-      ) => {
+      (ref: { path: string }, onNext: (snapshot: any) => void) => {
         if (ref.path === 'businesses/business-1/accountingEvents') {
+          onNext({ docs: [] });
+        }
+        if (
+          ref.path ===
+          'businesses/business-1/accountingEventProjectionDeadLetters'
+        ) {
           onNext({ docs: [] });
         }
         if (ref.path === 'businesses/business-1/journalEntries') {
@@ -230,11 +255,14 @@ describe('useAccountingWorkspace loading', () => {
       uid: 'user-1',
     }));
     onSnapshotMock.mockImplementation(
-      (
-        ref: { path: string },
-        onNext: (snapshot: any) => void,
-      ) => {
+      (ref: { path: string }, onNext: (snapshot: any) => void) => {
         if (ref.path === 'businesses/business-1/accountingEvents') {
+          onNext({ docs: [] });
+        }
+        if (
+          ref.path ===
+          'businesses/business-1/accountingEventProjectionDeadLetters'
+        ) {
           onNext({ docs: [] });
         }
         if (ref.path === 'businesses/business-1/journalEntries') {
@@ -259,7 +287,10 @@ describe('useAccountingWorkspace loading', () => {
     });
 
     await act(async () => {
-      const response = await result.current.closePeriod('2026-04', 'Cierre mensual');
+      const response = await result.current.closePeriod(
+        '2026-04',
+        'Cierre mensual',
+      );
       expect(response).toBe(true);
     });
 
@@ -268,6 +299,63 @@ describe('useAccountingWorkspace loading', () => {
       note: 'Cierre mensual',
       periodKey: '2026-04',
     });
+
+    unmount();
+  });
+
+  it('replays an accounting projection through the backend callable', async () => {
+    useSelectorMock.mockReturnValue({
+      businessID: 'business-1',
+      uid: 'user-1',
+    });
+    onSnapshotMock.mockImplementation(
+      (
+        ref: { path: string },
+        onNext: (snapshot: { docs: unknown[] }) => void,
+      ) => {
+        if (ref.path === 'businesses/business-1/accountingEvents') {
+          onNext({ docs: [] });
+        }
+        if (
+          ref.path ===
+          'businesses/business-1/accountingEventProjectionDeadLetters'
+        ) {
+          onNext({ docs: [] });
+        }
+        if (ref.path === 'businesses/business-1/journalEntries') {
+          onNext({ docs: [] });
+        }
+        if (ref.path === 'businesses/business-1/accountingPeriodClosures') {
+          onNext({ docs: [] });
+        }
+        return vi.fn();
+      },
+    );
+    fbReplayAccountingEventProjectionMock.mockResolvedValue({
+      eventId: 'purchase.committed__purchase-1',
+      journalEntryId: 'purchase.committed__purchase-1',
+      ok: true,
+      status: 'projected',
+    });
+
+    const { result, unmount } = renderHook(() => useAccountingWorkspace());
+
+    await waitFor(() => {
+      expect(result.current.journalLoading).toBe(false);
+    });
+
+    await act(async () => {
+      const response = await result.current.replayProjection(
+        'purchase.committed__purchase-1',
+      );
+      expect(response).toBe(true);
+    });
+
+    expect(fbReplayAccountingEventProjectionMock).toHaveBeenCalledWith({
+      businessId: 'business-1',
+      eventId: 'purchase.committed__purchase-1',
+    });
+    expect(result.current.replayingEventId).toBeNull();
 
     unmount();
   });

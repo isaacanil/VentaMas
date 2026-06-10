@@ -14,6 +14,7 @@ interface SubMenuProps {
   onClose: () => void;
   onActionDone?: () => void;
   parentTitle?: string;
+  searchQuery?: string;
   submenuPortalElement?: HTMLElement | null;
 }
 
@@ -23,6 +24,7 @@ export const SubMenu = ({
   onClose,
   onActionDone,
   parentTitle,
+  searchQuery,
   submenuPortalElement,
 }: SubMenuProps) => {
   const submenuItems = item.submenu || [];
@@ -68,6 +70,7 @@ export const SubMenu = ({
                       )}
                       onActionDone={handleSubmenuItemActionDone}
                       parentTitle={item.title}
+                      searchQuery={searchQuery}
                       submenuPortalElement={submenuPortalElement}
                     />
                   ))}

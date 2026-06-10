@@ -17,6 +17,7 @@ export const ACCOUNTING_EVENT_TYPE_VALUES = [
   'bank_statement_adjustment.recorded',
   'internal_transfer.posted',
   'inventory.cogs.recorded',
+  'inventory.cogs.voided',
   'manual.entry.recorded',
   'fx_settlement.recorded',
   'fx_settlement.voided',
@@ -121,7 +122,11 @@ export const AccountingEventProjectionSchema = z
     status: z.enum(ACCOUNTING_PROJECTION_STATUS_VALUES),
     projectorVersion: z.coerce.number().int().positive().optional().default(1),
     journalEntryId: nullableTrimmedStringSchema.optional().default(null),
+    attemptCount: z.coerce.number().int().nonnegative().optional().default(0),
+    replayCount: z.coerce.number().int().nonnegative().optional().default(0),
     lastAttemptAt: timestampLikeSchema,
+    lastReplayRequestedAt: timestampLikeSchema,
+    lastReplayRequestedBy: nullableTrimmedStringSchema.optional().default(null),
     projectedAt: timestampLikeSchema,
     lastError: AccountingEventErrorSchema.nullable().optional().default(null),
   })
@@ -130,9 +135,17 @@ export const AccountingEventProjectionSchema = z
 export const AccountingEventMonetarySnapshotSchema = z
   .object({
     amount: optionalRoundedAmountSchema,
+    subtotalAmount: optionalRoundedAmountSchema,
     taxAmount: optionalRoundedAmountSchema,
+    withholdingITBISAmount: optionalRoundedAmountSchema,
+    withholdingISRAmount: optionalRoundedAmountSchema,
+    netPayableAmount: optionalRoundedAmountSchema,
     functionalAmount: optionalRoundedAmountSchema,
+    functionalSubtotalAmount: optionalRoundedAmountSchema,
     functionalTaxAmount: optionalRoundedAmountSchema,
+    functionalWithholdingITBISAmount: optionalRoundedAmountSchema,
+    functionalWithholdingISRAmount: optionalRoundedAmountSchema,
+    functionalNetPayableAmount: optionalRoundedAmountSchema,
   })
   .passthrough();
 
@@ -234,6 +247,7 @@ export const ReverseJournalEntryResultSchema = z.object({
 
 export const CloseAccountingPeriodInputSchema = z.object({
   businessId: trimmedStringSchema,
+  confirmFiscalYearClose: z.boolean().optional().default(false),
   note: nullableTrimmedStringSchema.optional().default(null),
   periodKey: z
     .string()
@@ -244,6 +258,9 @@ export const CloseAccountingPeriodResultSchema = z.object({
   ok: z.literal(true),
   periodKey: trimmedStringSchema,
   reused: z.boolean(),
+  fiscalYearCloseCreated: z.boolean().optional(),
+  fiscalYearCloseEntryId: nullableTrimmedStringSchema.optional().default(null),
+  fiscalYearCloseReused: z.boolean().optional(),
 });
 
 export const GetAccountingReportsInputSchema = z.object({

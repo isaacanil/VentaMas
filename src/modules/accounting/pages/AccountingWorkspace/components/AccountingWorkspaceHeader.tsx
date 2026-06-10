@@ -60,7 +60,7 @@ export const AccountingWorkspaceHeader = ({
           <SupportValue>{postingAccountsCount}</SupportValue>
         </SupportItem>
         <SupportItem>
-          <SupportLabel>Perfiles cargados</SupportLabel>
+          <SupportLabel>Reglas cargadas</SupportLabel>
           <SupportValue>{postingProfilesCount}</SupportValue>
         </SupportItem>
         <Button onClick={onOpenSettings}>Abrir configuracion</Button>

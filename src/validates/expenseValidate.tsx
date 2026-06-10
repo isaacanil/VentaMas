@@ -1,4 +1,5 @@
 import type { Expense } from '@/utils/expenses/types';
+import { resolveExpenseFiscalTotals } from '@/utils/expenses/fiscal';
 import {
   isBankExpensePaymentMethod,
   isCashRegisterExpensePaymentMethod,
@@ -27,8 +28,13 @@ export const validateExpense = (
   if (!expense.description) {
     errors.description = 'Descripción es requerida';
   }
-  if (!expense.amount) {
+  const fiscalTotals = resolveExpenseFiscalTotals(expense);
+  const withholdingTotal =
+    fiscalTotals.withholdingITBISAmount + fiscalTotals.withholdingISRAmount;
+  if (fiscalTotals.total <= 0) {
     errors.amount = 'Importe es requerido';
+  } else if (withholdingTotal > fiscalTotals.total) {
+    errors.amount = 'Las retenciones no pueden exceder el total';
   }
   if (!expense.categoryId) {
     errors.category = 'Categoría es requerida';

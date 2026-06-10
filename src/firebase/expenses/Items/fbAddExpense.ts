@@ -11,6 +11,7 @@ import { toTimestamp } from '@/utils/firebase/toTimestamp';
 import {
   resolveMonetarySnapshotForBusiness,
 } from '@/utils/accounting/monetary';
+import { resolveExpenseFiscalTotals } from '@/utils/expenses/fiscal';
 import { normalizeExpensePayment } from '@/utils/expenses/payment';
 import type {
   Expense,
@@ -58,8 +59,17 @@ export const fbAddExpense = async (
       expense,
     });
 
+    const fiscalTotals = resolveExpenseFiscalTotals(expense);
     const modifiedExpense: Expense = {
       ...expense,
+      amount: fiscalTotals.total,
+      subtotal: fiscalTotals.subtotal,
+      taxAmount: fiscalTotals.taxAmount,
+      itbisAmount: fiscalTotals.taxAmount,
+      withholdingITBISAmount: fiscalTotals.withholdingITBISAmount,
+      withholdingISRAmount: fiscalTotals.withholdingISRAmount,
+      total: fiscalTotals.total,
+      netPayableAmount: fiscalTotals.netPayableAmount,
       payment: normalizeExpensePayment(expense.payment),
       dates: {
         ...expense.dates,
@@ -74,8 +84,10 @@ export const fbAddExpense = async (
       monetary: expense.monetary,
       source: expense,
       totals: {
-        total: safeNumber(expense.amount),
-        paid: safeNumber(expense.amount),
+        subtotal: fiscalTotals.subtotal,
+        taxes: fiscalTotals.taxAmount,
+        total: fiscalTotals.total,
+        paid: fiscalTotals.netPayableAmount,
         balance: 0,
       },
       capturedBy: user.uid,

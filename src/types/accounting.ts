@@ -69,6 +69,7 @@ export type AccountingEventType =
   | 'bank_statement_adjustment.recorded'
   | 'internal_transfer.posted'
   | 'inventory.cogs.recorded'
+  | 'inventory.cogs.voided'
   | 'manual.entry.recorded'
   | 'fx_settlement.recorded'
   | 'fx_settlement.voided'
@@ -90,8 +91,18 @@ export type AccountingPostingAmountSource =
   | 'sale_bank_received'
   | 'sale_other_received'
   | 'credit_note_net_total'
+  | 'purchase_subtotal'
+  | 'purchase_tax'
   | 'purchase_total'
+  | 'purchase_net_payable'
+  | 'purchase_withholding_itbis'
+  | 'purchase_withholding_isr'
+  | 'expense_subtotal'
+  | 'expense_tax'
   | 'expense_total'
+  | 'expense_net_payable'
+  | 'expense_withholding_itbis'
+  | 'expense_withholding_isr'
   | 'tax_total'
   | 'cash_over_short_gain'
   | 'cash_over_short_loss'
@@ -130,6 +141,12 @@ export type AccountingPostingSettlementTiming =
   | 'any'
   | 'immediate'
   | 'deferred';
+export type AccountingPostingTransferDirection =
+  | 'any'
+  | 'cash_to_bank'
+  | 'bank_to_cash'
+  | 'bank_to_bank'
+  | 'cash_to_cash';
 export type JournalEntryStatus = 'posted' | 'reversed';
 
 export type AccountingOperationType =
@@ -218,6 +235,7 @@ export interface CashAccount {
   currency: SupportedDocumentCurrency;
   status: CashAccountStatus;
   type?: CashAccountType | null;
+  chartOfAccountId?: string | null;
   location?: string | null;
   openingBalance?: number | null;
   openingBalanceDate?: TimestampLike | null;
@@ -352,9 +370,17 @@ export interface ChartOfAccount {
 
 export interface AccountingEventMonetarySnapshot {
   amount?: number | null;
+  subtotalAmount?: number | null;
   taxAmount?: number | null;
+  withholdingITBISAmount?: number | null;
+  withholdingISRAmount?: number | null;
+  netPayableAmount?: number | null;
   functionalAmount?: number | null;
+  functionalSubtotalAmount?: number | null;
   functionalTaxAmount?: number | null;
+  functionalWithholdingITBISAmount?: number | null;
+  functionalWithholdingISRAmount?: number | null;
+  functionalNetPayableAmount?: number | null;
 }
 
 export interface AccountingEventError {
@@ -368,7 +394,11 @@ export interface AccountingEventProjection {
   status: AccountingProjectionStatus;
   projectorVersion?: number | null;
   journalEntryId?: string | null;
+  attemptCount?: number | null;
+  replayCount?: number | null;
   lastAttemptAt?: TimestampLike | null;
+  lastReplayRequestedAt?: TimestampLike | null;
+  lastReplayRequestedBy?: string | null;
   projectedAt?: TimestampLike | null;
   lastError?: AccountingEventError | null;
 }
@@ -407,6 +437,7 @@ export interface AccountingPostingCondition {
   taxTreatment?: AccountingPostingTaxTreatment;
   documentNature?: AccountingPostingDocumentNature;
   settlementTiming?: AccountingPostingSettlementTiming;
+  transferDirection?: AccountingPostingTransferDirection;
 }
 
 export interface AccountingPostingLineTemplate {

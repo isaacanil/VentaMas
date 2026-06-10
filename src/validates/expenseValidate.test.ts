@@ -50,4 +50,21 @@ describe('validateExpense', () => {
       },
     });
   });
+
+  it('rejects expenses when supplier withholdings exceed the total', () => {
+    expect(
+      validateExpense({
+        description: 'Servicio profesional',
+        amount: 100,
+        total: 100,
+        withholdingITBISAmount: 70,
+        withholdingISRAmount: 40,
+        categoryId: 'cat_1',
+        dates: { expenseDate: Date.now() },
+        payment: { method: 'bank_transfer', bankAccountId: 'bank-1' },
+      }),
+    ).toEqual({
+      amount: 'Las retenciones no pueden exceder el total',
+    });
+  });
 });

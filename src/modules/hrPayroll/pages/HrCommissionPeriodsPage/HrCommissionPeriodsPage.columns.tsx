@@ -1,9 +1,12 @@
-import { VmButton } from '@/components/heroui';
+import { VmButton, VmDropdown } from '@/components/heroui';
 import {
   CheckCircleOutlined,
+  DownOutlined,
   DollarOutlined,
   EditOutlined,
   EyeOutlined,
+  FileExcelOutlined,
+  FilePdfOutlined,
 } from '@/constants/icons/antd';
 import {
   HrActionGroup as ActionGroup,
@@ -30,7 +33,14 @@ import type {
   HrPayrollEmployeeLineRecord,
   HrPayrollRunStatus,
 } from '@/types/hrPayroll';
-import { DetailLinkButton } from './HrCommissionPeriodsPage.styles';
+import {
+  DetailLinkButton,
+  ExportMenuItemContent,
+  ExportMenuItemDescription,
+  ExportMenuItemTitle,
+} from './HrCommissionPeriodsPage.styles';
+
+export type HrCommissionLineExportFormat = 'excel' | 'pdf';
 
 const PERIOD_STATUS_TONES: Record<
   HrCommissionPeriodStatus,
@@ -51,6 +61,24 @@ const LINE_STATUS_TONES: Record<
 
 const getPeriodPayableAmount = (period: HrCommissionPeriodRecord): number =>
   period.netAmount ?? period.totalPayableAmount ?? period.totalCommissionAmount;
+
+const getHumanPeriodLabel = (period: HrCommissionPeriodRecord): string =>
+  (period.label || period.periodKey || 'Corte').replace(
+    /\s+\d{4}-\d{2}-\d{2}\s+-\s+\d{4}-\d{2}-\d{2}$/,
+    '',
+  );
+
+const getPeriodSecondaryLabel = (period: HrCommissionPeriodRecord): string => {
+  const primaryLabel = getHumanPeriodLabel(period);
+  const cutRuleLabel = period.cutRuleLabel?.trim();
+  if (cutRuleLabel && cutRuleLabel !== primaryLabel) {
+    return cutRuleLabel;
+  }
+  return `${formatHrPeriodDate(period, 'start')} - ${formatHrPeriodDate(
+    period,
+    'end',
+  )}`;
+};
 
 const getPeriodPaidAmount = (period: HrCommissionPeriodRecord): number => {
   const paidAmount = period.paidAmount ?? 0;
@@ -80,8 +108,8 @@ export const buildPeriodColumns = ({
     isRowHeader: true,
     render: (period) => (
       <CellStack>
-        <PrimaryText>{period.label || period.periodKey}</PrimaryText>
-        <MutedText>{period.cutRuleLabel || period.periodKey}</MutedText>
+        <PrimaryText>{getHumanPeriodLabel(period)}</PrimaryText>
+        <MutedText>{getPeriodSecondaryLabel(period)}</MutedText>
       </CellStack>
     ),
   },
@@ -182,6 +210,12 @@ export const buildPeriodColumns = ({
 interface LineColumnsOptions {
   adjustmentActionKey: string | null;
   canRecordPayments?: boolean;
+  exportLineDisabled?: boolean;
+  exportingLineId?: string | null;
+  onExportLine?: (
+    line: HrPayrollEmployeeLineRecord,
+    format: HrCommissionLineExportFormat,
+  ) => void;
   onOpenAdjustment: (line: HrPayrollEmployeeLineRecord) => void;
   paymentActionKey: string | null;
   periodStatus?: HrCommissionPeriodStatus | null;
@@ -216,6 +250,9 @@ const isLineAdjustable = (line: HrPayrollEmployeeLineRecord): boolean =>
 export const buildLineColumns = ({
   adjustmentActionKey,
   canRecordPayments = true,
+  exportLineDisabled = false,
+  exportingLineId = null,
+  onExportLine,
   onOpenAdjustment,
   paymentActionKey,
   periodStatus = null,
@@ -318,14 +355,59 @@ export const buildLineColumns = ({
     ),
   },
   {
-    title: 'Acción',
+    title: 'Pago / exportar',
     key: 'payment',
     align: 'right',
-    width: 180,
+    width: 240,
     render: (line) => {
       const paymentPeriodOpen =
         periodStatus === 'approved' || periodStatus === 'partially_paid';
       const pendingAmount = getLinePendingAmount(line);
+      const employeeLabel =
+        line.employeeNameSnapshot || line.employeeCode || line.employeeId;
+      const exportSupportButton = onExportLine ? (
+        <VmDropdown>
+          <VmDropdown.Button
+            variant="secondary"
+            aria-label={`Exportar comisión de ${employeeLabel}`}
+            isDisabled={exportLineDisabled || exportingLineId === line.id}
+          >
+            Exportar
+            <DownOutlined />
+          </VmDropdown.Button>
+          <VmDropdown.Popover placement="bottom end">
+            <VmDropdown.Menu
+              aria-label={`Exportar comisión de ${employeeLabel}`}
+              onAction={(key) =>
+                onExportLine(line, key === 'excel' ? 'excel' : 'pdf')
+              }
+            >
+              <VmDropdown.Item id="pdf" textValue="PDF individual">
+                <ExportMenuItemContent>
+                  <ExportMenuItemTitle>
+                    <FilePdfOutlined />
+                    PDF individual
+                  </ExportMenuItemTitle>
+                  <ExportMenuItemDescription>
+                    PDF listo para firma o archivo.
+                  </ExportMenuItemDescription>
+                </ExportMenuItemContent>
+              </VmDropdown.Item>
+              <VmDropdown.Item id="excel" textValue="Excel individual">
+                <ExportMenuItemContent>
+                  <ExportMenuItemTitle>
+                    <FileExcelOutlined />
+                    Excel individual
+                  </ExportMenuItemTitle>
+                  <ExportMenuItemDescription>
+                    Datos editables para conciliación.
+                  </ExportMenuItemDescription>
+                </ExportMenuItemContent>
+              </VmDropdown.Item>
+            </VmDropdown.Menu>
+          </VmDropdown.Popover>
+        </VmDropdown>
+      ) : null;
 
       if (line.status === 'paid') {
         return (
@@ -334,6 +416,7 @@ export const buildLineColumns = ({
               <CheckCircleOutlined />
               Pagado
             </StatusTag>
+            {exportSupportButton}
           </ActionGroup>
         );
       }
@@ -354,6 +437,7 @@ export const buildLineColumns = ({
               <DollarOutlined />
               Pagar
             </VmButton>
+            {exportSupportButton}
           </ActionGroup>
         );
       }
@@ -372,13 +456,14 @@ export const buildLineColumns = ({
               <EditOutlined />
               Editar
             </VmButton>
+            {exportSupportButton}
           </ActionGroup>
         );
       }
 
       return (
         <ActionGroup>
-          <MutedText>Sin acciones</MutedText>
+          {exportSupportButton ?? <MutedText>Sin acciones</MutedText>}
         </ActionGroup>
       );
     },

@@ -15,6 +15,7 @@ const {
   ACCOUNTING_MANUAL_ENTRIES,
   ACCOUNTING_PERIOD_CLOSE,
   ACCOUNTING_FISCAL_COMPLIANCE,
+  ACCOUNTING_MONITOR,
   ACCOUNTING_REPORTS,
 } = ROUTES_NAME.ACCOUNTING_TERM;
 
@@ -48,6 +49,12 @@ export const ACCOUNTING_WORKSPACE_PANELS: AccountingWorkspacePanelItem[] = [
     label: 'Cumplimiento fiscal',
     description: 'Corridas, validacion y exportacion 606, 607 y 608.',
     route: ACCOUNTING_FISCAL_COMPLIANCE,
+  },
+  {
+    key: 'accounting-monitor',
+    label: 'Monitor contable',
+    description: 'Eventos automaticos pendientes, fallidos o sin mapeo.',
+    route: ACCOUNTING_MONITOR,
   },
   {
     key: 'period-close',
@@ -92,6 +99,10 @@ export const resolveAccountingWorkspacePanelKey = (
     pathname.includes('/compliance-fiscal')
   ) {
     return 'fiscal-compliance';
+  }
+
+  if (pathname.includes('/monitor')) {
+    return 'accounting-monitor';
   }
 
   if (

@@ -89,12 +89,23 @@ describe('HrCommissionPeriodLineBreakdown', () => {
       screen.getByText('Desglose operativo por colaborador'),
     ).toBeInTheDocument();
     expect(screen.getByText('Ana Perez')).toBeInTheDocument();
-    expect(screen.getByText('Comision normal')).toBeInTheDocument();
+    expect(screen.getByText('Comisión normal')).toBeInTheDocument();
     expect(screen.getByText('Ajuste retroactivo')).toBeInTheDocument();
     expect(screen.getByText('Deducciones')).toBeInTheDocument();
+    expect(screen.getByText(/Cómo se calculó:/i)).toBeInTheDocument();
     expect(screen.getAllByText('RD$100.00')[0]).toBeInTheDocument();
     expect(screen.getAllByText('RD$30.00')[0]).toBeInTheDocument();
     expect(screen.getAllByText('RD$120.00')[0]).toBeInTheDocument();
     expect(screen.getByText('Corte anterior')).toBeInTheDocument();
+  });
+
+  it('warns when a line has no linked commission entries', () => {
+    render(<HrCommissionPeriodLineBreakdown entries={[]} lines={[line]} />);
+
+    expect(screen.getByText('Trazabilidad pendiente')).toBeInTheDocument();
+    expect(
+      screen.getByText(/No hay facturas enlazadas a esta comisión/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/reconstruir factura, base y tasa/i)).toBeInTheDocument();
   });
 });

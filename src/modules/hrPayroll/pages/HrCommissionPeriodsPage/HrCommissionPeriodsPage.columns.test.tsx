@@ -91,7 +91,9 @@ describe('HrCommissionPeriodsPage columns', () => {
 
     expect(screen.getByText('RD$125.00')).toBeInTheDocument();
     expect(screen.getByText('Retroactiva +RD$25.00')).toBeInTheDocument();
-    expect(screen.getByText('Incluye RD$25.00 retroactivo')).toBeInTheDocument();
+    expect(
+      screen.getByText('Incluye RD$25.00 retroactivo'),
+    ).toBeInTheDocument();
   });
 
   it('keeps collaborator detail columns compact', () => {
@@ -149,18 +151,15 @@ describe('HrCommissionPeriodsPage columns', () => {
     expect(screen.getByRole('button', { name: /pagar/i })).toBeInTheDocument();
   });
 
-  it.each<HrCommissionPeriodStatus>([
-    'draft',
-    'closed',
-    'paid',
-    'cancelled',
-  ])('hides the pay action when the period is %s', (periodStatus) => {
+  it('groups individual PDF and Excel exports under an export dropdown', () => {
     const line: HrPayrollEmployeeLineRecord = {
-      id: `line-${periodStatus}`,
+      id: 'line-support',
       businessId: 'business-1',
       periodId: 'period-1',
       payrollRunId: 'run-1',
       employeeId: 'emp-1',
+      employeeCode: 'EMP-1',
+      employeeNameSnapshot: 'Ana Perez',
       type: 'commission',
       status: 'approved',
       currency: 'DOP',
@@ -174,17 +173,58 @@ describe('HrCommissionPeriodsPage columns', () => {
     };
     const columns = buildLineColumns({
       adjustmentActionKey: null,
+      onExportLine: () => undefined,
       onOpenAdjustment: () => undefined,
       paymentActionKey: null,
-      periodStatus,
+      periodStatus: 'approved',
       onOpenPayment: () => undefined,
     });
     const actionColumn = columns.find((column) => column.key === 'payment');
 
     render(<>{actionColumn?.render(line)}</>);
 
+    expect(screen.getByRole('button', { name: /pagar/i })).toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: /pagar/i }),
-    ).not.toBeInTheDocument();
+      screen.getByRole('button', {
+        name: 'Exportar comisión de Ana Perez',
+      }),
+    ).toBeInTheDocument();
   });
+
+  it.each<HrCommissionPeriodStatus>(['draft', 'closed', 'paid', 'cancelled'])(
+    'hides the pay action when the period is %s',
+    (periodStatus) => {
+      const line: HrPayrollEmployeeLineRecord = {
+        id: `line-${periodStatus}`,
+        businessId: 'business-1',
+        periodId: 'period-1',
+        payrollRunId: 'run-1',
+        employeeId: 'emp-1',
+        type: 'commission',
+        status: 'approved',
+        currency: 'DOP',
+        grossAmount: 100,
+        deductionsAmount: 0,
+        netAmount: 100,
+        commissionAmount: 100,
+        deductionLines: [],
+        commissionEntryIds: ['entry-normal'],
+        entriesCount: 1,
+      };
+      const columns = buildLineColumns({
+        adjustmentActionKey: null,
+        onOpenAdjustment: () => undefined,
+        paymentActionKey: null,
+        periodStatus,
+        onOpenPayment: () => undefined,
+      });
+      const actionColumn = columns.find((column) => column.key === 'payment');
+
+      render(<>{actionColumn?.render(line)}</>);
+
+      expect(
+        screen.queryByRole('button', { name: /pagar/i }),
+      ).not.toBeInTheDocument();
+    },
+  );
 });
