@@ -1,6 +1,5 @@
 import { createHash } from 'node:crypto';
 
-import { Timestamp } from '../../../core/config/firebase.js';
 import {
   applyOverduePaymentState,
   buildPaymentState,
@@ -47,6 +46,16 @@ export const safeNumber = (value) => {
 export const roundToTwoDecimals = (value) =>
   Math.round((safeNumber(value) || 0) * 100) / 100;
 
+const isTimestampLike = (value) => {
+  if (!value || typeof value !== 'object') return false;
+  if (typeof value.toMillis === 'function') return true;
+  const record = asRecord(value);
+  return (
+    typeof record.seconds === 'number' ||
+    typeof record._seconds === 'number'
+  );
+};
+
 export const toMillis = (value) => {
   if (value == null) return null;
   if (typeof value === 'number') {
@@ -55,9 +64,6 @@ export const toMillis = (value) => {
   if (typeof value === 'string') {
     const parsed = Date.parse(value);
     return Number.isNaN(parsed) ? null : parsed;
-  }
-  if (value instanceof Timestamp) {
-    return value.toMillis();
   }
   if (typeof value?.toMillis === 'function') {
     const parsed = value.toMillis();
@@ -85,8 +91,9 @@ export const toMillis = (value) => {
 };
 
 export const sanitizeForResponse = (value) => {
-  if (value instanceof Timestamp) {
-    return value.toMillis();
+  if (isTimestampLike(value)) {
+    const millis = toMillis(value);
+    return millis ?? value;
   }
   if (Array.isArray(value)) {
     return value.map((item) => sanitizeForResponse(item));

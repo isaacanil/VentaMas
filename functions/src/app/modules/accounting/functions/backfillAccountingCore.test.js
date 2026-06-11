@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  buildAccountingEventRepairPatch,
+  getAccountingEventRepairPlan,
   loadDefaultChartOfAccountTemplatesFromSource,
   loadDefaultPostingProfileSeedsFromSource,
   planDefaultPostingProfileChanges,
   planMissingChartAccounts,
+  resolveChangedAccountingEventFields,
 } from '../../../../../scripts/backfillAccountingCore.js';
 
 const buildCanonicalAccounts = () =>
@@ -138,5 +141,105 @@ describe('backfillAccountingCore planner', () => {
       existingAccountId: 'legacy-2210',
       systemKey: 'withholding_itbis_payable',
     });
+  });
+
+  it('plans accounting event repairs without overwriting projection state', () => {
+    const rebuiltEvent = {
+      id: 'purchase.committed__purchase-1',
+      eventType: 'purchase.committed',
+      eventVersion: 1,
+      status: 'recorded',
+      sourceType: 'purchase',
+      sourceId: 'purchase-1',
+      sourceDocumentType: 'purchase',
+      sourceDocumentId: 'purchase-1',
+      monetary: {
+        amount: 1180,
+        subtotalAmount: 1000,
+        taxAmount: 180,
+        netPayableAmount: 1180,
+      },
+      payload: {
+        fiscalTotals: {
+          subtotal: 1000,
+          taxAmount: 180,
+          total: 1180,
+          netPayableAmount: 1180,
+        },
+      },
+      projection: {
+        status: 'pending',
+      },
+    };
+    const currentEvent = {
+      ...rebuiltEvent,
+      monetary: {
+        amount: 0,
+      },
+      payload: {},
+      projection: {
+        status: 'failed',
+        attemptCount: 5,
+      },
+    };
+
+    const plan = getAccountingEventRepairPlan({
+      currentEvent,
+      eventRef: { id: rebuiltEvent.id },
+      rebuiltEvent,
+      sourceCollection: 'purchases',
+      sourceId: 'purchase-1',
+    });
+
+    expect(plan).toMatchObject({
+      eventId: 'purchase.committed__purchase-1',
+      repairType: 'update',
+      shouldRepair: true,
+      changedFields: expect.arrayContaining(['monetary', 'payload']),
+    });
+    expect(plan.patch).not.toHaveProperty('projection');
+    expect(plan.patch).toMatchObject({
+      monetary: rebuiltEvent.monetary,
+      payload: rebuiltEvent.payload,
+    });
+  });
+
+  it('detects current rebuilt accounting events as unchanged', () => {
+    const rebuiltEvent = {
+      id: 'expense.recorded__expense-1',
+      eventType: 'expense.recorded',
+      eventVersion: 1,
+      status: 'recorded',
+      sourceType: 'expense',
+      sourceId: 'expense-1',
+      sourceDocumentType: 'expense',
+      sourceDocumentId: 'expense-1',
+      monetary: {
+        amount: 100,
+      },
+      payload: {
+        fiscalTotals: {
+          total: 100,
+        },
+      },
+      projection: {
+        status: 'failed',
+      },
+    };
+
+    expect(
+      resolveChangedAccountingEventFields({
+        currentEvent: rebuiltEvent,
+        rebuiltEvent: {
+          ...rebuiltEvent,
+          projection: {
+            status: 'pending',
+          },
+        },
+      }),
+    ).toEqual([]);
+    expect(buildAccountingEventRepairPatch(rebuiltEvent)).not.toHaveProperty(
+      'projection',
+    );
   });
 });

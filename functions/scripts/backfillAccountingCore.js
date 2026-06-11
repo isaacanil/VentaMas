@@ -23,7 +23,16 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import admin from 'firebase-admin';
 
-import { buildPurchasePaymentState } from '../src/app/modules/purchase/functions/payablePayments.shared.js';
+import {
+  buildPurchasePaymentState,
+  sanitizeForResponse,
+} from '../src/app/modules/purchase/functions/payablePayments.shared.js';
+import {
+  buildExpenseRecordedAccountingEvent,
+} from '../src/app/modules/expenses/functions/expenseAccountingEvent.shared.js';
+import {
+  buildPurchaseCommittedAccountingEvent,
+} from '../src/app/modules/purchase/functions/purchaseAccountingEvent.shared.js';
 import {
   buildCanonicalVendorBillIdFromPurchaseId,
   buildVendorBillProjection,
@@ -599,6 +608,298 @@ export const planDefaultPostingProfileChanges = ({
   };
 };
 
+const ACCOUNTING_EVENT_REPAIR_FIELDS = [
+  'eventType',
+  'eventVersion',
+  'status',
+  'sourceType',
+  'sourceId',
+  'sourceDocumentType',
+  'sourceDocumentId',
+  'counterpartyType',
+  'counterpartyId',
+  'currency',
+  'functionalCurrency',
+  'monetary',
+  'treasury',
+  'payload',
+  'dedupeKey',
+  'idempotencyKey',
+  'reversalOfEventId',
+  'createdBy',
+];
+
+const stableSerialize = (value) => {
+  const sanitized = sanitizeForResponse(value);
+  if (sanitized == null || typeof sanitized !== 'object') {
+    return JSON.stringify(sanitized);
+  }
+  if (Array.isArray(sanitized)) {
+    return `[${sanitized.map((item) => stableSerialize(item)).join(',')}]`;
+  }
+  const record = asRecord(sanitized);
+  return `{${Object.keys(record)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${stableSerialize(record[key])}`)
+    .join(',')}}`;
+};
+
+export const buildAccountingEventRepairPatch = (rebuiltEvent) =>
+  ACCOUNTING_EVENT_REPAIR_FIELDS.reduce((patch, field) => {
+    if (rebuiltEvent[field] !== undefined) {
+      patch[field] = rebuiltEvent[field];
+    }
+    return patch;
+  }, {});
+
+export const resolveChangedAccountingEventFields = ({
+  currentEvent,
+  rebuiltEvent,
+}) =>
+  ACCOUNTING_EVENT_REPAIR_FIELDS.filter(
+    (field) =>
+      stableSerialize(currentEvent?.[field] ?? null) !==
+      stableSerialize(rebuiltEvent?.[field] ?? null),
+  );
+
+export const getAccountingEventRepairPlan = ({
+  currentEvent,
+  eventRef,
+  rebuiltEvent,
+  sourceCollection,
+  sourceId,
+}) => {
+  if (!rebuiltEvent) {
+    return {
+      reason: 'source_not_accounting_event_candidate',
+      shouldRepair: false,
+    };
+  }
+
+  const eventId = toCleanString(rebuiltEvent.id);
+  if (!eventId) {
+    return {
+      reason: 'rebuilt_event_missing_id',
+      shouldRepair: false,
+    };
+  }
+
+  if (!currentEvent) {
+    return {
+      eventId,
+      eventType: toCleanString(rebuiltEvent.eventType),
+      patch: rebuiltEvent,
+      ref: eventRef,
+      repairType: 'create',
+      shouldRepair: true,
+      sourceCollection,
+      sourceId,
+    };
+  }
+
+  const changedFields = resolveChangedAccountingEventFields({
+    currentEvent,
+    rebuiltEvent,
+  });
+  if (!changedFields.length) {
+    return {
+      eventId,
+      reason: 'already_current',
+      shouldRepair: false,
+    };
+  }
+
+  return {
+    changedFields,
+    eventId,
+    eventType: toCleanString(rebuiltEvent.eventType),
+    patch: buildAccountingEventRepairPatch(rebuiltEvent),
+    ref: eventRef,
+    repairType: 'update',
+    shouldRepair: true,
+    sourceCollection,
+    sourceId,
+  };
+};
+
+const planAccountingEventRepairFromSource = async ({
+  buildEvent,
+  businessId,
+  db,
+  sourceCollection,
+  sourceId,
+}) => {
+  let rebuiltEvent;
+  try {
+    rebuiltEvent = buildEvent();
+  } catch (error) {
+    return {
+      skipped: {
+        reason: 'rebuild_failed',
+        sourceCollection,
+        sourceId,
+        message: error?.message ?? String(error),
+      },
+    };
+  }
+
+  if (!rebuiltEvent) {
+    return {
+      skipped: {
+        reason: 'source_not_accounting_event_candidate',
+        sourceCollection,
+        sourceId,
+      },
+    };
+  }
+
+  const eventId = toCleanString(rebuiltEvent.id);
+  const eventRef = db.doc(`businesses/${businessId}/accountingEvents/${eventId}`);
+  const currentEventSnap = await eventRef.get();
+  const currentEvent = currentEventSnap.exists
+    ? {
+        id: currentEventSnap.id,
+        ...asRecord(currentEventSnap.data()),
+      }
+    : null;
+  const plan = getAccountingEventRepairPlan({
+    currentEvent,
+    eventRef,
+    rebuiltEvent,
+    sourceCollection,
+    sourceId,
+  });
+
+  return plan.shouldRepair
+    ? { repair: plan }
+    : {
+        skipped: {
+          eventId: plan.eventId ?? eventId,
+          reason: plan.reason,
+          sourceCollection,
+          sourceId,
+        },
+      };
+};
+
+const repairAccountingEventsFromSourceDocuments = async (
+  db,
+  businessId,
+  { dryRun },
+) => {
+  const [purchasesSnap, expensesSnap] = await Promise.all([
+    db.collection(`businesses/${businessId}/purchases`).get(),
+    db.collection(`businesses/${businessId}/expenses`).get(),
+  ]);
+  const repairs = [];
+  const skipped = [];
+
+  for (const purchaseSnap of purchasesSnap.docs) {
+    const purchaseId = toCleanString(purchaseSnap.id);
+    const purchaseRecord = asRecord(purchaseSnap.data());
+    if (!purchaseId) {
+      skipped.push({
+        reason: 'source_id_missing',
+        sourceCollection: 'purchases',
+        sourceId: purchaseSnap.id,
+      });
+      continue;
+    }
+
+    const plan = await planAccountingEventRepairFromSource({
+      businessId,
+      db,
+      sourceCollection: 'purchases',
+      sourceId: purchaseId,
+      buildEvent: () =>
+        buildPurchaseCommittedAccountingEvent({
+          afterPurchase: purchaseRecord,
+          beforePurchase: null,
+          businessId,
+          purchaseId,
+        }),
+    });
+
+    if (plan.repair) {
+      repairs.push(plan.repair);
+    } else if (plan.skipped?.reason !== 'source_not_accounting_event_candidate') {
+      skipped.push(plan.skipped);
+    }
+  }
+
+  for (const expenseSnap of expensesSnap.docs) {
+    const expenseId = toCleanString(expenseSnap.id);
+    const expenseDocument = asRecord(expenseSnap.data());
+    const expenseRecord = asRecord(expenseDocument.expense ?? expenseDocument);
+    if (!expenseId) {
+      skipped.push({
+        reason: 'source_id_missing',
+        sourceCollection: 'expenses',
+        sourceId: expenseSnap.id,
+      });
+      continue;
+    }
+
+    const plan = await planAccountingEventRepairFromSource({
+      businessId,
+      db,
+      sourceCollection: 'expenses',
+      sourceId: expenseId,
+      buildEvent: () =>
+        buildExpenseRecordedAccountingEvent({
+          afterExpense: expenseRecord,
+          beforeExpense: null,
+          businessId,
+          expenseId,
+        }),
+    });
+
+    if (plan.repair) {
+      repairs.push(plan.repair);
+    } else if (plan.skipped?.reason !== 'source_not_accounting_event_candidate') {
+      skipped.push(plan.skipped);
+    }
+  }
+
+  if (!dryRun) {
+    const batchLimit = 450;
+    for (let index = 0; index < repairs.length; index += batchLimit) {
+      const batch = db.batch();
+      repairs.slice(index, index + batchLimit).forEach(({ patch, ref }) => {
+        batch.set(ref, patch, { merge: true });
+      });
+      await batch.commit();
+    }
+  }
+
+  const plannedCreates = repairs.filter(
+    (repair) => repair.repairType === 'create',
+  );
+  const plannedUpdates = repairs.filter(
+    (repair) => repair.repairType === 'update',
+  );
+
+  return {
+    planned: repairs.length,
+    created: dryRun ? 0 : plannedCreates.length,
+    updated: dryRun ? 0 : plannedUpdates.length,
+    plannedCreatedAccountingEvents: plannedCreates.map((repair) => ({
+      eventId: repair.eventId,
+      eventType: repair.eventType,
+      sourceCollection: repair.sourceCollection,
+      sourceId: repair.sourceId,
+    })),
+    plannedUpdatedAccountingEvents: plannedUpdates.map((repair) => ({
+      changedFields: repair.changedFields,
+      eventId: repair.eventId,
+      eventType: repair.eventType,
+      sourceCollection: repair.sourceCollection,
+      sourceId: repair.sourceId,
+    })),
+    skippedAccountingEvents: skipped,
+  };
+};
+
 const resolvePurchaseDocumentTotal = (purchaseRecord) => {
   const monetary = asRecord(purchaseRecord.monetary);
   const documentTotals = asRecord(monetary.documentTotals);
@@ -873,6 +1174,11 @@ const main = async () => {
         includeSeedKeyOnly,
       },
     );
+    const accountingEvents = await repairAccountingEventsFromSourceDocuments(
+      db,
+      businessId,
+      { dryRun },
+    );
     const vendorBills = await syncVendorBillsFromPurchases(db, businessId, {
       dryRun,
     });
@@ -895,6 +1201,14 @@ const main = async () => {
         skippedMissingAccountPostingProfiles:
           postingProfiles.skippedMissingAccounts,
         likelyFixableEventTypes: postingProfiles.likelyFixableEventTypes,
+        plannedAccountingEvents: accountingEvents.planned,
+        createdAccountingEvents: accountingEvents.created,
+        updatedAccountingEvents: accountingEvents.updated,
+        plannedCreatedAccountingEvents:
+          accountingEvents.plannedCreatedAccountingEvents,
+        plannedUpdatedAccountingEvents:
+          accountingEvents.plannedUpdatedAccountingEvents,
+        skippedAccountingEvents: accountingEvents.skippedAccountingEvents,
         plannedVendorBills: vendorBills.plannedMaterialized,
         materializedVendorBills: vendorBills.materialized,
         plannedDeletedVendorBills: vendorBills.plannedDeleted,

@@ -165,4 +165,50 @@ describe('useAccountingConfig loading', () => {
       expect(result.current.loading).toBe(false);
     });
   });
+
+  it('does not subscribe to the market exchange-rate reference by default', async () => {
+    onSnapshotMock.mockImplementation(() => vi.fn());
+
+    renderHook(() =>
+      useAccountingConfig({
+        businessId: 'business-1',
+        includeBankingDetails: false,
+        includeHistory: false,
+        userId: 'user-1',
+      }),
+    );
+
+    await waitFor(() => {
+      expect(onSnapshotMock).toHaveBeenCalled();
+    });
+
+    const docPaths = docMock.mock.calls.map((call) => call.slice(1).join('/'));
+    expect(docPaths).not.toContain(
+      'system/marketData/exchangeRateProviders/open-exchange-rates',
+    );
+  });
+
+  it('subscribes to the market exchange-rate reference when requested', async () => {
+    onSnapshotMock.mockImplementation(() => vi.fn());
+
+    renderHook(() =>
+      useAccountingConfig({
+        businessId: 'business-1',
+        includeBankingDetails: false,
+        includeExchangeRateReference: true,
+        includeHistory: false,
+        userId: 'user-1',
+      }),
+    );
+
+    await waitFor(() => {
+      expect(docMock).toHaveBeenCalledWith(
+        dbMock,
+        'system',
+        'marketData',
+        'exchangeRateProviders',
+        'open-exchange-rates',
+      );
+    });
+  });
 });

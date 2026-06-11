@@ -251,7 +251,7 @@ const mergeConfigWithDirtySections = ({
 export const useAccountingConfig = ({
   businessId,
   includeBankingDetails = true,
-  includeExchangeRateReference = true,
+  includeExchangeRateReference = false,
   includeHistory = true,
   userId,
 }: UseAccountingConfigArgs) => {

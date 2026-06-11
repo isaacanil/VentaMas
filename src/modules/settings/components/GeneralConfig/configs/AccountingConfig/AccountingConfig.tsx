@@ -59,6 +59,7 @@ export default function AccountingConfig() {
     updateSellRate,
   } = useAccountingConfig({
     businessId,
+    includeExchangeRateReference: true,
     userId,
   });
   const {
