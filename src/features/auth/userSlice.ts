@@ -176,6 +176,7 @@ export const userSlice = createSlice({
     logout: (state: UserState) => {
       state.user = null;
       // authReady stays true — we know there's no user (not "haven't checked yet")
+      state.authReady = true;
       state.originalBusinessId = null; // Limpiar también la referencia original
       state.originalRole = null; // Limpiar también el role original
     },
