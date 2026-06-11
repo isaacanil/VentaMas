@@ -198,6 +198,50 @@ describe('syncExpenseAccountingEvent', () => {
     );
   });
 
+  it('fails instead of clamping when expense withholdings exceed the total', async () => {
+    await expect(
+      syncExpenseAccountingEvent({
+        params: {
+          businessId: 'business-1',
+          expenseId: 'expense-1',
+        },
+        data: {
+          before: {
+            data: () => ({
+              expense: {
+                status: 'draft',
+              },
+            }),
+          },
+          after: {
+            data: () => ({
+              expense: {
+                status: 'active',
+                amount: 100,
+                monetary: {
+                  documentTotals: {
+                    total: 100,
+                    withholdingITBISAmount: 70,
+                    withholdingISRAmount: 40,
+                  },
+                },
+              },
+            }),
+          },
+        },
+      }),
+    ).rejects.toThrow(
+      'expense expense-1: invalid fiscal totals. withholdingITBIS + withholdingISR (110) must be less than or equal to total (100); netPayableAmount must be >= 0 (calculated -10).',
+    );
+
+    expect(buildAccountingEventMock).not.toHaveBeenCalled();
+    expect(
+      getDocRef(
+        'businesses/business-1/accountingEvents/expense.recorded__expense-1',
+      ).set,
+    ).not.toHaveBeenCalled();
+  });
+
   it('does not emit again when the expense was already active before the write', async () => {
     await syncExpenseAccountingEvent({
       params: {

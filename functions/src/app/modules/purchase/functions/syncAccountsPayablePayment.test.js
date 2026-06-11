@@ -229,6 +229,10 @@ describe('buildAccountsPayablePaymentAccountingEvents', () => {
         }),
       }),
     );
+    const eventInput = buildAccountingEventMock.mock.calls[0][0];
+    expect(eventInput.monetary).not.toHaveProperty('withholdingITBISAmount');
+    expect(eventInput.monetary).not.toHaveProperty('withholdingISRAmount');
+    expect(eventInput.payload).not.toHaveProperty('fiscalTotals');
   });
 
   it('emits accounts_payable.payment.voided with reversalOfEventId on void transition', () => {

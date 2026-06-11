@@ -239,6 +239,15 @@ describe('postingProfiles', () => {
       ),
     ).toBe(true);
     expect(
+      result
+        .find((profile) => profile.metadata?.seedKey === 'inventory_cogs_voided')
+        ?.linesTemplate.some(
+          (line) =>
+            line.accountSystemKey === 'cost_of_sales' &&
+            line.amountSource === 'document_total',
+        ),
+    ).toBe(true);
+    expect(
       result.some(
         (profile) => profile.name === 'Venta a credito con abono inicial',
       ),
@@ -358,5 +367,25 @@ describe('postingProfiles', () => {
         (profile) => profile.name === 'Ajuste por diferencia bancaria',
       ),
     ).toBe(true);
+  });
+
+  it('mantiene los pagos CxP sin cuentas de retencion ya registradas en el documento', () => {
+    const result =
+      buildDefaultAccountingPostingProfileTemplates(chartOfAccounts);
+    const payablePaymentProfiles = result.filter(
+      (profile) => profile.eventType === 'accounts_payable.payment.recorded',
+    );
+    const payablePaymentAccountKeys = payablePaymentProfiles.flatMap(
+      (profile) =>
+        profile.linesTemplate.map((line) => line.accountSystemKey ?? ''),
+    );
+
+    expect(payablePaymentProfiles.length).toBeGreaterThan(0);
+    expect(payablePaymentAccountKeys).not.toContain(
+      'withholding_itbis_payable',
+    );
+    expect(payablePaymentAccountKeys).not.toContain(
+      'withholding_isr_payable',
+    );
   });
 });

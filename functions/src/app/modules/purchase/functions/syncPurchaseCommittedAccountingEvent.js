@@ -91,7 +91,29 @@ const resolveTimestamp = (...values) => {
 const resolveCurrencyCode = (value) =>
   toCleanString(asRecord(value).code ?? value)?.toUpperCase() || null;
 
-const resolvePurchaseMonetarySnapshot = (purchaseRecord) => {
+const resolveValidNetPayableAmount = ({
+  contextLabel,
+  total,
+  withholdingITBIS,
+  withholdingISR,
+}) => {
+  const withholdingTotal = roundToTwoDecimals(
+    withholdingITBIS + withholdingISR,
+  );
+  const netPayableAmount = roundToTwoDecimals(
+    total - withholdingITBIS - withholdingISR,
+  );
+
+  if (withholdingTotal > total || netPayableAmount < 0) {
+    throw new Error(
+      `${contextLabel}: invalid fiscal totals. withholdingITBIS + withholdingISR (${withholdingTotal}) must be less than or equal to total (${total}); netPayableAmount must be >= 0 (calculated ${netPayableAmount}).`,
+    );
+  }
+
+  return netPayableAmount;
+};
+
+const resolvePurchaseMonetarySnapshot = (purchaseRecord, { purchaseId }) => {
   const monetary = asRecord(purchaseRecord.monetary);
   const documentTotals = asRecord(monetary.documentTotals);
   const functionalTotals = asRecord(monetary.functionalTotals);
@@ -124,9 +146,13 @@ const resolvePurchaseMonetarySnapshot = (purchaseRecord) => {
         purchaseRecord.isrWithheld,
     ) ?? 0,
   );
-  const documentNetPayable = roundToTwoDecimals(
-    Math.max(documentTotal - documentWithholdingITBIS - documentWithholdingISR, 0),
-  );
+  const contextLabel = `purchase ${purchaseId}`;
+  const documentNetPayable = resolveValidNetPayableAmount({
+    contextLabel,
+    total: documentTotal,
+    withholdingITBIS: documentWithholdingITBIS,
+    withholdingISR: documentWithholdingISR,
+  });
   const functionalTotal = roundToTwoDecimals(
     safeNumber(functionalTotals.total) ?? documentTotal,
   );
@@ -151,12 +177,12 @@ const resolvePurchaseMonetarySnapshot = (purchaseRecord) => {
       functionalTotals.withholdingISRAmount ?? functionalTotals.isrWithheld,
     ) ?? documentWithholdingISR,
   );
-  const functionalNetPayable = roundToTwoDecimals(
-    Math.max(
-      functionalTotal - functionalWithholdingITBIS - functionalWithholdingISR,
-      0,
-    ),
-  );
+  const functionalNetPayable = resolveValidNetPayableAmount({
+    contextLabel: `${contextLabel} functional totals`,
+    total: functionalTotal,
+    withholdingITBIS: functionalWithholdingITBIS,
+    withholdingISR: functionalWithholdingISR,
+  });
 
   return {
     currency: resolveCurrencyCode(monetary.documentCurrency),
@@ -222,7 +248,9 @@ export const syncPurchaseCommittedAccountingEvent = onDocumentWritten(
       afterPurchase.createdAt,
     );
     const recordedAt = Timestamp.now();
-    const monetarySnapshot = resolvePurchaseMonetarySnapshot(afterPurchase);
+    const monetarySnapshot = resolvePurchaseMonetarySnapshot(afterPurchase, {
+      purchaseId,
+    });
     const accountingEvent = buildAccountingEvent({
       businessId,
       eventType: 'purchase.committed',

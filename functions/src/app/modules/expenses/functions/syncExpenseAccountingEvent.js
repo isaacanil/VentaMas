@@ -59,7 +59,29 @@ const isRecordedExpenseStatus = (status) =>
 const resolveCurrencyCode = (value) =>
   toCleanString(asRecord(value).code ?? value)?.toUpperCase() || null;
 
-const resolveExpenseMonetarySnapshot = (expenseRecord) => {
+const resolveValidNetPayableAmount = ({
+  contextLabel,
+  total,
+  withholdingITBIS,
+  withholdingISR,
+}) => {
+  const withholdingTotal = roundToTwoDecimals(
+    withholdingITBIS + withholdingISR,
+  );
+  const netPayableAmount = roundToTwoDecimals(
+    total - withholdingITBIS - withholdingISR,
+  );
+
+  if (withholdingTotal > total || netPayableAmount < 0) {
+    throw new Error(
+      `${contextLabel}: invalid fiscal totals. withholdingITBIS + withholdingISR (${withholdingTotal}) must be less than or equal to total (${total}); netPayableAmount must be >= 0 (calculated ${netPayableAmount}).`,
+    );
+  }
+
+  return netPayableAmount;
+};
+
+const resolveExpenseMonetarySnapshot = (expenseRecord, { expenseId }) => {
   const monetary = asRecord(expenseRecord.monetary);
   const documentTotals = asRecord(monetary.documentTotals);
   const functionalTotals = asRecord(monetary.functionalTotals);
@@ -101,9 +123,13 @@ const resolveExpenseMonetarySnapshot = (expenseRecord) => {
       'isrWithheld',
     ) ?? 0,
   );
-  const netPayableAmount = roundToTwoDecimals(
-    Math.max(amount - withholdingITBISAmount - withholdingISRAmount, 0),
-  );
+  const contextLabel = `expense ${expenseId}`;
+  const netPayableAmount = resolveValidNetPayableAmount({
+    contextLabel,
+    total: amount,
+    withholdingITBIS: withholdingITBISAmount,
+    withholdingISR: withholdingISRAmount,
+  });
   const functionalAmount = roundToTwoDecimals(
     safeNumber(functionalTotals.total ?? monetary.functionalAmount ?? amount) ??
       amount,
@@ -130,7 +156,12 @@ const resolveExpenseMonetarySnapshot = (expenseRecord) => {
   );
   const functionalNetPayableAmount = roundToTwoDecimals(
     safeNumber(functionalTotals.netPayableAmount) ??
-      netPayableAmount * functionalRate,
+      resolveValidNetPayableAmount({
+        contextLabel: `${contextLabel} functional totals`,
+        total: functionalAmount,
+        withholdingITBIS: functionalWithholdingITBISAmount,
+        withholdingISR: functionalWithholdingISRAmount,
+      }),
   );
 
   return {
@@ -228,7 +259,9 @@ export const buildExpenseRecordedAccountingEvent = ({
     ? nextExpense.attachments
     : [];
   const invoice = asRecord(nextExpense.invoice);
-  const monetarySnapshot = resolveExpenseMonetarySnapshot(nextExpense);
+  const monetarySnapshot = resolveExpenseMonetarySnapshot(nextExpense, {
+    expenseId,
+  });
 
   return buildAccountingEvent({
     businessId,

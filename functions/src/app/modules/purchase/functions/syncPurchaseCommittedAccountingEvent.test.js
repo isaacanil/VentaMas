@@ -197,6 +197,53 @@ describe('syncPurchaseCommittedAccountingEvent', () => {
     );
   });
 
+  it('fails instead of clamping when purchase withholdings exceed the total', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+    });
+
+    await expect(
+      syncPurchaseCommittedAccountingEvent({
+        params: {
+          businessId: 'business-1',
+          purchaseId: 'purchase-1',
+        },
+        data: {
+          before: {
+            data: () => ({
+              status: 'pending',
+              workflowStatus: 'pending_receipt',
+            }),
+          },
+          after: {
+            data: () => ({
+              status: 'completed',
+              workflowStatus: 'completed',
+              monetary: {
+                documentTotals: {
+                  total: 100,
+                  taxes: 18,
+                  withholdingITBISAmount: 70,
+                  withholdingISRAmount: 40,
+                },
+              },
+            }),
+          },
+        },
+      }),
+    ).rejects.toThrow(
+      'purchase purchase-1: invalid fiscal totals. withholdingITBIS + withholdingISR (110) must be less than or equal to total (100); netPayableAmount must be >= 0 (calculated -10).',
+    );
+
+    expect(buildAccountingEventMock).not.toHaveBeenCalled();
+    expect(
+      getDocRef(
+        'businesses/business-1/accountingEvents/purchase.committed__purchase-1',
+      ).set,
+    ).not.toHaveBeenCalled();
+  });
+
   it('does not emit again when the purchase was already completed before the write', async () => {
     documentSnapshots.set('businesses/business-1/settings/accounting', {
       rolloutEnabled: true,

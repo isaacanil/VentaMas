@@ -784,7 +784,7 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       },
       {
         side: 'credit',
-        accountSystemKey: 'cost_of_goods_sold',
+        accountSystemKey: 'cost_of_sales',
         amountSource: 'document_total',
       },
     ],
