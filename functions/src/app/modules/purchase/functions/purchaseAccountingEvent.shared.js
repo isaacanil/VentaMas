@@ -151,12 +151,22 @@ const resolveValidNetPayableAmount = ({
   return netPayableAmount;
 };
 
+const resolveTotalFromFiscalParts = ({ subtotal, tax, total }) => {
+  const normalizedTotal = roundToTwoDecimals(total);
+  if (normalizedTotal > 0) {
+    return normalizedTotal;
+  }
+
+  const reconstructedTotal = roundToTwoDecimals(subtotal + tax);
+  return reconstructedTotal > 0 ? reconstructedTotal : normalizedTotal;
+};
+
 const resolvePurchaseMonetarySnapshot = (purchaseRecord, { purchaseId }) => {
   const monetary = asRecord(purchaseRecord.monetary);
   const documentTotals = asRecord(monetary.documentTotals);
   const legacyTotals = resolvePurchaseDocumentTotals(purchaseRecord);
   const functionalTotals = asRecord(monetary.functionalTotals);
-  const documentTotal = roundToTwoDecimals(
+  const documentTotalCandidate = roundToTwoDecimals(
     safeNumber(
       documentTotals.total ??
         legacyTotals.total ??
@@ -183,8 +193,13 @@ const resolvePurchaseMonetarySnapshot = (purchaseRecord, { purchaseId }) => {
         legacyTotals.subtotalAmount ??
         legacyTotals.totalBaseCost ??
         legacyTotals.totalProducts,
-    ) ?? Math.max(documentTotal - documentTaxes, 0),
+    ) ?? Math.max(documentTotalCandidate - documentTaxes, 0),
   );
+  const documentTotal = resolveTotalFromFiscalParts({
+    subtotal: documentSubtotal,
+    tax: documentTaxes,
+    total: documentTotalCandidate,
+  });
   const documentWithholdingITBIS = roundToTwoDecimals(
     safeNumber(
       documentTotals.withholdingITBISAmount ??
@@ -225,6 +240,11 @@ const resolvePurchaseMonetarySnapshot = (purchaseRecord, { purchaseId }) => {
         functionalTotals.subtotalAmount,
     ) ?? Math.max(functionalTotal - functionalTaxes, 0),
   );
+  const resolvedFunctionalTotal = resolveTotalFromFiscalParts({
+    subtotal: functionalSubtotal,
+    tax: functionalTaxes,
+    total: functionalTotal,
+  });
   const functionalWithholdingITBIS = roundToTwoDecimals(
     safeNumber(
       functionalTotals.withholdingITBISAmount ?? functionalTotals.itbisWithheld,
@@ -236,7 +256,7 @@ const resolvePurchaseMonetarySnapshot = (purchaseRecord, { purchaseId }) => {
   );
   const functionalNetPayable = resolveValidNetPayableAmount({
     contextLabel: `${contextLabel} functional totals`,
-    total: functionalTotal,
+    total: resolvedFunctionalTotal,
     withholdingITBIS: functionalWithholdingITBIS,
     withholdingISR: functionalWithholdingISR,
   });
@@ -251,7 +271,7 @@ const resolvePurchaseMonetarySnapshot = (purchaseRecord, { purchaseId }) => {
       withholdingITBISAmount: documentWithholdingITBIS,
       withholdingISRAmount: documentWithholdingISR,
       netPayableAmount: documentNetPayable,
-      functionalAmount: functionalTotal,
+      functionalAmount: resolvedFunctionalTotal,
       functionalSubtotalAmount: functionalSubtotal,
       functionalTaxAmount: functionalTaxes,
       functionalWithholdingITBISAmount: functionalWithholdingITBIS,

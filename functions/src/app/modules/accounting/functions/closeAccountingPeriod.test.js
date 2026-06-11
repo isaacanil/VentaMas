@@ -372,6 +372,42 @@ describe('closeAccountingPeriod', () => {
     expect(transactionSetMock).toHaveBeenCalled();
   });
 
+  it('does not block period close with dead letters from voided events', async () => {
+    collectionSnapshots.set(
+      'businesses/business-1/accountingEventProjectionDeadLetters',
+      [
+        {
+          id: 'hr_commission.accrued__period-1',
+          data: {
+            eventId: 'hr_commission.accrued__period-1',
+            eventType: 'hr_commission.accrued',
+            metadata: {
+              eventStatus: 'voided',
+            },
+            projectionStatus: 'pending_account_mapping',
+          },
+        },
+      ],
+    );
+    transactionSnapshots.set(
+      'businesses/business-1/accountingPeriodClosures/2026-04',
+      null,
+    );
+
+    const result = await closeAccountingPeriod({
+      data: {
+        businessId: 'business-1',
+        periodKey: '2026-04',
+      },
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      periodKey: '2026-04',
+    });
+    expect(transactionSetMock).toHaveBeenCalled();
+  });
+
   it('blocks period close when a journal entry is unbalanced', async () => {
     collectionSnapshots.set('businesses/business-1/journalEntries', [
       {
@@ -419,6 +455,39 @@ describe('closeAccountingPeriod', () => {
           status: 'voided',
           projection: {
             status: 'pending',
+          },
+        },
+      },
+    ]);
+    transactionSnapshots.set(
+      'businesses/business-1/accountingPeriodClosures/2026-04',
+      null,
+    );
+
+    const result = await closeAccountingPeriod({
+      data: {
+        businessId: 'business-1',
+        periodKey: '2026-04',
+      },
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      periodKey: '2026-04',
+      reused: false,
+    });
+    expect(transactionSetMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('allows period close for zero-amount events skipped by projection', async () => {
+    collectionSnapshots.set('businesses/business-1/accountingEvents', [
+      {
+        id: 'purchase.committed__zero-1',
+        data: {
+          eventType: 'purchase.committed',
+          status: 'recorded',
+          projection: {
+            status: 'skipped_zero_amount',
           },
         },
       },

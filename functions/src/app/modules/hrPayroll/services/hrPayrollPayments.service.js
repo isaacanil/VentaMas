@@ -7,6 +7,8 @@ const LINE_PAYABLE_STATUSES = new Set(['approved']);
 const BANK_METHODS = new Set(['card', 'transfer']);
 const CASH_METHODS = new Set(['cash']);
 const SUPPORTED_MOVEMENT_METHODS = new Set([...CASH_METHODS, ...BANK_METHODS]);
+const SUPPORTED_PAYMENT_METHOD_MESSAGE =
+  'Selecciona caja, transferencia o cheque para registrar un pago de nomina con soporte contable.';
 
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -310,6 +312,25 @@ export const buildHrPayrollPaymentDocuments = ({
   const bankAccountId = toCleanString(paymentPayload.bankAccountId);
   const cashAccountId = toCleanString(paymentPayload.cashAccountId);
   const cashCountId = toCleanString(paymentPayload.cashCountId);
+  if (!SUPPORTED_MOVEMENT_METHODS.has(paymentMethod)) {
+    return {
+      ok: false,
+      error: SUPPORTED_PAYMENT_METHOD_MESSAGE,
+    };
+  }
+  if (CASH_METHODS.has(paymentMethod) && (!cashAccountId || !cashCountId)) {
+    return {
+      ok: false,
+      error:
+        'Indica la caja y el cuadre operativo para registrar este pago en efectivo.',
+    };
+  }
+  if (BANK_METHODS.has(paymentMethod) && !bankAccountId) {
+    return {
+      ok: false,
+      error: 'Indica la cuenta bancaria operativa antes de confirmar el pago.',
+    };
+  }
   const reference =
     toCleanString(paymentPayload.reference) ||
     toCleanString(paymentPayload.transferReference) ||

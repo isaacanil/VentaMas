@@ -36,6 +36,8 @@ export const ACCOUNTING_PROJECTION_STATUS_VALUES = [
   'projected',
   'failed',
   'pending_account_mapping',
+  'voided',
+  'skipped_zero_amount',
 ];
 
 export const ACCOUNTING_TREASURY_PAYMENT_CHANNEL_VALUES = [

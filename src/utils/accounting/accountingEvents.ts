@@ -215,6 +215,8 @@ export const ACCOUNTING_PROJECTION_STATUS_LABELS: Record<
   projected: 'Proyectado',
   failed: 'Fallido',
   pending_account_mapping: 'Pendiente de mapeo contable',
+  voided: 'Anulado',
+  skipped_zero_amount: 'Omitido por monto cero',
 };
 
 export const normalizeAccountingEventType = (

@@ -251,6 +251,176 @@ describe('projectAccountingEventToJournalEntry', () => {
     ).toBe(false);
   });
 
+  it('skips projection and clears dead letters for voided accounting events', async () => {
+    documentSnapshots.set(
+      'businesses/business-1/accountingEventProjectionDeadLetters/hr_commission.accrued__period-1',
+      {
+        id: 'hr_commission.accrued__period-1',
+        projectionStatus: 'pending_account_mapping',
+      },
+    );
+
+    await projectAccountingEventToJournalEntry({
+      params: {
+        businessId: 'business-1',
+        eventId: 'hr_commission.accrued__period-1',
+      },
+      data: {
+        data: () => ({
+          id: 'hr_commission.accrued__period-1',
+          businessId: 'business-1',
+          eventType: 'hr_commission.accrued',
+          eventVersion: 1,
+          sourceType: 'hrCommissionPeriod',
+          sourceId: 'period-1',
+          sourceDocumentId: 'period-1',
+          sourceDocumentType: 'hrCommissionPeriod',
+          status: 'voided',
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: {
+            amount: 16.1,
+            functionalAmount: 16.1,
+          },
+          payload: {},
+        }),
+      },
+    });
+
+    const eventRecord =
+      documentSnapshots.get(
+        'businesses/business-1/accountingEvents/hr_commission.accrued__period-1',
+      ) ?? null;
+    expect(eventRecord).toMatchObject({
+      projection: expect.objectContaining({
+        status: 'voided',
+        journalEntryId: null,
+      }),
+    });
+    expect(
+      documentSnapshots.has(
+        'businesses/business-1/journalEntries/hr_commission.accrued__period-1',
+      ),
+    ).toBe(false);
+    expect(
+      documentSnapshots.has(
+        'businesses/business-1/accountingEventProjectionDeadLetters/hr_commission.accrued__period-1',
+      ),
+    ).toBe(false);
+  });
+
+  it('skips zero amount events without creating a journal entry', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+      functionalCurrency: 'DOP',
+    });
+    documentSnapshots.set(
+      'businesses/business-1/accountingEventProjectionDeadLetters/purchase.committed__zero-1',
+      {
+        id: 'purchase.committed__zero-1',
+        projectionStatus: 'failed',
+      },
+    );
+    collectionSnapshots.set('businesses/business-1/accountingPostingProfiles', [
+      {
+        id: 'profile-1',
+        data: {
+          id: 'profile-1',
+          name: 'Compra registrada',
+          eventType: 'purchase.committed',
+          status: 'active',
+          priority: 10,
+          linesTemplate: [
+            {
+              id: 'l1',
+              side: 'debit',
+              accountSystemKey: 'inventory',
+              amountSource: 'purchase_total',
+            },
+            {
+              id: 'l2',
+              side: 'credit',
+              accountSystemKey: 'accounts_payable',
+              amountSource: 'purchase_total',
+            },
+          ],
+        },
+      },
+    ]);
+    collectionSnapshots.set('businesses/business-1/chartOfAccounts', [
+      {
+        id: 'inventory-1',
+        data: {
+          id: 'inventory-1',
+          code: '1130',
+          name: 'Inventario',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'inventory',
+        },
+      },
+      {
+        id: 'ap-1',
+        data: {
+          id: 'ap-1',
+          code: '2100',
+          name: 'Cuentas por pagar',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'accounts_payable',
+        },
+      },
+    ]);
+
+    await projectAccountingEventToJournalEntry({
+      params: {
+        businessId: 'business-1',
+        eventId: 'purchase.committed__zero-1',
+      },
+      data: {
+        data: () => ({
+          id: 'purchase.committed__zero-1',
+          businessId: 'business-1',
+          eventType: 'purchase.committed',
+          eventVersion: 1,
+          sourceType: 'purchase',
+          sourceId: 'zero-1',
+          sourceDocumentId: 'zero-1',
+          sourceDocumentType: 'purchase',
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: {
+            amount: 0,
+            functionalAmount: 0,
+          },
+          payload: {},
+        }),
+      },
+    });
+
+    const eventRecord =
+      documentSnapshots.get(
+        'businesses/business-1/accountingEvents/purchase.committed__zero-1',
+      ) ?? null;
+    expect(eventRecord).toMatchObject({
+      projection: expect.objectContaining({
+        status: 'skipped_zero_amount',
+        journalEntryId: null,
+      }),
+    });
+    expect(
+      documentSnapshots.has(
+        'businesses/business-1/journalEntries/purchase.committed__zero-1',
+      ),
+    ).toBe(false);
+    expect(
+      documentSnapshots.has(
+        'businesses/business-1/accountingEventProjectionDeadLetters/purchase.committed__zero-1',
+      ),
+    ).toBe(false);
+  });
+
   it('projects receivable payments with third-party withholding as collected plus tax receivable', async () => {
     documentSnapshots.set('businesses/business-1/settings/accounting', {
       rolloutEnabled: true,

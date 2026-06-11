@@ -14,6 +14,8 @@ import {
 import { buildAccountingPeriodKey } from './utils/periodClosure.util.js';
 
 export const PROJECTOR_VERSION = 1;
+const VOIDED_ACCOUNTING_EVENT_STATUSES = new Set(['voided']);
+const ZERO_AMOUNT_PROJECTION_STATUS = 'skipped_zero_amount';
 
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -42,6 +44,50 @@ const resolveEventPeriodKey = (event, fallbackDate) =>
     event?.occurredAt ?? event?.entryDate ?? event?.recordedAt ?? fallbackDate,
     fallbackDate,
   );
+
+const safeNumber = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const hasPostingAmountSignal = (event) => {
+  const monetary = asRecord(event?.monetary);
+  const payload = asRecord(event?.payload);
+  const fiscalTotals = asRecord(payload.fiscalTotals);
+  const amountKeys = [
+    'amount',
+    'functionalAmount',
+    'subtotalAmount',
+    'functionalSubtotalAmount',
+    'taxAmount',
+    'functionalTaxAmount',
+    'netPayableAmount',
+    'functionalNetPayableAmount',
+    'withholdingITBISAmount',
+    'functionalWithholdingITBISAmount',
+    'withholdingISRAmount',
+    'functionalWithholdingISRAmount',
+  ];
+
+  const payloadAmountKeys = [
+    'amount',
+    'total',
+    'netAmount',
+    'grossAmount',
+    'subtotal',
+    'taxAmount',
+    'netPayableAmount',
+  ];
+
+  return (
+    amountKeys.some((key) => Math.abs(safeNumber(monetary[key])) > 0) ||
+    payloadAmountKeys.some(
+      (key) =>
+        Math.abs(safeNumber(payload[key])) > 0 ||
+        Math.abs(safeNumber(fiscalTotals[key])) > 0,
+    )
+  );
+};
 
 const buildProjectionUpdate = ({
   accountingEvent,
@@ -183,6 +229,27 @@ export const runAccountingEventProjection = async ({
   );
   const now = Timestamp.now();
 
+  if (VOIDED_ACCOUNTING_EVENT_STATUSES.has(toCleanString(eventRecord.status))) {
+    const projectionUpdate = buildProjectionUpdate({
+      accountingEvent: eventRecord,
+      status: 'voided',
+      now,
+      projectorVersion: PROJECTOR_VERSION,
+      replayRequestedBy,
+    });
+    await eventRef.update(projectionUpdate);
+    await deadLetterRef.delete().catch(() => undefined);
+
+    return {
+      ok: true,
+      status: 'voided',
+      journalEntryId: null,
+      reusedExistingEntry: false,
+      deadLetterId: null,
+      lastError: null,
+    };
+  }
+
   const [
     settingsSnap,
     entrySnap,
@@ -318,6 +385,27 @@ export const runAccountingEventProjection = async ({
       reusedExistingEntry: false,
       deadLetterId: normalizedEventId,
       lastError,
+    };
+  }
+
+  if (!hasPostingAmountSignal(eventRecord)) {
+    const projectionUpdate = buildProjectionUpdate({
+      accountingEvent: eventRecord,
+      status: ZERO_AMOUNT_PROJECTION_STATUS,
+      now,
+      projectorVersion: PROJECTOR_VERSION,
+      replayRequestedBy,
+    });
+    await eventRef.update(projectionUpdate);
+    await deadLetterRef.delete().catch(() => undefined);
+
+    return {
+      ok: true,
+      status: ZERO_AMOUNT_PROJECTION_STATUS,
+      journalEntryId: null,
+      reusedExistingEntry: false,
+      deadLetterId: null,
+      lastError: null,
     };
   }
 

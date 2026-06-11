@@ -137,6 +137,16 @@ const resolveValidNetPayableAmount = ({
   return netPayableAmount;
 };
 
+const resolveTotalFromFiscalParts = ({ subtotal, tax, total }) => {
+  const normalizedTotal = roundToTwoDecimals(total);
+  if (normalizedTotal > 0) {
+    return normalizedTotal;
+  }
+
+  const reconstructedTotal = roundToTwoDecimals(subtotal + tax);
+  return reconstructedTotal > 0 ? reconstructedTotal : normalizedTotal;
+};
+
 const resolveExpenseMonetarySnapshot = (expenseRecord, { expenseId }) => {
   const monetary = asRecord(expenseRecord.monetary);
   const documentTotals = asRecord(monetary.documentTotals);
@@ -144,7 +154,7 @@ const resolveExpenseMonetarySnapshot = (expenseRecord, { expenseId }) => {
     expenseRecord.totals ?? expenseRecord.totalPurchase,
   );
   const functionalTotals = asRecord(monetary.functionalTotals);
-  const amount = roundToTwoDecimals(
+  const amountCandidate = roundToTwoDecimals(
     safeNumber(
       documentTotals.total ??
         legacyTotals.total ??
@@ -170,8 +180,13 @@ const resolveExpenseMonetarySnapshot = (expenseRecord, { expenseId }) => {
       'subtotal',
       'subTotal',
       'subtotalAmount',
-    ) ?? Math.max(amount - taxAmount, 0),
+    ) ?? Math.max(amountCandidate - taxAmount, 0),
   );
+  const amount = resolveTotalFromFiscalParts({
+    subtotal: subtotalAmount,
+    tax: taxAmount,
+    total: amountCandidate,
+  });
   const withholdingITBISAmount = roundToTwoDecimals(
     resolveExpenseFiscalAmount(
       expenseRecord,
@@ -212,6 +227,11 @@ const resolveExpenseMonetarySnapshot = (expenseRecord, { expenseId }) => {
         functionalTotals.subtotalAmount,
     ) ?? subtotalAmount * functionalRate,
   );
+  const resolvedFunctionalAmount = resolveTotalFromFiscalParts({
+    subtotal: functionalSubtotalAmount,
+    tax: functionalTaxAmount,
+    total: functionalAmount,
+  });
   const functionalWithholdingITBISAmount = roundToTwoDecimals(
     safeNumber(functionalTotals.withholdingITBISAmount) ??
       withholdingITBISAmount * functionalRate,
@@ -224,7 +244,7 @@ const resolveExpenseMonetarySnapshot = (expenseRecord, { expenseId }) => {
     safeNumber(functionalTotals.netPayableAmount) ??
       resolveValidNetPayableAmount({
         contextLabel: `${contextLabel} functional totals`,
-        total: functionalAmount,
+        total: resolvedFunctionalAmount,
         withholdingITBIS: functionalWithholdingITBISAmount,
         withholdingISR: functionalWithholdingISRAmount,
       }),
@@ -240,7 +260,7 @@ const resolveExpenseMonetarySnapshot = (expenseRecord, { expenseId }) => {
       withholdingITBISAmount,
       withholdingISRAmount,
       netPayableAmount,
-      functionalAmount,
+      functionalAmount: resolvedFunctionalAmount,
       functionalSubtotalAmount,
       functionalTaxAmount,
       functionalWithholdingITBISAmount,
@@ -276,6 +296,15 @@ const resolveExpenseSettlementTiming = (expenseRecord) => {
     payment.deferToAccountsPayable === true ||
     toCleanString(payment.accountsPayableId) ||
     toCleanString(expenseRecord.accountsPayableId)
+  ) {
+    return 'deferred';
+  }
+
+  if (
+    !paymentMethods.length &&
+    !toCleanString(payment.method) &&
+    !toCleanString(payment.sourceType) &&
+    !toCleanString(expenseRecord.paymentMethod)
   ) {
     return 'deferred';
   }

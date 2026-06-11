@@ -8,6 +8,7 @@ import type {
 } from '@/types/hrPayroll';
 
 import { RecordHrPaymentModal } from './RecordHrPaymentModal';
+import { PAYMENT_METHOD_OPTIONS } from './RecordHrPaymentModal.helpers';
 
 const period: HrCommissionPeriodRecord = {
   id: 'period-1',
@@ -47,6 +48,14 @@ const line: HrPayrollEmployeeLineRecord = {
 };
 
 describe('RecordHrPaymentModal', () => {
+  it('only exposes payment methods with accounting support', () => {
+    expect(PAYMENT_METHOD_OPTIONS.map((option) => option.value)).toEqual([
+      'cash',
+      'bank_transfer',
+      'check',
+    ]);
+  });
+
   it('shows the payment summary before confirming', () => {
     const onFinish = vi.fn();
 

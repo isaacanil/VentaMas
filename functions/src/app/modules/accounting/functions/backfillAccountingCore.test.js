@@ -66,6 +66,74 @@ describe('backfillAccountingCore planner', () => {
     );
   });
 
+  it('updates seed-key-only profiles when explicitly requested', () => {
+    const plan = planDefaultPostingProfileChanges({
+      accounts: buildCanonicalAccounts(),
+      businessId: 'business-1',
+      includeSeedKeyOnly: true,
+      profiles: [
+        {
+          id: 'legacy-expense-bank',
+          ref: { id: 'legacy-expense-bank' },
+          metadata: {
+            seedKey: 'expense_bank',
+            seededBy: 'codex_2026_04_07',
+          },
+          linesTemplate: [
+            {
+              side: 'debit',
+              accountSystemKey: 'operating_expenses',
+              amountSource: 'expense_total',
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(plan.skippedCustom).toEqual([]);
+    expect(plan.updates).toContainEqual(
+      expect.objectContaining({
+        seedKey: 'expense_bank',
+      }),
+    );
+    expect(
+      plan.updates
+        .find((change) => change.seedKey === 'expense_bank')
+        ?.payload.linesTemplate.some(
+          (line) => line.amountSource === 'expense_tax',
+        ),
+    ).toBe(true);
+  });
+
+  it('deactivates managed legacy purchase profiles replaced by default profiles', () => {
+    const plan = planDefaultPostingProfileChanges({
+      accounts: buildCanonicalAccounts(),
+      businessId: 'business-1',
+      profiles: [
+        {
+          id: 'purchaseCommittedCash20260407',
+          ref: { id: 'purchaseCommittedCash20260407' },
+          status: 'active',
+          eventType: 'purchase.committed',
+          metadata: {
+            seedKey: 'purchase_committed_cash',
+            seededBy: 'codex_2026_04_07',
+          },
+        },
+      ],
+    });
+
+    expect(plan.deactivations).toContainEqual(
+      expect.objectContaining({
+        profileId: 'purchaseCommittedCash20260407',
+        seedKey: 'purchase_committed_cash',
+        payload: expect.objectContaining({
+          status: 'inactive',
+        }),
+      }),
+    );
+  });
+
   it('plans updates for default profiles that still point withholdings to tax payable', () => {
     const plan = planDefaultPostingProfileChanges({
       accounts: buildCanonicalAccounts(),
@@ -107,6 +175,66 @@ describe('backfillAccountingCore planner', () => {
         (line) =>
           line.accountSystemKey === 'withholding_isr_payable' &&
           line.amountSource === 'purchase_withholding_isr',
+      ),
+    ).toBe(true);
+  });
+
+  it('treats reordered default profile conditions as already current', () => {
+    const profilePlan = planDefaultPostingProfileChanges({
+      accounts: buildCanonicalAccounts(),
+      businessId: 'business-1',
+      profiles: [
+        {
+          id: 'invoice_cash_sale_bank',
+          ref: { id: 'invoice_cash_sale_bank' },
+          businessId: 'business-1',
+          name: 'Venta al contado por banco',
+          description: 'Factura confirmada y cobrada directamente por banco.',
+          eventType: 'invoice.committed',
+          moduleKey: 'sales',
+          priority: 15,
+          status: 'active',
+          conditions: {
+            settlementKind: 'bank',
+            taxTreatment: 'any',
+            paymentTerm: 'cash',
+          },
+          linesTemplate: [
+            {
+              side: 'debit',
+              accountId: 'account_bank',
+              accountSystemKey: 'bank',
+              amountSource: 'document_total',
+            },
+            {
+              side: 'credit',
+              accountId: 'account_sales',
+              accountSystemKey: 'sales',
+              amountSource: 'net_sales',
+            },
+            {
+              side: 'credit',
+              accountId: 'account_tax_payable',
+              accountSystemKey: 'tax_payable',
+              amountSource: 'tax_total',
+            },
+          ],
+          metadata: {
+            seedKey: 'invoice_cash_sale_bank',
+            seededBy: 'default_posting_profiles',
+          },
+        },
+      ],
+    });
+
+    expect(
+      profilePlan.updates.some(
+        (change) => change.seedKey === 'invoice_cash_sale_bank',
+      ),
+    ).toBe(false);
+    expect(
+      profilePlan.alreadyCurrent.some(
+        (profile) => profile.seedKey === 'invoice_cash_sale_bank',
       ),
     ).toBe(true);
   });

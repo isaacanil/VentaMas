@@ -7,7 +7,6 @@ export const PAYMENT_METHOD_OPTIONS: Array<{
   { value: 'cash', label: 'Efectivo' },
   { value: 'bank_transfer', label: 'Transferencia' },
   { value: 'check', label: 'Cheque' },
-  { value: 'other', label: 'Otro' },
 ];
 
 export const normalizePaymentMethod = (

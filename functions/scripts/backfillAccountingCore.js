@@ -448,6 +448,20 @@ const buildDefaultPostingProfilePayload = ({
   };
 };
 
+const OBSOLETE_POSTING_PROFILE_SEED_KEYS = new Set([
+  'purchase_committed',
+  'purchase_committed_cash',
+]);
+
+const isManagedLegacyPostingProfile = (profile) => {
+  const metadata = asRecord(profile.metadata);
+  const seededBy = toCleanString(metadata.seededBy);
+  return (
+    seededBy === 'default_posting_profiles' ||
+    Boolean(seededBy?.startsWith('codex'))
+  );
+};
+
 const normalizeLineForComparison = (line) => ({
   accountId: toCleanString(line.accountId),
   accountSystemKey: toCleanString(line.accountSystemKey),
@@ -462,8 +476,24 @@ const linesMatchTemplate = (currentLines, nextLines) =>
     ),
   ) === JSON.stringify(nextLines.map(normalizeLineForComparison));
 
+const serializeRecordForComparison = (value) => {
+  if (value == null || typeof value !== 'object') {
+    return JSON.stringify(value);
+  }
+
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => serializeRecordForComparison(item)).join(',')}]`;
+  }
+
+  const record = asRecord(value);
+  return `{${Object.keys(record)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${serializeRecordForComparison(record[key])}`)
+    .join(',')}}`;
+};
+
 const serializeConditionsForComparison = (conditions) =>
-  JSON.stringify(asRecord(conditions));
+  serializeRecordForComparison(asRecord(conditions));
 
 const profileMatchesDefaultSeed = (profile, payload) =>
   profile.name === payload.name &&
@@ -480,6 +510,7 @@ export const planDefaultPostingProfileChanges = ({
   accounts,
   businessId,
   createRef,
+  includeSeedKeyOnly = false,
   profiles,
   seeds = loadDefaultPostingProfileSeedsFromSource(),
 }) => {
@@ -487,6 +518,7 @@ export const planDefaultPostingProfileChanges = ({
   const profilesBySeedKey = new Map();
   const creates = [];
   const updates = [];
+  const deactivations = [];
   const alreadyCurrent = [];
   const skippedCustom = [];
   const skippedMissingAccounts = [];
@@ -497,6 +529,29 @@ export const planDefaultPostingProfileChanges = ({
       continue;
     }
     profilesBySeedKey.set(seedKey, profile);
+
+    if (
+      OBSOLETE_POSTING_PROFILE_SEED_KEYS.has(seedKey) &&
+      toCleanString(profile.status) !== 'inactive' &&
+      isManagedLegacyPostingProfile(profile)
+    ) {
+      deactivations.push({
+        ref: profile.ref,
+        payload: {
+          status: 'inactive',
+          metadata: {
+            ...asRecord(profile.metadata),
+            deactivatedBy: 'backfillAccountingCore',
+            deactivatedReason: 'replaced_by_default_posting_profiles',
+          },
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedBy: 'script:backfillAccountingCore',
+        },
+        profileId: profile.id ?? null,
+        seedKey,
+        eventType: profile.eventType,
+      });
+    }
   }
 
   for (const seed of seeds) {
@@ -555,7 +610,10 @@ export const planDefaultPostingProfileChanges = ({
     }
 
     const metadata = asRecord(existingProfile.metadata);
-    if (metadata.seededBy !== 'default_posting_profiles') {
+    if (
+      metadata.seededBy !== 'default_posting_profiles' &&
+      !includeSeedKeyOnly
+    ) {
       skippedCustom.push({
         profileId: existingProfile.id ?? null,
         seedKey,
@@ -595,12 +653,13 @@ export const planDefaultPostingProfileChanges = ({
   return {
     creates,
     updates,
+    deactivations,
     alreadyCurrent,
     skippedCustom,
     skippedMissingAccounts,
     likelyFixableEventTypes: Array.from(
       new Set(
-        [...creates, ...updates]
+        [...creates, ...updates, ...deactivations]
           .map((change) => toCleanString(change.eventType))
           .filter(Boolean),
       ),
@@ -1006,6 +1065,7 @@ const migrateDefaultPostingProfiles = async (
         .collection(`businesses/${businessId}/accountingPostingProfiles`)
         .doc(seedKey || undefined);
     },
+    includeSeedKeyOnly,
     profiles,
   });
   const skippedCustom = plan.skippedCustom.map((skipped) => ({
@@ -1013,6 +1073,7 @@ const migrateDefaultPostingProfiles = async (
     includeSeedKeyOnlyRequested: includeSeedKeyOnly,
   }));
   const updates = plan.updates;
+  const deactivations = plan.deactivations;
 
   if (!dryRun) {
     const batchLimit = 450;
@@ -1025,6 +1086,12 @@ const migrateDefaultPostingProfiles = async (
         ref: change.ref,
         payload: change.payload,
       })),
+      ...deactivations
+        .filter((change) => change.ref)
+        .map((change) => ({
+          ref: change.ref,
+          payload: change.payload,
+        })),
     ];
 
     for (let index = 0; index < writes.length; index += batchLimit) {
@@ -1037,9 +1104,10 @@ const migrateDefaultPostingProfiles = async (
   }
 
   return {
-    planned: plan.creates.length + updates.length,
+    planned: plan.creates.length + updates.length + deactivations.length,
     created: dryRun ? 0 : plan.creates.length,
     updated: dryRun ? 0 : updates.length,
+    deactivated: dryRun ? 0 : deactivations.length,
     alreadyCurrent: plan.alreadyCurrent.length,
     plannedCreates: plan.creates.map(({ seedKey, eventType }) => ({
       seedKey,
@@ -1049,6 +1117,13 @@ const migrateDefaultPostingProfiles = async (
       seedKey,
       eventType,
     })),
+    plannedDeactivations: deactivations.map(
+      ({ profileId, seedKey, eventType }) => ({
+        profileId,
+        seedKey,
+        eventType,
+      }),
+    ),
     skippedCustom,
     skippedSeedKeyOnly: skippedCustom.length,
     skippedMissingAccounts: plan.skippedMissingAccounts,
@@ -1193,9 +1268,12 @@ const main = async () => {
         plannedPostingProfiles: postingProfiles.planned,
         createdPostingProfiles: postingProfiles.created,
         updatedPostingProfiles: postingProfiles.updated,
+        deactivatedPostingProfiles: postingProfiles.deactivated,
         currentPostingProfiles: postingProfiles.alreadyCurrent,
         plannedCreatedPostingProfiles: postingProfiles.plannedCreates,
         plannedUpdatedPostingProfiles: postingProfiles.plannedUpdates,
+        plannedDeactivatedPostingProfiles:
+          postingProfiles.plannedDeactivations,
         skippedCustomPostingProfiles: postingProfiles.skippedCustom,
         skippedSeedKeyOnlyPostingProfiles: postingProfiles.skippedSeedKeyOnly,
         skippedMissingAccountPostingProfiles:

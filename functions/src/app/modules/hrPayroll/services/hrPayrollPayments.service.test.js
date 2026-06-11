@@ -124,6 +124,43 @@ describe('hrPayrollPayments.service', () => {
     expect(cashMovements).toEqual([]);
   });
 
+  it('rejects unsupported payments without accounting support', () => {
+    expect(
+      buildHrPayrollPaymentDocuments({
+        businessId: 'business-1',
+        line: approvedLine,
+        payload: { paymentMethod: 'other' },
+      }),
+    ).toMatchObject({
+      ok: false,
+      error:
+        'Selecciona caja, transferencia o cheque para registrar un pago de nomina con soporte contable.',
+    });
+
+    expect(
+      buildHrPayrollPaymentDocuments({
+        businessId: 'business-1',
+        line: approvedLine,
+        payload: { paymentMethod: 'bank_transfer' },
+      }),
+    ).toMatchObject({
+      ok: false,
+      error: 'Indica la cuenta bancaria operativa antes de confirmar el pago.',
+    });
+
+    expect(
+      buildHrPayrollPaymentDocuments({
+        businessId: 'business-1',
+        line: approvedLine,
+        payload: { paymentMethod: 'cash', cashAccountId: 'cash-account-1' },
+      }),
+    ).toMatchObject({
+      ok: false,
+      error:
+        'Indica la caja y el cuadre operativo para registrar este pago en efectivo.',
+    });
+  });
+
   it('rejects draft lines and partial line payments for the MVP', () => {
     expect(
       buildHrPayrollPaymentDocuments({

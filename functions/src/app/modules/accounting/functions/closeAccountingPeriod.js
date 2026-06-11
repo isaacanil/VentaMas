@@ -22,6 +22,11 @@ import { parseSchemaOrThrow } from '../utils/zodHttps.util.js';
 const MAX_BLOCKER_EXAMPLES = 10;
 const CLOSING_THRESHOLD = 0.01;
 const VOIDED_ACCOUNTING_EVENT_STATUSES = new Set(['voided']);
+const NON_BLOCKING_PROJECTION_STATUSES = new Set([
+  'projected',
+  'voided',
+  'skipped_zero_amount',
+]);
 const BLOCKING_DEAD_LETTER_STATUSES = new Set([
   'failed',
   'pending',
@@ -82,15 +87,37 @@ const resolveEventJournalEntryId = (event) => {
   );
 };
 
+const isEventProjectionResolved = (event) => {
+  const projectionStatus = resolveEventProjectionStatus(event);
+  if (!NON_BLOCKING_PROJECTION_STATUSES.has(projectionStatus)) {
+    return false;
+  }
+
+  if (projectionStatus === 'projected') {
+    return Boolean(resolveEventJournalEntryId(event));
+  }
+
+  return true;
+};
+
+const isDeadLetterForVoidedEvent = (deadLetter) =>
+  VOIDED_ACCOUNTING_EVENT_STATUSES.has(
+    toCleanString(asRecord(deadLetter.metadata).eventStatus),
+  );
+
 const loadProjectionDeadLetters = async ({ businessId }) => {
   const deadLettersSnap = await db
     .collection(`businesses/${businessId}/accountingEventProjectionDeadLetters`)
     .get();
-  return mapSnapshotDocs(deadLettersSnap).filter((deadLetter) =>
-    BLOCKING_DEAD_LETTER_STATUSES.has(
+  return mapSnapshotDocs(deadLettersSnap).filter((deadLetter) => {
+    if (isDeadLetterForVoidedEvent(deadLetter)) {
+      return false;
+    }
+
+    return BLOCKING_DEAD_LETTER_STATUSES.has(
       toCleanString(deadLetter.projectionStatus) ?? 'pending',
-    ),
-  );
+    );
+  });
 };
 
 const loadPeriodClosureBlockers = async ({ businessId, periodKey }) => {
@@ -113,14 +140,9 @@ const loadPeriodClosureBlockers = async ({ businessId, periodKey }) => {
       !VOIDED_ACCOUNTING_EVENT_STATUSES.has(toCleanString(event.status)),
   );
   const journalEntries = mapSnapshotDocs(journalEntriesSnap);
-  const unresolvedEvents = accountingEvents.filter((event) => {
-    const projectionStatus = resolveEventProjectionStatus(event);
-    if (projectionStatus !== 'projected') {
-      return true;
-    }
-
-    return !resolveEventJournalEntryId(event);
-  });
+  const unresolvedEvents = accountingEvents.filter(
+    (event) => !isEventProjectionResolved(event),
+  );
   const unbalancedEntries = journalEntries.filter(
     (entry) => !isJournalEntryBalanced(entry),
   );
@@ -155,14 +177,9 @@ const loadFiscalYearClosureBlockers = async ({ businessId, year }) => {
       !VOIDED_ACCOUNTING_EVENT_STATUSES.has(toCleanString(event.status)),
   );
   const journalEntries = mapSnapshotDocs(journalEntriesSnap);
-  const unresolvedEvents = accountingEvents.filter((event) => {
-    const projectionStatus = resolveEventProjectionStatus(event);
-    if (projectionStatus !== 'projected') {
-      return true;
-    }
-
-    return !resolveEventJournalEntryId(event);
-  });
+  const unresolvedEvents = accountingEvents.filter(
+    (event) => !isEventProjectionResolved(event),
+  );
   const unbalancedEntries = journalEntries.filter(
     (entry) => !isJournalEntryBalanced(entry),
   );

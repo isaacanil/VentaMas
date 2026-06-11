@@ -304,6 +304,71 @@ describe('syncPurchaseCommittedAccountingEvent', () => {
     );
   });
 
+  it('reconstructs purchase total when legacy monetary total is zero but subtotal exists', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+    });
+
+    await syncPurchaseCommittedAccountingEvent({
+      params: {
+        businessId: 'business-1',
+        purchaseId: 'purchase-1',
+      },
+      data: {
+        before: {
+          data: () => ({
+            status: 'pending',
+            workflowStatus: 'pending_receipt',
+          }),
+        },
+        after: {
+          data: () => ({
+            status: 'completed',
+            workflowStatus: 'completed',
+            condition: 'cash',
+            monetary: {
+              documentTotals: {
+                subtotal: 1000,
+                taxes: 180,
+                total: 0,
+              },
+              functionalTotals: {
+                subtotal: 1000,
+                taxes: 180,
+                total: 0,
+              },
+            },
+          }),
+        },
+      },
+    });
+
+    expect(buildAccountingEventMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        monetary: expect.objectContaining({
+          amount: 1180,
+          subtotalAmount: 1000,
+          taxAmount: 180,
+          netPayableAmount: 1180,
+          functionalAmount: 1180,
+          functionalSubtotalAmount: 1000,
+          functionalTaxAmount: 180,
+          functionalNetPayableAmount: 1180,
+        }),
+        payload: expect.objectContaining({
+          settlementTiming: 'deferred',
+          fiscalTotals: expect.objectContaining({
+            subtotal: 1000,
+            taxAmount: 180,
+            total: 1180,
+            netPayableAmount: 1180,
+          }),
+        }),
+      }),
+    );
+  });
+
   it('adds bank treasury context from purchase paymentMethods', async () => {
     documentSnapshots.set('businesses/business-1/settings/accounting', {
       rolloutEnabled: true,

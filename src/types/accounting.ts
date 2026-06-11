@@ -80,7 +80,9 @@ export type AccountingProjectionStatus =
   | 'pending'
   | 'projected'
   | 'failed'
-  | 'pending_account_mapping';
+  | 'pending_account_mapping'
+  | 'voided'
+  | 'skipped_zero_amount';
 export type AccountingPostingProfileStatus = 'active' | 'inactive';
 export type AccountingPostingAmountSource =
   | 'document_total'

@@ -98,13 +98,44 @@ export const resolvePurchaseDocumentNature = (purchaseRecord) => {
   }
 };
 
+const hasPurchasePaymentEvidence = (purchaseRecord) => {
+  const payment = asRecord(purchaseRecord.payment);
+  const paymentState = asRecord(purchaseRecord.paymentState);
+  const rawPaymentMethods = Array.isArray(purchaseRecord.paymentMethods)
+    ? purchaseRecord.paymentMethods
+    : Array.isArray(purchaseRecord.paymentMethod)
+      ? purchaseRecord.paymentMethod
+      : [];
+  const hasPaymentMethod = rawPaymentMethods.some((entry) => {
+    const record = asRecord(entry);
+    const method = toCleanString(record.method ?? record.code ?? entry);
+    const amount = roundToTwoDecimals(record.amount ?? record.value);
+    return Boolean(method && amount > THRESHOLD && record.status !== false);
+  });
+
+  return (
+    hasPaymentMethod ||
+    roundToTwoDecimals(paymentState.paid) > THRESHOLD ||
+    Number(paymentState.paymentCount ?? 0) > 0 ||
+    Boolean(toCleanString(paymentState.lastPaymentId)) ||
+    Boolean(toCleanString(payment.method)) ||
+    Boolean(toCleanString(payment.sourceType))
+  );
+};
+
 export const resolvePurchaseSettlementTiming = (purchaseRecord) => {
   const paymentTerms = asRecord(purchaseRecord.paymentTerms);
-  if (paymentTerms.isImmediate === true) {
+  const condition = toCleanString(
+    paymentTerms.condition ?? purchaseRecord.condition,
+  )?.toLowerCase();
+  const immediateByTerms =
+    paymentTerms.isImmediate === true || condition === 'cash';
+
+  if (immediateByTerms && hasPurchasePaymentEvidence(purchaseRecord)) {
     return 'immediate';
   }
-  const condition = toCleanString(paymentTerms.condition ?? purchaseRecord.condition)?.toLowerCase();
-  return condition === 'cash' ? 'immediate' : 'deferred';
+
+  return 'deferred';
 };
 
 export const resolveVendorBillStatus = ({ purchaseRecord, paymentState }) => {

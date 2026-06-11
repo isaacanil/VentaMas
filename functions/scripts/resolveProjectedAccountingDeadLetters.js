@@ -24,6 +24,11 @@ const ACTIVE_DEAD_LETTER_STATUSES = new Set([
 ]);
 const RESOLVED_STATUS = 'resolved';
 const SCRIPT_NAME = 'resolveProjectedAccountingDeadLetters';
+const VOIDED_ACCOUNTING_EVENT_STATUSES = new Set(['voided']);
+const RESOLVED_EVENT_PROJECTION_STATUSES = new Set([
+  'voided',
+  'skipped_zero_amount',
+]);
 
 const args = process.argv.slice(2);
 const hasFlag = (flag) => args.includes(flag);
@@ -109,6 +114,76 @@ export const planDeadLetterResolution = ({
     };
   }
 
+  const eventStatus = toCleanString(accountingEvent.status);
+  const eventProjectionStatus = toCleanString(
+    asRecord(accountingEvent.projection).status,
+  );
+  if (VOIDED_ACCOUNTING_EVENT_STATUSES.has(eventStatus)) {
+    const previousMetadata = asRecord(deadLetter.metadata);
+    const currentProjection = asRecord(accountingEvent.projection);
+    return {
+      journalEntryId: null,
+      accountingEventPatch: {
+        projection: {
+          ...currentProjection,
+          status: 'voided',
+          journalEntryId: null,
+          lastAttemptAt: now,
+          lastError: null,
+        },
+        projectionStatus: 'voided',
+        updatedAt: now,
+      },
+      patch: {
+        projectionStatus: RESOLVED_STATUS,
+        retryable: false,
+        resolvedAt: now,
+        resolvedBy,
+        resolution: {
+          eventStatus,
+          previousProjectionStatus: projectionStatus,
+          reason: 'accounting_event_voided',
+          resolvedBy,
+        },
+        metadata: {
+          ...previousMetadata,
+          resolvedBy,
+          resolvedReason: 'accounting_event_voided',
+        },
+        updatedAt: now,
+      },
+      reason: 'accounting_event_voided',
+      shouldResolve: true,
+    };
+  }
+
+  if (RESOLVED_EVENT_PROJECTION_STATUSES.has(eventProjectionStatus)) {
+    const previousMetadata = asRecord(deadLetter.metadata);
+    return {
+      journalEntryId: null,
+      patch: {
+        projectionStatus: RESOLVED_STATUS,
+        retryable: false,
+        resolvedAt: now,
+        resolvedBy,
+        resolution: {
+          eventProjectionStatus,
+          previousProjectionStatus: projectionStatus,
+          reason: 'event_projection_resolved_without_journal',
+          resolvedBy,
+        },
+        metadata: {
+          ...previousMetadata,
+          resolvedBy,
+          resolvedReason: 'event_projection_resolved_without_journal',
+        },
+        updatedAt: now,
+      },
+      reason: 'event_projection_resolved_without_journal',
+      shouldResolve: true,
+    };
+  }
+
   const journalEntryId = resolveJournalEntryIdForDeadLetter({
     accountingEvent,
     deadLetter: {
@@ -131,9 +206,6 @@ export const planDeadLetterResolution = ({
     };
   }
 
-  const eventProjectionStatus = toCleanString(
-    asRecord(accountingEvent.projection).status,
-  );
   const hasProjectionSignal =
     eventProjectionStatus === 'projected' ||
     projectionStatus === 'projected' ||
@@ -243,11 +315,15 @@ const resolveDeadLettersForBusiness = async (db, businessId, { dryRun }) => {
     resolved.push({
       deadLetterId: deadLetterSnap.id,
       eventId,
+      reason: plan.reason,
       journalEntryId: plan.journalEntryId,
     });
 
     if (!dryRun) {
       await deadLetterSnap.ref.set(plan.patch, { merge: true });
+      if (plan.accountingEventPatch && eventSnap?.ref) {
+        await eventSnap.ref.set(plan.accountingEventPatch, { merge: true });
+      }
     }
   }
 

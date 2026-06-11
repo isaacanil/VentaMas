@@ -311,6 +311,73 @@ describe('syncExpenseAccountingEvent', () => {
     );
   });
 
+  it('reconstructs expense total from subtotal and treats missing payment evidence as payable', async () => {
+    await syncExpenseAccountingEvent({
+      params: {
+        businessId: 'business-1',
+        expenseId: 'expense-1',
+      },
+      data: {
+        before: {
+          data: () => ({
+            expense: {
+              status: 'draft',
+            },
+          }),
+        },
+        after: {
+          data: () => ({
+            expense: {
+              status: 'active',
+              monetary: {
+                documentTotals: {
+                  subtotal: 1000,
+                  tax: 180,
+                  total: 0,
+                },
+                functionalTotals: {
+                  subtotal: 1000,
+                  tax: 180,
+                  total: 0,
+                },
+              },
+            },
+          }),
+        },
+      },
+    });
+
+    expect(buildAccountingEventMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        monetary: expect.objectContaining({
+          amount: 1180,
+          subtotalAmount: 1000,
+          taxAmount: 180,
+          netPayableAmount: 1180,
+          functionalAmount: 1180,
+          functionalSubtotalAmount: 1000,
+          functionalTaxAmount: 180,
+          functionalNetPayableAmount: 1180,
+        }),
+        treasury: {
+          bankAccountId: null,
+          cashAccountId: null,
+          cashCountId: null,
+          paymentChannel: null,
+        },
+        payload: expect.objectContaining({
+          settlementTiming: 'deferred',
+          fiscalTotals: expect.objectContaining({
+            subtotal: 1000,
+            taxAmount: 180,
+            total: 1180,
+            netPayableAmount: 1180,
+          }),
+        }),
+      }),
+    );
+  });
+
   it('uses paymentMethods from cash expenses', async () => {
     await syncExpenseAccountingEvent({
       params: {

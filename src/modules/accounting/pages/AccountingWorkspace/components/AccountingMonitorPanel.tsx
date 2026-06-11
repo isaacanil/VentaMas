@@ -67,6 +67,10 @@ const resolveTone = (status: string): MonitorIssue['tone'] => {
 };
 
 const resolveEventIssueStatus = (record: AccountingLedgerRecord) => {
+  if (record.event?.status === 'voided') {
+    return null;
+  }
+
   const projection = record.event?.projection;
   const status = projection?.status ?? 'pending';
   const journalEntryId =
