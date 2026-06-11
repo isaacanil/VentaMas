@@ -80,9 +80,16 @@ vi.mock('../../../versions/v2/accounting/utils/accountingRollout.util.js', () =>
     isAccountingRolloutEnabledForBusinessMock(...args),
 }));
 
-vi.mock('../../../versions/v2/accounting/utils/accountingEvent.util.js', () => ({
-  buildAccountingEvent: (...args) => buildAccountingEventMock(...args),
-}));
+vi.mock('../../../versions/v2/accounting/utils/accountingEvent.util.js', async () => {
+  const actual = await vi.importActual(
+    '../../../versions/v2/accounting/utils/accountingEvent.util.js',
+  );
+
+  return {
+    ...actual,
+    buildAccountingEvent: (...args) => buildAccountingEventMock(...args),
+  };
+});
 
 import { syncPurchaseCommittedAccountingEvent } from './syncPurchaseCommittedAccountingEvent.js';
 
@@ -242,6 +249,183 @@ describe('syncPurchaseCommittedAccountingEvent', () => {
         'businesses/business-1/accountingEvents/purchase.committed__purchase-1',
       ).set,
     ).not.toHaveBeenCalled();
+  });
+
+  it('uses legacy purchase totals instead of emitting amount zero', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+    });
+
+    await syncPurchaseCommittedAccountingEvent({
+      params: {
+        businessId: 'business-1',
+        purchaseId: 'purchase-1',
+      },
+      data: {
+        before: {
+          data: () => ({
+            status: 'pending',
+            workflowStatus: 'pending_receipt',
+          }),
+        },
+        after: {
+          data: () => ({
+            status: 'completed',
+            workflowStatus: 'completed',
+            condition: 'credit',
+            totals: {
+              subtotal: 1000,
+              tax: 180,
+              total: 1180,
+            },
+          }),
+        },
+      },
+    });
+
+    expect(buildAccountingEventMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        monetary: expect.objectContaining({
+          amount: 1180,
+          subtotalAmount: 1000,
+          taxAmount: 180,
+          netPayableAmount: 1180,
+        }),
+        payload: expect.objectContaining({
+          fiscalTotals: expect.objectContaining({
+            subtotal: 1000,
+            taxAmount: 180,
+            total: 1180,
+          }),
+          settlementTiming: 'deferred',
+        }),
+      }),
+    );
+  });
+
+  it('adds bank treasury context from purchase paymentMethods', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+    });
+
+    await syncPurchaseCommittedAccountingEvent({
+      params: {
+        businessId: 'business-1',
+        purchaseId: 'purchase-1',
+      },
+      data: {
+        before: {
+          data: () => ({
+            status: 'pending',
+            workflowStatus: 'pending_receipt',
+          }),
+        },
+        after: {
+          data: () => ({
+            status: 'completed',
+            workflowStatus: 'completed',
+            paymentTerms: {
+              condition: 'cash',
+              isImmediate: true,
+            },
+            totals: {
+              total: 2360,
+              tax: 360,
+            },
+            paymentMethods: [
+              {
+                amount: 2360,
+                bankAccountId: 'bank-1',
+                method: 'transfer',
+                reference: 'TRX-1',
+              },
+            ],
+          }),
+        },
+      },
+    });
+
+    expect(buildAccountingEventMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        treasury: {
+          bankAccountId: 'bank-1',
+          cashAccountId: null,
+          cashCountId: null,
+          paymentChannel: 'bank',
+        },
+        payload: expect.objectContaining({
+          paymentMethodCount: 1,
+          paymentMethods: [
+            {
+              amount: 2360,
+              bankAccountId: 'bank-1',
+              cashAccountId: null,
+              cashCountId: null,
+              method: 'transfer',
+              reference: 'TRX-1',
+              value: 2360,
+            },
+          ],
+          settlementTiming: 'immediate',
+        }),
+      }),
+    );
+  });
+
+  it('adds cash treasury context from purchase paymentMethods', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+    });
+
+    await syncPurchaseCommittedAccountingEvent({
+      params: {
+        businessId: 'business-1',
+        purchaseId: 'purchase-1',
+      },
+      data: {
+        before: {
+          data: () => ({
+            status: 'pending',
+            workflowStatus: 'pending_receipt',
+          }),
+        },
+        after: {
+          data: () => ({
+            status: 'completed',
+            workflowStatus: 'completed',
+            paymentTerms: {
+              condition: 'cash',
+              isImmediate: true,
+            },
+            totals: {
+              total: 3200,
+              tax: 0,
+            },
+            paymentMethods: [
+              {
+                amount: 3200,
+                cashCountId: 'cash-count-1',
+                method: 'cash',
+              },
+            ],
+          }),
+        },
+      },
+    });
+
+    expect(buildAccountingEventMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        treasury: {
+          bankAccountId: null,
+          cashAccountId: null,
+          cashCountId: 'cash-count-1',
+          paymentChannel: 'cash',
+        },
+      }),
+    );
   });
 
   it('does not emit again when the purchase was already completed before the write', async () => {

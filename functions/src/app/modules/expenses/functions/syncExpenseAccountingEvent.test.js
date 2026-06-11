@@ -242,6 +242,219 @@ describe('syncExpenseAccountingEvent', () => {
     ).not.toHaveBeenCalled();
   });
 
+  it('uses top-level expense records with paymentMethods from bank', async () => {
+    await syncExpenseAccountingEvent({
+      params: {
+        businessId: 'business-1',
+        expenseId: 'expense-1',
+      },
+      data: {
+        before: {
+          data: () => ({
+            status: 'draft',
+          }),
+        },
+        after: {
+          data: () => ({
+            status: 'active',
+            numberId: 'G-002',
+            totals: {
+              subtotal: 10000,
+              tax: 1800,
+              total: 11800,
+            },
+            paymentMethods: [
+              {
+                amount: 11800,
+                bankAccountId: 'bank-1',
+                method: 'transfer',
+                reference: 'TRX-2',
+              },
+            ],
+          }),
+        },
+      },
+    });
+
+    expect(buildAccountingEventMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        monetary: expect.objectContaining({
+          amount: 11800,
+          subtotalAmount: 10000,
+          taxAmount: 1800,
+          netPayableAmount: 11800,
+        }),
+        treasury: {
+          bankAccountId: 'bank-1',
+          cashAccountId: null,
+          cashCountId: null,
+          paymentChannel: 'bank',
+        },
+        payload: expect.objectContaining({
+          paymentMethod: 'transfer',
+          paymentMethodCount: 1,
+          paymentMethods: [
+            {
+              amount: 11800,
+              bankAccountId: 'bank-1',
+              cashAccountId: null,
+              cashCountId: null,
+              method: 'transfer',
+              reference: 'TRX-2',
+              sourceType: null,
+              value: 11800,
+            },
+          ],
+          settlementTiming: 'immediate',
+        }),
+      }),
+    );
+  });
+
+  it('uses paymentMethods from cash expenses', async () => {
+    await syncExpenseAccountingEvent({
+      params: {
+        businessId: 'business-1',
+        expenseId: 'expense-1',
+      },
+      data: {
+        before: {
+          data: () => ({
+            expense: {
+              status: 'draft',
+            },
+          }),
+        },
+        after: {
+          data: () => ({
+            expense: {
+              status: 'active',
+              totals: {
+                total: 3200,
+                tax: 0,
+              },
+              paymentMethods: [
+                {
+                  amount: 3200,
+                  cashCountId: 'cash-count-1',
+                  method: 'cash',
+                },
+              ],
+            },
+          }),
+        },
+      },
+    });
+
+    expect(buildAccountingEventMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        treasury: {
+          bankAccountId: null,
+          cashAccountId: null,
+          cashCountId: 'cash-count-1',
+          paymentChannel: 'cash',
+        },
+        payload: expect.objectContaining({
+          paymentMethod: 'cash',
+          settlementTiming: 'immediate',
+        }),
+      }),
+    );
+  });
+
+  it('marks credit expenses as deferred', async () => {
+    await syncExpenseAccountingEvent({
+      params: {
+        businessId: 'business-1',
+        expenseId: 'expense-1',
+      },
+      data: {
+        before: {
+          data: () => ({
+            expense: {
+              status: 'draft',
+            },
+          }),
+        },
+        after: {
+          data: () => ({
+            expense: {
+              status: 'active',
+              amount: 944,
+              paymentMethods: [
+                {
+                  amount: 944,
+                  method: 'credit',
+                },
+              ],
+            },
+          }),
+        },
+      },
+    });
+
+    expect(buildAccountingEventMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        treasury: {
+          bankAccountId: null,
+          cashAccountId: null,
+          cashCountId: null,
+          paymentChannel: null,
+        },
+        payload: expect.objectContaining({
+          paymentMethod: 'credit',
+          settlementTiming: 'deferred',
+        }),
+      }),
+    );
+  });
+
+  it('keeps valid ITBIS and withholdings in the fiscal snapshot', async () => {
+    await syncExpenseAccountingEvent({
+      params: {
+        businessId: 'business-1',
+        expenseId: 'expense-1',
+      },
+      data: {
+        before: {
+          data: () => ({
+            expense: {
+              status: 'draft',
+            },
+          }),
+        },
+        after: {
+          data: () => ({
+            expense: {
+              status: 'active',
+              totals: {
+                subtotal: 1000,
+                tax: 180,
+                total: 1180,
+                withholdingITBISAmount: 54,
+                withholdingISRAmount: 20,
+              },
+              paymentMethods: [{ amount: 1106, method: 'cash' }],
+            },
+          }),
+        },
+      },
+    });
+
+    expect(buildAccountingEventMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        monetary: expect.objectContaining({
+          amount: 1180,
+          subtotalAmount: 1000,
+          taxAmount: 180,
+          withholdingITBISAmount: 54,
+          withholdingISRAmount: 20,
+          netPayableAmount: 1106,
+        }),
+      }),
+    );
+  });
+
   it('does not emit again when the expense was already active before the write', async () => {
     await syncExpenseAccountingEvent({
       params: {

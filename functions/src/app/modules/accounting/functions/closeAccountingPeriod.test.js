@@ -339,6 +339,39 @@ describe('closeAccountingPeriod', () => {
     expect(transactionSetMock).not.toHaveBeenCalled();
   });
 
+  it('does not block period close with resolved projection dead letters', async () => {
+    collectionSnapshots.set(
+      'businesses/business-1/accountingEventProjectionDeadLetters',
+      [
+        {
+          id: 'purchase.committed__purchase-1',
+          data: {
+            eventId: 'purchase.committed__purchase-1',
+            eventType: 'purchase.committed',
+            projectionStatus: 'resolved',
+          },
+        },
+      ],
+    );
+    transactionSnapshots.set(
+      'businesses/business-1/accountingPeriodClosures/2026-04',
+      null,
+    );
+
+    const result = await closeAccountingPeriod({
+      data: {
+        businessId: 'business-1',
+        periodKey: '2026-04',
+      },
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      periodKey: '2026-04',
+    });
+    expect(transactionSetMock).toHaveBeenCalled();
+  });
+
   it('blocks period close when a journal entry is unbalanced', async () => {
     collectionSnapshots.set('businesses/business-1/journalEntries', [
       {

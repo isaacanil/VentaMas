@@ -22,6 +22,11 @@ import { parseSchemaOrThrow } from '../utils/zodHttps.util.js';
 const MAX_BLOCKER_EXAMPLES = 10;
 const CLOSING_THRESHOLD = 0.01;
 const VOIDED_ACCOUNTING_EVENT_STATUSES = new Set(['voided']);
+const BLOCKING_DEAD_LETTER_STATUSES = new Set([
+  'failed',
+  'pending',
+  'pending_account_mapping',
+]);
 
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -81,7 +86,11 @@ const loadProjectionDeadLetters = async ({ businessId }) => {
   const deadLettersSnap = await db
     .collection(`businesses/${businessId}/accountingEventProjectionDeadLetters`)
     .get();
-  return mapSnapshotDocs(deadLettersSnap);
+  return mapSnapshotDocs(deadLettersSnap).filter((deadLetter) =>
+    BLOCKING_DEAD_LETTER_STATUSES.has(
+      toCleanString(deadLetter.projectionStatus) ?? 'pending',
+    ),
+  );
 };
 
 const loadPeriodClosureBlockers = async ({ businessId, periodKey }) => {

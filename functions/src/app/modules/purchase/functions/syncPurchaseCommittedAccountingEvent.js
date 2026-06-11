@@ -5,7 +5,10 @@ import {
   getPilotAccountingSettingsForBusiness,
   isAccountingRolloutEnabledForBusiness,
 } from '../../../versions/v2/accounting/utils/accountingRollout.util.js';
-import { buildAccountingEvent } from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
+import {
+  buildAccountingEvent,
+  resolveAccountingPaymentChannel,
+} from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
 import {
   asRecord,
   resolvePurchaseDocumentTotal,
@@ -91,6 +94,48 @@ const resolveTimestamp = (...values) => {
 const resolveCurrencyCode = (value) =>
   toCleanString(asRecord(value).code ?? value)?.toUpperCase() || null;
 
+const resolvePurchaseDocumentTotals = (purchaseRecord) => {
+  const monetary = asRecord(purchaseRecord.monetary);
+  const documentTotals = asRecord(monetary.documentTotals);
+  return asRecord(purchaseRecord.totals ?? purchaseRecord.totalPurchase ?? documentTotals);
+};
+
+const normalizePurchasePaymentMethods = (purchaseRecord) => {
+  const paymentMethods = Array.isArray(purchaseRecord.paymentMethods)
+    ? purchaseRecord.paymentMethods
+    : Array.isArray(purchaseRecord.paymentMethod)
+      ? purchaseRecord.paymentMethod
+      : [];
+
+  return paymentMethods
+    .map((entry) => {
+      const record = asRecord(entry);
+      const method = toCleanString(record.method ?? record.code ?? entry);
+      const amount = roundToTwoDecimals(record.amount ?? record.value);
+      if (!method || amount <= 0 || record.status === false) {
+        return null;
+      }
+
+      return {
+        amount,
+        bankAccountId: toCleanString(record.bankAccountId),
+        cashAccountId: toCleanString(record.cashAccountId),
+        cashCountId: toCleanString(record.cashCountId ?? record.cashRegister),
+        method,
+        reference: toCleanString(record.reference),
+        value: amount,
+      };
+    })
+    .filter(Boolean);
+};
+
+const resolvePrimaryValue = (records, key) => {
+  const values = new Set(
+    records.map((record) => toCleanString(record[key])).filter(Boolean),
+  );
+  return values.size === 1 ? Array.from(values)[0] : null;
+};
+
 const resolveValidNetPayableAmount = ({
   contextLabel,
   total,
@@ -116,24 +161,43 @@ const resolveValidNetPayableAmount = ({
 const resolvePurchaseMonetarySnapshot = (purchaseRecord, { purchaseId }) => {
   const monetary = asRecord(purchaseRecord.monetary);
   const documentTotals = asRecord(monetary.documentTotals);
+  const legacyTotals = resolvePurchaseDocumentTotals(purchaseRecord);
   const functionalTotals = asRecord(monetary.functionalTotals);
   const documentTotal = roundToTwoDecimals(
-    safeNumber(documentTotals.total) ?? resolvePurchaseDocumentTotal(purchaseRecord),
+    safeNumber(
+      documentTotals.total ??
+        legacyTotals.total ??
+        legacyTotals.totalPurchase ??
+        legacyTotals.gross,
+    ) ?? resolvePurchaseDocumentTotal(purchaseRecord),
   );
   const documentTaxes = roundToTwoDecimals(
-    safeNumber(documentTotals.taxes ?? documentTotals.tax) ?? 0,
+    safeNumber(
+      documentTotals.taxes ??
+        documentTotals.tax ??
+        legacyTotals.taxes ??
+        legacyTotals.tax ??
+        legacyTotals.totalItbis,
+    ) ?? 0,
   );
   const documentSubtotal = roundToTwoDecimals(
     safeNumber(
       documentTotals.subtotal ??
         documentTotals.subTotal ??
-        documentTotals.subtotalAmount,
+        documentTotals.subtotalAmount ??
+        legacyTotals.subtotal ??
+        legacyTotals.subTotal ??
+        legacyTotals.subtotalAmount ??
+        legacyTotals.totalBaseCost ??
+        legacyTotals.totalProducts,
     ) ?? Math.max(documentTotal - documentTaxes, 0),
   );
   const documentWithholdingITBIS = roundToTwoDecimals(
     safeNumber(
       documentTotals.withholdingITBISAmount ??
         documentTotals.itbisWithheld ??
+        legacyTotals.withholdingITBISAmount ??
+        legacyTotals.itbisWithheld ??
         purchaseRecord.withholdingITBISAmount ??
         purchaseRecord.itbisWithheld,
     ) ?? 0,
@@ -142,6 +206,8 @@ const resolvePurchaseMonetarySnapshot = (purchaseRecord, { purchaseId }) => {
     safeNumber(
       documentTotals.withholdingISRAmount ??
         documentTotals.isrWithheld ??
+        legacyTotals.withholdingISRAmount ??
+        legacyTotals.isrWithheld ??
         purchaseRecord.withholdingISRAmount ??
         purchaseRecord.isrWithheld,
     ) ?? 0,
@@ -204,6 +270,21 @@ const resolvePurchaseMonetarySnapshot = (purchaseRecord, { purchaseId }) => {
   };
 };
 
+const resolvePurchaseTreasurySnapshot = (purchaseRecord) => {
+  const paymentMethods = normalizePurchasePaymentMethods(purchaseRecord);
+  const paymentChannel = resolveAccountingPaymentChannel(paymentMethods);
+
+  return {
+    paymentMethods,
+    treasury: {
+      bankAccountId: resolvePrimaryValue(paymentMethods, 'bankAccountId'),
+      cashAccountId: resolvePrimaryValue(paymentMethods, 'cashAccountId'),
+      cashCountId: resolvePrimaryValue(paymentMethods, 'cashCountId'),
+      paymentChannel,
+    },
+  };
+};
+
 export const syncPurchaseCommittedAccountingEvent = onDocumentWritten(
   {
     document: 'businesses/{businessId}/purchases/{purchaseId}',
@@ -251,6 +332,7 @@ export const syncPurchaseCommittedAccountingEvent = onDocumentWritten(
     const monetarySnapshot = resolvePurchaseMonetarySnapshot(afterPurchase, {
       purchaseId,
     });
+    const treasurySnapshot = resolvePurchaseTreasurySnapshot(afterPurchase);
     const accountingEvent = buildAccountingEvent({
       businessId,
       eventType: 'purchase.committed',
@@ -263,6 +345,7 @@ export const syncPurchaseCommittedAccountingEvent = onDocumentWritten(
       currency: monetarySnapshot.currency,
       functionalCurrency: monetarySnapshot.functionalCurrency,
       monetary: monetarySnapshot.monetary,
+      treasury: treasurySnapshot.treasury,
       payload: {
         purchaseNumber:
           toCleanString(afterPurchase.numberId) ??
@@ -282,6 +365,8 @@ export const syncPurchaseCommittedAccountingEvent = onDocumentWritten(
           toCleanString(afterPurchase.paymentTerms?.condition) ??
           toCleanString(afterPurchase.condition) ??
           null,
+        paymentMethodCount: treasurySnapshot.paymentMethods.length,
+        paymentMethods: treasurySnapshot.paymentMethods,
         documentNature: resolvePurchaseDocumentNature(afterPurchase),
         settlementTiming: resolvePurchaseSettlementTiming(afterPurchase),
         fiscalTotals: {

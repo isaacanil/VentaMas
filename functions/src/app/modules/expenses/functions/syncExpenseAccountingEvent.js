@@ -40,12 +40,76 @@ const safeNumber = (value) => {
 const roundToTwoDecimals = (value) =>
   Math.round((safeNumber(value) || 0) * 100) / 100;
 
+const normalizeExpensePaymentMethods = (expenseRecord) => {
+  const payment = asRecord(expenseRecord.payment);
+  const rawPaymentMethods = Array.isArray(expenseRecord.paymentMethods)
+    ? expenseRecord.paymentMethods
+    : Array.isArray(expenseRecord.paymentMethod)
+      ? expenseRecord.paymentMethod
+      : [];
+  const sourcePaymentMethods = rawPaymentMethods.length
+    ? rawPaymentMethods
+    : [
+        {
+          amount: payment.amount,
+          bankAccountId: payment.bankAccountId,
+          cashAccountId: payment.cashAccountId,
+          cashCountId: payment.cashCountId ?? payment.cashRegister,
+          method: payment.method,
+          reference: payment.reference ?? payment.bank,
+          sourceType: payment.sourceType,
+          value: payment.value,
+        },
+      ];
+
+  return sourcePaymentMethods
+    .map((entry) => {
+      const record = asRecord(entry);
+      const method = toCleanString(record.method ?? record.code ?? entry);
+      if (!method) {
+        return null;
+      }
+
+      const explicitAmount = safeNumber(record.amount ?? record.value);
+      if (explicitAmount != null && explicitAmount <= 0) {
+        return null;
+      }
+
+      const normalized = {
+        bankAccountId: toCleanString(record.bankAccountId),
+        cashAccountId: toCleanString(record.cashAccountId),
+        cashCountId: toCleanString(record.cashCountId ?? record.cashRegister),
+        method,
+        reference: toCleanString(record.reference),
+        sourceType: toCleanString(record.sourceType),
+      };
+
+      if (explicitAmount != null) {
+        normalized.amount = roundToTwoDecimals(explicitAmount);
+        normalized.value = normalized.amount;
+      }
+
+      return normalized;
+    })
+    .filter(Boolean);
+};
+
+const resolvePrimaryValue = (records, key) => {
+  const values = new Set(
+    records.map((record) => toCleanString(record[key])).filter(Boolean),
+  );
+  return values.size === 1 ? Array.from(values)[0] : null;
+};
+
 const resolveExpenseFiscalAmount = (expenseRecord, documentTotals, ...keys) => {
+  const legacyTotals = asRecord(expenseRecord.totals ?? expenseRecord.totalPurchase);
   for (const key of keys) {
     const direct = safeNumber(expenseRecord[key]);
     if (direct != null) return direct;
     const nested = safeNumber(documentTotals[key]);
     if (nested != null) return nested;
+    const legacy = safeNumber(legacyTotals[key]);
+    if (legacy != null) return legacy;
   }
   return null;
 };
@@ -84,9 +148,16 @@ const resolveValidNetPayableAmount = ({
 const resolveExpenseMonetarySnapshot = (expenseRecord, { expenseId }) => {
   const monetary = asRecord(expenseRecord.monetary);
   const documentTotals = asRecord(monetary.documentTotals);
+  const legacyTotals = asRecord(expenseRecord.totals ?? expenseRecord.totalPurchase);
   const functionalTotals = asRecord(monetary.functionalTotals);
   const amount = roundToTwoDecimals(
-    safeNumber(documentTotals.total ?? monetary.amount ?? expenseRecord.amount) ?? 0,
+    safeNumber(
+      documentTotals.total ??
+        legacyTotals.total ??
+        legacyTotals.gross ??
+        monetary.amount ??
+        expenseRecord.amount,
+    ) ?? 0,
   );
   const taxAmount = roundToTwoDecimals(
     resolveExpenseFiscalAmount(
@@ -186,6 +257,15 @@ const resolveExpenseMonetarySnapshot = (expenseRecord, { expenseId }) => {
 
 const resolveExpenseSettlementTiming = (expenseRecord) => {
   const payment = asRecord(expenseRecord.payment);
+  const paymentMethods = normalizeExpensePaymentMethods(expenseRecord);
+  if (
+    paymentMethods.some(
+      (method) => toCleanString(method.method)?.toLowerCase() === 'credit',
+    )
+  ) {
+    return 'deferred';
+  }
+
   const settlementMode = toCleanString(
     payment.settlementMode ??
       payment.mode ??
@@ -254,6 +334,9 @@ export const buildExpenseRecordedAccountingEvent = ({
   }
 
   const payment = asRecord(nextExpense.payment);
+  const paymentMethods = normalizeExpensePaymentMethods(nextExpense);
+  const paymentChannel = resolveAccountingPaymentChannel(paymentMethods);
+  const primaryPaymentMethod = paymentMethods[0] ?? null;
   const dates = asRecord(nextExpense.dates);
   const attachments = Array.isArray(nextExpense.attachments)
     ? nextExpense.attachments
@@ -274,15 +357,16 @@ export const buildExpenseRecordedAccountingEvent = ({
     functionalCurrency: monetarySnapshot.functionalCurrency,
     monetary: monetarySnapshot.monetary,
     treasury: {
-      cashAccountId: toCleanString(payment.cashAccountId),
-      cashCountId: toCleanString(payment.cashRegister),
-      bankAccountId: toCleanString(payment.bankAccountId),
-      paymentChannel: resolveAccountingPaymentChannel([
-        {
-          method: payment.method,
-          bankAccountId: payment.bankAccountId,
-        },
-      ]),
+      cashAccountId:
+        resolvePrimaryValue(paymentMethods, 'cashAccountId') ??
+        toCleanString(payment.cashAccountId),
+      cashCountId:
+        resolvePrimaryValue(paymentMethods, 'cashCountId') ??
+        toCleanString(payment.cashRegister),
+      bankAccountId:
+        resolvePrimaryValue(paymentMethods, 'bankAccountId') ??
+        toCleanString(payment.bankAccountId),
+      paymentChannel,
     },
     payload: {
       numberId:
@@ -292,8 +376,13 @@ export const buildExpenseRecordedAccountingEvent = ({
       categoryId: toCleanString(nextExpense.categoryId),
       category: toCleanString(nextExpense.category),
       description: toCleanString(nextExpense.description),
-      paymentMethod: toCleanString(payment.method),
-      paymentSourceType: toCleanString(payment.sourceType),
+      paymentMethod:
+        toCleanString(primaryPaymentMethod?.method) ?? toCleanString(payment.method),
+      paymentMethods,
+      paymentMethodCount: paymentMethods.length,
+      paymentSourceType:
+        toCleanString(primaryPaymentMethod?.sourceType) ??
+        toCleanString(payment.sourceType),
       settlementMode:
         toCleanString(payment.settlementMode) ??
         toCleanString(nextExpense.settlementMode) ??
@@ -360,11 +449,13 @@ export const syncExpenseAccountingEvent = onDocumentWritten(
       return null;
     }
 
+    const beforeRecord = event.data?.before?.data() ?? null;
+    const afterRecord = event.data?.after?.data() ?? null;
     const accountingEvent = buildExpenseRecordedAccountingEvent({
       businessId,
       expenseId,
-      beforeExpense: event.data?.before?.data()?.expense ?? null,
-      afterExpense: event.data?.after?.data()?.expense ?? null,
+      beforeExpense: beforeRecord?.expense ?? beforeRecord,
+      afterExpense: afterRecord?.expense ?? afterRecord,
     });
 
     if (!accountingEvent) {

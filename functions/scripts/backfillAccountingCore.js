@@ -19,6 +19,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import admin from 'firebase-admin';
 
@@ -71,26 +72,22 @@ const REQUIRED_CHART_OF_ACCOUNTS = [
   },
 ];
 
-const PURCHASE_PROFILE_SPECS = [
-  ['purchase_immediate_inventory_cash', 'inventory', 'cash'],
-  ['purchase_immediate_inventory_bank', 'inventory', 'bank'],
-  ['purchase_immediate_expense_cash', 'operating_expenses', 'cash'],
-  ['purchase_immediate_expense_bank', 'operating_expenses', 'bank'],
-  ['purchase_immediate_asset_cash', 'fixed_assets', 'cash'],
-  ['purchase_immediate_asset_bank', 'fixed_assets', 'bank'],
-  ['purchase_immediate_service_cash', 'operating_expenses', 'cash'],
-  ['purchase_immediate_service_bank', 'operating_expenses', 'bank'],
-  ['purchase_committed_inventory', 'inventory', 'accounts_payable'],
-  ['purchase_committed_expense', 'operating_expenses', 'accounts_payable'],
-  ['purchase_committed_asset', 'fixed_assets', 'accounts_payable'],
-  ['purchase_committed_service', 'operating_expenses', 'accounts_payable'],
-];
-
-const EXPENSE_PROFILE_SPECS = [
-  ['expense_cash', 'cash'],
-  ['expense_bank', 'bank'],
-  ['expense_payable', 'accounts_payable'],
-];
+const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = path.resolve(SCRIPT_DIR, '..', '..');
+const CHART_OF_ACCOUNTS_SOURCE_PATH = path.join(
+  REPO_ROOT,
+  'src',
+  'utils',
+  'accounting',
+  'chartOfAccounts.ts',
+);
+const POSTING_PROFILES_SOURCE_PATH = path.join(
+  REPO_ROOT,
+  'src',
+  'utils',
+  'accounting',
+  'postingProfiles.ts',
+);
 
 const args = process.argv.slice(2);
 const hasFlag = (flag) => args.includes(flag);
@@ -101,6 +98,176 @@ const getFlagValue = (flag) => {
   const value = args[index + 1];
   if (!value || value.startsWith('--')) return null;
   return value;
+};
+
+const extractArrayLiteralAfterMarker = (source, marker) => {
+  const markerIndex = source.indexOf(marker);
+  if (markerIndex === -1) {
+    throw new Error(`No se encontro el marcador ${marker}.`);
+  }
+
+  const equalsIndex = source.indexOf('=', markerIndex);
+  const startIndex = source.indexOf('[', equalsIndex);
+  if (equalsIndex === -1 || startIndex === -1) {
+    throw new Error(`No se pudo ubicar el arreglo para ${marker}.`);
+  }
+
+  let depth = 0;
+  let quote = null;
+  let escaped = false;
+  let inLineComment = false;
+  let inBlockComment = false;
+
+  for (let index = startIndex; index < source.length; index += 1) {
+    const char = source[index];
+    const nextChar = source[index + 1];
+
+    if (inLineComment) {
+      if (char === '\n') inLineComment = false;
+      continue;
+    }
+
+    if (inBlockComment) {
+      if (char === '*' && nextChar === '/') {
+        inBlockComment = false;
+        index += 1;
+      }
+      continue;
+    }
+
+    if (quote) {
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (char === '\\') {
+        escaped = true;
+        continue;
+      }
+      if (char === quote) {
+        quote = null;
+      }
+      continue;
+    }
+
+    if (char === '/' && nextChar === '/') {
+      inLineComment = true;
+      index += 1;
+      continue;
+    }
+
+    if (char === '/' && nextChar === '*') {
+      inBlockComment = true;
+      index += 1;
+      continue;
+    }
+
+    if (char === '"' || char === "'" || char === '`') {
+      quote = char;
+      continue;
+    }
+
+    if (char === '[') {
+      depth += 1;
+      continue;
+    }
+
+    if (char === ']') {
+      depth -= 1;
+      if (depth === 0) {
+        return source.slice(startIndex, index + 1);
+      }
+    }
+  }
+
+  throw new Error(`No se pudo cerrar el arreglo para ${marker}.`);
+};
+
+const evaluateArrayLiteral = (literal, context = {}) => {
+  const names = Object.keys(context);
+  const values = Object.values(context);
+  return Function(...names, `"use strict"; return (${literal});`)(...values);
+};
+
+const buildImmediatePurchaseProfileSeed = ({
+  creditAccountSystemKey,
+  debitAccountSystemKey,
+  description,
+  documentNature,
+  name,
+  priority,
+  seedKey,
+  settlementKind,
+}) => ({
+  seedKey,
+  name,
+  description,
+  eventType: 'purchase.committed',
+  moduleKey: 'purchases',
+  priority,
+  conditions: {
+    documentNature,
+    settlementKind,
+    settlementTiming: 'immediate',
+  },
+  linesTemplate: [
+    {
+      side: 'debit',
+      accountSystemKey: debitAccountSystemKey,
+      amountSource: 'purchase_subtotal',
+    },
+    {
+      side: 'debit',
+      accountSystemKey: 'tax_receivable',
+      amountSource: 'purchase_tax',
+    },
+    {
+      side: 'credit',
+      accountSystemKey: creditAccountSystemKey,
+      amountSource: 'purchase_net_payable',
+    },
+    {
+      side: 'credit',
+      accountSystemKey: 'withholding_itbis_payable',
+      amountSource: 'purchase_withholding_itbis',
+    },
+    {
+      side: 'credit',
+      accountSystemKey: 'withholding_isr_payable',
+      amountSource: 'purchase_withholding_isr',
+    },
+  ],
+});
+
+export const loadDefaultChartOfAccountTemplatesFromSource = (
+  source = fs.readFileSync(CHART_OF_ACCOUNTS_SOURCE_PATH, 'utf8'),
+) =>
+  evaluateArrayLiteral(
+    extractArrayLiteralAfterMarker(
+      source,
+      'export const DEFAULT_CHART_OF_ACCOUNTS_TEMPLATE',
+    ),
+  );
+
+export const loadDefaultPostingProfileSeedsFromSource = (
+  source = fs.readFileSync(POSTING_PROFILES_SOURCE_PATH, 'utf8'),
+) => {
+  const immediatePurchaseProfileSeeds = evaluateArrayLiteral(
+    extractArrayLiteralAfterMarker(
+      source,
+      'const IMMEDIATE_PURCHASE_PROFILE_SEEDS',
+    ),
+    { buildImmediatePurchaseProfileSeed },
+  );
+  const allSeedLiteral = extractArrayLiteralAfterMarker(
+    source,
+    'const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS',
+  ).replaceAll(
+    '...IMMEDIATE_PURCHASE_PROFILE_SEEDS',
+    '...immediatePurchaseProfileSeeds',
+  );
+
+  return evaluateArrayLiteral(allSeedLiteral, { immediatePurchaseProfileSeeds });
 };
 
 const asRecord = (value) =>
@@ -129,117 +296,308 @@ const buildAccountMaps = (accounts) => ({
       .map((account) => [toCleanString(account.systemKey), account])
       .filter(([systemKey]) => Boolean(systemKey)),
   ),
+  byCode: new Map(
+    accounts
+      .map((account) => [toCleanString(account.code), account])
+      .filter(([code]) => Boolean(code)),
+  ),
 });
 
-const buildPostingLine = ({
-  accountsBySystemKey,
-  accountSystemKey,
-  amountSource,
-  id,
-  side,
+export const planMissingChartAccounts = ({
+  accounts,
+  businessId,
+  templates = loadDefaultChartOfAccountTemplatesFromSource(),
+  createRef,
 }) => {
-  const account = accountsBySystemKey.get(accountSystemKey) ?? null;
-  if (!account) {
+  const { byCode, bySystemKey } = buildAccountMaps(accounts);
+  const writes = [];
+  const skippedExistingCodeMissingSystemKey = [];
+
+  for (const template of templates) {
+    const systemKey = toCleanString(template.systemKey);
+    if (!systemKey || bySystemKey.has(systemKey)) {
+      continue;
+    }
+
+    const code = toCleanString(template.code);
+    const existingByCode = code ? byCode.get(code) : null;
+    if (existingByCode) {
+      skippedExistingCodeMissingSystemKey.push({
+        code,
+        existingAccountId: existingByCode.id ?? null,
+        systemKey,
+      });
+      continue;
+    }
+
+    const ref =
+      typeof createRef === 'function'
+        ? createRef(template)
+        : {
+            id: `dryrun_${systemKey}`,
+          };
+    const parent =
+      bySystemKey.get(toCleanString(template.parentSystemKey)) ??
+      byCode.get(toCleanString(template.parentCode)) ??
+      null;
+    const payload = {
+      id: ref.id,
+      businessId,
+      code,
+      name: template.name,
+      type: template.type,
+      postingAllowed: template.postingAllowed,
+      status: 'active',
+      normalSide: template.normalSide,
+      currencyMode: template.currencyMode,
+      systemKey,
+      parentId: parent?.id ?? null,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdBy: 'script:backfillAccountingCore',
+      updatedBy: 'script:backfillAccountingCore',
+      metadata: {
+        backfilledBy: 'backfillAccountingCore',
+        seededBy: 'default_chart_template',
+      },
+    };
+
+    writes.push({ ref, payload, systemKey });
+    const plannedAccount = {
+      ...payload,
+      id: ref.id,
+    };
+    bySystemKey.set(systemKey, plannedAccount);
+    if (code) {
+      byCode.set(code, plannedAccount);
+    }
+  }
+
+  return {
+    writes,
+    skippedExistingCodeMissingSystemKey,
+  };
+};
+
+const buildDefaultPostingProfileLines = ({ accountsBySystemKey, seed }) => {
+  const seedKey = toCleanString(seed.seedKey);
+  return (Array.isArray(seed.linesTemplate) ? seed.linesTemplate : []).map(
+    (line, index) => {
+      const accountSystemKey = toCleanString(line.accountSystemKey);
+      const account = accountsBySystemKey.get(accountSystemKey) ?? null;
+      if (!seedKey || !accountSystemKey || !account) {
+        return null;
+      }
+
+      return {
+        id: `${seedKey}__${toCleanString(line.amountSource) ?? 'amount'}__${index + 1}`,
+        side: line.side,
+        accountId: account.id,
+        accountCode: toCleanString(account.code),
+        accountName: toCleanString(account.name),
+        accountSystemKey,
+        amountSource: line.amountSource,
+        description: line.description ?? null,
+        omitIfZero: line.omitIfZero !== false,
+        metadata: asRecord(line.metadata),
+      };
+    },
+  );
+};
+
+const buildDefaultPostingProfilePayload = ({
+  accountsBySystemKey,
+  businessId,
+  refId,
+  seed,
+}) => {
+  const seedKey = toCleanString(seed.seedKey);
+  const linesTemplate = buildDefaultPostingProfileLines({
+    accountsBySystemKey,
+    seed,
+  });
+  if (!seedKey || linesTemplate.some((line) => !line)) {
     return null;
   }
 
   return {
-    id,
-    side,
-    accountId: account.id,
-    accountCode: toCleanString(account.code),
-    accountName: toCleanString(account.name),
-    accountSystemKey,
-    amountSource,
-    omitIfZero: true,
-    metadata: {},
+    id: refId,
+    businessId,
+    name: seed.name,
+    description: seed.description ?? null,
+    eventType: seed.eventType,
+    moduleKey: seed.moduleKey,
+    priority: safeNumber(seed.priority) ?? 100,
+    status: 'active',
+    conditions: seed.conditions ?? null,
+    linesTemplate,
+    metadata: {
+      seedKey,
+      seededBy: 'default_posting_profiles',
+      backfilledBy: 'backfillAccountingCore',
+    },
   };
 };
 
-const buildPurchaseFiscalLines = ({
-  accountsBySystemKey,
-  creditSystemKey,
-  debitSystemKey,
-  seedKey,
-}) => [
-  buildPostingLine({
-    accountsBySystemKey,
-    accountSystemKey: debitSystemKey,
-    amountSource: 'purchase_subtotal',
-    id: `${seedKey}__purchase_subtotal`,
-    side: 'debit',
-  }),
-  buildPostingLine({
-    accountsBySystemKey,
-    accountSystemKey: 'tax_receivable',
-    amountSource: 'purchase_tax',
-    id: `${seedKey}__purchase_tax`,
-    side: 'debit',
-  }),
-  buildPostingLine({
-    accountsBySystemKey,
-    accountSystemKey: creditSystemKey,
-    amountSource: 'purchase_net_payable',
-    id: `${seedKey}__purchase_net_payable`,
-    side: 'credit',
-  }),
-  buildPostingLine({
-    accountsBySystemKey,
-    accountSystemKey: 'withholding_itbis_payable',
-    amountSource: 'purchase_withholding_itbis',
-    id: `${seedKey}__purchase_withholding_itbis`,
-    side: 'credit',
-  }),
-  buildPostingLine({
-    accountsBySystemKey,
-    accountSystemKey: 'withholding_isr_payable',
-    amountSource: 'purchase_withholding_isr',
-    id: `${seedKey}__purchase_withholding_isr`,
-    side: 'credit',
-  }),
-];
+const normalizeLineForComparison = (line) => ({
+  accountId: toCleanString(line.accountId),
+  accountSystemKey: toCleanString(line.accountSystemKey),
+  amountSource: toCleanString(line.amountSource),
+  side: toCleanString(line.side),
+});
 
-const buildExpenseFiscalLines = ({
-  accountsBySystemKey,
-  creditSystemKey,
-  seedKey,
-}) => [
-  buildPostingLine({
-    accountsBySystemKey,
-    accountSystemKey: 'operating_expenses',
-    amountSource: 'expense_subtotal',
-    id: `${seedKey}__expense_subtotal`,
-    side: 'debit',
-  }),
-  buildPostingLine({
-    accountsBySystemKey,
-    accountSystemKey: 'tax_receivable',
-    amountSource: 'expense_tax',
-    id: `${seedKey}__expense_tax`,
-    side: 'debit',
-  }),
-  buildPostingLine({
-    accountsBySystemKey,
-    accountSystemKey: creditSystemKey,
-    amountSource: 'expense_net_payable',
-    id: `${seedKey}__expense_net_payable`,
-    side: 'credit',
-  }),
-  buildPostingLine({
-    accountsBySystemKey,
-    accountSystemKey: 'withholding_itbis_payable',
-    amountSource: 'expense_withholding_itbis',
-    id: `${seedKey}__expense_withholding_itbis`,
-    side: 'credit',
-  }),
-  buildPostingLine({
-    accountsBySystemKey,
-    accountSystemKey: 'withholding_isr_payable',
-    amountSource: 'expense_withholding_isr',
-    id: `${seedKey}__expense_withholding_isr`,
-    side: 'credit',
-  }),
-];
+const linesMatchTemplate = (currentLines, nextLines) =>
+  JSON.stringify(
+    (Array.isArray(currentLines) ? currentLines : []).map(
+      normalizeLineForComparison,
+    ),
+  ) === JSON.stringify(nextLines.map(normalizeLineForComparison));
+
+const serializeConditionsForComparison = (conditions) =>
+  JSON.stringify(asRecord(conditions));
+
+const profileMatchesDefaultSeed = (profile, payload) =>
+  profile.name === payload.name &&
+  (profile.description ?? null) === (payload.description ?? null) &&
+  profile.eventType === payload.eventType &&
+  profile.moduleKey === payload.moduleKey &&
+  safeNumber(profile.priority) === payload.priority &&
+  (profile.status ?? 'active') === payload.status &&
+  serializeConditionsForComparison(profile.conditions) ===
+    serializeConditionsForComparison(payload.conditions) &&
+  linesMatchTemplate(profile.linesTemplate, payload.linesTemplate);
+
+export const planDefaultPostingProfileChanges = ({
+  accounts,
+  businessId,
+  createRef,
+  profiles,
+  seeds = loadDefaultPostingProfileSeedsFromSource(),
+}) => {
+  const { bySystemKey: accountsBySystemKey } = buildAccountMaps(accounts);
+  const profilesBySeedKey = new Map();
+  const creates = [];
+  const updates = [];
+  const alreadyCurrent = [];
+  const skippedCustom = [];
+  const skippedMissingAccounts = [];
+
+  for (const profile of profiles) {
+    const seedKey = toCleanString(asRecord(profile.metadata).seedKey);
+    if (!seedKey || profilesBySeedKey.has(seedKey)) {
+      continue;
+    }
+    profilesBySeedKey.set(seedKey, profile);
+  }
+
+  for (const seed of seeds) {
+    const seedKey = toCleanString(seed.seedKey);
+    if (!seedKey) {
+      continue;
+    }
+
+    const existingProfile = profilesBySeedKey.get(seedKey) ?? null;
+    const ref =
+      existingProfile?.ref ??
+      (typeof createRef === 'function'
+        ? createRef(seed)
+        : {
+            id: seedKey,
+          });
+    const payload = buildDefaultPostingProfilePayload({
+      accountsBySystemKey,
+      businessId,
+      refId: existingProfile?.id ?? ref.id ?? seedKey,
+      seed,
+    });
+
+    if (!payload) {
+      skippedMissingAccounts.push({
+        seedKey,
+        eventType: seed.eventType,
+        missingSystemKeys: Array.from(
+          new Set(
+            (Array.isArray(seed.linesTemplate) ? seed.linesTemplate : [])
+              .map((line) => toCleanString(line.accountSystemKey))
+              .filter(
+                (systemKey) =>
+                  Boolean(systemKey) && !accountsBySystemKey.has(systemKey),
+              ),
+          ),
+        ),
+      });
+      continue;
+    }
+
+    if (!existingProfile) {
+      creates.push({
+        ref,
+        payload: {
+          ...payload,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          createdBy: 'script:backfillAccountingCore',
+          updatedBy: 'script:backfillAccountingCore',
+        },
+        seedKey,
+        eventType: seed.eventType,
+      });
+      continue;
+    }
+
+    const metadata = asRecord(existingProfile.metadata);
+    if (metadata.seededBy !== 'default_posting_profiles') {
+      skippedCustom.push({
+        profileId: existingProfile.id ?? null,
+        seedKey,
+        eventType: seed.eventType,
+      });
+      continue;
+    }
+
+    if (profileMatchesDefaultSeed(existingProfile, payload)) {
+      alreadyCurrent.push({
+        profileId: existingProfile.id ?? null,
+        seedKey,
+        eventType: seed.eventType,
+      });
+      continue;
+    }
+
+    updates.push({
+      ref,
+      payload: {
+        ...payload,
+        id: existingProfile.id ?? payload.id,
+        metadata: {
+          ...metadata,
+          seedKey,
+          seededBy: 'default_posting_profiles',
+          backfilledFiscalSourcesBy: 'backfillAccountingCore',
+        },
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedBy: 'script:backfillAccountingCore',
+      },
+      seedKey,
+      eventType: seed.eventType,
+    });
+  }
+
+  return {
+    creates,
+    updates,
+    alreadyCurrent,
+    skippedCustom,
+    skippedMissingAccounts,
+    likelyFixableEventTypes: Array.from(
+      new Set(
+        [...creates, ...updates]
+          .map((change) => toCleanString(change.eventType))
+          .filter(Boolean),
+      ),
+    ).sort(),
+  };
+};
 
 const resolvePurchaseDocumentTotal = (purchaseRecord) => {
   const monetary = asRecord(purchaseRecord.monetary);
@@ -273,52 +631,32 @@ const ensureChartOfAccounts = async (db, businessId, { dryRun }) => {
     id: docSnap.id,
     ...asRecord(docSnap.data()),
   }));
-  const accountsBySystemKey = new Map(
-    accounts
-      .map((account) => [toCleanString(account.systemKey), account])
-      .filter(([systemKey]) => Boolean(systemKey)),
-  );
-
-  const writes = [];
-  for (const template of REQUIRED_CHART_OF_ACCOUNTS) {
-    if (accountsBySystemKey.has(template.systemKey)) {
-      continue;
-    }
-
-    const parentId =
-      accountsBySystemKey.get(template.parentSystemKey)?.id ?? null;
-    const ref = db.collection(`businesses/${businessId}/chartOfAccounts`).doc();
-    writes.push({
-      ref,
-      payload: {
-        id: ref.id,
-        businessId,
-        code: template.code,
-        name: template.name,
-        type: template.type,
-        postingAllowed: template.postingAllowed,
-        status: 'active',
-        normalSide: template.normalSide,
-        currencyMode: template.currencyMode,
-        systemKey: template.systemKey,
-        parentId,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        createdBy: 'script:backfillAccountingCore',
-        updatedBy: 'script:backfillAccountingCore',
-        metadata: {
-          backfilledBy: 'backfillAccountingCore',
-        },
-      },
+  const { skippedExistingCodeMissingSystemKey, writes } =
+    planMissingChartAccounts({
+      accounts,
+      businessId,
+      templates: [
+        ...loadDefaultChartOfAccountTemplatesFromSource(),
+        ...REQUIRED_CHART_OF_ACCOUNTS,
+      ],
+      createRef: () =>
+        db.collection(`businesses/${businessId}/chartOfAccounts`).doc(),
     });
-  }
 
   if (!writes.length) {
-    return { planned: 0, created: 0 };
+    return {
+      planned: 0,
+      created: 0,
+      skippedExistingCodeMissingSystemKey,
+    };
   }
 
   if (dryRun) {
-    return { planned: writes.length, created: 0 };
+    return {
+      planned: writes.length,
+      created: 0,
+      skippedExistingCodeMissingSystemKey,
+    };
   }
 
   const batch = db.batch();
@@ -326,7 +664,11 @@ const ensureChartOfAccounts = async (db, businessId, { dryRun }) => {
     batch.set(ref, payload, { merge: true }),
   );
   await batch.commit();
-  return { planned: writes.length, created: writes.length };
+  return {
+    planned: writes.length,
+    created: writes.length,
+    skippedExistingCodeMissingSystemKey,
+  };
 };
 
 const loadChartOfAccounts = async (db, businessId) => {
@@ -339,52 +681,6 @@ const loadChartOfAccounts = async (db, businessId) => {
   }));
 };
 
-const buildFiscalProfileLinesBySeedKey = (accounts) => {
-  const { bySystemKey: accountsBySystemKey } = buildAccountMaps(accounts);
-  const entries = [];
-
-  PURCHASE_PROFILE_SPECS.forEach(
-    ([seedKey, debitSystemKey, creditSystemKey]) => {
-      entries.push([
-        seedKey,
-        buildPurchaseFiscalLines({
-          accountsBySystemKey,
-          creditSystemKey,
-          debitSystemKey,
-          seedKey,
-        }),
-      ]);
-    },
-  );
-
-  EXPENSE_PROFILE_SPECS.forEach(([seedKey, creditSystemKey]) => {
-    entries.push([
-      seedKey,
-      buildExpenseFiscalLines({
-        accountsBySystemKey,
-        creditSystemKey,
-        seedKey,
-      }),
-    ]);
-  });
-
-  return new Map(entries);
-};
-
-const normalizeLineForComparison = (line) => ({
-  accountId: toCleanString(line.accountId),
-  accountSystemKey: toCleanString(line.accountSystemKey),
-  amountSource: toCleanString(line.amountSource),
-  side: toCleanString(line.side),
-});
-
-const linesMatchTemplate = (currentLines, nextLines) =>
-  JSON.stringify(
-    (Array.isArray(currentLines) ? currentLines : []).map(
-      normalizeLineForComparison,
-    ),
-  ) === JSON.stringify(nextLines.map(normalizeLineForComparison));
-
 const migrateDefaultPostingProfiles = async (
   db,
   businessId,
@@ -394,62 +690,68 @@ const migrateDefaultPostingProfiles = async (
     loadChartOfAccounts(db, businessId),
     db.collection(`businesses/${businessId}/accountingPostingProfiles`).get(),
   ]);
-  const linesBySeedKey = buildFiscalProfileLinesBySeedKey(accounts);
-  let planned = 0;
-  let updated = 0;
-  let alreadyCurrent = 0;
-  let skippedSeedKeyOnly = 0;
-  let skippedMissingAccounts = 0;
 
-  for (const profileSnap of profilesSnap.docs) {
-    const profile = asRecord(profileSnap.data());
-    const metadata = asRecord(profile.metadata);
-    const seedKey = toCleanString(metadata.seedKey);
-    const nextLines = seedKey ? (linesBySeedKey.get(seedKey) ?? null) : null;
-    if (!nextLines) {
-      continue;
-    }
+  const profiles = profilesSnap.docs.map((profileSnap) => ({
+    id: profileSnap.id,
+    ref: profileSnap.ref,
+    ...asRecord(profileSnap.data()),
+  }));
+  const plan = planDefaultPostingProfileChanges({
+    accounts,
+    businessId,
+    createRef: (seed) => {
+      const seedKey = toCleanString(seed.seedKey);
+      return db
+        .collection(`businesses/${businessId}/accountingPostingProfiles`)
+        .doc(seedKey || undefined);
+    },
+    profiles,
+  });
+  const skippedCustom = plan.skippedCustom.map((skipped) => ({
+    ...skipped,
+    includeSeedKeyOnlyRequested: includeSeedKeyOnly,
+  }));
+  const updates = plan.updates;
 
-    const isDefaultSeeded = metadata.seededBy === 'default_posting_profiles';
-    if (!isDefaultSeeded && !includeSeedKeyOnly) {
-      skippedSeedKeyOnly += 1;
-      continue;
-    }
+  if (!dryRun) {
+    const batchLimit = 450;
+    const writes = [
+      ...plan.creates.map((change) => ({
+        ref: change.ref,
+        payload: change.payload,
+      })),
+      ...updates.map((change) => ({
+        ref: change.ref,
+        payload: change.payload,
+      })),
+    ];
 
-    if (nextLines.some((line) => !line)) {
-      skippedMissingAccounts += 1;
-      continue;
-    }
-
-    if (linesMatchTemplate(profile.linesTemplate, nextLines)) {
-      alreadyCurrent += 1;
-      continue;
-    }
-
-    planned += 1;
-    if (!dryRun) {
-      await profileSnap.ref.set(
-        {
-          linesTemplate: nextLines,
-          metadata: {
-            ...metadata,
-            backfilledFiscalSourcesBy: 'backfillAccountingCore',
-          },
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          updatedBy: 'script:backfillAccountingCore',
-        },
-        { merge: true },
-      );
-      updated += 1;
+    for (let index = 0; index < writes.length; index += batchLimit) {
+      const batch = db.batch();
+      writes.slice(index, index + batchLimit).forEach(({ ref, payload }) => {
+        batch.set(ref, payload, { merge: true });
+      });
+      await batch.commit();
     }
   }
 
   return {
-    planned,
-    updated,
-    alreadyCurrent,
-    skippedSeedKeyOnly,
-    skippedMissingAccounts,
+    planned: plan.creates.length + updates.length,
+    created: dryRun ? 0 : plan.creates.length,
+    updated: dryRun ? 0 : updates.length,
+    alreadyCurrent: plan.alreadyCurrent.length,
+    plannedCreates: plan.creates.map(({ seedKey, eventType }) => ({
+      seedKey,
+      eventType,
+    })),
+    plannedUpdates: updates.map(({ seedKey, eventType }) => ({
+      seedKey,
+      eventType,
+    })),
+    skippedCustom,
+    skippedSeedKeyOnly: skippedCustom.length,
+    skippedMissingAccounts: plan.skippedMissingAccounts,
+    likelyFixableEventTypes: plan.likelyFixableEventTypes,
   };
 };
 
@@ -580,12 +882,19 @@ const main = async () => {
         businessId,
         plannedChartAccounts: accounts.planned,
         createdChartAccounts: accounts.created,
+        skippedChartAccountsExistingCodeMissingSystemKey:
+          accounts.skippedExistingCodeMissingSystemKey,
         plannedPostingProfiles: postingProfiles.planned,
+        createdPostingProfiles: postingProfiles.created,
         updatedPostingProfiles: postingProfiles.updated,
         currentPostingProfiles: postingProfiles.alreadyCurrent,
+        plannedCreatedPostingProfiles: postingProfiles.plannedCreates,
+        plannedUpdatedPostingProfiles: postingProfiles.plannedUpdates,
+        skippedCustomPostingProfiles: postingProfiles.skippedCustom,
         skippedSeedKeyOnlyPostingProfiles: postingProfiles.skippedSeedKeyOnly,
         skippedMissingAccountPostingProfiles:
           postingProfiles.skippedMissingAccounts,
+        likelyFixableEventTypes: postingProfiles.likelyFixableEventTypes,
         plannedVendorBills: vendorBills.plannedMaterialized,
         materializedVendorBills: vendorBills.materialized,
         plannedDeletedVendorBills: vendorBills.plannedDeleted,
@@ -595,9 +904,11 @@ const main = async () => {
   }
 };
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error('[backfillAccountingCore] Failed:', error);
-    process.exit(1);
-  });
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+  main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+      console.error('[backfillAccountingCore] Failed:', error);
+      process.exit(1);
+    });
+}

@@ -24,6 +24,7 @@ const currentPostingProfilesMock = vi.hoisted(() => ({
   loading: false,
   postingProfiles: [],
 }));
+const useAccountingConfigMock = vi.hoisted(() => vi.fn());
 const messageMock = vi.hoisted(() => ({
   error: vi.fn(),
   info: vi.fn(),
@@ -78,7 +79,8 @@ vi.mock('@/firebase/accounting/fbReplayAccountingEventProjection', () => ({
 vi.mock(
   '@/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useAccountingConfig',
   () => ({
-    useAccountingConfig: () => currentConfigMock,
+    useAccountingConfig: (...args: unknown[]) =>
+      useAccountingConfigMock(...args),
   }),
 );
 
@@ -118,13 +120,35 @@ describe('useAccountingWorkspace loading', () => {
     fbReplayAccountingEventProjectionMock.mockReset();
     fbReverseJournalEntryMock.mockReset();
     onSnapshotMock.mockReset();
+    useAccountingConfigMock.mockReset();
     useSelectorMock.mockReset();
+    useAccountingConfigMock.mockReturnValue(currentConfigMock);
 
     collectionMock.mockImplementation(
       (_db: unknown, ...segments: string[]) => ({
         path: segments.join('/'),
       }),
     );
+  });
+
+  it('does not subscribe to global exchange rate provider metadata', () => {
+    useSelectorMock.mockReturnValue({
+      businessID: 'business-1',
+      uid: 'user-1',
+    });
+    onSnapshotMock.mockReturnValue(vi.fn());
+
+    const { unmount } = renderHook(() => useAccountingWorkspace());
+
+    expect(useAccountingConfigMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        businessId: 'business-1',
+        includeExchangeRateReference: false,
+        userId: 'user-1',
+      }),
+    );
+
+    unmount();
   });
 
   it('reactivates accounting snapshots loading when the active business changes', async () => {

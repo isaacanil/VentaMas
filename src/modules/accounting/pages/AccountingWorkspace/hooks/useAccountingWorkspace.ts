@@ -95,7 +95,7 @@ export const useAccountingWorkspace = ({
   } = useAccountingConfig({
     businessId,
     includeBankingDetails: includeAccountingSetup,
-    includeExchangeRateReference: includeAccountingSetup,
+    includeExchangeRateReference: false,
     includeHistory: includeAccountingSetup,
     userId,
   });

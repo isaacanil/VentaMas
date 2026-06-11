@@ -152,9 +152,16 @@ export const resolvePurchaseSupplierId = (purchaseRecord) => {
 export const resolvePurchaseDocumentTotal = (purchaseRecord) => {
   const monetary = asRecord(purchaseRecord.monetary);
   const documentTotals = asRecord(monetary.documentTotals);
+  const legacyTotals = asRecord(
+    purchaseRecord.totals ?? purchaseRecord.totalPurchase,
+  );
   const totalFromPaymentState = safeNumber(purchaseRecord.paymentState?.total);
   const totalFromMonetary = safeNumber(
-    documentTotals.total ?? documentTotals.gross,
+    documentTotals.total ??
+      documentTotals.gross ??
+      legacyTotals.total ??
+      legacyTotals.gross ??
+      legacyTotals.totalPurchase,
   );
   const totalFallback =
     safeNumber(purchaseRecord.totalAmount) ??

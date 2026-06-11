@@ -1,4 +1,5 @@
 import pluginReact from '@vitejs/plugin-react';
+import { execSync } from 'node:child_process';
 import { availableParallelism } from 'node:os';
 import { fileURLToPath, URL } from 'node:url';
 import {
@@ -18,6 +19,25 @@ const buildId =
   process.env.VERCEL_GIT_COMMIT_SHA ||
   process.env.GITHUB_SHA ||
   buildTimestamp;
+
+const resolveGitSha = (): string | null => {
+  const envSha =
+    process.env.VITE_GIT_SHA ||
+    process.env.VERCEL_GIT_COMMIT_SHA ||
+    process.env.GITHUB_SHA ||
+    null;
+  if (envSha) return envSha;
+
+  try {
+    return execSync('git rev-parse HEAD', {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return null;
+  }
+};
+const gitSha = resolveGitSha();
 
 // ──────────────────────────────────────────────────────────────────
 // CLAVE DE RENDIMIENTO (ver https://vite.dev/guide/rolldown#performance):
@@ -66,6 +86,34 @@ function reactCompilerPlugin(): PluginOption {
   };
 }
 
+function buildVersionManifestPlugin(): PluginOption {
+  let mode = 'production';
+
+  return {
+    name: 'build-version-manifest',
+    apply: 'build',
+    configResolved(config) {
+      mode = config.mode;
+    },
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'version.json',
+        source: `${JSON.stringify(
+          {
+            buildId,
+            buildTime: buildTimestamp,
+            environment: process.env.VITE_APP_ENV || mode,
+            gitSha,
+          },
+          null,
+          2,
+        )}\n`,
+      });
+    },
+  };
+}
+
 const plugins: PluginOption[] = [
   // pluginReact sin babel plugins → Oxc puro (Rust nativo, rapidísimo)
   pluginReact({}),
@@ -79,6 +127,7 @@ const plugins: PluginOption[] = [
         }),
       ]
     : []),
+  buildVersionManifestPlugin(),
 ];
 
 // Configuración del analizador si lo necesitas
