@@ -39,6 +39,8 @@ emulator-data/
 # Local tooling and agent artifacts
 .agents/
 .antigravitycli/
+.codex-logs/
+.codex-screenshots/
 .github/
 .mcp_screenshot/
 .tools/
@@ -46,6 +48,13 @@ emulator-data/
 tmp/
 tmp/pdfs/
 vivaldi_*.png
+
+# Root-level investigation/backfill outputs
+/CODEX_*.md
+/*-snapshot.json
+/*-dry-run*.json
+/*-write.json
+/*-results*.json
 
 # Vercel
 .vercel

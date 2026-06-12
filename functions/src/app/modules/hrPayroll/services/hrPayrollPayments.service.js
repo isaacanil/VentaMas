@@ -1,6 +1,7 @@
 import { FieldValue } from '../../../core/config/firebase.js';
 import { buildAccountingEvent } from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
 import { normalizePaymentMethodCode } from '../../../versions/v2/accounting/utils/accountingContract.util.js';
+import { normalizeHrDepositAccount } from './hrDepositAccounts.service.js';
 
 const THRESHOLD = 0.01;
 const LINE_PAYABLE_STATUSES = new Set(['approved']);
@@ -354,6 +355,8 @@ export const buildHrPayrollPaymentDocuments = ({
     employeeCode: toCleanString(lineRecord.employeeCode),
     employeeNameSnapshot: toCleanString(lineRecord.employeeNameSnapshot),
     partyId: toCleanString(lineRecord.partyId),
+    paymentDestination: toCleanString(lineRecord.paymentDestination),
+    depositAccount: normalizeHrDepositAccount(lineRecord.depositAccount),
     baseSalaryAmount: roundMoney(lineRecord.baseSalaryAmount),
     commissionAmount: roundMoney(lineRecord.commissionAmount),
     grossAmount: roundMoney(lineRecord.grossAmount),

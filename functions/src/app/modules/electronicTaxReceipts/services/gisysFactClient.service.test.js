@@ -43,6 +43,7 @@ describe('gisysFactClient.service', () => {
         responseSummary: {
           hasMessage: true,
           keys: ['message', 'rawXml'],
+          message: 'RNC [id] rejected for [email]',
         },
       },
     });

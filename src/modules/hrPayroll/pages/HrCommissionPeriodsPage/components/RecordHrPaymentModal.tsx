@@ -24,6 +24,7 @@ import type {
   HrPaymentMethod,
   HrPayrollEmployeeLineRecord,
 } from '@/types/hrPayroll';
+import { formatHrDepositAccount } from '@/utils/hrPayroll/depositAccounts';
 
 import {
   PAYMENT_METHOD_OPTIONS,
@@ -56,8 +57,16 @@ export interface PaymentFormValues {
   transferReference?: string;
 }
 
+interface BusinessBankAccountOption {
+  label: string;
+  value: string;
+}
+
 interface RecordHrPaymentModalProps {
   actionKey: string | null;
+  bankAccountOptions: BusinessBankAccountOption[];
+  bankAccountsError: boolean;
+  bankAccountsLoading: boolean;
   line: HrPayrollEmployeeLineRecord;
   onCancel: () => void;
   onFinish: (values: PaymentFormValues) => void | Promise<void>;
@@ -91,7 +100,18 @@ const getPeriodName = (
     '',
   );
 
-const validatePaymentDraft = (draft: PaymentFormValues): string | null => {
+const validatePaymentDraft = (
+  draft: PaymentFormValues,
+  {
+    bankAccountOptions,
+    bankAccountsError,
+    bankAccountsLoading,
+  }: {
+    bankAccountOptions: BusinessBankAccountOption[];
+    bankAccountsError: boolean;
+    bankAccountsLoading: boolean;
+  },
+): string | null => {
   if (draft.paymentMethod === 'cash') {
     if (!draft.cashAccountId?.trim() || !draft.cashCountId?.trim()) {
       return 'Indica la caja y el cuadre operativo para registrar este pago en efectivo.';
@@ -105,7 +125,23 @@ const validatePaymentDraft = (draft: PaymentFormValues): string | null => {
       draft.paymentMethod === 'check') &&
     !draft.bankAccountId?.trim()
   ) {
-    return 'Indica la cuenta bancaria operativa antes de confirmar el pago.';
+    if (bankAccountsLoading) {
+      return 'Espera a que carguen las cuentas origen del negocio.';
+    }
+    if (bankAccountsError) {
+      return 'No se pudieron cargar las cuentas origen del negocio.';
+    }
+    if (!bankAccountOptions.length) {
+      return 'Configura una cuenta bancaria activa para registrar este pago.';
+    }
+    return 'Selecciona la cuenta origen del negocio antes de confirmar el pago.';
+  }
+
+  if (
+    draft.bankAccountId?.trim() &&
+    !bankAccountOptions.some((option) => option.value === draft.bankAccountId)
+  ) {
+    return 'Selecciona una cuenta origen activa del negocio.';
   }
 
   if (draft.paymentMethod === 'check' && !draft.checkNumber?.trim()) {
@@ -151,6 +187,9 @@ const getPaymentFormula = ({
 
 export function RecordHrPaymentModal({
   actionKey,
+  bankAccountOptions,
+  bankAccountsError,
+  bankAccountsLoading,
   line,
   onCancel,
   onFinish,
@@ -184,7 +223,11 @@ export function RecordHrPaymentModal({
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const validationError = validatePaymentDraft(draft);
+    const validationError = validatePaymentDraft(draft, {
+      bankAccountOptions,
+      bankAccountsError,
+      bankAccountsLoading,
+    });
     if (validationError) {
       setFormError(validationError);
       return;
@@ -196,6 +239,14 @@ export function RecordHrPaymentModal({
   const retroactiveAdjustmentAmount = line.retroactiveAdjustmentAmount ?? 0;
   const manualAdjustmentAmount = line.manualAdjustmentAmount ?? 0;
   const deductionAmount = getLineDeductionAmount(line);
+  const depositAccountLabel = formatHrDepositAccount({
+    depositAccount: line.depositAccount,
+    paymentDestination: line.paymentDestination,
+    revealSensitive: true,
+  });
+  const selectedBusinessBankAccountLabel =
+    bankAccountOptions.find((option) => option.value === draft.bankAccountId)
+      ?.label ?? 'Seleccionar cuenta origen';
   const summaryItems = [
     {
       label: 'Comisión normal',
@@ -272,6 +323,12 @@ export function RecordHrPaymentModal({
           })}
         </PaymentFormula>
         <PaymentSummaryGrid>
+          <PaymentSummaryItem>
+            <PaymentSummaryLabel>
+              Cuenta destino del colaborador
+            </PaymentSummaryLabel>
+            <PaymentSummaryValue>{depositAccountLabel}</PaymentSummaryValue>
+          </PaymentSummaryItem>
           {summaryItems
             .filter((item) => item.visible)
             .map((item) => (
@@ -376,19 +433,47 @@ export function RecordHrPaymentModal({
 
           {draft.paymentMethod !== 'cash' ? (
             <Field>
-              <FieldLabel>Cuenta bancaria operativa</FieldLabel>
-              <VmInput
-                aria-label="Cuenta bancaria operativa"
-                value={draft.bankAccountId ?? ''}
-                disabled={saving}
-                placeholder="Ej. Banco Popular · Operativa 1234"
-                onChange={(event) =>
-                  updateField('bankAccountId', event.target.value)
-                }
-              />
+              <FieldLabel>Cuenta origen del negocio</FieldLabel>
+              <VmSelect
+                aria-label="Cuenta origen del negocio"
+                selectedKey={draft.bankAccountId || null}
+                isDisabled={saving || bankAccountsLoading}
+                onSelectionChange={(key) => {
+                  const nextValue = key ? String(key) : '';
+                  if (
+                    bankAccountOptions.some(
+                      (option) => option.value === nextValue,
+                    )
+                  ) {
+                    updateField('bankAccountId', nextValue);
+                  }
+                }}
+              >
+                <VmSelect.Trigger>
+                  <VmSelect.Value>{selectedBusinessBankAccountLabel}</VmSelect.Value>
+                  <VmSelect.Indicator />
+                </VmSelect.Trigger>
+                <VmSelect.Popover>
+                  <VmListBox aria-label="Cuentas origen del negocio">
+                    {bankAccountOptions.map((option) => (
+                      <VmListBox.Item
+                        key={option.value}
+                        id={option.value}
+                        textValue={option.label}
+                      >
+                        {option.label}
+                        <VmListBox.ItemIndicator />
+                      </VmListBox.Item>
+                    ))}
+                  </VmListBox>
+                </VmSelect.Popover>
+              </VmSelect>
               <FieldHint>
-                Usa el nombre visible de la cuenta bancaria; evita escribir
-                códigos técnicos si Finanzas no los reconoce.
+                {bankAccountsLoading
+                  ? 'Cargando cuentas activas...'
+                  : bankAccountOptions.length
+                    ? 'Solo aparecen cuentas bancarias activas.'
+                    : 'No hay cuentas bancarias activas disponibles.'}
               </FieldHint>
             </Field>
           ) : null}

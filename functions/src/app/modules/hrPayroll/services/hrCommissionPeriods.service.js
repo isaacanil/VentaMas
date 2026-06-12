@@ -1,5 +1,6 @@
 import { db, FieldValue, Timestamp } from '../../../core/config/firebase.js';
 import { buildAccountingEvent } from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
+import { normalizeHrDepositAccount } from './hrDepositAccounts.service.js';
 import { calculateSalaryDeductions } from './hrSalaryDeductions.service.js';
 
 const ELIGIBLE_ENTRY_STATUSES = new Set(['calculated', 'eligible']);
@@ -1082,6 +1083,7 @@ export const buildHrCommissionCutDocuments = ({
     const lineId = sanitizeDocId(`${resolvedPeriodId}_${group.employeeId}`);
     const employee = employeesById.get(group.employeeId) || {};
     const employeePayType = toCleanString(employee.payType);
+    const depositAccount = normalizeHrDepositAccount(employee.depositAccount);
     const baseSalaryAmount = ['salary', 'mixed'].includes(employeePayType)
       ? roundMoney(employee.baseSalaryAmount)
       : 0;
@@ -1114,6 +1116,9 @@ export const buildHrCommissionCutDocuments = ({
             : 'commission',
       status: 'draft',
       currency: group.currency || currency,
+      paymentMethod: toCleanString(employee.paymentMethod),
+      paymentDestination: toCleanString(employee.paymentDestination),
+      depositAccount,
       baseSalaryAmount,
       grossAmount,
       deductionsAmount: deductions.deductionsAmount,

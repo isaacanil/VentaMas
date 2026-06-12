@@ -1,4 +1,4 @@
-import type { FormEvent, Key } from 'react';
+import type { FormEvent, Key, ReactNode } from 'react';
 import { useState } from 'react';
 
 import {
@@ -26,6 +26,11 @@ import {
 } from '@/shared/phone';
 import type { HrEmployeeInput, HrEmployeeRecord } from '@/types/hrPayroll';
 import { normalizeServiceCommissionServiceRules } from '@/utils/commissions/serviceCommissions';
+import {
+  HR_DEPOSIT_ACCOUNT_TYPE_LABELS,
+  getHrDepositAccountValidationMessage,
+  normalizeHrDepositAccount,
+} from '@/utils/hrPayroll/depositAccounts';
 import { normalizeSalaryDeductionLines } from '@/utils/hrPayroll/salaryDeductions';
 
 import {
@@ -39,9 +44,16 @@ import {
   Field,
   FieldGrid,
   FieldHint,
+  FieldSectionBody,
+  FieldSectionFieldset,
+  FieldSectionHeading,
+  FieldSectionIndicator,
+  FieldSectionLegend,
+  FieldSectionPanel,
   FieldLabel,
   FieldSection,
   FieldSectionTitle,
+  FieldSectionTrigger,
   FormSections,
   FullWidthField,
   ModalActions,
@@ -67,6 +79,44 @@ interface HrEmployeeEditorModalProps {
   userOptions: HrLinkedUserOption[];
 }
 
+const ALL_EMPLOYEE_SECTION_KEYS = [
+  'general',
+  'payment',
+  'deductions',
+  'notes',
+];
+
+interface EmployeeFormSectionProps {
+  children: ReactNode;
+  id: string;
+  title: string;
+}
+
+function EmployeeFormSection({
+  children,
+  id,
+  title,
+}: EmployeeFormSectionProps) {
+  return (
+    <FieldSection id={id}>
+      <FieldSectionHeading level={3}>
+        <FieldSectionTrigger type="button">
+          <FieldSectionTitle>{title}</FieldSectionTitle>
+          <FieldSectionIndicator />
+        </FieldSectionTrigger>
+      </FieldSectionHeading>
+      <FieldSectionPanel>
+        <FieldSectionBody>
+          <FieldSectionFieldset>
+            <FieldSectionLegend>{title}</FieldSectionLegend>
+            {children}
+          </FieldSectionFieldset>
+        </FieldSectionBody>
+      </FieldSectionPanel>
+    </FieldSection>
+  );
+}
+
 export function HrEmployeeEditorModal({
   employee,
   initialValues,
@@ -81,6 +131,9 @@ export function HrEmployeeEditorModal({
     null,
   );
   const title = employee ? 'Editar colaborador' : 'Nuevo colaborador';
+  const defaultExpandedKeys = employee
+    ? ALL_EMPLOYEE_SECTION_KEYS
+    : ['general'];
 
   const updateField = <K extends keyof HrEmployeeFormValues>(
     field: K,
@@ -98,6 +151,30 @@ export function HrEmployeeEditorModal({
     setDraft((current) => applyLinkedUserDefaults(current, linkedUser));
   };
 
+  const updateDepositAccountField = <
+    K extends keyof NonNullable<HrEmployeeInput['depositAccount']>,
+  >(
+    field: K,
+    value: NonNullable<HrEmployeeInput['depositAccount']>[K],
+  ) => {
+    setValidationMessage(null);
+    setDraft((current) => ({
+      ...current,
+      depositAccount: normalizeHrDepositAccount(
+        field === 'accountType'
+          ? {
+              ...(current.depositAccount ?? {}),
+              [field]: value,
+            }
+          : {
+              accountType: current.depositAccount?.accountType ?? 'checking',
+              ...(current.depositAccount ?? {}),
+              [field]: value,
+            },
+      ),
+    }));
+  };
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const code = draft.code?.trim();
@@ -112,6 +189,14 @@ export function HrEmployeeEditorModal({
       setValidationMessage(phoneValidationMessage);
       return;
     }
+    const depositValidationMessage = getHrDepositAccountValidationMessage(
+      draft.depositAccount,
+    );
+    if (depositValidationMessage) {
+      setValidationMessage(depositValidationMessage);
+      return;
+    }
+    const depositAccount = normalizeHrDepositAccount(draft.depositAccount);
     void onSave({
       ...draft,
       code,
@@ -122,6 +207,8 @@ export function HrEmployeeEditorModal({
       phone: normalizedPhone,
       baseSalaryAmount: toFiniteNumber(draft.baseSalaryAmount),
       hourlyRateAmount: toFiniteNumber(draft.hourlyRateAmount),
+      paymentDestination: draft.paymentDestination?.trim() || null,
+      depositAccount,
       salaryDeductions: normalizeSalaryDeductionLines(draft.salaryDeductions),
       defaultCommissionRate:
         draft.defaultCommissionRate == null
@@ -165,9 +252,12 @@ export function HrEmployeeEditorModal({
           </VmAlert>
         ) : null}
 
-        <FormSections>
-          <FieldSection>
-            <FieldSectionTitle>Datos básicos</FieldSectionTitle>
+        <FormSections
+          allowsMultipleExpanded
+          aria-label="Secciones del colaborador"
+          defaultExpandedKeys={defaultExpandedKeys}
+        >
+          <EmployeeFormSection id="general" title="Datos generales">
             <FieldGrid>
               <Field>
                 <FieldLabel>Código</FieldLabel>
@@ -274,12 +364,6 @@ export function HrEmployeeEditorModal({
                   </VmSelect.Popover>
                 </VmSelect>
               </Field>
-            </FieldGrid>
-          </FieldSection>
-
-          <FieldSection>
-            <FieldSectionTitle>Documento y vinculación</FieldSectionTitle>
-            <FieldGrid>
               <Field>
                 <FieldLabel>Tipo de documento</FieldLabel>
                 <VmSelect
@@ -333,6 +417,29 @@ export function HrEmployeeEditorModal({
                 />
               </Field>
 
+              <Field>
+                <FieldLabel>Correo</FieldLabel>
+                <VmInput
+                  aria-label="Correo"
+                  type="email"
+                  value={draft.email ?? ''}
+                  disabled={saving}
+                  placeholder="correo@empresa.com"
+                  onChange={(event) => updateField('email', event.target.value)}
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel>Telefono</FieldLabel>
+                <VmPhoneField
+                  id="hr-employee-phone"
+                  ariaLabel="Telefono"
+                  value={draft.phone ?? ''}
+                  disabled={saving}
+                  onValueChange={(phone) => updateField('phone', phone)}
+                />
+              </Field>
+
               <FullWidthField>
                 <FieldLabel>Usuario vinculado</FieldLabel>
                 <VmSelect
@@ -373,34 +480,6 @@ export function HrEmployeeEditorModal({
                   editar el colaborador manualmente.
                 </FieldHint>
               </FullWidthField>
-            </FieldGrid>
-          </FieldSection>
-
-          <FieldSection>
-            <FieldSectionTitle>Contacto</FieldSectionTitle>
-            <FieldGrid>
-              <Field>
-                <FieldLabel>Correo</FieldLabel>
-                <VmInput
-                  aria-label="Correo"
-                  type="email"
-                  value={draft.email ?? ''}
-                  disabled={saving}
-                  placeholder="correo@empresa.com"
-                  onChange={(event) => updateField('email', event.target.value)}
-                />
-              </Field>
-
-              <Field>
-                <FieldLabel>Telefono</FieldLabel>
-                <VmPhoneField
-                  id="hr-employee-phone"
-                  ariaLabel="Telefono"
-                  value={draft.phone ?? ''}
-                  disabled={saving}
-                  onValueChange={(phone) => updateField('phone', phone)}
-                />
-              </Field>
 
               <FullWidthField>
                 <FieldLabel>Direccion</FieldLabel>
@@ -415,10 +494,9 @@ export function HrEmployeeEditorModal({
                 />
               </FullWidthField>
             </FieldGrid>
-          </FieldSection>
+          </EmployeeFormSection>
 
-          <FieldSection>
-            <FieldSectionTitle>Pago y nómina</FieldSectionTitle>
+          <EmployeeFormSection id="payment" title="Datos de pago y cuentas">
             <FieldGrid>
               <Field>
                 <FieldLabel>Tipo de pago</FieldLabel>
@@ -514,15 +592,6 @@ export function HrEmployeeEditorModal({
                 </VmNumberField>
               </Field>
 
-              <SalaryDeductionsSection
-                baseSalaryAmount={toFiniteNumber(draft.baseSalaryAmount)}
-                disabled={saving}
-                value={draft.salaryDeductions}
-                onChange={(salaryDeductions) =>
-                  updateField('salaryDeductions', salaryDeductions)
-                }
-              />
-
               <Field>
                 <FieldLabel>Tarifa por hora</FieldLabel>
                 <VmNumberField
@@ -552,23 +621,155 @@ export function HrEmployeeEditorModal({
                 />
               </Field>
 
-              <FullWidthField>
-                <FieldLabel>Destino de pago</FieldLabel>
+              <Field>
+                <FieldLabel>Banco destino</FieldLabel>
                 <VmInput
-                  aria-label="Destino de pago"
+                  aria-label="Banco destino"
+                  value={draft.depositAccount?.bankName ?? ''}
+                  disabled={saving}
+                  placeholder="Banco Popular"
+                  onChange={(event) =>
+                    updateDepositAccountField('bankName', event.target.value)
+                  }
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel>Tipo de cuenta destino</FieldLabel>
+                <VmSelect
+                  aria-label="Tipo de cuenta destino"
+                  selectedKey={draft.depositAccount?.accountType ?? 'checking'}
+                  isDisabled={saving}
+                  onSelectionChange={(key) =>
+                    updateDepositAccountField(
+                      'accountType',
+                      String(key) as NonNullable<
+                        HrEmployeeInput['depositAccount']
+                      >['accountType'],
+                    )
+                  }
+                >
+                  <VmSelect.Trigger>
+                    <VmSelect.Value>
+                      {
+                        HR_DEPOSIT_ACCOUNT_TYPE_LABELS[
+                          draft.depositAccount?.accountType ?? 'checking'
+                        ]
+                      }
+                    </VmSelect.Value>
+                    <VmSelect.Indicator />
+                  </VmSelect.Trigger>
+                  <VmSelect.Popover>
+                    <VmListBox aria-label="Tipos de cuenta destino">
+                      {Object.entries(HR_DEPOSIT_ACCOUNT_TYPE_LABELS).map(
+                        ([value, label]) => (
+                          <VmListBox.Item
+                            key={value}
+                            id={value}
+                            textValue={label}
+                          >
+                            {label}
+                            <VmListBox.ItemIndicator />
+                          </VmListBox.Item>
+                        ),
+                      )}
+                    </VmListBox>
+                  </VmSelect.Popover>
+                </VmSelect>
+              </Field>
+
+              <Field>
+                <FieldLabel>Número de cuenta destino</FieldLabel>
+                <VmInput
+                  aria-label="Número de cuenta destino"
+                  value={draft.depositAccount?.accountNumber ?? ''}
+                  disabled={saving}
+                  inputMode="numeric"
+                  placeholder="0000000000"
+                  onChange={(event) =>
+                    updateDepositAccountField(
+                      'accountNumber',
+                      event.target.value,
+                    )
+                  }
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel>Titular</FieldLabel>
+                <VmInput
+                  aria-label="Titular de la cuenta destino"
+                  value={draft.depositAccount?.holderName ?? ''}
+                  disabled={saving}
+                  placeholder={draft.fullName ?? 'Titular'}
+                  onChange={(event) =>
+                    updateDepositAccountField('holderName', event.target.value)
+                  }
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel>Documento del titular</FieldLabel>
+                <VmInput
+                  aria-label="Documento del titular"
+                  value={draft.depositAccount?.holderDocument ?? ''}
+                  disabled={saving}
+                  inputMode="numeric"
+                  placeholder="000-0000000-0"
+                  onChange={(event) =>
+                    updateDepositAccountField(
+                      'holderDocument',
+                      event.target.value,
+                    )
+                  }
+                />
+              </Field>
+
+              <FullWidthField>
+                <FieldLabel>Notas de la cuenta destino</FieldLabel>
+                <VmInput
+                  aria-label="Notas de la cuenta destino"
+                  value={draft.depositAccount?.notes ?? ''}
+                  disabled={saving}
+                  placeholder="Referencia interna de nómina"
+                  onChange={(event) =>
+                    updateDepositAccountField('notes', event.target.value)
+                  }
+                />
+              </FullWidthField>
+
+              <FullWidthField>
+                <FieldLabel>Referencia legacy de pago</FieldLabel>
+                <VmInput
+                  aria-label="Referencia legacy de pago"
                   value={draft.paymentDestination ?? ''}
                   disabled={saving}
-                  placeholder="Cuenta, banco o referencia"
+                  placeholder="Dato anterior de cuenta o destino"
                   onChange={(event) =>
                     updateField('paymentDestination', event.target.value)
                   }
                 />
+                <FieldHint>
+                  Se usa solo si no hay cuenta destino estructurada.
+                </FieldHint>
               </FullWidthField>
             </FieldGrid>
-          </FieldSection>
+          </EmployeeFormSection>
 
-          <FieldSection>
-            <FieldSectionTitle>Notas internas</FieldSectionTitle>
+          <EmployeeFormSection id="deductions" title="Deducciones">
+            <FieldGrid>
+              <SalaryDeductionsSection
+                baseSalaryAmount={toFiniteNumber(draft.baseSalaryAmount)}
+                disabled={saving}
+                value={draft.salaryDeductions}
+                onChange={(salaryDeductions) =>
+                  updateField('salaryDeductions', salaryDeductions)
+                }
+              />
+            </FieldGrid>
+          </EmployeeFormSection>
+
+          <EmployeeFormSection id="notes" title="Notas internas">
             <FieldGrid>
               <FullWidthField>
                 <FieldLabel>Notas</FieldLabel>
@@ -582,7 +783,7 @@ export function HrEmployeeEditorModal({
                 />
               </FullWidthField>
             </FieldGrid>
-          </FieldSection>
+          </EmployeeFormSection>
         </FormSections>
       </VmForm>
     </VmModal>

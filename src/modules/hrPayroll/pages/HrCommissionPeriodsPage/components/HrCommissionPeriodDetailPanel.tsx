@@ -120,7 +120,7 @@ export function HrCommissionPeriodDetailPanel({
                 rows={payments}
                 loading={paymentsLoading}
                 emptyText="Aún no se han registrado pagos para este corte."
-                minTableWidth={920}
+                minTableWidth={1080}
                 pageSize={5}
               />
             </DetailPanelContent>

@@ -22,6 +22,7 @@ import {
   HR_PAYMENT_METHOD_LABELS as PAYMENT_METHOD_LABELS,
 } from '@/modules/hrPayroll/utils/hrPayrollDisplay';
 import type { HrEmployeeRecord } from '@/types/hrPayroll';
+import { formatHrDepositAccount } from '@/utils/hrPayroll/depositAccounts';
 import { summarizeSalaryDeductions } from '@/utils/hrPayroll/salaryDeductions';
 
 interface EmployeeColumnsOptions {
@@ -101,7 +102,12 @@ export const buildEmployeeColumns = ({
         <PrimaryText>
           {PAYMENT_METHOD_LABELS[employee.paymentMethod]}
         </PrimaryText>
-        <MutedText>{employee.paymentDestination || 'Sin destino'}</MutedText>
+        <MutedText>
+          {formatHrDepositAccount({
+            depositAccount: employee.depositAccount,
+            paymentDestination: employee.paymentDestination,
+          })}
+        </MutedText>
       </CellStack>
     ),
   },

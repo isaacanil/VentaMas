@@ -23,6 +23,13 @@ const approvedLine = {
   employeeCode: 'EMP-001',
   employeeNameSnapshot: 'Ana Perez',
   partyId: 'party-1',
+  paymentDestination: 'Destino legacy',
+  depositAccount: {
+    bankName: 'Banco Popular',
+    accountType: 'savings',
+    accountNumber: '123456789',
+    holderName: 'Ana Perez',
+  },
   status: 'approved',
   currency: 'DOP',
   netAmount: 125,
@@ -63,6 +70,13 @@ describe('hrPayrollPayments.service', () => {
       paymentMethod: 'cash',
       paymentChannel: 'cash',
       reference: 'REC-001',
+      depositAccount: {
+        bankName: 'Banco Popular',
+        accountType: 'savings',
+        accountNumber: '123456789',
+        holderName: 'Ana Perez',
+      },
+      paymentDestination: 'Destino legacy',
       accountingEventId: 'hr_payroll.payment.recorded__hrpay_line-1',
       cashMovementIds: ['hrp_hrpay_line-1_cash_1'],
     });
@@ -122,6 +136,57 @@ describe('hrPayrollPayments.service', () => {
     });
 
     expect(cashMovements).toEqual([]);
+  });
+
+  it('records bank transfer using the business origin bank account', () => {
+    const result = buildHrPayrollPaymentDocuments({
+      businessId: 'business-1',
+      line: approvedLine,
+      payload: {
+        paymentMethod: 'bank_transfer',
+        bankAccountId: 'bank-origin-1',
+        transferReference: 'TRX-001',
+      },
+      paymentDate: 'payment-date',
+      timestamp: 'now',
+      userId: 'admin-1',
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.payment).toMatchObject({
+      paymentMethod: 'transfer',
+      paymentChannel: 'bank',
+      bankAccountId: 'bank-origin-1',
+      reference: 'TRX-001',
+      depositAccount: approvedLine.depositAccount,
+    });
+    expect(result.cashMovements[0]).toMatchObject({
+      method: 'transfer',
+      bankAccountId: 'bank-origin-1',
+      impactsBankLedger: true,
+      impactsCashDrawer: false,
+    });
+  });
+
+  it('preserves legacy payment destination when the payroll line has no structured account', () => {
+    const result = buildHrPayrollPaymentDocuments({
+      businessId: 'business-1',
+      line: {
+        ...approvedLine,
+        depositAccount: null,
+        paymentDestination: 'Banco legacy cuenta 9999',
+      },
+      payload: {
+        paymentMethod: 'bank_transfer',
+        bankAccountId: 'bank-origin-1',
+      },
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.payment).toMatchObject({
+      depositAccount: null,
+      paymentDestination: 'Banco legacy cuenta 9999',
+    });
   });
 
   it('rejects unsupported payments without accounting support', () => {

@@ -25,6 +25,10 @@ const TAXABLE_BILLING_INDICATORS = new Set([
   BILLING_INDICATOR.ITBIS_16,
   BILLING_INDICATOR.ITBIS_0,
 ]);
+const ZERO_TAX_AMOUNT_BILLING_INDICATORS = new Set([
+  BILLING_INDICATOR.ITBIS_0,
+  BILLING_INDICATOR.EXEMPT,
+]);
 const ITEM_KIND = Object.freeze({
   GOOD: '1',
   SERVICE: '2',
@@ -482,6 +486,8 @@ const buildItems = (cart) => {
       ) ?? lineAmount * (taxRate / 100);
     const isTaxableLine = TAXABLE_BILLING_INDICATORS.has(billingIndicator);
     const taxAmount = isTaxableLine && taxRate > 0 ? declaredTaxAmount : 0;
+    const shouldEmitTaxAmount =
+      taxAmount > 0 || ZERO_TAX_AMOUNT_BILLING_INDICATORS.has(billingIndicator);
 
     return pruneUndefined({
       lineNumber: index + 1,
@@ -497,7 +503,7 @@ const buildItems = (cart) => {
       discountAmount:
         discountAmount > 0 ? roundAmount(discountAmount) : undefined,
       taxRate: isTaxableLine ? roundAmount(taxRate) : undefined,
-      taxAmount: taxAmount > 0 ? roundAmount(taxAmount) : undefined,
+      taxAmount: shouldEmitTaxAmount ? roundAmount(taxAmount) : undefined,
       lineAmount: roundAmount(lineAmount),
     });
   });
@@ -547,8 +553,8 @@ const buildTotals = (cart, items) => {
   const taxAmount = roundAmount(
     (totalItbis1 || 0) + (totalItbis2 || 0) + (totalItbis3 || 0),
   );
-  const netAmount = roundAmount(taxableAmountTotal + exemptAmount);
-  const grandTotal = roundAmount(netAmount + taxAmount);
+  const netAmount = taxableAmountTotal;
+  const grandTotal = roundAmount(taxableAmountTotal + exemptAmount + taxAmount);
   const periodAmount = roundAmount(grandTotal + nonBillableAmount);
 
   return pruneUndefined({

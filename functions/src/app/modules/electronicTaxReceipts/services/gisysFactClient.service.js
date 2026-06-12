@@ -53,6 +53,48 @@ const readJsonResponse = async (response) => {
   }
 };
 
+const SENSITIVE_RESPONSE_KEY_PATTERN =
+  /authorization|body|certificate|password|payload|raw|request|secret|signature|token|xml/i;
+const SUMMARY_TEXT_MAX_LENGTH = 240;
+
+const redactSummaryText = (value) =>
+  String(value)
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[email]')
+    .replace(/\b\d{3}-?\d{7}-?\d\b/g, '[id]')
+    .slice(0, SUMMARY_TEXT_MAX_LENGTH);
+
+const toSummaryText = (...values) => {
+  for (const value of values) {
+    if (typeof value !== 'string' && typeof value !== 'number') continue;
+    const text = redactSummaryText(value).trim();
+    if (text) return text;
+  }
+  return undefined;
+};
+
+const summarizeSafeValue = (value, depth = 0) => {
+  if (value == null || typeof value === 'boolean' || typeof value === 'number') {
+    return value;
+  }
+  if (typeof value === 'string') return toSummaryText(value);
+  if (depth >= 3) return '[truncated]';
+  if (Array.isArray(value)) {
+    return value
+      .slice(0, 8)
+      .map((entry) => summarizeSafeValue(entry, depth + 1))
+      .filter((entry) => entry !== undefined);
+  }
+  if (typeof value !== 'object') return undefined;
+
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key]) => !SENSITIVE_RESPONSE_KEY_PATTERN.test(key))
+      .slice(0, 12)
+      .map(([key, entry]) => [key, summarizeSafeValue(entry, depth + 1)])
+      .filter(([, entry]) => entry !== undefined),
+  );
+};
+
 const summarizeGisysResponse = (body) => {
   if (!body || typeof body !== 'object') {
     return {
@@ -71,6 +113,9 @@ const summarizeGisysResponse = (body) => {
     hasMessage: Boolean(body.message || body.error || body.errorMessage),
     hasRawText: Boolean(body.rawText),
     hasLinks: Boolean(body.links),
+    code: toSummaryText(body.code, body.errorCode),
+    message: toSummaryText(body.message, body.error, body.errorMessage),
+    details: summarizeSafeValue(body.details),
   };
 };
 

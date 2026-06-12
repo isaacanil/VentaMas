@@ -32,6 +32,12 @@ export type HrEmployeeDocumentType = 'cedula' | 'passport' | 'rnc' | 'other';
 
 export type HrEmployeeGender = 'male' | 'female' | 'other';
 
+export type HrEmployeeDepositAccountType =
+  | 'checking'
+  | 'savings'
+  | 'payroll'
+  | 'other';
+
 export type HrReadyToPayStatus = 'ready' | 'needs_review';
 
 export type HrCommissionCutRuleFrequency = 'weekly' | 'biweekly' | 'monthly';
@@ -100,11 +106,21 @@ export interface HrEmployeeInput {
   currency?: string | null;
   paymentMethod?: HrPaymentMethod | null;
   paymentDestination?: string | null;
+  depositAccount?: HrEmployeeDepositAccount | null;
   salaryDeductions?: HrSalaryDeductionLine[] | null;
   commissionEnabled?: boolean | null;
   defaultCommissionType?: HrCommissionType | null;
   defaultCommissionRate?: number | string | null;
   serviceCommissionRules?: ServiceCommissionServiceRule[] | null;
+  notes?: string | null;
+}
+
+export interface HrEmployeeDepositAccount extends Record<string, unknown> {
+  bankName?: string | null;
+  accountType?: HrEmployeeDepositAccountType | null;
+  accountNumber?: string | null;
+  holderName?: string | null;
+  holderDocument?: string | null;
   notes?: string | null;
 }
 
@@ -148,6 +164,7 @@ export interface HrEmployeeRecord extends Record<string, unknown> {
   currency: string;
   paymentMethod: HrPaymentMethod;
   paymentDestination?: string | null;
+  depositAccount?: HrEmployeeDepositAccount | null;
   salaryDeductions: HrSalaryDeductionLine[];
   commissionEnabled: boolean;
   defaultCommissionType: HrCommissionType;
@@ -421,6 +438,8 @@ export interface HrPayrollEmployeeLineRecord extends Record<string, unknown> {
   accountingEventId?: string | null;
   employeePaymentId?: string | null;
   paymentMethod?: HrPaymentMethod | null;
+  paymentDestination?: string | null;
+  depositAccount?: HrEmployeeDepositAccount | null;
   paymentAccountingEventId?: string | null;
   cashMovementIds?: string[];
   paidAt?: unknown;
@@ -447,6 +466,8 @@ export interface HrEmployeePaymentRecord extends Record<string, unknown> {
   cashAccountId?: string | null;
   cashCountId?: string | null;
   bankAccountId?: string | null;
+  paymentDestination?: string | null;
+  depositAccount?: HrEmployeeDepositAccount | null;
   accountingEventId?: string | null;
   cashMovementIds: string[];
   paymentDate?: unknown;

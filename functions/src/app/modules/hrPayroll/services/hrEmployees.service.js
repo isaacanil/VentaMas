@@ -1,4 +1,8 @@
 import { normalizeSalaryDeductionLines } from './hrSalaryDeductions.service.js';
+import {
+  normalizeHrDepositAccount,
+  validateHrDepositAccount,
+} from './hrDepositAccounts.service.js';
 
 export const HR_EMPLOYEE_STATUSES = new Set([
   'active',
@@ -192,6 +196,8 @@ const shouldEnableCommission = ({ payType, rawValue }) => {
 export const buildReadyToPayIssues = (employee) => {
   const issues = [];
   const status = employee.status || 'active';
+  const depositAccount = normalizeHrDepositAccount(employee.depositAccount);
+  const depositAccountErrors = validateHrDepositAccount(employee.depositAccount);
   const activeSalaryDeductions = Array.isArray(employee.salaryDeductions)
     ? employee.salaryDeductions.filter((line) => line.active !== false)
     : [];
@@ -208,8 +214,10 @@ export const buildReadyToPayIssues = (employee) => {
   if (!employee.documentId) {
     issues.push('Falta documento de identidad.');
   }
+  depositAccountErrors.forEach((error) => issues.push(error));
   if (
     employee.paymentMethod === 'bank_transfer' &&
+    !depositAccount &&
     !employee.paymentDestination
   ) {
     issues.push('Falta cuenta o destino de transferencia.');
@@ -310,6 +318,7 @@ export const normalizeHrEmployeeInput = (input, options = {}) => {
     currency: normalizeCurrency(employeeInput.currency),
     paymentMethod,
     paymentDestination: toCleanString(employeeInput.paymentDestination),
+    depositAccount: normalizeHrDepositAccount(employeeInput.depositAccount),
     commissionEnabled,
     defaultCommissionType: normalizeEnum(
       employeeInput.defaultCommissionType,
@@ -341,6 +350,9 @@ export const validateHrEmployeeInput = (employee) => {
   if (!employee.code) errors.push('codigo es requerido.');
   if (!employee.fullName) errors.push('nombre es requerido.');
   if (!employee.partyId) errors.push('partyId es requerido.');
+  validateHrDepositAccount(employee.depositAccount).forEach((error) => {
+    errors.push(error);
+  });
   return errors;
 };
 
@@ -405,6 +417,7 @@ export const buildHrEmployeePayload = ({
   currency: employee.currency,
   paymentMethod: employee.paymentMethod,
   paymentDestination: employee.paymentDestination,
+  depositAccount: employee.depositAccount ?? null,
   commissionEnabled: employee.commissionEnabled,
   defaultCommissionType: employee.defaultCommissionType,
   defaultCommissionRate: employee.defaultCommissionRate,

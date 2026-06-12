@@ -41,6 +41,7 @@ import {
   HrTitle as Title,
   HrTitleBlock as TitleBlock,
 } from '@/modules/hrPayroll/components/HrPayrollPagePrimitives';
+import { useActiveBusinessBankAccounts } from '@/modules/hrPayroll/hooks/useActiveBusinessBankAccounts';
 import {
   formatHrDateKey,
   formatHrPeriodDate,
@@ -365,6 +366,14 @@ export default function HrCommissionPeriodsPage() {
   } = useHrEmployeePayments({
     businessId,
     periodId: selectedPeriod?.id,
+  });
+  const {
+    error: businessBankAccountsError,
+    loading: businessBankAccountsLoading,
+    options: businessBankAccountOptions,
+  } = useActiveBusinessBankAccounts({
+    businessId,
+    enabled: Boolean(paymentLine),
   });
 
   const summary = useMemo(
@@ -1290,6 +1299,9 @@ export default function HrCommissionPeriodsPage() {
         <RecordHrPaymentModal
           key={paymentLine.id}
           actionKey={paymentActionKey}
+          bankAccountOptions={businessBankAccountOptions}
+          bankAccountsError={businessBankAccountsError}
+          bankAccountsLoading={businessBankAccountsLoading}
           line={paymentLine}
           period={selectedPeriod}
           onCancel={() => setPaymentLine(null)}

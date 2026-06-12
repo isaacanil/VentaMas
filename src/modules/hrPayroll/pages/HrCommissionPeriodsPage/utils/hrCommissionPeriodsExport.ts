@@ -23,6 +23,7 @@ import type {
   HrEmployeePaymentStatus,
   HrPayrollEmployeeLineRecord,
 } from '@/types/hrPayroll';
+import { formatHrDepositAccount } from '@/utils/hrPayroll/depositAccounts';
 
 type HrCommissionPeriodExportRow = {
   AjusteRetroactivo: number;
@@ -46,6 +47,7 @@ type HrCommissionLineExportRow = {
   Colaborador: string;
   Comisión: number;
   Comentario: string;
+  CuentaDestino: string;
   Deducciones: number;
   Entradas: number;
   Estado: string;
@@ -56,7 +58,8 @@ type HrCommissionLineExportRow = {
 };
 
 type HrEmployeePaymentExportRow = {
-  CuentaCaja: string;
+  CuentaDestino: string;
+  CuentaOrigen: string;
   Código: string;
   Colaborador: string;
   Estado: string;
@@ -175,6 +178,7 @@ const LINE_COLUMNS = [
   'Neto',
   'Moneda',
   'Método',
+  'CuentaDestino',
   'PagadoEl',
   'Comentario',
 ];
@@ -184,7 +188,8 @@ const PAYMENT_COLUMNS = [
   'Código',
   'Fecha',
   'Método',
-  'CuentaCaja',
+  'CuentaOrigen',
+  'CuentaDestino',
   'Monto',
   'Moneda',
   'Referencia',
@@ -232,6 +237,14 @@ const getPaymentReference = (payment: HrEmployeePaymentRecord): string =>
 
 const getPaymentAccountReference = (payment: HrEmployeePaymentRecord): string =>
   payment.bankAccountId || payment.cashAccountId || payment.cashCountId || '-';
+
+const getPaymentDestinationReference = (
+  row: HrEmployeePaymentRecord | HrPayrollEmployeeLineRecord,
+): string =>
+  formatHrDepositAccount({
+    depositAccount: row.depositAccount,
+    paymentDestination: row.paymentDestination,
+  });
 
 const getPeriodLabel = (period: HrCommissionPeriodRecord | null): string =>
   period?.label || period?.periodKey || period?.id || 'Corte seleccionado';
@@ -484,6 +497,7 @@ const addPaymentsPdfTable = (
       formatHrDate(payment.paymentDate),
       formatPaymentMethod(payment.paymentMethod),
       getPaymentAccountReference(payment),
+      getPaymentDestinationReference(payment),
       getPaymentReference(payment),
       PAYMENT_STATUS_LABELS[payment.status],
       formatPdfMoney(payment.amount, payment.currency),
@@ -494,7 +508,8 @@ const addPaymentsPdfTable = (
         'Código',
         'Fecha',
         'Método',
-        'Cuenta/Caja',
+        'Cuenta origen',
+        'Cuenta destino',
         'Referencia',
         'Estado',
         'Monto',
@@ -652,6 +667,7 @@ export const buildHrCommissionLineExportRows = (
     Neto: line.netAmount,
     Moneda: line.currency,
     Método: formatPaymentMethod(line.paymentMethod),
+    CuentaDestino: getPaymentDestinationReference(line),
     PagadoEl: formatHrDate(line.paidAt),
     Comentario: getLineAdjustmentComment(line),
   }));
@@ -664,7 +680,8 @@ export const buildHrEmployeePaymentExportRows = (
     Código: getEmployeeCode(payment),
     Fecha: formatHrDate(payment.paymentDate),
     Método: formatPaymentMethod(payment.paymentMethod),
-    CuentaCaja: getPaymentAccountReference(payment),
+    CuentaOrigen: getPaymentAccountReference(payment),
+    CuentaDestino: getPaymentDestinationReference(payment),
     Monto: payment.amount,
     Moneda: payment.currency,
     Referencia: getPaymentReference(payment),
@@ -706,6 +723,10 @@ export const buildHrCommissionLineSupportSummaryRows = ({
   return [
     { Campo: 'Colaborador', Valor: getEmployeeName(employeeLine) },
     { Campo: 'Código', Valor: getEmployeeCode(employeeLine) },
+    {
+      Campo: 'Cuenta destino',
+      Valor: getPaymentDestinationReference(employeeLine),
+    },
     { Campo: 'Corte', Valor: getPeriodLabel(selectedPeriod) },
     {
       Campo: 'Rango',

@@ -21,6 +21,28 @@ import {
 const hasDuplicateCode = (snapshot, employeeId) =>
   snapshot.docs.some((docSnap) => docSnap.id !== employeeId);
 
+const getSafeEmployeeRequestLogContext = (requestData) => {
+  const payload = asRecord(requestData);
+  const employeeInput = asRecord(payload.employee);
+  return {
+    businessId:
+      toCleanString(payload.businessId) ||
+      toCleanString(payload.businessID) ||
+      toCleanString(employeeInput.businessId) ||
+      toCleanString(employeeInput.businessID) ||
+      null,
+    employeeId:
+      toCleanString(employeeInput.employeeId) ||
+      toCleanString(employeeInput.id) ||
+      null,
+    code: toCleanString(employeeInput.code),
+    hasDepositAccount: Boolean(employeeInput.depositAccount),
+    hasLegacyPaymentDestination: Boolean(
+      toCleanString(employeeInput.paymentDestination),
+    ),
+  };
+};
+
 export const manageHrEmployee = onCall(async (request) => {
   try {
     const authUid = await resolveCallableAuthUid(request);
@@ -236,7 +258,7 @@ export const manageHrEmployee = onCall(async (request) => {
     logger.error('manageHrEmployee failed unexpectedly', {
       error: error instanceof Error ? error.message : error,
       stack: error instanceof Error ? error.stack : null,
-      data: request?.data || null,
+      context: getSafeEmployeeRequestLogContext(request?.data),
     });
     throw new HttpsError(
       'internal',

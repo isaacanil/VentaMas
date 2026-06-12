@@ -61,6 +61,77 @@ describe('hrEmployees.service', () => {
     expect(employee.readyToPayIssues).toEqual([]);
   });
 
+  it('normaliza cuenta destino estructurada y no exige destino legacy', () => {
+    const employee = normalizeHrEmployeeInput({
+      id: 'employee-bank',
+      code: 'EMP-BANK',
+      fullName: 'Empleado Bancario',
+      documentId: '40212345678',
+      paymentMethod: 'bank_transfer',
+      payType: 'salary',
+      baseSalaryAmount: 30000,
+      depositAccount: {
+        bankName: '  Banco Popular  ',
+        accountType: 'savings',
+        accountNumber: ' 123 456 789 ',
+        holderName: '  Empleado Bancario ',
+        holderDocument: ' 402-1234567-8 ',
+        notes: '',
+      },
+    });
+
+    expect(employee.readyToPayStatus).toBe('ready');
+    expect(employee.paymentDestination).toBeNull();
+    expect(employee.depositAccount).toEqual({
+      bankName: 'Banco Popular',
+      accountType: 'savings',
+      accountNumber: '123 456 789',
+      holderName: 'Empleado Bancario',
+      holderDocument: '402-1234567-8',
+    });
+    expect(validateHrEmployeeInput(employee)).toEqual([]);
+  });
+
+  it('rechaza cuenta destino estructurada incompleta', () => {
+    const employee = normalizeHrEmployeeInput({
+      id: 'employee-bank-partial',
+      code: 'EMP-PARTIAL',
+      fullName: 'Empleado Parcial',
+      documentId: '40212345678',
+      paymentMethod: 'bank_transfer',
+      payType: 'salary',
+      baseSalaryAmount: 30000,
+      depositAccount: {
+        bankName: 'Banco Popular',
+      },
+    });
+
+    expect(validateHrEmployeeInput(employee)).toContain(
+      'numero de cuenta destino es requerido.',
+    );
+  });
+
+  it('elimina campos vacios de la cuenta destino', () => {
+    const employee = normalizeHrEmployeeInput({
+      id: 'employee-empty-bank',
+      code: 'EMP-EMPTY',
+      fullName: 'Empleado Sin Banco',
+      documentId: '40212345678',
+      paymentMethod: 'cash',
+      payType: 'salary',
+      baseSalaryAmount: 30000,
+      depositAccount: {
+        accountType: 'checking',
+        bankName: '   ',
+        accountNumber: '',
+        holderName: '',
+      },
+    });
+
+    expect(employee.depositAccount).toBeNull();
+    expect(validateHrEmployeeInput(employee)).toEqual([]);
+  });
+
   it('normaliza deducciones salariales como obligaciones por pagar', () => {
     const employee = normalizeHrEmployeeInput({
       id: 'employee-deductions',

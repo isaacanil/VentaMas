@@ -42,9 +42,45 @@ const line: HrPayrollEmployeeLineRecord = {
   commissionAmount: 100,
   retroactiveAdjustmentAmount: 30,
   retroactiveEntryIds: ['entry-retro'],
+  depositAccount: {
+    bankName: 'Banco Popular',
+    accountType: 'savings',
+    accountNumber: '123456789',
+    holderName: 'Ana Perez',
+  },
   deductionLines: [],
   commissionEntryIds: ['entry-normal'],
   entriesCount: 2,
+};
+
+const bankAccountOptions = [
+  {
+    value: 'bank-1',
+    label: 'Banco origen activo',
+  },
+];
+
+const renderPaymentModal = ({
+  paymentLine = line,
+  onFinish = vi.fn(),
+}: {
+  onFinish?: ReturnType<typeof vi.fn>;
+  paymentLine?: HrPayrollEmployeeLineRecord;
+} = {}) => {
+  render(
+    <RecordHrPaymentModal
+      actionKey={null}
+      bankAccountOptions={bankAccountOptions}
+      bankAccountsError={false}
+      bankAccountsLoading={false}
+      line={paymentLine}
+      period={period}
+      onCancel={() => undefined}
+      onFinish={onFinish}
+    />,
+  );
+
+  return { onFinish };
 };
 
 describe('RecordHrPaymentModal', () => {
@@ -57,20 +93,12 @@ describe('RecordHrPaymentModal', () => {
   });
 
   it('shows the payment summary before confirming', () => {
-    const onFinish = vi.fn();
-
-    render(
-      <RecordHrPaymentModal
-        actionKey={null}
-        line={line}
-        period={period}
-        onCancel={() => undefined}
-        onFinish={onFinish}
-      />,
-    );
+    const { onFinish } = renderPaymentModal();
 
     expect(onFinish).not.toHaveBeenCalled();
     expect(screen.getByText('Ana Perez')).toBeInTheDocument();
+    expect(screen.getByText(/Banco Popular/)).toBeInTheDocument();
+    expect(screen.getByText(/123456789/)).toBeInTheDocument();
     expect(screen.getByText('Comisión normal')).toBeInTheDocument();
     expect(screen.getByText('Retroactiva')).toBeInTheDocument();
     expect(screen.queryByText('Ajuste manual')).not.toBeInTheDocument();
@@ -86,15 +114,7 @@ describe('RecordHrPaymentModal', () => {
     const user = userEvent.setup();
     const onFinish = vi.fn();
 
-    render(
-      <RecordHrPaymentModal
-        actionKey={null}
-        line={line}
-        period={period}
-        onCancel={() => undefined}
-        onFinish={onFinish}
-      />,
-    );
+    renderPaymentModal({ onFinish });
 
     await user.click(
       screen.getByRole('button', { name: /registrar pago de rd\$120\.00/i }),
@@ -102,10 +122,13 @@ describe('RecordHrPaymentModal', () => {
 
     expect(onFinish).not.toHaveBeenCalled();
     expect(screen.getByRole('alert')).toHaveTextContent(
-      /cuenta bancaria operativa/i,
+      /cuenta origen del negocio/i,
     );
 
-    await user.type(screen.getByLabelText('Cuenta bancaria operativa'), 'bank-1');
+    await user.click(screen.getByLabelText('Cuenta origen del negocio'));
+    await user.click(
+      await screen.findByRole('option', { name: 'Banco origen activo' }),
+    );
     await user.click(
       screen.getByRole('button', { name: /registrar pago de rd\$120\.00/i }),
     );
@@ -116,5 +139,17 @@ describe('RecordHrPaymentModal', () => {
         bankAccountId: 'bank-1',
       }),
     );
+  });
+
+  it('uses legacy payment destination when the line has no structured account', () => {
+    renderPaymentModal({
+      paymentLine: {
+        ...line,
+        depositAccount: null,
+        paymentDestination: 'Banco legacy · cuenta 9999',
+      },
+    });
+
+    expect(screen.getByText('Banco legacy · cuenta 9999')).toBeInTheDocument();
   });
 });

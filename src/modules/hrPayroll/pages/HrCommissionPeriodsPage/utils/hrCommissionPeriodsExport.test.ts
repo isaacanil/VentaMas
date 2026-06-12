@@ -125,6 +125,12 @@ const lines: HrPayrollEmployeeLineRecord[] = [
     manualAdjustmentAmount: 500,
     manualAdjustmentComment: 'Ajuste autorizado por gerencia',
     paymentMethod: 'bank_transfer',
+    depositAccount: {
+      bankName: 'Banco Popular',
+      accountType: 'savings',
+      accountNumber: '123456789',
+      holderName: 'Ana Perez',
+    },
   },
 ];
 
@@ -143,6 +149,13 @@ const payments: HrEmployeePaymentRecord[] = [
     status: 'confirmed',
     paymentMethod: 'bank_transfer',
     transferReference: 'TRX-001',
+    bankAccountId: 'bank-origin-1',
+    depositAccount: {
+      bankName: 'Banco Popular',
+      accountType: 'savings',
+      accountNumber: '123456789',
+      holderName: 'Ana Perez',
+    },
     cashMovementIds: [],
   },
 ];
@@ -243,6 +256,7 @@ describe('hrCommissionPeriodsExport', () => {
         Neto: 7500,
         Moneda: 'DOP',
         Método: 'Transferencia',
+        CuentaDestino: 'Banco Popular · Ahorros · ****6789',
         PagadoEl: '-',
         Comentario: 'Ajuste autorizado por gerencia',
       },
@@ -254,7 +268,8 @@ describe('hrCommissionPeriodsExport', () => {
         Código: 'EMP-1',
         Fecha: '-',
         Método: 'Transferencia',
-        CuentaCaja: '-',
+        CuentaOrigen: 'bank-origin-1',
+        CuentaDestino: 'Banco Popular · Ahorros · ****6789',
         Monto: 7500,
         Moneda: 'DOP',
         Referencia: 'TRX-001',

@@ -175,9 +175,9 @@ describe('gisysIssuePayload.mapper', () => {
     expect(payload.items[0]).toMatchObject({ taxRate: 18, taxAmount: 18 });
     expect(payload.items[1]).toMatchObject({ taxRate: 16, taxAmount: 16 });
     expect(payload.items[2].taxRate).toBeUndefined();
-    expect(payload.items[2].taxAmount).toBeUndefined();
+    expect(payload.items[2].taxAmount).toBe(0);
     expect(payload.totals).toMatchObject({
-      netAmount: 300,
+      netAmount: 200,
       taxableAmountTotal: 200,
       taxableAmount1: 100,
       taxableAmount2: 100,
@@ -216,9 +216,9 @@ describe('gisysIssuePayload.mapper', () => {
       lineAmount: 500,
     });
     expect(payload.items[0].taxRate).toBeUndefined();
-    expect(payload.items[0].taxAmount).toBeUndefined();
+    expect(payload.items[0].taxAmount).toBe(0);
     expect(payload.totals).toMatchObject({
-      netAmount: 500,
+      netAmount: 0,
       exemptAmount: 500,
       taxAmount: 0,
       grandTotal: 500,
@@ -250,8 +250,8 @@ describe('gisysIssuePayload.mapper', () => {
     expect(payload.items[0]).toMatchObject({
       billingIndicator: '3',
       taxRate: 0,
+      taxAmount: 0,
     });
-    expect(payload.items[0].taxAmount).toBeUndefined();
     expect(payload.items[1].billingIndicator).toBe('0');
     expect(payload.items[1].taxRate).toBeUndefined();
     expect(payload.items[1].taxAmount).toBeUndefined();

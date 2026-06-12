@@ -16,6 +16,7 @@ import type {
   HrReadyToPayStatus,
 } from '@/types/hrPayroll';
 import { normalizeServiceCommissionServiceRules } from '@/utils/commissions/serviceCommissions';
+import { normalizeHrDepositAccount } from '@/utils/hrPayroll/depositAccounts';
 import { normalizeSalaryDeductionLines } from '@/utils/hrPayroll/salaryDeductions';
 
 interface HrEmployeesState {
@@ -170,6 +171,7 @@ const normalizeHrEmployeeRecord = (
       'bank_transfer',
     ),
     paymentDestination: toCleanString(data.paymentDestination),
+    depositAccount: normalizeHrDepositAccount(data.depositAccount),
     salaryDeductions: normalizeSalaryDeductionLines(data.salaryDeductions),
     commissionEnabled: data.commissionEnabled === true,
     defaultCommissionType: normalizeEnum(

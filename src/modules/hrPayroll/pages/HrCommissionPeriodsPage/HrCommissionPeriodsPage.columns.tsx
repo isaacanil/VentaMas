@@ -33,6 +33,7 @@ import type {
   HrPayrollEmployeeLineRecord,
   HrPayrollRunStatus,
 } from '@/types/hrPayroll';
+import { formatHrDepositAccount } from '@/utils/hrPayroll/depositAccounts';
 import {
   DetailLinkButton,
   ExportMenuItemContent,
@@ -489,6 +490,14 @@ const getPaymentReference = (payment: HrEmployeePaymentRecord): string =>
 const getPaymentAccountReference = (payment: HrEmployeePaymentRecord): string =>
   payment.bankAccountId || payment.cashAccountId || payment.cashCountId || '-';
 
+const getPaymentDestinationReference = (
+  payment: HrEmployeePaymentRecord,
+): string =>
+  formatHrDepositAccount({
+    depositAccount: payment.depositAccount,
+    paymentDestination: payment.paymentDestination,
+  });
+
 export const paymentColumns: HrTableColumn<HrEmployeePaymentRecord>[] = [
   {
     title: 'Fecha',
@@ -531,11 +540,19 @@ export const paymentColumns: HrTableColumn<HrEmployeePaymentRecord>[] = [
     ),
   },
   {
-    title: 'Cuenta/Caja',
+    title: 'Origen',
     key: 'account',
     width: 150,
     render: (payment) => (
       <MutedText>{getPaymentAccountReference(payment)}</MutedText>
+    ),
+  },
+  {
+    title: 'Destino',
+    key: 'destination',
+    width: 180,
+    render: (payment) => (
+      <MutedText>{getPaymentDestinationReference(payment)}</MutedText>
     ),
   },
   {

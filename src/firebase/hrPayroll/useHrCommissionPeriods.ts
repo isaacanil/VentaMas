@@ -29,6 +29,7 @@ import type {
   HrPayrollEmployeeLineRecord,
   HrPayrollRunStatus,
 } from '@/types/hrPayroll';
+import { normalizeHrDepositAccount } from '@/utils/hrPayroll/depositAccounts';
 import { normalizeSalaryDeductionLines } from '@/utils/hrPayroll/salaryDeductions';
 import { normalizeHrCommissionEntryRecord } from './useHrCommissionEntries';
 
@@ -615,6 +616,8 @@ const normalizePayrollEmployeeLineRecord = (
     : [],
   accountingEventId: toCleanString(data.accountingEventId),
   employeePaymentId: toCleanString(data.employeePaymentId),
+  paymentDestination: toCleanString(data.paymentDestination),
+  depositAccount: normalizeHrDepositAccount(data.depositAccount),
   paymentMethod: data.paymentMethod
     ? normalizePaymentMethod(data.paymentMethod)
     : null,
@@ -653,6 +656,8 @@ const normalizeHrEmployeePaymentRecord = (
   cashAccountId: toCleanString(data.cashAccountId),
   cashCountId: toCleanString(data.cashCountId),
   bankAccountId: toCleanString(data.bankAccountId),
+  paymentDestination: toCleanString(data.paymentDestination),
+  depositAccount: normalizeHrDepositAccount(data.depositAccount),
   accountingEventId: toCleanString(data.accountingEventId),
   cashMovementIds: normalizeCashMovementIds(data.cashMovementIds),
   paymentDate: data.paymentDate,

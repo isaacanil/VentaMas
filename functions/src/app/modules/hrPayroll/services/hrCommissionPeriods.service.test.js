@@ -520,6 +520,14 @@ describe('hrCommissionPeriods.service', () => {
           employeeId: 'emp-1',
           payType: 'mixed',
           baseSalaryAmount: 10000,
+          paymentMethod: 'bank_transfer',
+          paymentDestination: 'Cuenta legacy',
+          depositAccount: {
+            bankName: 'Banco Popular',
+            accountType: 'savings',
+            accountNumber: '123456789',
+            holderName: 'Ana Perez',
+          },
           salaryDeductions: [
             { id: 'afp', kind: 'afp', mode: 'percentage', rate: 3 },
             { id: 'tss', kind: 'tss', mode: 'percentage', rate: 2 },
@@ -551,6 +559,14 @@ describe('hrCommissionPeriods.service', () => {
     expect(result.ok).toBe(true);
     expect(result.employeeLines[0]).toMatchObject({
       type: 'mixed',
+      paymentMethod: 'bank_transfer',
+      paymentDestination: 'Cuenta legacy',
+      depositAccount: {
+        bankName: 'Banco Popular',
+        accountType: 'savings',
+        accountNumber: '123456789',
+        holderName: 'Ana Perez',
+      },
       baseSalaryAmount: 10000,
       commissionAmount: 1000,
       grossAmount: 11000,
