@@ -59,6 +59,23 @@ describe('protectedRouteLoader', () => {
     );
   });
 
+  it('redirects non-dev users away from subscription maintenance plans', () => {
+    const result = protectedRouteLoader(
+      createLoaderArgs(
+        ROUTES_NAME.DEV_VIEW_TERM.SUBSCRIPTION_MAINTENANCE_PLANS,
+      ),
+    );
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        status: 302,
+      }),
+    );
+    expect((result as Response).headers.get('Location')).toBe(
+      ROUTES_NAME.BASIC_TERM.HOME,
+    );
+  });
+
   it('allows developer users through routes requiring developer access', () => {
     mockState.user.user = {
       ...mockState.user.user,

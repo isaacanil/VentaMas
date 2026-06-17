@@ -16,9 +16,10 @@ import {
 import { normalizeSupportedDocumentCurrency } from '@/utils/accounting/currencies';
 import { formatPriceByCurrency, getPriceSymbolByCurrency } from '@/utils/format';
 import { getTotalDiscount } from '@/utils/pricing';
-import CustomInput from '@/components/ui/Inputs/CustomInput';
-import { InputV4 } from '@/components/ui/Inputs/GeneralInput/InputV4';
+import { InputV4 } from '@/components/ui/Inputs';
 import type { SupportedDocumentCurrency } from '@/types/products';
+
+import { DiscountInput } from './DiscountInput/DiscountInput';
 
 type PaymentMethodOption = {
   status: boolean;
@@ -110,7 +111,7 @@ export const PaymentArea = () => {
           </Wrapper>
         </LeftSide>
         <RightSide>
-          <CustomInput
+              <DiscountInput
             options={[10, 20, 30, 50]}
             value={discountPercent}
             discount={discount}

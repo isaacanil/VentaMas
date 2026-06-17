@@ -6,7 +6,7 @@ import { icons } from '@/constants/icons/icons';
 import { useDialog } from '@/context/Dialog/useDialog';
 import type { DialogSize, DialogType } from '@/context/Dialog/contextState';
 import { ButtonGroup } from '@/components/ui/Button';
-import Typography from '@/components/ui/Typography/Typography';
+import Typography from '@/components/ui/Typography';
 import { useModalFocusTrap } from '@/hooks/useModalFocusTrap';
 
 import { iconTypes } from './Dialog.config';

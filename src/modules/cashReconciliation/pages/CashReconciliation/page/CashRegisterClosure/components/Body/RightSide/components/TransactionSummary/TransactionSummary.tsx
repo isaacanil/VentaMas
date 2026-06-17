@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { selectCashCount } from '@/features/cashCount/cashCountManagementSlice';
 import type { CashCountRecord } from '@/utils/cashCount/types';
 import { formatNumber } from '@/utils/format';
-import { InputWithHorizontalLabel } from '@/components/ui/Inputs/InputWithHorizontalLabel';
+import { InputWithHorizontalLabel } from '@/components/ui/Inputs';
 
 interface TransactionSummaryProps {
   loading?: boolean;

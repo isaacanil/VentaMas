@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import { createCurrencyBarChartOptions } from '@/components/charts';
 import { createSingleDatasetBarData } from '@/components/charts';
-import Typography from '@/components/ui/Typography/Typography';
+import Typography from '@/components/ui/Typography';
 import type { Expense, ExpenseDoc } from '@/utils/expenses/types';
 
 type ExpenseEntry = Expense | ExpenseDoc;

@@ -12,7 +12,7 @@ import {
 } from '@/features/productOutflow/productOutflow';
 import { ProductFilter } from '@/modules/inventory/components/ProductFilter/ProductFilter';
 import { Button } from '@/components/ui/Button';
-import { InputV4 } from '@/components/ui/Inputs/GeneralInput/InputV4';
+import { InputV4 } from '@/components/ui/Inputs';
 import {
   useTableHeaderColumns,
   type TableHeaderColumn,

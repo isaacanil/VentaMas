@@ -2,7 +2,7 @@ import { m } from 'framer-motion';
 import styled, { css, type DefaultTheme } from 'styled-components';
 
 import type { DialogSize, DialogType } from '@/context/Dialog/contextState';
-import Typography from '@/components/ui/Typography/Typography';
+import Typography from '@/components/ui/Typography';
 
 import { dialogTheme } from './Dialog.config';
 

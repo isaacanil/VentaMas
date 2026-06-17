@@ -2,7 +2,7 @@ import { useMemo, useState, type JSX } from 'react';
 import styled from 'styled-components';
 
 import { designSystemV2 } from '@/theme/designSystemV2';
-import { SimpleTypography } from '@/components/ui/Typography/SimpleTypography';
+import { SimpleTypography } from '@/components/ui/Typography';
 import type {
   UtilityCurrencyFormatter,
   UtilityDailyMetric,

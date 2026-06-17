@@ -16,11 +16,11 @@ import {
   StyledMenu,
   StyledMenuItem,
   Wrapper,
-} from './CustomInput.styles';
+} from './DiscountInput.styles';
 
 const { Title, Paragraph } = Typography;
 
-interface CustomInputProps {
+interface DiscountInputProps {
   options: number[];
   value: number;
   discount: number;
@@ -29,14 +29,14 @@ interface CustomInputProps {
   width?: string;
 }
 
-const CustomInput = ({
+export const DiscountInput = ({
   options,
   value,
   discount,
   disabled = false,
   onRequestAccess,
   width = '170px',
-}: CustomInputProps) => {
+}: DiscountInputProps) => {
   const [showMenu, setShowMenu] = useState(false);
   const dispatch = useDispatch();
   const inputRef = useRef<HTMLDivElement>(null);
@@ -130,5 +130,3 @@ const CustomInput = ({
     </Container>
   );
 };
-
-export default CustomInput;

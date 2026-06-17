@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
 import { Button } from '@/components/ui/Button';
-import Typography from '@/components/ui/Typography/Typography';
+import Typography from '@/components/ui/Typography';
 
 export const Header = () => {
   return (

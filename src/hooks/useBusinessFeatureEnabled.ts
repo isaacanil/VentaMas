@@ -23,7 +23,7 @@ const readTreasuryFeatureState = (value: unknown): boolean => {
   return record.treasuryEnabled !== false;
 };
 
-const useTreasuryFeatureAvailability = (
+const resolveTreasuryFeatureAvailability = (
   businessId: string | null,
   accountingSettingsSnapshot: ReturnType<typeof useAccountingSettingsSnapshot>,
 ): { enabled: boolean; resolved: boolean } => {
@@ -71,7 +71,7 @@ const useBusinessFeatureStates = (
     resolvedBusinessId,
     accountingSettingsSnapshot,
   );
-  const treasury = useTreasuryFeatureAvailability(
+  const treasury = resolveTreasuryFeatureAvailability(
     resolvedBusinessId,
     accountingSettingsSnapshot,
   );

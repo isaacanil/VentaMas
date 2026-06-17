@@ -14,7 +14,7 @@ import {
 import { fbGetCustomProduct } from '@/firebase/products/customProduct/fbGetCustomProductTypePizza';
 import { Button } from '@/components/ui/Button';
 import { PlusIconButton } from '@/components/ui/Button';
-import { InputV4 } from '@/components/ui/Inputs/GeneralInput/InputV4';
+import { InputV4 } from '@/components/ui/Inputs';
 import { IngredientCard } from './IngredientCard';
 
 interface CustomProductIngredient extends IngredientInput {

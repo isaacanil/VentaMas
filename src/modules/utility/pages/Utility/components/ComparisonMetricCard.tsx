@@ -10,7 +10,7 @@ import { LazyMotion, domAnimation, m } from 'framer-motion';
 import type { JSX } from 'react';
 import styled, { keyframes } from 'styled-components';
 
-import { SimpleTypography } from '@/components/ui/Typography/SimpleTypography';
+import { SimpleTypography } from '@/components/ui/Typography';
 import { designSystemV2 } from '@/theme/designSystemV2';
 import type {
   UtilityComparison,

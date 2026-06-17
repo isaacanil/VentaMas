@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
+import * as FrontendAccountingSchemas from '../../../src/shared/accountingSchemas.js';
 import {
   AccountingEventSchema as FrontendAccountingEventSchema,
   CreateManualJournalEntryInputSchema as FrontendCreateManualJournalEntryInputSchema,
   GetAccountingReportsInputSchema as FrontendGetAccountingReportsInputSchema,
 } from '../../../src/shared/accountingSchemas.js';
+import * as FunctionsAccountingSchemas from './accountingSchemas.js';
 import {
   AccountingEventSchema as FunctionsAccountingEventSchema,
   CreateManualJournalEntryInputSchema as FunctionsCreateManualJournalEntryInputSchema,
@@ -13,7 +15,31 @@ import {
 
 const clone = (value) => structuredClone(value);
 
+const getExportedEnumConstantNames = (schemaModule) =>
+  Object.keys(schemaModule)
+    .filter(
+      (name) => name.endsWith('_VALUES') && Array.isArray(schemaModule[name]),
+    )
+    .sort();
+
 describe('accountingSchemas parity', () => {
+  it('keeps exported enum constants aligned', () => {
+    const frontendConstantNames = getExportedEnumConstantNames(
+      FrontendAccountingSchemas,
+    );
+    const functionsConstantNames = getExportedEnumConstantNames(
+      FunctionsAccountingSchemas,
+    );
+
+    expect(functionsConstantNames).toEqual(frontendConstantNames);
+
+    for (const constantName of functionsConstantNames) {
+      expect(FunctionsAccountingSchemas[constantName]).toEqual(
+        FrontendAccountingSchemas[constantName],
+      );
+    }
+  });
+
   it('keeps frontend and Functions AccountingEvent parsing aligned', () => {
     const now = new Date('2026-04-05T12:00:00.000Z');
     const input = {

@@ -1,7 +1,7 @@
 import type { JSX } from 'react';
 import styled from 'styled-components';
 
-import Typography from '@/components/ui/Typography/Typography';
+import Typography from '@/components/ui/Typography';
 import type { UtilityInvoiceEntry } from '@/modules/utility/types';
 import { getInvoiceTotalValue } from '../utils/invoiceUtils';
 

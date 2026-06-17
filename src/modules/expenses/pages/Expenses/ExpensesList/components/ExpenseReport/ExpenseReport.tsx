@@ -10,7 +10,7 @@ import {
 } from '@/features/expense/expenseUISlice';
 import type { ExpenseDoc } from '@/utils/expenses/types';
 import { Button } from '@/components/ui/Button';
-import Typography from '@/components/ui/Typography/Typography';
+import Typography from '@/components/ui/Typography';
 
 import { CategoryExpenseBarChart } from './reports/CategoryExpenseBarChart';
 import { DailyExpenseBarChart } from './reports/DailyExpensesBarChart';

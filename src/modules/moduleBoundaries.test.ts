@@ -65,6 +65,7 @@ const forbiddenLegacySharedImportPrefixes = [
   '@/components/ui/AppModal',
   '@/components/ui/Button/OpenMenuButton',
   '@/components/ui/Button/EditDelBtns',
+  '@/components/ui/Inputs/CustomInput',
   '@/components/ui/Transition',
   '@/components/common/ThankYouMessage/ThankYouMessage',
   '@/hooks/accountsReceivable',
@@ -88,6 +89,7 @@ const forbiddenLegacySharedImportPrefixes = [
   '@/hooks/useVendorBills',
   '@/hooks/exportToExcel',
   '@/features/uploadImg',
+  '@/modules/invoice/pages/InvoicesPage/SalesAnalyticsPanel/components/Bars',
   '@/features/auth/useBusinessDataConfig',
   '@/features/noteModal/components/NoteModal',
   '@/config/fiscalReceiptsAlertConfig',
@@ -183,6 +185,30 @@ const restrictedSharedImportRules: RestrictedSharedImportRule[] = [
     allowedFilePathPrefixes: ['src/components/ui/Button/'],
   },
   {
+    importPrefix: '@/components/ui/Typography/Typography',
+    allowedFilePathPrefixes: ['src/components/ui/Typography/'],
+  },
+  {
+    importPrefix: '@/components/ui/Typography/SimpleTypography',
+    allowedFilePathPrefixes: ['src/components/ui/Typography/'],
+  },
+  {
+    importPrefix: '@/components/ui/Typography/types',
+    allowedFilePathPrefixes: ['src/components/ui/Typography/'],
+  },
+  {
+    importPrefix: '@/components/ui/Typography/style',
+    allowedFilePathPrefixes: ['src/components/ui/Typography/'],
+  },
+  {
+    importPrefix: '@/components/ui/Inputs/GeneralInput',
+    allowedFilePathPrefixes: ['src/components/ui/Inputs/'],
+  },
+  {
+    importPrefix: '@/components/ui/Inputs/InputWithHorizontalLabel',
+    allowedFilePathPrefixes: ['src/components/ui/Inputs/'],
+  },
+  {
     importPrefix: '@/components/ui/AdvancedTable/AdvancedTable',
     allowedFilePathPrefixes: ['src/components/ui/AdvancedTable/'],
   },
@@ -240,7 +266,20 @@ const retiredLegacySharedSourcePaths = [
   ['src', 'components', 'ui', 'AppModal'],
   ['src', 'components', 'ui', 'Button', 'OpenMenuButton.tsx'],
   ['src', 'components', 'ui', 'Button', 'EditDelBtns'],
+  ['src', 'components', 'ui', 'Inputs', 'CustomInput.tsx'],
+  ['src', 'components', 'ui', 'Inputs', 'CustomInput.styles.ts'],
   ['src', 'components', 'ui', 'Transition.tsx'],
+  [
+    'src',
+    'modules',
+    'invoice',
+    'pages',
+    'InvoicesPage',
+    'SalesAnalyticsPanel',
+    'components',
+    'Bars',
+  ],
+  ['src', 'firebase', 'taxReceipt', 'taxReceiptTemplates.ts'],
   [
     'src',
     'modules',

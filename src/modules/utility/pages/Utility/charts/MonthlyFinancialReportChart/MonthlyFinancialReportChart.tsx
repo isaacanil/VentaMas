@@ -8,7 +8,7 @@ import type {
   UtilityExpenseEntry,
   UtilityInvoiceEntry,
 } from '@/modules/utility/types';
-import Typography from '@/components/ui/Typography/Typography';
+import Typography from '@/components/ui/Typography';
 
 import { getTotalSalesPerMonth, getTotalExpensesPerMonth } from './utils';
 

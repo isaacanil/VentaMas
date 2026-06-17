@@ -63,7 +63,6 @@ import { CashRegisterAlertModal } from '@/modules/sales/pages/Sale/components/mo
 import { usePreorderModal } from '@/modules/sales/pages/Sale/components/usePreorderModal';
 import { PreorderModal } from '@/modules/sales/pages/Sale/components/PreorderModal';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber/AnimatedNumber';
-import CustomInput from '@/components/ui/Inputs/CustomInput';
 import {
   VmButton,
   VmButtonGroup,
@@ -78,6 +77,7 @@ import { useInvoiceSummaryUiState } from './hooks/useInvoiceSummaryUiState';
 import { useLocalStorageBoolean } from './hooks/useLocalStorageBoolean';
 
 import { Delivery } from './components/Delivery/Delivery';
+import { DiscountInput } from '../DiscountInput/DiscountInput';
 import { PreorderConfirmation } from './components/Delivery/PreorderConfirmation/PreorderConfirmation';
 import WarningPill from './components/WarningPill/WarningPill';
 import { resolveAuthorizerName } from './utils/resolveAuthorizerName';
@@ -869,7 +869,7 @@ const InvoiceSummary = () => {
             </Label>
           ) : (
             <DiscountInputContainer>
-              <CustomInput
+              <DiscountInput
                 discount={discount}
                 value={discountPercent}
                 options={[10, 20, 30, 40, 50]}

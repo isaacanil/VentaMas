@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import type { ChartData, ChartOptions } from '@/components/charts';
 import { LazyDoughnut } from '@/components/charts';
-import { SimpleTypography } from '@/components/ui/Typography/SimpleTypography';
+import { SimpleTypography } from '@/components/ui/Typography';
 import type {
   UtilityCurrencyFormatter,
   UtilityDistributionDetail,

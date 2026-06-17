@@ -108,6 +108,7 @@ const Routes: AppRoute[] = [
       {
         path: 'planes',
         element: <DeveloperSubscriptionMaintenancePlansPage />,
+        requiresDevAccess: true,
       },
       {
         path: '*',

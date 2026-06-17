@@ -17,7 +17,7 @@ import {
 
 import { icons } from '@/constants/icons/icons';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
-import { InputV4 } from '@/components/ui/Inputs/GeneralInput/InputV4';
+import { InputV4 } from '@/components/ui/Inputs';
 
 import {
   Asterisk,

@@ -7,6 +7,7 @@ export const ACCOUNTING_EVENT_TYPE_VALUES = [
   'accounts_receivable.payment.voided',
   'customer_credit_note.issued',
   'customer_credit_note.applied',
+  'customer_debit_note.issued',
   'purchase.committed',
   'accounts_payable.payment.recorded',
   'accounts_payable.payment.voided',

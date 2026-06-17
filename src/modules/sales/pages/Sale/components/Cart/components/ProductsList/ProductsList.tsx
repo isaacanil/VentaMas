@@ -15,7 +15,7 @@ import {
 import { useInsuranceEnabled } from '@/modules/insurance/public';
 import { InsuranceAuthFields } from '@/modules/sales/pages/Sale/components/Cart/components/InsuranceAuthFields/InsuranceAuthFields';
 import { ProductCardForCart } from '@/modules/sales/pages/Sale/components/Cart/components/ProductCardForCart/ProductCardForCart';
-import Typography from '@/components/ui/Typography/Typography';
+import Typography from '@/components/ui/Typography';
 
 import { BatchInfoModal } from './components/BatchInfoModal/BatchInfoModal';
 import { CommentModal } from './components/CommentModal/CommentModal';

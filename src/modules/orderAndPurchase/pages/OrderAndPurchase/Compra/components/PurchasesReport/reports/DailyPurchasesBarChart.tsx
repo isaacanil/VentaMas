@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { LazyBar } from '@/components/charts';
 import { createCurrencyBarChartOptions } from '@/components/charts';
 import { createSingleDatasetBarData } from '@/components/charts';
-import Typography from '@/components/ui/Typography/Typography';
+import Typography from '@/components/ui/Typography';
 import type { Purchase } from '@/utils/purchase/types';
 import type { TimestampLike } from '@/utils/date/types';
 import { toMillis } from '@/utils/date/toMillis';
