@@ -419,7 +419,7 @@ export const componentRegistry = [
   {
     id: 'vm.badge',
     displayName: 'Badge',
-    importPath: '@/components/common/Badge/Badge',
+    importPath: '@/components/common/Badge',
     namedExport: 'Badge',
     category: 'feedback',
     status: 'legacy',
@@ -776,7 +776,7 @@ export const componentRegistry = [
   {
     id: 'vm.modal',
     displayName: 'Modal',
-    importPath: '@/components/common/Modal/Modal',
+    importPath: '@/components/common/Modal',
     namedExport: 'Modal',
     category: 'overlay',
     status: 'ready',
@@ -899,7 +899,7 @@ export const componentRegistry = [
   {
     id: 'vm.modalShell',
     displayName: 'ModalShell',
-    importPath: '@/components/common/Modal/ModalShell',
+    importPath: '@/components/common/Modal',
     namedExport: 'ModalShell',
     category: 'overlay',
     status: 'ready',

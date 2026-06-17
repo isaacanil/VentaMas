@@ -29,7 +29,7 @@ import {
   resolvePurchaseWorkflowStatus,
 } from '@/utils/purchase/workflow';
 import { TextCell } from '@/components/ui/AdvancedTable';
-import { Badge } from '@/components/common/Badge/Badge';
+import { Badge } from '@/components/common/Badge';
 import { formatPrice } from '@/utils/format/formatPrice';
 
 import { ActionIcon } from '../../../shared/components/ActionIcon/ActionIcon';

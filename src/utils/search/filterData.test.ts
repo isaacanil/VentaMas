@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { filterData } from './useSearch';
+import { filterData } from './filterData';
 
 describe('filterData', () => {
   it('normaliza despues de recortar el termino de busqueda', () => {

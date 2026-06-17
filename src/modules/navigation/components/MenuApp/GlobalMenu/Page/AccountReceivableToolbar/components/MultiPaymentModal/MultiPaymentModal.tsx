@@ -9,7 +9,7 @@ import { selectUser } from '@/features/auth/userSlice';
 import { fbProcessMultiplePaymentsAR } from '@/firebase/processAccountsReceivablePayments/insurance/fbProcessMultiplePaymentsAR';
 import { formatDate as formatDateUtil } from '@/utils/date/dateUtils';
 import { formatMoney } from '@/utils/formatters';
-import { ShowcaseList } from '@/components/ui/ShowCase/ShowcaseList';
+import { ShowcaseList } from '@/components/ui/ShowCase';
 import type { UserIdentity } from '@/types/users';
 
 import AccountsTable from './components/AccountsTable';

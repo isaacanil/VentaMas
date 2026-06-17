@@ -27,7 +27,7 @@ import {
   type PhoneCountryCode,
 } from '@/shared/phone/phoneNumber';
 import { comprobantesOptions } from '@/utils/taxReceipt';
-import { Modal } from '@/components/common/Modal/Modal';
+import { Modal } from '@/components/common/Modal';
 import { DgiiSyncAlert } from '@/modules/contacts/components/Rnc/DgiiSyncAlert/DgiiSyncAlert';
 import { RncPanel } from '@/modules/contacts/components/Rnc/RncPanel/RncPanel';
 import { getBusinessCountryPhoneCode } from '@/shared/location/businessLocations';

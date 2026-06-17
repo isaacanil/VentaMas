@@ -18,7 +18,7 @@ import { fbAddProductOutFlow } from '@/modules/inventory/repositories/productOut
 import { fbRemoveOutputRestoreQuantity } from '@/modules/inventory/repositories/productOutflow/fbRemoveOutputRestoreQuantity';
 import { fbUpdateProductOutflow } from '@/modules/inventory/repositories/productOutflow/fbUpdateProductOutflow';
 import useScroll from '@/hooks/useScroll';
-import { LegacyMotionModal } from '@/components/common/Modal/LegacyMotionModal';
+import { LegacyMotionModal } from '@/components/common/Modal';
 import { CenteredText } from '@/components/ui/CenteredText';
 import { FormattedValue } from '@/components/ui/FormattedValue';
 import type { UserIdentity, UserWithBusiness } from '@/types/users';

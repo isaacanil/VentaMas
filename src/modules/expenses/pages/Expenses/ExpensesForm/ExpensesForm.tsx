@@ -18,7 +18,7 @@ import type { ExpenseCategoryDoc } from '@/utils/expenses/types';
 import EvidenceUpload, {
   type EvidenceFile,
 } from '@/components/common/EvidenceUpload';
-import Loader from '@/components/ui/loader/Loader';
+import { Loader } from '@/components/ui/loader';
 
 import ManageExpenseCategoriesModal from './components/ManageExpenseCategoriesModal';
 import useExpensesForm from './hooks/useExpenseForm';

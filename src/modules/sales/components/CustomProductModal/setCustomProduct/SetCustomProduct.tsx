@@ -7,7 +7,7 @@ import { formatData } from '@/features/customProducts/customProductSlice';
 import { handleModalSetCustomPizza } from '@/features/modals/modalSlice';
 import { addNotification } from '@/features/notification/notificationSlice';
 import { separator } from '@/utils/number/number';
-import { LegacyMotionModal } from '@/components/common/Modal/LegacyMotionModal';
+import { LegacyMotionModal } from '@/components/common/Modal';
 import type { Product } from '@/features/cart/types';
 
 import { AddCustomProductModal } from './components/AddCustomProductModal/AddCustomProductModal';

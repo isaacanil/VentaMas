@@ -17,7 +17,7 @@ import { CategoriesGrouped } from '@/modules/sales/pages/Sale/components/Categor
 import { ShoppingItemsCounter } from '@/modules/sales/pages/Sale/components/ShoppingItemsCounter/ShoppingItemsCounter';
 import { CenteredText } from '@/components/ui/CenteredText';
 import { Grid } from '@/components/ui/Grid/Grid';
-import Loader from '@/components/ui/loader/Loader';
+import { Loader } from '@/components/ui/loader';
 import { CustomProduct } from './components/ProductCard/CustomProduct';
 import { Product } from './components/ProductCard/Product/Product';
 import type { ProductRecord } from '@/types/products';

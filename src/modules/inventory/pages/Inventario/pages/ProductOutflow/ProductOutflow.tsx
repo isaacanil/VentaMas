@@ -19,7 +19,7 @@ const { formatDate, toMillis } = DateUtils;
 import { ButtonGroup } from '@/components/ui/Button';
 import { CenteredText } from '@/components/ui/CenteredText';
 import { FormattedValue } from '@/components/ui/FormattedValue';
-import Loader from '@/components/ui/loader/Loader';
+import { Loader } from '@/components/ui/loader';
 import type { UserWithBusiness } from '@/types/users';
 import { MenuApp } from '@/modules/navigation/public';
 

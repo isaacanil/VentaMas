@@ -8,7 +8,7 @@ import {
   type SupportedDocumentCurrency,
 } from '@/utils/accounting/currencies';
 import { normalizeInvoiceChange } from '@/utils/invoice';
-import { Showcase } from '@/components/ui/ShowCase/ShowCase';
+import { Showcase } from '@/components/ui/ShowCase';
 
 export const PaymentSummary = () => {
   const cart = useSelector(selectCart) as {

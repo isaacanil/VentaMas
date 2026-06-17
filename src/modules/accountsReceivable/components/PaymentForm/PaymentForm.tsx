@@ -10,7 +10,7 @@ import {
 import styled from 'styled-components';
 import dayjs from 'dayjs';
 
-import { ShowcaseList } from '@/components/ui/ShowCase/ShowcaseList';
+import { ShowcaseList } from '@/components/ui/ShowCase';
 import {
   AccountsReceivablePaymentReceipt,
   Receipt,

@@ -5,7 +5,7 @@ import {
   normalizeSupportedDocumentCurrency,
   type SupportedDocumentCurrency,
 } from '@/utils/accounting/currencies';
-import { Showcase } from '@/components/ui/ShowCase/ShowCase';
+import { Showcase } from '@/components/ui/ShowCase';
 
 export const ChargedSection = () => {
   const cart = useSelector(selectCart) as {

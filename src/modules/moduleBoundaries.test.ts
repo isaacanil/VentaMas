@@ -209,6 +209,38 @@ const restrictedSharedImportRules: RestrictedSharedImportRule[] = [
     allowedFilePathPrefixes: ['src/components/ui/FormattedValue/'],
   },
   {
+    importPrefix: '@/components/common/Badge/Badge',
+    allowedFilePathPrefixes: ['src/components/common/Badge/'],
+  },
+  {
+    importPrefix: '@/components/common/Modal/Modal',
+    allowedFilePathPrefixes: ['src/components/common/Modal/'],
+  },
+  {
+    importPrefix: '@/components/common/Modal/ModalShell',
+    allowedFilePathPrefixes: ['src/components/common/Modal/'],
+  },
+  {
+    importPrefix: '@/components/common/Modal/LegacyMotionModal',
+    allowedFilePathPrefixes: ['src/components/common/Modal/'],
+  },
+  {
+    importPrefix: '@/components/ui/loader/GenericLoader',
+    allowedFilePathPrefixes: ['src/components/ui/loader/'],
+  },
+  {
+    importPrefix: '@/components/ui/loader/Loader',
+    allowedFilePathPrefixes: ['src/components/ui/loader/'],
+  },
+  {
+    importPrefix: '@/components/ui/ShowCase/ShowCase',
+    allowedFilePathPrefixes: ['src/components/ui/ShowCase/'],
+  },
+  {
+    importPrefix: '@/components/ui/ShowCase/ShowcaseList',
+    allowedFilePathPrefixes: ['src/components/ui/ShowCase/'],
+  },
+  {
     importPrefix: '@/components/ui/Inputs/GeneralInput',
     allowedFilePathPrefixes: ['src/components/ui/Inputs/'],
   },

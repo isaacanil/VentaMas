@@ -3,7 +3,7 @@ import { type ReactNode } from 'react';
 import { Modal, type ModalProps } from './Modal';
 import { Body } from './ModalShell.styles';
 
-type ModalShellProps = Omit<ModalProps, 'footer' | 'children'> & {
+export type ModalShellProps = Omit<ModalProps, 'footer' | 'children'> & {
   footer: ReactNode;
   children: ReactNode;
   bodyClassName?: string;

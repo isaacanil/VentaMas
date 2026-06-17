@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { Button } from 'antd';
 import { FileDoneOutlined } from '@ant-design/icons';
 
-import { Modal } from '@/components/common/Modal/Modal';
+import { Modal } from '@/components/common/Modal';
 import { VmButton, VmModal } from '@/components/heroui';
 import { DollarOutlined, FileTextOutlined } from '@/constants/icons/antd';
 import { selectBusinessData } from '@/features/auth/businessSlice';

@@ -1,7 +1,7 @@
 import { Button, Popconfirm } from 'antd';
 import styled from 'styled-components';
 
-import { Modal } from '@/components/common/Modal/Modal';
+import { Modal } from '@/components/common/Modal';
 
 import { resolveAccountingOriginTarget } from '../utils/accountingOrigin';
 import {

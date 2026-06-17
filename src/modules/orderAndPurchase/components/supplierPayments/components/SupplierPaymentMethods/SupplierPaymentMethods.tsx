@@ -12,8 +12,8 @@ import { useEffect, useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
 import styled from 'styled-components';
 
-import { Showcase } from '@/components/ui/ShowCase/ShowCase';
-import { ShowcaseList } from '@/components/ui/ShowCase/ShowcaseList';
+import { Showcase } from '@/components/ui/ShowCase';
+import { ShowcaseList } from '@/components/ui/ShowCase';
 import { icons } from '@/constants/icons/icons';
 import type { CashRegisterOption } from '@/modules/cashReconciliation/public';
 import type { BankAccountOption } from '@/modules/accounting/public';

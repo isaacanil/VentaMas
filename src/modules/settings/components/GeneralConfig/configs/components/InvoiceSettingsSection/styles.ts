@@ -1,7 +1,7 @@
 import { Form } from 'antd';
 import styled from 'styled-components';
 
-import { MainLayoutModal } from '@/components/common/Modal/Modal';
+import { MainLayoutModal } from '@/components/common/Modal';
 
 export const MainLayout = styled(MainLayoutModal).attrs({
   $hasSecondary: true,

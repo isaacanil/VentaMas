@@ -140,7 +140,7 @@ Archivos:
 
 - `functions/src/app/modules/business/functions/createBusiness.js`
 - `src/firebase/taxReceipt/taxReceiptsDefault.ts`
-- `src/firebase/taxReceipt/taxReceiptTemplates.ts`
+- `src/domain/fiscal/taxReceiptTemplates.ts`
 - `functions/src/app/modules/invoice/templates/template2/builders/header.js`
 
 Problema:
@@ -189,7 +189,7 @@ Aplicado a VentaMas:
 
 - `functions/src/app/modules/business/functions/createBusiness.js`
 - `src/firebase/taxReceipt/taxReceiptsDefault.ts`
-- `src/firebase/taxReceipt/taxReceiptTemplates.ts`
+- `src/domain/fiscal/taxReceiptTemplates.ts`
 - `src/firebase/Settings/taxReceipt/fbEnabledTaxReceipt.tsx`
 - `src/firebase/Settings/taxReceipt/fbGetTaxReceiptToggleStatus.tsx`
 
@@ -272,7 +272,7 @@ La regla usada aquí es:
 | `src/firebase/taxReceipt/fbDeteteTaxReceipt.ts` | borrado | `retirado` | `settings fiscal data access` | Retirado como stub huérfano sin consumidores. |
 | `src/firebase/taxReceipt/fbAutoCreateDefaultReceipt.ts` | auto seed desde cliente | `se reemplaza luego` | `legacy bootstrap` | El seed debe consolidarse en backend/provisioning. |
 | `src/firebase/taxReceipt/taxReceiptsDefault.ts` | defaults locales | `se mueve` | `fiscal localization catalogs` | Convertir en catálogo inicial, no seed operativo disperso. |
-| `src/firebase/taxReceipt/taxReceiptTemplates.ts` | plantillas por país | `se queda y evoluciona` | `fiscal localization catalogs` | Buena base para localización; ampliar a `traditional/electronic`. |
+| `src/domain/fiscal/taxReceiptTemplates.ts` | plantillas por país | `se queda y evoluciona` | `fiscal localization catalogs` | Buena base para localización; ampliar a `traditional/electronic`. |
 | `src/firebase/taxReceipt/rebuildNcfLedger.ts` | wrapper callable de reconstrucción | `se queda` | `fiscal operations` | Útil para soporte y migración. |
 | `src/firebase/taxReceipt/getNcfLedgerInsights.ts` | wrapper callable de insights | `se queda` | `fiscal operations` | Útil para UX de secuencia segura. |
 | `src/firebase/taxReceipt/logSequenceWarning.ts` | warnings de secuencia | `se queda` | `fiscal operations` | Mantener como observabilidad. |

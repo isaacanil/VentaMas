@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import DatePicker from '@/components/DatePicker';
-import { ModalShell } from '@/components/common/Modal/ModalShell';
+import { ModalShell } from '@/components/common/Modal';
 import { selectUser } from '@/features/auth/userSlice';
 import { useIsOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
 import { fbAddAccountsPayablePayment } from '@/firebase/purchase/fbAddAccountsPayablePayment';

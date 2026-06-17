@@ -6,7 +6,7 @@ import {
   type FilterBarItem,
 } from '@/components/common/FilterBar';
 import { useFbGetClients } from '@/firebase/client/useFbGetClients';
-import { filterData } from '@/hooks/search/useSearch';
+import { filterData } from '@/utils/search/filterData';
 import { MenuApp } from '@/modules/navigation/public';
 
 import { ClientsListTable } from './components/OrderListTable/ClientsListTable';

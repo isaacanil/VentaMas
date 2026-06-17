@@ -4,7 +4,7 @@ import { DateTime } from 'luxon';
 
 import { formatPrice } from '@/utils/format';
 import { toMillis } from '@/utils/date/dateUtils';
-import { Badge } from '@/components/common/Badge/Badge';
+import { Badge } from '@/components/common/Badge';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 
 import { BadgeDate } from './components/BadgeDate/BadgeDate';

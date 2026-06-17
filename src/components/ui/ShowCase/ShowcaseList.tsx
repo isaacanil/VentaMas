@@ -7,7 +7,7 @@ type ShowcaseItem = Pick<
   'color' | 'description' | 'title' | 'value' | 'valueType'
 >;
 
-type ShowcaseListProps = {
+export type ShowcaseListProps = {
   showcases: ShowcaseItem[];
 };
 

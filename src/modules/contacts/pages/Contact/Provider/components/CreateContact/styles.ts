@@ -1,6 +1,6 @@
 import styled, { css } from 'styled-components';
 
-import { MainLayoutModal } from '@/components/common/Modal/Modal';
+import { MainLayoutModal } from '@/components/common/Modal';
 
 export const ModalLayout = styled(MainLayoutModal).attrs<{
   $hasDetails: boolean;

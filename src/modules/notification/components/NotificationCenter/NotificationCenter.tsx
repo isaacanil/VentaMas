@@ -9,7 +9,7 @@ import {
   closeNotificationCenter,
 } from '@/features/notification/notificationCenterSlice';
 import { useFiscalReceiptsAlerts } from '@/hooks/useFiscalReceiptsAlerts';
-import Loader from '@/components/ui/loader/Loader';
+import { Loader } from '@/components/ui/loader';
 
 const ModulesNavigator = lazy(() => import('./components/ModulesNavigator'));
 

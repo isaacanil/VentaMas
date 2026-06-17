@@ -71,7 +71,7 @@ Superficies actuales relevantes:
   - ya expone `electronicModelEnabled` y `electronicTransportEnabled`.
 - `functions/src/app/modules/compliance/*`
   - ya existen builders/exports DGII 606/607/608 y motor 607.
-- `src/firebase/taxReceipt/taxReceiptTemplates.ts`
+- `src/domain/fiscal/taxReceiptTemplates.ts`
   - plantillas DO actuales: `B02`, `B01`, `B15`, `B04`.
 
 Conclusion VentaMas: base de venta y comprobante tradicional existe. Falta capa electronica de proveedor, no motor DGII desde cero.

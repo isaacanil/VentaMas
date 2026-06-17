@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { Virtuoso } from 'react-virtuoso';
 
 import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
-import { filterData } from '@/hooks/search/useSearch';
+import { filterData } from '@/utils/search/filterData';
 import type { ProductRecord } from '@/types/products';
 
 import { ProductItem } from './ProductCard/ProductItem';

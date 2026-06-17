@@ -6,7 +6,7 @@ import styled from 'styled-components';
 
 import { closeModalAddClient } from '@/features/modals/modalSlice';
 import { db } from '@/firebase/firebaseconfig';
-import { LegacyMotionModal } from '@/components/common/Modal/LegacyMotionModal';
+import { LegacyMotionModal } from '@/components/common/Modal';
 import { InputV4 } from '@/components/ui/Inputs';
 
 interface AddClientModalProps {

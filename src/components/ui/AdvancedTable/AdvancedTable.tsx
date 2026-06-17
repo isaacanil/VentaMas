@@ -10,7 +10,7 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
-import { filterData } from '@/hooks/search/useSearch';
+import { filterData } from '@/utils/search/filterData';
 import { useWindowWidth } from '@/hooks/useWindowWidth';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { MillisRangeDatePicker as DatePicker } from '@/components/common/DatePicker';

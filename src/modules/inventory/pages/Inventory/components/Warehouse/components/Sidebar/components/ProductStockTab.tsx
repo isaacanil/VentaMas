@@ -7,6 +7,7 @@ import styled from 'styled-components';
 
 import Tree from '../../tree/Tree';
 import type { TreeConfig, TreeNodeData } from '../../tree/Tree';
+import { buildProductStockPath } from './ProductStockTab.utils';
 
 const TabContent = styled.div`
   display: flex;
@@ -50,12 +51,12 @@ const ProductStockTab = ({
         icon: faEye,
         type: 'button',
         handler: (node) => {
-          navigate(`/inventory/warehouses/product/${String(node.id)}/stock`);
+          navigate(buildProductStockPath(String(node.id)));
         },
       },
     ],
     onNodeClick: (node) => {
-      navigate(`/inventory/warehouses/product/${String(node.id)}/stock`);
+      navigate(buildProductStockPath(String(node.id)));
     },
     showMatchedStockCount: false,
     showActions: true,

@@ -11,7 +11,7 @@ import type { InvoiceRecord } from '@/modules/invoice/pages/InvoicesPage/types';
 import { Virtuoso } from 'react-virtuoso';
 import styled from 'styled-components';
 
-import { filterData } from '@/hooks/search/useSearch';
+import { filterData } from '@/utils/search/filterData';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 import { InvoiceItem } from './InvoiceItem/InvoiceItem';

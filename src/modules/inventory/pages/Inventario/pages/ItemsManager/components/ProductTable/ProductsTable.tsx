@@ -22,7 +22,7 @@ import { openModalUpdateProd } from '@/features/modals/modalSlice';
 import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
 import { ChangeProductData } from '@/features/updateProduct/updateProductSlice';
 import { fbDeleteProduct } from '@/firebase/products/fbDeleteProduct';
-import { filterData } from '@/hooks/search/useSearch';
+import { filterData } from '@/utils/search/filterData';
 import { formatPrice } from '@/utils/format';
 import { formatNumber } from '@/utils/format';
 import { getTax, getTotalPrice } from '@/utils/pricing';

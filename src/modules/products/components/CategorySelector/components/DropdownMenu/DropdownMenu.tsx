@@ -3,7 +3,7 @@ import { forwardRef, useState } from 'react';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
-import { filterData } from '@/hooks/search/useSearch';
+import { filterData } from '@/utils/search/filterData';
 
 import { Category } from './Category';
 

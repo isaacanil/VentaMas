@@ -82,11 +82,36 @@ test('dry-run preserves explicit scoped --only function targets', async () => {
   assert.match(result.output, /--only functions:reserveCreditNoteNcf/);
 });
 
+test('dry-run preserves equals-form scoped --only function targets', async () => {
+  const result = await runDeploy([
+    'staging:functions',
+    '--only=functions:reserveCreditNoteNcf',
+    '--dry-run',
+  ]);
+
+  assert.equal(result.code, 0, result.output);
+  assert.match(result.output, /--only=functions:reserveCreditNoteNcf/);
+});
+
 test('dry-run blocks non-functions --only targets from scoped functions target', async () => {
   const result = await runDeploy([
     'staging:functions',
     '--only',
     'hosting:staging',
+    '--dry-run',
+  ]);
+
+  assert.equal(result.code, 1, result.output);
+  assert.match(
+    result.output,
+    /solo aceptan --only functions:<nombreDeFuncion>/,
+  );
+});
+
+test('dry-run blocks equals-form non-functions --only targets from scoped functions target', async () => {
+  const result = await runDeploy([
+    'staging:functions',
+    '--only=hosting:staging',
     '--dry-run',
   ]);
 
@@ -115,6 +140,29 @@ test('dry-run blocks passthrough all-functions --only target', async () => {
 
   assert.equal(result.code, 1, result.output);
   assert.match(result.output, /Deploy all Cloud Functions bloqueado/);
+});
+
+test('dry-run blocks equals-form passthrough all-functions --only target', async () => {
+  const result = await runDeploy([
+    'staging:functions',
+    '--only=functions',
+    '--dry-run',
+  ]);
+
+  assert.equal(result.code, 1, result.output);
+  assert.match(result.output, /Deploy all Cloud Functions bloqueado/);
+});
+
+test('dry-run scopes prod functions to named function targets', async () => {
+  const result = await runDeploy([
+    'prod:functions',
+    'reserveCreditNoteNcf',
+    '--dry-run',
+  ]);
+
+  assert.equal(result.code, 0, result.output);
+  assert.match(result.output, /Build script: \(none\)/);
+  assert.match(result.output, /--project prod --only functions:reserveCreditNoteNcf/);
 });
 
 test('dry-run allows all-functions target only with explicit guard', async () => {

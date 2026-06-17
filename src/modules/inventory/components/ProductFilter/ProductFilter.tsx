@@ -6,7 +6,7 @@ import styled from 'styled-components';
 
 import { isProductExplicitlyInventoryTracked } from '@/domain/products/productInventoryLogic';
 import { useGetProducts } from '@/firebase/products/fbGetProducts';
-import { filterData } from '@/hooks/search/useSearch';
+import { filterData } from '@/utils/search/filterData';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
 import type { ProductRecord } from '@/types/products';
 

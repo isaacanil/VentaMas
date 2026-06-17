@@ -1,6 +1,6 @@
 import React from 'react';
 
-import VentamaxLoader from '@/components/ui/loader/GenericLoader';
+import { GenericLoader as VentamaxLoader } from '@/components/ui/loader';
 
 export const SessionManager = ({ status, error }) => {
   const show = status === 'checking' || status === 'error';

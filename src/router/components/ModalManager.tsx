@@ -35,7 +35,7 @@ import { selectRowShelfState } from '@/features/warehouse/rowShelfModalSlice';
 import { selectSegmentState } from '@/features/warehouse/segmentModalSlice';
 import { selectShelfState } from '@/features/warehouse/shelfModalSlice';
 import { selectWarehouseModalState } from '@/features/warehouse/warehouseModalSlice';
-import Loader from '@/components/ui/loader/Loader';
+import { Loader } from '@/components/ui/loader';
 import {
   loadAccountReceivableSummaryModal,
   loadAccountsReceivablePaymentForm,

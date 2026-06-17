@@ -24,7 +24,7 @@ import styled from 'styled-components';
 import { selectUser } from '@/features/auth/userSlice';
 import { useGetProducts } from '@/firebase/products/fbGetProducts';
 import { getInventoriableProductsCount } from '@/firebase/products/productAggregates';
-import { filterData } from '@/hooks/search/useSearch';
+import { filterData } from '@/utils/search/filterData';
 import { filterInventoriableProducts } from '@/domain/products/productInventoryLogic';
 import type { UserIdentity } from '@/types/users';
 

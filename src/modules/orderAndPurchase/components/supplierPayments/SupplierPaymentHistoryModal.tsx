@@ -12,7 +12,7 @@ import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { ModalShell } from '@/components/common/Modal/ModalShell';
+import { ModalShell } from '@/components/common/Modal';
 import { selectUser } from '@/features/auth/userSlice';
 import { fbVoidAccountsPayablePayment } from '@/firebase/purchase/fbVoidAccountsPayablePayment';
 import { useOpenAccountingEntry } from '@/modules/accounting/public';

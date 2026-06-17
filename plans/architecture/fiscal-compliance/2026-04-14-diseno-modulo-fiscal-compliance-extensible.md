@@ -88,7 +88,7 @@ Diseñar una capa `fiscal/compliance` que:
 
 - Ya existe un módulo contable activo y no conviene abrir otro pipeline paralelo.
 - Ya existe `taxReceipt` con una semilla multi-país básica en
-  `src/firebase/taxReceipt/taxReceiptTemplates.ts`.
+  `src/domain/fiscal/taxReceiptTemplates.ts`.
 - El soporte actual de comprobantes dominicanos en el repo todavía está sesgado a
   series `B` tradicionales y debe abrirse para `e-CF` serie `E`.
 - La base contable vigente vive en:
@@ -655,7 +655,7 @@ Usar consola operacional con:
 
 ### Hallazgos concretos del repo que afectan este plan
 
-- [taxReceiptTemplates.ts](/c:/Dev/VentaMas/src/firebase/taxReceipt/taxReceiptTemplates.ts:13)
+- [taxReceiptTemplates.ts](/c:/Dev/VentaMas/src/domain/fiscal/taxReceiptTemplates.ts:14)
   hoy filtra República Dominicana con series `B` y plantillas `B01`, `B02`, `B15`,
   `B04`.
 - [generateNCFCode.ts](/c:/Dev/VentaMas/functions/src/app/modules/taxReceipt/utils/generateNCFCode.ts:36)
