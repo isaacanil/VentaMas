@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import type { DateTime } from 'luxon';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { LeftSide } from './LeftSide/LeftSide';
-import { RightSide } from './RightSide/RightSide';
+import { ClosureSidePanel } from './ClosureSidePanel/ClosureSidePanel';
 
 interface BodyProps {
   closingDate: DateTime;
@@ -44,7 +44,7 @@ export const Body: React.FC<BodyProps> = ({ closingDate: _closingDate }) => {
           />
         )}
         {(!isNarrowScreen || activeSide === 'rightSide') && (
-          <RightSide
+          <ClosureSidePanel
             calculationIsOpen={calculationIsOpen}
             setCalculationIsOpen={setCalculationIsOpen}
           />

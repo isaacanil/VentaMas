@@ -1,0 +1,1 @@
+export { JournalBookPanel } from './JournalBookPanel';

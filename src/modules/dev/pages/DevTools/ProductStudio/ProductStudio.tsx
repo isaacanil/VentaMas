@@ -1,5 +1,5 @@
 import { MenuApp } from '@/modules/navigation/public';
-import { ProductEditorImageManager } from '@/modules/products/public';
+import { productStudioProductEditorAdapters } from '@/modules/products/public';
 
 import { ActionBar } from './components/ActionBar';
 import { ProductForm } from './components/form/ProductForm';
@@ -21,6 +21,9 @@ import {
 } from './components/StudioLayout';
 import { useProductStudioController } from './hooks/useProductStudioController';
 import { useSectionNavigation } from './hooks/useSectionNavigation';
+
+const ProductStudioImageManager =
+  productStudioProductEditorAdapters.ImageManager;
 
 export default function ProductStudio() {
   const { scrollContainerRef, activeSection, handleSectionNavigation } =
@@ -107,7 +110,7 @@ export default function ProductStudio() {
                 )}
               </StudioGrid>
 
-              <ProductEditorImageManager
+              <ProductStudioImageManager
                 open={imageDrawerVisible}
                 onCancel={handleCloseImageManager}
               />

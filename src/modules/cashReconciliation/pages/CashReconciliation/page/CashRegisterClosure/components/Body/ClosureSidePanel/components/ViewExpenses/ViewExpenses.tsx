@@ -93,7 +93,7 @@ export const ViewExpenses = ({
   }, 0);
 
   return (
-    <Container>
+    <>
       <PillButton
         onClick={handleOpenModal}
         loading={loading}
@@ -133,11 +133,9 @@ export const ViewExpenses = ({
           </>
         )}
       </Modal>
-    </Container>
+    </>
   );
 };
-
-const Container = styled.div``;
 
 const TotalContainer = styled.div`
   display: flex;

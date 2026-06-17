@@ -9,7 +9,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { useFbGetAccountReceivablePayments } from '@/firebase/accountsReceivable/useFbGetAccountReceivablePayments';
-import { Payment } from '@/modules/contacts/public';
+import { AccountPaymentControl } from '@/features/accountsReceivable/accountPayment';
 import { formatInvoicePrice } from '@/utils/invoice/documentCurrency';
 type ReceivablePaymentMethod = {
   status?: boolean;
@@ -124,7 +124,7 @@ export const AccountReceivableItem = ({
       </ItemDetails>
 
       <ActionBar>
-        <Payment
+        <AccountPaymentControl
           installments={totalInstallments}
           isActive={ar.isActive}
           balance={Number(ar.arBalance ?? 0)}

@@ -8,29 +8,29 @@ import { fbGetAccountingReports } from '@/firebase/accounting/fbGetAccountingRep
 
 import {
   formatAccountingPeriod,
-} from '../utils/accountingWorkspace';
+} from '../../utils/accountingWorkspace';
 import {
   normalizeGeneralLedgerSnapshot,
   useAccountingBackendReports,
-} from '../hooks/useAccountingBackendReports';
-import { JournalEntryDetailDrawer } from './JournalEntryDetailDrawer';
-import { GeneralLedgerEmptyState } from './GeneralLedgerPanel/GeneralLedgerEmptyState';
-import { GeneralLedgerHeader } from './GeneralLedgerPanel/GeneralLedgerHeader';
-import { GeneralLedgerPagination } from './GeneralLedgerPanel/GeneralLedgerPagination';
-import { GeneralLedgerSummaryCard } from './GeneralLedgerPanel/GeneralLedgerSummaryCard';
-import { GeneralLedgerTable } from './GeneralLedgerPanel/GeneralLedgerTable';
-import { GeneralLedgerToolbar } from './GeneralLedgerPanel/GeneralLedgerToolbar';
-import { GeneralLedgerTAccountCard } from './GeneralLedgerPanel/GeneralLedgerTAccountCard';
+} from '../../hooks/useAccountingBackendReports';
+import { JournalEntryDetailDrawer } from '../JournalEntryDetailDrawer';
+import { GeneralLedgerEmptyState } from './GeneralLedgerEmptyState';
+import { GeneralLedgerHeader } from './GeneralLedgerHeader';
+import { GeneralLedgerPagination } from './GeneralLedgerPagination';
+import { GeneralLedgerSummaryCard } from './GeneralLedgerSummaryCard';
+import { GeneralLedgerTable } from './GeneralLedgerTable';
+import { GeneralLedgerToolbar } from './GeneralLedgerToolbar';
+import { GeneralLedgerTAccountCard } from './GeneralLedgerTAccountCard';
 import {
   formatDateInputValue,
   getVisibleLedgerMetrics,
-} from './GeneralLedgerPanel/generalLedgerPanelUtils';
-import { exportGeneralLedgerWorkbook } from './utils/generalLedgerExport';
+} from './generalLedgerPanelUtils';
+import { exportGeneralLedgerWorkbook } from '../utils/generalLedgerExport';
 
 import type {
   AccountingLedgerRecord,
   GeneralLedgerMovement,
-} from '../utils/accountingWorkspace';
+} from '../../utils/accountingWorkspace';
 
 interface GeneralLedgerPanelProps {
   businessId: string | null;

@@ -2,26 +2,21 @@ import { faCalendarAlt, faReceipt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
 
+import { AccountPaymentControl } from '@/features/accountsReceivable/accountPayment';
 import { formatPrice } from '@/utils/format';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
-import type {
-  AccountsReceivableDoc,
-  TimestampLike,
-} from '@/utils/accountsReceivable/types';
+import type { AccountsReceivableDoc } from '@/utils/accountsReceivable/types';
 
-import { Payment } from './components/Payment';
+import type { ClientFinancialSummary } from '../types';
 
 type AccountCardProps = {
   account: AccountsReceivableDoc;
-  accountNumber?: string | number;
-  date?: TimestampLike;
   frequency?: string;
   balance?: number;
   installments?: number;
   installmentAmount?: number;
-  lastPayment?: number;
-  lastPaymentDate?: TimestampLike;
   isActive?: boolean;
+  client?: ClientFinancialSummary | null;
 };
 
 export const AccountCard = ({
@@ -31,19 +26,9 @@ export const AccountCard = ({
   installments = 0,
   installmentAmount,
   isActive,
+  client,
 }: AccountCardProps) => {
-  // const formatDate = (dateValue) => {
-  //   console.log(dateValue)
-  //   if (!dateValue) return 'N/A';
-  //   if (dateValue.seconds) {
-  //     return new DateTime(dateValue.seconds * 1000).toFormat('dd/MM/yyyy');
-  //   }
-  //   return new DateTime(dateValue).toFormat('dd/MM/yyyy');
-  // };
-
-  const getPaidInstallments = () => {
-    return account?.paidInstallments?.length || 0;
-  };
+  const paidInstallmentsCount = account?.paidInstallments?.length || 0;
 
   return (
     <Card>
@@ -63,7 +48,7 @@ export const AccountCard = ({
         </HeaderMeta>
       </CardHeader>
 
-      <FinancialDetails>
+      <div>
         <DetailsRow>
           <DetailGroup>
             <GroupContent>
@@ -74,7 +59,7 @@ export const AccountCard = ({
               <GroupItem>
                 <GroupLabel>Pagadas:</GroupLabel>
                 <GroupValue>
-                  {getPaidInstallments()}/{installments}
+                  {paidInstallmentsCount}/{installments}
                 </GroupValue>
               </GroupItem>
             </GroupContent>
@@ -93,16 +78,18 @@ export const AccountCard = ({
             </GroupContent>
           </DetailGroup>
         </DetailsRow>
-      </FinancialDetails>
+      </div>
 
-      <ActionBar>
-        <Payment
+      <div>
+        <AccountPaymentControl
           installments={installments}
+          paidInstallmentsCount={paidInstallmentsCount}
           isActive={isActive}
           balance={balance ?? 0}
           account={account}
+          client={client}
         />
-      </ActionBar>
+      </div>
     </Card>
   );
 };
@@ -180,8 +167,6 @@ const FrequencyTag = styled.div`
   border-radius: 4px;
 `;
 
-const FinancialDetails = styled.div``;
-
 const DetailsRow = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -243,7 +228,3 @@ const GroupValue = styled.span<GroupValueProps>`
     font-size: 16px;
   `}
 `;
-
-const ActionBar = styled.div``;
-
-export const Payments = styled.div``;

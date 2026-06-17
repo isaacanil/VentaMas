@@ -1,6 +1,5 @@
 export { ClientControl } from './components/ClientControl/ClientControl';
 export { ClientSelector } from './components/ClientControl/ClientSelector/ClientSelector';
-export { Payment } from './pages/Contact/Client/components/ClientForm/components/ClientFinancialInfo/AccountCard/components/Payment';
 
 export const loadClientAdminRoute = () =>
   import('./pages/Contact/Client/ClientAdmin').then((module) => ({

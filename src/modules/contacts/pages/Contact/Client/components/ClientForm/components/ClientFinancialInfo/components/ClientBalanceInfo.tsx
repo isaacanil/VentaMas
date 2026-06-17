@@ -1,20 +1,15 @@
 import { faUser, faHashtag } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from 'antd';
-import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { setAccountPayment } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
+import { useOpenBalancePayment } from '@/features/accountsReceivable/accountPayment';
 import { formatPrice } from '@/utils/format';
 
-type ClientSummary = {
-  id?: string;
-  name?: string;
-  numberId?: string | number;
-} & Record<string, unknown>;
+import type { ClientFinancialSummary } from '../types';
 
 type ClientBalanceInfoProps = {
-  client: ClientSummary | null | undefined;
+  client: ClientFinancialSummary | null | undefined;
   pendingBalance: number;
 };
 
@@ -22,25 +17,12 @@ export const ClientBalanceInfo = ({
   client,
   pendingBalance,
 }: ClientBalanceInfoProps) => {
-  const dispatch = useDispatch();
+  const { openBalancePayment } = useOpenBalancePayment(client);
+
   const handlePayment = () => {
-    if (!client?.id) return;
-    dispatch(
-      setAccountPayment({
-        isOpen: true,
-        paymentDetails: {
-          paymentScope: 'balance',
-          totalAmount: pendingBalance,
-          clientId: client.id,
-        },
-        extra: {
-          clientName: client?.name,
-          clientCode:
-            (client as { numberId?: string | number })?.numberId ?? client?.id,
-        },
-      }),
-    );
+    openBalancePayment(pendingBalance);
   };
+
   return (
     <Container>
       <ClientInfoSection>

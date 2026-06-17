@@ -8,11 +8,9 @@ import { selectUser } from '@/features/auth/userSlice';
 import { useFbGetAccountReceivableByInvoice } from '@/firebase/accountsReceivable/useFbGetAccountReceivableByInvoice';
 import { useFbGetCreditNotesByInvoice } from '@/firebase/creditNotes/useFbGetCreditNotesByInvoice';
 import { useFbGetCreditNoteApplicationsByInvoice } from '@/modules/invoice/hooks/creditNote/useFbGetCreditNoteApplicationsByInvoice';
-import {
-  CreditNotesInfoCard,
-  PaymentMethodInfoCard,
-  ReceivablePaymentsInfoCard,
-} from '@/modules/invoice/public';
+import { CreditNotesInfoCard } from '@/modules/invoice/components/InvoiceDetailCards/CreditNotesInfoCard';
+import { PaymentMethodInfoCard } from '@/modules/invoice/components/InvoiceDetailCards/PaymentMethodInfoCard';
+import { ReceivablePaymentsInfoCard } from '@/modules/invoice/components/InvoiceDetailCards/ReceivablePaymentsInfoCard';
 import type { InvoiceClient, InvoiceData } from '@/types/invoice';
 import type { UserIdentity } from '@/types/users';
 import type { AccountsReceivableDoc } from '@/utils/accountsReceivable/types';

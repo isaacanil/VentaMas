@@ -4,11 +4,11 @@ import { useMemo, useState } from 'react';
 import type { GeneratedPins } from '@/firebase/authorization/pinAuth';
 import { fbSendPinByEmail } from '@/firebase/authorization/pinAuth';
 
-import { PinEntriesList } from './PinDetailsModal/PinEntriesList';
-import { buildPinDetailsPrintContent } from './PinDetailsModal/printPinDetails';
-import { ActionBar, Header, IconBadge, ModalBody, Subtitle } from './PinDetailsModal/styles';
+import { PinEntriesList } from './PinEntriesList';
+import { buildPinDetailsPrintContent } from './printPinDetails';
+import { ActionBar, Header, IconBadge, ModalBody, Subtitle } from './styles';
 
-import type { PinDetailsModalProps, PinEntryView } from './PinDetailsModal/types';
+import type { PinDetailsModalProps, PinEntryView } from './types';
 
 const { Title } = Typography;
 

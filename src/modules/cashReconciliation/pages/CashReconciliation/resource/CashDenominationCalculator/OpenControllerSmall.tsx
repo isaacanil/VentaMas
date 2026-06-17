@@ -13,16 +13,8 @@ export const OpenControllerSmall: React.FC<OpenControllerSmallProps> = ({
 }) => {
   return (
     <Container
+      type="button"
       onClick={onClick}
-      onKeyDown={(event) => {
-        if (event.key !== 'Enter' && event.key !== ' ') {
-          return;
-        }
-        event.preventDefault();
-        onClick?.();
-      }}
-      role="button"
-      tabIndex={0}
       aria-expanded={Boolean(isExpanded)}
       aria-label={isExpanded ? 'Contraer calculadora' : 'Expandir calculadora'}
     >
@@ -31,4 +23,14 @@ export const OpenControllerSmall: React.FC<OpenControllerSmallProps> = ({
   );
 };
 
-const Container = styled.div``;
+const Container = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  background: transparent;
+  cursor: pointer;
+`;

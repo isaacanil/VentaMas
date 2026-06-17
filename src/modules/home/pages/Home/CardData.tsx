@@ -18,7 +18,7 @@ import type { MenuItem } from '@/types/menu';
 import type { UserIdentity } from '@/types/users';
 import { hasAuthorizationApproveAccess } from '@/utils/access/authorizationAccess';
 import { useBusinessFeatureEnabled } from '@/hooks/useBusinessFeatureEnabled';
-import { useFilterMenuItemsByAccess } from '@/utils/menuAccess';
+import { useFilterMenuItemsByAccess } from '@/modules/navigation/public';
 
 type ShortcutFeature = 'accounting' | 'treasury';
 

@@ -8,8 +8,7 @@ export {
 } from './state/productBrandSlice';
 export { ProductCategoryBar } from './components/ProductCategoryBar/ProductCategoryBar';
 export { ProductQRCode } from './components/ProductQRCode';
-export { default as ProductEditorImageManager } from './components/ProductEditorModal/ImageManager/ImageManager';
-export { BarCode as ProductEditorBarcode } from './components/ProductEditorModal/components/sections/BarCode';
+export { productStudioProductEditorAdapters } from './devTools/productStudioProductEditorAdapters';
 
 export const loadActiveIngredientModal = () =>
   import('./components/ActiveIngredientModal/ActiveIngredientModal');

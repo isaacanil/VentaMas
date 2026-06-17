@@ -18,7 +18,7 @@ import { selectUser } from '@/features/auth/userSlice';
 import { SelectSettingCart } from '@/features/cart/cartSlice';
 import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import ROUTES_PATH from '@/router/routes/routesName';
-import { useHasDeveloperAccess } from '@/utils/menuAccess';
+import { useHasDeveloperAccess } from '@/modules/navigation/utils/menuAccess';
 import { useMenuData } from '@/modules/navigation/components/MenuApp/MenuData/MenuData';
 import {
   filterGroupedMenuByQuery,

@@ -74,12 +74,12 @@ const useExpenseComments = (expenses: CashCountExpense[]) => {
   return useMemo(() => generate(), [generate]);
 };
 
-interface RightSideProps {
+interface ClosureSidePanelProps {
   calculationIsOpen: boolean;
   setCalculationIsOpen: (value: boolean) => void;
 }
 
-export const RightSide: React.FC<RightSideProps> = ({
+export const ClosureSidePanel: React.FC<ClosureSidePanelProps> = ({
   calculationIsOpen,
   setCalculationIsOpen,
 }) => {

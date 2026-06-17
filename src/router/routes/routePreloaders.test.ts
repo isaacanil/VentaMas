@@ -43,7 +43,7 @@ vi.mock('@/hooks/useBusinessFeatureEnabled', () => ({
     useBusinessFeatureEnabledMock(...args),
 }));
 
-vi.mock('@/utils/menuAccess', () => ({
+vi.mock('@/modules/navigation/utils/menuAccess', () => ({
   useFilterMenuItemsByAccess: (...args: unknown[]) =>
     useFilterMenuItemsByAccessMock(...args),
 }));

@@ -1,0 +1,1 @@
+export { GeneralLedgerPanel } from './GeneralLedgerPanel';

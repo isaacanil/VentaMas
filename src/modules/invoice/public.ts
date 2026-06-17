@@ -1,10 +1,5 @@
-export { CreditNotesInfoCard } from './components/InvoiceDetailCards/CreditNotesInfoCard';
 export { default as CreditSelector } from './components/CreditSelector/CreditSelector';
-export { ElectronicTaxReceiptInfoCard } from './components/InvoiceDetailCards/ElectronicTaxReceiptInfoCard';
-export { PaymentMethodInfoCard } from './components/InvoiceDetailCards/PaymentMethodInfoCard';
-export { ReceivablePaymentsInfoCard } from './components/InvoiceDetailCards/ReceivablePaymentsInfoCard';
 export { Invoice } from './components/Invoice/components/Invoice/Invoice';
-export { InvoiceDocumentHeader } from './components/InvoiceDocumentHeader/InvoiceDocumentHeader';
 export { default as InvoiceTemplates } from './components/Invoice/components/InvoiceTemplates/InvoiceTemplates';
 export { TaxReceiptDepletedModal } from './components/TaxReceiptDepletedModal';
 

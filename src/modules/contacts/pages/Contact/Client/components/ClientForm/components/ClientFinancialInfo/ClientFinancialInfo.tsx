@@ -3,7 +3,7 @@ import {
   faReceipt,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, Card, Pagination } from 'antd';
+import { Pagination } from 'antd';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -18,19 +18,15 @@ import { AccountCard } from './AccountCard/AccountCard';
 import { ClientBalanceInfo } from './components/ClientBalanceInfo';
 import { CreditLimits } from './components/CreditLimits';
 import { FilterBar } from './components/FilterBar';
+import type { ClientFinancialSummary } from './types';
+import { getAccountCardKey } from './utils/getAccountCardKey';
 
 type UserRootState = Parameters<typeof selectUser>[0];
-
-type ClientSummary = {
-  id?: string;
-  name?: string;
-  numberId?: string | number;
-} & Record<string, unknown>;
 
 type DisplayedAccount = ReturnType<typeof convertAccountsData>[number];
 
 type ClientFinancialInfoProps = {
-  client: ClientSummary | null | undefined;
+  client: ClientFinancialSummary | null | undefined;
 };
 
 const ClientFinancialInfo = ({ client }: ClientFinancialInfoProps) => {
@@ -115,27 +111,16 @@ const ClientFinancialInfo = ({ client }: ClientFinancialInfoProps) => {
         <Accounts>
           {paginatedDisplayedAccounts.length > 0 ? (
             paginatedDisplayedAccounts.map((account) => {
-              const accountNumber =
-                account.numberId ??
-                (account as { accountNumber?: string | number }).accountNumber;
-              const accountKey =
-                (account as { arId?: string }).arId ??
-                (account as { accountNumber?: string | number })
-                  .accountNumber ??
-                (account as { id?: string }).id ??
-                accountNumber;
               return (
                 <AccountCard
-                  key={accountKey ?? accountNumber}
-                  account={account as any}
-                  accountNumber={accountNumber}
-                  date={account.date}
+                  key={getAccountCardKey(account)}
+                  account={account}
                   frequency={account.frequency}
                   balance={account.balance}
                   installments={account.installments}
                   installmentAmount={account.installmentAmount}
-                  lastPayment={account.lastPayment}
                   isActive={account.isActive}
+                  client={client}
                 />
               );
             })
@@ -173,97 +158,6 @@ export const Container = styled.div`
   gap: 1rem;
 `;
 
-// Encabezado de sección
-export const Header = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-// Títulos y texto
-export const CodeTitle = styled.p`
-  margin: 0;
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.4;
-  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
-`;
-
-export const ClientName = styled.p`
-  margin: 0;
-  font-size: 0.875rem;
-  font-style: italic;
-  font-weight: 400;
-  line-height: 1.5;
-  color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
-`;
-
-// Cards de balance
-export const BalanceCard = styled(Card)`
-  text-align: center;
-
-  .ant-card-body {
-    padding: 12px;
-  }
-`;
-
-export const BalanceTitle = styled.div`
-  margin-bottom: 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  line-height: 1.5;
-  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
-`;
-
-export const BalanceAmount = styled.div`
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.3;
-  color: #ff4d4f;
-`;
-
-// Cards de límite de crédito
-export const CreditLimitCard = styled(Card)`
-  text-align: center;
-
-  .ant-card-body {
-    padding: 12px;
-  }
-`;
-
-export const CreditAvailableCard = styled(Card)`
-  text-align: center;
-
-  .ant-card-body {
-    padding: 12px;
-  }
-`;
-
-export const LimitTitle = styled.div`
-  margin-bottom: 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  line-height: 1.5;
-  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
-`;
-
-export const LimitAmount = styled.div`
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.3;
-  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
-`;
-
-// Botón estilizado
-export const StyledButton = styled(Button)`
-  margin-top: 10px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.4;
-`;
-
 // Sección de cuentas por cobrar
 export const AccountsReceivable = styled.div`
   display: grid;
@@ -286,44 +180,6 @@ export const SectionTitle = styled.h2`
     color: #1890ff;
     opacity: 0.8;
   }
-`;
-
-export const OpenAccountsTitle = styled.div`
-  margin-bottom: 10px;
-  font-size: 0.875rem;
-  font-weight: 400;
-  line-height: 1.5;
-  color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
-`;
-
-// Sección de pagos
-export const Payments = styled.div`
-  margin-top: 10px;
-`;
-
-export const PaymentRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 5px;
-
-  span {
-    font-size: 0.875rem;
-    font-weight: 400;
-    line-height: 1.5;
-    color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
-  }
-`;
-
-// Sección general
-export const Section = styled.section`
-  margin: 0.75rem 0;
-`;
-
-// Línea divisoria
-export const Line = styled.div`
-  margin: 0.5rem 0;
-  border-bottom: 1px solid
-    ${({ theme }) => theme.divider || 'rgba(0, 0, 0, 0.12)'};
 `;
 
 // Contenedor de cuentas

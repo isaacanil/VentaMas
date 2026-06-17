@@ -171,6 +171,7 @@ const forbiddenLegacySharedImportPrefixes = [
   '@/utils/fiscal/electronicTaxReceiptDocumentTypes',
   '@/utils/fiscal/dgii608ReasonCatalog',
   '@/utils/commissions/collaboratorOptions',
+  '@/utils/menuAccess',
   '@/schema',
   '@/notification',
 ];
@@ -577,6 +578,8 @@ const retiredLegacySharedSourcePaths = [
   ['src', 'utils', 'fiscal', 'dgii608ReasonCatalog.ts'],
   ['src', 'utils', 'fiscal', 'dgii608ReasonCatalog.test.ts'],
   ['src', 'utils', 'commissions', 'collaboratorOptions.ts'],
+  ['src', 'utils', 'menuAccess.ts'],
+  ['src', 'utils', 'menuAccess.test.tsx'],
   ['src', 'services', 'functionsApiClient.ts'],
   ['src', 'services', 'functionsApiClient.test.ts'],
   ['src', 'services', 'dynamicPermissions.ts'],

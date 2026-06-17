@@ -3,8 +3,8 @@ import styled from 'styled-components';
 import type { FC } from 'react';
 
 import {
-  ProductEditorBarcode,
   ProductQRCode,
+  productStudioProductEditorAdapters,
 } from '@/modules/products/public';
 import {
   SectionCard,
@@ -15,6 +15,7 @@ import {
 import type { ProductRecord } from '@/types/products';
 
 const EMPTY_PRODUCT = {} as ProductRecord;
+const ProductStudioBarcode = productStudioProductEditorAdapters.Barcode;
 
 const CodesCard = styled(SectionCard)`
   .ant-card-body {
@@ -53,7 +54,7 @@ export const CodesSection: FC<CodesSectionProps> = ({ domId, product }) => (
     </SectionHeader>
     <CodesColumns>
       <ProductQRCode product={product ?? EMPTY_PRODUCT} />
-      <ProductEditorBarcode product={product ?? EMPTY_PRODUCT} />
+      <ProductStudioBarcode product={product ?? EMPTY_PRODUCT} />
     </CodesColumns>
     <CodesSpacer />
   </CodesCard>

@@ -2,7 +2,7 @@ import type { MenuItem } from '@/types/menu';
 import { useBusinessFeatureEnabled } from '@/hooks/useBusinessFeatureEnabled';
 import ROUTES_NAME from '@/router/routes/routesName';
 import { routePreloaders } from '@/router/routes/routePreloaders';
-import { useFilterMenuItemsByAccess } from '@/utils/menuAccess';
+import { useFilterMenuItemsByAccess } from '@/modules/navigation/utils/menuAccess';
 
 import admin from './items/admin';
 import basic from './items/basic';

@@ -236,6 +236,14 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - Se retiro el redirect redundante `/settings/modules` -> `/settings/modules`, reduciendo la allowlist de rutas duplicadas a su unica excepcion activa documentada.
 - `usePersistentDeveloperBusiness` vive junto a los listeners del router en `src/router/hooks`, `GlobalListeners` dejo de montar el listener offline local de imagenes sin usar su estado, y el `formatDate` legacy de `src/utils` quedo retirado en favor de los formatters vivos bajo `src/utils/date`.
 - Los paths retirados recientes (`functionsApiClient`, `dynamicPermissions`, `invoiceV2Admin`, `pdfMakeLoader` legacy y `reconcileBatchStatus` bajo functions/inventory) quedaron cubiertos por `moduleBoundaries.test.ts`; los planes históricos de testing deben apuntar a `src/firebase/functions/httpClient.ts`, `src/domain|firebase/permissions/*` y el service owner-local de `InvoiceV2Recovery`.
+- `menuAccess` vive bajo `src/modules/navigation/utils`, porque el owner real del filtrado de menu es navegacion; `Home` consume solo el contrato minimo expuesto por `navigation/public`.
+- El pago de cuentas por cobrar salio de `contacts` como detalle profundo: `AccountPaymentControl`, `useOpenAccountPayment`, `useOpenBalancePayment` y los builders de payload viven bajo `src/features/accountsReceivable/accountPayment`, junto al slice que abre el modal de pago, para que `contacts` e `invoice` reutilicen el contrato sin crear ciclos entre modulos.
+- `ClientFinancialInfo` redujo props muertas de `AccountCard`, centralizo la key de tarjeta en `getAccountCardKey`, retiro styled exports sin consumidores y dejo el pago de balance detras del hook de CxC.
+- Se retiraron anidaciones accidentales o duplicados seguros: `PaymentFields`, `PinDetailsModal`, `GeneralLedgerPanel` y `JournalBookPanel` ahora son carpetas owner-locales con `index.ts`; el `UserSection` duplicado de apertura de caja fue eliminado en favor del recurso compartido vivo.
+- `RightSide` de cierre de caja se renombro a `ClosureSidePanel`, conservando el subtree local pero usando un nombre de ownership mas claro que no describe solo layout.
+- Los barrels publicos quedaron mas estrictos: `navigation/public` ya no expone `MenuAppUI`, `MenuAppUIProps` ni `openNotificationCenter`; `invoice/public` ya no expone detail cards/header usados solo dentro de invoice; y `products/public` reemplazo internals de `ProductEditorModal` por `productStudioProductEditorAdapters` para DevTools.
+- Se retiraron huerfanos confirmados sin consumidores: `PostingProfileInspector`, el `Header` raiz legacy de CashReconciliation y los `Header`/`Body` legacy de `InvoiceItem`.
+- `OpenControllerSmall` usa un `button` nativo estilizado en vez de `div role="button"`, eliminando handlers de teclado manuales innecesarios.
 
 ## Guardrails añadidos en esta pasada
 

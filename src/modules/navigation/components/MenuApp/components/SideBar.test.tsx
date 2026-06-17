@@ -43,7 +43,7 @@ vi.mock('@/hooks/abilities/useAbilities', () => ({
   }),
 }));
 
-vi.mock('@/utils/menuAccess', () => ({
+vi.mock('@/modules/navigation/utils/menuAccess', () => ({
   useHasDeveloperAccess: () => false,
 }));
 

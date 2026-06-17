@@ -15,10 +15,8 @@ import { markAuthorizationUsed } from '@/firebase/authorizations/invoiceEditAuth
 import { fbUpdateInvoice } from '@/firebase/invoices/fbUpdateInvoice';
 import { useAccountingRolloutEnabled } from '@/hooks/useAccountingRolloutEnabled';
 import { useOpenAccountingEntry } from '@/modules/accounting/public';
-import {
-  ElectronicTaxReceiptInfoCard,
-  InvoiceDocumentHeader,
-} from '@/modules/invoice/public';
+import { ElectronicTaxReceiptInfoCard } from '@/modules/invoice/components/InvoiceDetailCards/ElectronicTaxReceiptInfoCard';
+import { InvoiceDocumentHeader } from '@/modules/invoice/components/InvoiceDocumentHeader/InvoiceDocumentHeader';
 import { formatPrice } from '@/utils/format';
 import { convertInvoiceDateToMillis } from '@/utils/invoice';
 import type { UserIdentity } from '@/types/users';

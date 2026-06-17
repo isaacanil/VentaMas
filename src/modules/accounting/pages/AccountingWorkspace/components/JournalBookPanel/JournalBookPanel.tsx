@@ -7,15 +7,15 @@ import { VmButton } from '@/components/heroui';
 import { FileExcelOutlined, PlusOutlined } from '@/constants/icons/antd';
 import ROUTES_NAME from '@/router/routes/routesName';
 
-import { JOURNAL_BOOK_PAGE_SIZE } from './JournalBookPanel/constants';
-import { JournalBookSummary } from './JournalBookPanel/components/JournalBookSummary';
-import { JournalBookTable } from './JournalBookPanel/components/JournalBookTable';
-import { JournalBookToolbar } from './JournalBookPanel/components/JournalBookToolbar';
-import { JournalEntryDetailDrawer } from './JournalEntryDetailDrawer';
-import { exportJournalBookWorkbook } from './utils/journalBookExport';
+import { JOURNAL_BOOK_PAGE_SIZE } from './constants';
+import { JournalBookSummary } from './components/JournalBookSummary';
+import { JournalBookTable } from './components/JournalBookTable';
+import { JournalBookToolbar } from './components/JournalBookToolbar';
+import { JournalEntryDetailDrawer } from '../JournalEntryDetailDrawer';
+import { exportJournalBookWorkbook } from '../utils/journalBookExport';
 
-import type { JournalBookSummaryTotals } from './JournalBookPanel/types';
-import type { AccountingLedgerRecord } from '../utils/accountingWorkspace';
+import type { JournalBookSummaryTotals } from './types';
+import type { AccountingLedgerRecord } from '../../utils/accountingWorkspace';
 
 interface JournalBookPanelProps {
   loading: boolean;

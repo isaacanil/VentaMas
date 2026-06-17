@@ -21,9 +21,9 @@ import {
   resolvePaymentMethodStatusValue,
 } from '@/utils/payments/paymentMethodBootstrap';
 
-import { paymentDescriptions } from '../constants/paymentDescriptions';
-import { PaymentMethodRow } from './PaymentFields/PaymentMethodRow';
-import { Container, Items } from './PaymentFields/styles';
+import { paymentDescriptions } from '../../constants/paymentDescriptions';
+import { PaymentMethodRow } from './PaymentMethodRow';
+import { Container, Items } from './styles';
 
 type AccountsReceivablePaymentRootState = Parameters<
   typeof selectAccountsReceivablePayment

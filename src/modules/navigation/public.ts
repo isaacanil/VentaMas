@@ -1,16 +1,12 @@
-export {
-  MenuApp,
-  MenuAppUI,
-  type MenuAppUIProps,
-} from './components/MenuApp/MenuApp';
+export { MenuApp } from './components/MenuApp/MenuApp';
 export { DashboardLayout } from './layout/DashboardLayout';
 export { NotificationButton } from './components/MenuApp/components/NotificationButton/NotificationButton';
 export { useMenuData } from './components/MenuApp/MenuData/MenuData';
+export { useFilterMenuItemsByAccess } from './utils/menuAccess';
 export { default as navReducer } from './state/navSlice';
 export {
   closeNotificationCenter,
   default as notificationCenterReducer,
-  openNotificationCenter,
   selectNotificationCenter,
 } from './state/notificationCenterSlice';
 export {
