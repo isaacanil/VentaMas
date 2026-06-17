@@ -62,7 +62,6 @@ const hostingVisibleDevRoutes = [
 
 const allowedDuplicateRoutePaths = new Set([
   '/account/subscription',
-  '/settings/modules',
 ]);
 
 const activeRoutes = [

@@ -47,7 +47,6 @@ export const generalConfigRedirectRoutes = createRedirectRoutes([
   ['/settings/general-config/', GENERAL_CONFIG_BILLING],
   ['/settings/general-config/modules', GENERAL_CONFIG_MODULES],
   ['/settings/general-config/billing', GENERAL_CONFIG_BILLING],
-  ['/settings/modules', GENERAL_CONFIG_MODULES],
   ['/settings/general-config/accounting', GENERAL_CONFIG_ACCOUNTING],
   ['/settings/contabilidad', GENERAL_CONFIG_ACCOUNTING],
   ['/settings/contabilidad/tasa-cambio', GENERAL_CONFIG_EXCHANGE_RATES],

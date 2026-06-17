@@ -233,6 +233,7 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - `updateObject` quedo owner-local en `ClientControl`, la ruta `Lab` usa `ROUTES_NAME.LAB_TERM`, `electronicInvoiceReadiness` reutiliza `asRecord` compartido y el bucket zombie `src/features/navigation` queda protegido por `moduleBoundaries.test.ts`.
 - `formatNumber` quedo integrado en `formatCounts` como `formatNullableCountValue`; `formatters` quedo integrado en `src/utils/format`, sus consumidores activos apuntan al owner real y ambos paths legacy quedan protegidos por `moduleBoundaries.test.ts`.
 - `filterData` y `filterByDeepSearchText` comparten traversal profundo mediante `createDeepSearchTextPredicate`, conservando las opciones especificas de fechas/profundidad del filtro legacy.
+- Se retiro el redirect redundante `/settings/modules` -> `/settings/modules`, reduciendo la allowlist de rutas duplicadas a su unica excepcion activa documentada.
 - Los paths retirados recientes (`functionsApiClient`, `dynamicPermissions`, `invoiceV2Admin`, `pdfMakeLoader` legacy y `reconcileBatchStatus` bajo functions/inventory) quedaron cubiertos por `moduleBoundaries.test.ts`; los planes históricos de testing deben apuntar a `src/firebase/functions/httpClient.ts`, `src/domain|firebase/permissions/*` y el service owner-local de `InvoiceV2Recovery`.
 
 ## Guardrails añadidos en esta pasada
