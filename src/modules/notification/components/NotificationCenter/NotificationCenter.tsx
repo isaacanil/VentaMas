@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import {
   selectNotificationCenter,
   closeNotificationCenter,
-} from '@/features/notification/notificationCenterSlice';
+} from '@/modules/navigation/public';
 import { useFiscalReceiptsAlerts } from '@/hooks/useFiscalReceiptsAlerts';
 import { Loader } from '@/components/ui/loader';
 

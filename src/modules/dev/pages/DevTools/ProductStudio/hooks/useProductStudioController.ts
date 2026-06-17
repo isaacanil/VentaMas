@@ -6,7 +6,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useCategoryState } from '@/context/CategoryContext/useCategoryState';
 import { openModal as openActiveIngredientModal } from '@/features/activeIngredients/activeIngredientsSlice';
 import { selectUser } from '@/features/auth/userSlice';
-import { openBrandModal } from '@/features/productBrands/productBrandSlice';
 import {
   ChangeProductData,
   changeProductPrice,
@@ -24,6 +23,7 @@ import {
   buildBrandOptions,
 } from '@/domain/products/brandSelection';
 import { buildSanitizedProductForSubmit } from '@/domain/products/normalization';
+import { openBrandModal } from '@/modules/products/public';
 
 import {
   useProductPreviewMetrics,

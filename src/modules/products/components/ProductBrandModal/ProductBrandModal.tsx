@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   closeBrandModal,
   selectProductBrandModal,
-} from '@/features/productBrands/productBrandSlice';
+} from '@/modules/products/state/productBrandSlice';
 import {
   useProductBrandSubmit,
   type BrandFormValues,

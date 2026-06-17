@@ -4,7 +4,7 @@ import type { RouteObject } from 'react-router';
 import { RouteErrorFallback } from './components/RouteErrorFallback/RouteErrorFallback';
 import { protectedRouteLoader } from '@/router/routes/loaders/accessLoaders';
 
-import DashboardLayout from '@/layouts/DashboardLayout';
+import { DashboardLayout } from '@/modules/navigation/public';
 
 import { RootElement } from './AppRouterLayout';
 import { routes } from './routes/routes';

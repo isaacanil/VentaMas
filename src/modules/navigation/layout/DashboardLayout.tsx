@@ -6,7 +6,7 @@ import {
   DashboardMenuProvider,
   type DashboardMenuConfig,
 } from './dashboardMenuContext';
-import { MenuAppUI } from '@/modules/navigation/public';
+import { MenuAppUI } from '../components/MenuApp/MenuApp';
 
 const spin = keyframes`
   to { transform: rotate(360deg); }

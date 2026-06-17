@@ -15,7 +15,7 @@ import styled from 'styled-components';
 import {
   useDashboardMenu,
   type DashboardMenuConfig,
-} from '@/layouts/dashboardMenuContext';
+} from '../../layout/dashboardMenuContext';
 
 import { VmInputGroup } from '@/components/heroui';
 import { icons } from '@/constants/icons/icons';

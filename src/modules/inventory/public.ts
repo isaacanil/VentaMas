@@ -1,4 +1,9 @@
 export { ProductBatchModal } from './pages/Inventory/components/Warehouse/components/ProductBatchModal/ProductBatchModal';
+export {
+  default as barcodePrintModalReducer,
+  SelectBarcodePrintModal,
+  toggleBarcodeModal,
+} from './state/barcodePrintModalSlice';
 export { InventoryFilterAndSort } from './pages/Inventario/pages/ItemsManager/components/InventoryFilterAndSort/InventoryFilterAndSort';
 export { default as InventoryMenu } from './pages/Inventory/components/Warehouse/components/DetailView/InventoryMenu';
 export {

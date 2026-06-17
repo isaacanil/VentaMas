@@ -9,7 +9,6 @@ import alertReducer from '@/features/Alert/AlertSlice';
 import appReducer from '@/features/appModes/appModeSlice';
 import businessReducer from '@/features/auth/businessSlice';
 import userReducer from '@/features/auth/userSlice';
-import barcodePrintModalReducer from '@/features/barcodePrintModalSlice/barcodePrintModalSlice';
 import cartReducer from '@/features/cart/cartSlice';
 import cashCountManagementReducer from '@/features/cashCount/cashCountManagementSlice';
 import cashCountState from '@/features/cashCount/cashStateSlice';
@@ -32,11 +31,13 @@ import invoiceFormReducer from '@/features/invoice/invoiceFormSlice';
 import invoicePreviewReducer from '@/features/invoice/invoicePreviewSlice';
 import invoiceWorkspaceModalReducer from '@/features/invoice/invoiceWorkspaceModalSlice';
 import modalReducer from '@/features/modals/modalSlice';
-import { navReducer, routeHistoryReducer } from '@/modules/navigation/public';
+import {
+  navReducer,
+  notificationCenterReducer,
+  routeHistoryReducer,
+} from '@/modules/navigation/public';
 import noteModalReducer from '@/features/noteModal/noteModalSlice';
-import notificationCenterReducer from '@/features/notification/notificationCenterSlice';
 import notificationReducer from '@/features/notification/notificationSlice';
-import productBrandReducer from '@/features/productBrands/productBrandSlice';
 import productOutflowReducer from '@/features/productOutflow/productOutflow';
 import deleteProductStockReducer from '@/features/productStock/deleteProductStockSlice';
 import productStockSimpleReducer from '@/features/productStock/productStockSimpleSlice';
@@ -55,6 +56,8 @@ import segmentModalReducer from '@/features/warehouse/segmentModalSlice';
 import shelfModalReducer from '@/features/warehouse/shelfModalSlice';
 import warehouseModalReducer from '@/features/warehouse/warehouseModalSlice';
 import warehouseReducer from '@/features/warehouse/warehouseSlice';
+import { barcodePrintModalReducer } from '@/modules/inventory/public';
+import { productBrandReducer } from '@/modules/products/public';
 
 import { totalsListener } from './middleware/cartTotalsListener';
 

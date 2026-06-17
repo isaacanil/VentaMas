@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { selectUser } from '@/features/auth/userSlice';
-import { closeNotificationCenter } from '@/features/notification/notificationCenterSlice';
+import { closeNotificationCenter } from '@/modules/navigation/public';
 import ROUTES_PATH from '@/router/routes/routesName';
 import { hasAuthorizationApproveAccess } from '@/utils/access/authorizationAccess';
 

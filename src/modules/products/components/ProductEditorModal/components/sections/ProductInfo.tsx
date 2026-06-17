@@ -5,10 +5,10 @@ import { useDispatch } from 'react-redux';
 import { icons } from '@/constants/icons/icons';
 import { useCategoryState } from '@/context/CategoryContext/useCategoryState';
 import { openModal } from '@/features/activeIngredients/activeIngredientsSlice';
-import { openBrandModal } from '@/features/productBrands/productBrandSlice';
 import { PRODUCT_ITEM_TYPE_OPTIONS } from '@/domain/products/productDefaults';
 import { matchesSelectOptionText } from '@/domain/products/selectOptionText';
 import { buildBrandOptions } from '@/domain/products/brandSelection';
+import { openBrandModal } from '@/modules/products/state/productBrandSlice';
 import type {
   ActiveIngredient,
   ProductBrand,

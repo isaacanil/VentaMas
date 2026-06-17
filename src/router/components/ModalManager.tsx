@@ -8,7 +8,6 @@ import { selectAccountsReceivablePayment } from '@/features/accountsReceivable/a
 import { selectARDetailsModal } from '@/features/accountsReceivable/accountsReceivableSlice';
 import { selectActiveIngredientModal } from '@/features/activeIngredients/activeIngredientsSlice';
 import { selectAppMode } from '@/features/appModes/appModeSlice';
-import { SelectBarcodePrintModal } from '@/features/barcodePrintModalSlice/barcodePrintModalSlice';
 import { selectCreditNoteModal } from '@/features/creditNote/creditNoteModalSlice';
 import { selectFileCenter } from '@/features/files/fileSlice';
 import { selectImageViewerShow } from '@/features/imageViewer/imageViewerSlice';
@@ -26,7 +25,6 @@ import {
 } from '@/features/modals/modalSlice';
 import { selectNote } from '@/features/noteModal/noteModalSlice';
 import { selectCurrentNotification } from '@/features/notification/notificationSlice';
-import { selectProductBrandModal } from '@/features/productBrands/productBrandSlice';
 import { SelectProductOutflow } from '@/features/productOutflow/productOutflow';
 import { selectDeleteModalState } from '@/features/productStock/deleteProductStockSlice';
 import { selectProductStock } from '@/features/productStock/productStockSlice';
@@ -47,6 +45,7 @@ import {
 import { loadDeveloperConsoleModal } from '@/modules/dev/public';
 import {
   loadDeleteProductStockModal,
+  SelectBarcodePrintModal,
   loadBarcodePrintModal,
   loadProductOutflowModal,
   loadProductStockForm,
@@ -66,6 +65,7 @@ import {
   loadActiveIngredientModal,
   loadProductEditorModal,
   loadProductBrandModal,
+  selectProductBrandModal,
 } from '@/modules/products/public';
 import { loadSetCustomProductModal } from '@/modules/sales/public';
 import { loadSignUpUserModal } from '@/modules/settings/public';
