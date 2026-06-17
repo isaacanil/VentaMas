@@ -40,10 +40,18 @@ import {
   formatElectronicTaxReceiptLabel,
 } from '@/domain/fiscal/electronicTaxReceiptDocumentTypes';
 import { resolveBusinessFiscalRollout } from '@/utils/fiscal/fiscalRollout';
-import { updateObject } from '@/utils/object/updateObject';
 import type { TaxReceiptDocument } from '@/types/taxReceipt';
 
 import { ClientDetails } from './ClientDetails/ClientDetails';
+
+type UpdateClientObjectEvent = {
+  target: {
+    name: string;
+    type?: string;
+    value?: string | number;
+    checked?: boolean;
+  };
+};
 
 type BusinessRootState = Parameters<typeof selectBusinessData>[0];
 type ClientRootState = Parameters<typeof selectClient>[0];
@@ -52,6 +60,48 @@ type ClientSearchRootState = Parameters<typeof selectClientSearchTerm>[0];
 type TaxReceiptRootState = Parameters<typeof selectTaxReceipt>[0];
 type NcfTypeRootState = Parameters<typeof selectNcfType>[0];
 type NcfTypeLockedRootState = Parameters<typeof selectNcfTypeLocked>[0];
+
+const updateClientObject = <T extends Record<string, unknown>>(
+  object: T,
+  e: UpdateClientObjectEvent,
+): T => {
+  const { name, type } = e.target;
+  let value;
+
+  switch (type) {
+    case 'checkbox':
+      value = e.target.checked;
+      break;
+    case 'number':
+      value = Number(e.target.value) || 0;
+      break;
+    default:
+      value = e.target.value;
+  }
+
+  const objectCopy = JSON.parse(JSON.stringify(object)) as Record<
+    string,
+    unknown
+  >;
+
+  const keys = name.split('.');
+  let currentObj = objectCopy;
+
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+
+    if (i === keys.length - 1) {
+      currentObj[key] = value;
+    } else {
+      if (!currentObj[key]) {
+        currentObj[key] = {};
+      }
+      currentObj = currentObj[key] as Record<string, unknown>;
+    }
+  }
+
+  return objectCopy as T;
+};
 
 export const ClientControl = () => {
   const dispatch = useDispatch();
@@ -137,7 +187,7 @@ export const ClientControl = () => {
       mode === CLIENT_MODE_BAR.UPDATE.id ||
       mode === CLIENT_MODE_BAR.CREATE.id
     ) {
-      dispatch(setClient(updateObject(client, e)));
+      dispatch(setClient(updateClientObject(client, e)));
     }
   };
 

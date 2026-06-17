@@ -6,15 +6,18 @@ import {
   loadHeroUiPlaygroundRoute,
 } from '@/modules/dev/public';
 import { ROUTE_STATUS } from '@/router/routes/routeMeta';
+import ROUTES_NAME from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/types/routeTypes';
 
 const Lab = () => <Outlet />;
 const HeroUiPlayground = lazy(loadHeroUiPlaygroundRoute);
 const CustomHeroUiPlayground = lazy(loadCustomHeroUiPlaygroundRoute);
+const { LAB, HEROUI, HEROUI_CUSTOM } = ROUTES_NAME.LAB_TERM;
+const LAB_CHILD_PATH_PREFIX = `${LAB}/`;
 
 const Routes: AppRoute[] = [
   {
-    path: '/lab',
+    path: LAB,
     element: <Lab />,
     devOnly: true,
     requiresDevAccess: true,
@@ -22,7 +25,7 @@ const Routes: AppRoute[] = [
     status: ROUTE_STATUS.WIP,
     children: [
       {
-        path: 'heroui',
+        path: HEROUI.replace(LAB_CHILD_PATH_PREFIX, ''),
         element: <HeroUiPlayground />,
         devOnly: true,
         requiresDevAccess: true,
@@ -30,7 +33,7 @@ const Routes: AppRoute[] = [
         status: ROUTE_STATUS.WIP,
       },
       {
-        path: 'heroui/custom',
+        path: HEROUI_CUSTOM.replace(LAB_CHILD_PATH_PREFIX, ''),
         element: <CustomHeroUiPlayground />,
         devOnly: true,
         requiresDevAccess: true,

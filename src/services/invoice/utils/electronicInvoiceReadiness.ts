@@ -1,11 +1,7 @@
 import type { InvoiceData } from '@/types/invoice';
+import { asRecord } from '@/utils/object/record';
 
 import type { UnknownRecord } from '../types';
-
-const asRecord = (value: unknown): UnknownRecord =>
-  value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as UnknownRecord)
-    : {};
 
 const hasKeys = (value: unknown): boolean => Object.keys(asRecord(value)).length > 0;
 
