@@ -116,11 +116,19 @@ vi.mock('../../../versions/v2/auth/services/userAccess.service.js', () => ({
   assertUserAccess: vi.fn(async () => ({ role: 'admin' })),
 }));
 
+vi.mock(
+  '../../../versions/v2/billing/utils/subscriptionAccess.util.js',
+  () => ({
+    assertBusinessSubscriptionAccess: vi.fn(async () => ({ allowed: true })),
+  }),
+);
+
 import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.util.js';
 import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
 } from '../../../versions/v2/auth/services/userAccess.service.js';
+import { assertBusinessSubscriptionAccess } from '../../../versions/v2/billing/utils/subscriptionAccess.util.js';
 import {
   repairCustomerAdjustmentNoteFinancialEffects,
   repairRejectedAdjustmentNoteFinancialEffects,
@@ -135,6 +143,7 @@ describe('repairCustomerAdjustmentNoteFinancialEffects', () => {
     vi.clearAllMocks();
     resolveCallableAuthUid.mockResolvedValue('user-1');
     assertUserAccess.mockResolvedValue({ role: 'admin' });
+    assertBusinessSubscriptionAccess.mockResolvedValue({ allowed: true });
   });
 
   it('reports rejected adjustment notes with safe financial effects in dry-run mode', async () => {
@@ -336,6 +345,11 @@ describe('repairCustomerAdjustmentNoteFinancialEffects', () => {
       businessId: 'business-1',
       allowedRoles: MEMBERSHIP_ROLE_GROUPS.FINANCIAL_DOCUMENT_VOID,
     });
+    expect(assertBusinessSubscriptionAccess).toHaveBeenCalledWith({
+      businessId: 'business-1',
+      action: 'read',
+      requiredModule: 'accountsReceivable',
+    });
   });
 
   it('rejects unauthenticated callable requests', async () => {
@@ -359,6 +373,36 @@ describe('repairCustomerAdjustmentNoteFinancialEffects', () => {
     ).rejects.toBe(accessError);
     expect(collectionSnapshots.size).toBe(0);
     expect(transactionSetCalls).toHaveLength(0);
+  });
+
+  it('propagates subscription failures before scanning documents', async () => {
+    const subscriptionError = new Error('module disabled');
+    assertBusinessSubscriptionAccess.mockRejectedValueOnce(subscriptionError);
+
+    await expect(
+      repairCustomerAdjustmentNoteFinancialEffects({
+        data: { businessId: 'business-1' },
+      }),
+    ).rejects.toBe(subscriptionError);
+    expect(collectionSnapshots.size).toBe(0);
+    expect(transactionSetCalls).toHaveLength(0);
+  });
+
+  it('requires write subscription access when write repair mode is requested', async () => {
+    await repairCustomerAdjustmentNoteFinancialEffects({
+      data: {
+        businessId: 'business-1',
+        dryRun: false,
+        noteIds: { debit: [] },
+        type: 'debit',
+      },
+    });
+
+    expect(assertBusinessSubscriptionAccess).toHaveBeenCalledWith({
+      businessId: 'business-1',
+      action: 'write',
+      requiredModule: 'accountsReceivable',
+    });
   });
 
   it('returns manual review without writes when debit note receivables already have payments', async () => {

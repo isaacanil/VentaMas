@@ -4,14 +4,21 @@ import { HttpsError } from 'firebase-functions/v2/https';
 import { db } from '../../../../core/config/firebase.js';
 import { resolveSubscriptionOperationAccess } from '../config/limitOperations.config.js';
 import { resolveEffectiveSubscriptionForBusiness } from '../services/subscriptionSnapshot.service.js';
-import { assertUsageCanIncrease, getBusinessUsageSnapshot } from '../services/usage.service.js';
+import {
+  assertUsageCanIncrease,
+  getBusinessUsageSnapshot,
+} from '../services/usage.service.js';
 import { asRecord, toCleanString } from './billingCommon.util.js';
 import { normalizePlanEntitlements } from './planEntitlements.util.js';
 
 const ACTIVE_STATUSES = new Set(['active', 'trialing']);
 const BLOCKED_WRITE_STATUSES = new Set(['past_due', 'canceled', 'unpaid']);
 const STRICT_LIMIT_PLANS = new Set(['demo', 'plus']);
-const INACTIVE_MEMBERSHIP_STATUSES = new Set(['inactive', 'suspended', 'revoked']);
+const INACTIVE_MEMBERSHIP_STATUSES = new Set([
+  'inactive',
+  'suspended',
+  'revoked',
+]);
 const LIMIT_ENFORCEMENT_MODE = String(
   process.env.BILLING_LIMIT_ENFORCEMENT_MODE || 'enforce',
 )
@@ -41,10 +48,9 @@ const normalizeLimitMetricKey = (rawMetricKey) => {
 
 const normalizeEntitlementKey = (rawKey) => toCleanString(rawKey) || null;
 
-const resolveRequiredEntitlement = ({
-  explicitValue,
-  operationValue,
-}) => normalizeEntitlementKey(explicitValue) || normalizeEntitlementKey(operationValue);
+const resolveRequiredEntitlement = ({ explicitValue, operationValue }) =>
+  normalizeEntitlementKey(explicitValue) ||
+  normalizeEntitlementKey(operationValue);
 
 const assertEntitlementAccess = ({
   entitlementType,
@@ -62,8 +68,7 @@ const assertEntitlementAccess = ({
     };
   }
 
-  const entitlementLabel =
-    entitlementType === 'addon' ? 'add-on' : 'módulo';
+  const entitlementLabel = entitlementType === 'addon' ? 'add-on' : 'módulo';
   throw new HttpsError(
     'permission-denied',
     `Tu suscripción no tiene habilitado el ${entitlementLabel} ${normalizedEntitlementKey}.`,
@@ -83,12 +88,10 @@ const resolveOwnerUidFromBusiness = (businessData) => {
 };
 
 const normalizeUserRoleFromMembership = ({ membership, userData }) => {
-  const roleFromMembership = toCleanString(membership?.role)?.toLowerCase() || null;
+  const roleFromMembership =
+    toCleanString(membership?.role)?.toLowerCase() || null;
   if (roleFromMembership) return roleFromMembership;
-  return (
-    toCleanString(userData?.activeRole)?.toLowerCase() ||
-    null
-  );
+  return toCleanString(userData?.activeRole)?.toLowerCase() || null;
 };
 
 const isPlatformDev = (userData) => {
@@ -109,12 +112,19 @@ export const assertBillingAccessForBusiness = async ({
   const normalizedBusinessId = toCleanString(businessId);
   const normalizedActorUserId = toCleanString(actorUserId);
   if (!normalizedBusinessId || !normalizedActorUserId) {
-    throw new HttpsError('invalid-argument', 'businessId y actorUserId son requeridos');
+    throw new HttpsError(
+      'invalid-argument',
+      'businessId y actorUserId son requeridos',
+    );
   }
 
   const [businessSnap, memberSnap, userSnap] = await Promise.all([
     db.doc(`businesses/${normalizedBusinessId}`).get(),
-    db.doc(`businesses/${normalizedBusinessId}/members/${normalizedActorUserId}`).get(),
+    db
+      .doc(
+        `businesses/${normalizedBusinessId}/members/${normalizedActorUserId}`,
+      )
+      .get(),
     db.doc(`users/${normalizedActorUserId}`).get(),
   ]);
   if (!businessSnap.exists) {
@@ -150,16 +160,22 @@ export const assertBillingAccessForBusiness = async ({
   const membership = memberSnap.data() || {};
   const status = toCleanString(membership.status)?.toLowerCase() || 'active';
   if (INACTIVE_MEMBERSHIP_STATUSES.has(status)) {
-    throw new HttpsError('permission-denied', 'Membresía inactiva para este negocio');
+    throw new HttpsError(
+      'permission-denied',
+      'Membresía inactiva para este negocio',
+    );
   }
 
-  const role = normalizeUserRoleFromMembership({ membership, userData }) || 'cashier';
+  const role =
+    normalizeUserRoleFromMembership({ membership, userData }) || 'cashier';
   if (allowReadForAnyMember) {
     return { allowed: true, role, policy: 'any-active-member' };
   }
 
   const allowedRoleSet = new Set(
-    (allowRoles || []).map((roleItem) => toCleanString(roleItem)?.toLowerCase()).filter(Boolean),
+    (allowRoles || [])
+      .map((roleItem) => toCleanString(roleItem)?.toLowerCase())
+      .filter(Boolean),
   );
   if (!allowedRoleSet.has(role)) {
     throw new HttpsError(
@@ -236,32 +252,8 @@ export const assertBusinessSubscriptionAccess = async ({
     };
   }
 
-  if (action === 'read') {
-    return {
-      ...snapshot,
-      allowed: true,
-      policy: 'read-allowed',
-    };
-  }
-
-  if (!ACTIVE_STATUSES.has(status)) {
-    if (BLOCKED_WRITE_STATUSES.has(status)) {
-      throw new HttpsError(
-        'failed-precondition',
-        `La suscripción del negocio está en estado ${status}. Contacta soporte para reactivar el servicio.`,
-      );
-    }
-
-    throw new HttpsError(
-      'failed-precondition',
-      `No se permite esta operación con la suscripción en estado ${status}.`,
-    );
-  }
-
-  const normalizedPlanId = toCleanString(snapshot.planId)?.toLowerCase() || null;
   const usageConfig = asRecord(usageDelta);
-  const operationAccess =
-    resolveSubscriptionOperationAccess(operation) || {};
+  const operationAccess = resolveSubscriptionOperationAccess(operation) || {};
   const resolvedRequiredModule = resolveRequiredEntitlement({
     explicitValue: requiredModule,
     operationValue: operationAccess.requiredModule,
@@ -297,10 +289,25 @@ export const assertBusinessSubscriptionAccess = async ({
     };
   }
 
+  if (!ACTIVE_STATUSES.has(status)) {
+    if (BLOCKED_WRITE_STATUSES.has(status)) {
+      throw new HttpsError(
+        'failed-precondition',
+        `La suscripción del negocio está en estado ${status}. Contacta soporte para reactivar el servicio.`,
+      );
+    }
+
+    throw new HttpsError(
+      'failed-precondition',
+      `No se permite esta operación con la suscripción en estado ${status}.`,
+    );
+  }
+
+  const normalizedPlanId =
+    toCleanString(snapshot.planId)?.toLowerCase() || null;
+
   const metricKey = normalizeLimitMetricKey(
-    usageConfig.metricKey ||
-      usageConfig.metric ||
-      operationAccess.metricKey,
+    usageConfig.metricKey || usageConfig.metric || operationAccess.metricKey,
   );
   const incrementBy = Number(
     usageConfig.incrementBy ??

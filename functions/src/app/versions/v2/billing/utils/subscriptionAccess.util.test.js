@@ -29,7 +29,8 @@ vi.mock('../services/usage.service.js', () => ({
 }));
 
 vi.mock('./planEntitlements.util.js', () => ({
-  normalizePlanEntitlements: (...args) => normalizePlanEntitlementsMock(...args),
+  normalizePlanEntitlements: (...args) =>
+    normalizePlanEntitlementsMock(...args),
 }));
 
 import {
@@ -192,7 +193,80 @@ describe('subscriptionAccess.util', () => {
         action: 'write',
         requiredModule: 'inventory',
       }),
-    ).rejects.toThrow('Tu suscripción no tiene habilitado el módulo inventory.');
+    ).rejects.toThrow(
+      'Tu suscripción no tiene habilitado el módulo inventory.',
+    );
+  });
+
+  it('rejects reads when a required module is not enabled in the plan', async () => {
+    docMock = vi.fn((path) => ({
+      get: vi.fn(async () => {
+        if (path === 'businesses/business-1') {
+          return {
+            exists: true,
+            data: () => ({
+              subscription: {
+                status: 'active',
+                planId: 'plus',
+                modules: {
+                  accountsReceivable: false,
+                },
+              },
+            }),
+          };
+        }
+        throw new Error(`Unexpected path: ${path}`);
+      }),
+    }));
+
+    await expect(
+      assertBusinessSubscriptionAccess({
+        businessId: 'business-1',
+        action: 'read',
+        requiredModule: 'accountsReceivable',
+      }),
+    ).rejects.toThrow(
+      'Tu suscripción no tiene habilitado el módulo accountsReceivable.',
+    );
+  });
+
+  it('marks reads as entitlement-checked when a required module is enabled', async () => {
+    docMock = vi.fn((path) => ({
+      get: vi.fn(async () => {
+        if (path === 'businesses/business-1') {
+          return {
+            exists: true,
+            data: () => ({
+              subscription: {
+                status: 'active',
+                planId: 'plus',
+                modules: {
+                  accountsReceivable: true,
+                },
+              },
+            }),
+          };
+        }
+        throw new Error(`Unexpected path: ${path}`);
+      }),
+    }));
+
+    const result = await assertBusinessSubscriptionAccess({
+      businessId: 'business-1',
+      action: 'read',
+      requiredModule: 'accountsReceivable',
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        allowed: true,
+        policy: 'read-allowed-with-entitlement-check',
+        module: {
+          key: 'accountsReceivable',
+          enabled: true,
+        },
+      }),
+    );
   });
 
   it('returns usage details when a strict plan passes the limit check', async () => {

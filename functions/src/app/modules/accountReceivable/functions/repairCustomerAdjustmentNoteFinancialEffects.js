@@ -6,6 +6,7 @@ import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
 } from '../../../versions/v2/auth/services/userAccess.service.js';
+import { assertBusinessSubscriptionAccess } from '../../../versions/v2/billing/utils/subscriptionAccess.util.js';
 import { buildClientPendingBalanceUpdate } from '../utils/clientPendingBalance.util.js';
 import {
   canCreateFinancialEffectsForAdjustmentNote,
@@ -800,6 +801,11 @@ export const repairCustomerAdjustmentNoteFinancialEffects = onCall(
       authUid,
       businessId,
       allowedRoles: MEMBERSHIP_ROLE_GROUPS.FINANCIAL_DOCUMENT_VOID,
+    });
+    await assertBusinessSubscriptionAccess({
+      businessId,
+      action: payload.dryRun === false ? 'write' : 'read',
+      requiredModule: 'accountsReceivable',
     });
 
     return repairRejectedAdjustmentNoteFinancialEffects({

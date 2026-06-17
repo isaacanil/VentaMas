@@ -2,59 +2,17 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FormInstance } from 'antd';
 
-import supabase from '@/supabase/config';
+import { fetchRncRecordByNumber } from '@/modules/contacts/repositories/rnc.repository';
 
-import {
-  fetchRncRecordByNumber,
-  getRncSearchErrorMessage,
-  useRncSearch,
-} from './useRncSearch';
+import { getRncSearchErrorMessage, useRncSearch } from './useRncSearch';
 
-vi.mock('@/supabase/config', () => ({
-  default: {
-    from: vi.fn(),
-  },
+vi.mock('@/modules/contacts/repositories/rnc.repository', () => ({
+  fetchRncRecordByNumber: vi.fn(),
 }));
-
-const maybeSingle = vi.fn();
-const eq = vi.fn(() => ({ maybeSingle }));
-const select = vi.fn(() => ({ eq }));
 
 describe('useRncSearch helpers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-
-    vi.mocked(supabase.from).mockReturnValue({
-      select,
-    } as never);
-
-    select.mockReturnValue({ eq });
-    eq.mockReturnValue({ maybeSingle });
-  });
-
-  it('returns null when the RNC does not exist', async () => {
-    maybeSingle.mockResolvedValue({
-      data: null,
-      error: null,
-    });
-
-    await expect(fetchRncRecordByNumber('101026042')).resolves.toBeNull();
-    expect(maybeSingle).toHaveBeenCalledOnce();
-  });
-
-  it('returns the matched RNC record when it exists', async () => {
-    maybeSingle.mockResolvedValue({
-      data: {
-        rnc_number: '101026042',
-        full_name: 'Empresa Demo',
-      },
-      error: null,
-    });
-
-    await expect(fetchRncRecordByNumber('101026042')).resolves.toEqual({
-      rnc_number: '101026042',
-      full_name: 'Empresa Demo',
-    });
   });
 
   it('preserves specific error messages for the UI', () => {
@@ -77,5 +35,28 @@ describe('useRncSearch helpers', () => {
     rerender();
 
     expect(result.current.consultarRNC).toBe(firstConsultarRNC);
+  });
+
+  it('uses the contacts RNC repository when consulting DGII data', async () => {
+    vi.mocked(fetchRncRecordByNumber).mockResolvedValue({
+      rnc_number: '101026042',
+      full_name: 'Empresa Demo',
+    });
+    const form = {
+      setFieldsValue: vi.fn(),
+      getFieldsValue: vi.fn(() => ({
+        rnc: '101026042',
+        name: 'Empresa Demo',
+      })),
+    } as unknown as FormInstance;
+
+    const { result } = renderHook(() => useRncSearch(form));
+    await result.current.consultarRNC('101026042');
+
+    expect(fetchRncRecordByNumber).toHaveBeenCalledWith('101026042');
+    expect(form.setFieldsValue).toHaveBeenCalledWith({
+      rnc: '101026042',
+      name: 'Empresa Demo',
+    });
   });
 });

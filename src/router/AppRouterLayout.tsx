@@ -11,7 +11,7 @@ import {
   SessionExpiredAlertDialog,
   useAutomaticLogin,
 } from '@/modules/auth/public';
-import SEO from '@/seo/Seo';
+import { AppSeo } from '@/router/components/AppSeo';
 import { SessionManager } from '@/router/components/SessionManager';
 
 // Tipo básico para User (ajustar según la estructura real)
@@ -108,7 +108,7 @@ const AppLayout = memo(({ blockContent }: { blockContent: boolean }) => {
   return (
     <ViewportContainer>
       {isNavigating ? <RoutePendingBar /> : null}
-      <SEO />
+      <AppSeo />
       <Suspense fallback={<RouteSuspenseFallback />}>
         <Outlet />
       </Suspense>

@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
+import { PageLayout } from '@/components/layout/PageShell';
 import PurchaseCompletionSummary from '@/modules/orderAndPurchase/components/PurchaseCompletionSummary/PurchaseCompletionSummary';
 import type { Purchase } from '@/utils/purchase/types';
 import { MenuApp } from '@/modules/navigation/public';
@@ -67,15 +68,9 @@ export const Purchases = () => {
   );
 };
 
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+const Container = styled(PageLayout)`
   width: 100%;
   height: 100%;
-  min-height: 0;
-  overflow: hidden;
-  background-color: var(--color2);
 `;
 
 const ContentArea = styled.div`

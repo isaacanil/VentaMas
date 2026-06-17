@@ -133,7 +133,7 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - `InventoryControl` dejo de importar `db` directamente; sus hooks locales resuelven el `db` por defecto y conservan override opcional para pruebas.
 - `pinAuth` reutiliza `createFirebaseCallable` para sus siete Cloud Functions de autorizacion, eliminando `httpsCallable` directo y extraccion manual repetida de `response.data`.
 - El componente UI compartido de tipografia se normalizo a `Typography` en carpeta, archivo e imports activos, manteniendo intacto el contrato visual existente.
-- Las carpetas raiz de contexto y SEO se normalizaron a `src/context` y `src/seo`, junto con imports activos y targets de lint, para evitar fragilidad por casing.
+- La carpeta raiz de contexto se normalizo a `src/context`, y el SEO de la app vive junto al router en `src/router/components/AppSeo.tsx` porque depende de metadata de rutas.
 - La carpeta utilitaria de transferencia de datos entre negocios se normalizo a `src/firebase/transfer`; no tenia consumidores activos fuera de sus imports internos.
 - Se retiraron componentes legacy de recibos/notificaciones fiscales sin imports activos (`NotificationSection` y ambos `FiscalReceiptsList`), confirmados con busqueda repo-wide.
 - Las mutaciones simples de almacen, clientes, proveedores, productos y creacion de negocio reutilizan `createFirebaseCallable`, quitando `httpsCallable` directo y extraccion manual de `response.data` donde aplicaba.
@@ -144,6 +144,7 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - La conversion de timestamps Firestore se centralizo en `src/firebase/utils/firestoreDates.ts`, evitando duplicacion entre ordenes y compras y quitando el import cruzado de ordenes hacia `purchase`.
 - Se retiro el archivo legacy sin consumidores de pedidos pendientes; el flujo activo de ordenes pendientes por proveedor vive en `src/firebase/order/useFbGetOrders.tsx`.
 - `ProviderForm` dejo de mantener `selectedCountry` como estado duplicado; ahora deriva el pais desde `Form.useWatch('country')` y conserva el form de AntD como fuente de verdad.
+- La consulta Supabase de RNC salio del bucket raiz `src/supabase` y vive como repository owner-local en `src/modules/contacts/repositories/rnc.repository.ts`.
 - `UpdateProduct/InitializeData.ts` fue retirado como facade sin consumidores; los defaults de producto se importan desde `src/domain/products/productDefaults.ts`.
 - `shortenLocationPath` vive en `src/utils/inventory/locations.ts`, reduciendo el import cruzado desde movimientos de inventario hacia componentes profundos de `InventoryControl`.
 - `inventoryTableUtils` dejo de reexportar `Tag`, `Tooltip` y `EditorsList`; los consumidores importan UI desde `antd` y `EditorsList` desde su componente real.
@@ -205,7 +206,9 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - Las notas de credito/debito electronicas solo crean efectos financieros cuando DGII/RFCE ya estan en un estado aceptado; el mismo criterio se usa para ocultar notas de credito electronicas rechazadas como medio de pago disponible.
 - Se eliminaron assets scaffold sin referencias (`src/assets/react.svg`, `src/assets/link`) y modelos muertos (`src/models/Products`, `src/models/Sales`), actualizando la referencia de inventario.
 - `auditAccountsReceivableHttp` ahora reporta `adjustmentNoteFinancialEffects` para detectar notas de credito/debito electronicas no posteables que aun conservan CxC, aplicaciones o eventos contables activos.
+- La pantalla de auditoria CxC consume ese indicador con un panel local de revision, y la llamada HTTP vive en un service owner-local del modulo en vez de reintroducir un cliente global en `src/services`.
 - `repairCustomerAdjustmentNoteFinancialEffects` centraliza la reparacion segura de esos efectos financieros: por defecto corre en dry-run, solo auto-repara rechazos fiscales confirmados, revalida dentro de transaccion y devuelve `manual_review` para estados ambiguos o documentos con pagos/aplicaciones/asientos.
+- Los accesos de lectura con `requiredModule` ya validan entitlement de suscripcion, y la reparacion fiscal de CxC exige acceso al modulo `accountsReceivable` tanto en dry-run como en escritura.
 
 ## Guardrails añadidos en esta pasada
 

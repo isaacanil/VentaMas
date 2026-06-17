@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
+import { PageLayout } from '@/components/layout/PageShell';
 import { useFbGetProviders } from '@/firebase/provider/useFbGetProvider';
 import useFilter from '@/hooks/search/useSearch';
 import { useListenOrders } from '@/modules/orderAndPurchase/hooks/useOrders';
@@ -83,15 +84,9 @@ export const Orders = () => {
   );
 };
 
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+const Container = styled(PageLayout)`
   width: 100%;
   height: 100%;
-  min-height: 0;
-  overflow: hidden;
-  background-color: var(--color2);
 `;
 
 const ContentArea = styled.div`

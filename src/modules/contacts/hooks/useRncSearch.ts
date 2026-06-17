@@ -1,12 +1,12 @@
 import { useState, useCallback } from 'react';
 import type { FormInstance } from 'antd';
 
-import supabase from '@/supabase/config';
+import {
+  fetchRncRecordByNumber,
+  type DgiiRecord,
+} from '@/modules/contacts/repositories/rnc.repository';
 
 type FieldType = 'rnc' | 'personalID';
-
-type DgiiComparableValue = string | number | null | undefined;
-type DgiiRecord = Record<string, DgiiComparableValue>;
 
 type Difference = {
   field: string;
@@ -36,20 +36,6 @@ const COMPARABLE_FIELDS = [
   // Add other common fields here
 ];
 
-export const fetchRncRecordByNumber = async (value: string) => {
-  const { data, error } = await supabase
-    .from('rnc')
-    .select('*')
-    .eq('rnc_number', value)
-    .maybeSingle<DgiiRecord>();
-
-  if (error) {
-    throw error;
-  }
-
-  return data;
-};
-
 export const getRncSearchErrorMessage = (error: unknown) => {
   if (error instanceof Error && error.message.trim()) {
     return error.message;
@@ -74,7 +60,10 @@ export const useRncSearch = (
   }, []);
 
   const compareDgiiData = useCallback(
-    <TFormData extends object>(formData: TFormData, dgiiData: DgiiRecord | null) => {
+    <TFormData extends object>(
+      formData: TFormData,
+      dgiiData: DgiiRecord | null,
+    ) => {
       if (!dgiiData) {
         setDifferences([]);
         return false;
@@ -175,7 +164,10 @@ export const useRncSearch = (
 
         setRncInfo(data);
 
-        const fieldsToUpdate = [...COMPARABLE_FIELDS, FIELD_MAPPINGS[fieldType]];
+        const fieldsToUpdate = [
+          ...COMPARABLE_FIELDS,
+          FIELD_MAPPINGS[fieldType],
+        ];
 
         const updates = fieldsToUpdate.reduce<Record<string, unknown>>(
           (acc, field) => {

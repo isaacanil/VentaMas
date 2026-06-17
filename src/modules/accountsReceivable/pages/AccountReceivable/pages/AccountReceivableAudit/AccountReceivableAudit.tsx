@@ -24,7 +24,9 @@ import { hasDeveloperAccess } from '@/utils/access/developerAccess';
 
 import { FinancialSummary } from './components/FinancialSummary';
 import { InvoiceTable } from './components/InvoiceTable';
+import { AdjustmentNoteFinancialEffectsPanel } from './components/AdjustmentNoteFinancialEffectsPanel';
 import { DEFAULT_SAMPLE_LIMIT, MAX_SAMPLE_LIMIT } from './constants';
+import { useAccountReceivableAuditIndicators } from './hooks/useAccountReceivableAuditIndicators';
 import { useReceivableInvoices } from './hooks/useReceivableInvoices';
 import {
   buildAccountReceivableAuditExportRows,
@@ -119,6 +121,15 @@ export const AccountReceivableAudit = () => {
   } = useReceivableInvoices(businessId, {
     defaultLimit: DEFAULT_SAMPLE_LIMIT,
   });
+  const {
+    adjustmentNoteFinancialEffects,
+    error: auditIndicatorsError,
+    fetchAuditIndicators,
+    lastUpdated: auditIndicatorsLastUpdated,
+    loading: auditIndicatorsLoading,
+  } = useAccountReceivableAuditIndicators(businessId, {
+    defaultLimit: DEFAULT_SAMPLE_LIMIT,
+  });
 
   const totalInvoices = receivableInvoices.length;
   const filteredInvoices = (() => {
@@ -170,9 +181,12 @@ export const AccountReceivableAudit = () => {
         ...prev,
         current: 1,
       }));
-      void fetchInvoices(values?.sampleLimit);
+      void Promise.all([
+        fetchInvoices(values?.sampleLimit),
+        fetchAuditIndicators(values?.sampleLimit),
+      ]);
     },
-    [fetchInvoices],
+    [fetchAuditIndicators, fetchInvoices],
   );
 
   const handlePaginationChange = useCallback(
@@ -229,6 +243,11 @@ export const AccountReceivableAudit = () => {
       current: 1,
     }));
   }, []);
+
+  const handleRefreshAuditIndicators = useCallback(() => {
+    const sampleLimit = form.getFieldValue('sampleLimit');
+    void fetchAuditIndicators(sampleLimit);
+  }, [fetchAuditIndicators, form]);
 
   const handleRecoverInvoice = useCallback(
     (invoiceId: string) => {
@@ -298,7 +317,11 @@ export const AccountReceivableAudit = () => {
               <InputNumber min={5} max={MAX_SAMPLE_LIMIT} />
             </Form.Item>
             <Form.Item>
-              <Button type="primary" htmlType="submit" loading={loading}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading || auditIndicatorsLoading}
+              >
                 Actualizar
               </Button>
             </Form.Item>
@@ -308,6 +331,14 @@ export const AccountReceivableAudit = () => {
         {error && <Alert type="error" message={error} />}
 
         <FinancialSummary data={financialSummaryData} />
+
+        <AdjustmentNoteFinancialEffectsPanel
+          error={auditIndicatorsError}
+          indicator={adjustmentNoteFinancialEffects}
+          lastUpdated={auditIndicatorsLastUpdated}
+          loading={auditIndicatorsLoading}
+          onRefresh={handleRefreshAuditIndicators}
+        />
 
         <FiltersRow>
           <FilterGroup>
@@ -319,7 +350,9 @@ export const AccountReceivableAudit = () => {
               ]}
               value={receivableFilter}
               onChange={(value) =>
-                handleReceivableFilterChange(value as 'all' | 'with' | 'missing')
+                handleReceivableFilterChange(
+                  value as 'all' | 'with' | 'missing',
+                )
               }
             />
             <Input.Search
