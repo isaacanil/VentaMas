@@ -251,6 +251,12 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - DevTools redujo carpetas `components/` de un solo archivo moviendo `DomainTable`, `SessionTokensCleanupResults`, `ProgressBar` y `CatalogCard` junto al owner que los consume.
 - `DeveloperConsoleModal` reemplazo nombres genericos (`Header`, `Modal`) por `DeveloperConsoleHeader` y `DeveloperConsoleFrame`, quitando nodos vacios y agregando semantica basica de dialog al frame.
 - `InventoryMigrationTool/index.tsx` quedo como re-export directo de `InventoryMigration`, sin wrapper de ruta que solo renderizaba un componente.
+- Se retiraron huerfanos confirmados de `PreorderSale` (`NavBar`, `Button`, `Badge`, `Input` y `PreventaCard`) tras verificar que no tenian consumidores activos fuera de su propio grupo legacy.
+- `UserActivity`, `GroupedLotsSourceRow`, `BarCode` y `TreasuryBankAccountsPage` quedaron como carpetas owner-locales con `index.ts`, eliminando patrones archivo+carpeta con el mismo basename sin cambiar imports publicos ni lazy loaders.
+- `CashRegisterOpening` dejo de usar un wrapper `Header` que solo renderizaba `UserSection`; la pantalla consume directamente el recurso compartido de caja usado tambien por el cierre.
+- `Comments` y `DateSection` de caja salieron de `CashRegisterClosure` hacia `resource/`, porque apertura, cierre y panel lateral los comparten; tambien se retiraron archivos huerfanos de caja (`filterConfig`, `CashReconciliationState`, `TextareaV2` y `CashupInvoicesOverview/tableConfig`).
+- `GeneralConfig` retiro un `Header` legacy sin consumidores activos, y `AllUsersControl` renombro el modal de cambio de contrasena para quitar el typo `Changer` junto con un wrapper styled vacio en `TableUser`.
+- POS retiro huerfanos de carrito confirmados sin consumidores (`CheckoutAction`, `Dropdown`, `InvoicePanel/Header`, `CreditLimitConfig` visual y `CommentModal/commentUtils`), dejando intactos los candidatos de riesgo medio que requieren caracterizacion funcional.
 
 ## Guardrails añadidos en esta pasada
 

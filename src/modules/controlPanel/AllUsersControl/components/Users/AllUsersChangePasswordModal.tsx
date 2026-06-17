@@ -11,7 +11,7 @@ interface ChangePasswordFormValues {
   password: string;
 }
 
-interface ChangerPasswordModalProps {
+interface AllUsersChangePasswordModalProps {
   isOpen: boolean;
   data?: UserRow | null;
   onClose?: () => void;
@@ -29,7 +29,7 @@ const getErrorMessage = (error: unknown): string | null => {
   return null;
 };
 
-export const ChangerPasswordModal: FC<ChangerPasswordModalProps> = ({
+export const AllUsersChangePasswordModal: FC<AllUsersChangePasswordModalProps> = ({
   isOpen,
   data,
   onClose,

@@ -5,9 +5,9 @@ import {
   selectCashCount,
   setCashCountOpeningBanknotes,
 } from '@/features/cashCount/cashCountManagementSlice';
-import { Comments } from '@/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/Comments/Comments';
-import { DateSection } from '@/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/components/Header/DateSection';
 import { CashDenominationCalculator } from '@/modules/cashReconciliation/pages/CashReconciliation/resource/CashDenominationCalculator/CashDenominationCalculator';
+import { Comments } from '@/modules/cashReconciliation/pages/CashReconciliation/resource/Comments';
+import { DateSection } from '@/modules/cashReconciliation/pages/CashReconciliation/resource/DateSection';
 import { UserView } from '@/modules/cashReconciliation/pages/CashReconciliation/resource/UserView/UserView';
 import type {
   CashCountBanknote,

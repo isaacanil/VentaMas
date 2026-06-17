@@ -1,18 +1,18 @@
 import { InputNumber, Tag, Tooltip } from 'antd';
 import { DateTime } from 'luxon';
 
-import { EditorsList } from '../../../../inventoryTableComponents';
+import { EditorsList } from '../../../../../inventoryTableComponents';
 import {
   Diff,
   formatInputDate,
   formatNumber,
   getEffectiveCount,
   normalizeExpirationValue,
-} from '../../../../inventoryTableUtils';
+} from '../../../../../inventoryTableUtils';
 
-import { LotNameCell } from './LotNameCell';
-import { SourceActionsMenu } from './GroupedLotsSourceRow/SourceActionsMenu';
-import { SourceExpirationCell } from './GroupedLotsSourceRow/SourceExpirationCell';
+import { LotNameCell } from '../LotNameCell';
+import { SourceActionsMenu } from './SourceActionsMenu';
+import { SourceExpirationCell } from './SourceExpirationCell';
 
 import { CLEAR_SENTINEL } from '@/modules/inventory/utils/constants';
 import { shortenLocationPath } from '@/utils/inventory/locations';

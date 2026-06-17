@@ -10,12 +10,12 @@ import Barcode from 'react-barcode';
 import styled from 'styled-components';
 
 import type { ProductRecord } from '@/types/products';
-import { BarcodeGenerator } from './BarcodeGenerator/BarcodeGenerator';
-import BarcodeFixTooltip from './BarcodeGenerator/components/BarcodeFixTooltip';
-import { BarcodeInfoModal } from './BarcodeInfoModal/BarcodeInfoModal';
-import BarcodePreviewModal from './BarcodeInfoModal/BarcodePreviewModal';
-import { BarcodePrintModal } from './BarcodePrintModal/BarcodePrintModal';
-import { useBarCodeController } from './BarCode/hooks/useBarCodeController';
+import { BarcodeGenerator } from '../BarcodeGenerator/BarcodeGenerator';
+import BarcodeFixTooltip from '../BarcodeGenerator/components/BarcodeFixTooltip';
+import { BarcodeInfoModal } from '../BarcodeInfoModal/BarcodeInfoModal';
+import BarcodePreviewModal from '../BarcodeInfoModal/BarcodePreviewModal';
+import { BarcodePrintModal } from '../BarcodePrintModal/BarcodePrintModal';
+import { useBarCodeController } from './hooks/useBarCodeController';
 
 const HeaderContainer = styled.div`
   display: flex;

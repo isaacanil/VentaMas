@@ -1,8 +1,7 @@
 import { Button, Table } from 'antd';
 import { useState } from 'react';
-import styled from 'styled-components';
 
-import { ChangerPasswordModal } from './ChangerPasswordModal';
+import { AllUsersChangePasswordModal } from './AllUsersChangePasswordModal';
 
 import type { FC } from 'react';
 import type { TableProps } from 'antd';
@@ -103,20 +102,18 @@ export const TableUser: FC<TableUserProps> = ({ users = EMPTY_USERS }) => {
   };
 
   return (
-    <Container>
+    <>
       <Table
         pagination={pagination}
         columns={columnas}
         dataSource={userList}
         rowKey="id"
       />
-      <ChangerPasswordModal
+      <AllUsersChangePasswordModal
         isOpen={isOpen}
         data={userSelected}
         onClose={() => setIsOpen(false)}
       />
-    </Container>
+    </>
   );
 };
-
-const Container = styled.div``;

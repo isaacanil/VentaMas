@@ -7,22 +7,22 @@ import { getRoleLabelById } from '@/abilities/roles';
 import { fbRevokeSession } from '@/firebase/Auth/fbAuthV2/fbRevokeSession';
 import ROUTES_NAME from '@/router/routes/routesName';
 
-import { SessionsTable } from './UserActivity/components/SessionsTable';
-import { UserActivityCharts } from './UserActivity/components/UserActivityCharts';
-import { UserActivityHeader } from './UserActivity/components/UserActivityHeader';
-import { UserActivityList } from './UserActivity/components/UserActivityList';
-import { UserActivitySummary } from './UserActivity/components/UserActivitySummary';
-import { UserInfoCard } from './UserActivity/components/UserInfoCard';
+import { SessionsTable } from './components/SessionsTable';
+import { UserActivityCharts } from './components/UserActivityCharts';
+import { UserActivityHeader } from './components/UserActivityHeader';
+import { UserActivityList } from './components/UserActivityList';
+import { UserActivitySummary } from './components/UserActivitySummary';
+import { UserInfoCard } from './components/UserInfoCard';
 import {
   useUserActivityData,
   type PresenceState,
   type UserActivityUser,
-} from './UserActivity/hooks/useUserActivityData';
-import { useUserRealActivity } from './UserActivity/hooks/useUserRealActivity';
+} from './hooks/useUserActivityData';
+import { useUserRealActivity } from './hooks/useUserRealActivity';
 import {
   formatDateTime,
   type SessionSummary,
-} from './UserActivity/utils/activityUtils';
+} from './utils/activityUtils';
 
 const {
   SETTING_TERM: { USERS, USERS_LIST },

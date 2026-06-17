@@ -20,9 +20,10 @@ import {
   useAuthorizationModules,
   useAuthorizationPin,
 } from '@/modules/authorizations/public';
-import { Comments } from '@/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/Comments/Comments';
-import { DateSection } from '@/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/components/Header/DateSection';
 import { CashDenominationCalculator } from '@/modules/cashReconciliation/pages/CashReconciliation/resource/CashDenominationCalculator/CashDenominationCalculator';
+import { Comments } from '@/modules/cashReconciliation/pages/CashReconciliation/resource/Comments';
+import { DateSection } from '@/modules/cashReconciliation/pages/CashReconciliation/resource/DateSection';
+import { UserSection } from '@/modules/cashReconciliation/pages/CashReconciliation/resource/UserSection/UserSection';
 import type { UserIdentity } from '@/types/users';
 import type {
   CashCountBanknote,
@@ -32,7 +33,6 @@ import { CASH_COUNT_AUTHORIZATION_ROLES } from '@/utils/roles/roleGroups';
 import { resolveUserIdentityBusinessId } from '@/utils/users/userIdentityAccess';
 
 import { Footer } from './components/Footer/Footer';
-import { Header } from './components/Headers/Header';
 import { PeerReviewAuthorization } from '../../resource/PeerReviewAuthorization/PeerReviewAuthorization';
 
 const { Text } = Typography;
@@ -188,7 +188,7 @@ export const CashRegisterOpening: React.FC = () => {
   return (
     <Backdrop>
       <Container>
-        <Header />
+        <UserSection />
         <CashDenominationCalculator
           title={'Efectivo para apertura'}
           banknotes={banknotes}

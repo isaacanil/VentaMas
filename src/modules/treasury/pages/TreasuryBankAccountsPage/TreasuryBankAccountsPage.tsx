@@ -2,7 +2,7 @@ import BusinessFeatureRouteGate from '@/router/guards/availability/BusinessFeatu
 import { PageLayout } from '@/components/layout/PageShell';
 import { MenuApp } from '@/modules/navigation/public';
 import ROUTES_NAME from '@/router/routes/routesName';
-import TreasuryBankAccountsWorkspace from './TreasuryBankAccountsPage/components/TreasuryBankAccountsWorkspace';
+import TreasuryBankAccountsWorkspace from './components/TreasuryBankAccountsWorkspace';
 
 export default function TreasuryBankAccountsPage() {
   return (

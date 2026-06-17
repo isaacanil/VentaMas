@@ -23,9 +23,9 @@ import type {
   CashCountRecord,
 } from '@/utils/cashCount/types';
 import type { UserIdentity } from '@/types/users';
-import { Comments } from '@/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/Comments/Comments';
-import { DateSection } from '@/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/components/Header/DateSection';
 import { CashDenominationCalculator } from '@/modules/cashReconciliation/pages/CashReconciliation/resource/CashDenominationCalculator/CashDenominationCalculator';
+import { Comments } from '@/modules/cashReconciliation/pages/CashReconciliation/resource/Comments';
+import { DateSection } from '@/modules/cashReconciliation/pages/CashReconciliation/resource/DateSection';
 
 import { CashBoxClosureDetails } from './components/CashBoxClosureDetails/CashBoxClosureDetails';
 import { TransactionSummary } from './components/TransactionSummary/TransactionSummary';
