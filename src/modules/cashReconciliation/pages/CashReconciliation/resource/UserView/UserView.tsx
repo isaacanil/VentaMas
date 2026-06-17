@@ -2,7 +2,7 @@ import { Input, Form } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 import { icons } from '@/constants/icons/icons';
-import { FormattedValue } from '@/components/ui/FormattedValue/FormattedValue';
+import { FormattedValue } from '@/components/ui/FormattedValue';
 import type { CashCountEmployee } from '@/utils/cashCount/types';
 
 interface UserViewProps {

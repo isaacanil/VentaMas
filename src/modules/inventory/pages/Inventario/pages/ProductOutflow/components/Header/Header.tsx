@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import { toggleAddProductOutflow } from '@/features/modals/modalSlice';
 import { Button } from '@/components/ui/Button';
-import { FormattedValue } from '@/components/ui/FormattedValue/FormattedValue';
+import { FormattedValue } from '@/components/ui/FormattedValue';
 
 export const Header = () => {
   const dispatch = useDispatch();

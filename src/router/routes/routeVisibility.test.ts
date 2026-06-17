@@ -32,16 +32,19 @@ const joinRoutePath = (parentPath: string, routePath?: string) => {
   return `${parentPath.replace(/\/$/, '')}/${routePath}`;
 };
 
-const collectDevOnlyRoutes = (
+const isMountableMetadataRoute = (route: AppRoute) =>
+  route.index !== true && route.path !== '*';
+
+const collectMountableRoutes = (
   routes: AppRoute[],
   parentPath = '',
 ): Array<{ path: string; route: AppRoute }> =>
   routes.flatMap((route) => {
     const path = joinRoutePath(parentPath, route.path);
-    const routeEntry = route.devOnly ? [{ path, route }] : [];
+    const routeEntry = isMountableMetadataRoute(route) ? [{ path, route }] : [];
     return [
       ...routeEntry,
-      ...collectDevOnlyRoutes(route.children ?? [], path),
+      ...collectMountableRoutes(route.children ?? [], path),
     ];
   });
 
@@ -120,8 +123,8 @@ describe('routeVisibility', () => {
     );
   });
 
-  it('requires dev access metadata for every dev-only route', () => {
-    const devOnlyRoutesMissingAccess = collectDevOnlyRoutes([
+  it('requires dev access metadata for every dev or lab route', () => {
+    const devLabRoutesMissingAccess = collectMountableRoutes([
       ...devRoutes,
       ...labRoutes,
     ])
@@ -129,6 +132,18 @@ describe('routeVisibility', () => {
       .map(({ path }) => path)
       .sort();
 
-    expect(devOnlyRoutesMissingAccess).toEqual([]);
+    expect(devLabRoutesMissingAccess).toEqual([]);
+  });
+
+  it('requires explicit status metadata for every dev or lab route', () => {
+    const devLabRoutesMissingStatus = collectMountableRoutes([
+      ...devRoutes,
+      ...labRoutes,
+    ])
+      .filter(({ route }) => route.status === undefined)
+      .map(({ path }) => path)
+      .sort();
+
+    expect(devLabRoutesMissingStatus).toEqual([]);
   });
 });

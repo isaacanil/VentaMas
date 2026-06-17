@@ -1,7 +1,7 @@
 import { InputNumber } from 'antd';
 import styled from 'styled-components';
 import { formatPrice } from '@/utils/format';
-import { FormattedValue } from '@/components/ui/FormattedValue/FormattedValue';
+import { FormattedValue } from '@/components/ui/FormattedValue';
 import type { CashCountBanknote } from '@/utils/cashCount/types';
 
 interface BillRowProps {

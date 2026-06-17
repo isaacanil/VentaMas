@@ -82,6 +82,21 @@ test('dry-run preserves explicit scoped --only function targets', async () => {
   assert.match(result.output, /--only functions:reserveCreditNoteNcf/);
 });
 
+test('dry-run blocks non-functions --only targets from scoped functions target', async () => {
+  const result = await runDeploy([
+    'staging:functions',
+    '--only',
+    'hosting:staging',
+    '--dry-run',
+  ]);
+
+  assert.equal(result.code, 1, result.output);
+  assert.match(
+    result.output,
+    /solo aceptan --only functions:<nombreDeFuncion>/,
+  );
+});
+
 test('dry-run blocks staging all-functions target without explicit guard', async () => {
   const result = await runDeploy(['staging:all', '--dry-run']);
 

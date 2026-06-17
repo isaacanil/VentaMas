@@ -20,7 +20,7 @@ import { fbUpdateProductOutflow } from '@/modules/inventory/repositories/product
 import useScroll from '@/hooks/useScroll';
 import { LegacyMotionModal } from '@/components/common/Modal/LegacyMotionModal';
 import { CenteredText } from '@/components/ui/CenteredText';
-import { FormattedValue } from '@/components/ui/FormattedValue/FormattedValue';
+import { FormattedValue } from '@/components/ui/FormattedValue';
 import type { UserIdentity, UserWithBusiness } from '@/types/users';
 import type { ProductRecord } from '@/types/products';
 

@@ -2,7 +2,7 @@ import { LazyMotion, domAnimation, m } from 'framer-motion';
 import { useRef } from 'react';
 import styled from 'styled-components';
 import { formatNumber, formatPrice } from '@/utils/format';
-import { FormattedValue } from '@/components/ui/FormattedValue/FormattedValue';
+import { FormattedValue } from '@/components/ui/FormattedValue';
 import type { CashCountBanknote } from '@/utils/cashCount/types';
 import { BillRow } from './components/BillRow';
 import { OpenControllerSmall } from './OpenControllerSmall';

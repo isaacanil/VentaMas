@@ -18,7 +18,7 @@ import DateUtils from '@/utils/date/dateUtils';
 const { formatDate, toMillis } = DateUtils;
 import { ButtonGroup } from '@/components/ui/Button';
 import { CenteredText } from '@/components/ui/CenteredText';
-import { FormattedValue } from '@/components/ui/FormattedValue/FormattedValue';
+import { FormattedValue } from '@/components/ui/FormattedValue';
 import Loader from '@/components/ui/loader/Loader';
 import type { UserWithBusiness } from '@/types/users';
 import { MenuApp } from '@/modules/navigation/public';

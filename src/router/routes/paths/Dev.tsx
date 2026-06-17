@@ -109,6 +109,7 @@ const Routes: AppRoute[] = [
         path: 'planes',
         element: <DeveloperSubscriptionMaintenancePlansPage />,
         requiresDevAccess: true,
+        status: ROUTE_STATUS.BETA,
       },
       {
         path: '*',
@@ -129,6 +130,7 @@ const Routes: AppRoute[] = [
     path: RoutesName.DEV_VIEW_TERM.FISCAL_RECEIPTS_AUDIT,
     element: <FiscalReceiptsAudit />,
     requiresDevAccess: true,
+    status: ROUTE_STATUS.WIP,
     // enabledEnvs: ['development'] // Ejemplo: sólo en dev incluso si se fuerza dev routes en staging
   },
   {
@@ -152,7 +154,9 @@ const Routes: AppRoute[] = [
   {
     path: RoutesName.DEV_VIEW_TERM.PRUEBA,
     element: <TestPlayground />,
+    devOnly: true,
     requiresDevAccess: true,
+    status: ROUTE_STATUS.WIP,
   },
   {
     path: ERROR_SCREEN_PREVIEW,
@@ -222,6 +226,7 @@ const Routes: AppRoute[] = [
     element: <LoginImageConfig />,
     devOnly: true,
     requiresDevAccess: true,
+    status: ROUTE_STATUS.BETA,
   },
   {
     path: AI_BUSINESS_SEEDING,

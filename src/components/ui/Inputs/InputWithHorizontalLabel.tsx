@@ -3,7 +3,7 @@ import { InputNumber } from 'antd';
 import type { CSSProperties } from 'react';
 import styled from 'styled-components';
 
-import { FormattedValue } from '@/components/ui/FormattedValue/FormattedValue';
+import { FormattedValue } from '@/components/ui/FormattedValue';
 
 const THEME_COLOR_TO_CSS_VAR = {
   success: 'var(--success)',

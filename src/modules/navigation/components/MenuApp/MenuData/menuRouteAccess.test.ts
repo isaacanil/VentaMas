@@ -14,22 +14,27 @@ import inventoryMenuItems from './items/inventory';
 const getMenuItemLabel = (item: MenuItem) =>
   String(item.title ?? item.label ?? item.route ?? item.action ?? '<sin titulo>');
 
-const collectMenuRouteEntries = (
+const collectMenuEntries = (
   items: MenuItem[],
   parentPath = '',
-): Array<{ item: MenuItem; menuPath: string; route: string }> =>
+): Array<{ item: MenuItem; menuPath: string }> =>
   items.flatMap((item) => {
     const menuPath = parentPath
       ? `${parentPath} > ${getMenuItemLabel(item)}`
       : getMenuItemLabel(item);
-    const routeEntry =
-      typeof item.route === 'string' ? [{ item, menuPath, route: item.route }] : [];
 
     return [
-      ...routeEntry,
-      ...collectMenuRouteEntries(item.submenu ?? [], menuPath),
+      { item, menuPath },
+      ...collectMenuEntries(item.submenu ?? [], menuPath),
     ];
   });
+
+const collectMenuRouteEntries = (
+  items: MenuItem[],
+): Array<{ item: MenuItem; menuPath: string; route: string }> =>
+  collectMenuEntries(items).flatMap(({ item, menuPath }) =>
+    typeof item.route === 'string' ? [{ item, menuPath, route: item.route }] : [],
+  );
 
 describe('menu route access metadata', () => {
   beforeAll(() => {
@@ -64,5 +69,18 @@ describe('menu route access metadata', () => {
       .sort();
 
     expect(menuRoutesMissingAccess).toEqual([]);
+  });
+
+  it('marks developer menu actions without routes as developer-only', () => {
+    const developerActionsMissingAccess = collectMenuEntries(developerMenuItems)
+      .filter(
+        ({ item }) =>
+          typeof item.action === 'string' && typeof item.route !== 'string',
+      )
+      .filter(({ item }) => item.requiresDevAccess !== true)
+      .map(({ item, menuPath }) => `${menuPath} -> ${item.action}`)
+      .sort();
+
+    expect(developerActionsMissingAccess).toEqual([]);
   });
 });

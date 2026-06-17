@@ -367,9 +367,34 @@ function onlyArgDeploysAllFunctions(value) {
     .some((target) => target === 'functions');
 }
 
+function onlyArgHasNonFunctionTarget(value) {
+  return value
+    .split(',')
+    .map((target) => target.trim())
+    .filter(Boolean)
+    .some(
+      (target) =>
+        target !== 'functions' && !target.startsWith('functions:'),
+    );
+}
+
 function deployArgsDeployAllFunctions(cfg, deployArgs) {
   if (!['prod', 'staging'].includes(cfg.environment)) return false;
   return getOnlyArgValues(deployArgs).some(onlyArgDeploysAllFunctions);
+}
+
+function assertScopedFunctionsOnlyTargets(passthrough) {
+  const invalidOnly = getOnlyArgValues(passthrough).find(
+    onlyArgHasNonFunctionTarget,
+  );
+
+  if (!invalidOnly) return;
+
+  consola.error(
+    'Los targets staging:functions/prod:functions solo aceptan --only functions:<nombreDeFuncion>.',
+  );
+  consola.info('Ejemplo: npm run deploy -- staging:functions --only functions:createInvoiceV2');
+  process.exit(1);
 }
 
 function normalizeFunctionTargets(rawNames) {
@@ -387,6 +412,7 @@ async function resolveDeployArgs(cfg, passthrough, canPrompt) {
   }
 
   if (hasOnlyArg(passthrough)) {
+    assertScopedFunctionsOnlyTargets(passthrough);
     return [...cfg.args, ...passthrough];
   }
 

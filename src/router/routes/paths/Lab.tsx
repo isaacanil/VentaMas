@@ -5,6 +5,7 @@ import {
   loadCustomHeroUiPlaygroundRoute,
   loadHeroUiPlaygroundRoute,
 } from '@/modules/dev/public';
+import { ROUTE_STATUS } from '@/router/routes/routeMeta';
 import type { AppRoute } from '@/router/types/routeTypes';
 
 const Lab = () => <Outlet />;
@@ -18,6 +19,7 @@ const Routes: AppRoute[] = [
     devOnly: true,
     requiresDevAccess: true,
     hideInMenu: true,
+    status: ROUTE_STATUS.WIP,
     children: [
       {
         path: 'heroui',
@@ -25,6 +27,7 @@ const Routes: AppRoute[] = [
         devOnly: true,
         requiresDevAccess: true,
         hideInMenu: true,
+        status: ROUTE_STATUS.WIP,
       },
       {
         path: 'heroui/custom',
@@ -32,6 +35,7 @@ const Routes: AppRoute[] = [
         devOnly: true,
         requiresDevAccess: true,
         hideInMenu: true,
+        status: ROUTE_STATUS.WIP,
       },
     ],
   },

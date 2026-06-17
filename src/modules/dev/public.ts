@@ -48,7 +48,7 @@ export const loadProductFormV2TestBenchRoute = () =>
   import('./pages/DevTools/ProductFormV2Test/ProductFormV2TestBench');
 
 export const loadProductPriceAuditRoute = () =>
-  import('./pages/test/pages/checkProductPriceField/CheckProductPriceAudit');
+  import('./pages/DevTools/CheckProductPriceAudit/CheckProductPriceAudit');
 
 export const loadProductStudioRoute = () =>
   import('./pages/DevTools/ProductStudio/ProductStudio');

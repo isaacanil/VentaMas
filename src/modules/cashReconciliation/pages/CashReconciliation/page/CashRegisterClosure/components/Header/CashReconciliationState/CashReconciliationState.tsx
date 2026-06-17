@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-import { FormattedValue } from '@/components/ui/FormattedValue/FormattedValue';
+import { FormattedValue } from '@/components/ui/FormattedValue';
 
 export const CashReconciliationState = () => {
   return (

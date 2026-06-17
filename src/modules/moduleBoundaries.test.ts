@@ -201,6 +201,14 @@ const restrictedSharedImportRules: RestrictedSharedImportRule[] = [
     allowedFilePathPrefixes: ['src/components/ui/Typography/'],
   },
   {
+    importPrefix: '@/components/ui/FormattedValue/FormattedValue',
+    allowedFilePathPrefixes: ['src/components/ui/FormattedValue/'],
+  },
+  {
+    importPrefix: '@/components/ui/FormattedValue/types',
+    allowedFilePathPrefixes: ['src/components/ui/FormattedValue/'],
+  },
+  {
     importPrefix: '@/components/ui/Inputs/GeneralInput',
     allowedFilePathPrefixes: ['src/components/ui/Inputs/'],
   },
@@ -328,6 +336,15 @@ const retiredLegacySharedSourcePaths = [
     'pages',
     'checkProductPriceField',
     'BusinessPriceAudit.tsx',
+  ],
+  [
+    'src',
+    'modules',
+    'dev',
+    'pages',
+    'test',
+    'pages',
+    'checkProductPriceField',
   ],
   ['src', 'modules', 'products', 'components', 'ProductListSelected'],
   ['src', 'modules', 'sales', 'components', 'Receipts', 'Sale', 'Template2'],

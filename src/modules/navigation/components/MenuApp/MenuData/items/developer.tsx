@@ -32,6 +32,7 @@ const developer: MenuItem[] = [
         action: 'openDeveloperModal',
         icon: <BugOutlined />,
         group: 'core',
+        requiresDevAccess: true,
       },
       {
         title: 'Switch Business',
