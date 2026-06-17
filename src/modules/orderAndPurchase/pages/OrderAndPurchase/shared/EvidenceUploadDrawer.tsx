@@ -1,8 +1,9 @@
 import { Drawer, type DrawerProps } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 
-import EvidenceUpload from '@/components/common/EvidenceUpload/EvidenceUpload';
-import type { EvidenceFile } from '@/components/common/EvidenceUpload/types';
+import EvidenceUpload, {
+  type EvidenceFile,
+} from '@/components/common/EvidenceUpload';
 import { closeFileCenter, selectFileCenter } from '@/features/files/fileSlice';
 
 interface EvidenceUploadDrawerProps {

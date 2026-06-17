@@ -3,11 +3,10 @@ import { doc, getDoc } from 'firebase/firestore';
 import {
   FISCAL_RECEIPTS_ALERT_CONFIG,
   createDefaultFiscalAlertsConfig,
-} from '@/config/fiscalReceiptsAlertConfig';
+  type FiscalAlertsConfig,
+} from '@/domain/fiscal/fiscalReceiptsAlertConfig';
 import { db } from '@/firebase/firebaseconfig';
 import type { UserIdentity } from '@/types/users';
-
-import type { FiscalAlertsConfig } from './types';
 
 type FiscalAlertsConfigDoc = Omit<
   Partial<FiscalAlertsConfig>,

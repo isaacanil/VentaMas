@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import type { EvidenceFile } from '@/components/common/EvidenceUpload/types';
+import type { EvidenceFile } from '@/components/common/EvidenceUpload';
 import {
   FileOutlined,
   ProfileOutlined,

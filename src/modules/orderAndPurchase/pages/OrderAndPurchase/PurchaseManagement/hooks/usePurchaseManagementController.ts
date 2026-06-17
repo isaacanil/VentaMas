@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useReducer } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import type { EvidenceFileInput } from '@/components/common/EvidenceUpload/types';
+import type { EvidenceFileInput } from '@/components/common/EvidenceUpload';
 import { selectUser } from '@/features/auth/userSlice';
 import {
   cleanPurchase,

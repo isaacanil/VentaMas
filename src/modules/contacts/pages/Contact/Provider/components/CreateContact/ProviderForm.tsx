@@ -158,13 +158,8 @@ export const ProviderForm = () => {
 
   useEffect(() => {
     if (!isOpen) {
-      setIsSubmitting(false);
-      setHasSubmittedSuccessfully(false);
       return;
     }
-
-    setIsSubmitting(false);
-    setHasSubmittedSuccessfully(false);
 
     if (mode === updateMode && data) {
       form.setFieldsValue({
@@ -185,7 +180,13 @@ export const ProviderForm = () => {
     }
   }, [isOpen, mode, data, form, consultarRNC, defaultCountry]);
 
+  const resetSubmissionGuards = () => {
+    setIsSubmitting(false);
+    setHasSubmittedSuccessfully(false);
+  };
+
   const handleOpenModal = () => {
+    resetSubmissionGuards();
     dispatch(toggleProviderModal({ mode: createMode }));
     form.resetFields();
   };

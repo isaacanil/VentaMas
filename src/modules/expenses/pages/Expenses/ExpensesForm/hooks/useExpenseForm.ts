@@ -21,7 +21,7 @@ import type {
   ExpenseAttachment,
   ExpenseAttachmentInput,
 } from '@/utils/expenses/types';
-import type { EvidenceFileInput } from '@/components/common/EvidenceUpload/types';
+import type { EvidenceFileInput } from '@/components/common/EvidenceUpload';
 import {
   isBankExpensePaymentMethod,
   normalizeExpensePayment,

@@ -15,8 +15,9 @@ import {
   toExpenseFiscalNumber,
 } from '@/utils/expenses/fiscal';
 import type { ExpenseCategoryDoc } from '@/utils/expenses/types';
-import type { EvidenceFile } from '@/components/common/EvidenceUpload/types';
-import EvidenceUpload from '@/components/common/EvidenceUpload/EvidenceUpload';
+import EvidenceUpload, {
+  type EvidenceFile,
+} from '@/components/common/EvidenceUpload';
 import Loader from '@/components/ui/loader/Loader';
 
 import ManageExpenseCategoriesModal from './components/ManageExpenseCategoriesModal';

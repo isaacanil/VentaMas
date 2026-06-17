@@ -7,8 +7,10 @@ import { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import { VmButton, VmNumberField, VmSwitch } from '@/components/heroui';
-import { FISCAL_RECEIPTS_ALERT_CONFIG } from '@/config/fiscalReceiptsAlertConfig';
-import type { FiscalAlertsConfig } from '@/firebase/Settings/fiscalAlertsConfig/types';
+import {
+  FISCAL_RECEIPTS_ALERT_CONFIG,
+  type FiscalAlertsConfig,
+} from '@/domain/fiscal/fiscalReceiptsAlertConfig';
 
 type ThresholdConfig = {
   warning: number | null;

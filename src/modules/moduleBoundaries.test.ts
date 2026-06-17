@@ -38,7 +38,13 @@ const allowedDirectHeroUiReactImportPathPrefixes = [
 ];
 
 const forbiddenDomainInfrastructureImportPrefixes = [
+  '@/components',
+  '@/features',
   '@/firebase',
+  '@/hooks',
+  '@/modules',
+  '@/router',
+  '@/styles',
   'firebase',
   'react',
   'react-dom',
@@ -82,17 +88,23 @@ const forbiddenLegacySharedImportPrefixes = [
   '@/features/uploadImg',
   '@/features/auth/useBusinessDataConfig',
   '@/features/noteModal/components/NoteModal',
+  '@/config/fiscalReceiptsAlertConfig',
   '@/config/statusActionConfig',
   '@/constants/appConfig',
   '@/domain/banking/useBankInstitutionCatalog',
   '@/models/Warehouse/ProductStock',
   '@/models/Warehouse/Sale',
   '@/supabase',
+  '@/firebase/Auth/fbAuthV2/fbCheckIfUserExists',
   '@/firebase/Auth/fbAuthV2/fbSignIn/checkSession',
   '@/firebase/Auth/fbAuthV2/fbSignIn/components',
   '@/firebase/Auth/fbAuthV2/fbSignIn/updateUserData',
+  '@/firebase/Auth/fbAuthV2/types',
+  '@/firebase/Auth/types',
+  '@/firebase/Auth/userData',
   '@/firebase/AppUpdate',
   '@/firebase/app/fbUpdateAppVersion',
+  '@/firebase/client/clients',
   '@/firebase/debitNotes',
   '@/firebase/errors',
   '@/firebase/functions/invoice/processInvoice',
@@ -100,6 +112,7 @@ const forbiddenLegacySharedImportPrefixes = [
   '@/firebase/inventoryDataCleaner',
   '@/firebase/purchase/addPurchaseImg',
   '@/firebase/ProductOutflow',
+  '@/firebase/provider/fbGetProviderFromReference',
   '@/firebase/taxReceipt/taxReceiptTemplates',
   '@/firebase/Tools/getDocRef',
   '@/firebase/treasury',
@@ -174,7 +187,9 @@ const retiredLegacySharedSourcePaths = [
   ['src', 'hooks', 'exportToExcel'],
   ['src', 'features', 'uploadImg'],
   ['src', 'features', 'auth', 'useBusinessDataConfig.ts'],
+  ['src', 'features', 'noteModal', 'components'],
   ['src', 'features', 'noteModal', 'components', 'NoteModal.tsx'],
+  ['src', 'config'],
   ['src', 'config', 'statusActionConfig.tsx'],
   ['src', 'constants', 'appConfig.ts'],
   ['src', 'domain', 'banking', 'useBankInstitutionCatalog.ts'],
@@ -190,11 +205,16 @@ const retiredLegacySharedSourcePaths = [
     'SearchProductBar.tsx',
   ],
   ['src', 'supabase'],
+  ['src', 'firebase', 'Auth', 'fbAuthV2', 'fbCheckIfUserExists.ts'],
   ['src', 'firebase', 'Auth', 'fbAuthV2', 'fbSignIn', 'checkSession.ts'],
   ['src', 'firebase', 'Auth', 'fbAuthV2', 'fbSignIn', 'components'],
   ['src', 'firebase', 'Auth', 'fbAuthV2', 'fbSignIn', 'updateUserData.ts'],
+  ['src', 'firebase', 'Auth', 'fbAuthV2', 'types.ts'],
+  ['src', 'firebase', 'Auth', 'types.ts'],
+  ['src', 'firebase', 'Auth', 'userData.ts'],
   ['src', 'firebase', 'AppUpdate'],
   ['src', 'firebase', 'app', 'fbUpdateAppVersion.ts'],
+  ['src', 'firebase', 'client', 'clients.ts'],
   ['src', 'firebase', 'debitNotes'],
   ['src', 'firebase', 'errors'],
   ['src', 'firebase', 'functions', 'invoice', 'processInvoice.ts'],
@@ -202,6 +222,7 @@ const retiredLegacySharedSourcePaths = [
   ['src', 'firebase', 'inventoryDataCleaner'],
   ['src', 'firebase', 'purchase', 'addPurchaseImg.ts'],
   ['src', 'firebase', 'ProductOutflow'],
+  ['src', 'firebase', 'provider', 'fbGetProviderFromReference.ts'],
   ['src', 'firebase', 'Tools', 'getDocRef.ts'],
   ['src', 'firebase', 'treasury'],
   ['src', 'firebase', 'vendorBills'],
@@ -236,6 +257,27 @@ const retiredLegacySharedSourcePaths = [
   ['src', 'utils', 'fiscal', 'dgii608ReasonCatalog.test.ts'],
   ['src', 'utils', 'commissions', 'collaboratorOptions.ts'],
   ['src', 'services', 'accountsReceivable'],
+  ['src', 'modules', 'settings', 'pages', 'setting', 'components'],
+  [
+    'src',
+    'modules',
+    'settings',
+    'pages',
+    'setting',
+    'components',
+    'SettingCategorySection',
+  ],
+  [
+    'src',
+    'modules',
+    'settings',
+    'pages',
+    'setting',
+    'components',
+    'SettingSearch',
+  ],
+  ['src', 'modules', 'settings', 'pages', 'setting', 'hooks'],
+  ['src', 'modules', 'settings', 'pages', 'setting', 'utils'],
   ['src', 'styles', 'insurance.css'],
   ['src', 'styles', 'variables.css'],
   ['src', 'notification'],
@@ -805,11 +847,11 @@ describe('module boundaries', () => {
     expect(violations).toEqual([]);
   }, 30_000);
 
-  it('keeps domain contracts free from React and Firebase infrastructure', () => {
+  it('keeps domain contracts free from UI, routing, and Firebase infrastructure', () => {
     const violations = findDomainInfrastructureImportViolations()
       .map(
         ({ filePath, line, specifier }) =>
-          `${filePath}:${line} imports ${specifier}; keep src/domain pure and move React/Firebase adapters to hooks, repositories, or modules`,
+          `${filePath}:${line} imports ${specifier}; keep src/domain pure and move UI, routing, or Firebase adapters to hooks, repositories, or modules`,
       )
       .sort();
 

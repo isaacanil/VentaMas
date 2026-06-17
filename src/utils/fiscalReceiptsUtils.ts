@@ -4,11 +4,9 @@ import {
   getThresholdsForReceiptType,
   getAlertMessage,
   FISCAL_RECEIPTS_ALERT_CONFIG,
-} from '@/config/fiscalReceiptsAlertConfig';
-import type {
-  FiscalAlertsConfig,
-  FiscalAlertThresholds,
-} from '@/firebase/Settings/fiscalAlertsConfig/types';
+  type FiscalAlertsConfig,
+  type FiscalAlertThresholds,
+} from '@/domain/fiscal/fiscalReceiptsAlertConfig';
 import type {
   TaxReceiptAuthorizationEntry,
   TaxReceiptData,

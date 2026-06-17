@@ -38,7 +38,6 @@ const WEB_LINT_GROUPS = [
     'src/abilities',
     'src/app',
     'src/assets',
-    'src/config',
     'src/constants',
     'src/context',
     'src/design-system',

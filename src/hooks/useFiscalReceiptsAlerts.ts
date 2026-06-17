@@ -1,14 +1,14 @@
 import { useMemo, useEffect, useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 
-import { createDefaultFiscalAlertsConfig } from '@/config/fiscalReceiptsAlertConfig';
+import {
+  createDefaultFiscalAlertsConfig,
+  type FiscalAlertsConfig,
+  type FiscalAlertThresholds,
+} from '@/domain/fiscal/fiscalReceiptsAlertConfig';
 import { selectUser } from '@/features/auth/userSlice';
 import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
 import { fbGetFiscalAlertsConfig } from '@/firebase/Settings/fiscalAlertsConfig/fbGetFiscalAlertsConfig';
-import type {
-  FiscalAlertsConfig,
-  FiscalAlertThresholds,
-} from '@/firebase/Settings/fiscalAlertsConfig/types';
 import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt';
 import type { TaxReceiptDocument } from '@/types/taxReceipt';
 import type { UserIdentity } from '@/types/users';

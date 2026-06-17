@@ -1,9 +1,8 @@
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
+import type { FiscalAlertsConfig } from '@/domain/fiscal/fiscalReceiptsAlertConfig';
 import { db } from '@/firebase/firebaseconfig';
 import type { UserIdentity } from '@/types/users';
-
-import type { FiscalAlertsConfig } from './types';
 
 /**
  * Actualiza o crea la configuracion de alertas de comprobantes fiscales

@@ -19,8 +19,8 @@ import {
   getTaxReceiptData,
   selectTaxReceiptEnabled,
 } from '@/features/taxReceipt/taxReceiptSlice';
+import type { FiscalAlertsConfig } from '@/domain/fiscal/fiscalReceiptsAlertConfig';
 import { fbGetFiscalAlertsConfig } from '@/firebase/Settings/fiscalAlertsConfig/fbGetFiscalAlertsConfig';
-import type { FiscalAlertsConfig } from '@/firebase/Settings/fiscalAlertsConfig/types';
 import { fbUpdateFiscalAlertsConfig } from '@/firebase/Settings/fiscalAlertsConfig/fbUpdateFiscalAlertsConfig';
 import { fbEnabledTaxReceipt } from '@/firebase/Settings/taxReceipt/fbEnabledTaxReceipt';
 import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt';

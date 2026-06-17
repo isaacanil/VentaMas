@@ -1,4 +1,4 @@
-import type { EvidenceFileInput } from '@/components/common/EvidenceUpload/types';
+import type { EvidenceFileInput } from '@/components/common/EvidenceUpload';
 import type { Purchase } from '@/utils/purchase/types';
 
 export type PurchaseMode = 'create' | 'complete' | 'convert' | 'update';

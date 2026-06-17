@@ -21,7 +21,9 @@ import { toggleProviderModal } from '@/features/modals/modalSlice';
 import { useFbGetProviders } from '@/firebase/provider/useFbGetProvider';
 import { useProviderSnapshotById } from '@/firebase/provider/useProviderSnapshotById';
 import { getBackOrdersByProduct } from '@/firebase/warehouse/backOrderService';
-import EvidenceUpload from '@/components/common/EvidenceUpload/EvidenceUpload';
+import EvidenceUpload, {
+  type EvidenceFileInput,
+} from '@/components/common/EvidenceUpload';
 import ProductsTable from '@/modules/orderAndPurchase/pages/OrderAndPurchase/OrderManagement/components/ProductsTable';
 import BackOrdersModal from '@/modules/orderAndPurchase/pages/OrderAndPurchase/PurchaseManagement/components/BackOrdersModal';
 import ProductModal from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/ProductModal';
@@ -44,7 +46,6 @@ import type {
   PurchaseReplenishment,
 } from '@/utils/purchase/types';
 import type { Order } from '@/utils/order/types';
-import type { EvidenceFileInput } from '@/components/common/EvidenceUpload/types';
 import type { UserIdentity } from '@/types/users';
 
 import ProviderSelector from '../../../components/ProviderSelector/ProviderSelector';

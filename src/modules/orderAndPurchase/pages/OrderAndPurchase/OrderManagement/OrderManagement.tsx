@@ -22,7 +22,7 @@ import {
   resolveUserIdentityBusinessId,
   resolveUserIdentityUid,
 } from '@/utils/users/userIdentityAccess';
-import type { EvidenceFileInput } from '@/components/common/EvidenceUpload/types';
+import type { EvidenceFileInput } from '@/components/common/EvidenceUpload';
 import { getBackOrderAssociationId } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/PurchaseManagement/purchaseManagementUtils';
 import ManagementLoader from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/components/ManagementLoader/ManagementLoader';
 import { MenuApp } from '@/modules/navigation/public';

@@ -29,7 +29,9 @@ import { useFbGetProviders } from '@/firebase/provider/useFbGetProvider';
 import { useProviderSnapshotById } from '@/firebase/provider/useProviderSnapshotById';
 import { getBackOrdersByProduct } from '@/firebase/warehouse/backOrderService';
 import BackOrdersModal from '@/modules/orderAndPurchase/pages/OrderAndPurchase/PurchaseManagement/components/BackOrdersModal';
-import EvidenceUpload from '@/components/common/EvidenceUpload/EvidenceUpload';
+import EvidenceUpload, {
+  type EvidenceFileInput,
+} from '@/components/common/EvidenceUpload';
 import ProductsTable from '@/modules/orderAndPurchase/pages/OrderAndPurchase/PurchaseManagement/components/ProductsTable';
 import ProductModal from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/ProductModal';
 import {
@@ -50,7 +52,6 @@ import type {
   PurchaseBackOrderSelection,
   PurchaseReplenishment,
 } from '@/utils/purchase/types';
-import type { EvidenceFileInput } from '@/components/common/EvidenceUpload/types';
 import type { UserIdentity } from '@/types/users';
 
 import ProviderSelector from '../../../components/ProviderSelector/ProviderSelector';
