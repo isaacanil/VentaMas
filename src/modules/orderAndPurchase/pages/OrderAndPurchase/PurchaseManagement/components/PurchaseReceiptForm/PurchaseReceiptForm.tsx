@@ -57,7 +57,7 @@ import {
   updateProduct,
 } from '@/features/purchase/addPurchaseSlice';
 import { useFbGetProviders } from '@/firebase/provider/useFbGetProvider';
-import { formatQuantity } from '@/utils/formatters';
+import { formatQuantity } from '@/utils/format';
 import type { Purchase, PurchaseReplenishment } from '@/utils/purchase/types';
 
 import ProductsTable from '../ProductsTable';

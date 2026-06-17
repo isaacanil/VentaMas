@@ -2,7 +2,7 @@ import { MoreOutlined } from '@/constants/icons/antd';
 import { Button, Dropdown, Empty, Table, message } from 'antd';
 import { useCallback, useMemo } from 'react';
 
-import { formatPrice } from '@/utils/formatters';
+import { formatPrice } from '@/utils/format';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
 
 import type {

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildSearchIndex,
   filterByDeepSearchText,
+  matchesDeepSearchText,
   normalizedIncludes,
   normalizeSearchText,
   normalizeTrimmedSearchText,
@@ -57,5 +58,35 @@ describe('searchText', () => {
     const clients = [{ client: { name: 'Ana' } }];
 
     expect(filterByDeepSearchText(clients, '   ')).toBe(clients);
+  });
+
+  it('matches date values only when date searches are enabled', () => {
+    const record = {
+      createdAt: new Date('2024-01-02T03:04:05.000Z'),
+    };
+
+    expect(matchesDeepSearchText(record, '2024-01-02')).toBe(false);
+    expect(
+      matchesDeepSearchText(record, '2024-01-02', { includeDates: true }),
+    ).toBe(true);
+  });
+
+  it('allows callers to cap deep-search traversal depth', () => {
+    const record = {
+      level1: {
+        level2: {
+          level3: {
+            level4: {
+              name: 'oculto',
+            },
+          },
+        },
+      },
+    };
+
+    expect(matchesDeepSearchText(record, 'oculto')).toBe(true);
+    expect(matchesDeepSearchText(record, 'oculto', { maxDepth: 3 })).toBe(
+      false,
+    );
   });
 });

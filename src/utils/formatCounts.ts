@@ -8,10 +8,12 @@ export const createCountFormatter = (
   options?: Intl.NumberFormatOptions,
 ): Intl.NumberFormat => new Intl.NumberFormat(DEFAULT_COUNT_LOCALE, options);
 
-export const toFiniteDisplayNumber = (
-  value: unknown,
-  fallback = 0,
-): number => {
+const nullableCountValueFormatter = createCountFormatter({
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+});
+
+export const toFiniteDisplayNumber = (value: unknown, fallback = 0): number => {
   const numeric = Number(value);
   return Number.isFinite(numeric) ? numeric : fallback;
 };
@@ -25,4 +27,22 @@ export const formatCountValue = (
 ): string => {
   const formatter = options ? createCountFormatter(options) : countFormatter;
   return formatter.format(toFiniteDisplayNumber(value));
+};
+
+export const formatNullableCountValue = (value: CountFormatValue): string => {
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+
+  if (typeof value === 'number') {
+    return nullableCountValueFormatter.format(value);
+  }
+
+  const parsed = parseFloat(value.toString().replace(/,/g, ''));
+
+  if (Number.isNaN(parsed)) {
+    return '';
+  }
+
+  return nullableCountValueFormatter.format(parsed);
 };

@@ -5,7 +5,7 @@ import {
   formatNumber,
   formatPercentage,
   formatQuantity,
-} from './formatters';
+} from './index';
 
 describe('shared legacy formatters', () => {
   it('formats money through the Dominican currency display with fallback zero', () => {

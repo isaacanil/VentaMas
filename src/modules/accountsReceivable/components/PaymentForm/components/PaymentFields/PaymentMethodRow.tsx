@@ -1,7 +1,7 @@
 import { Checkbox, Input, InputNumber, type GetRef } from 'antd';
 import React from 'react';
 
-import { formatNumber } from '@/utils/formatNumber';
+import { formatNullableCountValue } from '@/utils/formatCounts';
 
 import { CheckboxContainer, FormItem, Row } from './styles';
 
@@ -54,7 +54,7 @@ export const PaymentMethodRow = ({
       min={0}
       precision={2}
       step={0.01}
-      formatter={formatNumber}
+      formatter={formatNullableCountValue}
       parser={(value) => (value ? value.replace(/,/g, '') : '')}
       style={{ width: '100%' }}
       ref={paymentMethod.method === 'cash' ? cashInputRef : undefined}

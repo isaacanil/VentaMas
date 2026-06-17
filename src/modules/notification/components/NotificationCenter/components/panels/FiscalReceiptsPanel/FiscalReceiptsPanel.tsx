@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Empty } from 'antd';
 import { useMemo } from 'react';
 
-import { formatNumber } from '@/utils/formatNumber';
+import { formatNullableCountValue } from '@/utils/formatCounts';
 import {
   PanelCard,
   ScrollArea,
@@ -168,21 +168,27 @@ const ReceiptRow = ({ receipt }: { receipt: any }) => {
       <RowMeta>
         <MetaLabel>Disponibles</MetaLabel>
         <MetaValue>
-          {remaining !== null ? formatNumber(remaining) : '-'}
+          {remaining !== null ? formatNullableCountValue(remaining) : '-'}
         </MetaValue>
       </RowMeta>
 
       <RowMeta>
         <MetaLabel>{hasExpirationAlert ? 'Vence' : 'Usados'}</MetaLabel>
         <MetaValue>
-          {hasExpirationAlert ? expirationLabel : used !== null ? formatNumber(used) : '-'}
+          {hasExpirationAlert
+            ? expirationLabel
+            : used !== null
+              ? formatNullableCountValue(used)
+              : '-'}
         </MetaValue>
       </RowMeta>
 
       <RowStatus>
         <StatusPill $color={status.color}>{status.label}</StatusPill>
         <MetaValue style={{ color: '#64748b', fontWeight: 400 }}>
-          {hasExpirationAlert ? expirationLabel : percentage || status.description}
+          {hasExpirationAlert
+            ? expirationLabel
+            : percentage || status.description}
         </MetaValue>
       </RowStatus>
     </PanelRow>

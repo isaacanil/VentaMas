@@ -7,7 +7,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
 
-import { formatNumber } from '@/utils/formatNumber';
+import { formatNullableCountValue } from '@/utils/formatCounts';
 import {
   PanelRow,
   RowMain,
@@ -134,7 +134,7 @@ const AccountRow = ({ account }: { account: Account }) => {
       : null;
   const nextDate = formatInstallmentDate(nextInstallment?.installmentDate);
   const nextSummary = nextAmount
-    ? `${formatNumber(nextAmount)}${nextDate ? ` · ${nextDate}` : ''}`
+    ? `${formatNullableCountValue(nextAmount)}${nextDate ? ` · ${nextDate}` : ''}`
     : nextDate || '-';
 
   return (
@@ -163,7 +163,9 @@ const AccountRow = ({ account }: { account: Account }) => {
 
       <RowMeta>
         <MetaLabel>Balance</MetaLabel>
-        <MetaValue>{formatNumber(account?.arBalance ?? 0)}</MetaValue>
+        <MetaValue>
+          {formatNullableCountValue(account?.arBalance ?? 0)}
+        </MetaValue>
       </RowMeta>
 
       <RowMeta>

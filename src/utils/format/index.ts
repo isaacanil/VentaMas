@@ -4,7 +4,14 @@ import {
   isPhoneInputValid,
   unformatPhoneForStorage,
 } from '@/shared/phone/phoneNumber';
+import {
+  createCountFormatter,
+  toFiniteDisplayNumber,
+} from '@/utils/formatCounts';
 
+import { formatLocaleCurrency } from './currency';
+
+export { formatDate } from '../formatDate';
 export * from './formatPrice';
 
 export const formatPhoneNumber = (
@@ -25,19 +32,63 @@ export const isValidPhoneNumber = (
 // Re-export de la función simple de formateo de telefono (sin libphonenumber-js)
 export { formatPhoneNumber as formatPhoneNumberSimple } from './formatPhoneNumber';
 
+export const formatMoney = (amount: unknown): string => {
+  return formatLocaleCurrency(toFiniteDisplayNumber(amount), 'DOP', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
+const formatFixedNumber = (value: unknown, decimals = 2): string => {
+  return createCountFormatter({
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(toFiniteDisplayNumber(value));
+};
+
+export const formatPercentage = (value: unknown): string => {
+  return createCountFormatter({
+    style: 'percent',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(toFiniteDisplayNumber(value) / 100);
+};
+
+export const formatQuantity = (quantity: unknown, decimals = 2): string => {
+  return formatFixedNumber(quantity, decimals);
+};
+
 // Funciones de formato movidas desde hooks/
+export function formatNumber(value: unknown, decimals: number): string;
 export function formatNumber(
   numero: number | string,
-  type: 'string' | 'number' = 'string',
+  type?: 'string' | 'number',
+  round?: boolean,
+): string | number | null;
+export function formatNumber(
+  numero: unknown,
+  type: 'string' | 'number' | number = 'string',
   round = false,
 ): string | number | null {
+  if (typeof type === 'number') {
+    return formatFixedNumber(numero, type);
+  }
+
   const numericValue = typeof numero === 'number' ? numero : Number(numero);
   if (!Number.isFinite(numericValue)) {
+    if (arguments.length === 1) {
+      return formatFixedNumber(numero);
+    }
+
     return null;
   }
 
   if (type === 'number') {
     return round ? parseFloat(numericValue.toFixed(2)) : numericValue;
+  }
+
+  if (arguments.length === 1 && !Number.isInteger(Math.abs(numericValue))) {
+    return formatFixedNumber(numericValue);
   }
 
   const signo = Math.sign(numericValue) === -1 ? '-' : '';

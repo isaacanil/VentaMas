@@ -18,7 +18,7 @@ import { icons } from '@/constants/icons/icons';
 import type { CashRegisterOption } from '@/modules/cashReconciliation/public';
 import type { BankAccountOption } from '@/modules/accounting/public';
 import type { SupplierCreditNote } from '@/types/payments';
-import { formatNumber } from '@/utils/formatNumber';
+import { formatNullableCountValue } from '@/utils/formatCounts';
 import {
   paymentMethodRequiresBankAccount,
   paymentMethodRequiresCashCount,
@@ -367,7 +367,7 @@ export const SupplierPaymentMethods = ({
                     size="large"
                     precision={2}
                     step={0.01}
-                    formatter={formatNumber}
+                    formatter={formatNullableCountValue}
                     parser={(value) =>
                       value ? value.replace(/[^0-9.]/g, '') : ''
                     }

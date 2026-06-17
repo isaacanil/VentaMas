@@ -5,7 +5,7 @@ import { DateTime } from 'luxon';
 import type { ReactNode } from 'react';
 
 import DatePicker from '@/components/DatePicker';
-import { formatMoney, formatQuantity } from '@/utils/formatters';
+import { formatMoney, formatQuantity } from '@/utils/format';
 import type {
   PurchaseBackOrderRef,
   PurchaseReplenishment,

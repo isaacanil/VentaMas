@@ -9,7 +9,7 @@ import {
   formatMoney,
   formatPercentage,
   formatQuantity,
-} from '@/utils/formatters';
+} from '@/utils/format';
 import type { PurchaseReplenishment } from '@/utils/purchase/types';
 import { resolvePurchaseLineQuantities } from '@/utils/purchase/workflow';
 import ProductModal from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/ProductModal';

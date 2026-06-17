@@ -6,7 +6,7 @@ import {
 import { useMemo } from 'react';
 
 import { useDueDatesReceivable } from '@/modules/accountsReceivable/public';
-import { formatNumber } from '@/utils/formatNumber';
+import { formatNullableCountValue } from '@/utils/formatCounts';
 import { PanelCard } from '@/modules/notification/components/NotificationCenter/components/panels/shared/PanelPrimitives';
 
 import AccountsList from './components/AccountsList';
@@ -74,9 +74,12 @@ const AccountsReceivablePanel = ({
         title="Cuentas por Cobrar"
         badgeCount={overdueCount}
         metaItems={[
-          { label: 'Vencidas', value: formatNumber(overdueCount) },
-          { label: 'Próximas', value: formatNumber(dueSoonCount) },
-          { label: 'Total alertas', value: formatNumber(totalAlerts) },
+          { label: 'Vencidas', value: formatNullableCountValue(overdueCount) },
+          { label: 'Próximas', value: formatNullableCountValue(dueSoonCount) },
+          {
+            label: 'Total alertas',
+            value: formatNullableCountValue(totalAlerts),
+          },
         ]}
         showMeta={showQuickStats}
       />
