@@ -111,7 +111,7 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - Se marcaron docs historicos con rutas `src/views` y se limpiaron comentarios obsoletos en `eslint.config.js` sin tocar reglas.
 - Se corrigieron prefijos mojibake en logs de `arPaymentUtils.ts` usando texto ASCII estable, sin cambiar validaciones ni errores lanzados.
 - El modal de autorizacion por PIN movio estilos a archivos locales y elimino estado derivado en `CustomPinInput`; `PinAuthorizationContent` quedo sin inline styles ni textos mojibake.
-- `BackOrders` corrigio el icono de seccion/fallback de fecha con escapes seguros y movio estilos locales de layout al `styles.ts` del modulo.
+- `BackOrders` corrigio el icono de seccion/fallback de fecha con escapes seguros y movio estilos locales de layout al `BackOrders.styles.ts` owner-local del modulo.
 - `mapData` y `processMappedData` comparten `mappedRecord.ts` para normalizar/coaccionar valores importados y escribir paths anidados sin duplicar helpers.
 - El login con proveedor reutiliza `src/firebase/functions/callable.ts` para `clientLoginWithProvider`, quitando `httpsCallable` directo del repository de auth.
 - `AuthorizationsPanel` del centro de notificaciones reutiliza `PanelPrimitives` para tarjeta, header, lista, rows y estados vacio/cargando, dejando el panel enfocado en composicion.
@@ -229,6 +229,7 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - La metadata de productos de bajo riesgo (categorias, favoritos, ingredientes activos y marcas) se encapsulo en hooks owner-locales de products, sacando imports directos de Firebase de los componentes visuales sin tocar stock, imagenes ni guardados de producto.
 - El modal de pizza personalizada deriva el draft en render con `buildCustomPizzaDraft` y prueba focalizada, en vez de sincronizar estado derivado desde `Header` con `useEffect`.
 - React Scan vive en `src/modules/dev/utils/reactScan.ts` y la logica pura de InvoiceV2Recovery vive owner-local en `src/modules/dev/pages/DevTools/InvoiceV2Recovery/utils/invoiceV2RecoveryLogic.ts`; `src/utils/reactScan.ts` y `src/domain/devtools` quedan retirados y protegidos por `moduleBoundaries.test.ts`.
+- `useWindowWidth` quedo retirado como wrapper global de un solo calculo: sus consumidores usan `useViewportWidth` directamente, los montos puros de `HrCommissionPeriodsPage` viven en `utils/hrCommissionPeriodAmounts.ts`, y `moduleBoundaries.test.ts` congela `src/services` a la superficie legacy caracterizada de `src/services/invoice`.
 - Los paths retirados recientes (`functionsApiClient`, `dynamicPermissions`, `invoiceV2Admin`, `pdfMakeLoader` legacy y `reconcileBatchStatus` bajo functions/inventory) quedaron cubiertos por `moduleBoundaries.test.ts`; los planes históricos de testing deben apuntar a `src/firebase/functions/httpClient.ts`, `src/domain|firebase/permissions/*` y el service owner-local de `InvoiceV2Recovery`.
 
 ## Guardrails añadidos en esta pasada

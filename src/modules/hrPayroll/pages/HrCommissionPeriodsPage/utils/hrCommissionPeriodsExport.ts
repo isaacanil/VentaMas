@@ -25,6 +25,12 @@ import type {
 import { saveXlsxFile } from '@/utils/export/xlsx';
 import { formatHrDepositAccount } from '@/domain/hrPayroll/depositAccounts';
 import { normalizeText } from '@/utils/text';
+import {
+  getHrCommissionLineAdjustmentAmount as getLineAdjustmentAmount,
+  getHrCommissionLinePendingAmount as getLinePendingAmount,
+  getHrCommissionLineRetroactiveAdjustmentAmount as getLineRetroactiveAdjustmentAmount,
+  getHrCommissionPeriodPayableAmount as getPeriodPayableAmount,
+} from './hrCommissionPeriodAmounts';
 
 type HrCommissionPeriodExportRow = {
   AjusteRetroactivo: number;
@@ -246,19 +252,9 @@ const formatPaymentMethod = (
   method?: HrEmployeePaymentRecord['paymentMethod'] | null,
 ): string => (method ? HR_PAYMENT_METHOD_LABELS[method] : '-');
 
-const getPeriodPayableAmount = (period: HrCommissionPeriodRecord): number =>
-  period.netAmount ?? period.totalPayableAmount ?? period.totalCommissionAmount;
-
 const getLineDeductionAmount = (line: HrPayrollEmployeeLineRecord): number =>
   line.deductionsAmount ||
   Math.max(0, (line.grossAmount || line.commissionAmount) - line.netAmount);
-
-const getLineAdjustmentAmount = (line: HrPayrollEmployeeLineRecord): number =>
-  line.manualAdjustmentAmount ?? 0;
-
-const getLineRetroactiveAdjustmentAmount = (
-  line: HrPayrollEmployeeLineRecord,
-): number => line.retroactiveAdjustmentAmount ?? 0;
 
 const getLineAdjustmentComment = (line: HrPayrollEmployeeLineRecord): string =>
   line.manualAdjustmentComment || '-';
@@ -280,14 +276,6 @@ const formatRate = (entry: HrCommissionEntryRecord): string => {
   }
   return formatPdfMoney(entry.rateValue, entry.currency);
 };
-
-const getLinePaidAmount = (line: HrPayrollEmployeeLineRecord): number =>
-  line.status === 'paid' ? line.netAmount : 0;
-
-const getLinePendingAmount = (line: HrPayrollEmployeeLineRecord): number =>
-  line.status === 'paid' || line.status === 'cancelled'
-    ? 0
-    : Math.max(0, line.netAmount - getLinePaidAmount(line));
 
 const getEntrySourceReference = (entry: HrCommissionEntryRecord): string =>
   entry.sourceCommissionId ||

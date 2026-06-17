@@ -34,7 +34,7 @@ import {
 } from '@/features/taxReceipt/taxReceiptSlice';
 import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt';
 import { useInsuranceEnabled } from '@/modules/insurance/public';
-import { useWindowWidth } from '@/hooks/useWindowWidth';
+import useViewportWidth from '@/hooks/useViewportWidth';
 import {
   formatCompactElectronicTaxReceiptLabel,
   formatElectronicTaxReceiptLabel,
@@ -191,7 +191,8 @@ export const ClientControl = () => {
 
   const handleCloseCart = () => dispatch(toggleCart());
 
-  const limitByWindowWidth = useWindowWidth();
+  const viewportWidth = useViewportWidth();
+  const limitByWindowWidth = viewportWidth === 0 ? true : viewportWidth > 800;
   const selectedFiscalReceiptLabel = formatCompactElectronicTaxReceiptLabel(nfcType, {
     electronicModelEnabled: electronicTaxReceiptModelEnabled,
   });

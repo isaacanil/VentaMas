@@ -2,7 +2,7 @@ import { Drawer } from 'antd';
 import { useDeferredValue, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
-import { useWindowWidth } from '@/hooks/useWindowWidth';
+import useViewportWidth from '@/hooks/useViewportWidth';
 import type { ChartOfAccount, ChartOfAccountType } from '@/types/accounting';
 import type { ChartOfAccountDraft } from '@/utils/accounting/chartOfAccounts';
 import { sortChartOfAccountsForDisplay } from '@/utils/accounting/chartOfAccounts';
@@ -65,7 +65,8 @@ export const ChartOfAccountsList = ({
   onToggleChartOfAccountStatus,
   seeding,
 }: ChartOfAccountsListProps) => {
-  const isWideWorkspace = useWindowWidth(1320);
+  const viewportWidth = useViewportWidth();
+  const isWideWorkspace = viewportWidth === 0 ? true : viewportWidth > 1320;
   const [search, setSearch] = useState('');
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(

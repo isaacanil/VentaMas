@@ -21,7 +21,7 @@ import {
   PageContainer,
   PageContent,
   PageProductGroupsContainer,
-} from './styles';
+} from './BackOrders.styles';
 import type {
   BackOrderItem,
   BackorderGroup,

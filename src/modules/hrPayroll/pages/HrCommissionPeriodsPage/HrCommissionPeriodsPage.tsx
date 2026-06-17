@@ -116,6 +116,12 @@ import {
   exportHrCommissionPeriodsWorkbook,
   type HrCommissionPeriodsPdfMode,
 } from './utils/hrCommissionPeriodsExport';
+import {
+  getHrCommissionPeriodPaidAmount as getPeriodPaidAmount,
+  getHrCommissionPeriodPayableAmount as getPeriodPayableAmount,
+  getHrCommissionPeriodPendingAmount as getPeriodPendingAmount,
+  isHrCommissionPeriodUnpaid as isPeriodUnpaid,
+} from './utils/hrCommissionPeriodAmounts';
 
 type NoticeState = {
   description?: string;
@@ -125,26 +131,6 @@ type NoticeState = {
 
 type PeriodAction = 'create' | 'close' | 'approve' | 'revert_approval';
 type PeriodActionResult = Awaited<ReturnType<typeof manageHrCommissionPeriod>>;
-
-const getPeriodPayableAmount = (period: HrCommissionPeriodRecord): number =>
-  period.netAmount ?? period.totalPayableAmount ?? period.totalCommissionAmount;
-
-const getPeriodPaidAmount = (period: HrCommissionPeriodRecord): number => {
-  const paidAmount = period.paidAmount ?? 0;
-  if (paidAmount > 0) return paidAmount;
-  return period.status === 'paid' ? getPeriodPayableAmount(period) : 0;
-};
-
-const isPeriodUnpaid = (period: HrCommissionPeriodRecord): boolean =>
-  !['cancelled', 'paid'].includes(period.status);
-
-const getPeriodPendingAmount = (period: HrCommissionPeriodRecord): number => {
-  if (!isPeriodUnpaid(period)) return 0;
-  return Math.max(
-    0,
-    getPeriodPayableAmount(period) - getPeriodPaidAmount(period),
-  );
-};
 
 const getPeriodStatusTone = (
   status: HrCommissionPeriodStatus,

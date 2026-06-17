@@ -684,6 +684,16 @@ const retiredLegacySharedSourcePaths = [
   ],
 ];
 
+const allowedLegacyGlobalServiceSourcePaths = new Set([
+  'src/services/invoice/autoCompletePreorderInvoice.ts',
+  'src/services/invoice/invoice.service.ts',
+  'src/services/invoice/logInvoiceAuthorizations.ts',
+  'src/services/invoice/types.ts',
+  'src/services/invoice/useInvoice.ts',
+  'src/services/invoice/utils/electronicInvoiceReadiness.test.ts',
+  'src/services/invoice/utils/electronicInvoiceReadiness.ts',
+]);
+
 const allowedLegacyModuleCycles = new Set([
   'accounting -> accountsReceivable -> accounting',
   'accounting -> accountsReceivable -> invoice -> accounting',
@@ -1095,6 +1105,13 @@ const findRestrictedSharedImportViolations = () =>
     );
   });
 
+const listLegacyGlobalServiceSourceFiles = () => {
+  const servicesRoot = path.join(sourceRoot, 'services');
+  if (!existsSync(servicesRoot)) return [];
+
+  return listSourceFiles(servicesRoot).map(toRepoPath).sort();
+};
+
 const findDirectHeroUiReactImportViolations = () =>
   listSourceFiles(sourceRoot)
     .flatMap((filePath) =>
@@ -1345,6 +1362,28 @@ describe('module boundaries', () => {
       .sort();
 
     expect(restoredLegacyPaths).toEqual([]);
+  });
+
+  it('keeps src/services frozen to the characterized invoice legacy surface', () => {
+    const serviceSourceFiles = listLegacyGlobalServiceSourceFiles();
+    const unexpectedGlobalServices = serviceSourceFiles
+      .filter(
+        (servicePath) => !allowedLegacyGlobalServiceSourcePaths.has(servicePath),
+      )
+      .sort();
+    const staleAllowedLegacyGlobalServices = [
+      ...allowedLegacyGlobalServiceSourcePaths,
+    ]
+      .filter((servicePath) => !serviceSourceFiles.includes(servicePath))
+      .sort();
+
+    expect({
+      staleAllowedLegacyGlobalServices,
+      unexpectedGlobalServices,
+    }).toEqual({
+      staleAllowedLegacyGlobalServices: [],
+      unexpectedGlobalServices: [],
+    });
   });
 
   it('keeps transitional shared imports scoped to their owning module', () => {

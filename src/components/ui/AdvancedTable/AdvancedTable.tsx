@@ -11,8 +11,8 @@ import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
 import { filterData } from '@/utils/search/filterData';
-import { useWindowWidth } from '@/hooks/useWindowWidth';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import useViewportWidth from '@/hooks/useViewportWidth';
 import { MillisRangeDatePicker as DatePicker } from '@/components/common/DatePicker';
 
 import { ColumnMenu } from './components/ColumnMenu/ColumnMenu';
@@ -309,7 +309,8 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
     : currentData.length;
   const virtualData = shouldPaginateVirtualized ? currentData : sortedData;
 
-  const isWideScreen = useWindowWidth(1366);
+  const viewportWidth = useViewportWidth();
+  const isWideScreen = viewportWidth === 0 ? true : viewportWidth > 1366;
   const isWideLayout = useWideLayout();
 
   const handleWrapperScroll = (() => {

@@ -6,6 +6,10 @@ import type {
   HrCommissionEntryRecord,
   HrPayrollEmployeeLineRecord,
 } from '@/types/hrPayroll';
+import {
+  getHrCommissionLineDeductionAmount as getLineDeductionAmount,
+  getHrCommissionLinePendingAmount as getLinePendingAmount,
+} from '../../utils/hrCommissionPeriodAmounts';
 
 import {
   BreakdownMetric,
@@ -32,22 +36,6 @@ interface HrCommissionPeriodLineBreakdownProps {
 
 const toMoneyNumber = (value: unknown): number =>
   typeof value === 'number' && Number.isFinite(value) ? value : 0;
-
-const getLineDeductionAmount = (line: HrPayrollEmployeeLineRecord): number =>
-  line.deductionsAmount ||
-  Math.max(
-    0,
-    (line.grossAmount || line.commissionAmount || line.netAmount) -
-      line.netAmount,
-  );
-
-const getLinePaidAmount = (line: HrPayrollEmployeeLineRecord): number =>
-  line.status === 'paid' ? line.netAmount : 0;
-
-const getLinePendingAmount = (line: HrPayrollEmployeeLineRecord): number =>
-  line.status === 'paid' || line.status === 'cancelled'
-    ? 0
-    : Math.max(0, line.netAmount - getLinePaidAmount(line));
 
 const getEmployeeLabel = (line: HrPayrollEmployeeLineRecord): string =>
   line.employeeNameSnapshot || line.employeeCode || line.employeeId;

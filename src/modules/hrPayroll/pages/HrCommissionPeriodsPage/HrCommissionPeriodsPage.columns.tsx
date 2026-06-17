@@ -41,6 +41,16 @@ import {
   ExportMenuItemDescription,
   ExportMenuItemTitle,
 } from './HrCommissionPeriodsPage.styles';
+import {
+  getHrCommissionLineAdjustmentAmount as getLineAdjustmentAmount,
+  getHrCommissionLineDeductionAmount as getLineDeductionAmount,
+  getHrCommissionLinePaidAmount as getLinePaidAmount,
+  getHrCommissionLinePendingAmount as getLinePendingAmount,
+  getHrCommissionLineRetroactiveAdjustmentAmount as getLineRetroactiveAdjustmentAmount,
+  getHrCommissionPeriodPaidAmount as getPeriodPaidAmount,
+  getHrCommissionPeriodPayableAmount as getPeriodPayableAmount,
+  getHrCommissionPeriodPendingAmount as getPeriodPendingAmount,
+} from './utils/hrCommissionPeriodAmounts';
 
 export type HrCommissionLineExportFormat = 'excel' | 'pdf';
 
@@ -61,9 +71,6 @@ const LINE_STATUS_TONES: Record<
   'default' | 'info' | 'success' | 'warning' | 'danger' | 'accent'
 > = PERIOD_STATUS_TONES;
 
-const getPeriodPayableAmount = (period: HrCommissionPeriodRecord): number =>
-  period.netAmount ?? period.totalPayableAmount ?? period.totalCommissionAmount;
-
 const getHumanPeriodLabel = (period: HrCommissionPeriodRecord): string =>
   (period.label || period.periodKey || 'Corte').replace(
     /\s+\d{4}-\d{2}-\d{2}\s+-\s+\d{4}-\d{2}-\d{2}$/,
@@ -80,20 +87,6 @@ const getPeriodSecondaryLabel = (period: HrCommissionPeriodRecord): string => {
     period,
     'end',
   )}`;
-};
-
-const getPeriodPaidAmount = (period: HrCommissionPeriodRecord): number => {
-  const paidAmount = period.paidAmount ?? 0;
-  if (paidAmount > 0) return paidAmount;
-  return period.status === 'paid' ? getPeriodPayableAmount(period) : 0;
-};
-
-const getPeriodPendingAmount = (period: HrCommissionPeriodRecord): number => {
-  if (['paid', 'cancelled'].includes(period.status)) return 0;
-  return Math.max(
-    0,
-    getPeriodPayableAmount(period) - getPeriodPaidAmount(period),
-  );
 };
 
 interface PeriodColumnsOptions {
@@ -223,28 +216,6 @@ interface LineColumnsOptions {
   periodStatus?: HrCommissionPeriodStatus | null;
   onOpenPayment: (line: HrPayrollEmployeeLineRecord) => void;
 }
-
-const getLineGrossAmount = (line: HrPayrollEmployeeLineRecord): number =>
-  line.grossAmount || line.commissionAmount || line.netAmount || 0;
-
-const getLineDeductionAmount = (line: HrPayrollEmployeeLineRecord): number =>
-  line.deductionsAmount ||
-  Math.max(0, getLineGrossAmount(line) - line.netAmount);
-
-const getLineAdjustmentAmount = (line: HrPayrollEmployeeLineRecord): number =>
-  line.manualAdjustmentAmount ?? 0;
-
-const getLineRetroactiveAdjustmentAmount = (
-  line: HrPayrollEmployeeLineRecord,
-): number => line.retroactiveAdjustmentAmount ?? 0;
-
-const getLinePaidAmount = (line: HrPayrollEmployeeLineRecord): number =>
-  line.status === 'paid' ? line.netAmount : 0;
-
-const getLinePendingAmount = (line: HrPayrollEmployeeLineRecord): number =>
-  line.status === 'paid' || line.status === 'cancelled'
-    ? 0
-    : Math.max(0, line.netAmount - getLinePaidAmount(line));
 
 const isLineAdjustable = (line: HrPayrollEmployeeLineRecord): boolean =>
   line.status === 'draft' || line.status === 'closed';
