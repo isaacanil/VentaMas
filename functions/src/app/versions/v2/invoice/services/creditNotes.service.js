@@ -5,8 +5,138 @@ import {
   resolveElectronicAdjustmentNoteFiscalStatus,
 } from '../../../../modules/accountReceivable/utils/customerAdjustmentNoteFiscalStatus.util.js';
 
+const asRecord = (value) =>
+  value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+
+const toCleanString = (value) => {
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length ? trimmed : null;
+};
+
 const isElectronicCreditNote = (creditNote) => {
   return isElectronicAdjustmentNote(creditNote, { ncfPrefix: 'E34' });
+};
+
+const resolveInvoiceRecord = (invoiceSnap) => {
+  const raw = asRecord(invoiceSnap?.data?.());
+  return asRecord(raw.data ?? raw);
+};
+
+const normalizeFiscalId = (value) => {
+  const raw = toCleanString(value);
+  if (!raw) return null;
+  const digits = raw.replace(/\D/g, '');
+  return digits.length ? digits : raw.toLowerCase();
+};
+
+const resolveClientFiscalId = (client) => {
+  const record = asRecord(client);
+  return normalizeFiscalId(
+    record.personalID ??
+      record.rnc ??
+      record.RNC ??
+      record.taxId ??
+      record.taxID ??
+      record.documentNumber ??
+      record.identification,
+  );
+};
+
+const resolveClientRecordId = (client) => {
+  const record = asRecord(client);
+  return toCleanString(record.id) || toCleanString(record.clientId);
+};
+
+const resolveClientRecord = (record) =>
+  asRecord(record.client ?? record.customer ?? record.clientSnapshot);
+
+const resolveCurrencyCode = (value) => {
+  const record = asRecord(value);
+  const code =
+    toCleanString(record.code) ||
+    toCleanString(record.currencyCode) ||
+    toCleanString(record.id) ||
+    toCleanString(value);
+  return code ? code.toUpperCase() : null;
+};
+
+const resolveDocumentCurrency = (record) => {
+  const source = asRecord(record);
+  return (
+    resolveCurrencyCode(asRecord(source.monetary).documentCurrency) ||
+    resolveCurrencyCode(source.documentCurrency) ||
+    resolveCurrencyCode(source.currency) ||
+    resolveCurrencyCode(source.currencyCode)
+  );
+};
+
+const resolveInvoiceNcf = (invoice) => {
+  const record = asRecord(invoice);
+  return (
+    toCleanString(asRecord(record.ncf).code) ||
+    toCleanString(record.ncf) ||
+    toCleanString(record.NCF) ||
+    toCleanString(record.eNcf)
+  );
+};
+
+const resolveInvoiceNumber = (invoice) => {
+  const record = asRecord(invoice);
+  return (
+    toCleanString(record.numberID) ||
+    toCleanString(record.number) ||
+    toCleanString(record.invoiceNumber)
+  );
+};
+
+const assertCreditNoteMatchesInvoice = ({
+  creditNote,
+  noteId,
+  invoiceId,
+  invoice,
+}) => {
+  const sourceInvoiceId =
+    toCleanString(creditNote?.invoiceId) ||
+    toCleanString(creditNote?.sourceInvoiceId) ||
+    toCleanString(asRecord(creditNote?.invoice).id);
+  if (sourceInvoiceId && sourceInvoiceId !== invoiceId) {
+    throw new Error(
+      `La nota de crédito ${creditNote?.ncf || creditNote?.number || noteId} pertenece a otra factura`,
+    );
+  }
+
+  const noteClient = resolveClientRecord(creditNote);
+  const invoiceClient = resolveClientRecord(invoice);
+  const noteFiscalId = resolveClientFiscalId(noteClient);
+  const invoiceFiscalId = resolveClientFiscalId(invoiceClient);
+  if (noteFiscalId && invoiceFiscalId && noteFiscalId !== invoiceFiscalId) {
+    throw new Error(
+      `La nota de crédito ${creditNote?.ncf || creditNote?.number || noteId} pertenece a otro cliente`,
+    );
+  }
+
+  const noteClientId = resolveClientRecordId(noteClient);
+  const invoiceClientId = resolveClientRecordId(invoiceClient);
+  if (
+    (!noteFiscalId || !invoiceFiscalId) &&
+    noteClientId &&
+    invoiceClientId &&
+    noteClientId !== invoiceClientId
+  ) {
+    throw new Error(
+      `La nota de crédito ${creditNote?.ncf || creditNote?.number || noteId} pertenece a otro cliente`,
+    );
+  }
+
+  const noteCurrency = resolveDocumentCurrency(creditNote);
+  const invoiceCurrency = resolveDocumentCurrency(invoice);
+  if (noteCurrency && invoiceCurrency && noteCurrency !== invoiceCurrency) {
+    throw new Error(
+      `La nota de crédito ${creditNote?.ncf || creditNote?.number || noteId} está en una moneda distinta a la factura`,
+    );
+  }
 };
 
 const assertCreditNoteFiscalStatusAllowsConsumption = (creditNote, noteId) => {
@@ -33,10 +163,20 @@ const assertCreditNoteFiscalStatusAllowsConsumption = (creditNote, noteId) => {
  */
 export async function consumeCreditNotesTx(
   tx,
-  { businessId, userId, invoiceId, creditNotes = [], invoiceSnapshot = {} },
+  { businessId, userId, invoiceId, creditNotes = [] },
 ) {
   if (!Array.isArray(creditNotes) || creditNotes.length === 0)
     return { applicationIds: [] };
+
+  const invoiceRef = db.doc(`businesses/${businessId}/invoices/${invoiceId}`);
+  const invoiceSnap = await tx.get(invoiceRef);
+  if (!invoiceSnap.exists) {
+    throw new Error(`Factura ${invoiceId} no encontrada`);
+  }
+  const invoiceRecord = resolveInvoiceRecord(invoiceSnap);
+  const invoiceClient = resolveClientRecord(invoiceRecord);
+  const invoiceNcf = resolveInvoiceNcf(invoiceRecord);
+  const invoiceNumber = resolveInvoiceNumber(invoiceRecord);
 
   const createdApplicationIds = [];
 
@@ -62,6 +202,12 @@ export async function consumeCreditNotesTx(
         `La nota de crédito ${cnData?.ncf || cnData?.number || note.id} no está emitida y no puede aplicarse`,
       );
     }
+    assertCreditNoteMatchesInvoice({
+      creditNote: cnData,
+      noteId: note.id,
+      invoiceId,
+      invoice: invoiceRecord,
+    });
     assertCreditNoteFiscalStatusAllowsConsumption(cnData, note.id);
     if (!cnData?.ncf && !cnData?.eNcf) {
       throw new Error(
@@ -98,13 +244,10 @@ export async function consumeCreditNotesTx(
       creditNoteId: note.id,
       creditNoteNcf: note.ncf || cnData?.ncf || null,
       invoiceId,
-      invoiceNcf:
-        invoiceSnapshot?.snapshot?.ncf?.code ||
-        invoiceSnapshot?.snapshot?.ncf ||
-        null,
-      invoiceNumber: invoiceSnapshot?.snapshot?.numberID || null,
+      invoiceNcf,
+      invoiceNumber,
       clientId:
-        invoiceSnapshot?.snapshot?.client?.id || cnData?.client?.id || null,
+        resolveClientRecordId(invoiceClient) || cnData?.client?.id || null,
       amountApplied: amountToConsume,
       previousBalance: currentAvailable,
       newBalance: newAvailable,

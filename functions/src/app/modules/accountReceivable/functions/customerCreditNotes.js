@@ -613,7 +613,6 @@ export const applyCustomerCreditNotes = onCall(
     const creditNotes = Array.isArray(payload.creditNotes)
       ? payload.creditNotes
       : [];
-    const invoiceSnapshot = asRecord(payload.invoiceData);
     if (!businessId || !invoiceId) {
       throw new HttpsError(
         'invalid-argument',
@@ -637,7 +636,6 @@ export const applyCustomerCreditNotes = onCall(
         userId: authUid,
         invoiceId,
         creditNotes,
-        invoiceSnapshot,
       });
     });
 

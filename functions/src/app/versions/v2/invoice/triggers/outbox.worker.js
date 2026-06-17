@@ -1096,7 +1096,6 @@ export const processInvoiceOutbox = onDocumentCreated(
               userId: user.uid,
               invoiceId,
               creditNotes,
-              invoiceSnapshot: invoice,
             });
           }
           ensureTaskStart();
