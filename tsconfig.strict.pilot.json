@@ -7,7 +7,6 @@
   "include": [
     "src/utils/pricing.ts",
     "src/utils/invoice.ts",
-    "src/utils/formatters.ts",
-    "src/utils/inventory/expiration.ts"
+    "src/utils/formatters.ts"
   ]
 }

@@ -12,6 +12,7 @@ import {
   formatHrPeriodDate,
   formatHrMoney,
   HR_COMMISSION_PERIOD_STATUS_LABELS,
+  HR_EMPLOYEE_PAYMENT_STATUS_LABELS,
   HR_PAYMENT_METHOD_LABELS,
   HR_PAYROLL_RUN_STATUS_LABELS,
 } from '@/modules/hrPayroll/utils/hrPayrollDisplay';
@@ -19,7 +20,6 @@ import type {
   HrCommissionEntryRecord,
   HrCommissionPeriodRecord,
   HrEmployeePaymentRecord,
-  HrEmployeePaymentStatus,
   HrPayrollEmployeeLineRecord,
 } from '@/types/hrPayroll';
 import { saveXlsxFile } from '@/utils/export/xlsx';
@@ -142,11 +142,6 @@ export type HrCommissionPeriodEmployeePdfGroup = {
   Neto: string;
   Pendiente: string;
   rows: HrCommissionPeriodDetailPdfRow[];
-};
-
-const PAYMENT_STATUS_LABELS: Record<HrEmployeePaymentStatus, string> = {
-  confirmed: 'Confirmado',
-  voided: 'Anulado',
 };
 
 const PERIOD_COLUMNS = [
@@ -494,7 +489,7 @@ const addPaymentsPdfTable = (
       getPaymentAccountReference(payment),
       getPaymentDestinationReference(payment),
       getPaymentReference(payment),
-      PAYMENT_STATUS_LABELS[payment.status],
+      HR_EMPLOYEE_PAYMENT_STATUS_LABELS[payment.status],
       formatPdfMoney(payment.amount, payment.currency),
     ]),
     head: [
@@ -680,7 +675,7 @@ export const buildHrEmployeePaymentExportRows = (
     Monto: payment.amount,
     Moneda: payment.currency,
     Referencia: getPaymentReference(payment),
-    Estado: PAYMENT_STATUS_LABELS[payment.status],
+    Estado: HR_EMPLOYEE_PAYMENT_STATUS_LABELS[payment.status],
     Usuario: payment.createdBy || '-',
   }));
 

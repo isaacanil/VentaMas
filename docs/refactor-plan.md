@@ -16,7 +16,7 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 ## Fase 1 aplicada
 
 - Se extrajo `AppRoute` desde `src/router/routes/routes.tsx` hacia `src/router/types/routeTypes.ts`.
-- `routeVisibility.ts`, `router/index.tsx` y `findRouteByName.ts` ahora consumen el tipo desde el contrato neutral.
+- `routeVisibility.ts` y `router/index.tsx` ahora consumen el tipo desde el contrato neutral; el helper legacy `findRouteByName.ts` ya fue retirado.
 - En esa primera pasada, `routes.tsx` mantuvo un re-export temporal de `AppRoute` para no forzar una migracion masiva.
 
 ## Fase 2 aplicada

@@ -22,6 +22,7 @@ import {
   formatHrPeriodDate,
   formatHrMoney as formatMoney,
   HR_COMMISSION_PERIOD_STATUS_LABELS as STATUS_LABELS,
+  HR_EMPLOYEE_PAYMENT_STATUS_LABELS,
   HR_PAYMENT_METHOD_LABELS as PAYMENT_METHOD_LABELS,
   HR_PAYROLL_RUN_STATUS_LABELS as LINE_STATUS_LABELS,
 } from '@/modules/hrPayroll/utils/hrPayrollDisplay';
@@ -471,11 +472,6 @@ export const buildLineColumns = ({
   },
 ];
 
-const PAYMENT_STATUS_LABELS: Record<HrEmployeePaymentStatus, string> = {
-  confirmed: 'Confirmado',
-  voided: 'Anulado',
-};
-
 const PAYMENT_STATUS_TONES: Record<
   HrEmployeePaymentStatus,
   'default' | 'info' | 'success' | 'warning' | 'danger' | 'accent'
@@ -561,7 +557,7 @@ export const paymentColumns: HrTableColumn<HrEmployeePaymentRecord>[] = [
     width: 120,
     render: (payment) => (
       <StatusTag $tone={PAYMENT_STATUS_TONES[payment.status]}>
-        {PAYMENT_STATUS_LABELS[payment.status]}
+        {HR_EMPLOYEE_PAYMENT_STATUS_LABELS[payment.status]}
       </StatusTag>
     ),
   },

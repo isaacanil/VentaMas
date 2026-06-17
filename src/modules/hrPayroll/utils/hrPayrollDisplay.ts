@@ -5,6 +5,7 @@ import type {
   HrCommissionType,
   HrEmployeeDocumentType,
   HrEmployeeGender,
+  HrEmployeePaymentStatus,
   HrEmployeePayType,
   HrEmployeeStatus,
   HrPaymentMethod,
@@ -49,6 +50,14 @@ export const HR_PAYMENT_METHOD_LABELS: Record<HrPaymentMethod, string> = {
   card: 'Tarjeta',
   check: 'Cheque',
   other: 'Otro',
+};
+
+export const HR_EMPLOYEE_PAYMENT_STATUS_LABELS: Record<
+  HrEmployeePaymentStatus,
+  string
+> = {
+  confirmed: 'Confirmado',
+  voided: 'Anulado',
 };
 
 export const HR_COMMISSION_TYPE_LABELS: Record<HrCommissionType, string> = {

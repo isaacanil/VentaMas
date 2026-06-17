@@ -70,9 +70,6 @@ export const ExpenseChart = () => {
             </Header>
             <DailyExpenseBarChart expenses={expensesList} />
             <CategoryExpenseBarChart expenses={expensesList} />
-            {/* <MonthlyExpenseBarChart
-                expenses={expenses}
-              /> */}
             <MonthlyAndAccumulatedExpenseCharts expenses={expensesList} />
           </Component>
         </Backdrop>
