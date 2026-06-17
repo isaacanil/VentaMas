@@ -14,14 +14,13 @@ import { useRealtimePresence } from '@/firebase/presence/useRealtimePresence';
 import { useFbTaxReceiptToggleStatus } from '@/firebase/Settings/taxReceipt/fbGetTaxReceiptToggleStatus';
 import { useAutoCreateDefaultTaxReceipt } from '@/firebase/taxReceipt/fbAutoCreateDefaultReceipt';
 import { useLoadUserAbilities } from '@/hooks/abilities/useAbilities';
-import { useCheckForInternetConnection } from '@/hooks/useCheckForInternetConnection';
-import { usePersistentDeveloperBusiness } from '@/hooks/usePersistentDeveloperBusiness';
 import { useTaxReceiptsFix } from '@/hooks/useTaxReceiptsFix';
 import { useBusinessDataConfig, useUserDocListener } from '@/modules/auth/public';
 import { hasDeveloperAccess } from '@/utils/access/developerAccess';
 
 import { useDeveloperCommands } from './hooks/useDeveloperCommands';
 import { useNavigationTracker } from './hooks/useNavigationTracker';
+import { usePersistentDeveloperBusiness } from './hooks/usePersistentDeveloperBusiness';
 
 interface User {
   uid?: string;
@@ -87,7 +86,6 @@ export const GlobalListeners = ({ user }: { user: UserState }) => {
   useFbTaxReceiptToggleStatus();
   useBusinessDataConfig();
   useBusinessFiscalSync();
-  useCheckForInternetConnection();
 
   return <NavigationTracker />;
 };

@@ -11,7 +11,6 @@ import {
 
 import { formatLocaleCurrency } from './currency';
 
-export { formatDate } from '../formatDate';
 export * from './formatPrice';
 
 export const formatPhoneNumber = (

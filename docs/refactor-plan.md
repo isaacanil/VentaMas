@@ -234,6 +234,7 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - `formatNumber` quedo integrado en `formatCounts` como `formatNullableCountValue`; `formatters` quedo integrado en `src/utils/format`, sus consumidores activos apuntan al owner real y ambos paths legacy quedan protegidos por `moduleBoundaries.test.ts`.
 - `filterData` y `filterByDeepSearchText` comparten traversal profundo mediante `createDeepSearchTextPredicate`, conservando las opciones especificas de fechas/profundidad del filtro legacy.
 - Se retiro el redirect redundante `/settings/modules` -> `/settings/modules`, reduciendo la allowlist de rutas duplicadas a su unica excepcion activa documentada.
+- `usePersistentDeveloperBusiness` vive junto a los listeners del router en `src/router/hooks`, `GlobalListeners` dejo de montar el listener offline local de imagenes sin usar su estado, y el `formatDate` legacy de `src/utils` quedo retirado en favor de los formatters vivos bajo `src/utils/date`.
 - Los paths retirados recientes (`functionsApiClient`, `dynamicPermissions`, `invoiceV2Admin`, `pdfMakeLoader` legacy y `reconcileBatchStatus` bajo functions/inventory) quedaron cubiertos por `moduleBoundaries.test.ts`; los planes históricos de testing deben apuntar a `src/firebase/functions/httpClient.ts`, `src/domain|firebase/permissions/*` y el service owner-local de `InvoiceV2Recovery`.
 
 ## Guardrails añadidos en esta pasada
