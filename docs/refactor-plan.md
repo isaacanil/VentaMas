@@ -244,6 +244,9 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - Los barrels publicos quedaron mas estrictos: `navigation/public` ya no expone `MenuAppUI`, `MenuAppUIProps` ni `openNotificationCenter`; `invoice/public` ya no expone detail cards/header usados solo dentro de invoice; y `products/public` reemplazo internals de `ProductEditorModal` por `productStudioProductEditorAdapters` para DevTools.
 - Se retiraron huerfanos confirmados sin consumidores: `PostingProfileInspector`, el `Header` raiz legacy de CashReconciliation y los `Header`/`Body` legacy de `InvoiceItem`.
 - `OpenControllerSmall` usa un `button` nativo estilizado en vez de `div role="button"`, eliminando handlers de teclado manuales innecesarios.
+- `MiniClientSelector` vive en `src/modules/contacts/components/ClientControl/MiniClientSelector` y se expone por `contacts/public`, porque ventas y preventas compartian un selector de cliente escondido bajo una validacion profunda de CxC en POS.
+- `SyncDiagnostics` quedo como carpeta owner-local (`SyncDiagnostics/SyncDiagnostics.tsx` + `index.ts`), eliminando el patron archivo+carpeta con el mismo basename en DevTools sin cambiar el lazy loader publico.
+- Los estados vacio/carga/error de `NotificationCenter` usan `PanelStateCard` directamente en sus paneles, retirando wrappers locales de CxC y autorizaciones que no agregaban comportamiento.
 
 ## Guardrails añadidos en esta pasada
 

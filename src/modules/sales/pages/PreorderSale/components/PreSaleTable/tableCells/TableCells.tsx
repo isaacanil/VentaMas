@@ -22,8 +22,8 @@ import {
   selectTaxReceiptEnabled,
 } from '@/features/taxReceipt/taxReceiptSlice';
 import { fbCancelPreorder } from '@/firebase/invoices/fbCancelPreorder';
+import { MiniClientSelector } from '@/modules/contacts/public';
 import { Invoice, TaxReceiptDepletedModal } from '@/modules/invoice/public';
-import { MiniClientSelector } from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/MarkAsReceivableButton/components/ARValidateMessage/components/MiniClientSelector/MiniClientSelector';
 import { ReceivableManagementPanel } from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/ReceivableManagementPanel/ReceivableManagementPanel';
 import type { InvoiceBusinessInfo } from '@/types/invoice';
 import type { TaxReceiptItem } from '@/types/taxReceipt';

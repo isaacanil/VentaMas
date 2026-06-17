@@ -3,16 +3,19 @@ import {
   faExclamationTriangle,
   faCheckCircle,
 } from '@fortawesome/free-solid-svg-icons';
+import { Empty, Spin } from 'antd';
 import { useMemo } from 'react';
+import styled from 'styled-components';
 
 import { useDueDatesReceivable } from '@/modules/accountsReceivable/public';
 import { formatNullableCountValue } from '@/utils/formatCounts';
-import { PanelCard } from '@/modules/notification/components/NotificationCenter/components/panels/shared/PanelPrimitives';
+import {
+  MetaValue,
+  PanelCard,
+} from '@/modules/notification/components/NotificationCenter/components/panels/shared/PanelPrimitives';
+import { PanelStateCard } from '@/modules/notification/components/NotificationCenter/components/panels/shared/PanelStateCard';
 
 import AccountsList from './components/AccountsList';
-import EmptyState from './components/EmptyState';
-import ErrorState from './components/ErrorState';
-import LoadingState from './components/LoadingState';
 import PanelHeader from '@/modules/notification/components/NotificationCenter/components/panels/shared/SimplePanelHeader';
 
 /**
@@ -41,26 +44,29 @@ const AccountsReceivablePanel = ({
   }, [overdueAccounts, dueSoonAccounts]);
 
   if (loading) {
-    return <LoadingState title="Cuentas por Cobrar" icon={faCalendarAlt} />;
+    return (
+      <PanelStateCard icon={faCalendarAlt} title="Cuentas por Cobrar">
+        <Spin />
+      </PanelStateCard>
+    );
   }
 
   if (error) {
     return (
-      <ErrorState
-        title="Cuentas por Cobrar"
-        icon={faExclamationTriangle}
-        message="No se pudieron cargar los datos"
-      />
+      <PanelStateCard icon={faExclamationTriangle} title="Cuentas por Cobrar">
+        <ErrorMessage>No se pudieron cargar los datos</ErrorMessage>
+      </PanelStateCard>
     );
   }
 
   if (accounts.length === 0) {
     return (
-      <EmptyState
-        daysThreshold={daysThreshold}
-        title="Cuentas por Cobrar"
-        icon={faCheckCircle}
-      />
+      <PanelStateCard icon={faCheckCircle} title="Cuentas por Cobrar">
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description={`No hay cuentas por cobrar proximas a vencer en los proximos ${daysThreshold} dias`}
+        />
+      </PanelStateCard>
     );
   }
 
@@ -87,5 +93,10 @@ const AccountsReceivablePanel = ({
     </PanelCard>
   );
 };
+
+const ErrorMessage = styled(MetaValue)`
+  font-size: 14px;
+  color: #ef4444;
+`;
 
 export default AccountsReceivablePanel;

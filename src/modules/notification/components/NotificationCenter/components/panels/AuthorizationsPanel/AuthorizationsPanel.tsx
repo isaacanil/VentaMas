@@ -1,17 +1,16 @@
-import { message, Modal } from 'antd';
+import { Empty, message, Modal, Spin } from 'antd';
 import { useState, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { closeNotificationCenter } from '@/modules/navigation/public';
+import { PanelStateCard } from '@/modules/notification/components/NotificationCenter/components/panels/shared/PanelStateCard';
 import ROUTES_PATH from '@/router/routes/routesName';
 import { hasAuthorizationApproveAccess } from '@/utils/access/authorizationAccess';
 
 import { usePendingAuthorizations } from './hooks/usePendingAuthorizations';
 import { executeAuthorizationRequestAction } from './utils/executeAuthorizationRequestAction';
-import LoadingState from './components/LoadingState';
-import EmptyState from './components/EmptyState';
 import AuthorizationsPanelContent from './components/AuthorizationsPanelContent';
 
 const AuthorizationsPanel = () => {
@@ -111,11 +110,26 @@ const AuthorizationsPanel = () => {
   );
 
   if (loading) {
-    return <LoadingState />;
+    return (
+      <PanelStateCard title="Autorizaciones" padding="40px">
+        <Spin />
+      </PanelStateCard>
+    );
   }
 
   if (authorizations.length === 0) {
-    return <EmptyState isAdmin={isAdmin} />;
+    return (
+      <PanelStateCard title="Autorizaciones">
+        <Empty
+          description={
+            isAdmin
+              ? 'No hay solicitudes pendientes'
+              : 'No tienes solicitudes pendientes'
+          }
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+        />
+      </PanelStateCard>
+    );
   }
 
   return (

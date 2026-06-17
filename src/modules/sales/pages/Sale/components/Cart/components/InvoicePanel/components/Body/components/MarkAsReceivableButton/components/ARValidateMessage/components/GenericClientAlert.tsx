@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { OPERATION_MODES } from '@/constants/modes';
 import { selectClient } from '@/features/clientCart/clientCartSlice';
 import { toggleClientModal } from '@/features/modals/modalSlice';
+import { MiniClientSelector } from '@/modules/contacts/public';
 
 import {
   ActionButton,
@@ -33,7 +34,6 @@ import {
   buildARValidations,
   type ValidationIcon as ValidationIconName,
 } from './GenericClientAlert.utils';
-import { MiniClientSelector } from './MiniClientSelector/MiniClientSelector';
 
 import type { CreditLimitConfig } from '@/utils/accountsReceivable/types';
 import type { ReactNode } from 'react';

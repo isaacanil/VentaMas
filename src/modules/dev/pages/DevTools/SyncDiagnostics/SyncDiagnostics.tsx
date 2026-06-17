@@ -1,10 +1,4 @@
-import {
-  Card,
-  Typography,
-  Space,
-  Table,
-  Alert,
-} from 'antd';
+import { Card, Typography, Space, Table, Alert } from 'antd';
 import React, { useCallback, useReducer } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -25,9 +19,13 @@ import {
   type StockMismatchRow,
 } from '@/domain/warehouse/syncDiagnosticsLogic';
 
-import { SyncDiagnosticsActions } from './SyncDiagnostics/SyncDiagnosticsActions';
-import { buildProductColumns, batchColumns, orphanColumns } from './SyncDiagnostics/syncDiagnosticsColumns';
-import { SyncDiagnosticsSummary } from './SyncDiagnostics/SyncDiagnosticsSummary';
+import { SyncDiagnosticsActions } from './SyncDiagnosticsActions';
+import {
+  buildProductColumns,
+  batchColumns,
+  orphanColumns,
+} from './syncDiagnosticsColumns';
+import { SyncDiagnosticsSummary } from './SyncDiagnosticsSummary';
 
 // Developer Sync Diagnostics
 // Compares totals and referential integrity across:
@@ -149,10 +147,10 @@ export default function SyncDiagnostics() {
     if (!businessID) return;
     dispatch({ type: 'startDiagnostics' });
     Promise.all([
-        fetchProducts({ businessId: businessID }),
-        fetchBatches({ businessId: businessID }),
-        fetchProductsStock({ businessId: businessID }),
-      ])
+      fetchProducts({ businessId: businessID }),
+      fetchBatches({ businessId: businessID }),
+      fetchProductsStock({ businessId: businessID }),
+    ])
       .then(([productsRaw, batchesRaw, stocksRaw]) => {
         const products: ProductDoc[] = productsRaw.map((p) => ({
           id: p.id,
@@ -214,9 +212,7 @@ export default function SyncDiagnostics() {
         syncing={syncing}
         onRunDiagnostics={runDiagnostics}
         onSetSyncing={(value) => dispatch({ type: 'setSyncing', value })}
-        onSetSyncResult={(value) =>
-          dispatch({ type: 'setSyncResult', value })
-        }
+        onSetSyncResult={(value) => dispatch({ type: 'setSyncResult', value })}
         onSetError={(value) => dispatch({ type: 'setError', value })}
       />
 

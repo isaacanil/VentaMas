@@ -271,6 +271,7 @@ const publicBarrels: PublicBarrelCase[] = [
     exports: {
       ClientControl: 'function',
       ClientSelector: 'function',
+      MiniClientSelector: 'function',
       loadClientAdminRoute: 'function',
       loadClientFormModal: 'function',
       loadLegacyAddClientModal: 'function',

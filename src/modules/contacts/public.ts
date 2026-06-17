@@ -1,5 +1,6 @@
 export { ClientControl } from './components/ClientControl/ClientControl';
 export { ClientSelector } from './components/ClientControl/ClientSelector/ClientSelector';
+export { MiniClientSelector } from './components/ClientControl/MiniClientSelector/MiniClientSelector';
 
 export const loadClientAdminRoute = () =>
   import('./pages/Contact/Client/ClientAdmin').then((module) => ({
