@@ -14,9 +14,9 @@ import '@/styles/global.css';
 
 injectTokens();
 import { store } from '@/app/store';
+import { ReducedMotionProvider } from '@/app/providers/ReducedMotionProvider';
 import AppProviders from '@/context/AppProviders';
 import i18n from '@/i18n';
-import { ReducedMotionProvider } from '@/motion/ReducedMotionProvider';
 import { initFlowTrace } from '@/utils/flowTrace';
 
 (async () => {

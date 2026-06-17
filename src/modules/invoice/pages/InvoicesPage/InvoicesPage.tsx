@@ -1,6 +1,6 @@
 import { useMemo, useState, Suspense } from 'react';
 
-import useViewportWidth from '@/hooks/windows/useViewportWidth';
+import useViewportWidth from '@/hooks/useViewportWidth';
 import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import { MenuApp } from '@/modules/navigation/public';
 import { PageLayout } from '@/components/layout/PageShell';
@@ -65,9 +65,7 @@ export const InvoicesPage = () => {
       {vw > 900 ? (
         <Suspense
           fallback={
-            <div style={{ padding: '2em', textAlign: 'center' }}>
-              Cargando…
-            </div>
+            <div style={{ padding: '2em', textAlign: 'center' }}>Cargando…</div>
           }
         >
           <SaleReportTable

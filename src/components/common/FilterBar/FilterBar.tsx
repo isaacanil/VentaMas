@@ -20,7 +20,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 
 import { DatePicker } from '@/components/common/DatePicker/DatePicker';
 import { useOverflowCollapse } from '@/hooks/useOverflowCollapse';
-import useViewportWidth from '@/hooks/windows/useViewportWidth';
+import useViewportWidth from '@/hooks/useViewportWidth';
 
 import {
   getDateRangeValue,
@@ -28,6 +28,10 @@ import {
   handleDateRangeChange,
   isItemActive,
 } from './FilterBar.utils';
+import {
+  getFilterBarItemSlots,
+  getFilterBarOverflowSlots,
+} from './FilterBar.layout';
 import type {
   DateRangeInputValue,
   DateRangeMillisValue,
@@ -125,7 +129,10 @@ type FilterBarDateRangeItem = FilterBarItemBase & {
   type: 'dateRange';
   value?: DateRangeInputValue;
   onChange?: (
-    value: DateRangeValue | DateRangeMillisValue | [number | null, number | null],
+    value:
+      | DateRangeValue
+      | DateRangeMillisValue
+      | [number | null, number | null],
   ) => void;
   valueFormat?: 'luxon' | 'timestamp';
   valueAsArray?: boolean;
@@ -174,17 +181,6 @@ const DEFAULT_LABELS: Required<FilterBarLabels> = {
   more: 'Más filtros',
   clear: 'Limpiar filtros',
 };
-
-const normalizeItems = (
-  items: FilterBarItem[] = EMPTY_ITEMS,
-): FilterBarItem[] =>
-  items.map((item) => ({
-    section: 'main',
-    visibleOnDesktop: true,
-    visibleOnMobile: true,
-    collapsible: true,
-    ...item,
-  }));
 
 const renderControl = (item: FilterBarItem) => {
   if (item.render) return item.render(item);
@@ -367,43 +363,20 @@ export const FilterBar = ({
   const mobileBreakpoint = breakpoints.mobile ?? DEFAULT_BREAKPOINTS.mobile;
   const isMobile = vw <= mobileBreakpoint;
 
-  const normalizedItems = useMemo(() => normalizeItems(items), [items]);
-  const mainItems = useMemo(
-    () =>
-      normalizedItems.filter(
-        (item) =>
-          item.section !== 'additional' && item.visibleOnDesktop !== false,
-      ),
-    [normalizedItems],
+  const filterBarItemSlots = useMemo(
+    () => getFilterBarItemSlots(items),
+    [items],
   );
-  const collapsibleMainItems = useMemo(
-    () => mainItems.filter((item) => item.collapsible !== false),
-    [mainItems],
-  );
-  const pinnedMainItems = useMemo(
-    () => mainItems.filter((item) => item.collapsible === false),
-    [mainItems],
-  );
-  const additionalItems = useMemo(
-    () =>
-      normalizedItems.filter(
-        (item) =>
-          item.section === 'additional' && item.visibleOnDesktop !== false,
-      ),
-    [normalizedItems],
-  );
-  const mobileItems = useMemo(
-    () => normalizedItems.filter((item) => item.visibleOnMobile !== false),
-    [normalizedItems],
-  );
+  const { collapsibleMainItems, mobileItems, pinnedMainItems } =
+    filterBarItemSlots;
 
   const { containerRef, register, visibleCount, hasOverflow } =
     useOverflowCollapse({ gap: 16, endPadding: 0 });
 
-  const visibleMainItems = useMemo(() => {
-    if (!Number.isFinite(visibleCount)) return collapsibleMainItems;
-    return collapsibleMainItems.slice(0, visibleCount);
-  }, [collapsibleMainItems, visibleCount]);
+  const { visibleMainItems, modalItems } = useMemo(
+    () => getFilterBarOverflowSlots(filterBarItemSlots, visibleCount),
+    [filterBarItemSlots, visibleCount],
+  );
   const desktopFilters = useMemo(
     () => renderItems(visibleMainItems),
     [visibleMainItems],
@@ -420,15 +393,6 @@ export const FilterBar = ({
     [pinnedMainItems],
   );
   const mobileFilters = useMemo(() => renderItems(mobileItems), [mobileItems]);
-
-  const collapsedMainItems = useMemo(() => {
-    if (!Number.isFinite(visibleCount)) return [];
-    return collapsibleMainItems.slice(visibleCount);
-  }, [collapsibleMainItems, visibleCount]);
-
-  const modalItems = useMemo(() => {
-    return [...collapsedMainItems, ...additionalItems];
-  }, [collapsedMainItems, additionalItems]);
 
   const hasActiveExtras = useMemo(
     () => modalItems.some(isItemActive),

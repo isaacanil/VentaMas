@@ -29,7 +29,7 @@ import {
   unlockTaxReceiptType,
 } from '@/features/taxReceipt/taxReceiptSlice';
 import { useInsuranceEnabled } from '@/modules/insurance/public';
-import useViewportWidth from '@/hooks/windows/useViewportWidth';
+import useViewportWidth from '@/hooks/useViewportWidth';
 import useInvoice from '@/services/invoice/useInvoice';
 import type { InvoiceData } from '@/types/invoice';
 import type { TaxReceiptItem } from '@/types/taxReceipt';
@@ -347,9 +347,10 @@ export const useInvoicePanelController = () => {
     schedulePrintCompletionFallback,
   ]);
 
-  useEffect(() => () => clearPrintCompletionFallback(), [
-    clearPrintCompletionFallback,
-  ]);
+  useEffect(
+    () => () => clearPrintCompletionFallback(),
+    [clearPrintCompletionFallback],
+  );
 
   const showCancelSaleConfirm = () => {
     AntdModal.confirm({

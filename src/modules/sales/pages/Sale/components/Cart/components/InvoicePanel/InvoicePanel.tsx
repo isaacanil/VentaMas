@@ -18,7 +18,7 @@ import {
 import { Body } from './components/Body/Body';
 import { InvoiceProgress } from './components/Progress/InvoiceProgress';
 import { useInvoicePanelController } from './hooks/useInvoicePanelController';
-import useViewportWidth from '@/hooks/windows/useViewportWidth';
+import useViewportWidth from '@/hooks/useViewportWidth';
 import {
   InvoicePanelBody,
   InvoicePanelDialog,
@@ -201,7 +201,10 @@ export const InvoicePanel = () => {
         </VmDrawer.Primitive>
       ) : (
         <VmModal.Primitive>
-          <VmModal.Backdrop isOpen={invoicePanel} onOpenChange={handleOpenChange}>
+          <VmModal.Backdrop
+            isOpen={invoicePanel}
+            onOpenChange={handleOpenChange}
+          >
             <InvoicePanelModalContainer placement="center" scroll="inside">
               <InvoicePanelDialog>
                 {!isPanelBusy && <VmModal.CloseTrigger />}

@@ -20,15 +20,19 @@ import {
   generateGTIN13CL,
   generateGTIN13PE,
 } from '@/utils/barcode/barcode';
-import {
-  isGS1RDCode,
-  extractCompanyPrefix,
-} from '@/utils/barcode/barcode';
+import { isGS1RDCode, extractCompanyPrefix } from '@/utils/barcode/barcode';
 import type { ProductRecord } from '@/types/products';
 import type { UserIdentity, UserWithBusiness } from '@/types/users';
 
 import ConfigurationTab from './components/ConfigurationTab';
 import GenerateTab from './components/GenerateTab';
+import {
+  buildConfigFromCompanyPrefix,
+  getBarcodePreferenceDefaults,
+  isCompanyPrefixConfigValid,
+  validateInternalItemReference,
+  validateItemReference,
+} from './utils/barcodeGeneratorConfig';
 
 const { Text } = Typography;
 
@@ -281,9 +285,7 @@ export const BarcodeGenerator = ({
       setSelectedConfig(settings);
       // Inicializar validez si ya hay configuración guardada
       setCompanyPrefixConfigValid(
-        settings.companyPrefix
-          ? /^\d{4,7}$/.test(settings.companyPrefix)
-          : true,
+        isCompanyPrefixConfigValid(settings.companyPrefix),
       );
       // Inicializar switches desde configuración
       if (typeof settings.useCompanyPrefixDefault === 'boolean') {
@@ -311,7 +313,7 @@ export const BarcodeGenerator = ({
           savedPrefix,
         );
         setSelectedConfig(settings);
-        setCompanyPrefixConfigValid(/^\d{4,7}$/.test(savedPrefix));
+        setCompanyPrefixConfigValid(isCompanyPrefixConfigValid(savedPrefix));
       }
       // Mantener la preferencia del usuario aunque no exista Company Prefix
       // Nota: se eliminó la lógica que deshabilitaba automáticamente `useCompanyPrefix` cuando no existía Company Prefix
@@ -514,16 +516,6 @@ export const BarcodeGenerator = ({
     [selectedStandard],
   );
 
-  const validateItemReference = (
-    value: string,
-    config: BarcodeSettings | null,
-  ) => {
-    if (!value) return null;
-    if (!/^\d+$/.test(value)) return false;
-    if (config && value.length !== config.itemReferenceLength) return false;
-    return true;
-  };
-
   // Función para generar código (unificada)
   const handleGenerateCode = async () => {
     setLoadingGenerate(true);
@@ -602,16 +594,10 @@ export const BarcodeGenerator = ({
       setInternalManualValues({ itemReference: '' });
       setItemReferenceValid(null);
       setCompanyPrefixValid(null);
-      setAutoMode(
-        typeof settings?.autoModeDefault === 'boolean'
-          ? settings.autoModeDefault
-          : true,
-      );
-      setUseCompanyPrefix(
-        typeof settings?.useCompanyPrefixDefault === 'boolean'
-          ? settings.useCompanyPrefixDefault
-          : false,
-      );
+      const { autoModeDefault, useCompanyPrefixDefault } =
+        getBarcodePreferenceDefaults(settings);
+      setAutoMode(autoModeDefault);
+      setUseCompanyPrefix(useCompanyPrefixDefault);
       refresh?.();
     })()
       .then(() => null)
@@ -647,13 +633,6 @@ export const BarcodeGenerator = ({
 
     const isValid = validateInternalItemReference(value);
     setItemReferenceValid(isValid);
-  };
-
-  const validateInternalItemReference = (value: string) => {
-    if (!value) return null;
-    if (!/^\d+$/.test(value)) return false;
-    if (value.length !== 9) return false;
-    return true;
   };
 
   const livePreview = (() => {
@@ -693,36 +672,17 @@ export const BarcodeGenerator = ({
   ) => {
     const companyPrefix = e.target.value;
 
-    // Crear nueva configuración con el valor actualizado
-    let newConfig: BarcodeSettings = {
-      ...selectedConfig, // Mantener configuración existente
+    const newConfig = buildConfigFromCompanyPrefix(
+      selectedConfig,
       companyPrefix,
-    };
-
-    // Si es numérico, calcular configuración automática válida
-    if (/^\d+$/.test(companyPrefix)) {
-      const companyPrefixLength = companyPrefix.length;
-      const itemReferenceLength = 9 - companyPrefixLength;
-      if (itemReferenceLength >= 2 && itemReferenceLength <= 5) {
-        const maxProducts = Math.pow(10, itemReferenceLength);
-        newConfig = {
-          ...newConfig,
-          companyPrefixLength,
-          itemReferenceLength,
-          maxProducts,
-          name: `Empresa ${companyPrefixLength}+${itemReferenceLength}`,
-          description: `Configuración automática para ${maxProducts.toLocaleString()} productos`,
-        };
-      }
-    }
+    );
 
     // Actualizar la configuración local inmediatamente
     setSelectedConfig(newConfig);
 
     // La validación ahora se maneja en ConfigurationTab
     // Validación: solo números, longitud entre 4 y 7
-    const isValidConfig =
-      companyPrefix === '' || /^\d{4,7}$/.test(companyPrefix);
+    const isValidConfig = isCompanyPrefixConfigValid(companyPrefix);
     setCompanyPrefixConfigValid(isValidConfig);
 
     // Limpiar código generado
@@ -825,22 +785,16 @@ export const BarcodeGenerator = ({
     // reset to generate view
     setShowConfigModal(false);
     // Restaurar preferencias guardadas o valores por defecto
-    setAutoMode(
-      typeof settings?.autoModeDefault === 'boolean'
-        ? settings.autoModeDefault
-        : true,
-    );
+    const { autoModeDefault, useCompanyPrefixDefault } =
+      getBarcodePreferenceDefaults(settings);
+    setAutoMode(autoModeDefault);
     setSelectedStandard('gs1rd');
     setCompanyPrefixValid(null);
     setItemReferenceValid(null);
     setManualValues({ companyPrefix: '', itemReference: '' });
 
     // Reset interno
-    setUseCompanyPrefix(
-      typeof settings?.useCompanyPrefixDefault === 'boolean'
-        ? settings.useCompanyPrefixDefault
-        : false,
-    );
+    setUseCompanyPrefix(useCompanyPrefixDefault);
     setInternalManualValues({ itemReference: '' });
 
     // Resetear baseline del listener
@@ -971,7 +925,7 @@ export const BarcodeGenerator = ({
           if (settings) {
             setSelectedConfig(settings);
             setCompanyPrefixConfigValid(
-              /^\d{4,7}$/.test(settings.companyPrefix),
+              isCompanyPrefixConfigValid(settings.companyPrefix),
             );
           }
         }}
@@ -984,7 +938,7 @@ export const BarcodeGenerator = ({
                 if (settings) {
                   setSelectedConfig(settings);
                   setCompanyPrefixConfigValid(
-                    /^\d{4,7}$/.test(settings.companyPrefix),
+                    isCompanyPrefixConfigValid(settings.companyPrefix),
                   );
                 }
               }}
@@ -1006,7 +960,7 @@ export const BarcodeGenerator = ({
           if (settings) {
             setSelectedConfig(settings);
             setCompanyPrefixConfigValid(
-              /^\d{4,7}$/.test(settings.companyPrefix),
+              isCompanyPrefixConfigValid(settings.companyPrefix),
             );
           }
         }}

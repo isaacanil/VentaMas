@@ -29,7 +29,7 @@ import { clearTaxReceiptData } from '@/features/taxReceipt/taxReceiptSlice';
 import { useIsOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
 import { useGetProducts } from '@/firebase/products/fbGetProducts';
 import { useBarcodeScanner } from '@/shared/barcode/useBarcodeScanner';
-import useViewportWidth from '@/hooks/windows/useViewportWidth';
+import useViewportWidth from '@/hooks/useViewportWidth';
 import {
   normalizeSupportedDocumentCurrency,
   type SupportedDocumentCurrency,
@@ -269,9 +269,8 @@ export const Sales = (): JSX.Element => {
   const currentCartCurrencies = Array.isArray(cartData?.products)
     ? cartData.products
         .map((item) => (item as any)?.monetary?.documentCurrency)
-        .filter(
-          (currency): currency is SupportedDocumentCurrency =>
-            Boolean(currency),
+        .filter((currency): currency is SupportedDocumentCurrency =>
+          Boolean(currency),
         )
     : [];
   const productsByBarcode = useMemo(() => {
@@ -394,7 +393,9 @@ export const Sales = (): JSX.Element => {
             weightDetail: {
               ...product.weightDetail,
               weight: toWeightValue(
-                formatWeight(toWeightInfoString(extractWeightInfo(numericBarcode))),
+                formatWeight(
+                  toWeightInfoString(extractWeightInfo(numericBarcode)),
+                ),
               ),
             },
           }
@@ -412,7 +413,11 @@ export const Sales = (): JSX.Element => {
       .then((selection) => {
         if (selection.kind === 'direct') {
           const added = dispatchResolvedScannedProduct(selection.product);
-          if (added && isVariableWeightBarcode(numericBarcode) && isSoldByWeight) {
+          if (
+            added &&
+            isVariableWeightBarcode(numericBarcode) &&
+            isSoldByWeight
+          ) {
             notification.success({
               title: 'Producto agregado',
               description: `${scannedProduct.name} ${scannedProduct.weightDetail?.weight ?? ''}`,
@@ -479,7 +484,9 @@ export const Sales = (): JSX.Element => {
     () =>
       normalizedSearchTerm
         ? indexedVisibleProducts
-            .filter(({ searchIndex }) => searchIndex.includes(normalizedSearchTerm))
+            .filter(({ searchIndex }) =>
+              searchIndex.includes(normalizedSearchTerm),
+            )
             .map(({ product }) => product)
         : visibleProducts,
     [indexedVisibleProducts, normalizedSearchTerm, visibleProducts],

@@ -1,4 +1,4 @@
-import useViewportWidth from '@/hooks/windows/useViewportWidth';
+import useViewportWidth from '@/hooks/useViewportWidth';
 
 export function useWindowWidth(width = 800): boolean {
   const viewportWidth = useViewportWidth();

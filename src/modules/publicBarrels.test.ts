@@ -1,7 +1,8 @@
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import * as ts from 'typescript';
 import { describe, expect, test } from 'vitest';
 
 type RuntimeExportKind = 'defined' | 'function' | 'object';
@@ -10,6 +11,7 @@ type PublicBarrelCase = {
   moduleName: string;
   load: () => Promise<Record<string, unknown>>;
   exports: Record<string, RuntimeExportKind>;
+  typeExports?: string[];
 };
 
 const publicBarrels: PublicBarrelCase[] = [
@@ -37,6 +39,14 @@ const publicBarrels: PublicBarrelCase[] = [
       useOpenAccountingEntry: 'function',
       loadAccountingWorkspaceRoute: 'function',
     },
+    typeExports: [
+      'AccountingManualRatesByCurrency',
+      'AccountingSettingsConfig',
+      'AccountingSettingsHistoryEntry',
+      'BankAccountOption',
+      'ExchangeRateReferenceSnapshot',
+      'SupportedDocumentCurrency',
+    ],
   },
   {
     moduleName: '@/modules/auth/public',
@@ -76,6 +86,7 @@ const publicBarrels: PublicBarrelCase[] = [
       loadCashReconciliationOpeningRoute: 'function',
       useOpenCashRegisters: 'function',
     },
+    typeExports: ['CashRegisterOption'],
   },
   {
     moduleName: '@/modules/treasury/public',
@@ -217,6 +228,7 @@ const publicBarrels: PublicBarrelCase[] = [
       NotificationButton: 'function',
       useMenuData: 'function',
     },
+    typeExports: ['MenuAppUIProps'],
   },
   {
     moduleName: '@/modules/notification/public',
@@ -240,6 +252,12 @@ const publicBarrels: PublicBarrelCase[] = [
       loadPurchasesAnalyticsRoute: 'function',
       loadPurchasesRoute: 'function',
     },
+    typeExports: [
+      'DataConfigMap',
+      'FilterConfigState',
+      'FilterOption',
+      'FilterState',
+    ],
   },
   {
     moduleName: '@/modules/contacts/public',
@@ -398,6 +416,51 @@ const listModulePublicBarrels = () =>
     .map((moduleName) => `@/modules/${moduleName}/public`)
     .sort();
 
+const getPublicBarrelPath = (moduleName: string) =>
+  path.join(
+    modulesDir,
+    moduleName.replace('@/modules/', '').replace(/\/public$/, ''),
+    'public.ts',
+  );
+
+const sortNames = (names: readonly string[] = []) => [...names].sort();
+
+const listTypeOnlyExports = (filePath: string) => {
+  const sourceText = readFileSync(filePath, 'utf8');
+  const sourceFile = ts.createSourceFile(
+    filePath,
+    sourceText,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  );
+  const exportNames: string[] = [];
+
+  for (const statement of sourceFile.statements) {
+    if (!ts.isExportDeclaration(statement)) {
+      continue;
+    }
+
+    const { exportClause } = statement;
+
+    if (!exportClause || !ts.isNamedExports(exportClause)) {
+      if (statement.isTypeOnly) {
+        exportNames.push(statement.getText(sourceFile));
+      }
+
+      continue;
+    }
+
+    for (const element of exportClause.elements) {
+      if (statement.isTypeOnly || element.isTypeOnly) {
+        exportNames.push(element.name.text);
+      }
+    }
+  }
+
+  return sortNames(exportNames);
+};
+
 const expectRuntimeExport = (
   barrel: Record<string, unknown>,
   exportName: string,
@@ -432,6 +495,15 @@ describe('module public barrels', () => {
     expect(publicBarrels.map(({ moduleName }) => moduleName).sort()).toEqual(
       listModulePublicBarrels(),
     );
+  });
+
+  test('registers public barrel type-only exports', () => {
+    for (const { moduleName, typeExports } of publicBarrels) {
+      expect(
+        listTypeOnlyExports(getPublicBarrelPath(moduleName)),
+        moduleName,
+      ).toEqual(sortNames(typeExports));
+    }
   });
 
   test.each(publicBarrels)(

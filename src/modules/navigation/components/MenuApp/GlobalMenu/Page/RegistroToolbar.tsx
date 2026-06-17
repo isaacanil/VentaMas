@@ -15,7 +15,7 @@ import styled from 'styled-components';
 import { createProfessionalReportCallback } from '@/utils/export/excel/exportConfig';
 import { formatBill } from '@/utils/export/excel/formatBill';
 import exportToExcel from '@/utils/export/excel/useExportToExcel';
-import useViewportWidth from '@/hooks/windows/useViewportWidth';
+import useViewportWidth from '@/hooks/useViewportWidth';
 import routesName from '@/router/routes/routesName';
 import { DropdownMenu } from '@/components/ui/DropdownMenu/DropdownMenu';
 

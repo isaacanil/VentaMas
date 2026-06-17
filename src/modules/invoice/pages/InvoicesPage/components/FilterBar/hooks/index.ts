@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { useFbGetClientsOnOpen } from '@/firebase/client/useFbGetClientsOnOpen';
 import { useOverflowCollapse } from '@/hooks/useOverflowCollapse';
-import useViewportWidth from '@/hooks/windows/useViewportWidth';
+import useViewportWidth from '@/hooks/useViewportWidth';
 import type { InvoiceFilters } from '@/types/invoiceFilters';
 import { BREAKPOINTS } from '@/modules/invoice/pages/InvoicesPage/components/FilterBar/constants';
 

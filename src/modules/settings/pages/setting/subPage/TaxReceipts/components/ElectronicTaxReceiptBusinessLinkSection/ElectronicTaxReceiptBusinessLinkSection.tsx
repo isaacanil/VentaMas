@@ -12,7 +12,7 @@ import {
   VmSwitch,
 } from '@/components/heroui';
 import { fbUpdateElectronicTaxReceiptConfig } from '@/firebase/electronicTaxReceipts/fbUpdateElectronicTaxReceiptConfig';
-import useViewportWidth from '@/hooks/windows/useViewportWidth';
+import useViewportWidth from '@/hooks/useViewportWidth';
 
 import {
   resolveElectronicTaxReceiptBusinessLinkValues,
@@ -76,7 +76,9 @@ export const ElectronicTaxReceiptBusinessLinkSection = ({
       return;
     }
     if (values.electronicModelEnabled && !taxReceiptEnabled) {
-      message.error('Habilita los comprobantes fiscales antes de activar e-CF.');
+      message.error(
+        'Habilita los comprobantes fiscales antes de activar e-CF.',
+      );
       return;
     }
 

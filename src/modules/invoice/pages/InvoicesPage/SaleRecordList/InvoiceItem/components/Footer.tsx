@@ -10,7 +10,7 @@ import styled from 'styled-components';
 import { icons } from '@/constants/icons/icons';
 import { addInvoice } from '@/features/invoice/invoiceFormSlice';
 import { openInvoiceWorkspaceModal } from '@/features/invoice/invoiceWorkspaceModalSlice';
-import useViewportWidth from '@/hooks/windows/useViewportWidth';
+import useViewportWidth from '@/hooks/useViewportWidth';
 import { isInvoicePaidInFull } from '@/utils/invoice';
 import { prepareInvoiceForEdit } from '@/utils/invoice';
 import { Receipt } from '@/modules/checkout/public';

@@ -12,7 +12,7 @@ import {
 import { ChangeProductData } from '@/features/updateProduct/updateProductSlice';
 import { useBarcodeScanner } from '@/shared/barcode/useBarcodeScanner';
 import type { BarcodeScanMeta } from '@/shared/barcode/useBarcodeScanner';
-import useViewportWidth from '@/hooks/windows/useViewportWidth';
+import useViewportWidth from '@/hooks/useViewportWidth';
 import {
   getBarcodeLookupCandidates,
   normalizeBarcodeValue,

@@ -2,7 +2,7 @@ import React from 'react';
 import type { ReactNode } from 'react';
 import styled from 'styled-components';
 
-import useViewportWidth from '@/hooks/windows/useViewportWidth';
+import useViewportWidth from '@/hooks/useViewportWidth';
 
 type ItemsProps = {
   label?: string;

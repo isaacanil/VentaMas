@@ -15,7 +15,7 @@ import { selectUser } from '@/features/auth/userSlice';
 import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
 import { useGetProducts } from '@/firebase/products/fbGetProducts';
 import { ExportProducts } from '@/utils/export/excel/useExportProducts';
-import useViewportWidth from '@/hooks/windows/useViewportWidth';
+import useViewportWidth from '@/hooks/useViewportWidth';
 import ROUTES_NAME from '@/router/routes/routesName';
 import { getProducts } from '@/utils/pricing';
 import { InventoryFilterAndSort } from '@/modules/inventory/public';

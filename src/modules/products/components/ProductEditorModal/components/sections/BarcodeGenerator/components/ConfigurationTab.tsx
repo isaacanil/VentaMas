@@ -4,6 +4,8 @@ import styled from 'styled-components';
 
 import type { BarcodeSettings } from '@/domain/barcode/types';
 
+import { getCompanyPrefixValidationStatus } from '../utils/barcodeGeneratorConfig';
+
 const Label = styled.label`
   display: block;
   margin-bottom: 8px;
@@ -31,47 +33,10 @@ export const ConfigurationTab = ({
   handleCompanyPrefixChange,
   companyPrefixConfigValid,
 }: ConfigurationTabProps) => {
-  const getValidationStatus = () => {
-    const value = selectedConfig?.companyPrefix || '';
-
-    if (!value) return { status: '', message: '' };
-
-    // Solo números
-    if (!/^\d+$/.test(value)) {
-      return {
-        status: 'error',
-        message: 'Solo se permiten números',
-      };
-    }
-
-    // Longitud mínima
-    if (value.length < 4) {
-      return {
-        status: 'error',
-        message: `Mínimo 4 dígitos (tienes ${value.length})`,
-      };
-    }
-
-    // Longitud máxima
-    if (value.length > 7) {
-      return {
-        status: 'error',
-        message: `Máximo 7 dígitos (tienes ${value.length})`,
-      };
-    }
-
-    // Válido - también verificar con la validación del padre
-    if (companyPrefixConfigValid) {
-      return {
-        status: 'success',
-        message: `✓ Configuración válida (${value.length} dígitos)`,
-      };
-    }
-
-    return { status: '', message: '' };
-  };
-
-  const validation = getValidationStatus();
+  const validation = getCompanyPrefixValidationStatus(
+    selectedConfig?.companyPrefix || '',
+    companyPrefixConfigValid,
+  );
 
   return (
     <div style={{ padding: '8px 0' }}>
