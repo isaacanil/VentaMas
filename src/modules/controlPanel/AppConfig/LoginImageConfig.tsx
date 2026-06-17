@@ -1,15 +1,7 @@
 import { Upload, message } from 'antd';
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject,
-  listAll,
-} from 'firebase/storage';
-import { useEffect, useMemo, useReducer } from 'react';
+import { useEffect, useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { storage } from '@/firebase/firebaseconfig';
 import { MenuApp } from '@/modules/navigation/public';
 
 import { LoginImageActions } from './components/LoginImageActions';
@@ -17,8 +9,12 @@ import { LoginImagePreview } from './components/LoginImagePreview';
 import { LoginImageProgress } from './components/LoginImageProgress';
 import { Content, Page } from './LoginImageConfig.styles';
 import {
+  clearLoginImages,
+  getCurrentLoginImageUrl,
+  uploadLoginImage,
+} from './repositories/loginImageStorageRepository';
+import {
   compressLoginImageIterative,
-  LOGIN_IMAGE_STORAGE_PATH,
   resolveUploadFile,
 } from './utils/loginImageCompression';
 import type { UploadFile, UploadProps } from 'antd';
@@ -72,19 +68,10 @@ const LoginImageConfig = () => {
     progress,
   } = state;
 
-  const loginImageRef = useMemo(
-    () => ref(storage, LOGIN_IMAGE_STORAGE_PATH),
-    [],
-  );
-
   useEffect(() => {
     let isSubscribed = true;
 
-    void listAll(loginImageRef)
-      .then((files) => {
-        if (!files.items.length) return null;
-        return getDownloadURL(files.items[0]);
-      })
+    void getCurrentLoginImageUrl()
       .then((url) => {
         if (!isSubscribed) return;
         dispatchState({ type: 'patch', patch: { currentImage: url } });
@@ -102,7 +89,7 @@ const LoginImageConfig = () => {
     return () => {
       isSubscribed = false;
     };
-  }, [loginImageRef]);
+  }, []);
 
   const beforeUpload: UploadProps['beforeUpload'] = (file) => {
     const isImage = file.type.startsWith('image/');
@@ -131,8 +118,7 @@ const LoginImageConfig = () => {
   const clearCurrentImage = async () => {
     dispatchState({ type: 'patch', patch: { loadingAction: true } });
     try {
-      const files = await listAll(loginImageRef);
-      await Promise.all(files.items.map((file) => deleteObject(file)));
+      await clearLoginImages();
       dispatchState({ type: 'patch', patch: { currentImage: null } });
       message.success('Imagen eliminada correctamente');
     } catch (error) {
@@ -176,14 +162,12 @@ const LoginImageConfig = () => {
         patch: { compressedSize: compressedSizeKb },
       });
 
-      const files = await listAll(loginImageRef);
-      await Promise.all(files.items.map((file) => deleteObject(file)));
-
-      const imageRef = ref(loginImageRef, selectedFile.name);
       const fileToUpload = resolveUploadFile(compressedFile, file);
-      await uploadBytes(imageRef, fileToUpload);
+      const url = await uploadLoginImage({
+        file: fileToUpload,
+        fileName: selectedFile.name,
+      });
 
-      const url = await getDownloadURL(imageRef);
       dispatchState({
         type: 'patch',
         patch: {

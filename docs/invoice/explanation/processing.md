@@ -8,7 +8,7 @@ El flujo de facturación conecta el panel de cobro (`InvoicePanel`) con el servi
 
 - Documentar cómo la UI recolecta datos, bloquea acciones y dispara el servicio central.
 - Detallar las etapas críticas del servicio de negocio y sus dependencias (NCF, inventario, AR, seguros).
-- Identificar riesgos actuales para planificar una futura migración a backend/serverless.
+- Identificar riesgos actuales del flujo V2 y dejar claro que la persistencia principal ya entra por backend/serverless.
 
 ## ⚙️ Diseño / Arquitectura
 
@@ -18,8 +18,9 @@ Este documento describe el flujo completo para “hacer la factura” desde el p
 
 - UI principal: `src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/InvoicePanel.tsx:28` (ruta actual).
 - Acción principal (submit): `src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/hooks/useInvoicePanelController.ts:340` delega en `src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/utils/submitInvoicePanel.ts:214` (ruta actual).
-- Servicio cliente: `src/services/invoice/useInvoice.ts:250` y `src/services/invoice/invoice.service.ts:482` (ruta actual del servicio cliente anterior).
-- Servicio backend transaccional: `functions/src/app/modules/invoice/services/invoice.service.js:25` (`processInvoiceData`).
+- Servicio cliente: `src/services/invoice/useInvoice.ts:250` y `src/services/invoice/invoice.service.ts:482` llaman la callable `createInvoiceV2`.
+- Backend V2 vigente: `functions/src/app/versions/v2/invoice/controllers/createInvoice.controller.js` delega en `createPendingInvoice` (`functions/src/app/versions/v2/invoice/services/orchestrator.service.js`), y `processInvoiceOutbox` (`functions/src/app/versions/v2/invoice/triggers/outbox.worker.js`) ejecuta las tareas diferidas.
+- Compatibilidad/legacy: `functions/src/app/modules/invoice/services/invoice.service.js` (`processInvoiceData`) documenta el flujo historico y no debe presentarse como el camino actual de `createInvoiceV2`.
 - Utilidades relacionadas: actualización de inventario, NCF, AR, preórdenes y modo prueba (ver rutas actuales referenciadas más abajo).
 
 ---
@@ -55,9 +56,9 @@ Estados/flags importantes:
 
 ---
 
-### Servicio: processInvoice (negocio)
+### Servicio: processInvoice -> createInvoiceV2
 
-Firma actual: `processInvoice(params)` (`src/services/invoice/useInvoice.ts:250`) envuelve `submitInvoice` (`src/services/invoice/invoice.service.ts:482`) y la callable `createInvoiceV2`; la lógica transaccional está en `processInvoiceData(...)` (`functions/src/app/modules/invoice/services/invoice.service.js:25`).
+Firma actual: `processInvoice(params)` (`src/services/invoice/useInvoice.ts:250`) envuelve `submitInvoice` (`src/services/invoice/invoice.service.ts:482`) y la callable `createInvoiceV2`. El backend actual crea una factura V2 pendiente con `createPendingInvoice` y agenda tareas de outbox para inventario, CxC, e-CF/DGII, factura canonica y cierre/compensacion.
 
 Nota de ruta: el servicio cliente anterior ya no existe; las referencias siguientes apuntan a la ruta actual o nombran el equivalente del snapshot histórico cuando el nombre cambió.
 
@@ -67,23 +68,16 @@ Parámetros clave:
 - `accountsReceivable` (CxC), `insuranceAR`, `insuranceAuth`, `insuranceEnabled`.
 - `ncfType`, `taxReceiptEnabled`, `dueDate` (ms), `dispatch`, `isTestMode`.
 
-Flujo principal:
+Flujo principal vigente:
 
-1. Validar carrito: `validateInvoiceCart` (`functions/src/app/modules/invoice/utils/invoiceValidation.js:34`, ruta actual; snapshot histórico: `verifyCartItems`).
-2. Modo prueba (si `isTestMode`): `buildTestModeInvoice` (`src/services/invoice/useInvoice.ts:45`, ruta actual) y retornar mock de factura sin persistir.
-3. Validar cuadre de caja: `checkOpenCashCount` (`functions/src/app/modules/cashCount/utils/cashCountCheck.js:13`, ruta actual). Requiere estado `open` o aborta con estrategia de notificación.
-4. NCF (si habilitado): `getAndUpdateTaxReceipt` (`functions/src/app/modules/taxReceipt/services/taxReceiptAdmin.service.js:76`, ruta actual).
-5. Cliente: `retrieveAndUpdateClient` (`functions/src/app/modules/client/services/clientAdmin.service.js:22`, ruta actual); usa `GenericClient` como fallback.
-6. Generar factura:
-   - Si es preorden: `generateInvoiceFromPreorder` (`functions/src/app/modules/invoice/services/invoiceGeneration.service.js:94`, ruta actual).
-   - Si es venta normal: `generateFinalInvoice` (`functions/src/app/modules/invoice/services/invoiceGeneration.service.js:35`, ruta actual) adjunta `NCF`, `client` y `cashCountId`. Considera `dueDate` con `checkIfHasDueDate` (`functions/src/app/modules/invoice/services/invoiceGeneration.service.js:25`, ruta actual).
-7. Inventario: `adjustProductInventory` (`functions/src/app/modules/Inventory/services/Inventory.service.js:127`, ruta actual).
-   - Antes de enviar al backend se normaliza el carrito (`src/services/invoice/invoice.service.ts:174`, ruta actual), forzando que cada producto lleve `productStockId` y `batchId` en `null` cuando no existan valores reales. Esto evita que Firestore rechace la factura por campos `undefined` y deja explícito que no hay stock o lote vinculado.
-8. Notas de crédito: si existen en el carrito, `fbConsumeCreditNotes`.
-9. Cuentas por cobrar:
-   - AR normal: `manageReceivableAccounts` (`functions/src/app/modules/accountReceivable/services/accountReceivable.service.js:6`, ruta actual).
-   - AR de seguros: `manageInsuranceReceivableAccounts` (`functions/src/app/modules/accountReceivable/services/insuranceAccountReceivable.service.js:8`, ruta actual) normaliza estructura, obtiene nombre del seguro y registra autorización.
-10. Retorno: `{ invoice }`.
+1. Validar carrito y payload en frontend antes de llamar `createInvoiceV2`.
+2. Modo prueba (si `isTestMode`): `buildTestModeInvoice` (`src/services/invoice/useInvoice.ts`) retorna una factura simulada sin persistir.
+3. Normalizar carrito antes de enviarlo al backend (`src/services/invoice/invoice.service.ts`), forzando `productStockId` y `batchId` a `null` cuando no existan valores reales.
+4. `createInvoiceV2` valida autenticacion, negocio, payload y delega en `createPendingInvoice`.
+5. `createPendingInvoice` crea `invoicesV2/{invoiceId}`, reserva idempotencia, prepara snapshot y agenda tareas `outbox` como inventario, CxC (`setupAR`), proyeccion canonica, e-CF/DGII y finalizacion.
+6. `processInvoiceOutbox` ejecuta cada tarea de forma separada, incluyendo `adjustProductInventory` y la creacion de CxC cuando aplica.
+7. `attemptFinalizeInvoice` cierra la factura V2 o agenda compensaciones si una tarea critica falla.
+8. Retorno al cliente: `{ invoice }` o resultado equivalente para que la UI imprima y limpie estado.
 
 Errores y garantías:
 
@@ -116,15 +110,15 @@ Postcondiciones:
 
 ### Integraciones externas (resumen)
 
-- Firestore/Firebase: `fbAddInvoice`, `fbUpdateProductsStock`, `fbAddAR`, `fbAddInstallmentAR`, `fbGenerateInvoiceFromPreorder`, `fbGetAndUpdateTaxReceipt`, `fbConsumeCreditNotes`.
+- Firestore/Firebase: `createInvoiceV2`, `createPendingInvoice`, `processInvoiceOutbox`, tareas `outbox` de inventario/CxC/e-CF y servicios legacy solo como compatibilidad historica.
 - Seguros: `getInsurance`, `addInsuranceAuth`.
 - UI/UX: `useReactToPrint`, `downloadInvoiceLetterPdf` para plantillas tipo carta.
 
 ---
 
-### Consideraciones para versión backend
+### Consideraciones backend
 
-- `processInvoice` ya está modularizado y delimita claramente el contrato de entrada/salida → candidato a trasladar a un endpoint o función serverless.
+- `processInvoice` ya entra por `createInvoiceV2`; el foco pendiente no es migrar a backend, sino endurecer idempotencia, monitoreo de outbox y compatibilidad con lectores legacy.
 - Requisitos backend:
   - Autorización/tenancy por `user` y `business`.
   - Transaccionalidad en: consumo de NCF, creación de factura, actualización de inventario, AR e instalación de cuotas.
@@ -140,7 +134,7 @@ Postcondiciones:
 - Cambio negativo sin CxC: botón deshabilitado en UI.
 - Impresión antes de hidratar estado: mitigado con `pendingPrint` y `useReactToPrint`.
 - Falta de cuadre de caja: bloquea proceso y muestra estrategia de notificación.
-- Concurrencia de NCF: uso de `fbGetAndUpdateTaxReceipt` para reservar/actualizar.
+- Concurrencia de NCF: el flujo V2 debe mantenerse en reserva server-side; `fbGetAndUpdateTaxReceipt` queda como referencia legacy/congelada para no crecer.
 - Preorden inválida: se aborta en `generalInvoiceFromPreorder` con mensaje claro.
 
 ---
@@ -149,7 +143,7 @@ Postcondiciones:
 
 - 👍 Permite facturar desde frontend con respuestas inmediatas (modo test incluye simulación sin persistir).
 - 👍 Orquesta dependencias críticas (NCF, inventario, AR, seguros) en una sola llamada.
-- ⚠️ La lógica vive en frontend y depende de múltiples servicios Firebase; es difícil auditarla o versionarla por separado.
+- ⚠️ La UI todavía prepara mucho payload y conserva dependencias legacy, aunque la persistencia critica ya vive en la callable V2 y su outbox.
 - ⚠️ No existen transacciones multi-servicio: fallas intermedias dejan estados parciales y dependen de jobs correctivos.
 
 ## 🔜 Seguimiento / Próximos pasos

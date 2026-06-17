@@ -43,7 +43,8 @@ Cerrar la lista de dominios top-level del repo para que el plan de testing no de
 ### `src/services`
 
 - `Parcial`: `functionsApiClient.ts`, `invoice/invoice.service.ts`, `invoice/invoiceV2Admin.service.ts`
-- `Pendiente`: `dynamicPermissions.ts`, `accountsReceivable/audit.service.ts`, `invoice/autoCompletePreorderInvoice.ts`, `invoice/logInvoiceAuthorizations.ts`, `invoice/types.ts`, `invoice/useInvoice.ts`
+- `Pendiente`: `dynamicPermissions.ts`, `invoice/autoCompletePreorderInvoice.ts`, `invoice/logInvoiceAuthorizations.ts`, `invoice/types.ts`, `invoice/useInvoice.ts`
+- `Retirado`: `accountsReceivable/audit.service.ts` no tenia consumidores activos y fue eliminado como cliente frontend muerto.
 
 ### `src/hooks`
 

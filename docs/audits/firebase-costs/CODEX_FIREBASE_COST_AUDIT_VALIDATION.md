@@ -30,7 +30,7 @@ Estado: **condicional**.
 Evidencia exacta:
 
 - Imports directos:
-  - `src/modules/dev/pages/Prueba/InventoryMigration.tsx:4` importa `syncAllBusinessesProductsStock`.
+  - `src/modules/dev/pages/DevTools/InventoryMigrationTool/InventoryMigration.tsx` importa `syncAllBusinessesProductsStock`.
   - `src/modules/dev/pages/DevTools/SyncDiagnostics/SyncDiagnosticsActions.tsx:4` importa `syncProductsStockFromProductsStock`.
   - `src/modules/dev/pages/DevTools/SyncDiagnostics/syncDiagnosticsColumns.tsx:5` importa `syncProductsStockFromProductsStock`.
 - Rutas:
@@ -310,10 +310,10 @@ Evidencia exacta:
   - `src/modules/home/pages/Home/components/HomeDashboard/hooks/useHomeDashboardData.tsx:45` llama `useListenAllActiveProductsStock`.
   - `src/modules/home/pages/Home/components/HomeDashboard/hooks/useHomeDashboardData.tsx:47` llama `useInventoryProductIds`.
 - Hooks:
-  - `src/hooks/useProductStock.ts:97` monta listener de active stock.
-  - `src/hooks/useProductStock.ts:100` llama `listenActiveProductStocks`.
-  - `src/hooks/useProductStock.ts:127` monta listener de productos.
-  - `src/hooks/useProductStock.ts:130` llama `listenBusinessProducts`.
+  - `src/modules/inventory/hooks/useProductStock.ts` monta listener de active stock.
+  - `src/modules/inventory/hooks/useProductStock.ts` llama `listenActiveProductStocks`.
+  - `src/modules/inventory/hooks/useProductStock.ts` monta listener de productos.
+  - `src/modules/inventory/hooks/useProductStock.ts` llama `listenBusinessProducts`.
 - Servicios:
   - `src/firebase/warehouse/productStockService.ts:472` consulta `productsStock` con `status == active` y `isDeleted == false`.
   - `src/firebase/warehouse/productStockService.ts:478` abre `onSnapshot`.
@@ -389,7 +389,7 @@ Evidencia exacta:
 
 - `src/modules/inventory/pages/Inventory/components/Warehouse/Warehouse.tsx:78` llama `useListenProductsStockByLocation(path)`.
 - `src/modules/inventory/pages/Inventory/components/Warehouse/components/ProductsSection.tsx:34` vuelve a llamar `useListenProductsStockByLocation(location)`.
-- `src/hooks/useProductStock.ts:44` retorna listener por ubicacion.
+- `src/modules/inventory/hooks/useProductStock.ts` retorna listener por ubicacion.
 - `src/firebase/warehouse/productStockService.ts:427` filtra `location == normalizedLocation`.
 - `src/firebase/warehouse/productStockService.ts:430` filtra `isDeleted == false`.
 - `src/firebase/warehouse/productStockService.ts:431` filtra `status == active`.
@@ -596,7 +596,7 @@ Limite real por ejecucion:
 
 Escrituras que podrian disparar otros triggers:
 
-- Actualiza `productsStock`; `stockAlertsOnWrite` se invoca en `functions/src/app/modules/Inventory/functions/stockAlertsOnWrite.js:76`, aunque sale si `status` no es active o si `quantity` no cambio.
+- Actualiza `productsStock`; el trigger historico `stockAlertsOnWrite` ya no esta presente en el arbol actual, por lo que esta validacion no debe tratarlo como superficie desplegable vigente.
 - Actualiza `products`; `syncProductNameOnUpdate` se invoca en `functions/src/app/modules/Inventory/functions/syncProductNameOnUpdate.js:26`, pero sale si el nombre no cambio en `:46`.
 - Crea `backOrders`; no confirme trigger directo sobre `backOrders`, pero si notifica listeners cliente.
 - Actualiza batches; puede afectar listeners cliente y jobs de inventario.

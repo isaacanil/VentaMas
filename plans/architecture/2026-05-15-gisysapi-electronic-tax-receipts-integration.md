@@ -484,16 +484,14 @@ Mitigacion: documento y rollout deben decir claro: local esta avanzado; DGII TES
 PowerShell 7.5.4:
 
 ```powershell
-npm run lint
+npm run lint:fast
 npm run build
 ```
 
 Tests backend focales cuando se implemente:
 
 ```powershell
-Push-Location functions
-npm run test -- electronicTaxReceipts
-Pop-Location
+npm run test:run:functions -- functions/src/app/modules/electronicTaxReceipts
 ```
 
 Regresion critica:

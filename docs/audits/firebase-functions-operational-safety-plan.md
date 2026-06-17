@@ -87,7 +87,7 @@ PowerShell:
 npm run test:run:functions -- functions/src/app/versions/v2/invoice/services/orchestrator.service.test.js functions/src/app/modules/treasury/functions/createBankStatementLine.test.js functions/src/app/modules/treasury/functions/resolveBankStatementLineMatch.test.js
 npm --prefix functions run build
 npm --prefix functions run lint
-.\node_modules\.bin\eslint.cmd src/app/versions/v2/invoice/services/orchestrator.service.js src/app/versions/v2/invoice/services/orchestrator.service.test.js src/app/modules/treasury/functions/createBankStatementLine.js src/app/modules/treasury/functions/createBankStatementLine.test.js src/app/modules/treasury/functions/resolveBankStatementLineMatch.js src/app/modules/treasury/functions/resolveBankStatementLineMatch.test.js
+.\node_modules\.bin\eslint.cmd functions/src/app/versions/v2/invoice/services/orchestrator.service.js functions/src/app/versions/v2/invoice/services/orchestrator.service.test.js functions/src/app/modules/treasury/functions/createBankStatementLine.js functions/src/app/modules/treasury/functions/createBankStatementLine.test.js functions/src/app/modules/treasury/functions/resolveBankStatementLineMatch.js functions/src/app/modules/treasury/functions/resolveBankStatementLineMatch.test.js
 npm run test:run:functions
 npm run typecheck
 ```

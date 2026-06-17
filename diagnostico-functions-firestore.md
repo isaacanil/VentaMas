@@ -11,7 +11,7 @@
 ## Resumen ejecutivo
 - `Hecho confirmado`: el modelo de persistencia en `functions/` no tiene una sola fuente de verdad por dominio. Usuario/membresia, negocio/billing, factura V2/factura canonica y varias proyecciones derivadas conviven y se pisan entre si. Evidencia principal: `functions/src/app/versions/v2/auth/controllers/businessContext.controller.js:343-406`, `functions/src/app/versions/v2/auth/controllers/businessInvites.controller.js:262-350`, `functions/src/app/versions/v2/billing/services/subscriptionSnapshot.service.js:245-266,531-624`, `functions/src/app/versions/v2/invoice/services/orchestrator.service.js:196-556`, `functions/src/app/versions/v2/invoice/triggers/outbox.worker.js:275-576`.
 - `Hecho confirmado`: el flujo de facturacion V2 es el punto mas maduro del backend. Tiene outbox, compensaciones, idempotencia y estados intermedios. Tambien es el punto mas complejo y con mas superficies derivadas. Evidencia: `functions/src/app/versions/v2/invoice/services/orchestrator.service.js:47-560`, `functions/src/app/versions/v2/invoice/triggers/outbox.worker.js:139-1073`, `functions/src/app/versions/v2/invoice/services/finalize.service.js:24-103`, `functions/src/app/versions/v2/invoice/services/compensation.service.js:3-150`.
-- `Hecho confirmado`: hay triggers de sincronizacion definidos en el repo que no estan exportados en `functions/src/index.js`, por lo que hoy no forman parte de la superficie desplegada. Eso convierte varias denormalizaciones en datos potencialmente obsoletos. Casos claros: `syncClientOnUpdate`, `syncCategoryOnUpdate`, `syncProductBrandOnUpdate`, `syncActiveIngredientOnUpdate`, `stockAlertsOnWrite`, `syncNcfLedger`, `updateStockOnInvoiceCreate`. Evidencia de superficie activa: `functions/src/index.js:117-210`. Evidencia de archivos existentes: `functions/src/app/modules/client/functions/syncClientOnUpdate.js:41-209`, `functions/src/app/modules/products/functions/syncCategoryOnUpdate.js:24-78`, `functions/src/app/modules/products/functions/syncProductBrandOnUpdate.js:17-96`, `functions/src/app/modules/products/functions/syncActiveIngredientOnUpdate.js:17-71`, `functions/src/app/modules/Inventory/functions/stockAlertsOnWrite.js:63-241`, `functions/src/app/versions/v2/invoice/triggers/ncfLedger.worker.js:13-42`, `functions/src/app/versions/v1/modules/inventory/triggers/updateStockOnInvoiceCreate.js:6-33`.
+- `Hecho confirmado`: hay triggers de sincronizacion definidos en el repo que no estan exportados en `functions/src/index.js`, por lo que hoy no forman parte de la superficie desplegada. Eso convierte varias denormalizaciones en datos potencialmente obsoletos. Casos presentes: `syncNcfLedger` y `updateStockOnInvoiceCreate`. Casos historicos ya retirados del arbol actual: `syncClientOnUpdate`, `syncCategoryOnUpdate`, `syncProductBrandOnUpdate`, `syncActiveIngredientOnUpdate` y `stockAlertsOnWrite`. Evidencia de superficie activa: `functions/src/index.js:117-210`. Evidencia de archivos existentes: `functions/src/app/versions/v2/invoice/triggers/ncfLedger.worker.js:13-42`, `functions/src/app/versions/v1/modules/inventory/triggers/updateStockOnInvoiceCreate.js:6-33`.
 - `Hecho confirmado`: hay flujos sensibles a dinero o a estado contable sin idempotencia fuerte ni transaccion de extremo a extremo. Los mas delicados son cobros de cuentas por cobrar y webhook de billing. Evidencia: `functions/src/app/modules/accountReceivable/functions/processAccountsReceivablePayment.js:406-726`, `functions/src/app/versions/v2/billing/controllers/webhookManagement.controller.js:110-178`.
 - `Hecho confirmado`: hay jobs de reparacion y reconciliacion que escanean todos los negocios o todas las cuentas de billing. Eso es senal de desconfianza estructural en el estado persistido, no solo mantenimiento normal. Evidencia: `functions/src/app/versions/v2/inventory/syncProductsStockCron.js:564-660`, `functions/src/app/versions/v2/billing/billingMaintenanceCron.js:41-220`, `functions/src/app/scheduled/expireAuthorizationRequests.ts:52-80`, `functions/src/app/versions/v2/billing/services/planCatalog.service.js:667-755`.
 
@@ -22,11 +22,9 @@
 - Triggers activos relevantes: `updatePendingBalance`, `processInvoiceOutbox`, `processInvoiceCompensation`, `syncRealtimePresence`, `syncProductNameOnUpdate`. Evidencia: `functions/src/index.js:121-149,187-210`.
 
 ### Archivos de persistencia/sync presentes pero no exportados
-- `Hecho confirmado`: `syncClientOnUpdate` existe, pero `functions/src/index.js:117-210` no lo exporta. Archivo: `functions/src/app/modules/client/functions/syncClientOnUpdate.js:41-209`.
-- `Hecho confirmado`: `syncCategoryOnUpdate`, `syncProductBrandOnUpdate` y `syncActiveIngredientOnUpdate` existen, pero no aparecen en `functions/src/index.js:117-210`. Archivos: `functions/src/app/modules/products/functions/syncCategoryOnUpdate.js:24-78`, `functions/src/app/modules/products/functions/syncProductBrandOnUpdate.js:17-96`, `functions/src/app/modules/products/functions/syncActiveIngredientOnUpdate.js:17-71`.
-- `Hecho confirmado`: `stockAlertsOnWrite` existe, pero no aparece en `functions/src/index.js:117-210`. Archivo: `functions/src/app/modules/Inventory/functions/stockAlertsOnWrite.js:63-241`.
 - `Hecho confirmado`: `syncNcfLedger` existe, pero no aparece en `functions/src/index.js:117-210`. Archivo: `functions/src/app/versions/v2/invoice/triggers/ncfLedger.worker.js:13-42`.
 - `Hecho confirmado`: `updateStockOnInvoiceCreate` existe, pero no aparece en `functions/src/index.js:117-210`. Archivo: `functions/src/app/versions/v1/modules/inventory/triggers/updateStockOnInvoiceCreate.js:6-33`.
+- `Hecho confirmado`: `syncClientOnUpdate`, `syncCategoryOnUpdate`, `syncProductBrandOnUpdate`, `syncActiveIngredientOnUpdate` y `stockAlertsOnWrite` aparecen en este diagnostico como deuda historica, pero sus archivos ya no existen en el arbol actual.
 
 ## Mapa actual del modelo Firestore desde `functions/`
 
@@ -117,8 +115,8 @@
 | `createProvider` | callable | crea proveedor e incrementa uso | `providers/{providerId}`, `usage/*` | transaccion | baja | `functions/src/app/modules/provider/functions/createProvider.js:54-137` |
 | `createWarehouse` | callable | crea almacen e incrementa uso | `warehouses/{warehouseId}`, `usage/*` | transaccion | baja | `functions/src/app/modules/warehouse/functions/createWarehouse.js:34-121` |
 | `syncProductNameOnUpdate` | Firestore trigger activo | sincroniza nombre de producto | `productsStock`, `batches`, `movements`, `backOrders` | BulkWriter, eventual | media | `functions/src/app/modules/Inventory/functions/syncProductNameOnUpdate.js:19-100`; activo en `functions/src/index.js:122-123` |
-| `syncClientOnUpdate` | trigger no exportado | sincronizaria snapshot de cliente | `invoices`, `invoicesV2`, `accountsReceivablePaymentReceipt`, `approvalLogs` | BulkWriter, eventual | media si estuviera activo | `functions/src/app/modules/client/functions/syncClientOnUpdate.js:41-209`; no aparece en `functions/src/index.js:117-210` |
-| `syncCategoryOnUpdate`, `syncProductBrandOnUpdate`, `syncActiveIngredientOnUpdate` | triggers no exportados | sincronizarian denorm de catalogos | `products/*` | BulkWriter, eventual | media si estuvieran activos | `functions/src/app/modules/products/functions/syncCategoryOnUpdate.js:24-78`, `functions/src/app/modules/products/functions/syncProductBrandOnUpdate.js:17-96`, `functions/src/app/modules/products/functions/syncActiveIngredientOnUpdate.js:17-71` |
+| `syncClientOnUpdate` | trigger retirado | sincronizaria snapshot de cliente | `invoices`, `invoicesV2`, `accountsReceivablePaymentReceipt`, `approvalLogs` | n/a | n/a | archivo no presente en el arbol actual; no aparece en `functions/src/index.js:117-210` |
+| `syncCategoryOnUpdate`, `syncProductBrandOnUpdate`, `syncActiveIngredientOnUpdate` | triggers retirados | sincronizarian denorm de catalogos | `products/*` | n/a | n/a | archivos no presentes en el arbol actual; no aparecen en `functions/src/index.js:117-210` |
 
 ### Cuentas por cobrar
 | Superficie | Tipo | Operacion | Rutas afectadas | Atomicidad | Idempotencia | Observacion |
@@ -158,7 +156,7 @@
 | `reconcileBatchStatusFromStocks` | callable | recalcula estado/cantidad de lotes | `productsStock`, `batches` | BulkWriter | media | `functions/src/app/modules/Inventory/functions/reconcileBatchStatusFromStocks.js:95-267` |
 | `quantityZeroToInactivePerBusiness` | cron activo | apaga docs `active` con `quantity == 0` usando collection group | `batches`, `productsStock` en todos los negocios | BulkWriter | media | `functions/src/app/modules/Inventory/functions/quantityZeroToInactivePerBusiness.js:1-188` |
 | `stockAlertsDailyDigest` | cron activo | escanea negocios y `productsStock` para correo diario | `businesses/*`, `settings/billing`, `productsStock`, `products`, `warehouses` | eventual | baja | `functions/src/app/modules/Inventory/functions/stockAlertsDailyDigest.js:75-417` |
-| `stockAlertsOnWrite` | trigger no exportado | alertaria por cruce de umbrales | `productsStock/{stockId}` | eventual | media si estuviera activo | `functions/src/app/modules/Inventory/functions/stockAlertsOnWrite.js:63-241` |
+| `stockAlertsOnWrite` | trigger retirado | alertaria por cruce de umbrales | `productsStock/{stockId}` | n/a | n/a | archivo no presente en el arbol actual; no aparece en `functions/src/index.js:117-210` |
 | `updateStockOnInvoiceCreate` | trigger no exportado | flujo legacy de descuento por creacion de invoice | `invoices`, `productsStock`, `batches`, `products`, `backOrders`, `movements` | mezcla tx + batchs | baja | `functions/src/app/versions/v1/modules/inventory/triggers/updateStockOnInvoiceCreate.js:6-33`; `functions/src/app/versions/v1/modules/inventory/handlers/handleUpdateProductsStock.js:38-201` |
 
 ## Patrones de atomicidad, batches e idempotencia
@@ -189,9 +187,9 @@
 - Impacto: el root dice "owner" y la membresia canonica dice "admin". Eso es inconsistencia semantica, no solo denormalizacion.
 
 ### 3. Triggers de sync definidos pero hoy inactivos
-- `Hecho confirmado`: `syncClientOnUpdate` no esta desplegado. Por tanto snapshots de cliente en `invoices`, `invoicesV2`, `accountsReceivablePaymentReceipt` y `approvalLogs` no se corrigen automaticamente. Evidencia: `functions/src/app/modules/client/functions/syncClientOnUpdate.js:41-209`; superficie activa en `functions/src/index.js:117-210`.
+- `Hecho confirmado`: `syncClientOnUpdate` ya no esta desplegado ni presente como archivo. Por tanto snapshots de cliente en `invoices`, `invoicesV2`, `accountsReceivablePaymentReceipt` y `approvalLogs` no se corrigen automaticamente por ese mecanismo. Evidencia: ausencia del archivo en el arbol actual; superficie activa en `functions/src/index.js:117-210`.
 - `Hecho confirmado`: `syncNcfLedger` no esta desplegado. El ledger derivado puede quedar obsoleto salvo reconstruccion manual. Evidencia: `functions/src/app/versions/v2/invoice/triggers/ncfLedger.worker.js:13-42`; `functions/src/index.js:117-210`.
-- `Hecho confirmado`: category/brand/ingredient sync tampoco esta desplegado. Si existen campos denormalizados en `products`, hoy no hay sincronizacion backend activa para esas renombradas. Evidencia: `functions/src/app/modules/products/functions/syncCategoryOnUpdate.js:24-78`, `functions/src/app/modules/products/functions/syncProductBrandOnUpdate.js:17-96`, `functions/src/app/modules/products/functions/syncActiveIngredientOnUpdate.js:17-71`; `functions/src/index.js:117-210`.
+- `Hecho confirmado`: category/brand/ingredient sync tampoco esta desplegado ni presente como archivos. Si existen campos denormalizados en `products`, hoy no hay sincronizacion backend activa para esas renombradas. Evidencia: ausencia de esos archivos en el arbol actual; `functions/src/index.js:117-210`.
 
 ### 4. Cobros de CxC sin idempotencia ni transaccion end-to-end
 - `Hecho confirmado`: `processAccountsReceivablePayment` lee cuentas/cuotas/invoices/caja, luego hace `db.batch()` con multiples updates y crea recibo. No hay idempotency key, no hay version check y no hay rollback si la entrada se reintenta logicamente. Evidencia: `functions/src/app/modules/accountReceivable/functions/processAccountsReceivablePayment.js:406-726`.
@@ -231,7 +229,7 @@
 - `Inferencia`: el repo esta absorbiendo deuda de modelado con "repair crons" en vez de limpiar la canonicidad del modelo.
 
 ## Quick wins
-- Exportar o eliminar `syncClientOnUpdate`, `syncNcfLedger`, `syncCategoryOnUpdate`, `syncProductBrandOnUpdate`, `syncActiveIngredientOnUpdate`, `stockAlertsOnWrite` y `updateStockOnInvoiceCreate`. Mantener codigo muerto de persistencia es caro y enganoso.
+- Decidir explicitamente si `syncNcfLedger` y `updateStockOnInvoiceCreate` deben exportarse, retirarse o quedar como tooling interno. Las referencias historicas a syncs ya eliminados (`syncClientOnUpdate`, category/brand/ingredient y `stockAlertsOnWrite`) no deben tratarse como codigo presente.
 - Corregir `redeemBusinessOwnershipClaimToken` para que la membresia canonica sea `owner` si el root del negocio pasa a ese usuario, o dejar de escribir owner fields en el root.
 - Agregar idempotencia explicita a `processAccountsReceivablePayment`, idealmente con clave del request y dedupe por recibo/pago.
 - Hacer dedupe en `azulWebhookAuth2` por `OrderNumber` + `AuthorizationCode` antes de crear `paymentHistory`.
@@ -257,7 +255,7 @@
 
 ## Plan de migracion gradual
 1. Congelar nuevas denormalizaciones en `functions/`. Ningun modulo nuevo deberia escribir espejos sin declarar un documento canonico.
-2. Resolver superficie activa: decidir que triggers de sync siguen vivos y borrar el resto del codigo muerto.
+2. Resolver superficie activa: decidir que triggers de sync presentes siguen vivos y borrar o documentar el resto del codigo muerto.
 3. Introducir idempotency keys en cobros de CxC y dedupe en webhooks de billing.
 4. Migrar arrays de caja a subcolecciones con doble escritura temporal y lectura backward-compatible.
 5. Corregir ownership/membership y migrar documentos inconsistentes.
@@ -266,7 +264,7 @@
 8. Si `ncfLedger` es realmente requerido, exportar su trigger o convertir el ledger en rebuild on demand y dejar de tratarlo como proyeccion supuestamente viva.
 
 ## Preguntas abiertas
-- `Pregunta`: `syncClientOnUpdate` y `syncNcfLedger` estan deshabilitados a proposito o simplemente quedaron fuera de `index.js` por accidente.
+- `Pregunta`: `syncNcfLedger` esta deshabilitado a proposito o quedo fuera de `index.js` por accidente; `syncClientOnUpdate` ya fue retirado del arbol actual.
 - `Pregunta`: que flujo es el canonico para alta de negocio en produccion: `createBusiness` o `clientCreateBusinessForCurrentAccount`.
 - `Pregunta`: el negocio necesita distinguir `owner` juridico de `admin` operativo, o el caso de ownership claim es un bug semantico.
 - `Pregunta`: `ncfLedger` se usa en reportes productivos hoy, o solo como herramienta interna via `rebuildNcfLedger` / `getNcfLedgerInsights`.
@@ -275,7 +273,7 @@
 ## Matriz final de prioridad
 | Hallazgo | Severidad | Impacto | Dificultad | Recomendacion | Archivos implicados |
 |---|---|---|---|---|---|
-| Triggers de sync definidos pero no desplegados (`syncClientOnUpdate`, `syncNcfLedger`, category/brand/ingredient, `stockAlertsOnWrite`) | Alta | Datos derivados stale y falsa sensacion de cobertura | Baja | Exportarlos o borrarlos; no dejar sincronizacion "fantasma" | `functions/src/index.js:117-210`; `functions/src/app/modules/client/functions/syncClientOnUpdate.js:41-209`; `functions/src/app/versions/v2/invoice/triggers/ncfLedger.worker.js:13-42`; `functions/src/app/modules/products/functions/syncCategoryOnUpdate.js:24-78`; `functions/src/app/modules/products/functions/syncProductBrandOnUpdate.js:17-96`; `functions/src/app/modules/products/functions/syncActiveIngredientOnUpdate.js:17-71`; `functions/src/app/modules/Inventory/functions/stockAlertsOnWrite.js:63-241` |
+| Triggers de sync presentes pero no desplegados (`syncNcfLedger`, `updateStockOnInvoiceCreate`) y referencias historicas a syncs ya retirados | Alta | Datos derivados stale y falsa sensacion de cobertura | Baja | Exportar o borrar los presentes; no tratar referencias historicas como codigo vivo | `functions/src/index.js:117-210`; `functions/src/app/versions/v2/invoice/triggers/ncfLedger.worker.js:13-42`; `functions/src/app/versions/v1/modules/inventory/triggers/updateStockOnInvoiceCreate.js:6-33` |
 | Ownership claim deja `business.ownerUid` en un usuario cuya membresia canonica queda `admin` | Alta | Inconsistencia semantica de ownership y permisos | Media | Alinear root y membership; `owner` debe ser `owner` en ambos lados o explicitar dos conceptos distintos | `functions/src/app/versions/v2/auth/controllers/businessOwnershipClaims.controller.js:458-520` |
 | Cobros de CxC sin idempotencia y con `db.batch()` sobre estado monetario | Alta | Riesgo de doble cobro, balances errados y recibos duplicados | Media | Agregar idempotency key y migrar a patron transaccional u outbox | `functions/src/app/modules/accountReceivable/functions/processAccountsReceivablePayment.js:406-726` |
 | Webhook de billing crea `paymentHistory` sin dedupe y reasigna suscripcion en cada retry | Alta | Duplicacion de pagos y drift de billing | Media | Deducir por `OrderNumber` + `AuthorizationCode`; usar doc deterministico o marca de procesamiento | `functions/src/app/versions/v2/billing/controllers/webhookManagement.controller.js:110-178` |

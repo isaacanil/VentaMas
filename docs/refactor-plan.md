@@ -193,6 +193,11 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - Se normalizaron imports internos con sufijo `.js` que apuntaban a fuentes TypeScript reales en PDF, inventario, clientes y comprobantes; se dejaron intactos los `.js` reales como `accountingSchemas.js`.
 - `CentredText` se normalizo a `CenteredText`, alineando nombre de archivo, export e imports activos sin cambiar su API visual.
 - `useFbGetProviders` delega la suscripcion Firestore en `src/firebase/provider/provider.repository.ts`, reutilizando `providerRefs` y dejando el hook enfocado en estado React/loading.
+- Se retiro la isla legacy autocontenida `src/modules/home/pages/Home/HomeScreen`, que no tenia consumidores externos y mantenia debug JSON junto a un acceso opcional a `getBills` desde `firebaseconfig`; la pantalla activa de Home sigue viviendo en `src/modules/home/pages/Home/Home.tsx`.
+- Se retiraron componentes Home legacy sin consumidores (`DashboardShortcuts`, `FeatureCardList`, `HomeQuickActions`, `BusinessInfoModal` y `AppVersionBadge`) y la referencia muerta del piloto estricto hacia la utilidad eliminada de `HomeScreen`.
+- Se elimino el cliente frontend muerto `src/services/accountsReceivable/audit.service.ts`; el endpoint HTTP de auditoria CxC queda como superficie backend/documentada, no como API importada desde `src/services`.
+- `LoginImageConfig` dejo de importar Firebase Storage directo; el acceso a `listAll`, `getDownloadURL`, `deleteObject` y `uploadBytes` vive en `src/modules/controlPanel/AppConfig/repositories/loginImageStorageRepository.ts`.
+- Al retirar `AppVersionBadge`, tambien se elimino el formatter exclusivo de ese badge, manteniendo solo `formatClientAppVersionDate` para `getClientBuildInfo`.
 
 ## Guardrails añadidos en esta pasada
 

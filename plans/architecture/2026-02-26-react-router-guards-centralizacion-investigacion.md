@@ -196,14 +196,14 @@ Se detectó que la mayor parte de la lentitud del lint venía del modo TypeScrip
   - Lint normal (por defecto): usa reglas TS no type-aware (`projectService: false`)
   - Lint type-aware: queda opt-in con `ESLINT_TYPED=true`
 - `package.json`
-  - script nuevo: `lint:path:typed`
+  - el lint por archivo se ejecuta con el target `path` del script `lint`.
 
 ### Uso recomendado
 
 - Validación rápida de cambios locales:
-  - `npm run lint:path -- <archivo>`
+  - `npm run lint -- path <archivo>`
 - Validación estricta puntual (cuando haga falta):
-  - `npm run lint:path:typed -- <archivo>`
+  - `ESLINT_TYPED=true npm run lint -- path <archivo>`
 
 ## Checklist de migración sugerido (prioridad)
 

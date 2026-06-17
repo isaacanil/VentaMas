@@ -26,7 +26,7 @@ import { SubscriptionStatusBanner } from './components/SubscriptionStatusBanner/
 
 import type { JSX } from 'react';
 
-const DashboardShortcuts = lazy(() =>
+const LazyHomeDashboard = lazy(() =>
   import('./components/HomeDashboard/HomeDashboard').then((module) => ({
     default: module.HomeDashboard,
   })),
@@ -229,7 +229,7 @@ export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
                 }
               >
                 <SubscriptionStatusBanner business={business} user={user} />
-                <DashboardShortcuts
+                <LazyHomeDashboard
                   activePanel={activePanel}
                   businessName={business?.name ?? null}
                   displayName={displayName}

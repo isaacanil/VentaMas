@@ -51,11 +51,9 @@ Las capturas se encuentran adjuntas en el hilo original (ver referencia en la co
 ### Al facturar (alta de CxC)
 
 1. El frontend invoca `processInvoice` desde `src/services/invoice/useInvoice.ts` y `src/services/invoice/invoice.service.ts`; si `receivableStatus` está activo, envía `accountsReceivable` con `totalReceivable`, `totalInstallments`, `paymentFrequency`, `dueDate`, etc.
-2. La callable `createInvoiceV2` ejecuta `processInvoiceData` (`functions/src/app/modules/invoice/services/invoice.service.js:25`). Dentro de la transacción:
-   - Se genera la factura (`generateFinalInvoice` o `generateInvoiceFromPreorder`).
-   - Se ajusta inventario y se reserva el NCF.
-   - Finalmente se llama a `manageReceivableAccounts` (`functions/src/app/modules/accountReceivable/services/accountReceivable.service.js:6`).
-3. `manageReceivableAccounts` obtiene el siguiente correlativo (`collectReceivablePrereqs`) y llama a:
+2. La callable `createInvoiceV2` crea una factura pendiente con `createPendingInvoice` (`functions/src/app/versions/v2/invoice/services/orchestrator.service.js`) y agenda tareas en el outbox de la factura. Cuando hay CxC, una de esas tareas es `setupAR`.
+3. `processInvoiceOutbox` (`functions/src/app/versions/v2/invoice/triggers/outbox.worker.js`) ejecuta `setupAR`, prepara los prerequisitos de CxC y llama a los servicios de cuentas por cobrar.
+4. Los servicios de CxC obtienen el siguiente correlativo (`collectReceivablePrereqs`) y llaman a:
    - `addAccountReceivable` (`functions/src/app/modules/accountReceivable/services/addAccountReceivable.js`) crea el documento `accountsReceivable/{arId}` con `arBalance = totalReceivable`, `isActive = true` y `paidInstallments = []`.
    - `addInstallmentReceivable` (`functions/src/app/modules/accountReceivable/services/addInstallmentsAccountReceivable.js`) persiste las cuotas en `accountsReceivableInstallments` calculadas por `generateInstallments`.
 
@@ -80,7 +78,7 @@ Las capturas se encuentran adjuntas en el hilo original (ver referencia en la co
 1. **Ver el documento de la cuenta**: `accountsReceivable/{arId}` debe tener `arBalance` y `installmentBalance` coherentes y `isActive=false` cuando llega a cero.
 2. **Confirmar la escritura agregada**: en `clients/{clientId}` revisa `client.pendingBalance`. Si no cambia, revisar logs de `updatePendingBalance` en Firebase para validar que la función esté desplegada y sin errores.
 3. **Verificar los pagos parciales**: usa la colección `accountsReceivableInstallmentPayments` para comprobar que el pago quedó registrado y que el batch que ejecuta el frontend no falló (consultar la consola del navegador / Sentry).
-4. **Validar los datos enviados**: si el panel de CxC calcula montos incorrectos (`ReceivableManagementPanel.jsx`), el `arBalance` inicial será diferente y la suma agregada nunca llegará a cero.
+4. **Validar los datos enviados**: si el panel de CxC calcula montos incorrectos (`src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/ReceivableManagementPanel/ReceivableManagementPanel.tsx`), el `arBalance` inicial será diferente y la suma agregada nunca llegará a cero.
 
 ### Hipótesis iniciales
 

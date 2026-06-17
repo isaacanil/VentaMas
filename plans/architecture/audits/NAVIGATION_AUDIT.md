@@ -32,7 +32,8 @@ Files checked:
 
 - `src/modules/navigation/components/MenuApp/Components/SideBar.tsx`
 - `src/modules/navigation/components/MenuApp/Components/MenuLink.tsx`
-- `src/modules/home/pages/Home/components/FeatureCardList/FeatureCard.tsx`
+- `src/modules/home/pages/Home/components/HomeDashboard/components/ModuleLauncher/ModuleShortcutGrid.tsx`
+- `src/modules/home/pages/Home/components/MenuWebsite/components/ShortcutSearch.tsx`
 - Global scan for `<a>`, `window.location`, and `location.href` in `src/`
 
 Findings:

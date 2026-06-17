@@ -22,10 +22,10 @@ Se revisaron los flujos que crean o consumen inventario para mantener alineados 
 
 ### Salidas (ventas)
 
-Dos implementaciones conviven:
+Dos generaciones conviven en la documentacion, pero el flujo recomendado actual es V2:
 
-1. **Backend (recomendado)** - `processInvoiceData` llama a `collectInventoryPrereqs` y `adjustProductInventory` dentro de una transacción (`functions/src/app/modules/invoice/services/invoice.service.js:18-108`). `adjustProductInventory` (`functions/src/app/modules/Inventory/services/Inventory.service.js:16-258`) descuenta stock de `productsStock`, `batches`, `products`, registra movimientos y crea backorders cuando faltan unidades.
-2. **Frontend legacy** - el servicio cliente actual (`src/services/invoice/useInvoice.ts`, `src/services/invoice/invoice.service.ts`) delega en `createInvoiceV2`; la ruta histórica del servicio JS anterior ya no existe.
+1. **Backend V2 (recomendado)** - el servicio cliente (`src/services/invoice/useInvoice.ts`, `src/services/invoice/invoice.service.ts`) delega en `createInvoiceV2`. Esa callable crea la factura con `createPendingInvoice` y agenda una tarea de inventario en `invoicesV2/{invoiceId}/outbox`; `processInvoiceOutbox` ejecuta `collectInventoryPrereqs` y `adjustProductInventory` (`functions/src/app/modules/Inventory/services/Inventory.service.js`), descontando `productsStock`, `batches`, `products`, registrando movimientos y creando backorders cuando faltan unidades.
+2. **Backend legacy** - `processInvoiceData` (`functions/src/app/modules/invoice/services/invoice.service.js`) conserva el modelo historico del proceso transaccional y no debe documentarse como ruta principal de `createInvoiceV2`.
 
 ### Ajustes físicos e inventarios cíclicos
 

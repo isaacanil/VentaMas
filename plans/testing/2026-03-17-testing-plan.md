@@ -334,7 +334,6 @@ Inventario top-level consolidado en [2026-03-17-testing-module-audit.md](c:\Dev\
 ### Servicios Y Hooks Aun No Mapeados Explicitamente
 
 - [ ] [src/services/dynamicPermissions.ts](c:\Dev\VentaMas\src\services\dynamicPermissions.ts)
-- [ ] [src/services/accountsReceivable/audit.service.ts](c:\Dev\VentaMas\src\services\accountsReceivable\audit.service.ts)
 - [ ] [src/services/invoice/autoCompletePreorderInvoice.ts](c:\Dev\VentaMas\src\services\invoice\autoCompletePreorderInvoice.ts)
 - [ ] [src/services/invoice/logInvoiceAuthorizations.ts](c:\Dev\VentaMas\src\services\invoice\logInvoiceAuthorizations.ts)
 - [ ] [src/services/invoice/useInvoice.ts](c:\Dev\VentaMas\src\services\invoice\useInvoice.ts)
