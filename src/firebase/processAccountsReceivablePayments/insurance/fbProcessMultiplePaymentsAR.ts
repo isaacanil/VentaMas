@@ -23,8 +23,10 @@ import {
   type PaymentDetails,
   type UserWithBusinessAndUid,
 } from '@/firebase/processAccountsReceivablePayments/arPaymentUtils';
-import { defaultInstallmentPaymentsAR } from '@/schema/accountsReceivable/installmentPaymentsAR';
-import { defaultPaymentsAR } from '@/schema/accountsReceivable/paymentAR';
+import {
+  defaultInstallmentPaymentsAR,
+  defaultPaymentsAR,
+} from '@/domain/accountsReceivable/accountsReceivableDefaults';
 
 const THRESHOLD = 1e-10;
 // Función mejorada para redondear a dos decimales y evitar problemas de precisión

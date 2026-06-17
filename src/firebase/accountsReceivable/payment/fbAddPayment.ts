@@ -2,7 +2,7 @@ import { setDoc, Timestamp } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
 import { getDocRef } from '@/firebase/firebaseOperations';
-import { defaultPaymentsAR } from '@/schema/accountsReceivable/paymentAR';
+import { defaultPaymentsAR } from '@/domain/accountsReceivable/accountsReceivableDefaults';
 import type { UserIdentity } from '@/types/users';
 import {
   resolveMonetarySnapshotForBusiness,

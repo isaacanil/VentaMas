@@ -14,8 +14,10 @@ import type { DocumentReference, Transaction, WriteBatch } from 'firebase/firest
 import { nanoid } from 'nanoid';
 
 import { db } from '@/firebase/firebaseconfig';
-import { defaultInstallmentPaymentsAR } from '@/schema/accountsReceivable/installmentPaymentsAR';
-import { defaultPaymentsAR } from '@/schema/accountsReceivable/paymentAR';
+import {
+  defaultInstallmentPaymentsAR,
+  defaultPaymentsAR,
+} from '@/domain/accountsReceivable/accountsReceivableDefaults';
 import type {
   InvoiceCreditNote,
   InvoiceData,

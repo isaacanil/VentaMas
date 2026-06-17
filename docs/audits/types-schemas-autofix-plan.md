@@ -6,7 +6,7 @@ Fecha: 2026-05-05
 
 Revision autonoma de tipos, interfaces, schemas, enums, constantes y contratos compartidos en VentaMas. Superficies inspeccionadas:
 
-- Frontend TypeScript: `src/types`, `src/utils`, `src/schema`, `src/features`, `src/modules`.
+- Frontend TypeScript: `src/types`, `src/utils`, `src/domain`, `src/features`, `src/modules`.
 - Shared schemas: `src/shared/accountingSchemas.js` y `functions/src/shared/accountingSchemas.js`.
 - Cloud Functions: `functions/src/app/modules`, `functions/src/app/versions/v2`.
 - Modelos Firestore/DTOs por dominio: pagos, cash movements, facturas, compras, gastos, CxC, CxP, tesoreria, contabilidad, monedas y NCF.

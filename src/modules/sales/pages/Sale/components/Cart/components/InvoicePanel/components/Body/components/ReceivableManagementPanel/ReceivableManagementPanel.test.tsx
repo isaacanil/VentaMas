@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { Provider } from 'react-redux';
 import { describe, expect, it, vi } from 'vitest';
 
-import { defaultAR } from '@/schema/accountsReceivable/accountsReceivable';
+import { defaultAR } from '@/domain/accountsReceivable/accountsReceivableDefaults';
 
 import { ReceivableManagementPanel } from './ReceivableManagementPanel';
 

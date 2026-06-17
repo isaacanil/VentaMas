@@ -8,8 +8,8 @@ Se revisaron los flujos que crean o consumen inventario para mantener alineados 
 
 ### Creación y edición de productos
 
-- **Alta nueva** `fbAddProduct` (`src/firebase/products/fbAddProduct.js:10-115`): ejecuta una transacción que crea `products`, `batches`, `productsStock` y un `movement` inicial apuntando al almacén por defecto. El stock del producto queda igual al del lote inicial.
-- **Edición** `fbUpdateProduct` (`src/firebase/products/fbUpdateProduct.js:5-11`): actualiza el documento completo sin invariantes; cualquier cambio manual en `stock` o banderas de inventario se persiste tal cual.
+- **Alta nueva** `fbAddProduct` (`src/firebase/products/fbAddProduct.ts`): delega en la callable `createProduct`; la transacción que crea `products`, `batches`, `productsStock` y el `movement` inicial vive en `functions/src/app/modules/products/functions/createProduct.js`. El stock del producto queda igual al del lote inicial.
+- **Edición** `fbUpdateProduct` (`src/firebase/products/fbUpdateProduct.ts`): actualiza el documento completo sin invariantes; cualquier cambio manual en `stock` o banderas de inventario se persiste tal cual.
 
 ### Entradas (compras)
 
@@ -49,10 +49,10 @@ Dos generaciones conviven en la documentacion, pero el flujo recomendado actual 
    `productStockData.location` llega como string (`"warehouseId"`), pero `createProductStock` intenta desestructurar `{ warehouse, shelf, row, segment }` (`src/firebase/warehouse/productStockService.ts`). El flujo rompe antes de insertar el registro físico y la compra queda incompleta.
 
 3. **Ventas legadas solo bajan `products.stock`**  
-   `fbUpdateProductsStock` (`src/firebase/products/fbUpdateProductStock.js:43-134`) actualiza `productsStock` y `batches` únicamente si `hasExpirationDate` es `true`. Para el resto de productos, la salida de inventario solo impacta el campo congelado de `products`, dejando los lotes con cantidades viejas.
+   `fbUpdateProductsStock` (`src/firebase/products/fbUpdateProductStock.ts`) actualiza `productsStock` y `batches` únicamente si `hasExpirationDate` es `true`. Para el resto de productos, la salida de inventario solo impacta el campo congelado de `products`, dejando los lotes con cantidades viejas.
 
 4. **Ediciones manuales del producto ignoran invariantes**  
-   `fbUpdateProduct` sobrescribe cualquier atributo sin validaciones (`src/firebase/products/fbUpdateProduct.js:5-11`), por lo que un usuario puede ajustar `stock`, `trackInventory` o `status` sin tocar `productsStock`. Esto rompe la relación “stock agregado = suma física” hasta que un inventario cíclico vuelva a reconciliar.
+   `fbUpdateProduct` sobrescribe cualquier atributo sin validaciones (`src/firebase/products/fbUpdateProduct.ts`), por lo que un usuario puede ajustar `stock`, `trackInventory` o `status` sin tocar `productsStock`. Esto rompe la relación “stock agregado = suma física” hasta que un inventario cíclico vuelva a reconciliar.
 
 5. **Eliminación de productStock no es atómica**  
    `deleteProductStock` aplica cuatro escrituras independientes (`src/firebase/warehouse/productStockService.ts`). Si se interrumpe entre la baja del lote y la del producto, `products.stock` puede quedar negativo hasta que otro proceso lo repare.

@@ -13,7 +13,7 @@ import { Header } from './components/Header/Header';
 import { PaymentArea } from './components/PaymentArea';
 import { ProductList } from './components/ProductList';
 import { Row } from './components/Table/Row';
-import { ThankYouMessage } from '@/components/common/ThankYouMessage/ThankYouMessage';
+import { ThankYouMessage } from '@/components/common/ThankYouMessage';
 import { WarrantySignature } from '@/components/common/WarrantySignature';
 import { Container, HiddenPrintWrapper } from './Style';
 

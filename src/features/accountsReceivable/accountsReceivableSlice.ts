@@ -6,7 +6,7 @@ import {
 } from '@reduxjs/toolkit';
 
 import { getAccountReceivableDetails } from '@/firebase/accountsReceivable/fbGetAccountReceivableDetails'; // Asegúrate de que la ruta es correcta
-import { defaultAR } from '@/schema/accountsReceivable/accountsReceivable';
+import { defaultAR } from '@/domain/accountsReceivable/accountsReceivableDefaults';
 import { applyUpdates } from '@/utils/reduxStateUtils';
 
 interface AccountsReceivableInfo {

@@ -62,7 +62,7 @@ enviando `operation: 'analyze' | 'execute'`.
 
 - Analyze wrapper: `src/modules/dev/pages/dev/AiBusinessSeeding/api/fbAiBusinessSeedingAgentAnalyze.ts`
 - Execute wrapper: `src/modules/dev/pages/dev/AiBusinessSeeding/api/fbAiBusinessSeedingAgentExecute.ts`
-- Seeding directo de negocio+usuarios (usado por acciones): `src/modules/dev/pages/dev/AiBusinessSeeding/api/fbSeedBusinessWithUsers.ts`
+- Status wrapper: `src/modules/dev/pages/dev/AiBusinessSeeding/api/fbAiBusinessSeedingAgentStatus.ts`
 
 ### Backend (Firebase Functions / AI)
 

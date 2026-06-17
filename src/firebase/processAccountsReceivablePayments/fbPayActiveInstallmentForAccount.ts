@@ -14,7 +14,7 @@ import { fbAddPayment } from '@/firebase/accountsReceivable/payment/fbAddPayment
 import { checkOpenCashReconciliation } from '@/firebase/cashCount/cashReconciliationStatus.repository';
 import { db } from '@/firebase/firebaseconfig';
 import { fbGetInvoice } from '@/firebase/invoices/fbGetInvoice';
-import { defaultInstallmentPaymentsAR } from '@/schema/accountsReceivable/installmentPaymentsAR';
+import { defaultInstallmentPaymentsAR } from '@/domain/accountsReceivable/accountsReceivableDefaults';
 
 import {
   type PaymentDetails,

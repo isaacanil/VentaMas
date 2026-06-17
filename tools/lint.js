@@ -47,7 +47,6 @@ const WEB_LINT_GROUPS = [
     'src/models',
     'src/pdf',
     'src/router',
-    'src/schema',
     'src/services',
     'src/shared',
     'stories',
