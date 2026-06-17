@@ -106,7 +106,7 @@ export const SessionInfoDropdown = ({
 
   const handleOpenSettings = () => {
     setIsOpen(false);
-    navigate(ROUTES_PATH.SETTING_TERM.SETTINGS);
+    navigate(ROUTES_PATH.SETTING_TERM.SETTING);
   };
 
   const handleOpenLogoutConfirmation = () => {

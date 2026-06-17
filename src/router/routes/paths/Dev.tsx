@@ -121,6 +121,7 @@ const Routes: AppRoute[] = [
     path: '/doc',
     element: <Doc />,
     devOnly: true,
+    requiresDevAccess: true,
     status: ROUTE_STATUS.BETA,
   },
   {
@@ -168,18 +169,21 @@ const Routes: AppRoute[] = [
     path: PRICE_LIST_AUDIT,
     element: <CheckProductPriceAudit />,
     devOnly: true,
+    requiresDevAccess: true,
     status: ROUTE_STATUS.BETA,
   },
   {
     path: CASH_COUNT_AUDIT,
     element: <CashCountAudit />,
     devOnly: true,
+    requiresDevAccess: true,
     status: ROUTE_STATUS.WIP,
   },
   {
     path: INVENTORY_MIGRATION,
     element: <InventoryMigrationTool />,
     devOnly: true,
+    requiresDevAccess: true,
     status: ROUTE_STATUS.WIP,
     // Para habilitar en staging usar VITE_ENABLE_DEV_ROUTES=true
     // enabledEnvs: ['development']
@@ -188,30 +192,35 @@ const Routes: AppRoute[] = [
     path: SYNC_DIAGNOSTICS,
     element: <SyncDiagnostics />,
     devOnly: true,
+    requiresDevAccess: true,
     status: ROUTE_STATUS.WIP,
   },
   {
     path: ALL_USERS,
     element: <AllUsersControl />,
     devOnly: true,
+    requiresDevAccess: true,
     status: ROUTE_STATUS.BETA,
   },
   {
     path: CHANGELOG_CREATE,
     element: <ChangeLogCreate />,
     devOnly: true,
+    requiresDevAccess: true,
     status: ROUTE_STATUS.BETA,
   },
   {
     path: APP_CONFIG.ROOT,
     element: <AppConfig />,
     devOnly: true,
+    requiresDevAccess: true,
     status: ROUTE_STATUS.BETA,
   },
   {
     path: APP_CONFIG.LOGIN_IMAGE,
     element: <LoginImageConfig />,
     devOnly: true,
+    requiresDevAccess: true,
   },
   {
     path: AI_BUSINESS_SEEDING,
@@ -225,18 +234,21 @@ const Routes: AppRoute[] = [
     path: PRODUCT_FORM_V2_TEST,
     element: <ProductFormV2TestBench />,
     devOnly: true,
+    requiresDevAccess: true,
     status: ROUTE_STATUS.BETA,
   },
   {
     path: ACCOUNTING_PILOT_AUDIT,
     element: <AccountingPilotAudit />,
     devOnly: true,
+    requiresDevAccess: true,
     status: ROUTE_STATUS.WIP,
   },
   {
     path: FINANCE_READINESS_AUDIT,
     element: <FinanceReadinessAudit />,
     devOnly: true,
+    requiresDevAccess: true,
     status: ROUTE_STATUS.WIP,
   },
 ];

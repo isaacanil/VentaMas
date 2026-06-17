@@ -119,7 +119,6 @@ const CONTACT_TERM = {
 } as const;
 
 const SETTING_TERM = {
-  SETTINGS: '/settings',
   SETTING: '/settings',
   USERS: '/users',
   USERS_LIST: 'list',

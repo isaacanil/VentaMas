@@ -1,7 +1,9 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import changelogRoutes from './paths/Changelogs';
+import devRoutes from './paths/Dev';
 import inventoryRoutes from './paths/Inventory';
+import labRoutes from './paths/Lab';
 import settingRoutes from './paths/Setting';
 import { ROUTE_STATUS } from './routeMeta';
 import {
@@ -10,6 +12,8 @@ import {
   registerRoutes,
 } from './routeVisibility';
 import ROUTES_NAME from './routesName';
+
+import type { AppRoute } from '@/router/types/routeTypes';
 
 const switchBusinessRoute = settingRoutes.find(
   (route) => route.path === ROUTES_NAME.DEV_VIEW_TERM.SWITCH_BUSINESS,
@@ -20,6 +24,26 @@ const productStudioRoute = inventoryRoutes.find(
 const changelogManageRoute = changelogRoutes.find(
   (route) => route.path === ROUTES_NAME.CHANGELOG_TERM.CHANGELOG_MANAGE,
 );
+
+const joinRoutePath = (parentPath: string, routePath?: string) => {
+  if (!routePath) return parentPath;
+  if (routePath.startsWith('/')) return routePath;
+  if (!parentPath || parentPath === '/') return `/${routePath}`;
+  return `${parentPath.replace(/\/$/, '')}/${routePath}`;
+};
+
+const collectDevOnlyRoutes = (
+  routes: AppRoute[],
+  parentPath = '',
+): Array<{ path: string; route: AppRoute }> =>
+  routes.flatMap((route) => {
+    const path = joinRoutePath(parentPath, route.path);
+    const routeEntry = route.devOnly ? [{ path, route }] : [];
+    return [
+      ...routeEntry,
+      ...collectDevOnlyRoutes(route.children ?? [], path),
+    ];
+  });
 
 describe('routeVisibility', () => {
   beforeAll(() => {
@@ -89,5 +113,17 @@ describe('routeVisibility', () => {
         requiresDevAccess: true,
       }),
     );
+  });
+
+  it('requires dev access metadata for every dev-only route', () => {
+    const devOnlyRoutesMissingAccess = collectDevOnlyRoutes([
+      ...devRoutes,
+      ...labRoutes,
+    ])
+      .filter(({ route }) => route.requiresDevAccess !== true)
+      .map(({ path }) => path)
+      .sort();
+
+    expect(devOnlyRoutesMissingAccess).toEqual([]);
   });
 });

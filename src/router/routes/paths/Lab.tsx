@@ -16,18 +16,21 @@ const Routes: AppRoute[] = [
     path: '/lab',
     element: <Lab />,
     devOnly: true,
+    requiresDevAccess: true,
     hideInMenu: true,
     children: [
       {
         path: 'heroui',
         element: <HeroUiPlayground />,
         devOnly: true,
+        requiresDevAccess: true,
         hideInMenu: true,
       },
       {
         path: 'heroui/custom',
         element: <CustomHeroUiPlayground />,
         devOnly: true,
+        requiresDevAccess: true,
         hideInMenu: true,
       },
     ],

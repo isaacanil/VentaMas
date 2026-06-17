@@ -1,6 +1,13 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-import { readLocalStorageBoolean } from '@/utils/storage/localStorage';
+import {
+  readStoredCategoryGrouped,
+  readStoredImageHidden,
+  readStoredRowMode,
+  writeStoredCategoryGrouped,
+  writeStoredImageHidden,
+  writeStoredRowMode,
+} from './utils/settingStorage';
 
 interface SettingState {
   status: boolean;
@@ -36,57 +43,37 @@ const initialState: SettingState = {
   },
 };
 
-const VIEW_PRODUCT_IMAGE_DISABLED_KEY = 'viewProductImageDisabled';
-const VIEW_PRODUCT_ROW_MODE_KEY = 'viewProductRowMode';
-const VIEW_PRODUCT_CATEGORY_GROUPED_KEY = 'viewProductCategoryGrouped';
-
 export const settingSlice = createSlice({
   name: 'setting',
   initialState,
   reducers: {
     handleImageHidden: (state: SettingState) => {
       const imageDisabled = state.userPreference.view.imageHidden;
-      localStorage.setItem(
-        VIEW_PRODUCT_IMAGE_DISABLED_KEY,
-        JSON.stringify(!imageDisabled),
-      );
-      state.userPreference.view.imageHidden = readLocalStorageBoolean(
-        VIEW_PRODUCT_IMAGE_DISABLED_KEY,
-        !imageDisabled,
-      );
+      writeStoredImageHidden(!imageDisabled);
+      state.userPreference.view.imageHidden =
+        readStoredImageHidden(!imageDisabled);
     },
     ReloadImageHiddenSetting: (state: SettingState) => {
-      state.userPreference.view.imageHidden = readLocalStorageBoolean(
-        VIEW_PRODUCT_IMAGE_DISABLED_KEY,
+      state.userPreference.view.imageHidden = readStoredImageHidden(
         state.userPreference.view.imageHidden,
       );
-      state.userPreference.view.rowMode = readLocalStorageBoolean(
-        VIEW_PRODUCT_ROW_MODE_KEY,
+      state.userPreference.view.rowMode = readStoredRowMode(
         state.userPreference.view.rowMode,
       );
-      state.userPreference.view.categoryGrouped = readLocalStorageBoolean(
-        VIEW_PRODUCT_CATEGORY_GROUPED_KEY,
+      state.userPreference.view.categoryGrouped = readStoredCategoryGrouped(
         state.userPreference.view.categoryGrouped,
       );
     },
     handleRowMode: (state: SettingState) => {
       const rowMode = state.userPreference.view.rowMode;
-      localStorage.setItem(VIEW_PRODUCT_ROW_MODE_KEY, JSON.stringify(!rowMode));
-      state.userPreference.view.rowMode = readLocalStorageBoolean(
-        VIEW_PRODUCT_ROW_MODE_KEY,
-        !rowMode,
-      );
+      writeStoredRowMode(!rowMode);
+      state.userPreference.view.rowMode = readStoredRowMode(!rowMode);
     },
     toggleCategoryGrouped: (state: SettingState) => {
       const categoryGrouped = state.userPreference.view.categoryGrouped;
-      localStorage.setItem(
-        VIEW_PRODUCT_CATEGORY_GROUPED_KEY,
-        JSON.stringify(!categoryGrouped),
-      );
-      state.userPreference.view.categoryGrouped = readLocalStorageBoolean(
-        VIEW_PRODUCT_CATEGORY_GROUPED_KEY,
-        !categoryGrouped,
-      );
+      writeStoredCategoryGrouped(!categoryGrouped);
+      state.userPreference.view.categoryGrouped =
+        readStoredCategoryGrouped(!categoryGrouped);
     },
     toggleFullScreen: (state: SettingState) => {
       const fullScreenMode = state.system.fullScreen;
