@@ -18,6 +18,7 @@ import insuranceRoutes from './paths/Insurance';
 import inventoryRoutes from './paths/Inventory';
 import labRoutes from './paths/Lab';
 import ordersRoutes from './paths/Orders';
+import { joinRoutePath } from './pathUtils';
 import purchasesRoutes from './paths/Purchases';
 import salesRoutes from './paths/Sales';
 import settingRoutes from './paths/Setting';
@@ -89,13 +90,6 @@ const activeRoutes = [
   ...debitNoteRoutes,
   ...authorizationsRoutes,
 ] satisfies AppRoute[];
-
-const joinRoutePath = (parentPath: string, routePath?: string) => {
-  if (!routePath) return parentPath;
-  if (routePath.startsWith('/')) return routePath;
-  if (!parentPath || parentPath === '/') return `/${routePath}`;
-  return `${parentPath.replace(/\/$/, '')}/${routePath}`;
-};
 
 const isMountableMetadataRoute = (route: AppRoute) =>
   route.index !== true && route.path !== '*';

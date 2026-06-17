@@ -1,6 +1,7 @@
 import { matchRoutes } from 'react-router';
 import { ROUTE_STATUS } from './routeMeta';
 import { getResolvedRouteMeta } from './routeHandle';
+import { stripTrailingSlash } from './pathUtils';
 
 import type { AppRoute } from '@/router/types/routeTypes';
 
@@ -12,14 +13,6 @@ interface MenuItemMeta {
 const routeIndex = new Map<string, AppRoute>();
 let indexed = false;
 let registeredRoutes: AppRoute[] = [];
-
-const normalizePathname = (path: string): string => {
-  if (!path) return path;
-  if (path.length > 1 && path.endsWith('/')) {
-    return path.slice(0, -1);
-  }
-  return path;
-};
 
 const indexRoutesRecursive = (list: AppRoute[]): void => {
   list.forEach((route) => {
@@ -46,7 +39,7 @@ const resolveRegisteredRouteMatch = (
   if (!registeredRoutes.length) return undefined;
   const matches = matchRoutes(
     registeredRoutes as Parameters<typeof matchRoutes>[0],
-    normalizePathname(pathname),
+    stripTrailingSlash(pathname),
   );
   if (!matches?.length) return undefined;
   const lastMatch = matches[matches.length - 1];

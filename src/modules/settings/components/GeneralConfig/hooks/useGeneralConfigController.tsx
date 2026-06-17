@@ -3,9 +3,9 @@ import { useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { selectUser } from '@/features/auth/userSlice';
-import { makeSelectPreviousRelevantRoute } from '@/features/navigation/navigationSlice';
 import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import { useBusinessFeatureEnabled } from '@/hooks/useBusinessFeatureEnabled';
+import { makeSelectPreviousRelevantRoute } from '@/modules/navigation/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 import { hasBusinessSettingsManageAccess } from '@/utils/access/businessSettingsAccess';
 import { isFrontendFeatureEnabled } from '@/utils/runtime/frontendFeatureAccess';

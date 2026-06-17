@@ -2,10 +2,10 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
-import { pushHistory } from '@/features/navigation/navigationSlice';
+import { pushHistory } from '@/modules/navigation/public';
 
 /**
- * Hook para registrar automáticamente las rutas visitadas en el navigationSlice
+ * Hook para registrar automáticamente las rutas visitadas en el historial.
  * @returns {void}
  */
 export const useNavigationTracker = () => {
@@ -13,7 +13,6 @@ export const useNavigationTracker = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // Guardamos la ubicación completa en el historial
     dispatch(
       pushHistory({
         pathname: location.pathname,

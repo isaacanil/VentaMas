@@ -2,8 +2,8 @@ import { renderHook } from '@testing-library/react';
 import { matchRoutes } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { developerShortcuts } from '@/constants/devtools/developerShortcuts';
 import {
+  developerShortcuts,
   loadInventoryMigrationToolRoute,
   loadProductFormV2TestBenchRoute,
   loadSyncDiagnosticsRoute,

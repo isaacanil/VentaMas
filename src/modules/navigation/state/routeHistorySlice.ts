@@ -1,4 +1,3 @@
-// src/store/navigationSlice.js
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 interface LocationObject {
@@ -19,21 +18,19 @@ interface NavigationRootState {
 }
 
 const initialState: NavigationState = {
-  history: [], // Array de objetos Location { pathname, search, hash, state, key }
-  maxLength: 20, // Puedes configurarlo aquí o pasarlo dinámicamente
+  history: [],
+  maxLength: 20,
 };
 
 const navigationSlice = createSlice({
   name: 'navigation',
   initialState,
   reducers: {
-    // Acción para añadir una nueva ubicación al historial
     pushHistory: (
       state: NavigationState,
       action: PayloadAction<LocationObject>,
     ) => {
-      const newLocation = action.payload; // Esperamos recibir el objeto Location completo
-      // Evitar duplicados consecutivos (basado en key o pathname)
+      const newLocation = action.payload;
       const lastLocation = state.history[state.history.length - 1];
       if (
         !lastLocation ||
@@ -41,7 +38,6 @@ const navigationSlice = createSlice({
         newLocation.pathname !== lastLocation.pathname
       ) {
         state.history.push(newLocation);
-        // Limitar longitud
         if (state.history.length > state.maxLength) {
           state.history = state.history.slice(
             state.history.length - state.maxLength,
@@ -54,28 +50,22 @@ const navigationSlice = createSlice({
 
 export const { pushHistory } = navigationSlice.actions;
 
-// Selector Factory: Creates a selector to get the previous relevant route, ignoring a specific path prefix.
 export const makeSelectPreviousRelevantRoute = (pathToIgnore?: string) => {
-  // Returns the actual selector function
   return (state: NavigationRootState) => {
     const history = state.navigation.history;
 
     if (history.length < 2) {
-      return null; // Not enough history
+      return null;
     }
 
-    // Iterate backwards from the second-to-last entry
     for (let i = history.length - 2; i >= 0; i--) {
       const routeToCheck = history[i];
-      // Check if the route's pathname starts with the specified path to ignore
       if (!pathToIgnore || !routeToCheck.pathname.startsWith(pathToIgnore)) {
-        // If it doesn't start with the ignored path (or if no path to ignore was provided),
-        // this is the relevant previous route.
         return routeToCheck;
       }
     }
 
-    return null; // No relevant previous route found
+    return null;
   };
 };
 

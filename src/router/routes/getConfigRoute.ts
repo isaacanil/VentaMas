@@ -1,4 +1,9 @@
 import ROUTES_NAME from './routesName';
+import {
+  getLastRouteSegment,
+  getRelativeRoutePath,
+  joinRoutePath,
+} from './pathUtils';
 
 /**
  * Función genérica multipropósito para manejar rutas.
@@ -25,21 +30,10 @@ export function getRoutePath(
 ): string {
   // Si no hay sección, estamos extrayendo la parte relativa
   if (section === undefined || section === null) {
-    const parts = basePath.split('/');
-    return parts[parts.length - 1] || ''; // Devuelve la última parte de la ruta
+    return getLastRouteSegment(basePath);
   }
 
-  // Estamos combinando base con sección
-  // Eliminar barra final de la base si existe
-  const cleanBasePath = basePath.endsWith('/')
-    ? basePath.slice(0, -1)
-    : basePath;
-
-  // Eliminar barra inicial de la sección si existe
-  const cleanSection = section.startsWith('/') ? section.slice(1) : section;
-
-  // Construir y devolver la ruta completa
-  return `${cleanBasePath}/${cleanSection}`;
+  return joinRoutePath(basePath, section);
 }
 
 /**
@@ -54,11 +48,7 @@ export function getRoutePath(
  * const relativePath = getRelativePath('/settings/users', '/settings'); // 'users'
  */
 export function getRelativePath(fullPath: string, basePath: string): string {
-  // Asegurarse de que basePath termine con una barra
-  const normalizedBasePath = basePath.endsWith('/') ? basePath : `${basePath}/`;
-
-  // Reemplazar la base en la ruta completa
-  return fullPath.replace(normalizedBasePath, '');
+  return getRelativeRoutePath(fullPath, basePath);
 }
 
 /**

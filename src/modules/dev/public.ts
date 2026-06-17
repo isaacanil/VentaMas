@@ -1,3 +1,10 @@
+export { developerShortcuts } from './config/developerShortcuts';
+
+export const loadAdvancedTableDocRoute = () =>
+  import('./pages/DevTools/AdvancedTableDoc/AdvancedTableDoc').then(
+    (module) => ({ default: module.AdvancedTableDoc }),
+  );
+
 export const loadAccountingPilotAuditRoute = () =>
   import('./pages/DevTools/AccountingPilotAudit/AccountingPilotAudit');
 

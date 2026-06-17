@@ -9,6 +9,7 @@ import styled from 'styled-components';
 
 import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import ROUTES_NAME from '@/router/routes/routesName';
+import { stripTrailingSlash } from '@/router/routes/pathUtils';
 import { MenuApp } from '@/modules/navigation/public';
 import { PageShell } from '@/components/layout/PageShell';
 
@@ -101,12 +102,7 @@ export const UserAdmin = () => {
     ],
   );
 
-  const normalizePath = (path: string) => {
-    if (!path) return path;
-    return path.length > 1 && path.endsWith('/') ? path.slice(0, -1) : path;
-  };
-
-  const normalizedPath = normalizePath(pathname);
+  const normalizedPath = stripTrailingSlash(pathname);
   const currentRoute = managedRoutes.find(({ match }) => match(normalizedPath));
   const fallbackManagedRoute = managedRoutes.find(({ allowed }) => allowed);
   const deniedRouteRedirectTarget =
@@ -115,10 +111,7 @@ export const UserAdmin = () => {
       : null;
 
   const sectionName = useMemo(() => {
-    const normalizedPath =
-      pathname.length > 1 && pathname.endsWith('/')
-        ? pathname.slice(0, -1)
-        : pathname;
+    const normalizedPath = stripTrailingSlash(pathname);
 
     if (normalizedPath === sessionLogsRoute) {
       return 'Sesiones de usuarios';

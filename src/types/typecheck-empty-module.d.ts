@@ -9,6 +9,8 @@ type LazyNamedDeveloperModalLoader = () => Promise<{
 
 export default moduleValue;
 
+export const developerShortcuts: any[];
+export const loadAdvancedTableDocRoute: LazyRouteLoader;
 export const loadAccountingPilotAuditRoute: LazyRouteLoader;
 export const loadAiBusinessSeedingRoute: LazyRouteLoader;
 export const loadBSeriesInvoicesRoute: LazyRouteLoader;

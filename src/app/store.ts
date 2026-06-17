@@ -32,8 +32,7 @@ import invoiceFormReducer from '@/features/invoice/invoiceFormSlice';
 import invoicePreviewReducer from '@/features/invoice/invoicePreviewSlice';
 import invoiceWorkspaceModalReducer from '@/features/invoice/invoiceWorkspaceModalSlice';
 import modalReducer from '@/features/modals/modalSlice';
-import navigationReducer from '@/features/navigation/navigationSlice';
-import { navReducer } from '@/modules/navigation/public';
+import { navReducer, routeHistoryReducer } from '@/modules/navigation/public';
 import noteModalReducer from '@/features/noteModal/noteModalSlice';
 import notificationCenterReducer from '@/features/notification/notificationCenterSlice';
 import notificationReducer from '@/features/notification/notificationSlice';
@@ -67,7 +66,7 @@ export const store = configureStore({
     app: appReducer,
     nav: navReducer,
     alert: alertReducer,
-    navigation: navigationReducer,
+    navigation: routeHistoryReducer,
 
     // Auth & Users
     user: userReducer,

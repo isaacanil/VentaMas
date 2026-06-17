@@ -4,6 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { ROUTE_STATUS } from '@/router/routes/routeMeta';
 import RoutesName from '@/router/routes/routesName';
 import {
+  loadAdvancedTableDocRoute,
   loadAccountingPilotAuditRoute,
   loadAiBusinessSeedingRoute,
   loadBSeriesInvoicesRoute,
@@ -52,11 +53,7 @@ const ElectronicTaxReceiptProviderConfigPage = lazy(
   loadElectronicTaxReceiptProviderConfigRoute,
 );
 const CheckProductPriceAudit = lazy(loadProductPriceAuditRoute);
-const Doc = lazy(() =>
-  import('@/components/ui/AdvancedTable/Doc').then((module) => ({
-    default: module.Doc,
-  })),
-);
+const Doc = lazy(loadAdvancedTableDocRoute);
 const ProductFormV2TestBench = lazy(loadProductFormV2TestBenchRoute);
 const DeveloperSubscriptionMaintenancePage = lazy(
   loadDeveloperSubscriptionMaintenanceRoute,

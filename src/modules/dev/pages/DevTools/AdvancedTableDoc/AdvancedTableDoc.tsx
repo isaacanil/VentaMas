@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import palette from '@/theme/colors/light/Palette';
 import type { ContrastColorPair } from '@/theme/getContrastColorPairs';
 
-export function Doc() {
+export function AdvancedTableDoc() {
   const colors = ['primary', 'error', 'warning', 'info', 'success'] as const;
   type BaseColor = (typeof colors)[number];
 

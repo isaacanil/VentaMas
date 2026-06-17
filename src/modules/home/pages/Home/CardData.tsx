@@ -11,8 +11,8 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { TeamOutlined } from '@/constants/icons/antd';
-import { developerShortcuts } from '@/constants/devtools/developerShortcuts';
 import { icons } from '@/constants/icons/icons';
+import { developerShortcuts } from '@/modules/dev/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 import type { MenuItem } from '@/types/menu';
 import type { UserIdentity } from '@/types/users';

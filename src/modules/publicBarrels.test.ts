@@ -224,10 +224,13 @@ const publicBarrels: PublicBarrelCase[] = [
     moduleName: '@/modules/navigation/public',
     load: () => import('@/modules/navigation/public'),
     exports: {
+      makeSelectPreviousRelevantRoute: 'function',
       MenuApp: 'function',
       MenuAppUI: 'function',
       navReducer: 'function',
       NotificationButton: 'function',
+      pushHistory: 'function',
+      routeHistoryReducer: 'function',
       useMenuData: 'function',
     },
     typeExports: ['MenuAppUIProps'],
@@ -292,6 +295,8 @@ const publicBarrels: PublicBarrelCase[] = [
     moduleName: '@/modules/dev/public',
     load: () => import('@/modules/dev/public'),
     exports: {
+      developerShortcuts: 'object',
+      loadAdvancedTableDocRoute: 'function',
       loadAccountingPilotAuditRoute: 'function',
       loadAiBusinessSeedingRoute: 'function',
       loadBSeriesInvoicesRoute: 'function',

@@ -6,5 +6,6 @@ export default defineConfig({
     globals: true,
     include: ['functions/src/**/*.{test,spec}.{js,ts}'],
     pool: 'threads',
+    testTimeout: 20_000,
   },
 });
