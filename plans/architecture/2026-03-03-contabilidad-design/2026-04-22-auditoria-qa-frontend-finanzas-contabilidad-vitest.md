@@ -39,7 +39,7 @@ Archivos fuente clave revisados:
 - `src/firebase/processAccountsReceivablePayments/fbProcessClientPaymentAR.ts`
 - `src/modules/accountsPayable/pages/AccountsPayable/**`
 - `src/modules/orderAndPurchase/pages/OrderAndPurchase/Compra/components/PurchasesTable/RegisterSupplierPaymentModal.tsx`
-- `src/modules/orderAndPurchase/pages/OrderAndPurchase/Compra/components/PurchasesTable/utils/supplierPaymentMethods.ts`
+- `src/modules/orderAndPurchase/components/supplierPayments/utils/supplierPaymentMethods.ts`
 - `src/modules/expenses/pages/Expenses/ExpensesForm/**`
 - `src/validates/expenseValidate.tsx`
 - `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/**`

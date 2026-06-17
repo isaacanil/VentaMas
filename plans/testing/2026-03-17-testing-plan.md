@@ -155,7 +155,7 @@ No empezar por snapshots grandes ni por componentes puramente visuales.
   - excedido
   - nulos y defaults
 - [x] [src/domain/accountsReceivable/getMaxInstallments.ts](c:\Dev\VentaMas\src\domain\accountsReceivable\getMaxInstallments.ts)
-- [ ] [src/utils/sorts/sortAccountsReceivable.ts](c:\Dev\VentaMas\src\utils\sorts\sortAccountsReceivable.ts)
+- [ ] [src/modules/accountsReceivable/utils/sortAccountsReceivable.ts](c:\Dev\VentaMas\src\modules\accountsReceivable\utils\sortAccountsReceivable.ts)
 
 ### Suscripciones, Permisos y Rutas
 

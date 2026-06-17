@@ -38,7 +38,7 @@ Subir cobertura contra regresiones sin cambiar comportamiento productivo. Priori
 1. Agregar tests frontend pequenos para utils puros:
    - `src/utils/import/mapData.test.ts`
    - `src/utils/import/processMappedData.test.ts`
-   - `src/utils/sorts/sortAccountsReceivable.test.ts`
+   - `src/modules/accountsReceivable/utils/sortAccountsReceivable.test.ts`
    - `src/domain/accountsReceivable/getMaxInstallments.test.ts`
 2. Agregar test de permisos sin Firestore real:
    - `src/services/dynamicPermissions.test.ts`
@@ -68,7 +68,7 @@ Complejidad esencial baja: tests nuevos observan contratos existentes. Complejid
   - transforms secuenciales
   - lectura desde `source` y escritura a otro path
   - error de transform aislado sin romper la fila
-- `src/utils/sorts/sortAccountsReceivable.test.ts`
+- `src/modules/accountsReceivable/utils/sortAccountsReceivable.test.ts`
   - no mutar arreglo original
   - orden numerico de facturas
   - fechas `Date`, `seconds`, `toMillis`
@@ -129,7 +129,7 @@ Complejidad esencial baja: tests nuevos observan contratos existentes. Complejid
 ### Pasaron
 
 ```powershell
-npm run test:run -- src/domain/accountsReceivable/getMaxInstallments.test.ts src/utils/import/mapData.test.ts src/utils/import/processMappedData.test.ts src/utils/sorts/sortAccountsReceivable.test.ts src/services/dynamicPermissions.test.ts
+npm run test:run -- src/domain/accountsReceivable/getMaxInstallments.test.ts src/utils/import/mapData.test.ts src/utils/import/processMappedData.test.ts src/modules/accountsReceivable/utils/sortAccountsReceivable.test.ts src/services/dynamicPermissions.test.ts
 ```
 
 Resultado: `5 passed files`, `16 passed tests`.

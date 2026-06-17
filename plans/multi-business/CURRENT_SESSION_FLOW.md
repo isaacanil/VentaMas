@@ -21,18 +21,18 @@ Alcance: Frontend (React) + Backend (Cloud Functions)
 
 ### 1.3 Refresh (`clientRefreshSession` / `useAutomaticLogin`)
 
-1. En el arranque y luego cada `SESSION_CHECK_INTERVAL` (5 minutos), `useAutomaticLogin` llama a `clientRefreshSession` en `src/firebase/Auth/fbAuthV2/fbSignIn/checkSession.ts`.
+1. En el arranque y luego cada `SESSION_CHECK_INTERVAL` (5 minutos), `useAutomaticLogin` llama a `clientRefreshSession` en `src/modules/auth/hooks/useAutomaticLogin.ts`.
 2. El frontend envia `{ sessionToken, extend: true, sessionInfo }`; por defecto `extend` es `true`, lo que habilita renovacion de `expiresAt` en backend.
 3. El backend valida y, si `extend` es `true`, actualiza `expiresAt = now + SESSION_EXTENSION_MS` y `lastActivity` en `functions/src/app/versions/v2/auth/controllers/clientAuth.controller.js`.
 4. El frontend guarda el nuevo `session.expiresAt` en `localStorage` como `sessionExpires` con `storeSessionLocally` en `src/firebase/Auth/fbAuthV2/sessionClient.ts`.
-5. Si el backend devuelve sesion valida, `useAutomaticLogin` carga el usuario desde Firestore (`users/{userId}`) y actualiza Redux (`login(...)`) en `src/firebase/Auth/fbAuthV2/fbSignIn/checkSession.ts`.
-6. Si hay error de sesion (codigos `unauthenticated`, `permission-denied`, `invalid-argument` o mensajes de expiracion), el frontend muestra modal y ejecuta `handleLogout` (limpia storage, Redux y redirige) en `src/firebase/Auth/fbAuthV2/fbSignIn/checkSession.ts`.
+5. Si el backend devuelve sesion valida, `useAutomaticLogin` carga el usuario desde Firestore (`users/{userId}`) y actualiza Redux (`login(...)`) en `src/modules/auth/hooks/useAutomaticLogin.ts`.
+6. Si hay error de sesion (codigos `unauthenticated`, `permission-denied`, `invalid-argument` o mensajes de expiracion), el frontend muestra modal y ejecuta `handleLogout` (limpia storage, Redux y redirige) en `src/modules/auth/hooks/useAutomaticLogin.ts`.
 
 ### 1.4 Que decide que un token ha expirado?
 
 1. **Backend (autoridad):** `ensureActiveSession` valida `expiresAt` y `lastActivity` contra `SESSION_IDLE_TIMEOUT_MS`; si expira o esta inactiva, termina la sesion y devuelve `unauthenticated` en `functions/src/app/versions/v2/auth/controllers/clientAuth.controller.js`.
 2. **Backend HTTP:** `resolveHttpAuthUser` y `verifySessionToken` aplican la misma logica para endpoints HTTP que usan `X-Session-Token` en `functions/src/app/versions/v2/auth/services/httpAuth.service.js`.
-3. **Frontend (heuristico):** el login screen redirige si `Date.now() < sessionExpiresAt` (solo local) en `src/modules/auth/pages/Login/Login.tsx`, y `useAutomaticLogin` interpreta codigos/mensajes para decidir logout en `src/firebase/Auth/fbAuthV2/fbSignIn/checkSession.ts`.
+3. **Frontend (heuristico):** el login screen redirige si `Date.now() < sessionExpiresAt` (solo local) en `src/modules/auth/pages/Login/Login.tsx`, y `useAutomaticLogin` interpreta codigos/mensajes para decidir logout en `src/modules/auth/hooks/useAutomaticLogin.ts`.
 4. **Otras causas de invalidacion:** `clientLogout`, `clientRevokeSession` y la revocacion automatica por exceso de sesiones paralelas (`MAX_PARALLEL_ACTIVE_SESSIONS`) eliminan el token antes de que expire, en `functions/src/app/versions/v2/auth/controllers/clientAuth.controller.js`.
 
 ## 2. Mecanismos de Persistencia
@@ -40,7 +40,7 @@ Alcance: Frontend (React) + Backend (Cloud Functions)
 ### 2.1 Recarga de Pagina (F5)
 
 1. El token persiste en `localStorage` (`sessionToken`, `sessionExpires`, `sessionId`) en `src/firebase/Auth/fbAuthV2/sessionClient.ts`.
-2. En el arranque, `RootElement` ejecuta `useAutomaticLogin`; esto llama `clientRefreshSession`, rehidrata el usuario desde Firestore y actualiza Redux en `src/router/AppRouterLayout.tsx` y `src/firebase/Auth/fbAuthV2/fbSignIn/checkSession.ts`.
+2. En el arranque, `RootElement` ejecuta `useAutomaticLogin`; esto llama `clientRefreshSession`, rehidrata el usuario desde Firestore y actualiza Redux en `src/router/AppRouterLayout.tsx` y `src/modules/auth/hooks/useAutomaticLogin.ts`.
 3. El `Login` page puede redirigir a `/home` si encuentra un `sessionExpiresAt` local vigente, sin confirmar aun con backend en `src/modules/auth/pages/Login/Login.tsx`.
 
 ### 2.2 Posibles Race Conditions al arrancar
@@ -61,10 +61,10 @@ Alcance: Frontend (React) + Backend (Cloud Functions)
 
 ### 3.2 Frontend
 
-1. `SESSION_CHECK_INTERVAL = 5 min` y `ACTIVITY_CHECK_INTERVAL = 15 min` en `src/constants/sessionConfig.ts`.
-2. `INACTIVITY_WARNING = 55 dias` (solo warning UI) en `src/constants/sessionConfig.ts`.
-3. Ventana de aviso por expiracion: `EXPIRY_WARNING_WINDOW_MS = 24 h` en `src/firebase/Auth/fbAuthV2/fbSignIn/checkSession.ts`.
-4. `SESSION_DURATION = 60 dias` existe en `src/constants/sessionConfig.ts`, pero el vencimiento real usa el `sessionExpiresAt` devuelto por backend y guardado en `localStorage`.
+1. `SESSION_CHECK_INTERVAL = 5 min` y `ACTIVITY_CHECK_INTERVAL = 15 min` en `src/modules/auth/constants/sessionConfig.ts`.
+2. `INACTIVITY_WARNING = 55 dias` (solo warning UI) en `src/modules/auth/constants/sessionConfig.ts`.
+3. Ventana de aviso por expiracion: `EXPIRY_WARNING_WINDOW_MS = 24 h` en `src/modules/auth/hooks/useAutomaticLogin.ts`.
+4. `SESSION_DURATION = 60 dias` existe en `src/modules/auth/constants/sessionConfig.ts`, pero el vencimiento real usa el `sessionExpiresAt` devuelto por backend y guardado en `localStorage`.
 
 ### 3.3 Coinciden?
 

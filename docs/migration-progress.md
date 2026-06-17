@@ -97,7 +97,7 @@
   - `src/modules/accountsReceivable/pages/AccountReceivable/pages/AccountReceivableList/components/AccountReceivableTable/*`
   - `src/modules/accountsReceivable/pages/AccountReceivable/pages/AccountReceivableList/components/FilterAccountReceivable/FilterAccountReceivable.tsx`
 - **Sorting y helpers tipados**:
-  - `src/utils/sorts/sortAccountsReceivable.ts`
+  - `src/modules/accountsReceivable/utils/sortAccountsReceivable.ts`
   - `src/utils/accountsReceivable/accountsReceivable.ts`
 - **Detalle, pagos y cuotas tipados**:
   - `src/firebase/accountsReceivable/fbAddAR.ts`

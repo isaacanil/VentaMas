@@ -460,7 +460,7 @@ Puntos P0 concretos:
 | Productos con batch | `src/modules/inventory/pages/Inventory/components/Warehouse/forms/ProductStockForm/hooks/useGetProductsWithBatch.ts` | Listener `products` completo. Candidato a duplicación con `useGetProducts`. |
 | productsStock por filtro | `src/firebase/products/fbGetProducts.ts` | Listeners por warehouse, filtros server-side por `location`, `isDeleted`, `status`. |
 | Inventario control | `src/modules/inventory/pages/InventoryControl/hooks/useInventoryStocksProducts.ts` | `productsStock` con `orderBy(updatedAt)` y filtro client-side; `products` completo con filtro client-side. |
-| Stock home | `src/hooks/useProductStock.ts` | `useListenAllActiveProductsStock` y `useInventoryProductIds`. |
+| Stock home | `src/modules/inventory/hooks/useProductStock.ts` | `useListenAllActiveProductsStock` y `useInventoryProductIds`. |
 | Accounting | `src/modules/accounting/pages/AccountingWorkspace/hooks/useAccountingWorkspace.ts` | `accountingEvents`, `accountingEventProjectionDeadLetters`, `journalEntries`, `accountingPeriodClosures`; hoy son colección completa si `includeLedgerRecords`. |
 | Treasury | `src/modules/treasury/hooks/useTreasuryWorkspace.ts` | `cashMovements`, `internalTransfers`, `bankReconciliations`, `bankStatementLines`; hoy colección completa. |
 

@@ -67,7 +67,7 @@ end
 - **Archivo:** `src/firebase/Auth/fbAuthV2/fbSignIn/fbSignIn.ts`
   - **Funciones:** `fbSignIn`, `updateAppState` - _Callable a `clientLogin`, guarda sesión local y setea Redux._
   - **Endpoints:** `[POST] /clientLogin` - _Envía `{ username, password, sessionInfo }` y recibe `{ ok, user, sessionToken, sessionExpiresAt }`._
-- **Archivo:** `src/firebase/Auth/fbAuthV2/fbSignIn/checkSession.ts`
+- **Archivo:** `src/modules/auth/hooks/useAutomaticLogin.ts`
   - **Funciones:** `useAutomaticLogin` - _Renueva sesión (`clientRefreshSession`), muestra avisos de expiración/inactividad, hace logout si falla._
   - **Endpoints:**
     - `[POST] /clientRefreshSession` - _Envía `{ sessionToken, extend, sessionInfo }` y recibe `{ session, activeSessions }`._
@@ -93,7 +93,7 @@ end
 - **Archivo:** `src/features/auth/userSlice.ts`
   - **Funciones:** `login`, `logout`, `addUserData`, `switchToBusiness`, `switchToRole` - _Estado global del usuario y cambios temporales._
   - **Endpoints:** `N/A` - _Redux._
-- **Archivo:** `src/constants/sessionConfig.ts`
+- **Archivo:** `src/modules/auth/constants/sessionConfig.ts`
   - **Funciones:** `SESSION_DURATION`, `INACTIVITY_WARNING`, `SESSION_CHECK_INTERVAL` - _Configuración local del cliente._
   - **Endpoints:** `N/A` - _Constantes._
 - **Archivo:** `src/firebase/firebaseconfig.tsx`
@@ -122,7 +122,7 @@ end
 - **Archivo:** `src/firebase/Auth/fbAuthV2/fbSignIn/fbVerifyUser.ts`
   - **Funciones:** `fbValidateUser` - _Verificación de credenciales para autorizaciones secundarias._
   - **Endpoints:** `[POST] /clientValidateUser` - _Envía `{ username, password, uid }` y recibe `{ ok, userId, user }`._
-- **Archivo:** `src/firebase/Auth/fbAuthV2/fbSignIn/updateUserData.ts`
+- **Archivo:** `src/modules/auth/hooks/useUserDocListener.ts`
   - **Funciones:** `useUserDocListener` - _Escucha `users/{uid}` y sincroniza Redux._
   - **Endpoints:** `N/A` - _Listener Firestore._
 - **Archivo:** `src/firebase/Auth/fbAuthV2/fbCheckIfUserExists.ts`
@@ -142,7 +142,7 @@ end
     - `[POST] /getUserModulePinStatus`
     - `[POST] /getUserModulePins`
     - `[POST] /getBusinessPinsSummary`
-- **Archivo:** `src/hooks/useAuthorizationPin.ts`
+- **Archivo:** `src/modules/authorizations/hooks/useAuthorizationPin.ts`
   - **Funciones:** `useAuthorizationPin` - _Hook para abrir/cerrar modal PIN._
   - **Endpoints:** `N/A` - _UI._
 - **Archivo:** `src/modules/authorizations/components/PinAuthorizationModal/PinAuthorizationModal.tsx`
