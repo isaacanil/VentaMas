@@ -61,9 +61,9 @@ Todos los scripts deben ejecutarse con Node.js desde la raíz del proyecto o des
   - Usa los aliases de `.firebaserc`, ejecuta el build del target cuando aplica
     y bloquea despliegues masivos de Cloud Functions en staging o produccion
     salvo guard explícito.
-  - Smoke test de guardrails:
+  - Smoke tests de guardrails:
     ```powershell
-    node --test .\tools\deploy.smoke.test.mjs
+    npm run test:run:tools
     ```
 
 - **`sync-to-alt-main.js`** - Sincroniza la rama actual con el remoto `alt`.

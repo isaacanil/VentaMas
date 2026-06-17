@@ -30,7 +30,7 @@ import { CashDenominationCalculator } from '@/modules/cashReconciliation/pages/C
 import { CashBoxClosureDetails } from './components/CashBoxClosureDetails/CashBoxClosureDetails';
 import { TransactionSummary } from './components/TransactionSummary/TransactionSummary';
 import { ViewExpenses } from './components/ViewExpenses/ViewExpenses';
-import { ViewInvoice } from './components/ViewInvoive/ViewInvoice';
+import { ViewInvoice } from './components/ViewInvoice/ViewInvoice';
 
 const useExpenseComments = (expenses: CashCountExpense[]) => {
   const formatter = useMemo(
@@ -108,14 +108,13 @@ export const RightSide: React.FC<RightSideProps> = ({
     payments: arPayments = [],
     cashMovements = [],
     loading: arPaymentsLoading,
-  } =
-    usePaymentsForCashCount(
-      user,
-      cashReconciliation.opening?.employee?.id,
-      cashReconciliation.opening?.date,
-      cashReconciliation.closing?.date || null,
-      id as string | null | undefined,
-    );
+  } = usePaymentsForCashCount(
+    user,
+    cashReconciliation.opening?.employee?.id,
+    cashReconciliation.opening?.date,
+    cashReconciliation.closing?.date || null,
+    id as string | null | undefined,
+  );
 
   const mergeExpenseComments = useCallback(
     (expenseBlock: string) => {

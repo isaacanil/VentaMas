@@ -33,114 +33,19 @@ import {
 import type { CartData } from '@/features/cart/types';
 
 import type {
-  DocumentCurrencyConfig,
   DocumentCurrencyContext,
   SupportedDocumentCurrency,
 } from './types';
-import { resolveTimestampMillis } from './documentCurrencyDates';
+import {
+  areCartManualRatesByCurrencyEqual,
+  buildCartAccountingContext,
+  isFreshDocumentCurrencyRate,
+  resolveDocumentCurrencyExchangeRate,
+} from './documentCurrencyCartContext';
 import { useDocumentCurrencyConfig } from './useDocumentCurrencyConfig';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
 
 const { Text } = Typography;
-
-type CartManualRatesByCurrency = NonNullable<CartData['manualRatesByCurrency']>;
-type CartManualRateConfig = NonNullable<
-  CartManualRatesByCurrency[SupportedDocumentCurrency]
->;
-
-const normalizeCartRateValue = (value: unknown): number | null => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-};
-
-const normalizeCartEffectiveAt = (
-  value: unknown,
-): CartManualRateConfig['effectiveAt'] => {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string' && value.trim().length) return value.trim();
-  if (value instanceof Date) return value;
-  return null;
-};
-
-const toComparableEffectiveAt = (value: unknown): number | string | null => {
-  const normalized = normalizeCartEffectiveAt(value);
-  return normalized instanceof Date ? normalized.getTime() : normalized;
-};
-
-const buildCartManualRatesByCurrency = (
-  manualRatesByCurrency: DocumentCurrencyConfig['manualRatesByCurrency'],
-): CartManualRatesByCurrency =>
-  Object.entries(manualRatesByCurrency).reduce<CartManualRatesByCurrency>(
-    (accumulator, [currency, rateConfig]) => {
-      const nextRateConfig: CartManualRateConfig = {
-        buyRate: normalizeCartRateValue(rateConfig?.purchase),
-        sellRate: normalizeCartRateValue(rateConfig?.sale),
-      };
-      const effectiveAt = normalizeCartEffectiveAt(rateConfig?.effectiveAt);
-      if (effectiveAt != null) {
-        nextRateConfig.effectiveAt = effectiveAt;
-      }
-      accumulator[currency as SupportedDocumentCurrency] = nextRateConfig;
-      return accumulator;
-    },
-    {},
-  );
-
-const areCartManualRateConfigsEqual = (
-  current: CartManualRateConfig | null | undefined,
-  next: CartManualRateConfig | null | undefined,
-): boolean => {
-  if (current == null || next == null) return current == null && next == null;
-
-  return (
-    normalizeCartRateValue(current.buyRate) ===
-      normalizeCartRateValue(next.buyRate) &&
-    normalizeCartRateValue(current.sellRate) ===
-      normalizeCartRateValue(next.sellRate) &&
-    Object.is(
-      toComparableEffectiveAt(current.effectiveAt),
-      toComparableEffectiveAt(next.effectiveAt),
-    )
-  );
-};
-
-const areCartManualRatesByCurrencyEqual = (
-  current: CartManualRatesByCurrency | null | undefined,
-  next: CartManualRatesByCurrency,
-): boolean => {
-  const currencies = new Set([
-    ...Object.keys(current ?? {}),
-    ...Object.keys(next),
-  ]);
-
-  for (const currency of currencies) {
-    const normalizedCurrency = currency as SupportedDocumentCurrency;
-    if (
-      !areCartManualRateConfigsEqual(
-        current?.[normalizedCurrency],
-        next[normalizedCurrency],
-      )
-    ) {
-      return false;
-    }
-  }
-
-  return true;
-};
-
-const isSameLocalDay = (left: Date, right: Date): boolean =>
-  left.getFullYear() === right.getFullYear() &&
-  left.getMonth() === right.getMonth() &&
-  left.getDate() === right.getDate();
-
-const isFreshDocumentCurrencyRate = (
-  effectiveAt: unknown,
-  now: Date = new Date(),
-): boolean => {
-  const millis = resolveTimestampMillis(effectiveAt);
-  if (millis == null) return false;
-  return isSameLocalDay(new Date(millis), now);
-};
 
 interface DocumentCurrencySelectorProps {
   businessId: string | null;
@@ -196,14 +101,13 @@ export const DocumentCurrencySelector = ({
   const selectedRateFresh = foreignCurrencySelected
     ? isFreshDocumentCurrencyRate(selectedRateConfig?.effectiveAt)
     : true;
-  const blockedReason =
-    foreignCurrencySelected
-      ? displayedRate == null || displayedRate <= 0
-        ? `No hay tasa de venta ${selectedCurrency} -> ${config.functionalCurrency} configurada. Ajustala en Ajustes > Contabilidad antes de facturar en ${selectedCurrency}.`
-        : !selectedRateFresh
-          ? `La tasa de venta ${selectedCurrency} -> ${config.functionalCurrency} no esta vigente para hoy. Actualizala en Ajustes > Contabilidad antes de facturar en ${selectedCurrency}.`
-          : undefined
-      : undefined;
+  const blockedReason = foreignCurrencySelected
+    ? displayedRate == null || displayedRate <= 0
+      ? `No hay tasa de venta ${selectedCurrency} -> ${config.functionalCurrency} configurada. Ajustala en Ajustes > Contabilidad antes de facturar en ${selectedCurrency}.`
+      : !selectedRateFresh
+        ? `La tasa de venta ${selectedCurrency} -> ${config.functionalCurrency} no esta vigente para hoy. Actualizala en Ajustes > Contabilidad antes de facturar en ${selectedCurrency}.`
+        : undefined
+    : undefined;
   const summaryTone = blockedReason
     ? 'error'
     : foreignCurrencySelected
@@ -267,27 +171,22 @@ export const DocumentCurrencySelector = ({
   ]);
 
   const nextAccountingContext = useMemo(
-    () => ({
-      functionalCurrency: config.functionalCurrency,
-      manualRatesByCurrency: buildCartManualRatesByCurrency(
-        config.manualRatesByCurrency,
-      ),
-    }),
-    [config.functionalCurrency, config.manualRatesByCurrency],
+    () => buildCartAccountingContext(config),
+    [config],
   );
 
-  const nextExchangeRate =
-    selectedCurrency === config.functionalCurrency
-      ? 1
-      : selectedRateFresh
-        ? normalizeCartRateValue(selectedRateConfig?.sale)
-        : null;
+  const nextExchangeRate = resolveDocumentCurrencyExchangeRate({
+    functionalCurrency: config.functionalCurrency,
+    rateConfig: selectedRateConfig,
+    selectedCurrency,
+  });
 
   useEffect(() => {
     if (loading) return;
 
     if (
-      cartData?.functionalCurrency === nextAccountingContext.functionalCurrency &&
+      cartData?.functionalCurrency ===
+        nextAccountingContext.functionalCurrency &&
       areCartManualRatesByCurrencyEqual(
         cartData?.manualRatesByCurrency,
         nextAccountingContext.manualRatesByCurrency,
@@ -335,7 +234,11 @@ export const DocumentCurrencySelector = ({
     const nextRate = config.manualRatesByCurrency[value];
     dispatch(
       setDocumentExchangeRate(
-        isFreshDocumentCurrencyRate(nextRate?.effectiveAt) ? nextRate?.sale : null,
+        resolveDocumentCurrencyExchangeRate({
+          functionalCurrency: config.functionalCurrency,
+          rateConfig: nextRate,
+          selectedCurrency: value,
+        }),
       ),
     );
   };
@@ -388,7 +291,9 @@ export const DocumentCurrencySelector = ({
             {foreignCurrencySelected && (
               <Tag
                 color={
-                  displayedRate != null && displayedRate > 0 && selectedRateFresh
+                  displayedRate != null &&
+                  displayedRate > 0 &&
+                  selectedRateFresh
                     ? 'green'
                     : 'red'
                 }
@@ -423,10 +328,7 @@ export const DocumentCurrencySelector = ({
       </SummaryButton>
 
       {isOpen && (
-        <FloatingPanel
-          ref={setFloating}
-          style={floatingStyles}
-        >
+        <FloatingPanel ref={setFloating} style={floatingStyles}>
           <PanelRow>
             <FieldLabel>
               Moneda de la factura
@@ -458,9 +360,12 @@ export const DocumentCurrencySelector = ({
             <>
               <InfoRow>
                 <Text type="secondary">
-                  Tasa venta {selectedCurrency} -&gt; {config.functionalCurrency}
+                  Tasa venta {selectedCurrency} -&gt;{' '}
+                  {config.functionalCurrency}
                 </Text>
-                {displayedRate != null && displayedRate > 0 && selectedRateFresh ? (
+                {displayedRate != null &&
+                displayedRate > 0 &&
+                selectedRateFresh ? (
                   <Tag color="green">{displayedRate}</Tag>
                 ) : displayedRate != null && displayedRate > 0 ? (
                   <Tag color="red">Tasa vencida</Tag>
@@ -499,7 +404,11 @@ const SummaryButton = styled.button<{ $tone: 'idle' | 'active' | 'error' }>`
   padding: 12px;
   border: 1px solid
     ${({ $tone }) =>
-      $tone === 'error' ? '#ffccc7' : $tone === 'active' ? '#b7eb8f' : '#d9d9d9'};
+      $tone === 'error'
+        ? '#ffccc7'
+        : $tone === 'active'
+          ? '#b7eb8f'
+          : '#d9d9d9'};
   border-radius: 10px;
   background: ${({ $tone }) =>
     $tone === 'error' ? '#fff2f0' : $tone === 'active' ? '#f6ffed' : '#fafafa'};
@@ -511,7 +420,11 @@ const SummaryButton = styled.button<{ $tone: 'idle' | 'active' | 'error' }>`
 
   &:hover {
     border-color: ${({ $tone }) =>
-      $tone === 'error' ? '#ff7875' : $tone === 'active' ? '#95de64' : '#bfbfbf'};
+      $tone === 'error'
+        ? '#ff7875'
+        : $tone === 'active'
+          ? '#95de64'
+          : '#bfbfbf'};
   }
 `;
 
