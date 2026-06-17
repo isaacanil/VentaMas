@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { icons } from '@/constants/icons/icons';
 import { useAuthBackgroundImage } from '@/modules/auth/hooks/useAuthBackgroundImage';
+import ROUTES_NAME from '@/router/routes/routesName';
 
 import {
   BackButton,
@@ -45,7 +46,7 @@ export const AuthPageShell = ({
   } = useAuthBackgroundImage();
 
   const goToWelcome = useCallback(() => {
-    void navigate('/');
+    void navigate(ROUTES_NAME.BASIC_TERM.WELCOME);
   }, [navigate]);
 
   const isImageLoaded = imageLoadState === 'loaded';

@@ -27,7 +27,7 @@ Estado: trabajo en progreso (base implementada + documentacion inicial)
 ## 3) Cambios tecnicos realizados (codigo)
 
 - Tipos base para modelo nuevo:
-  - `src/types/models.ts`
+  - `src/types/businessModels.ts`
   - Incluye `PlanTier`, `User`, `Membership`, `Business`, `BusinessSubscription`.
 - Adaptador de compatibilidad auth legacy/nuevo:
   - `src/utils/auth-adapter.ts`

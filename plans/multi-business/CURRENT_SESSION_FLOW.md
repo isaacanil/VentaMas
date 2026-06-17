@@ -7,7 +7,7 @@ Alcance: Frontend (React) + Backend (Cloud Functions)
 
 ### 1.1 Creacion (`clientLogin` / `clientLoginWithProvider`)
 
-1. El frontend inicia sesion con `httpsCallable('clientLogin')` (usuario/contrasena) en `src/firebase/Auth/fbAuthV2/fbSignIn/fbSignIn.ts` o con `httpsCallable('clientLoginWithProvider')` (Google) en `src/modules/auth/pages/Login/components/SocialLogin.tsx`.
+1. El frontend inicia sesion con `createFirebaseCallable('clientLogin')` (usuario/contrasena) en `src/firebase/Auth/fbAuthV2/fbSignIn/fbSignIn.ts` o con `createFirebaseCallable('clientLoginWithProvider')` (Google) en `src/modules/auth/repositories/providerLogin.repository.ts`; ambos pasan por el wrapper canonico `src/firebase/functions/callable.ts`.
 2. El backend recibe la solicitud en `functions/src/app/versions/v2/auth/controllers/clientAuth.controller.js` y genera un token aleatorio con `nanoid(32)` dentro de `createSessionToken`.
 3. Se crea el documento `sessionTokens/{tokenId}` con `expiresAt`, `createdAt`, `lastActivity`, `status` y metadatos de dispositivo (deviceId, deviceLabel, userAgent, ipAddress, platform) en `functions/src/app/versions/v2/auth/controllers/clientAuth.controller.js`.
 4. En ambos flujos de login, el backend devuelve `{ sessionToken, sessionExpiresAt, session }` y el frontend lo guarda localmente con `storeSessionLocally` en `src/firebase/Auth/fbAuthV2/sessionClient.ts`.

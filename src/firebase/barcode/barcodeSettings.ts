@@ -145,10 +145,3 @@ export const initializeBarcodeSettings = async (
     throw error;
   }
 };
-
-export const fbBarcodeSettings = {
-  setBarcodeSettings,
-  getBarcodeSettings,
-  updateCompanyPrefix,
-  initializeBarcodeSettings,
-};

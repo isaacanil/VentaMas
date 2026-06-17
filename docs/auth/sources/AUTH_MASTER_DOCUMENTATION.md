@@ -2,7 +2,7 @@
 
 ## Resumen
 
-El Frontend (React) se autentica contra Firebase Functions **Callable** usando `httpsCallable`. El flujo principal es **auth propio v2** con credenciales (username/password) en Firestore y **tokens de sesión propios** almacenados en la colección `sessionTokens`. El cliente guarda el `sessionToken` en `localStorage` y lo renueva periódicamente mediante `clientRefreshSession` (hook `useAutomaticLogin`).
+El Frontend (React) se autentica contra Firebase Functions **Callable** usando el wrapper `createFirebaseCallable` / `createFirebaseCallableFor` definido en `src/firebase/functions/callable.ts`. El flujo principal es **auth propio v2** con credenciales (username/password) en Firestore y **tokens de sesión propios** almacenados en la colección `sessionTokens`. El cliente guarda el `sessionToken` en `localStorage` y lo renueva periódicamente mediante `clientRefreshSession` (hook `useAutomaticLogin`). `httpsCallable` directo queda reservado para ese wrapper central o para deuda/diagnósticos standalone marcados explícitamente.
 
 ## Componentes Clave
 
@@ -13,7 +13,7 @@ El Frontend (React) se autentica contra Firebase Functions **Callable** usando `
   - Firestore (`db`, `Timestamp`, `FieldValue`) para usuarios y sesiones.
 - **Frontend (React + Ant Design):**
   - Ant Design `Form` + `Input.Password` con reglas de validación reutilizables.
-  - Firebase Functions SDK (`httpsCallable`) para invocar endpoints.
+  - Wrapper de Firebase Functions (`createFirebaseCallable`) para invocar endpoints.
   - Redux para estado de usuario (`userSlice`).
   - `localStorage` para persistencia del `sessionToken` y `sessionExpiresAt`.
 
@@ -53,7 +53,7 @@ El Frontend (React) se autentica contra Firebase Functions **Callable** usando `
 
 ## A. Inicio de Sesión (Login)
 
-1. **Frontend** (`LoginForm`) envía `{ username, password, sessionInfo }` vía `httpsCallable('clientLogin')`.
+1. **Frontend** (`LoginForm`) envía `{ username, password, sessionInfo }` vía `createFirebaseCallable('clientLogin')`.
 2. **Backend**:
    - Normaliza el username.
    - Verifica intentos fallidos y lockout.
@@ -67,7 +67,7 @@ El Frontend (React) se autentica contra Firebase Functions **Callable** usando `
 ## B. Creación de Usuario (SignUp)
 
 1. **Frontend** valida contraseña con `PASSWORD_STRENGTH_RULE`.
-2. **Frontend** envía `{ sessionToken, userData }` vía `httpsCallable('clientSignUp')`.
+2. **Frontend** envía `{ sessionToken, userData }` vía `createFirebaseCallable('clientSignUp')`.
 3. **Backend**:
    - **Valida sesión + rol admin** (`assertAdminAccess`).
    - Aplica `assertPassword` (regex fuerte).

@@ -65,7 +65,6 @@
   - `src/firebase/warehouse/locationService.ts`
   - `src/firebase/warehouse/warehouseNestedService.ts`
   - `src/firebase/warehouse/stockSyncService.ts`
-  - `src/firebase/warehouse/useListenMovementsByParams.ts`
 
 ### Inventario (stock y movimientos)
 
@@ -76,6 +75,7 @@
 - **Movimientos tipados y normalizados**:
   - `src/modules/inventory/pages/Inventory/components/AllMovements/AllMovements.tsx`
   - `src/modules/inventory/pages/Inventory/components/AllMovements/MovementsFilterBar.tsx`
+  - `src/firebase/warehouse/productMovementService.ts`
 
 ### Inventario (control de inventario)
 
@@ -185,7 +185,7 @@
 ## Componentes ajustados
 
 - **MenuApp** tipado: `src/modules/navigation/components/MenuApp/MenuApp.tsx`.
-- **Tree** tipado y reutilizable: `src/views/component/tree/Tree.tsx`.
+- **Tree** tipado y reutilizable: `src/modules/inventory/pages/Inventory/components/Warehouse/components/tree/Tree.tsx`.
 - **Inventario** sin setState en effect:
   - `src/modules/inventory/pages/Inventory/components/Warehouse/components/DetailView/InventoryMenu.tsx`.
 - **Facturas**:
@@ -196,8 +196,8 @@
   - `src/modules/settings/pages/setting/subPage/TaxReceipts/components/ReceiptTableSection/ReceiptTableSection.tsx`.
   - `src/modules/settings/pages/setting/subPage/TaxReceipts/components/AddReceiptModal/AddReceiptModal.tsx`.
 - **Usuarios**:
-  - `src/views/pages/setting/subPage/Users/components/DynamicPermissionsManager/DynamicPermissionsManager.tsx`.
-  - `src/views/pages/setting/subPage/Users/components/RoleDowngradeConfirmationModal/RoleDowngradeConfirmationModal.tsx`.
+  - `src/modules/settings/pages/setting/subPage/Users/components/DynamicPermissionsManager/DynamicPermissionsManager.tsx`.
+  - `src/modules/settings/pages/setting/subPage/Users/components/RoleDowngradeConfirmationModal/RoleDowngradeConfirmationModal.tsx`.
   - `src/modules/settings/pages/setting/subPage/Users/components/CashierMigrationTool/CashierMigrationTool.tsx` (retirado; sin equivalente activo confirmado).
 
 ## Limpieza y calidad
@@ -211,7 +211,7 @@
 - `@ts-nocheck` retirados en Compras (Firebase, adjuntos y stock).
 - Importaciones directas en `MultiPaymentModal`, `DatePicker` y módulos de filtros (sin barrels).
 - Ajuste de lazy import para CreditNote sin `index.ts` intermedio.
-- Eliminados reexports:
+- Eliminados reexports historicos (rutas `src/views` ya retiradas):
   - `src/features/expense/index.ts`.
   - `src/features/purchase/index.ts`.
   - `src/context/CategoryContext/index.ts`.
@@ -229,7 +229,7 @@
   - `src/views/component/modals/ProductForm/components/sections/BarcodeCorrector/index.ts` (retirado con el componente huérfano; sin equivalente directo confirmado).
   - `src/views/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/InvoiceComment/index.ts`.
   - `src/assets/index.ts`.
-- Eliminados archivos vacíos/no usados:
+- Eliminados archivos vacios/no usados historicos:
   - `src/firebase/expenses/Items/fbGetExpensesForCashRegister.ts`.
   - `src/views/pages/Expenses/ExpensesForm/utils/constants.ts`.
   - `src/views/pages/Expenses/ExpensesForm/utils/attachmentUtils.ts`.
@@ -241,7 +241,7 @@
 ## Estado actual
 
 - `npm run typecheck` OK
-- `npm run lint` OK
+- `npm run lint:all` OK
 
 ## Pendientes sugeridos
 

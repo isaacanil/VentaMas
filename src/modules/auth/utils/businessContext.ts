@@ -2,7 +2,7 @@ import type {
   MembershipRole,
   MembershipStatus,
   UserAccessControl,
-} from '@/types/models';
+} from '@/types/businessModels';
 import { asRecord, type UnknownRecord } from '@/utils/object/record';
 import { normalizeRoleId } from '@/utils/roles/normalizeRole';
 import { toCleanString } from '@/utils/text';

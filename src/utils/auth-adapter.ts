@@ -4,7 +4,7 @@ import type {
   MembershipStatus,
   User,
   UserAccessControl,
-} from '@/types/models';
+} from '@/types/businessModels';
 import { normalizeRoleId } from '@/utils/roles/normalizeRole';
 import { toCleanString } from '@/utils/text';
 

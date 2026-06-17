@@ -90,7 +90,7 @@ consolidar en `src/modules/*` y `src/components/*` y dejar una estructura modern
 - [ ] Actualizar imports (rg + replace)
 - [ ] Validar que no queden referencias legacy (rg "views/").
 - [ ] Ejecutar `npm run typecheck` al final de cada fase grande
-- [ ] Ejecutar `npm run lint` al final de la noche
+- [ ] Ejecutar `npm run lint:all` al final de la noche (`npm run lint` queda solo como menu interactivo en terminal TTY)
 
 ## Orden sugerido restante (de menor a mayor dependencia)
 

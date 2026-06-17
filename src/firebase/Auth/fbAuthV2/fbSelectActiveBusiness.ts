@@ -1,7 +1,5 @@
-import { httpsCallable } from 'firebase/functions';
-
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 type SelectActiveBusinessRequest = {
   businessId: string;
@@ -22,10 +20,10 @@ export type SelectActiveBusinessResult = {
   hasMultipleBusinesses: boolean | null;
 };
 
-const clientSelectActiveBusinessCallable = httpsCallable<
+const clientSelectActiveBusinessCallable = createFirebaseCallable<
   SelectActiveBusinessRequest,
   SelectActiveBusinessResponse
->(functions, 'clientSelectActiveBusiness');
+>('clientSelectActiveBusiness');
 
 const toCleanString = (value: unknown): string | null => {
   if (typeof value !== 'string') return null;
@@ -60,11 +58,10 @@ export const fbSelectActiveBusiness = async (
   const { sessionToken } = getStoredSession();
 
   try {
-    const response = await clientSelectActiveBusinessCallable({
+    const payload = await clientSelectActiveBusinessCallable({
       businessId: cleanBusinessId,
       ...(sessionToken ? { sessionToken } : {}),
     });
-    const payload = (response.data || {}) as SelectActiveBusinessResponse;
 
     if (payload.ok === false) {
       throw new Error(payload.message || 'No se pudo cambiar el negocio activo.');

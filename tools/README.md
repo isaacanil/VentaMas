@@ -9,7 +9,14 @@ Todos los scripts deben ejecutarse con Node.js desde la raíz del proyecto o des
 ### Gestión de Linting
 
 - **`lint.js`** - App de consola para ejecutar modos de lint (`path`, `typed`, `functions`, `styles`, `all`) sin recordar comandos.
-  - Recomendado usar vía npm: `npm run lint`
+  - `npm run lint` abre el menu interactivo solo en una terminal TTY; en CI o shells no interactivos imprime ayuda y sale con error.
+  - Comandos recomendados:
+    ```powershell
+    npm run lint:fast
+    npm run lint:web
+    npm run lint:all
+    npm run lint -- path src\router\routes\loaders\accessLoaders.ts
+    ```
 
 ### Mantenimiento de Código
 
@@ -147,7 +154,11 @@ node .\tools\audit-imports.js
 node .\tools\audit-imports.js --help
 node .\tools\lint.js
 node .\tools\lint.js path src\router\routes\loaders\accessLoaders.ts
-npm run lint
+npm run lint # menu interactivo en terminal TTY
+npm run lint:fast
+npm run lint:web
+npm run lint:all
+npm run lint -- path src\router\routes\loaders\accessLoaders.ts
 npm run lint -- --help
 npm run deploy
 npm run deploy -- --help

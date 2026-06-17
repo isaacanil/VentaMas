@@ -1,6 +1,4 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 type ValidateUserRequest = {
   username?: string;
@@ -15,10 +13,10 @@ type ValidateUserResponse = {
   user?: Record<string, unknown>;
 };
 
-const clientValidateUserCallable = httpsCallable<
+const clientValidateUserCallable = createFirebaseCallable<
   ValidateUserRequest,
   ValidateUserResponse
->(functions, 'clientValidateUser');
+>('clientValidateUser');
 
 type UserCredentials = {
   name?: string;
@@ -35,13 +33,12 @@ export const fbValidateUser = async (
   uid?: string | null,
 ): Promise<ValidateUserResult> => {
   try {
-    const response = await clientValidateUserCallable({
+    const data = await clientValidateUserCallable({
       username: user?.name,
       password: user?.password,
       uid,
     });
 
-    const data = response?.data || {};
     return {
       userData: {
         uid: data?.userId || uid || null,

@@ -1,10 +1,13 @@
 // One-off diagnostic script to reproduce Firestore rules issues against prod.
 //
 // Usage (PowerShell):
-//   node tools/debug-firestore-permissions.mjs dev_caja1 "PASSWORD"
+//   $env:DEBUG_FIRESTORE_PASSWORD = 'PASSWORD'
+//   node .\tools\debug-firestore-permissions.mjs dev_caja1
+//   Remove-Item Env:\DEBUG_FIRESTORE_PASSWORD
 //
 // Notes:
-// - Uses the public callable function `clientLogin` to obtain a Firebase custom token.
+// - Standalone diagnostic: uses the public callable function `clientLogin` to obtain a Firebase custom token.
+// - App/frontend code should use `src/firebase/functions/callable.ts` instead of direct `httpsCallable`.
 // - Signs in with that custom token and then performs reads/writes that are currently failing.
 
 import 'dotenv/config';
@@ -48,7 +51,7 @@ const password = process.env.DEBUG_FIRESTORE_PASSWORD || '';
 
 if (!username || !password) {
   console.error(
-    'Usage: set DEBUG_FIRESTORE_PASSWORD and run node tools/debug-firestore-permissions.mjs <username>',
+    'Usage: $env:DEBUG_FIRESTORE_PASSWORD = "PASSWORD"; node .\\tools\\debug-firestore-permissions.mjs <username>',
   );
   process.exit(2);
 }

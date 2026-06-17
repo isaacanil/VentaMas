@@ -8,8 +8,6 @@ const ALLOWED_WRAPPER_FILE = 'src/firebase/functions/callable.ts';
 
 // Existing migration debt. Remove entries as files move to createFirebaseCallable.
 const EXISTING_DIRECT_HTTPS_CALLABLE_IMPORT_DEBT = [
-  'src/firebase/Auth/fbAuthV2/fbSelectActiveBusiness.ts',
-  'src/firebase/Auth/fbAuthV2/fbSignIn/fbVerifyUser.ts',
   'src/firebase/accounting/accountingConfiguration.ts',
   'src/firebase/accounting/fbAnalyzeFinanceReadiness.ts',
   'src/firebase/accounting/fbCloseAccountingPeriod.ts',

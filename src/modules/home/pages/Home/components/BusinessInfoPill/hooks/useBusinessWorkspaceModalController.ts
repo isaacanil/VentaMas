@@ -20,7 +20,7 @@ import {
   useBusinessMetadata,
 } from '@/modules/auth/public';
 import ROUTES_PATH from '@/router/routes/routesName';
-import type { MembershipStatus } from '@/types/models';
+import type { MembershipStatus } from '@/types/businessModels';
 import type { UserIdentity } from '@/types/users';
 import { hasBusinessCreateUnderAccountQuotaAccess } from '@/utils/access/accountLevelCapabilities';
 import { hasDeveloperAccess } from '@/utils/access/developerAccess';

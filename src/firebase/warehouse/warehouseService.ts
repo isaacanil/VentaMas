@@ -453,26 +453,3 @@ export const useListenWarehouses = () => {
 
   return { data, loading, error };
 };
-
-export const useGetWarehouseData = (items: unknown[]) => {
-  const user = useSelector(selectUser) as InventoryUser | null;
-  const [data, _setData] = useState<{
-    warehouses: WarehouseRecord[];
-    shelves: WarehouseRecord[];
-    rows: WarehouseRecord[];
-    segments: WarehouseRecord[];
-  }>({
-    warehouses: [],
-    shelves: [],
-    rows: [],
-    segments: [],
-  });
-  const [loading, _setLoading] = useState(false);
-  const [error] = useState<unknown | null>(null);
-
-  useEffect(() => {
-    if (!Array.isArray(items) || items.length === 0) return;
-  }, [items, user]);
-
-  return { data, loading, error };
-};

@@ -180,12 +180,3 @@ export const previewNextItemReference = async (
     throw error;
   }
 };
-
-export const fbBarcodeGeneration = {
-  generateNextItemReference,
-  generateAutoBarcode,
-  validateItemReference,
-  previewNextItemReference,
-};
-
-

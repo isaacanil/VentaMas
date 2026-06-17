@@ -1,14 +1,5 @@
-import {
-  doc,
-  getDoc,
-  onSnapshot,
-  setDoc,
-  writeBatch,
-} from 'firebase/firestore';
-import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { doc, writeBatch } from 'firebase/firestore';
 
-import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
 import { buildLocationPath } from '@/utils/inventory/locations';
 import type {
@@ -105,42 +96,6 @@ const buildStructureElements = (
   return elements;
 };
 
-// Función para actualizar o añadir un elemento a la estructura
-const updateStructureElement = async (
-  user: InventoryUser,
-  type: StructureType,
-  elementId: string,
-  data: StructurePayload,
-) => {
-  const structureDoc = getStructureDoc(user.businessID!, type);
-  try {
-    const docSnapshot = await getDoc(structureDoc);
-    const existingData = docSnapshot.exists()
-      ? (docSnapshot.data().elements as Record<string, StructureElement>)
-      : {};
-
-    await setDoc(
-      structureDoc,
-      {
-        elements: {
-          ...existingData,
-          [elementId]: buildStructureElement({
-            type,
-            elementId,
-            data,
-            updatedAt: new Date().toISOString(),
-            updatedBy: user.uid,
-          }),
-        },
-      },
-      { merge: true },
-    );
-  } catch (error) {
-    console.error(`Error updating ${type} structure:`, error);
-    throw error;
-  }
-};
-
 // Función para crear la estructura desde datos existentes
 export const createStructureFromExisting = async (
   user: InventoryUser,
@@ -189,89 +144,3 @@ export const createStructureFromExisting = async (
     throw error;
   }
 };
-
-// Función para verificar si la estructura ya está migrada
-export const checkStructureMigration = async (user: InventoryUser) => {
-  try {
-    const structureDoc = getStructureDoc(user.businessID!, 'warehouses');
-    const docSnap = await getDoc(structureDoc);
-    return docSnap.exists();
-  } catch (error) {
-    console.error('Error checking structure migration:', error);
-    return false;
-  }
-};
-
-// Función para escuchar cambios en la estructura
-const listenToStructure = (
-  user: InventoryUser,
-  type: StructureType,
-  callback: (elements: StructureElement[]) => void,
-) => {
-  const structureDoc = getStructureDoc(user.businessID!, type);
-
-  return onSnapshot(structureDoc, (docSnap) => {
-    if (docSnap.exists()) {
-      const elements = (docSnap.data().elements || {}) as Record<
-        string,
-        StructureElement
-      >;
-      const activeElements = Object.values(elements).filter(
-        (el) => !el.isDeleted,
-      );
-      callback(activeElements);
-    } else {
-      callback([]);
-    }
-  });
-};
-
-// Hook personalizado para escuchar la estructura
-const useListenStructure = (type: StructureType) => {
-  const [data, setData] = useState<StructureElement[]>([]);
-  const [loading, setLoading] = useState(true);
-  const user = useSelector(selectUser) as InventoryUser | null;
-
-  useEffect(() => {
-    if (!user?.businessID) return;
-
-    const unsubscribe = listenToStructure(user, type, (elements) => {
-      setData(elements);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [user, type]);
-
-  return { data, loading };
-};
-
-// Funciones específicas para cada tipo de estructura
-export const updateWarehouse = (
-  user: InventoryUser,
-  warehouseId: string,
-  data: StructurePayload,
-) => updateStructureElement(user, 'warehouses', warehouseId, data);
-
-export const updateShelf = (
-  user: InventoryUser,
-  shelfId: string,
-  data: StructurePayload,
-) => updateStructureElement(user, 'shelves', shelfId, data);
-
-export const updateRow = (
-  user: InventoryUser,
-  rowId: string,
-  data: StructurePayload,
-) => updateStructureElement(user, 'rows', rowId, data);
-
-export const updateSegment = (
-  user: InventoryUser,
-  segmentId: string,
-  data: StructurePayload,
-) => updateStructureElement(user, 'segments', segmentId, data);
-
-export const useListenWarehouses = () => useListenStructure('warehouses');
-export const useListenShelves = () => useListenStructure('shelves');
-export const useListenRows = () => useListenStructure('rows');
-export const useListenSegments = () => useListenStructure('segments');

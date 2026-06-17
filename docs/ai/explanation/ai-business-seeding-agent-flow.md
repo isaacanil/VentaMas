@@ -107,7 +107,10 @@ Referencias:
 
 Wrapper frontend:
 
-- `httpsCallable(functions, 'aiBusinessSeedingAgent')`
+- `createFirebaseCallable('aiBusinessSeedingAgent', ...)`
+- Wrapper canonico: `src/firebase/functions/callable.ts`
+
+`httpsCallable` directo solo debe vivir dentro de `src/firebase/functions/callable.ts` o quedar marcado como deuda explicita/diagnostico standalone. El codigo de aplicacion debe pasar por `createFirebaseCallable` o `createFirebaseCallableFor`.
 
 Payload:
 
@@ -121,6 +124,7 @@ Payload:
 
 Referencias:
 
+- `src/firebase/functions/callable.ts`
 - `src/modules/dev/pages/dev/AiBusinessSeeding/api/fbAiBusinessSeedingAgentAnalyze.ts:18`
 - `src/modules/dev/pages/dev/AiBusinessSeeding/api/fbAiBusinessSeedingAgentAnalyze.ts:26`
 - `src/modules/dev/pages/dev/AiBusinessSeeding/api/fbAiBusinessSeedingAgentAnalyze.ts:27`
