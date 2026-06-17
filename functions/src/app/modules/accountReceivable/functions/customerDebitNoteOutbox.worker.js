@@ -96,7 +96,6 @@ const buildIssueDocument = ({ debitNote, invoiceData }) => ({
 export const resolveDebitNoteStatus = (electronicSnapshot) => {
   const status = toCleanString(electronicSnapshot?.status)?.toLowerCase();
   if (
-    status === 'issued' ||
     status === 'accepted' ||
     status === 'accepted_conditional'
   ) {

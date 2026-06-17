@@ -34,7 +34,7 @@ import { resolveDebitNoteStatus } from './customerDebitNoteOutbox.worker.js';
 
 describe('customerDebitNoteOutbox.worker', () => {
   it.each([
-    ['issued', 'issued'],
+    ['issued', 'electronic_pending'],
     ['accepted', 'issued'],
     ['accepted_conditional', 'issued'],
     ['shadow_ready', 'issued'],

@@ -442,6 +442,168 @@ describe('electronicTaxReceiptOutbox.service', () => {
     );
   });
 
+  it('keeps E33 debit notes pending when GISYS has not returned a terminal DGII status', async () => {
+    const debitNoteDoc = {
+      status: 'issued',
+      ncf: 'E330000000002',
+      electronicTaxReceipt: {
+        status: 'issued',
+        mode: 'required',
+        documentType: 'E33',
+        requestHash: 'request-hash',
+        submissionId: 'sub-33-pending',
+        eNcf: 'E330000000002',
+      },
+    };
+    const debitNoteRef = {
+      path: 'businesses/business-1/debitNotes/debit-note-pending',
+      collection: vi.fn(() => ({
+        doc: vi.fn(() => ({
+          path: 'debit-note-pending/fiscalAttempts/sub-33-pending',
+        })),
+      })),
+      get: vi.fn(async () => ({
+        exists: true,
+        data: () => debitNoteDoc,
+      })),
+    };
+    const businessRef = {
+      get: vi.fn(async () => ({
+        exists: true,
+        data: () => ({}),
+      })),
+    };
+    const tx = {
+      get: vi.fn(async () => ({
+        data: () => debitNoteDoc,
+      })),
+      set: vi.fn(),
+      update: vi.fn(),
+    };
+
+    db.doc.mockImplementation((path) => {
+      if (path === 'businesses/business-1/debitNotes/debit-note-pending') {
+        return debitNoteRef;
+      }
+      if (
+        path ===
+        'businesses/business-1/debitNotes/debit-note-pending/fiscalAttempts/sub-33-pending'
+      ) {
+        return { path };
+      }
+      if (path === 'businesses/business-1') {
+        return businessRef;
+      }
+      throw new Error(`Unexpected doc path: ${path}`);
+    });
+    db.runTransaction.mockImplementation(async (callback) => callback(tx));
+    refreshGisysFactDocumentStatus.mockResolvedValue({
+      eNcf: 'E330000000002',
+      localStatus: 'signed_local',
+      requestStatus: 'submitted',
+      dgiiSubmissionStatus: 'submitted',
+      dgiiStatus: 'pending',
+      dgiiValidationStatus: 'not_checked',
+    });
+
+    const result = await refreshElectronicTaxReceiptStatus({
+      businessId: 'business-1',
+      debitNoteId: 'debit-note-pending',
+      documentKind: 'debitNote',
+    });
+
+    expect(result.electronicTaxReceipt.status).toBe('submitted');
+    expect(tx.update).toHaveBeenCalledWith(
+      debitNoteRef,
+      expect.objectContaining({
+        ncf: 'E330000000002',
+        eNcf: 'E330000000002',
+        status: 'electronic_pending',
+        fiscalMode: 'electronic_ecf',
+        documentFormat: 'electronic',
+      }),
+    );
+  });
+
+  it('preserves credit note usage status while refreshing an accepted E34', async () => {
+    const creditNoteDoc = {
+      status: 'applied',
+      ncf: 'E340000000004',
+      electronicTaxReceipt: {
+        status: 'accepted',
+        mode: 'required',
+        documentType: 'E34',
+        requestHash: 'request-hash',
+        submissionId: 'sub-34-applied',
+        eNcf: 'E340000000004',
+      },
+    };
+    const creditNoteRef = {
+      path: 'businesses/business-1/creditNotes/credit-note-applied',
+      collection: vi.fn(() => ({
+        doc: vi.fn(() => ({
+          path: 'credit-note-applied/fiscalAttempts/sub-34-applied',
+        })),
+      })),
+      get: vi.fn(async () => ({
+        exists: true,
+        data: () => creditNoteDoc,
+      })),
+    };
+    const businessRef = {
+      get: vi.fn(async () => ({
+        exists: true,
+        data: () => ({}),
+      })),
+    };
+    const tx = {
+      get: vi.fn(async () => ({
+        data: () => creditNoteDoc,
+      })),
+      set: vi.fn(),
+      update: vi.fn(),
+    };
+
+    db.doc.mockImplementation((path) => {
+      if (path === 'businesses/business-1/creditNotes/credit-note-applied') {
+        return creditNoteRef;
+      }
+      if (
+        path ===
+        'businesses/business-1/creditNotes/credit-note-applied/fiscalAttempts/sub-34-applied'
+      ) {
+        return { path };
+      }
+      if (path === 'businesses/business-1') {
+        return businessRef;
+      }
+      throw new Error(`Unexpected doc path: ${path}`);
+    });
+    db.runTransaction.mockImplementation(async (callback) => callback(tx));
+    refreshGisysFactDocumentStatus.mockResolvedValue({
+      eNcf: 'E340000000004',
+      dgiiValidationStatus: 'accepted',
+      dgiiStatus: 'accepted',
+    });
+
+    await refreshElectronicTaxReceiptStatus({
+      businessId: 'business-1',
+      creditNoteId: 'credit-note-applied',
+      documentKind: 'creditNote',
+    });
+
+    expect(tx.update).toHaveBeenCalledWith(
+      creditNoteRef,
+      expect.objectContaining({
+        ncf: 'E340000000004',
+        eNcf: 'E340000000004',
+        status: 'applied',
+        fiscalMode: 'electronic_ecf',
+        documentFormat: 'electronic',
+      }),
+    );
+  });
+
   it('persists DGII rejection diagnostics for E33 debit notes', async () => {
     const debitNoteDoc = {
       status: 'issued',

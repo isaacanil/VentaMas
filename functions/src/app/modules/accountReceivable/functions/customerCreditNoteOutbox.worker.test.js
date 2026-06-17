@@ -4,7 +4,7 @@ import { resolveCreditNoteStatus } from './customerCreditNoteOutbox.worker.js';
 
 describe('customerCreditNoteOutbox.worker', () => {
   it.each([
-    ['issued', 'issued'],
+    ['issued', 'electronic_pending'],
     ['accepted', 'issued'],
     ['accepted_conditional', 'issued'],
     ['shadow_ready', 'issued'],

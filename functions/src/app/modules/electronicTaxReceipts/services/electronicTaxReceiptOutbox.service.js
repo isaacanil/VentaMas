@@ -50,6 +50,31 @@ const TERMINAL_DGII_STATUSES = new Set([
 const NON_LIFECYCLE_STATUSES = new Set(['not_checked', 'pending', 'queued']);
 const RFCE_ACCEPTED_STATUSES = new Set(['accepted', 'accepted_conditional']);
 const RFCE_ERROR_STATUSES = new Set(['error', 'failed', 'rejected']);
+const ADJUSTMENT_ACCEPTED_LIFECYCLE_STATUSES = new Set([
+  'accepted',
+  'accepted_conditional',
+  'shadow_ready',
+]);
+const ADJUSTMENT_FAILED_LIFECYCLE_STATUSES = new Set([
+  'rejected',
+  'error',
+  'failed',
+  'local_failed',
+]);
+const ADJUSTMENT_PRESERVED_OPERATIONAL_STATUSES = new Set([
+  'applied',
+  'fully_used',
+  'paid',
+  'partially_paid',
+  'cancelled',
+  'canceled',
+  'voided',
+]);
+const ADJUSTMENT_PRESERVED_VOID_STATUSES = new Set([
+  'cancelled',
+  'canceled',
+  'voided',
+]);
 
 const normalizeCode = (value) => {
   if (typeof value !== 'string' && typeof value !== 'number') return null;
@@ -759,24 +784,26 @@ export const processElectronicTaxReceiptOutboxTask = async ({
 
 const resolveAdjustmentDocumentStatus = ({ electronicSnapshot, currentStatus }) => {
   const lifecycleStatus = normalizeStatus(electronicSnapshot?.status);
-  if (
-    lifecycleStatus === 'accepted' ||
-    lifecycleStatus === 'accepted_conditional' ||
-    lifecycleStatus === 'shadow_ready'
-  ) {
+  const normalizedCurrentStatus = normalizeStatus(currentStatus);
+
+  if (ADJUSTMENT_ACCEPTED_LIFECYCLE_STATUSES.has(lifecycleStatus)) {
+    if (ADJUSTMENT_PRESERVED_OPERATIONAL_STATUSES.has(normalizedCurrentStatus)) {
+      return normalizedCurrentStatus;
+    }
     return 'issued';
   }
-  if (
-    lifecycleStatus === 'rejected' ||
-    lifecycleStatus === 'error' ||
-    lifecycleStatus === 'failed' ||
-    lifecycleStatus === 'local_failed'
-  ) {
+  if (ADJUSTMENT_FAILED_LIFECYCLE_STATUSES.has(lifecycleStatus)) {
+    if (ADJUSTMENT_PRESERVED_VOID_STATUSES.has(normalizedCurrentStatus)) {
+      return normalizedCurrentStatus;
+    }
     return 'electronic_failed';
   }
 
-  const normalizedCurrentStatus = normalizeStatus(currentStatus);
-  return normalizedCurrentStatus === 'issued' ? 'issued' : 'electronic_pending';
+  if (ADJUSTMENT_PRESERVED_OPERATIONAL_STATUSES.has(normalizedCurrentStatus)) {
+    return normalizedCurrentStatus;
+  }
+
+  return 'electronic_pending';
 };
 
 export const refreshElectronicTaxReceiptStatus = async ({
