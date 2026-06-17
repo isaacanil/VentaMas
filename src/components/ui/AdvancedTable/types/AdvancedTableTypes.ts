@@ -1,9 +1,9 @@
 import type { ReactNode, UIEvent } from 'react';
 
 import type {
-  DatePickerProps,
+  MillisRangeDatePickerProps,
   DateRangeValue,
-} from '@/components/common/DatePicker/adapters/MillisRangeDatePicker/DatePicker';
+} from '@/components/common/DatePicker';
 import type {
   ColumnConfig,
   FilterConfig,
@@ -43,7 +43,7 @@ export interface AdvancedTableProps<Row = TableRow> {
   elementName?: string;
   tableName?: string;
   dateRange?: DateRangeValue | null;
-  defaultDate?: DatePickerProps['datesDefault'];
+  defaultDate?: MillisRangeDatePickerProps['datesDefault'];
   datesKeyConfig?: string;
   setDateRange?: (value: DateRangeValue) => void;
   emptyText?: ReactNode;

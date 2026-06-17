@@ -18,7 +18,7 @@ import {
 } from 'antd';
 import React, { useCallback, useMemo, useState } from 'react';
 
-import { DatePicker } from '@/components/common/DatePicker/DatePicker';
+import { DatePicker } from '@/components/common/DatePicker';
 import { useOverflowCollapse } from '@/hooks/useOverflowCollapse';
 import useViewportWidth from '@/hooks/useViewportWidth';
 

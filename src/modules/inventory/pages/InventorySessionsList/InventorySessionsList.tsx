@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { DatePicker as RangeDatePicker } from '@/components/common/DatePicker/DatePicker';
+import { DatePicker as RangeDatePicker } from '@/components/common/DatePicker';
 import { PageShell } from '@/components/layout/PageShell';
 import { selectUser } from '@/features/auth/userSlice';
 import { formatDate, toMillis } from '@/utils/date/dateUtils';

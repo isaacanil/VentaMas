@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
-import { FilterBar as CommonFilterBar } from '@/components/common/FilterBar/FilterBar';
+import { FilterBar as CommonFilterBar } from '@/components/common/FilterBar';
 import { selectUser } from '@/features/auth/userSlice';
 import { toggleSignUpUser } from '@/features/modals/modalSlice';
 import { updateUser } from '@/features/usersManagement/usersManagementSlice';

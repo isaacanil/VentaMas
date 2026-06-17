@@ -13,7 +13,7 @@ import { icons } from '@/constants/icons/icons';
 import { filterData } from '@/hooks/search/useSearch';
 import { useWindowWidth } from '@/hooks/useWindowWidth';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { DatePicker } from '@/components/common/DatePicker/adapters/MillisRangeDatePicker/DatePicker';
+import { MillisRangeDatePicker as DatePicker } from '@/components/common/DatePicker';
 
 import { ColumnMenu } from './components/ColumnMenu/ColumnMenu';
 import { FilterUI } from './components/MenuFilter/MenuFilter';

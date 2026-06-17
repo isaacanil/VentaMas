@@ -1,9 +1,10 @@
 import { Drawer } from 'antd';
 
-import FileList, {
+import {
+  FileList,
   type FileListProps,
-} from '@/components/common/fileUploadShared/components/FileList';
-import type { PreviewableFile } from '@/components/common/fileUploadShared/types';
+  type PreviewableFile,
+} from '@/components/common/fileUploadShared';
 
 /**
  * Componente para mostrar la lista de archivos en un drawer

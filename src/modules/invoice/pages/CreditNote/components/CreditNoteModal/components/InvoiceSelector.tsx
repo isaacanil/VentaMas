@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { MouseEvent } from 'react';
 import styled from 'styled-components';
 
-import { DatePicker } from '@/components/common/DatePicker/DatePicker';
+import { DatePicker } from '@/components/common/DatePicker';
 import { formatDate } from '@/utils/date/dateUtils';
 import { formatPrice } from '@/utils/format';
 import { normalizeText } from '@/utils/text';
@@ -14,7 +14,7 @@ import type { InvoiceData } from '@/types/invoice';
 import type {
   DatePickerRangeValue,
   DatePickerValue,
-} from '@/components/common/DatePicker/types';
+} from '@/components/common/DatePicker';
 
 /*
   Selector de Facturas

@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import {
   FilterBar as CommonFilterBar,
   type FilterBarItem,
-} from '@/components/common/FilterBar/FilterBar';
+} from '@/components/common/FilterBar';
 import { icons } from '@/constants/icons/icons';
 import useBusiness from '@/hooks/useBusiness';
 

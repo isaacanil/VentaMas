@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import {
   FilterBar,
   type FilterBarItem,
-} from '@/components/common/FilterBar/FilterBar';
+} from '@/components/common/FilterBar';
 import { useFbGetClients } from '@/firebase/client/useFbGetClients';
 import { filterData } from '@/hooks/search/useSearch';
 import { MenuApp } from '@/modules/navigation/public';

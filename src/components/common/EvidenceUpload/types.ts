@@ -1,9 +1,6 @@
 import type { PurchaseAttachment } from '@/utils/purchase/types';
 
-import type {
-  LightboxSlide,
-  PreviewableFile,
-} from '../fileUploadShared/types';
+import type { LightboxSlide, PreviewableFile } from '../fileUploadShared';
 
 export type EvidenceFileCategory =
   | 'receipts'

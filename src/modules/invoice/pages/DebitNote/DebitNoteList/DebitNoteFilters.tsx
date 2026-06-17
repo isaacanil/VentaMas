@@ -3,8 +3,10 @@ import { Button, Drawer, Select } from 'antd';
 import { DateTime } from 'luxon';
 import React, { useMemo, useState } from 'react';
 
-import { DatePicker } from '@/components/common/DatePicker/DatePicker';
-import type { DatePickerRangeValue } from '@/components/common/DatePicker/types';
+import {
+  DatePicker,
+  type DatePickerRangeValue,
+} from '@/components/common/DatePicker';
 import { useFbGetClientsOnOpen } from '@/firebase/client/useFbGetClientsOnOpen';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import {

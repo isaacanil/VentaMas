@@ -43,7 +43,7 @@ import type {
 } from '@/types/invoice';
 import type { TaxReceiptDocument } from '@/types/taxReceipt';
 import type { UserIdentity } from '@/types/users';
-import type { DatePickerRangeValue } from '@/components/common/DatePicker/types';
+import type { DatePickerRangeValue } from '@/components/common/DatePicker';
 import type { TimestampLike } from '@/utils/date/types';
 
 const { useBreakpoint } = Grid;

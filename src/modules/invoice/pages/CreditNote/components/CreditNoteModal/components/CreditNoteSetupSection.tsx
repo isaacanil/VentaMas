@@ -11,7 +11,7 @@ import InvoiceSelector from './InvoiceSelector';
 
 import type { CreditNoteRecord } from '@/types/creditNote';
 import type { InvoiceClient, InvoiceData } from '@/types/invoice';
-import type { DatePickerRangeValue } from '@/components/common/DatePicker/types';
+import type { DatePickerRangeValue } from '@/components/common/DatePicker';
 
 type InvoiceWithNcf = InvoiceData & { ncf?: string };
 

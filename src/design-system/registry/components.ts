@@ -581,7 +581,7 @@ export const componentRegistry = [
   {
     id: 'vm.datePicker',
     displayName: 'DatePicker',
-    importPath: '@/components/common/DatePicker/DatePicker',
+    importPath: '@/components/common/DatePicker',
     namedExport: 'DatePicker',
     category: 'form',
     status: 'legacy',
@@ -654,7 +654,7 @@ export const componentRegistry = [
   {
     id: 'vm.filterBar',
     displayName: 'FilterBar',
-    importPath: '@/components/common/FilterBar/FilterBar',
+    importPath: '@/components/common/FilterBar',
     namedExport: 'FilterBar',
     category: 'form',
     status: 'ready',

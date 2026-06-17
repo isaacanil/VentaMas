@@ -2,7 +2,7 @@ import { ClearOutlined } from '@/constants/icons/antd';
 import { Select, Button } from 'antd';
 import React, { useMemo } from 'react';
 
-import { DatePicker } from '@/components/common/DatePicker/DatePicker';
+import { DatePicker } from '@/components/common/DatePicker';
 import {
   CREDIT_NOTE_USAGE_FILTER_OPTIONS,
 } from '@/modules/invoice/utils/adjustmentNoteStatusDisplay';

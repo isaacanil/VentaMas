@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { DatePicker } from '@/components/common/DatePicker/DatePicker';
+import { DatePicker } from '@/components/common/DatePicker';
 import { selectUser } from '@/features/auth/userSlice';
 import { hasAuthorizationApproveAccess } from '@/utils/access/authorizationAccess';
 

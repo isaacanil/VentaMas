@@ -6,8 +6,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from 'antd';
 import { memo, useCallback, useEffect, useMemo } from 'react';
 
-import { FilterBar as CommonFilterBar } from '@/components/common/FilterBar/FilterBar';
-import type { FilterBarItem } from '@/components/common/FilterBar/FilterBar';
+import {
+  FilterBar as CommonFilterBar,
+  type FilterBarItem,
+} from '@/components/common/FilterBar';
 
 import { useFilterBar } from './hooks/useFilterBar';
 import type {

@@ -3,7 +3,7 @@ import { DateTime } from 'luxon';
 import { useCallback, useDeferredValue, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
-import type { DatePickerRangeValue } from '@/components/common/DatePicker/types';
+import type { DatePickerRangeValue } from '@/components/common/DatePicker';
 import { fbGetAccountingReports } from '@/firebase/accounting/fbGetAccountingReports';
 
 import {

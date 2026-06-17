@@ -3,7 +3,7 @@ import { useCallback, useMemo } from 'react';
 import {
   FilterBar as CommonFilterBar,
   type FilterBarItem,
-} from '@/components/common/FilterBar/FilterBar';
+} from '@/components/common/FilterBar';
 
 interface DateRangeFilter {
   startDate?: number | Date | null;

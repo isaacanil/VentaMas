@@ -2,8 +2,10 @@ import { useCallback, useMemo } from 'react';
 import type { Key } from 'react';
 import styled from 'styled-components';
 
-import { VmDatePicker } from '@/components/common/DatePicker/VmDatePicker';
-import type { DatePickerRangeValue } from '@/components/common/DatePicker/types';
+import {
+  VmDatePicker,
+  type DatePickerRangeValue,
+} from '@/components/common/DatePicker';
 import { VmListBox, VmSearchField, VmSelect } from '@/components/heroui';
 
 import type { GeneralLedgerAccountOption } from '../../utils/accountingWorkspace';

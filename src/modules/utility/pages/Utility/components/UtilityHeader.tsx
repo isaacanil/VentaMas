@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 import { useCallback, useMemo, useState, type JSX } from 'react';
 import styled from 'styled-components';
 
-import { DatePicker } from '@/components/common/DatePicker/DatePicker';
+import { DatePicker } from '@/components/common/DatePicker';
 import { designSystemV2 } from '@/theme/designSystemV2';
 import { getDateRange } from '@/utils/date/getDateRange';
 import { SimpleTypography } from '@/components/ui/Typography/SimpleTypography';

@@ -5,9 +5,9 @@ import styled from 'styled-components';
 import { useWarehouseHierarchy } from '@/firebase/warehouse/warehouseNestedService';
 import { shortenLocationPath } from '@/utils/inventory/locations';
 import {
-  DatePicker,
+  MillisRangeDatePicker as DatePicker,
   type DateRangeValue,
-} from '@/components/common/DatePicker/adapters/MillisRangeDatePicker/DatePicker';
+} from '@/components/common/DatePicker';
 
 type MovementFilterType = 'in' | 'out' | null;
 

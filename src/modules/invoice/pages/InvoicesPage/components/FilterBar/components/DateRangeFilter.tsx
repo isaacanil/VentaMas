@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 import type { ReactNode } from 'react';
 import React, { useCallback, useMemo } from 'react';
 
-import { DatePicker } from '@/components/common/DatePicker/DatePicker';
+import { DatePicker } from '@/components/common/DatePicker';
 import type { DateRangeSelection } from '@/types/invoiceFilters';
 
 import { FilterField } from './FilterField';

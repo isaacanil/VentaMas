@@ -1,4 +1,4 @@
-import type { FilterBarItem } from '@/components/common/FilterBar/FilterBar';
+import type { FilterBarItem } from '@/components/common/FilterBar';
 
 import type {
   AccountsPayableAgingBucket,

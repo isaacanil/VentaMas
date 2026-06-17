@@ -2,16 +2,16 @@ import { FileOutlined } from '@/constants/icons/antd';
 import { message, Badge, Button } from 'antd';
 import { useCallback, useState } from 'react';
 
-import type { PreviewableFile } from '@/components/common/fileUploadShared/types';
-import FileList from '@/components/common/fileUploadShared/components/FileList';
+import {
+  FileList,
+  FileUploadControls,
+  FileUploadRuntimeLayer,
+  useFileUploadController,
+  type CreateLocalUploadFileContext,
+  type NormalizeLocalPreviewFileContext,
+  type PreviewableFile,
+} from '@/components/common/fileUploadShared';
 import FileListDrawer from './FileListDrawer';
-import FileUploadControls from '@/components/common/fileUploadShared/components/FileUploadControls';
-import FileUploadRuntimeLayer from '@/components/common/fileUploadShared/components/FileUploadRuntimeLayer';
-import useFileUploadController from '@/components/common/fileUploadShared/hooks/useFileUploadController';
-import type {
-  CreateLocalUploadFileContext,
-  NormalizeLocalPreviewFileContext,
-} from '@/components/common/fileUploadShared/hooks/useFileUploadController';
 
 type FileTypeKey = string;
 

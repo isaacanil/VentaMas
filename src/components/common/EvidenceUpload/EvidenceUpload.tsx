@@ -1,13 +1,13 @@
 import { message } from 'antd';
 
-import FileList from '../fileUploadShared/components/FileList';
-import FileUploadControls from '../fileUploadShared/components/FileUploadControls';
-import FileUploadRuntimeLayer from '../fileUploadShared/components/FileUploadRuntimeLayer';
-import useFileUploadController from '../fileUploadShared/hooks/useFileUploadController';
-import type {
-  CreateLocalUploadFileContext,
-  NormalizeLocalPreviewFileContext,
-} from '../fileUploadShared/hooks/useFileUploadController';
+import {
+  FileList,
+  FileUploadControls,
+  FileUploadRuntimeLayer,
+  useFileUploadController,
+  type CreateLocalUploadFileContext,
+  type NormalizeLocalPreviewFileContext,
+} from '../fileUploadShared';
 import {
   EVIDENCE_FILE_TYPES,
   EVIDENCE_FILE_TYPE_LABELS,

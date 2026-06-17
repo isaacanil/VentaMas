@@ -9,7 +9,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { CreditNoteFiltersContent } from './CreditNoteFilters/CreditNoteFiltersContent';
 import { MobileContainer } from './CreditNoteFilters/styles';
 
-import type { DatePickerRangeValue } from '@/components/common/DatePicker/types';
+import type { DatePickerRangeValue } from '@/components/common/DatePicker';
 import type { ElectronicTaxReceiptFilterStatus } from '@/modules/invoice/utils/electronicTaxReceipt';
 import type { CreditNoteUsageFilterStatus } from '@/modules/invoice/utils/adjustmentNoteStatusDisplay';
 import type {

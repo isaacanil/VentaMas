@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import {
   FilterBar as CommonFilterBar,
   type FilterBarItem,
-} from '@/components/common/FilterBar/FilterBar';
+} from '@/components/common/FilterBar';
 import type {
   DateRangeSelection,
   InvoiceFilters,
