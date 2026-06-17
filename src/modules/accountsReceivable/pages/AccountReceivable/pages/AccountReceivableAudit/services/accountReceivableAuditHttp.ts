@@ -2,7 +2,7 @@ import {
   buildFunctionsAuthHeaders,
   getFunctionsBaseUrl,
   parseFunctionsResponse,
-} from '@/services/functionsApiClient';
+} from '@/firebase/functions/httpClient';
 
 export interface AdjustmentNoteFinancialEffectIssue {
   issueType: string;

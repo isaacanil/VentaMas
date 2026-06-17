@@ -254,7 +254,7 @@ Salida por venta:
 ## APIs / rutas
 
 - `src/firebase/products/fbGetProducts.ts`: lecturas de productos.
-- `src/firebase/functions/inventory/reconcileBatchStatus.ts`: reconcilia lotes/batches.
+- `src/firebase/inventory/reconcileBatchStatus.ts`: reconcilia lotes/batches.
 - `functions/src/app/modules/Inventory/services/Inventory.service.js` y `getInventory.service.js`: operaciones backend.
 - `src/modules/inventory/pages/Inventory/...`: tablas y modales que consumen estas colecciones.
 

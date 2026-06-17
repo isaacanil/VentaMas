@@ -3,12 +3,12 @@ import { doc, writeBatch } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseconfig';
 import { buildLocationPath } from '@/utils/inventory/locations';
 import type {
-  InventoryUser,
   WarehouseStructureData,
   WarehouseStructureElement,
   WarehouseStructurePayload,
   WarehouseStructureType,
-} from '@/utils/inventory/types';
+} from '@/domain/warehouse/warehouseStructure';
+import type { InventoryUser } from '@/utils/inventory/types';
 
 // Función para obtener la referencia al documento de estructura
 const getStructureDoc = (businessId: string, type: StructureType) => {

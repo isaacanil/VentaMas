@@ -194,7 +194,7 @@ Esto no cambia el plan del emulador, pero si cambia la expectativa:
 
 Fuentes revisadas en esta pasada:
 
-- Repo: `src/firebase/Auth/fbAuthV2`, `src/services/functionsApiClient.ts`, `src/router/GlobalListeners.tsx`, `src/firebase/presence/useRealtimePresence.ts`, `functions/src/app/versions/v2/auth`, `functions/src/app/versions/v2/invoice`, `functions/src/app/modules/*`
+- Repo: `src/firebase/Auth/fbAuthV2`, `src/firebase/functions/httpClient.ts`, `src/router/GlobalListeners.tsx`, `src/firebase/presence/useRealtimePresence.ts`, `functions/src/app/versions/v2/auth`, `functions/src/app/versions/v2/invoice`, `functions/src/app/modules/*`
 - Firebase read-only: proyecto `ventamaxpos`, Functions desplegadas, reglas, usuario `dev#3407`, negocio `X63aIFwHzk3r0gmT8w6P`
 - Documentacion oficial Firebase Emulator Suite:
   - https://firebase.google.com/docs/emulator-suite/connect_auth

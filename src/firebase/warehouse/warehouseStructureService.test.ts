@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { InventoryUser, WarehouseStructureData } from '@/utils/inventory/types';
+import type { WarehouseStructureData } from '@/domain/warehouse/warehouseStructure';
+import type { InventoryUser } from '@/utils/inventory/types';
 
 const {
   batchCommitMock,

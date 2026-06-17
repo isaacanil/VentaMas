@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { openDeleteModal } from '@/features/productStock/deleteProductStockSlice';
-import { reconcileBatchStatus } from '@/firebase/functions/inventory/reconcileBatchStatus';
+import { reconcileBatchStatus } from '@/firebase/inventory/reconcileBatchStatus';
 import { getBatchById } from '@/firebase/warehouse/batchService';
 
 import { useInventoryFilters } from './useInventoryFilters';

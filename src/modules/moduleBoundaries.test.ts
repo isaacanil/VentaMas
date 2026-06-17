@@ -142,7 +142,6 @@ const forbiddenLegacySharedImportPrefixes = [
   '@/utils/fiscal/electronicTaxReceiptDocumentTypes',
   '@/utils/fiscal/dgii608ReasonCatalog',
   '@/utils/commissions/collaboratorOptions',
-  '@/services/accountsReceivable',
   '@/schema',
   '@/notification',
 ];
@@ -206,10 +205,6 @@ const restrictedSharedImportRules: RestrictedSharedImportRule[] = [
   },
   {
     importPrefix: '@/components/ui/FormattedValue/types',
-    allowedFilePathPrefixes: ['src/components/ui/FormattedValue/'],
-  },
-  {
-    importPrefix: '@/components/ui/FormattedValue/ui/uiImage',
     allowedFilePathPrefixes: ['src/components/ui/FormattedValue/'],
   },
   {

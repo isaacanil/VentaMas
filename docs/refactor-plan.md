@@ -158,6 +158,7 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - `InvoiceTemplate2` y `InvoiceTemplate3` comparten `ClassicHeader` y `ClassicFooter` en `templates/Invoicing/shared`, eliminando duplicacion exacta entre plantillas sin cambiar el render.
 - `ThankYouMessage` vive en `src/components/common/ThankYouMessage`, compartido por checkout, factura y cotizacion en lugar de tres copias equivalentes.
 - `WarrantySignature` vive en `src/components/common/WarrantySignature`, compartido por checkout, factura y cotizacion, retirando tres copias equivalentes de la firma por garantia.
+- `pdfMakeLoader` vive en `src/pdf/utils` porque solo sirve al arbol de PDFs, dejando `src/utils/pdf` para utilidades compartidas generales.
 - `BarCode` de `ProductForm` dejo de importar un modal desde `modules/dev/pages/test`; ahora reutiliza el modal local de impresion de etiquetas del propio formulario.
 - Los exportadores Excel viven en `src/utils/export/excel`; la carpeta legacy `src/hooks/exportToExcel` quedo retirada y protegida por guardrail.
 - `useStockAlertThresholds` y `useLocationNames` quedaron bajo `src/modules/inventory/hooks`, con exports publicos de inventario para consumidores externos.
@@ -187,6 +188,8 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - Se retiraron `NotificationHandler` y el `AlertDialog` legacy de `UserNotification`; `ModalManager` monta directamente `ConfirmationDialog`, que queda como el flujo activo.
 - `downloadQuotationPDF`, `fbUpdateUser` y `fbUpdateUserPassword` reutilizan `createFirebaseCallable`, quitando `httpsCallable` directo en wrappers simples sin cambiar sus APIs publicas.
 - `billingManagement` centraliza su helper dinamico `callBilling` sobre `createFirebaseCallable`, conservando data directa para las pantallas de suscripcion y evitando repetir `response.data`.
+- El cliente HTTP frontend de Cloud Functions vive en `src/firebase/functions/httpClient.ts`; los services owner-locales lo consumen desde la capa Firebase compartida en vez de `src/services`.
+- `reconcileBatchStatus` vive en `src/firebase/inventory/reconcileBatchStatus.ts`, dejando el wrapper callable bajo el owner de inventario sin cambiar su API publica.
 - Los helpers de pagos a proveedor (`fbAddAccountsPayablePayment`, `fbVoidAccountsPayablePayment`) reutilizan `createFirebaseCallable`, manteniendo validaciones locales y retorno directo de data sin repetir `httpsCallable`.
 - `electronicTaxReceipts` usa `callElectronicTaxReceipt` como helper local para agregar `sessionToken` y consumir `createFirebaseCallable` en validacion/configuracion fiscal sin repetir `response.data`.
 - La seleccion de marca de producto vive en `src/domain/products/brandSelection.ts`, compartida por `ProductForm` y `ProductStudio` sin acoplar devtools a carpetas internas del modal.

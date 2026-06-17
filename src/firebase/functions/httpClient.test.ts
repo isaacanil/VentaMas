@@ -13,9 +13,9 @@ vi.mock('@/firebase/firebaseconfig', () => ({
   auth: authState,
 }));
 
-const loadFunctionsApiClient = async () => import('./functionsApiClient');
+const loadFunctionsHttpClient = async () => import('./httpClient');
 
-describe('functionsApiClient', () => {
+describe('functions httpClient', () => {
   beforeEach(() => {
     vi.resetModules();
     vi.unstubAllEnvs();
@@ -39,7 +39,7 @@ describe('functionsApiClient', () => {
       'https://example.com/functions/',
     );
 
-    const { getFunctionsBaseUrl } = await loadFunctionsApiClient();
+    const { getFunctionsBaseUrl } = await loadFunctionsHttpClient();
 
     expect(getFunctionsBaseUrl()).toBe('https://example.com/functions');
   });
@@ -48,7 +48,7 @@ describe('functionsApiClient', () => {
     vi.stubEnv('VITE_FIREBASE_REGION', 'northamerica-northeast1');
     vi.stubEnv('VITE_FIREBASE_PROJECT_ID', 'ventamas-test');
 
-    const { getFunctionsBaseUrl } = await loadFunctionsApiClient();
+    const { getFunctionsBaseUrl } = await loadFunctionsHttpClient();
 
     expect(getFunctionsBaseUrl()).toBe(
       'https://northamerica-northeast1-ventamas-test.cloudfunctions.net',
@@ -62,7 +62,7 @@ describe('functionsApiClient', () => {
     vi.stubEnv('VITE_FIREBASE_EMULATOR_HOST', '127.0.0.1');
     vi.stubEnv('VITE_FUNCTIONS_EMULATOR_PORT', '5001');
 
-    const { getFunctionsBaseUrl } = await loadFunctionsApiClient();
+    const { getFunctionsBaseUrl } = await loadFunctionsHttpClient();
 
     expect(getFunctionsBaseUrl()).toBe(
       'http://127.0.0.1:5001/ventamas-test/us-central1',
@@ -73,7 +73,7 @@ describe('functionsApiClient', () => {
     vi.stubEnv('VITE_FIREBASE_FUNCTIONS_BASE_URL', '');
     vi.stubEnv('VITE_FIREBASE_PROJECT_ID', '');
 
-    const { getFunctionsBaseUrl } = await loadFunctionsApiClient();
+    const { getFunctionsBaseUrl } = await loadFunctionsHttpClient();
 
     expect(() => getFunctionsBaseUrl()).toThrow(
       'No se pudo determinar la URL de Cloud Functions. Verifica la configuración.',
@@ -92,7 +92,7 @@ describe('functionsApiClient', () => {
       deviceId: 'device-1',
     });
 
-    const { buildFunctionsAuthHeaders } = await loadFunctionsApiClient();
+    const { buildFunctionsAuthHeaders } = await loadFunctionsHttpClient();
 
     await expect(buildFunctionsAuthHeaders()).resolves.toEqual({
       Authorization: 'Bearer id-token-1',
@@ -112,7 +112,7 @@ describe('functionsApiClient', () => {
       deviceId: 'device-2',
     });
 
-    const { buildFunctionsAuthHeaders } = await loadFunctionsApiClient();
+    const { buildFunctionsAuthHeaders } = await loadFunctionsHttpClient();
 
     await expect(buildFunctionsAuthHeaders()).resolves.toEqual({
       'X-Session-Token': 'session-only',
@@ -122,7 +122,7 @@ describe('functionsApiClient', () => {
   it('lanza un error cuando no hay ninguna credencial disponible', async () => {
     vi.stubEnv('VITE_FIREBASE_PROJECT_ID', 'ventamas-test');
 
-    const { buildFunctionsAuthHeaders } = await loadFunctionsApiClient();
+    const { buildFunctionsAuthHeaders } = await loadFunctionsHttpClient();
 
     await expect(buildFunctionsAuthHeaders()).rejects.toThrow(
       'Debes iniciar sesión para continuar.',
@@ -130,7 +130,7 @@ describe('functionsApiClient', () => {
   });
 
   it('parsea respuestas exitosas y enriquece errores HTTP con status y code', async () => {
-    const { parseFunctionsResponse } = await loadFunctionsApiClient();
+    const { parseFunctionsResponse } = await loadFunctionsHttpClient();
 
     await expect(
       parseFunctionsResponse<{ ok: boolean }>(

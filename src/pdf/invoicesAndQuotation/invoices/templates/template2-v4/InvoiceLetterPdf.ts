@@ -1,4 +1,4 @@
-import { getPdfMake } from '@/utils/pdf/pdfMakeLoader';
+import { getPdfMake } from '@/pdf/utils/pdfMakeLoader';
 
 import { buildContent } from '../template2/builders/content';
 import { buildHeader } from '../template2/builders/header';

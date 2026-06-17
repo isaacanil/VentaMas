@@ -10,7 +10,7 @@ const {
   parseFunctionsResponse: vi.fn(),
 }));
 
-vi.mock('@/services/functionsApiClient', () => ({
+vi.mock('@/firebase/functions/httpClient', () => ({
   buildFunctionsAuthHeaders,
   getFunctionsBaseUrl,
   parseFunctionsResponse,

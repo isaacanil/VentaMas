@@ -2,7 +2,7 @@ import {
   buildFunctionsAuthHeaders,
   getFunctionsBaseUrl,
   parseFunctionsResponse,
-} from '@/services/functionsApiClient';
+} from '@/firebase/functions/httpClient';
 
 export interface InvoiceV2SummaryRequest {
   businessId: string;
