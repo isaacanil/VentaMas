@@ -12,7 +12,7 @@ import {
   processPurchase,
   type PurchaseFilters,
 } from '@/firebase/purchase/fbGetPurchases';
-import { sortPurchases } from '@/utils/filterUtils';
+import { sortByCreatedAt } from '@/utils/sorts/sortByCreatedAt';
 import type { UserIdentity } from '@/types/users';
 import { enrichPurchaseWorkflow } from '@/utils/purchase/workflow';
 
@@ -147,7 +147,7 @@ export const useListenPurchases = (filterState?: PurchaseFilterState) => {
   const sortedPurchases = useMemo(() => {
     if (!purchases) return [];
     return isAscending !== undefined
-      ? sortPurchases(purchases, isAscending)
+      ? sortByCreatedAt(purchases, isAscending)
       : purchases;
   }, [purchases, isAscending]);
 

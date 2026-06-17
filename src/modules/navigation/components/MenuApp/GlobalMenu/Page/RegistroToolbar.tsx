@@ -9,13 +9,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { message, Button } from 'antd';
 import { DateTime } from 'luxon';
 import { useState } from 'react';
-import { useMatch } from 'react-router-dom';
+import { useMatch, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { createProfessionalReportCallback } from '@/utils/export/excel/exportConfig';
 import { formatBill } from '@/utils/export/excel/formatBill';
 import exportToExcel from '@/utils/export/excel/useExportToExcel';
-import { useAppNavigation } from '@/hooks/useAppNavigation';
 import useViewportWidth from '@/hooks/windows/useViewportWidth';
 import routesName from '@/router/routes/routesName';
 import { DropdownMenu } from '@/components/ui/DropdownMenu/DropdownMenu';
@@ -36,7 +35,7 @@ export const RegistroToolbar = ({
   data,
 }: RegistroToolbarProps) => {
   const [isExporting, setIsExporting] = useState(false);
-  const navigateTo = useAppNavigation();
+  const navigate = useNavigate();
   const { BILLS } = routesName.SALES_TERM;
   const matchWithCashReconciliation = useMatch(BILLS);
   const invoices = (data ?? []) as InvoiceLike[];
@@ -147,7 +146,7 @@ export const RegistroToolbar = ({
         <>
           <Button
             icon={<FontAwesomeIcon icon={faChartPie} />}
-            onClick={navigateTo.billsAnalytics}
+            onClick={() => navigate(routesName.SALES_TERM.BILLS_ANALYTICS)}
           >
             {isMobile ? 'Gráficos' : 'Gráfico de ventas'}
           </Button>

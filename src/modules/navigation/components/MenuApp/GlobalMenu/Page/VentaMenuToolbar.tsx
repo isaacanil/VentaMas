@@ -1,7 +1,7 @@
 import { faCompress, faExpand } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useDispatch, useSelector } from 'react-redux';
-import { useMatch } from 'react-router-dom';
+import { useMatch, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
@@ -10,7 +10,6 @@ import {
   selectFullScreen,
   toggleFullScreen,
 } from '@/features/setting/settingSlice';
-import { useAppNavigation } from '@/hooks/useAppNavigation';
 import ROUTES_NAME from '@/router/routes/routesName';
 import { InventoryFilterAndSort } from '@/modules/inventory/public';
 import { ButtonIconMenu } from '@/components/ui/Button/ButtonIconMenu';
@@ -19,7 +18,7 @@ import type { UserIdentity } from '@/types/users';
 import { hasBusinessSettingsManageAccess } from '@/utils/access/businessSettingsAccess';
 
 export const VentaMenuToolbar = ({ side = 'left' }: ToolbarComponentProps) => {
-  const navigation = useAppNavigation();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector(selectUser) as UserIdentity | null;
   const canManageBusinessSettings = hasBusinessSettingsManageAccess(user);
@@ -30,7 +29,7 @@ export const VentaMenuToolbar = ({ side = 'left' }: ToolbarComponentProps) => {
   const handleFullScreenFN = () => dispatch(toggleFullScreen());
 
   const handleSettings = () => {
-    navigation.setting();
+    navigate(ROUTES_NAME.SETTING_TERM.SETTING);
   };
 
   return (

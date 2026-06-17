@@ -34,7 +34,7 @@ import type {
   PurchaseBackOrderRef,
   PurchaseReplenishment,
 } from '@/utils/purchase/types';
-import type { Order } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/orderTypes';
+import type { Order } from '@/utils/order/types';
 import type { EvidenceFileInput } from '@/components/common/EvidenceUpload/types';
 import type { UserIdentity } from '@/types/users';
 

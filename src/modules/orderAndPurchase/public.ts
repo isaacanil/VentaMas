@@ -2,7 +2,7 @@ export { FilterBar } from './pages/OrderAndPurchase/shared/components/Transactio
 export {
   RegisterSupplierPaymentModal,
   SupplierPaymentHistoryModal,
-} from './supplierPaymentModals';
+} from './components/supplierPayments';
 export type {
   DataConfigMap,
   FilterConfigState,

@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useFbGetProviders } from '@/firebase/provider/useFbGetProvider';
 import useFilter from '@/hooks/search/useSearch';
 import { useListenOrders } from '@/modules/orderAndPurchase/hooks/useOrders';
-import type { Order } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/orderTypes';
+import type { Order } from '@/utils/order/types';
 import { FilterBar } from '../shared/components/TransactionFilterBar/FilterBar';
 import type {
   DataConfigMap,

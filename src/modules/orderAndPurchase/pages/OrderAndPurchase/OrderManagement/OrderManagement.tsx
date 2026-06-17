@@ -16,7 +16,7 @@ import { useListenOrder } from '@/modules/orderAndPurchase/hooks/useOrders';
 import ROUTES_PATH from '@/router/routes/routesName';
 import type { UserIdentity } from '@/types/users';
 import { getLocalURL } from '@/utils/fileUtils';
-import type { Order } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/orderTypes';
+import type { Order } from '@/utils/order/types';
 import type { PurchaseAttachment } from '@/utils/purchase/types';
 import {
   resolveUserIdentityBusinessId,

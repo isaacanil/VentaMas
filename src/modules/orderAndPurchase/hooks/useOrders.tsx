@@ -4,10 +4,13 @@ import { selectUser } from '@/features/auth/userSlice';
 import { subscribeSingleOrder } from '@/firebase/order/fbGetOrder';
 import { subscribeToOrder, processOrder } from '@/firebase/order/fbGetOrders';
 import { toMillis } from '@/utils/date/toMillis';
+import {
+  sortByCreatedAt,
+  type SortableByCreatedAt,
+} from '@/utils/sorts/sortByCreatedAt';
 import type { UserIdentity } from '@/types/users';
 import type { Order } from '@/utils/order/types';
 import { normalizeOrderRecord } from '@/utils/order/status';
-import { sortOrders } from '@/utils/filterUtils';
 
 type OrderQueryFilters = {
   status?: string;
@@ -140,7 +143,10 @@ export const useListenOrders = (filterState?: OrdersFilterState) => {
   const sortedOrders = useMemo(() => {
     if (!orders) return [];
     return isAscending !== undefined
-      ? (sortOrders(orders as any, isAscending) as Order[])
+      ? (sortByCreatedAt(
+          orders as readonly (Order & SortableByCreatedAt)[],
+          isAscending,
+        ) as Order[])
       : orders;
   }, [orders, isAscending]);
 
