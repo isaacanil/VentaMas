@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.join(__dirname, '..');
 const ESLINT_EXTENSIONS = 'js,jsx,ts,tsx';
 const ESLINT_CACHE_LOCATION = 'node_modules/.cache/eslint/.eslintcache';
-const STYLELINT_CSS_GLOB = 'src/**/*.{css,scss}';
+const STYLELINT_CSS_GLOBS = ['src/**/*.{css,scss}', 'stories/**/*.{css,scss}'];
 const STYLELINT_STYLED_GLOB = 'src/**/*.{js,jsx,ts,tsx}';
 const WEB_LINT_GROUPS = [
   ['src/components', 'src/features', 'src/firebase', 'src/hooks'],
@@ -53,7 +53,7 @@ const WEB_LINT_GROUPS = [
     'src/schema',
     'src/services',
     'src/shared',
-    'src/stories',
+    'stories',
     'src/styles',
     'src/theme',
     'src/types',
@@ -319,7 +319,7 @@ async function runLintTarget(target, args) {
         env: { ...process.env, ESLINT_STORYBOOK: 'true' },
       });
       await runOrExit('npm', ['--prefix', 'functions', 'run', 'lint']);
-      await runOrExit('stylelint', [STYLELINT_CSS_GLOB]);
+      await runOrExit('stylelint', STYLELINT_CSS_GLOBS);
       await runOrExit('npm', ['run', 'typecheck:all']);
       await runOrExit('npm', ['run', 'typecheck:strict:pilot']);
       return;
@@ -347,10 +347,10 @@ async function runLintTarget(target, args) {
       await runOrExit('npm', ['--prefix', 'functions', 'run', 'lint:fix']);
       return;
     case 'styles:fix':
-      await runOrExit('stylelint', [STYLELINT_CSS_GLOB, '--fix']);
+      await runOrExit('stylelint', [...STYLELINT_CSS_GLOBS, '--fix']);
       return;
     case 'styles:check':
-      await runOrExit('stylelint', [STYLELINT_CSS_GLOB]);
+      await runOrExit('stylelint', STYLELINT_CSS_GLOBS);
       return;
     case 'styles:styled':
       await runOrExit('stylelint', [STYLELINT_STYLED_GLOB]);

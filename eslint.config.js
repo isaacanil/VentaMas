@@ -8,7 +8,9 @@ import globals from 'globals';
 const ENABLE_TYPED_LINT = process.env.ESLINT_TYPED === 'true';
 const ENABLE_STORYBOOK_LINT = process.env.ESLINT_STORYBOOK === 'true';
 const storybookConfigs = ENABLE_STORYBOOK_LINT
-  ? (await import('eslint-plugin-storybook')).default.configs['flat/recommended']
+  ? (await import('eslint-plugin-storybook')).default.configs[
+      'flat/recommended'
+    ]
   : [];
 
 export default [
@@ -40,7 +42,7 @@ export default [
   ...storybookConfigs,
 
   {
-    files: ['src/**/*.{js,jsx,mjs,cjs}'],
+    files: ['src/**/*.{js,jsx,mjs,cjs}', 'stories/**/*.{js,jsx,mjs,cjs}'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -80,12 +82,11 @@ export default [
         { allowConstantExport: true },
       ],
       'prefer-const': 'error',
-
     },
   },
 
   {
-    files: ['src/**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}', 'stories/**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -160,5 +161,4 @@ export default [
       globals: { ...globals.node },
     },
   },
-
 ];

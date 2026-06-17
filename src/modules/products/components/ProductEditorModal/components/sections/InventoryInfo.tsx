@@ -2,7 +2,7 @@ import { Card, InputNumber, Row, Col, Select, Checkbox, Form } from 'antd';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { unitsOfMeasure } from '@/constants/unitsOfMeasure';
+import { unitsOfMeasure } from '@/domain/products/unitsOfMeasure';
 import { selectUpdateProductData } from '@/features/updateProduct/updateProductSlice';
 
 import type { ProductRecord } from '@/types/products';
@@ -40,9 +40,7 @@ export const InventoryInfo = ({ onSaveAdjustments }: InventoryInfoProps) => {
             valuePropName="checked" // Esto es necesario para los Checkbox
             help="Activa o desactiva el seguimiento de inventario para este producto."
           >
-            <Checkbox title="Inventariable">
-              Inventariable
-            </Checkbox>
+            <Checkbox title="Inventariable">Inventariable</Checkbox>
           </Form.Item>
         </Col>
         <Col span={12}>
@@ -130,9 +128,7 @@ export const InventoryInfo = ({ onSaveAdjustments }: InventoryInfoProps) => {
             valuePropName="checked" // Esto es necesario para los Checkbox
             help="El precio se calcula por el peso en el momento de la venta."
           >
-            <Checkbox title="Se vende por peso">
-              Se vende por peso
-            </Checkbox>
+            <Checkbox title="Se vende por peso">Se vende por peso</Checkbox>
           </Form.Item>
         </Col>
         {product?.weightDetail?.isSoldByWeight ? (
@@ -148,7 +144,10 @@ export const InventoryInfo = ({ onSaveAdjustments }: InventoryInfoProps) => {
               ]}
             >
               <Select
-                options={unitsOfMeasure.map((unit) => ({ value: unit.unit, label: unit.unit }))}
+                options={unitsOfMeasure.map((unit) => ({
+                  value: unit.unit,
+                  label: unit.unit,
+                }))}
               />
             </Form.Item>
           </Col>

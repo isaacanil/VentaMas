@@ -50,7 +50,6 @@ import settingReducer from '@/features/setting/settingSlice';
 import taxReceiptReducer from '@/features/taxReceipt/taxReceiptSlice';
 import themeReducer from '@/features/theme/themeSlice';
 import updateProductReducer from '@/features/updateProduct/updateProductSlice';
-import uploadImgReducer from '@/features/uploadImg/uploadImageSlice';
 import UserNotificationReducer from '@/features/UserNotification/UserNotificationSlice';
 import usersManagementSlice from '@/features/usersManagement/usersManagementSlice';
 import rowShelfModalReducer from '@/features/warehouse/rowShelfModalSlice';
@@ -86,7 +85,6 @@ export const store = configureStore({
     notificationCenter: notificationCenterReducer,
     userNotification: UserNotificationReducer,
     imageViewer: viewerImageReducer,
-    uploadImg: uploadImgReducer,
     note: noteModalReducer,
 
     // Products & Categories

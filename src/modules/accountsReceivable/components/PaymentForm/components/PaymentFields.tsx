@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { icons } from '@/constants/icons/icons';
-import { paymentDescriptions } from '@/constants/paymentDescriptions';
 import { selectUser } from '@/features/auth/userSlice';
 import {
   clearMethodErrors,
@@ -22,6 +21,7 @@ import {
   resolvePaymentMethodStatusValue,
 } from '@/utils/payments/paymentMethodBootstrap';
 
+import { paymentDescriptions } from '../constants/paymentDescriptions';
 import { PaymentMethodRow } from './PaymentFields/PaymentMethodRow';
 import { Container, Items } from './PaymentFields/styles';
 

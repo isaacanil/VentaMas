@@ -3,14 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { message } from 'antd';
 import styled from 'styled-components';
 
-import {
-  VmAlert,
-  VmButton,
-  VmForm,
-  VmInput,
-  VmModal,
-  VmSwitch,
-} from '@/components/heroui';
+import { VmAlert, VmForm, VmModal, VmSwitch } from '@/components/heroui';
 import { ExclamationCircleOutlined } from '@/constants/icons/antd';
 import {
   fbUpdateBusinessFiscalRollout,
@@ -18,6 +11,16 @@ import {
 } from '@/firebase/dev/businesses/fbUpdateBusinessFiscalRollout';
 
 import type { BusinessInfo } from '../../types';
+import {
+  AdminBusinessActionFooter,
+  AdminBusinessConfirmationField,
+  AdminBusinessErrorText,
+  AdminBusinessFieldLabel,
+  AdminBusinessModalContent,
+  AdminBusinessNotice,
+  AdminBusinessNoticeIcon,
+  AdminBusinessSummary,
+} from '../AdminBusinessActionModal';
 
 type BusinessFiscalRolloutModalProps = {
   business: BusinessInfo | null;
@@ -56,10 +59,7 @@ export const BusinessFiscalRolloutModal = ({
     monthlyComplianceEnabled !== initialMonthlyComplianceEnabled;
   const monthlyReady = reportingEnabled && monthlyComplianceEnabled;
   const canSubmit =
-    Boolean(business?.id) &&
-    confirmationMatches &&
-    hasChanges &&
-    !isSubmitting;
+    Boolean(business?.id) && confirmationMatches && hasChanges && !isSubmitting;
 
   const statusLabel = useMemo(() => {
     if (monthlyReady) return 'DGII mensual activo';
@@ -134,24 +134,13 @@ export const BusinessFiscalRolloutModal = ({
   );
 
   const footer = (
-    <Actions>
-      <VmButton
-        variant="secondary"
-        isDisabled={isSubmitting}
-        onPress={handleClose}
-      >
-        Cancelar
-      </VmButton>
-      <VmButton
-        type="submit"
-        form={FORM_ID}
-        variant="primary"
-        isDisabled={!canSubmit}
-        isPending={isSubmitting}
-      >
-        Guardar fiscal
-      </VmButton>
-    </Actions>
+    <AdminBusinessActionFooter
+      canSubmit={canSubmit}
+      formId={FORM_ID}
+      isSubmitting={isSubmitting}
+      onCancel={handleClose}
+      submitLabel="Guardar fiscal"
+    />
   );
 
   return (
@@ -164,28 +153,18 @@ export const BusinessFiscalRolloutModal = ({
       footer={footer}
       isKeyboardDismissDisabled={isSubmitting}
     >
-      <Content>
-        <SummaryGrid>
-          <SummaryItem>
-            <SummaryLabel>Negocio</SummaryLabel>
-            <SummaryValue>
-              {business?.name || 'Negocio sin nombre'}
-            </SummaryValue>
-          </SummaryItem>
-          <SummaryItem>
-            <SummaryLabel>ID</SummaryLabel>
-            <SummaryValue>{business?.id || '-'}</SummaryValue>
-          </SummaryItem>
-          <SummaryItem>
-            <SummaryLabel>Estado</SummaryLabel>
-            <SummaryValue>{statusLabel}</SummaryValue>
-          </SummaryItem>
-        </SummaryGrid>
+      <AdminBusinessModalContent>
+        <AdminBusinessSummary
+          businessId={business?.id}
+          businessName={business?.name}
+          statusTitle="Estado"
+          statusLabel={statusLabel}
+        />
 
-        <Notice status={monthlyReady ? 'accent' : 'warning'}>
-          <NoticeIcon>
+        <AdminBusinessNotice status={monthlyReady ? 'accent' : 'warning'}>
+          <AdminBusinessNoticeIcon>
             <ExclamationCircleOutlined />
-          </NoticeIcon>
+          </AdminBusinessNoticeIcon>
           <VmAlert.Content>
             <VmAlert.Title>
               {monthlyReady
@@ -193,13 +172,15 @@ export const BusinessFiscalRolloutModal = ({
                 : 'El compliance mensual queda bloqueado si falta un flag.'}
             </VmAlert.Title>
           </VmAlert.Content>
-        </Notice>
+        </AdminBusinessNotice>
 
         <VmForm id={FORM_ID} onSubmit={handleSubmit}>
           <Fields>
             <SwitchField>
               <SwitchCopy>
-                <FieldLabel>Reportes fiscales</FieldLabel>
+                <AdminBusinessFieldLabel $tone="primary">
+                  Reportes fiscales
+                </AdminBusinessFieldLabel>
                 <FieldHint>features.fiscal.reportingEnabled</FieldHint>
               </SwitchCopy>
               <VmSwitch
@@ -212,7 +193,9 @@ export const BusinessFiscalRolloutModal = ({
 
             <SwitchField>
               <SwitchCopy>
-                <FieldLabel>Compliance mensual</FieldLabel>
+                <AdminBusinessFieldLabel $tone="primary">
+                  Compliance mensual
+                </AdminBusinessFieldLabel>
                 <FieldHint>features.fiscal.monthlyComplianceEnabled</FieldHint>
               </SwitchCopy>
               <VmSwitch
@@ -223,116 +206,31 @@ export const BusinessFiscalRolloutModal = ({
               />
             </SwitchField>
 
-            <Field>
-              <FieldLabel>Confirmar ID del negocio</FieldLabel>
-              <ConfirmInput
-                aria-label="Confirmar ID del negocio"
-                value={confirmation}
-                disabled={isSubmitting}
-                placeholder={business?.id || 'ID del negocio'}
-                onChange={(event) => setConfirmation(event.target.value)}
-              />
-              {submitAttempted && !confirmation ? (
-                <ErrorText>Confirma el ID del negocio.</ErrorText>
-              ) : null}
-              {(submitAttempted || confirmationInvalid) &&
-              confirmation &&
-              !confirmationMatches ? (
-                <ErrorText>El ID escrito no coincide con el negocio.</ErrorText>
-              ) : null}
+            <AdminBusinessConfirmationField
+              businessId={business?.id}
+              confirmationInvalid={confirmationInvalid}
+              isSubmitting={isSubmitting}
+              labelTone="primary"
+              submitAttempted={submitAttempted}
+              value={confirmation}
+              onChange={(event) => setConfirmation(event.target.value)}
+            >
               {submitAttempted && !hasChanges ? (
-                <ErrorText>No hay cambios pendientes.</ErrorText>
+                <AdminBusinessErrorText>
+                  No hay cambios pendientes.
+                </AdminBusinessErrorText>
               ) : null}
-            </Field>
+            </AdminBusinessConfirmationField>
           </Fields>
         </VmForm>
-      </Content>
+      </AdminBusinessModalContent>
     </VmModal>
   );
 };
 
-const Content = styled.div`
-  display: grid;
-  gap: var(--ds-space-4);
-`;
-
-const SummaryGrid = styled.dl`
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0;
-  margin: 0;
-  overflow: hidden;
-  border: 1px solid var(--ds-color-border-default);
-  border-radius: var(--ds-radius-md);
-
-  @media (max-width: 680px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const SummaryItem = styled.div`
-  display: grid;
-  gap: var(--ds-space-1);
-  min-width: 0;
-  padding: var(--ds-space-3);
-  border-right: 1px solid var(--ds-color-border-default);
-
-  &:last-child {
-    border-right: 0;
-  }
-
-  @media (max-width: 680px) {
-    border-right: 0;
-    border-bottom: 1px solid var(--ds-color-border-default);
-
-    &:last-child {
-      border-bottom: 0;
-    }
-  }
-`;
-
-const SummaryLabel = styled.dt`
-  color: var(--ds-color-text-secondary);
-  font-size: var(--ds-font-size-xs);
-  font-weight: var(--ds-font-weight-semibold);
-`;
-
-const SummaryValue = styled.dd`
-  min-width: 0;
-  margin: 0;
-  overflow: hidden;
-  color: var(--ds-color-text-primary);
-  font-size: var(--ds-font-size-sm);
-  font-weight: var(--ds-font-weight-medium);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
-const Notice = styled(VmAlert)`
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--ds-space-3);
-  align-items: flex-start;
-  padding: var(--ds-space-3);
-`;
-
-const NoticeIcon = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  color: currentcolor;
-`;
-
 const Fields = styled.div`
   display: grid;
   gap: var(--ds-space-4);
-`;
-
-const Field = styled.div`
-  display: grid;
-  gap: var(--ds-space-2);
 `;
 
 const SwitchField = styled.div`
@@ -352,32 +250,8 @@ const SwitchCopy = styled.div`
   min-width: 0;
 `;
 
-const FieldLabel = styled.label`
-  color: var(--ds-color-text-primary);
-  font-size: var(--ds-font-size-sm);
-  font-weight: var(--ds-font-weight-semibold);
-`;
-
 const FieldHint = styled.span`
   color: var(--ds-color-text-secondary);
   font-family: var(--ds-font-family-mono, monospace);
   font-size: var(--ds-font-size-xs);
-`;
-
-const ConfirmInput = styled(VmInput)`
-  width: 100%;
-`;
-
-const ErrorText = styled.p`
-  margin: 0;
-  color: var(--ds-color-danger, #b91c1c);
-  font-size: var(--ds-font-size-xs);
-  font-weight: var(--ds-font-weight-medium);
-`;
-
-const Actions = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ds-space-2);
-  justify-content: flex-end;
 `;

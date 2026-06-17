@@ -12,7 +12,7 @@ import {
 import {
   fetchInvoiceV2Summary,
   repairInvoiceV2,
-} from '@/services/invoice/invoiceV2Admin.service';
+} from '../services/invoiceV2Admin.service';
 import {
   buildInvoiceNumberUpdates,
   buildInvoiceV2Suggestions,
@@ -314,7 +314,9 @@ export const useIndividualInvoiceRecovery = ({
         }
 
         if (initialInvoiceId) {
-          const exists = options.some((entry) => entry.value === initialInvoiceId);
+          const exists = options.some(
+            (entry) => entry.value === initialInvoiceId,
+          );
           if (exists) {
             form.setFieldsValue({ invoiceId: initialInvoiceId });
             setActiveQuery((prev) => ({
@@ -351,7 +353,9 @@ export const useIndividualInvoiceRecovery = ({
         return null;
       }
       try {
-        const data = await fetchInvoiceCounterRepo({ businessId: targetBusinessId });
+        const data = await fetchInvoiceCounterRepo({
+          businessId: targetBusinessId,
+        });
         const normalizedValue = parseCounterNumber(data?.value);
         const updatedAt = data?.updatedAt ?? null;
         if (counterKey) {

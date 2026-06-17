@@ -1,7 +1,7 @@
 import { message } from 'antd';
 import { useCallback, useState } from 'react';
 
-import { autoRepairInvoiceV2 } from '@/services/invoice/invoiceV2Admin.service';
+import { autoRepairInvoiceV2 } from '../services/invoiceV2Admin.service';
 
 const AUTO_INVOICE_LIMIT = 50;
 const AUTO_BUSINESS_LIMIT = 50;
@@ -193,7 +193,9 @@ export const useBulkInvoiceRecovery = ({
           }
         }
 
-        const response = (await autoRepairInvoiceV2(payload as any)) as BulkResult;
+        const response = (await autoRepairInvoiceV2(
+          payload as any,
+        )) as BulkResult;
         aggregatedResult = mergeBatchResults(
           aggregatedResult,
           response,

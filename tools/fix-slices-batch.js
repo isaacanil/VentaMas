@@ -6,7 +6,6 @@ const slicesToFix = [
   'src/features/Alert/AlertSlice.ts',
   'src/features/loader/loaderSlice.ts',
   'src/features/navigation/navigationSlice.ts',
-  'src/features/uploadImg/uploadImageSlice.ts',
   'src/features/auth/userSlice.ts',
   'src/features/auth/businessSlice.ts',
   'src/features/appModes/appModeSlice.ts',

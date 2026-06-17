@@ -5,10 +5,7 @@ import styled from 'styled-components';
 
 import {
   VmAlert,
-  VmButton,
   VmForm,
-  VmInput,
-  VmLabel,
   VmListBox,
   VmModal,
   VmSelect,
@@ -24,6 +21,18 @@ import {
 
 import type { BusinessInfo } from '../../types';
 import { getBusinessAccessStatusDisplay } from '../../utils/businessStatusDisplay';
+import {
+  AdminBusinessActionFooter,
+  AdminBusinessConfirmationField,
+  AdminBusinessErrorText,
+  AdminBusinessField,
+  AdminBusinessFieldLabel,
+  AdminBusinessModalContent,
+  AdminBusinessNotice,
+  AdminBusinessNoticeDescription,
+  AdminBusinessNoticeIcon,
+  AdminBusinessSummary,
+} from '../AdminBusinessActionModal';
 
 type BusinessAccessActionsModalProps = {
   business: BusinessInfo | null;
@@ -145,24 +154,15 @@ export const BusinessAccessActionsModal = ({
   );
 
   const footer = (
-    <Actions>
-      <VmButton
-        variant="secondary"
-        isDisabled={isSubmitting}
-        onPress={handleClose}
-      >
-        Cancelar
-      </VmButton>
-      <VmButton
-        type="submit"
-        form={FORM_ID}
-        variant={isBlockingStatus ? 'danger' : 'primary'}
-        isDisabled={!canSubmit}
-        isPending={isSubmitting}
-      >
-        Aplicar cambio
-      </VmButton>
-    </Actions>
+    <AdminBusinessActionFooter
+      canSubmit={canSubmit}
+      formId={FORM_ID}
+      isSubmitting={isSubmitting}
+      onCancel={handleClose}
+      stackOnMobile
+      submitLabel="Aplicar cambio"
+      submitVariant={isBlockingStatus ? 'danger' : 'primary'}
+    />
   );
 
   return (
@@ -175,52 +175,40 @@ export const BusinessAccessActionsModal = ({
       footer={footer}
       isKeyboardDismissDisabled={isSubmitting}
     >
-      <Content>
-        <SummaryGrid>
-          <SummaryItem>
-            <SummaryLabel>Negocio</SummaryLabel>
-            <SummaryValue>
-              {business?.name || 'Negocio sin nombre'}
-            </SummaryValue>
-          </SummaryItem>
-          <SummaryItem>
-            <SummaryLabel>ID</SummaryLabel>
-            <SummaryValue>{business?.id || '-'}</SummaryValue>
-          </SummaryItem>
-          <SummaryItem>
-            <SummaryLabel>Estado actual</SummaryLabel>
-            <SummaryValue>
-              {
-                getBusinessAccessStatusDisplay(currentStatus, {
-                  includeLegacyStatusLabels: false,
-                }).label
-              }
-            </SummaryValue>
-          </SummaryItem>
-        </SummaryGrid>
+      <AdminBusinessModalContent>
+        <AdminBusinessSummary
+          businessId={business?.id}
+          businessName={business?.name}
+          statusTitle="Estado actual"
+          statusLabel={
+            getBusinessAccessStatusDisplay(currentStatus, {
+              includeLegacyStatusLabels: false,
+            }).label
+          }
+        />
 
-        <Notice status={isBlockingStatus ? 'warning' : 'accent'}>
-          <NoticeIcon>
+        <AdminBusinessNotice status={isBlockingStatus ? 'warning' : 'accent'}>
+          <AdminBusinessNoticeIcon>
             <ExclamationCircleOutlined />
-          </NoticeIcon>
+          </AdminBusinessNoticeIcon>
           <VmAlert.Content>
             <VmAlert.Title>
               {isBlockingStatus
                 ? 'Este cambio bloquea el acceso del negocio.'
                 : 'Este cambio ajusta la politica de acceso del negocio.'}
             </VmAlert.Title>
-            <NoticeDescription>
+            <AdminBusinessNoticeDescription>
               {isBlockingStatus
                 ? 'Se desactivan membresias del negocio y se revocan sesiones activas.'
                 : 'Los usuarios conservan acceso activo cuando la politica lo permite.'}
-            </NoticeDescription>
+            </AdminBusinessNoticeDescription>
           </VmAlert.Content>
-        </Notice>
+        </AdminBusinessNotice>
 
         <VmForm id={FORM_ID} onSubmit={handleSubmit}>
           <Fields>
-            <Field>
-              <FieldLabel>Nuevo estado</FieldLabel>
+            <AdminBusinessField>
+              <AdminBusinessFieldLabel>Nuevo estado</AdminBusinessFieldLabel>
               <AccessSelect
                 aria-label="Nuevo estado de acceso"
                 selectedKey={status}
@@ -250,10 +238,10 @@ export const BusinessAccessActionsModal = ({
               {selectedOption?.description ? (
                 <HelpText>{selectedOption.description}</HelpText>
               ) : null}
-            </Field>
+            </AdminBusinessField>
 
-            <Field>
-              <FieldLabel>Razon</FieldLabel>
+            <AdminBusinessField>
+              <AdminBusinessFieldLabel>Razon</AdminBusinessFieldLabel>
               <ReasonArea
                 aria-label="Razon del cambio"
                 value={reason}
@@ -262,133 +250,35 @@ export const BusinessAccessActionsModal = ({
                 onChange={(event) => setReason(event.target.value)}
               />
               {submitAttempted && reasonInvalid ? (
-                <ErrorText>
+                <AdminBusinessErrorText>
                   La razon debe tener al menos 8 caracteres.
-                </ErrorText>
+                </AdminBusinessErrorText>
               ) : null}
-            </Field>
+            </AdminBusinessField>
 
-            <Field>
-              <FieldLabel>Confirmar ID del negocio</FieldLabel>
-              <ConfirmInput
-                aria-label="Confirmar ID del negocio"
-                value={confirmation}
-                disabled={isSubmitting}
-                placeholder={business?.id || 'ID del negocio'}
-                onChange={(event) => setConfirmation(event.target.value)}
-              />
-              {submitAttempted && !confirmation ? (
-                <ErrorText>Confirma el ID del negocio.</ErrorText>
-              ) : null}
-              {(submitAttempted || confirmationInvalid) &&
-              confirmation &&
-              !confirmationMatches ? (
-                <ErrorText>El ID escrito no coincide con el negocio.</ErrorText>
-              ) : null}
-            </Field>
+            <AdminBusinessConfirmationField
+              businessId={business?.id}
+              confirmationInvalid={confirmationInvalid}
+              isSubmitting={isSubmitting}
+              inputMonospace
+              submitAttempted={submitAttempted}
+              value={confirmation}
+              onChange={(event) => setConfirmation(event.target.value)}
+            />
           </Fields>
         </VmForm>
 
         <AuditNote>
           La accion queda registrada en auditoria de plataforma.
         </AuditNote>
-      </Content>
+      </AdminBusinessModalContent>
     </VmModal>
   );
 };
 
-const Content = styled.div`
-  display: grid;
-  gap: var(--ds-space-4);
-`;
-
-const SummaryGrid = styled.dl`
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0;
-  margin: 0;
-  overflow: hidden;
-  border: 1px solid var(--ds-color-border-default);
-  border-radius: var(--ds-radius-md);
-
-  @media (max-width: 680px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const SummaryItem = styled.div`
-  display: grid;
-  gap: var(--ds-space-1);
-  min-width: 0;
-  padding: var(--ds-space-3);
-  border-right: 1px solid var(--ds-color-border-default);
-
-  &:last-child {
-    border-right: 0;
-  }
-
-  @media (max-width: 680px) {
-    border-right: 0;
-    border-bottom: 1px solid var(--ds-color-border-default);
-
-    &:last-child {
-      border-bottom: 0;
-    }
-  }
-`;
-
-const SummaryLabel = styled.dt`
-  color: var(--ds-color-text-secondary);
-  font-size: var(--ds-font-size-xs);
-  font-weight: var(--ds-font-weight-semibold);
-`;
-
-const SummaryValue = styled.dd`
-  min-width: 0;
-  margin: 0;
-  overflow: hidden;
-  color: var(--ds-color-text-primary);
-  font-size: var(--ds-font-size-sm);
-  font-weight: var(--ds-font-weight-medium);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
-const Notice = styled(VmAlert)`
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--ds-space-3);
-  align-items: flex-start;
-  padding: var(--ds-space-3);
-`;
-
-const NoticeIcon = styled(VmAlert.Indicator)`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding-top: 2px;
-`;
-
-const NoticeDescription = styled(VmAlert.Description)`
-  margin: var(--ds-space-1) 0 0;
-  color: var(--ds-color-text-secondary);
-  font-size: var(--ds-font-size-sm);
-`;
-
 const Fields = styled.div`
   display: grid;
   gap: var(--ds-space-3);
-`;
-
-const Field = styled.div`
-  display: grid;
-  gap: var(--ds-space-2);
-`;
-
-const FieldLabel = styled(VmLabel)`
-  color: var(--ds-color-text-secondary);
-  font-size: var(--ds-font-size-sm);
-  font-weight: var(--ds-font-weight-semibold);
 `;
 
 const AccessSelect = styled(VmSelect)`
@@ -399,11 +289,6 @@ const ReasonArea = styled(VmTextArea)`
   min-height: 92px;
 `;
 
-const ConfirmInput = styled(VmInput)`
-  width: 100%;
-  font-family: var(--ds-font-family-mono);
-`;
-
 const HelpText = styled.p`
   margin: 0;
   color: var(--ds-color-text-secondary);
@@ -411,30 +296,8 @@ const HelpText = styled.p`
   line-height: var(--ds-line-height-normal);
 `;
 
-const ErrorText = styled.p`
-  margin: 0;
-  color: var(--ds-color-state-danger);
-  font-size: var(--ds-font-size-xs);
-  font-weight: var(--ds-font-weight-medium);
-`;
-
 const AuditNote = styled.p`
   margin: 0;
   color: var(--ds-color-text-secondary);
   font-size: var(--ds-font-size-xs);
-`;
-
-const Actions = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ds-space-2);
-  justify-content: flex-end;
-
-  @media (max-width: 520px) {
-    width: 100%;
-
-    > button {
-      flex: 1 1 100%;
-    }
-  }
 `;

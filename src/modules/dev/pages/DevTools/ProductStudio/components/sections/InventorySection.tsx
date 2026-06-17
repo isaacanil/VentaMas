@@ -3,7 +3,7 @@ import { InputNumber, Select, Switch, Tooltip } from 'antd';
 import { Form } from 'antd';
 import styled from 'styled-components';
 
-import { unitsOfMeasure } from '@/constants/unitsOfMeasure';
+import { unitsOfMeasure } from '@/domain/products/unitsOfMeasure';
 import {
   FieldGrid,
   SectionCard,
@@ -112,10 +112,18 @@ export const InventorySection = ({ domId }: InventorySectionProps) => (
 
     <Form.Item noStyle dependencies={[['weightDetail', 'isSoldByWeight']]}>
       {({ getFieldValue }) => {
-        const isSoldByWeight = getFieldValue(['weightDetail', 'isSoldByWeight']);
+        const isSoldByWeight = getFieldValue([
+          'weightDetail',
+          'isSoldByWeight',
+        ]);
 
         return (
-          <CompactFields style={{ opacity: isSoldByWeight ? 1 : 0.5, transition: 'opacity 0.2s' }}>
+          <CompactFields
+            style={{
+              opacity: isSoldByWeight ? 1 : 0.5,
+              transition: 'opacity 0.2s',
+            }}
+          >
             <Form.Item
               name={['weightDetail', 'weight']}
               label="Peso promedio"
@@ -136,7 +144,10 @@ export const InventorySection = ({ domId }: InventorySectionProps) => (
               <Select
                 placeholder="Selecciona"
                 disabled={!isSoldByWeight}
-                options={unitsOfMeasure.map((unit) => ({ value: unit.unit, label: unit.unit }))}
+                options={unitsOfMeasure.map((unit) => ({
+                  value: unit.unit,
+                  label: unit.unit,
+                }))}
               />
             </Form.Item>
           </CompactFields>
