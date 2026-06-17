@@ -1,5 +1,48 @@
 import { db, FieldValue } from '../../../../core/config/firebase.js';
 
+const ELECTRONIC_CREDIT_NOTE_CONSUMABLE_STATUSES = new Set([
+  'accepted',
+  'accepted_conditional',
+  'shadow_ready',
+]);
+
+const normalizeStatus = (value) =>
+  String(value || '').trim().toLowerCase() || null;
+
+const isElectronicCreditNote = (creditNote) => {
+  const documentFormat = normalizeStatus(creditNote?.documentFormat);
+  const fiscalMode = normalizeStatus(creditNote?.fiscalMode);
+  const ncf = String(creditNote?.eNcf || creditNote?.ncf || '').trim();
+  const electronic = creditNote?.electronicTaxReceipt;
+
+  return (
+    documentFormat === 'electronic' ||
+    fiscalMode === 'electronic_ecf' ||
+    ncf.startsWith('E34') ||
+    Boolean(electronic && typeof electronic === 'object')
+  );
+};
+
+const resolveElectronicCreditNoteStatus = (creditNote) => {
+  const electronic = creditNote?.electronicTaxReceipt || {};
+  return (
+    normalizeStatus(electronic.dgiiValidationStatus) ||
+    normalizeStatus(electronic.dgiiStatus) ||
+    normalizeStatus(electronic.status)
+  );
+};
+
+const assertCreditNoteFiscalStatusAllowsConsumption = (creditNote, noteId) => {
+  if (!isElectronicCreditNote(creditNote)) return;
+
+  const fiscalStatus = resolveElectronicCreditNoteStatus(creditNote);
+  if (ELECTRONIC_CREDIT_NOTE_CONSUMABLE_STATUSES.has(fiscalStatus)) return;
+
+  throw new Error(
+    `La nota de crédito ${creditNote?.ncf || creditNote?.number || noteId} no está aceptada fiscalmente y no puede aplicarse`,
+  );
+};
+
 /**
  * Consume notas de crédito y crea registros de aplicación en una transacción.
  * creditNotes: [{ id, amountUsed, ncf?, originalAmount? }]
@@ -33,6 +76,7 @@ export async function consumeCreditNotesTx(
         `La nota de crédito ${cnData?.ncf || cnData?.number || note.id} no está emitida y no puede aplicarse`,
       );
     }
+    assertCreditNoteFiscalStatusAllowsConsumption(cnData, note.id);
     if (!cnData?.ncf && !cnData?.eNcf) {
       throw new Error(
         `La nota de crédito ${cnData?.number || note.id} no tiene NCF/e-NCF emitido`,

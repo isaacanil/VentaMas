@@ -16,6 +16,11 @@ import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
 import { MenuApp } from '@/modules/navigation/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 import { resolveBusinessFiscalRollout } from '@/utils/fiscal/fiscalRollout';
+import { resolveCreditNoteUsageFilterStatus } from '@/modules/invoice/utils/adjustmentNoteStatusDisplay';
+import {
+  resolveElectronicTaxReceiptFilterStatus,
+  type ElectronicTaxReceiptFilterStatus,
+} from '@/modules/invoice/utils/electronicTaxReceipt';
 
 import { CreditNoteConfigWarningState } from './CreditNoteConfigWarningState';
 import { CreditNoteFilters } from './components/CreditNoteFilters';
@@ -39,10 +44,12 @@ type BusinessRootState = Parameters<typeof selectBusinessData>[0];
 
 type CreditNoteFiltersState = Omit<
   CreditNoteFiltersType,
-  'startDate' | 'endDate'
+  'startDate' | 'endDate' | 'status'
 > & {
   startDate: DateTime;
   endDate: DateTime;
+  usageStatus?: ReturnType<typeof resolveCreditNoteUsageFilterStatus> | null;
+  fiscalStatus?: ElectronicTaxReceiptFilterStatus | null;
 };
 
 export const CreditNoteList = () => {
@@ -63,8 +70,17 @@ export const CreditNoteList = () => {
   const electronicModelEnabled =
     resolveBusinessFiscalRollout(business).electronicModelEnabled;
 
+  const creditNoteQueryFilters = useMemo<CreditNoteFiltersType>(
+    () => ({
+      startDate: filters.startDate,
+      endDate: filters.endDate,
+      clientId: filters.clientId ?? undefined,
+    }),
+    [filters.clientId, filters.endDate, filters.startDate],
+  );
+
   const { creditNotes, loading: creditNotesLoading } = useFbGetCreditNotes(
-    filters as CreditNoteFiltersType,
+    creditNoteQueryFilters,
   );
   const { taxReceipt, isLoading: taxReceiptLoading } = useFbGetTaxReceipt() as {
     taxReceipt: TaxReceiptDocument[];
@@ -162,15 +178,33 @@ export const CreditNoteList = () => {
     }
   };
 
+  const visibleCreditNotes = useMemo(
+    () =>
+      creditNotes.filter((record) => {
+        const matchesUsage =
+          !filters.usageStatus ||
+          resolveCreditNoteUsageFilterStatus(record) === filters.usageStatus;
+        const matchesFiscal =
+          !filters.fiscalStatus ||
+          resolveElectronicTaxReceiptFilterStatus(
+            record.electronicTaxReceipt,
+            record.status,
+          ) === filters.fiscalStatus;
+
+        return matchesUsage && matchesFiscal;
+      }),
+    [creditNotes, filters.fiscalStatus, filters.usageStatus],
+  );
+
   const columns = useCreditNoteColumns({
-    creditNotes,
+    creditNotes: visibleCreditNotes,
     onView: handleView,
     onEdit: handleEdit,
     onRefreshElectronicStatus: handleRefreshElectronicStatus,
     refreshingCreditNoteId,
   });
 
-  const transformedData = creditNotes.map((record) => ({
+  const transformedData = visibleCreditNotes.map((record) => ({
     ...record,
     actions: record,
   }));
@@ -197,7 +231,7 @@ export const CreditNoteList = () => {
       <MenuApp
         searchData={searchTerm}
         setSearchData={setSearchTerm}
-        data={creditNotes}
+        data={visibleCreditNotes}
       />
       <Container>
         <TableContainer>

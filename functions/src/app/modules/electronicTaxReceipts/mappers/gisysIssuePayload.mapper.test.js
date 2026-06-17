@@ -340,6 +340,42 @@ describe('gisysIssuePayload.mapper', () => {
     expect(payload.creditNoteIndicator).toBe('0');
   });
 
+  it('sends DGII reference data for E33 debit notes without credit note indicator', () => {
+    const input = buildBaseInput('debit-note-e33-reference');
+    input.invoice.snapshot.cart.date = '2026-06-16T19:00:00.000Z';
+    input.invoice.snapshot.ncf = {
+      type: 'NOTAS DE DÉBITO',
+      documentType: 'E33',
+      code: null,
+    };
+    input.invoice.snapshot.client = {
+      name: 'GI SYS SRL',
+      personalID: '132619201',
+    };
+    input.taskPayload = {
+      documentType: 'E33',
+      ncfType: 'NOTAS DE DÉBITO',
+      reference: {
+        modifiedENcf: 'E310000000008',
+        modifiedDocumentDate: '2026-06-16T18:47:42.000Z',
+        modificationCode: '3',
+        reason: 'Diferencia de precio',
+      },
+    };
+
+    const { documentType, payload } = buildGisysIssuePayload(input);
+
+    expect(documentType).toBe('E33');
+    expect(payload.reference).toEqual({
+      modifiedENcf: 'E310000000008',
+      modifiedDocumentDate: '2026-06-16T18:47:42.000Z',
+      modificationCode: '3',
+      reason: 'Diferencia de precio',
+    });
+    expect(payload.taxedAmountIndicator).toBe('0');
+    expect(payload.creditNoteIndicator).toBeUndefined();
+  });
+
   it('does not send requestedENcf to the GISYS issue_api contract', () => {
     const input = buildBaseInput('invoice-issue-api-no-requested-encf');
     input.invoice.snapshot.ncf = {

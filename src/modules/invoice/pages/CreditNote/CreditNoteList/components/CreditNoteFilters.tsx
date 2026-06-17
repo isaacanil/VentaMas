@@ -9,8 +9,9 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { CreditNoteFiltersContent } from './CreditNoteFilters/CreditNoteFiltersContent';
 import { MobileContainer } from './CreditNoteFilters/styles';
 
-import type { CreditNoteStatus } from '@/types/creditNote';
 import type { DatePickerRangeValue } from '@/components/common/DatePicker/types';
+import type { ElectronicTaxReceiptFilterStatus } from '@/modules/invoice/utils/electronicTaxReceipt';
+import type { CreditNoteUsageFilterStatus } from '@/modules/invoice/utils/adjustmentNoteStatusDisplay';
 import type {
   ClientOption,
   CreditNoteFiltersState,
@@ -63,10 +64,19 @@ export const CreditNoteFilters = ({
     });
   };
 
-  const handleStatusChange = (status?: CreditNoteStatus) => {
+  const handleUsageStatusChange = (usageStatus?: CreditNoteUsageFilterStatus) => {
     onFiltersChange({
       ...filters,
-      status: status || null,
+      usageStatus: usageStatus || null,
+    });
+  };
+
+  const handleFiscalStatusChange = (
+    fiscalStatus?: ElectronicTaxReceiptFilterStatus,
+  ) => {
+    onFiltersChange({
+      ...filters,
+      fiscalStatus: fiscalStatus || null,
     });
   };
 
@@ -75,7 +85,8 @@ export const CreditNoteFilters = ({
       startDate: DateTime.local().setLocale('es').startOf('day'),
       endDate: DateTime.local().setLocale('es').endOf('day'),
       clientId: null,
-      status: null,
+      usageStatus: null,
+      fiscalStatus: null,
     });
   };
 
@@ -94,7 +105,8 @@ export const CreditNoteFilters = ({
       dateRange={dateRange}
       onDateRangeChange={handleDateRangeChange}
       onClientChange={handleClientChange}
-      onStatusChange={handleStatusChange}
+      onUsageStatusChange={handleUsageStatusChange}
+      onFiscalStatusChange={handleFiscalStatusChange}
       onClearFilters={handleClearFilters}
     />
   );

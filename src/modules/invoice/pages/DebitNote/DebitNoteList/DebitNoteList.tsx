@@ -18,7 +18,15 @@ import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
 import { resolveBusinessFiscalRollout } from '@/utils/fiscal/fiscalRollout';
 import { formatPrice } from '@/utils/format';
 import { AdjustmentNoteFiscalStatusTag } from '@/modules/invoice/components/AdjustmentNoteFiscalStatusTag';
-import { resolveDebitNoteOperationalStatusDisplay } from '@/modules/invoice/utils/adjustmentNoteStatusDisplay';
+import {
+  resolveDebitNoteOperationalFilterStatus,
+  resolveDebitNoteOperationalStatusDisplay,
+  type DebitNoteOperationalFilterStatus,
+} from '@/modules/invoice/utils/adjustmentNoteStatusDisplay';
+import {
+  resolveElectronicTaxReceiptFilterStatus,
+  type ElectronicTaxReceiptFilterStatus,
+} from '@/modules/invoice/utils/electronicTaxReceipt';
 
 import { DebitNoteConfigWarningState } from './DebitNoteConfigWarningState';
 import { DebitNoteCreateModal } from './DebitNoteCreateModal';
@@ -48,10 +56,12 @@ type BusinessRootState = Parameters<typeof selectBusinessData>[0];
 
 type DebitNoteFiltersState = Omit<
   DebitNoteFiltersType,
-  'startDate' | 'endDate'
+  'startDate' | 'endDate' | 'status'
 > & {
   startDate: DateTime;
   endDate: DateTime;
+  operationalStatus?: DebitNoteOperationalFilterStatus | string | null;
+  fiscalStatus?: ElectronicTaxReceiptFilterStatus | null;
 };
 
 export const DebitNoteList = () => {
@@ -75,8 +85,17 @@ export const DebitNoteList = () => {
   const electronicModelEnabled =
     resolveBusinessFiscalRollout(business).electronicModelEnabled;
 
+  const debitNoteQueryFilters = useMemo<DebitNoteFiltersType>(
+    () => ({
+      startDate: filters.startDate,
+      endDate: filters.endDate,
+      clientId: filters.clientId ?? undefined,
+    }),
+    [filters.clientId, filters.endDate, filters.startDate],
+  );
+
   const { debitNotes, loading: debitNotesLoading } = useFbGetDebitNotes(
-    filters as DebitNoteFiltersType,
+    debitNoteQueryFilters,
   );
   const { taxReceipt, isLoading: taxReceiptLoading } = useFbGetTaxReceipt() as {
     taxReceipt: TaxReceiptDocument[];
@@ -148,14 +167,33 @@ export const DebitNoteList = () => {
     }
   };
 
+  const visibleDebitNotes = useMemo(
+    () =>
+      debitNotes.filter((record) => {
+        const matchesOperational =
+          !filters.operationalStatus ||
+          resolveDebitNoteOperationalFilterStatus(record) ===
+            filters.operationalStatus;
+        const matchesFiscal =
+          !filters.fiscalStatus ||
+          resolveElectronicTaxReceiptFilterStatus(
+            record.electronicTaxReceipt,
+            record.status,
+          ) === filters.fiscalStatus;
+
+        return matchesOperational && matchesFiscal;
+      }),
+    [debitNotes, filters.fiscalStatus, filters.operationalStatus],
+  );
+
   const columns = useDebitNoteColumns({
-    debitNotes,
+    debitNotes: visibleDebitNotes,
     onView: setSelectedDebitNote,
     onRefreshElectronicStatus: handleRefreshElectronicStatus,
     refreshingDebitNoteId,
   });
 
-  const transformedData = debitNotes.map((record) => ({
+  const transformedData = visibleDebitNotes.map((record) => ({
     ...record,
     actions: record,
   }));
@@ -194,7 +232,7 @@ export const DebitNoteList = () => {
       <MenuApp
         searchData={searchTerm}
         setSearchData={setSearchTerm}
-        data={debitNotes}
+        data={visibleDebitNotes}
       />
       <Container>
         <TableContainer>

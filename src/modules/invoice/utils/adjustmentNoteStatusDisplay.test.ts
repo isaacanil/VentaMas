@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   resolveCreditNoteUsageStatusDisplay,
+  resolveCreditNoteUsageFilterStatus,
+  resolveDebitNoteOperationalFilterStatus,
   resolveDebitNoteOperationalStatusDisplay,
 } from './adjustmentNoteStatusDisplay';
 
@@ -17,6 +19,13 @@ describe('adjustment note status display helpers', () => {
   });
 
   it('detects partially used credit notes from the available amount', () => {
+    expect(
+      resolveCreditNoteUsageFilterStatus({
+        status: 'issued',
+        totalAmount: 100,
+        availableAmount: 25,
+      }),
+    ).toBe('partially_used');
     expect(
       resolveCreditNoteUsageStatusDisplay({
         status: 'issued',
@@ -43,17 +52,27 @@ describe('adjustment note status display helpers', () => {
     ).toEqual({ label: 'Anulada', color: 'red' });
   });
 
-  it('keeps debit note fiscal processing statuses visible', () => {
+  it('keeps debit note fiscal processing statuses out of the operational status', () => {
+    expect(
+      resolveDebitNoteOperationalFilterStatus({
+        status: 'electronic_pending',
+      }),
+    ).toBe('issued');
+    expect(
+      resolveDebitNoteOperationalFilterStatus({
+        status: 'electronic_failed',
+      }),
+    ).toBe('issued');
     expect(
       resolveDebitNoteOperationalStatusDisplay({
         status: 'electronic_pending',
       }),
-    ).toEqual({ label: 'Pendiente e-CF', color: 'gold' });
+    ).toEqual({ label: 'Emitida', color: 'blue' });
     expect(
       resolveDebitNoteOperationalStatusDisplay({
         status: 'electronic_failed',
       }),
-    ).toEqual({ label: 'e-CF Fallido', color: 'red' });
+    ).toEqual({ label: 'Emitida', color: 'blue' });
   });
 
   it('maps debit note collection and cancellation statuses', () => {

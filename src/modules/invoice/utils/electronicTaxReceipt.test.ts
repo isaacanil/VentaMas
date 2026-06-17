@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   resolveElectronicTaxReceiptDiagnosticText,
+  resolveElectronicTaxReceiptFilterStatus,
   resolveElectronicTaxReceiptStatusDisplay,
   resolveElectronicTaxReceiptStatusKey,
   resolveElectronicTaxReceiptStatusLabel,
@@ -123,6 +124,39 @@ describe('electronicTaxReceipt status helpers', () => {
     expect(
       resolveElectronicTaxReceiptStatusDisplay(snapshot, 'electronic_pending'),
     ).toEqual({ label: 'Aceptado', color: 'green' });
+  });
+
+  it('resolves fiscal filter buckets from provider and fallback statuses', () => {
+    expect(
+      resolveElectronicTaxReceiptFilterStatus(
+        { status: 'issued', dgiiValidationStatus: 'accepted' },
+        'electronic_pending',
+      ),
+    ).toBe('accepted');
+    expect(
+      resolveElectronicTaxReceiptFilterStatus({
+        status: 'issued',
+        dgiiValidationStatus: 'accepted_conditional',
+      }),
+    ).toBe('accepted_conditional');
+    expect(
+      resolveElectronicTaxReceiptFilterStatus({
+        status: 'issued',
+        dgiiValidationStatus: 'rejected',
+      }),
+    ).toBe('rejected');
+    expect(
+      resolveElectronicTaxReceiptFilterStatus({
+        status: 'issued',
+        eNcf: 'E340000000001',
+        localStatus: 'signed_local',
+        dgiiStatus: 'pending',
+        dgiiValidationStatus: 'not_checked',
+      }),
+    ).toBe('pending');
+    expect(resolveElectronicTaxReceiptFilterStatus(null, 'issued')).toBe(
+      'not_applicable',
+    );
   });
 
   it('builds a compact diagnostic text for rejected electronic receipts', () => {

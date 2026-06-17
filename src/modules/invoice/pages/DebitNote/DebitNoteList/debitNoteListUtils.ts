@@ -26,7 +26,8 @@ export const buildDefaultDebitNoteFilters = () => ({
   startDate: DateTime.local().startOf('day'),
   endDate: DateTime.local().endOf('day'),
   clientId: null,
-  status: null,
+  operationalStatus: null,
+  fiscalStatus: null,
 });
 
 export const getDebitNoteWarningContent = (taxReceiptEnabled: boolean) => {

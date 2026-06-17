@@ -45,7 +45,8 @@ export const buildDefaultCreditNoteFilters = () => ({
   startDate: DateTime.local().startOf('day'),
   endDate: DateTime.local().endOf('day'),
   clientId: null,
-  status: null,
+  usageStatus: null,
+  fiscalStatus: null,
 });
 
 export const getCreditNoteWarningContent = (taxReceiptEnabled: boolean) => {

@@ -4,9 +4,11 @@ import React, { useMemo } from 'react';
 
 import { DatePicker } from '@/components/common/DatePicker/DatePicker';
 import {
-  CREDIT_NOTE_STATUS,
-  CREDIT_NOTE_STATUS_LABEL,
-} from '@/constants/creditNoteStatus';
+  CREDIT_NOTE_USAGE_FILTER_OPTIONS,
+} from '@/modules/invoice/utils/adjustmentNoteStatusDisplay';
+import {
+  ELECTRONIC_TAX_RECEIPT_FILTER_OPTIONS,
+} from '@/modules/invoice/utils/electronicTaxReceipt';
 
 import { buildCreditNoteFilterPresets } from './creditNoteFilterPresets';
 import {
@@ -39,7 +41,8 @@ export const CreditNoteFiltersContent = ({
   dateRange,
   onDateRangeChange,
   onClientChange,
-  onStatusChange,
+  onUsageStatusChange,
+  onFiscalStatusChange,
   onClearFilters,
 }: CreditNoteFiltersContentProps) => {
   const presets = useMemo(() => buildCreditNoteFilterPresets(), []);
@@ -85,9 +88,9 @@ export const CreditNoteFiltersContent = ({
 
   const statusSelect = (
     <Select
-      value={filters.status || ''}
-      onChange={onStatusChange}
-      placeholder={isMobile ? 'Todos los estados' : 'Todos'}
+      value={filters.usageStatus || ''}
+      onChange={onUsageStatusChange}
+      placeholder={isMobile ? 'Todos los usos' : 'Todos'}
       allowClear
       style={
         isMobile
@@ -97,9 +100,31 @@ export const CreditNoteFiltersContent = ({
       size="middle"
     >
       <Option value="">Todos</Option>
-      {Object.entries(CREDIT_NOTE_STATUS).map(([, value]) => (
-        <Option key={value} value={value}>
-          {CREDIT_NOTE_STATUS_LABEL[value]}
+      {CREDIT_NOTE_USAGE_FILTER_OPTIONS.map((option) => (
+        <Option key={option.value} value={option.value}>
+          {option.label}
+        </Option>
+      ))}
+    </Select>
+  );
+
+  const fiscalStatusSelect = (
+    <Select
+      value={filters.fiscalStatus || ''}
+      onChange={onFiscalStatusChange}
+      placeholder={isMobile ? 'Todos los e-CF' : 'Todos'}
+      allowClear
+      style={
+        isMobile
+          ? { width: '100%' }
+          : { width: '100%', minWidth: 140, maxWidth: 190 }
+      }
+      size="middle"
+    >
+      <Option value="">Todos</Option>
+      {ELECTRONIC_TAX_RECEIPT_FILTER_OPTIONS.map((option) => (
+        <Option key={option.value} value={option.value}>
+          {option.label}
         </Option>
       ))}
     </Select>
@@ -131,8 +156,13 @@ export const CreditNoteFiltersContent = ({
           </MobileFilterGroup>
 
           <MobileFilterGroup>
-            <MobileFilterLabel>Estado:</MobileFilterLabel>
+            <MobileFilterLabel>Uso:</MobileFilterLabel>
             {statusSelect}
+          </MobileFilterGroup>
+
+          <MobileFilterGroup>
+            <MobileFilterLabel>e-CF/DGII:</MobileFilterLabel>
+            {fiscalStatusSelect}
           </MobileFilterGroup>
 
           <MobileFilterGroup>{clearButton}</MobileFilterGroup>
@@ -155,8 +185,13 @@ export const CreditNoteFiltersContent = ({
         </FilterGroup>
 
         <FilterGroup>
-          <FilterLabel>Estado:</FilterLabel>
+          <FilterLabel>Uso:</FilterLabel>
           {statusSelect}
+        </FilterGroup>
+
+        <FilterGroup>
+          <FilterLabel>e-CF/DGII:</FilterLabel>
+          {fiscalStatusSelect}
         </FilterGroup>
 
         <FilterGroup>{clearButton}</FilterGroup>

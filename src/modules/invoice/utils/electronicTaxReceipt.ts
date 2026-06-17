@@ -23,6 +23,39 @@ export type ElectronicTaxReceiptStatusDisplay = {
   color: string;
 };
 
+export const ELECTRONIC_TAX_RECEIPT_FILTER_STATUS = {
+  ACCEPTED: 'accepted',
+  ACCEPTED_CONDITIONAL: 'accepted_conditional',
+  REJECTED: 'rejected',
+  PENDING: 'pending',
+  ERROR: 'error',
+  NOT_APPLICABLE: 'not_applicable',
+} as const;
+
+export type ElectronicTaxReceiptFilterStatus =
+  (typeof ELECTRONIC_TAX_RECEIPT_FILTER_STATUS)[keyof typeof ELECTRONIC_TAX_RECEIPT_FILTER_STATUS];
+
+export const ELECTRONIC_TAX_RECEIPT_FILTER_OPTIONS: Array<{
+  value: ElectronicTaxReceiptFilterStatus;
+  label: string;
+}> = [
+  { value: ELECTRONIC_TAX_RECEIPT_FILTER_STATUS.ACCEPTED, label: 'Aceptado' },
+  {
+    value: ELECTRONIC_TAX_RECEIPT_FILTER_STATUS.ACCEPTED_CONDITIONAL,
+    label: 'Aceptado cond.',
+  },
+  { value: ELECTRONIC_TAX_RECEIPT_FILTER_STATUS.REJECTED, label: 'Rechazado' },
+  {
+    value: ELECTRONIC_TAX_RECEIPT_FILTER_STATUS.PENDING,
+    label: 'Pendiente e-CF',
+  },
+  { value: ELECTRONIC_TAX_RECEIPT_FILTER_STATUS.ERROR, label: 'Error e-CF' },
+  {
+    value: ELECTRONIC_TAX_RECEIPT_FILTER_STATUS.NOT_APPLICABLE,
+    label: 'No aplica',
+  },
+];
+
 const FALLBACK_ELECTRONIC_STATUS_DISPLAY: Record<
   string,
   ElectronicTaxReceiptStatusDisplay
@@ -38,8 +71,17 @@ const TERMINAL_DGII_STATUSES = new Set([
 ]);
 
 const PENDING_STATUSES = new Set(['not_checked', 'pending', 'queued']);
+const IN_PROGRESS_STATUSES = new Set([
+  'not_checked',
+  'pending',
+  'queued',
+  'submitted',
+  'processing',
+  'issued',
+]);
 const RFCE_ACCEPTED_STATUSES = new Set(['accepted', 'accepted_conditional']);
 const RFCE_ERROR_STATUSES = new Set(['error', 'failed', 'rejected']);
+const ERROR_STATUSES = new Set(['error', 'failed', 'local_failed']);
 
 const normalizeStatus = (value: unknown): string | null => {
   if (typeof value !== 'string') return null;
@@ -252,6 +294,45 @@ export const resolveElectronicTaxReceiptStatusDisplay = (
   if (!normalizedFallback) return null;
 
   return FALLBACK_ELECTRONIC_STATUS_DISPLAY[normalizedFallback] ?? null;
+};
+
+export const resolveElectronicTaxReceiptFilterStatus = (
+  snapshot?: ElectronicTaxReceiptSnapshot | null,
+  fallbackStatus?: unknown,
+): ElectronicTaxReceiptFilterStatus => {
+  const statusKey = resolveElectronicTaxReceiptStatusKey(snapshot);
+  const statusLabel = resolveElectronicTaxReceiptStatusLabel(snapshot);
+
+  if (statusKey === 'accepted') {
+    return ELECTRONIC_TAX_RECEIPT_FILTER_STATUS.ACCEPTED;
+  }
+  if (statusKey === 'accepted_conditional') {
+    return ELECTRONIC_TAX_RECEIPT_FILTER_STATUS.ACCEPTED_CONDITIONAL;
+  }
+  if (statusKey === 'rejected') {
+    return ELECTRONIC_TAX_RECEIPT_FILTER_STATUS.REJECTED;
+  }
+  if (statusKey && ERROR_STATUSES.has(statusKey)) {
+    return ELECTRONIC_TAX_RECEIPT_FILTER_STATUS.ERROR;
+  }
+  if (
+    statusKey &&
+    (IN_PROGRESS_STATUSES.has(statusKey) ||
+      statusLabel?.toLowerCase().includes('pendiente') ||
+      statusLabel?.toLowerCase().includes('cola'))
+  ) {
+    return ELECTRONIC_TAX_RECEIPT_FILTER_STATUS.PENDING;
+  }
+
+  const normalizedFallback = normalizeStatus(fallbackStatus);
+  if (normalizedFallback === 'electronic_pending') {
+    return ELECTRONIC_TAX_RECEIPT_FILTER_STATUS.PENDING;
+  }
+  if (normalizedFallback === 'electronic_failed') {
+    return ELECTRONIC_TAX_RECEIPT_FILTER_STATUS.ERROR;
+  }
+
+  return ELECTRONIC_TAX_RECEIPT_FILTER_STATUS.NOT_APPLICABLE;
 };
 
 export const resolveElectronicTaxReceiptDiagnosticText = (

@@ -1,14 +1,18 @@
 import { DateTime } from 'luxon';
 
 import type { DatePickerRangeValue } from '@/components/common/DatePicker/types';
-import type { CreditNoteFilters, CreditNoteStatus } from '@/types/creditNote';
+import type { ElectronicTaxReceiptFilterStatus } from '@/modules/invoice/utils/electronicTaxReceipt';
+import type { CreditNoteUsageFilterStatus } from '@/modules/invoice/utils/adjustmentNoteStatusDisplay';
+import type { CreditNoteFilters } from '@/types/creditNote';
 
 export type CreditNoteFiltersState = Omit<
   CreditNoteFilters,
-  'startDate' | 'endDate'
+  'startDate' | 'endDate' | 'status'
 > & {
   startDate: DateTime;
   endDate: DateTime;
+  usageStatus?: CreditNoteUsageFilterStatus | null;
+  fiscalStatus?: ElectronicTaxReceiptFilterStatus | null;
 };
 
 export type CreditNoteFiltersContentProps = {
@@ -19,7 +23,8 @@ export type CreditNoteFiltersContentProps = {
   dateRange: DatePickerRangeValue | null;
   onDateRangeChange: (dates: DatePickerRangeValue) => void;
   onClientChange: (clientId?: string) => void;
-  onStatusChange: (status?: CreditNoteStatus) => void;
+  onUsageStatusChange: (status?: CreditNoteUsageFilterStatus) => void;
+  onFiscalStatusChange: (status?: ElectronicTaxReceiptFilterStatus) => void;
   onClearFilters: () => void;
 };
 

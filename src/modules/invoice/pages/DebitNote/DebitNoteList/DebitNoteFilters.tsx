@@ -5,12 +5,16 @@ import React, { useMemo, useState } from 'react';
 
 import { DatePicker } from '@/components/common/DatePicker/DatePicker';
 import type { DatePickerRangeValue } from '@/components/common/DatePicker/types';
-import {
-  DEBIT_NOTE_STATUS,
-  DEBIT_NOTE_STATUS_LABEL,
-} from '@/constants/debitNoteStatus';
 import { useFbGetClientsOnOpen } from '@/firebase/client/useFbGetClientsOnOpen';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import {
+  DEBIT_NOTE_OPERATIONAL_FILTER_OPTIONS,
+  type DebitNoteOperationalFilterStatus,
+} from '@/modules/invoice/utils/adjustmentNoteStatusDisplay';
+import {
+  ELECTRONIC_TAX_RECEIPT_FILTER_OPTIONS,
+  type ElectronicTaxReceiptFilterStatus,
+} from '@/modules/invoice/utils/electronicTaxReceipt';
 
 import {
   FilterGroup,
@@ -22,8 +26,6 @@ import {
   MobileFilterLabel,
   MobileFiltersContainer,
 } from './styles';
-
-import type { DebitNoteStatus } from '@/modules/invoice/types/debitNote';
 
 const { Option } = Select;
 
@@ -37,7 +39,8 @@ export type DebitNoteFiltersState = {
   startDate: DateTime;
   endDate: DateTime;
   clientId?: string | number | null;
-  status?: DebitNoteStatus | string | null;
+  operationalStatus?: DebitNoteOperationalFilterStatus | string | null;
+  fiscalStatus?: ElectronicTaxReceiptFilterStatus | null;
 };
 
 const filterSelectOption = (
@@ -109,7 +112,8 @@ export const DebitNoteFilters = ({
       startDate: DateTime.local().setLocale('es').startOf('day'),
       endDate: DateTime.local().setLocale('es').endOf('day'),
       clientId: null,
-      status: null,
+      operationalStatus: null,
+      fiscalStatus: null,
     });
   };
 
@@ -162,9 +166,12 @@ export const DebitNoteFilters = ({
 
   const statusSelect = (
     <Select
-      value={filters.status || ''}
-      onChange={(status?: DebitNoteStatus) =>
-        onFiltersChange({ ...filters, status: status || null })
+      value={filters.operationalStatus || ''}
+      onChange={(operationalStatus?: DebitNoteOperationalFilterStatus) =>
+        onFiltersChange({
+          ...filters,
+          operationalStatus: operationalStatus || null,
+        })
       }
       placeholder={isMobile ? 'Todos los estados' : 'Todos'}
       allowClear
@@ -176,9 +183,33 @@ export const DebitNoteFilters = ({
       size="middle"
     >
       <Option value="">Todos</Option>
-      {Object.entries(DEBIT_NOTE_STATUS).map(([, value]) => (
-        <Option key={value} value={value}>
-          {DEBIT_NOTE_STATUS_LABEL[value]}
+      {DEBIT_NOTE_OPERATIONAL_FILTER_OPTIONS.map((option) => (
+        <Option key={option.value} value={option.value}>
+          {option.label}
+        </Option>
+      ))}
+    </Select>
+  );
+
+  const fiscalStatusSelect = (
+    <Select
+      value={filters.fiscalStatus || ''}
+      onChange={(fiscalStatus?: ElectronicTaxReceiptFilterStatus) =>
+        onFiltersChange({ ...filters, fiscalStatus: fiscalStatus || null })
+      }
+      placeholder={isMobile ? 'Todos los e-CF' : 'Todos'}
+      allowClear
+      style={
+        isMobile
+          ? { width: '100%' }
+          : { width: '100%', minWidth: 140, maxWidth: 190 }
+      }
+      size="middle"
+    >
+      <Option value="">Todos</Option>
+      {ELECTRONIC_TAX_RECEIPT_FILTER_OPTIONS.map((option) => (
+        <Option key={option.value} value={option.value}>
+          {option.label}
         </Option>
       ))}
     </Select>
@@ -210,6 +241,10 @@ export const DebitNoteFilters = ({
           <MobileFilterLabel>Estado:</MobileFilterLabel>
           {statusSelect}
         </MobileFilterGroup>
+        <MobileFilterGroup>
+          <MobileFilterLabel>e-CF/DGII:</MobileFilterLabel>
+          {fiscalStatusSelect}
+        </MobileFilterGroup>
         <MobileFilterGroup>{clearButton}</MobileFilterGroup>
       </MobileFiltersContainer>
     </FiltersContainer>
@@ -227,6 +262,10 @@ export const DebitNoteFilters = ({
         <FilterGroup>
           <FilterLabel>Estado:</FilterLabel>
           {statusSelect}
+        </FilterGroup>
+        <FilterGroup>
+          <FilterLabel>e-CF/DGII:</FilterLabel>
+          {fiscalStatusSelect}
         </FilterGroup>
         <FilterGroup>{clearButton}</FilterGroup>
       </FiltersRow>
