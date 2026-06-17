@@ -12,6 +12,10 @@ import {
   issueGisysFactDocument,
   refreshGisysFactDocumentStatus,
 } from './gisysFactClient.service.js';
+import {
+  buildElectronicTaxReceiptAttemptRefreshRecord,
+  resolveElectronicTaxReceiptAttemptId,
+} from './electronicTaxReceiptAttempt.service.js';
 
 const toErrorMessage = (error) =>
   error instanceof Error ? error.message : String(error || 'Unknown error');
@@ -417,17 +421,25 @@ export const issueElectronicTaxReceiptForDocument = async ({
       documentType,
       requestHash,
     });
-    return { status: 'shadow_ready', documentType, requestHash, electronicSnapshot };
+    return {
+      status: 'shadow_ready',
+      documentType,
+      requestHash,
+      electronicSnapshot,
+      issuePayload,
+      idempotencyKey: null,
+    };
   }
 
+  const idempotencyKey = buildGisysFactIdempotencyKey({
+    businessId,
+    invoiceId: documentId,
+    documentType,
+  });
   const response = await issueGisysFactDocument({
     config: providerConfig,
     payload: issuePayload,
-    idempotencyKey: buildGisysFactIdempotencyKey({
-      businessId,
-      invoiceId: documentId,
-      documentType,
-    }),
+    idempotencyKey,
   });
   const status = resolveElectronicTaxReceiptLifecycleStatus({
     currentStatus: null,
@@ -441,7 +453,15 @@ export const issueElectronicTaxReceiptForDocument = async ({
     response,
   });
 
-  return { status, documentType, requestHash, response, electronicSnapshot };
+  return {
+    status,
+    documentType,
+    requestHash,
+    response,
+    electronicSnapshot,
+    issuePayload,
+    idempotencyKey,
+  };
 };
 
 const mergeGisysResponses = (baseResponse, nextResponse) => ({
@@ -878,53 +898,88 @@ export const refreshElectronicTaxReceiptStatus = async ({
     requestHash: currentSnapshot.requestHash || null,
     response: mergedResponse,
   });
+  const attemptId = isAdjustmentNoteRefresh
+    ? resolveElectronicTaxReceiptAttemptId({
+        currentSnapshot,
+        response: mergedResponse,
+        documentId: targetId,
+      })
+    : null;
+  const resolvedElectronicSnapshot =
+    attemptId && isAdjustmentNoteRefresh
+      ? {
+          ...electronicSnapshot,
+          attemptId,
+          outboxTaskId: currentSnapshot.outboxTaskId || attemptId,
+        }
+      : electronicSnapshot;
+  const fiscalAttemptRef =
+    attemptId && isAdjustmentNoteRefresh
+      ? db.doc(`${documentRef.path}/fiscalAttempts/${attemptId}`)
+      : null;
 
   await db.runTransaction(async (tx) => {
     const currentDocument = (await tx.get(documentRef)).data() || document;
     if (isAdjustmentNoteRefresh) {
       const eNcf =
-        electronicSnapshot.eNcf ||
+        resolvedElectronicSnapshot.eNcf ||
         currentDocument?.eNcf ||
         currentDocument?.ncf ||
         null;
       tx.update(documentRef, {
-        electronicTaxReceipt: electronicSnapshot,
+        electronicTaxReceipt: resolvedElectronicSnapshot,
         ncf: eNcf,
         eNcf,
         status: resolveAdjustmentDocumentStatus({
-          electronicSnapshot,
+          electronicSnapshot: resolvedElectronicSnapshot,
           currentStatus: currentDocument?.status,
         }),
         fiscalMode: 'electronic_ecf',
         documentFormat: 'electronic',
+        currentFiscalAttemptId: attemptId || null,
         statusTimeline: FieldValue.arrayUnion({
-          status: `electronic_tax_receipt_${electronicSnapshot.status}`,
+          status: `electronic_tax_receipt_${resolvedElectronicSnapshot.status}`,
           at: Timestamp.now(),
         }),
         updatedAt: FieldValue.serverTimestamp(),
       });
+      if (fiscalAttemptRef) {
+        tx.set(
+          fiscalAttemptRef,
+          buildElectronicTaxReceiptAttemptRefreshRecord({
+            attemptId,
+            documentKind: isCreditNoteRefresh ? 'creditNote' : 'debitNote',
+            documentId: targetId,
+            electronicSnapshot: resolvedElectronicSnapshot,
+            response: mergedResponse,
+          }),
+          { merge: true },
+        );
+      }
       return;
     }
 
     const eNcf =
-      electronicSnapshot.eNcf || currentDocument?.snapshot?.ncf?.code || null;
+      resolvedElectronicSnapshot.eNcf ||
+      currentDocument?.snapshot?.ncf?.code ||
+      null;
     const ncfSnapshot = {
       ...currentDocument?.snapshot?.ncf,
       code: eNcf,
-      status: eNcf ? 'issued' : electronicSnapshot.status,
+      status: eNcf ? 'issued' : resolvedElectronicSnapshot.status,
       documentFormat: 'electronic',
       provider: 'gisys_fact',
       submissionId,
-      documentType: electronicSnapshot.documentType,
+      documentType: resolvedElectronicSnapshot.documentType,
     };
 
     tx.update(documentRef, {
-      'snapshot.electronicTaxReceipt': electronicSnapshot,
+      'snapshot.electronicTaxReceipt': resolvedElectronicSnapshot,
       'snapshot.ncf': ncfSnapshot,
       'snapshot.fiscalMode': 'electronic_ecf',
       'snapshot.documentFormat': 'electronic',
       statusTimeline: FieldValue.arrayUnion({
-        status: `electronic_tax_receipt_${electronicSnapshot.status}`,
+        status: `electronic_tax_receipt_${resolvedElectronicSnapshot.status}`,
         at: Timestamp.now(),
       }),
       updatedAt: FieldValue.serverTimestamp(),
@@ -932,9 +987,9 @@ export const refreshElectronicTaxReceiptStatus = async ({
 
     const canonicalUpdate = {
       data: {
-        electronicTaxReceipt: electronicSnapshot,
+        electronicTaxReceipt: resolvedElectronicSnapshot,
         fiscal: {
-          electronic: electronicSnapshot,
+          electronic: resolvedElectronicSnapshot,
         },
         fiscalMode: 'electronic_ecf',
         documentFormat: 'electronic',
@@ -965,6 +1020,6 @@ export const refreshElectronicTaxReceiptStatus = async ({
         ? 'debitNote'
         : 'invoice',
     submissionId,
-    electronicTaxReceipt: electronicSnapshot,
+    electronicTaxReceipt: resolvedElectronicSnapshot,
   };
 };

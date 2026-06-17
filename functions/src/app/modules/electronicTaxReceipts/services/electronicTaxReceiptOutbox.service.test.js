@@ -256,6 +256,9 @@ describe('electronicTaxReceiptOutbox.service', () => {
     };
     const creditNoteRef = {
       path: 'businesses/business-1/creditNotes/credit-note-1',
+      collection: vi.fn(() => ({
+        doc: vi.fn(() => ({ path: 'credit-note-1/fiscalAttempts/sub-34' })),
+      })),
       get: vi.fn(async () => ({
         exists: true,
         data: () => creditNoteDoc,
@@ -278,6 +281,12 @@ describe('electronicTaxReceiptOutbox.service', () => {
     db.doc.mockImplementation((path) => {
       if (path === 'businesses/business-1/creditNotes/credit-note-1') {
         return creditNoteRef;
+      }
+      if (
+        path ===
+        'businesses/business-1/creditNotes/credit-note-1/fiscalAttempts/sub-34'
+      ) {
+        return { path };
       }
       if (path === 'businesses/business-1') {
         return businessRef;
@@ -312,6 +321,20 @@ describe('electronicTaxReceiptOutbox.service', () => {
     expect(tx.update.mock.calls[0][1].electronicTaxReceipt.status).toBe(
       'accepted',
     );
+    expect(tx.set).toHaveBeenCalledWith(
+      {
+        path: 'businesses/business-1/creditNotes/credit-note-1/fiscalAttempts/sub-34',
+      },
+      expect.objectContaining({
+        id: 'sub-34',
+        documentKind: 'creditNote',
+        documentId: 'credit-note-1',
+        status: 'accepted',
+        eNcf: 'E340000000001',
+        submissionId: 'sub-34',
+      }),
+      { merge: true },
+    );
   });
 
   it('refreshes an E33 debit note document status from GISYS', async () => {
@@ -329,6 +352,9 @@ describe('electronicTaxReceiptOutbox.service', () => {
     };
     const debitNoteRef = {
       path: 'businesses/business-1/debitNotes/debit-note-1',
+      collection: vi.fn(() => ({
+        doc: vi.fn(() => ({ path: 'debit-note-1/fiscalAttempts/sub-33' })),
+      })),
       get: vi.fn(async () => ({
         exists: true,
         data: () => debitNoteDoc,
@@ -351,6 +377,12 @@ describe('electronicTaxReceiptOutbox.service', () => {
     db.doc.mockImplementation((path) => {
       if (path === 'businesses/business-1/debitNotes/debit-note-1') {
         return debitNoteRef;
+      }
+      if (
+        path ===
+        'businesses/business-1/debitNotes/debit-note-1/fiscalAttempts/sub-33'
+      ) {
+        return { path };
       }
       if (path === 'businesses/business-1') {
         return businessRef;
@@ -394,6 +426,20 @@ describe('electronicTaxReceiptOutbox.service', () => {
         lastError: null,
       }),
     );
+    expect(tx.set).toHaveBeenCalledWith(
+      {
+        path: 'businesses/business-1/debitNotes/debit-note-1/fiscalAttempts/sub-33',
+      },
+      expect.objectContaining({
+        id: 'sub-33',
+        documentKind: 'debitNote',
+        documentId: 'debit-note-1',
+        status: 'accepted',
+        eNcf: 'E330000000001',
+        submissionId: 'sub-33',
+      }),
+      { merge: true },
+    );
   });
 
   it('persists DGII rejection diagnostics for E33 debit notes', async () => {
@@ -411,6 +457,11 @@ describe('electronicTaxReceiptOutbox.service', () => {
     };
     const debitNoteRef = {
       path: 'businesses/business-1/debitNotes/debit-note-rejected',
+      collection: vi.fn(() => ({
+        doc: vi.fn(() => ({
+          path: 'debit-note-rejected/fiscalAttempts/sub-33-rejected',
+        })),
+      })),
       get: vi.fn(async () => ({
         exists: true,
         data: () => debitNoteDoc,
@@ -433,6 +484,12 @@ describe('electronicTaxReceiptOutbox.service', () => {
     db.doc.mockImplementation((path) => {
       if (path === 'businesses/business-1/debitNotes/debit-note-rejected') {
         return debitNoteRef;
+      }
+      if (
+        path ===
+        'businesses/business-1/debitNotes/debit-note-rejected/fiscalAttempts/sub-33-rejected'
+      ) {
+        return { path };
       }
       if (path === 'businesses/business-1') {
         return businessRef;
@@ -476,6 +533,19 @@ describe('electronicTaxReceiptOutbox.service', () => {
         lastError: 'Fecha de vencimiento de secuencia inválida.',
         requiresDataCorrection: true,
       }),
+    );
+    expect(tx.set).toHaveBeenCalledWith(
+      {
+        path: 'businesses/business-1/debitNotes/debit-note-rejected/fiscalAttempts/sub-33-rejected',
+      },
+      expect.objectContaining({
+        id: 'sub-33-rejected',
+        documentKind: 'debitNote',
+        status: 'rejected',
+        dgiiCode: '02',
+        lastError: 'Fecha de vencimiento de secuencia inválida.',
+      }),
+      { merge: true },
     );
   });
 });

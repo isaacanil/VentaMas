@@ -3,6 +3,7 @@ import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 
 import { db, FieldValue, Timestamp } from '../../../core/config/firebase.js';
 import { GISYS_FACT_SECRETS } from '../../../core/config/secrets.js';
+import { buildElectronicTaxReceiptAttemptRecord } from '../../electronicTaxReceipts/services/electronicTaxReceiptAttempt.service.js';
 import { issueElectronicTaxReceiptForDocument } from '../../electronicTaxReceipts/services/electronicTaxReceiptOutbox.service.js';
 
 const DEBIT_NOTE_DOCUMENT_TYPE = 'E33';
@@ -176,8 +177,32 @@ export const processCustomerDebitNoteOutbox = onDocumentCreated(
         document: issueDocument,
         taskPayload: issuePayload,
       });
-      const nextNoteStatus = resolveDebitNoteStatus(result.electronicSnapshot);
-      const eNcf = result.response?.eNcf || debitNote.ncf || null;
+      const attemptId = taskId;
+      const electronicSnapshot = {
+        ...result.electronicSnapshot,
+        attemptId,
+        outboxTaskId: taskId,
+      };
+      const resultWithAttempt = {
+        ...result,
+        electronicSnapshot,
+      };
+      const nextNoteStatus = resolveDebitNoteStatus(electronicSnapshot);
+      const eNcf =
+        result.response?.eNcf || electronicSnapshot.eNcf || debitNote.ncf || null;
+      const attemptRecord = buildElectronicTaxReceiptAttemptRecord({
+        attemptId,
+        businessId,
+        documentKind: 'debitNote',
+        documentId: debitNoteId,
+        documentType: DEBIT_NOTE_DOCUMENT_TYPE,
+        ncfType: DEBIT_NOTE_NCF_TYPE,
+        note: debitNote,
+        taskId,
+        task,
+        issuePayload: result.issuePayload || issuePayload,
+        result: resultWithAttempt,
+      });
 
       await db.runTransaction(async (tx) => {
         const currentTask = await tx.get(taskRef);
@@ -197,9 +222,15 @@ export const processCustomerDebitNoteOutbox = onDocumentCreated(
               submissionId: result.response?.submissionId || null,
               eNcf,
               requestHash: result.requestHash || null,
+              attemptId,
             },
             updatedAt: FieldValue.serverTimestamp(),
           },
+          { merge: true },
+        );
+        tx.set(
+          noteRef.collection('fiscalAttempts').doc(attemptId),
+          attemptRecord,
           { merge: true },
         );
         tx.set(
@@ -208,12 +239,13 @@ export const processCustomerDebitNoteOutbox = onDocumentCreated(
             ncf: eNcf,
             eNcf,
             status: nextNoteStatus,
-            electronicTaxReceipt: result.electronicSnapshot,
+            electronicTaxReceipt: electronicSnapshot,
             fiscalMode: 'electronic_ecf',
             documentFormat: 'electronic',
+            currentFiscalAttemptId: attemptId,
             updatedAt: FieldValue.serverTimestamp(),
             statusTimeline: FieldValue.arrayUnion({
-              status: `electronic_tax_receipt_${result.electronicSnapshot.status}`,
+              status: `electronic_tax_receipt_${electronicSnapshot.status}`,
               at: Timestamp.now(),
             }),
           },
@@ -230,27 +262,52 @@ export const processCustomerDebitNoteOutbox = onDocumentCreated(
       await db.runTransaction(async (tx) => {
         const currentTask = await tx.get(taskRef);
         if (currentTask.data()?.status !== 'pending') return;
+        const attemptId = taskId;
+        const lastError = error?.message || String(error);
+        const electronicSnapshot = {
+          provider: 'gisys_fact',
+          status: 'local_failed',
+          documentType: DEBIT_NOTE_DOCUMENT_TYPE,
+          lastError,
+          attemptId,
+          outboxTaskId: taskId,
+          updatedAt: FieldValue.serverTimestamp(),
+        };
+        const attemptRecord = buildElectronicTaxReceiptAttemptRecord({
+          attemptId,
+          businessId,
+          documentKind: 'debitNote',
+          documentId: debitNoteId,
+          documentType: DEBIT_NOTE_DOCUMENT_TYPE,
+          ncfType: DEBIT_NOTE_NCF_TYPE,
+          note: debitNote,
+          taskId,
+          task,
+          issuePayload,
+          result: { documentType: DEBIT_NOTE_DOCUMENT_TYPE, electronicSnapshot },
+          error,
+        });
         tx.set(
           taskRef,
           {
             status: 'failed',
             attempts: (task.attempts || 0) + 1,
-            lastError: error?.message || String(error),
+            lastError,
             updatedAt: FieldValue.serverTimestamp(),
           },
+          { merge: true },
+        );
+        tx.set(
+          noteRef.collection('fiscalAttempts').doc(attemptId),
+          attemptRecord,
           { merge: true },
         );
         tx.set(
           noteRef,
           {
             status: 'electronic_failed',
-            electronicTaxReceipt: {
-              provider: 'gisys_fact',
-              status: 'local_failed',
-              documentType: DEBIT_NOTE_DOCUMENT_TYPE,
-              lastError: error?.message || String(error),
-              updatedAt: FieldValue.serverTimestamp(),
-            },
+            electronicTaxReceipt: electronicSnapshot,
+            currentFiscalAttemptId: attemptId,
             updatedAt: FieldValue.serverTimestamp(),
           },
           { merge: true },
