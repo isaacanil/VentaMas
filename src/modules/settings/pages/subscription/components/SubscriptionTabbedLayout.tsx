@@ -9,9 +9,9 @@ import {
   NavButton,
   SubNav,
   SubNavInner,
-  Wrapper,
 } from './SubscriptionTabbedLayout.styles';
 
+import { PageShell } from '@/components/layout/PageShell';
 import { MenuApp } from '@/modules/navigation/public';
 
 export interface SubscriptionTabbedLayoutItem {
@@ -36,7 +36,7 @@ export const SubscriptionTabbedLayout = ({
   const navigate = useNavigate();
 
   return (
-    <Wrapper>
+    <PageShell>
       <MenuApp sectionName={sectionName} onBackClick={onBack} />
 
       <SubNav>
@@ -63,7 +63,7 @@ export const SubscriptionTabbedLayout = ({
       <Content>
         <ContentInner>{children}</ContentInner>
       </Content>
-    </Wrapper>
+    </PageShell>
   );
 };
 

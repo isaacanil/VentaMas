@@ -9,7 +9,7 @@ import {
   INACTIVITY_WARNING,
   SESSION_CHECK_INTERVAL,
   ACTIVITY_CHECK_INTERVAL,
-} from '@/constants/sessionConfig';
+} from '@/modules/auth/constants/sessionConfig';
 import {
   addUserData,
   login,

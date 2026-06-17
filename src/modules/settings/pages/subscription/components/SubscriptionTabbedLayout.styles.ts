@@ -1,9 +1,5 @@
 import styled from 'styled-components';
 
-import { PageShell } from '@/components/layout/PageShell';
-
-export const Wrapper = styled(PageShell)``;
-
 export const SubNav = styled.div`
   border-bottom: 1px solid #e2e8f0;
   background: #ffffff;

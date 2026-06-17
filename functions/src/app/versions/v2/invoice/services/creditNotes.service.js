@@ -1,45 +1,29 @@
 import { db, FieldValue } from '../../../../core/config/firebase.js';
-
-const ELECTRONIC_CREDIT_NOTE_CONSUMABLE_STATUSES = new Set([
-  'accepted',
-  'accepted_conditional',
-  'shadow_ready',
-]);
-
-const normalizeStatus = (value) =>
-  String(value || '').trim().toLowerCase() || null;
+import {
+  canCreateFinancialEffectsForAdjustmentNote,
+  isElectronicAdjustmentNote,
+  resolveElectronicAdjustmentNoteFiscalStatus,
+} from '../../../../modules/accountReceivable/utils/customerAdjustmentNoteFiscalStatus.util.js';
 
 const isElectronicCreditNote = (creditNote) => {
-  const documentFormat = normalizeStatus(creditNote?.documentFormat);
-  const fiscalMode = normalizeStatus(creditNote?.fiscalMode);
-  const ncf = String(creditNote?.eNcf || creditNote?.ncf || '').trim();
-  const electronic = creditNote?.electronicTaxReceipt;
-
-  return (
-    documentFormat === 'electronic' ||
-    fiscalMode === 'electronic_ecf' ||
-    ncf.startsWith('E34') ||
-    Boolean(electronic && typeof electronic === 'object')
-  );
-};
-
-const resolveElectronicCreditNoteStatus = (creditNote) => {
-  const electronic = creditNote?.electronicTaxReceipt || {};
-  return (
-    normalizeStatus(electronic.dgiiValidationStatus) ||
-    normalizeStatus(electronic.dgiiStatus) ||
-    normalizeStatus(electronic.status)
-  );
+  return isElectronicAdjustmentNote(creditNote, { ncfPrefix: 'E34' });
 };
 
 const assertCreditNoteFiscalStatusAllowsConsumption = (creditNote, noteId) => {
   if (!isElectronicCreditNote(creditNote)) return;
 
-  const fiscalStatus = resolveElectronicCreditNoteStatus(creditNote);
-  if (ELECTRONIC_CREDIT_NOTE_CONSUMABLE_STATUSES.has(fiscalStatus)) return;
+  if (
+    canCreateFinancialEffectsForAdjustmentNote(creditNote, {
+      ncfPrefix: 'E34',
+    })
+  ) {
+    return;
+  }
+
+  const fiscalStatus = resolveElectronicAdjustmentNoteFiscalStatus(creditNote);
 
   throw new Error(
-    `La nota de crédito ${creditNote?.ncf || creditNote?.number || noteId} no está aceptada fiscalmente y no puede aplicarse`,
+    `La nota de crédito ${creditNote?.ncf || creditNote?.number || noteId} no está aceptada fiscalmente y no puede aplicarse${fiscalStatus ? ` (${fiscalStatus})` : ''}`,
   );
 };
 
@@ -65,7 +49,9 @@ export async function consumeCreditNotesTx(
       throw new Error(`Nota de crédito ${note.id} no encontrada`);
     }
     const cnData = cnSnap.data();
-    const status = String(cnData?.status || '').trim().toLowerCase();
+    const status = String(cnData?.status || '')
+      .trim()
+      .toLowerCase();
     if (status === 'cancelled' || status === 'voided') {
       throw new Error(
         `La nota de crédito ${cnData?.ncf || cnData?.number || note.id} está anulada y no puede aplicarse`,

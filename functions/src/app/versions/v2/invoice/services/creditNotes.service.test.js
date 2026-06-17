@@ -200,4 +200,50 @@ describe('creditNotes.service', () => {
       }),
     );
   });
+
+  it('permite consumir una E34 aceptada aunque dgiiValidationStatus siga not_checked', async () => {
+    const tx = {
+      get: vi.fn(async () =>
+        snapshot({
+          id: 'credit-note-1',
+          status: 'issued',
+          ncf: 'E340000000001',
+          documentFormat: 'electronic',
+          totalAmount: 118,
+          availableAmount: 118,
+          electronicTaxReceipt: {
+            status: 'accepted',
+            dgiiStatus: 'accepted',
+            requestStatus: 'accepted',
+            dgiiValidationStatus: 'not_checked',
+          },
+        }),
+      ),
+      update: vi.fn(),
+      set: vi.fn(),
+    };
+
+    const result = await consumeCreditNotesTx(tx, {
+      businessId: 'business-1',
+      userId: 'user-1',
+      invoiceId: 'invoice-1',
+      creditNotes: [{ id: 'credit-note-1', amountUsed: 50 }],
+      invoiceSnapshot: {
+        snapshot: {
+          ncf: { code: 'E310000000001' },
+          numberID: 701,
+          client: { id: 'client-1' },
+        },
+      },
+    });
+
+    expect(result.applicationIds).toEqual(['application-1']);
+    expect(tx.update).toHaveBeenCalledWith(
+      { path: 'businesses/business-1/creditNotes/credit-note-1' },
+      expect.objectContaining({
+        availableAmount: 68,
+        status: 'applied',
+      }),
+    );
+  });
 });

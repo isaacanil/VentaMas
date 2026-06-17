@@ -26,10 +26,26 @@ const PILOT_BUSINESS_ID = 'X63aIFwHzk3r0gmT8w6P';
 type TabId = DomainKey;
 
 const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
-  { id: 'invoices', label: 'Facturas', icon: <FontAwesomeIcon icon={faFileInvoiceDollar} /> },
-  { id: 'accountsReceivablePayments', label: 'Pagos CxC', icon: <FontAwesomeIcon icon={faHandHoldingDollar} /> },
-  { id: 'purchases', label: 'Compras', icon: <FontAwesomeIcon icon={faCartShopping} /> },
-  { id: 'expenses', label: 'Gastos', icon: <FontAwesomeIcon icon={faReceipt} /> },
+  {
+    id: 'invoices',
+    label: 'Facturas',
+    icon: <FontAwesomeIcon icon={faFileInvoiceDollar} />,
+  },
+  {
+    id: 'accountsReceivablePayments',
+    label: 'Pagos CxC',
+    icon: <FontAwesomeIcon icon={faHandHoldingDollar} />,
+  },
+  {
+    id: 'purchases',
+    label: 'Compras',
+    icon: <FontAwesomeIcon icon={faCartShopping} />,
+  },
+  {
+    id: 'expenses',
+    label: 'Gastos',
+    icon: <FontAwesomeIcon icon={faReceipt} />,
+  },
 ];
 
 const AccountingPilotAudit: React.FC = () => {
@@ -50,7 +66,7 @@ const AccountingPilotAudit: React.FC = () => {
   const activeResult = state[activeTab];
 
   return (
-    <Wrapper>
+    <PageShell>
       <MenuApp
         sectionName="Auditoría Monetary — Piloto"
         showBackButton
@@ -91,29 +107,35 @@ const AccountingPilotAudit: React.FC = () => {
             description={
               !isPilot ? (
                 <>
-                  Los datos corresponden al negocio activo en sesión, que <strong>no</strong> es el
-                  piloto <Text code>{PILOT_BUSINESS_ID}</Text>. Es probable que los documentos no
-                  tengan campo <Text code>monetary</Text>.
+                  Los datos corresponden al negocio activo en sesión, que{' '}
+                  <strong>no</strong> es el piloto{' '}
+                  <Text code>{PILOT_BUSINESS_ID}</Text>. Es probable que los
+                  documentos no tengan campo <Text code>monetary</Text>.
                 </>
               ) : undefined
             }
             action={
-              <Button size="small" onClick={() => refresh(businessId)} disabled={!businessId}>
+              <Button
+                size="small"
+                onClick={() => refresh(businessId)}
+                disabled={!businessId}
+              >
                 Refrescar
               </Button>
             }
           />
 
-          <DomainTable result={activeResult} title={TABS.find((t) => t.id === activeTab)?.label ?? ''} />
+          <DomainTable
+            result={activeResult}
+            title={TABS.find((t) => t.id === activeTab)?.label ?? ''}
+          />
         </ContentInner>
       </Content>
-    </Wrapper>
+    </PageShell>
   );
 };
 
 export default AccountingPilotAudit;
-
-const Wrapper = styled(PageShell)``;
 
 const SubNav = styled.div`
   border-bottom: 1px solid #e2e8f0;

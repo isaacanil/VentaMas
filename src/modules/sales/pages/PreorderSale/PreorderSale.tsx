@@ -146,7 +146,7 @@ export const Preorder = () => {
   }, []);
 
   return (
-    <Container>
+    <PageBody>
       <MenuApp sectionName={'Pre-ventas'} />
       <Layout>
         <SearchContainer>
@@ -166,8 +166,6 @@ export const Preorder = () => {
         />
       </Layout>
       <InvoicePanel />
-    </Container>
+    </PageBody>
   );
 };
-
-const Container = styled(PageBody)``;

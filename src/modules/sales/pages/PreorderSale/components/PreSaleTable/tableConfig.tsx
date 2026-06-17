@@ -1,12 +1,9 @@
 import { getTimeElapsed } from '@/utils/date/formatTime';
 import type { ColumnConfig } from '@/components/ui/AdvancedTable/types/ColumnTypes';
 
-import {
-  PreorderActionsCell,
-  PriceCell,
-  StatusCell,
-  type PreorderActionCellValue,
-} from './tableCells';
+import { PriceCell, StatusCell } from './tableCells/components/BasicCells';
+import { PreorderActionsCell } from './tableCells/TableCells';
+import type { PreorderActionCellValue } from './tableCells/types';
 
 export const tableConfig: ColumnConfig[] = [
   {

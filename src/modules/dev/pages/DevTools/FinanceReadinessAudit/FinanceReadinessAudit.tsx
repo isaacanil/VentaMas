@@ -80,7 +80,9 @@ const collectIssues = (
       ...issue,
       moduleKey,
       moduleLabel:
-        MODULE_LABELS[moduleKey as keyof FinanceReadinessBusinessResult['modules']],
+        MODULE_LABELS[
+          moduleKey as keyof FinanceReadinessBusinessResult['modules']
+        ],
     })),
   );
 
@@ -92,8 +94,9 @@ const FinanceReadinessAudit: React.FC = () => {
   const [businessIdInput, setBusinessIdInput] = useState('');
   const [maxDocuments, setMaxDocuments] = useState<number | null>(300);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] =
-    useState<AnalyzeFinanceReadinessResponse | null>(null);
+  const [result, setResult] = useState<AnalyzeFinanceReadinessResponse | null>(
+    null,
+  );
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(
     null,
   );
@@ -147,9 +150,11 @@ const FinanceReadinessAudit: React.FC = () => {
           <ModuleTags>
             {Object.entries(row.modules).map(([key, module]) => (
               <Tag key={key} color={STATUS_COLORS[module.status]}>
-                {MODULE_LABELS[
-                  key as keyof FinanceReadinessBusinessResult['modules']
-                ]}
+                {
+                  MODULE_LABELS[
+                    key as keyof FinanceReadinessBusinessResult['modules']
+                  ]
+                }
               </Tag>
             ))}
           </ModuleTags>
@@ -186,7 +191,7 @@ const FinanceReadinessAudit: React.FC = () => {
   };
 
   return (
-    <Wrapper>
+    <PageShell>
       <MenuApp
         sectionName="Preparación financiera"
         showBackButton
@@ -349,14 +354,16 @@ const FinanceReadinessAudit: React.FC = () => {
                     </IssueList>
                   </>
                 ) : (
-                  <EmptyState>Ejecuta un análisis para ver detalles.</EmptyState>
+                  <EmptyState>
+                    Ejecuta un análisis para ver detalles.
+                  </EmptyState>
                 )}
               </Panel>
             </MainGrid>
           </>
         ) : null}
       </Content>
-    </Wrapper>
+    </PageShell>
   );
 };
 
@@ -387,8 +394,6 @@ const ModuleBox: React.FC<{
 );
 
 export default FinanceReadinessAudit;
-
-const Wrapper = styled(PageShell)``;
 
 const Content = styled.main`
   display: flex;
