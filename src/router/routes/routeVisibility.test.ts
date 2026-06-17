@@ -29,6 +29,19 @@ const changelogManageRoute = changelogRoutes.find(
   (route) => route.path === ROUTES_NAME.CHANGELOG_TERM.CHANGELOG_MANAGE,
 );
 
+const hostingVisibleDevRoutes = [
+  ROUTES_NAME.DEV_VIEW_TERM.AI_BUSINESS_SEEDING,
+  ROUTES_NAME.DEV_VIEW_TERM.B_SERIES_INVOICES,
+  ROUTES_NAME.DEV_VIEW_TERM.BUSINESSES,
+  ROUTES_NAME.DEV_VIEW_TERM.ELECTRONIC_TAX_RECEIPT_PROVIDER,
+  ROUTES_NAME.DEV_VIEW_TERM.ERROR_REPORTS,
+  ROUTES_NAME.DEV_VIEW_TERM.ERROR_SCREEN_PREVIEW,
+  ROUTES_NAME.DEV_VIEW_TERM.FISCAL_RECEIPTS_AUDIT,
+  ROUTES_NAME.DEV_VIEW_TERM.INVOICE_V2_RECOVERY,
+  ROUTES_NAME.DEV_VIEW_TERM.SUBSCRIPTION_MAINTENANCE,
+  ROUTES_NAME.DEV_VIEW_TERM.SUBSCRIPTION_MAINTENANCE_PLANS,
+].sort();
+
 const joinRoutePath = (parentPath: string, routePath?: string) => {
   if (!routePath) return parentPath;
   if (routePath.startsWith('/')) return routePath;
@@ -157,5 +170,14 @@ describe('routeVisibility', () => {
       .sort();
 
     expect(devLabRoutesMissingStatus).toEqual([]);
+  });
+
+  it('keeps dev routes without devOnly explicitly allowlisted', () => {
+    const devRoutesWithoutDevOnly = collectMountableRoutes(devRoutes)
+      .filter(({ route }) => route.devOnly !== true)
+      .map(({ path }) => path)
+      .sort();
+
+    expect(devRoutesWithoutDevOnly).toEqual(hostingVisibleDevRoutes);
   });
 });

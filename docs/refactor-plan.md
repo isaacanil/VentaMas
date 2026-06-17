@@ -228,15 +228,15 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - Los permisos dinamicos separan catalogo puro (`src/domain/permissions/dynamicPermissionsCatalog.ts`) de persistencia Firestore (`src/firebase/permissions/dynamicPermissions.repository.ts`), y los consumidores de usuarios importan solo la capa que necesitan.
 - La metadata de productos de bajo riesgo (categorias, favoritos, ingredientes activos y marcas) se encapsulo en hooks owner-locales de products, sacando imports directos de Firebase de los componentes visuales sin tocar stock, imagenes ni guardados de producto.
 - El modal de pizza personalizada deriva el draft en render con `buildCustomPizzaDraft` y prueba focalizada, en vez de sincronizar estado derivado desde `Header` con `useEffect`.
-- Los paths retirados recientes (`functionsApiClient`, `dynamicPermissions`, `invoiceV2Admin`, `pdfMakeLoader` legacy y `reconcileBatchStatus` bajo functions/inventory) quedaron cubiertos por `moduleBoundaries.test.ts`, y los planes/docs activos apuntan a sus owners actuales.
+- Los paths retirados recientes (`functionsApiClient`, `dynamicPermissions`, `invoiceV2Admin`, `pdfMakeLoader` legacy y `reconcileBatchStatus` bajo functions/inventory) quedaron cubiertos por `moduleBoundaries.test.ts`; los planes históricos de testing deben apuntar a `src/firebase/functions/httpClient.ts`, `src/domain|firebase/permissions/*` y el service owner-local de `InvoiceV2Recovery`.
 
 ## Guardrails añadidos en esta pasada
 
 - `src/modules/moduleBoundaries.test.ts` protege boundaries entre dominios: bloquea imports desde un modulo hacia carpetas privadas de otro (`pages/`, `components/`, `hooks/`, `utils/`), mantiene vacias las allowlists `allowedLegacyDeepImports` y `allowedLegacyPrivateRouterImports`, y tambien cubre buckets legacy retirados, el adapter HeroUI y ciclos entre modulos. Los ciclos legacy permitidos viven en una lista explicita separada y no deben crecer.
 - `src/modules/publicBarrels.test.ts` fija el contrato runtime exacto de cada `public.ts`: cada modulo debe tener barrel publico registrado y exportar solo los nombres/tipos esperados por el test, para que el barrel sea un contrato acotado y no un indice de carpetas internas.
 - `src/firebase/functions/callableImportGuard.test.ts` obliga a que los wrappers nuevos de Cloud Functions usen `src/firebase/functions/callable.ts` / `createFirebaseCallable`; los imports directos de `httpsCallable` quedan limitados al wrapper compartido y a la deuda enumerada en el test.
-- `src/router/routes/routePreloaders.test.ts`, `routeHandle.test.ts`, `routeVisibility.test.ts` y `src/modules/navigation/components/MenuApp/GlobalMenu/core/createLazyLoader.test.ts` son el guardrail ejecutable de rutas/menu/preloaders. No mantener checklists manuales paralelos salvo como nota temporal de migracion.
-- `npm run test:run:architecture` corre la suite estructural actual: callable wrappers, boundaries, public barrels, rutas y lazy loaders.
+- `src/router/routes/routePreloaders.test.ts`, `routeHandle.test.ts`, `routeVisibility.test.ts`, `src/modules/navigation/components/MenuApp/MenuData/menuRouteAccess.test.ts` y `src/modules/navigation/components/MenuApp/GlobalMenu/core/createLazyLoader.test.ts` son el guardrail ejecutable de rutas/menu/preloaders. No mantener checklists manuales paralelos salvo como nota temporal de migracion.
+- `npm run test:run:architecture` corre la suite estructural actual: callable wrappers, boundaries, public barrels, rutas, acceso de menu, lazy loaders y guardrails estructurales de Functions.
 - `tools/deploy.js` y `tools/project.js` bloquean los deploys de todas las Cloud Functions de staging salvo `ALLOW_ALL_FUNCTIONS_DEPLOY=1`. El flujo normal documentado por el helper es `npm run deploy -- staging:functions nombreDeFuncion`, que termina en `--only functions:nombreDeFuncion`.
 
 ## Deuda restante de alto riesgo: no tocar sin QA
@@ -251,7 +251,7 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 Centralizar servicios/API/Firebase por dominio, empezando por dominios de menor riesgo y dejando fuera fiscal, caja, pagos, facturacion y NCF hasta tener pruebas de caracterizacion. Ya hay avances en auth provider login, lectura de cuentas bancarias activas y callables simples de inventario/contactos/productos; continuar con lecturas simples antes de escrituras sensibles.
 
 1. Inventariar imports directos a `src/firebase/**` desde componentes y paginas.
-2. Elegir 1 dominio de bajo riesgo y crear `services/<dominio>` o `modules/<dominio>/services`.
+2. Elegir 1 dominio de bajo riesgo y crear `src/modules/<dominio>/services|repositories` para ownership local, o `src/firebase/<dominio>` cuando el owner sea Firebase; no abrir nuevos buckets globales en `src/services` salvo deuda legacy existente.
 3. Mover solo llamadas de lectura simples detras de un service/repository tipado.
 4. Agregar pruebas de contrato para normalizadores o mappers antes de mover escrituras.
 5. Repetir por dominio, evitando barrels globales y evitando imports profundos entre modulos; cuando se use `public.ts`, tratarlo como contrato publico acotado del modulo owner, no como indice general de carpetas internas.

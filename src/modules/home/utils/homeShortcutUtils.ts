@@ -1,4 +1,5 @@
 import type { FeatureCardData } from '@/modules/home/types/featureCard';
+import { ensureArray } from '@/utils/array/ensureArray';
 import { normalizeTrimmedSearchText } from '@/utils/searchText';
 
 export const CATEGORY_ORDER: Record<string, number> = {
@@ -34,12 +35,12 @@ export const isRoutableFeatureCardData = (
 };
 
 export const normalizeFeatureCardData = (data: unknown): FeatureCardData[] =>
-  Array.isArray(data) ? data.filter(isFeatureCardData) : [];
+  ensureArray(data).filter(isFeatureCardData);
 
 export const normalizeRoutableFeatureCardData = (
   data: unknown,
 ): RoutableFeatureCardData[] =>
-  Array.isArray(data) ? data.filter(isRoutableFeatureCardData) : [];
+  ensureArray(data).filter(isRoutableFeatureCardData);
 
 export const uniqueShortcutsByRoute = <T extends { route?: string }>(
   shortcuts: readonly T[],

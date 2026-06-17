@@ -1,4 +1,5 @@
 import type { MenuItem } from '@/types/menu';
+import { ensureArray } from '@/utils/array/ensureArray';
 import { normalizeTrimmedSearchText } from '@/utils/searchText';
 
 export interface MenuSearchItem extends MenuItem {
@@ -50,7 +51,7 @@ const collectMenuItemMatches = (
   const itemWithGroup = getNextFallbackGroup(item, fallbackGroup);
   const itemGroup = itemWithGroup.group ?? fallbackGroup;
   const itemMatches = getMenuItemSearchValue(item).includes(normalizedQuery);
-  const submenu = Array.isArray(item.submenu) ? item.submenu : [];
+  const submenu = ensureArray(item.submenu);
   const submenuMatches = submenu.flatMap((submenuItem) =>
     collectMenuItemMatches(
       submenuItem,

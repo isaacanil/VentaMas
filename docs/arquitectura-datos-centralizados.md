@@ -77,11 +77,11 @@ Para un dominio ejemplo: **`Invoice`** (Facturación).
 
 ## Guardrails Automatizados
 
-- `npm run test:run:architecture` ejecuta la suite estructural vigente: callable wrappers, boundaries de módulos, barrels públicos, preloaders de rutas, metadata/visibilidad de rutas y lazy loaders del menú global.
+- `npm run test:run:architecture` ejecuta la suite estructural vigente: callable wrappers, boundaries de módulos, barrels públicos, preloaders de rutas, metadata/visibilidad de rutas, acceso/metadata de rutas del menú, lazy loaders del menú global y guardrails estructurales de Functions.
 - `src/modules/moduleBoundaries.test.ts` recorre `src/modules` con el AST de TypeScript y bloquea nuevos imports profundos hacia carpetas privadas de otro módulo (`pages/`, `components/`, `hooks/`, `utils/`), imports relativos entre módulos, buckets compartidos retirados, imports privados desde router y ciclos nuevos entre módulos.
 - `src/modules/publicBarrels.test.ts` valida que cada barrel público runtime (`src/modules/<dominio>/public.ts`) exponga exactamente el contrato esperado. Si se agrega o elimina un export runtime, se debe actualizar el barrel y el test juntos.
 - La lista vigente de barrels públicos y rutas con preloader vive en `src/modules/publicBarrels.test.ts` y `src/router/routes/routePreloaders.test.ts`; evita duplicarla aquí para que el contrato quede en guardrails ejecutables.
-- `src/router/routes/routeHandle.test.ts`, `src/router/routes/routeVisibility.test.ts` y `src/modules/navigation/components/MenuApp/GlobalMenu/core/createLazyLoader.test.ts` cubren metadata, visibilidad y carga lazy de rutas. No crear checklist manual paralelo salvo para una migración temporal.
+- `src/router/routes/routeHandle.test.ts`, `src/router/routes/routeVisibility.test.ts`, `src/modules/navigation/components/MenuApp/MenuData/menuRouteAccess.test.ts` y `src/modules/navigation/components/MenuApp/GlobalMenu/core/createLazyLoader.test.ts` cubren metadata, visibilidad, acceso de menú y carga lazy de rutas. No crear checklist manual paralelo salvo para una migración temporal.
 - `src/firebase/functions/callableImportGuard.test.ts` bloquea nuevos imports directos de `httpsCallable` fuera de `src/firebase/functions/callable.ts` y de la deuda explícita del test. Los wrappers nuevos de Cloud Functions deben pasar por `createFirebaseCallable`.
 - `tools/deploy.js` y `tools/project.js` ocultan y bloquean deploys de todas las Cloud Functions de staging salvo que exista `ALLOW_ALL_FUNCTIONS_DEPLOY=1`. El camino normal para Functions sigue siendo por función específica.
 

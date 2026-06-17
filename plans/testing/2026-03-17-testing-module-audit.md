@@ -42,8 +42,9 @@ Cerrar la lista de dominios top-level del repo para que el plan de testing no de
 
 ### `src/services`
 
-- `Parcial`: `functionsApiClient.ts`, `invoice/invoice.service.ts`, `invoice/invoiceV2Admin.service.ts`
-- `Pendiente`: `dynamicPermissions.ts`, `invoice/autoCompletePreorderInvoice.ts`, `invoice/logInvoiceAuthorizations.ts`, `invoice/types.ts`, `invoice/useInvoice.ts`
+- `Parcial`: `invoice/invoice.service.ts`
+- `Pendiente`: `invoice/autoCompletePreorderInvoice.ts`, `invoice/logInvoiceAuthorizations.ts`, `invoice/types.ts`, `invoice/useInvoice.ts`
+- `Trasladado`: `functionsApiClient.ts` vive ahora en `src/firebase/functions/httpClient.ts`; `invoice/invoiceV2Admin.service.ts` vive como service owner-local en `src/modules/dev/pages/DevTools/InvoiceV2Recovery/services/invoiceV2Admin.service.ts`; `dynamicPermissions.ts` se separo entre `src/domain/permissions/dynamicPermissionsCatalog.ts` y `src/firebase/permissions/dynamicPermissions.repository.ts`.
 - `Retirado`: `accountsReceivable/audit.service.ts` no tenia consumidores activos y fue eliminado como cliente frontend muerto.
 
 ### `src/hooks`

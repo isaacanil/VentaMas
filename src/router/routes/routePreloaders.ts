@@ -101,6 +101,12 @@ import ROUTES_NAME from './routesName';
 
 type RoutePreloader = () => Promise<unknown>;
 
+const mapRoutesToPreloader = (
+  routes: readonly string[],
+  preloader: RoutePreloader,
+): Record<string, RoutePreloader> =>
+  Object.fromEntries(routes.map((route) => [route, preloader]));
+
 const {
   BASIC_TERM,
   AUTH_TERM,
@@ -170,6 +176,33 @@ const preloadAccountSubscriptionWithLayout =
     await Promise.all([loadAccountSubscriptionLayoutRoute(), loadPageRoute()]);
   };
 
+const accountingWorkspacePreloaders = mapRoutesToPreloader(
+  [
+    ACCOUNTING,
+    ACCOUNTING_JOURNAL_BOOK,
+    ACCOUNTING_GENERAL_LEDGER,
+    ACCOUNTING_MANUAL_ENTRIES,
+    ACCOUNTING_REPORTS,
+    ACCOUNTING_FISCAL_COMPLIANCE,
+    ACCOUNTING_MONITOR,
+    ACCOUNTING_PERIOD_CLOSE,
+  ],
+  loadAccountingWorkspaceRoute,
+);
+
+const hrPayrollWorkspacePreloaders = mapRoutesToPreloader(
+  [HR_PAYROLL_TERM.HR_PAYROLL, HR_PAYROLL_TERM.HR_EMPLOYEES],
+  loadHrPayrollWorkspaceRoute,
+);
+
+const hrCommissionPeriodPreloaders = mapRoutesToPreloader(
+  [
+    HR_PAYROLL_TERM.HR_COMMISSION_PERIODS,
+    HR_PAYROLL_TERM.HR_COMMISSION_PERIOD_DETAIL,
+  ],
+  loadHrCommissionPeriodsRoute,
+);
+
 export const routePreloaders: Record<string, RoutePreloader> = {
   [BASIC_TERM.HOME]: loadHomeRoute,
   [BASIC_TERM.DEVELOPER_HUB]: loadDeveloperHubRoute,
@@ -199,19 +232,10 @@ export const routePreloaders: Record<string, RoutePreloader> = {
 
   [ACCOUNT_PAYABLE.ACCOUNT_PAYABLE_LIST]: loadAccountsPayableListRoute,
 
-  [ACCOUNTING]: loadAccountingWorkspaceRoute,
-  [ACCOUNTING_JOURNAL_BOOK]: loadAccountingWorkspaceRoute,
-  [ACCOUNTING_GENERAL_LEDGER]: loadAccountingWorkspaceRoute,
-  [ACCOUNTING_MANUAL_ENTRIES]: loadAccountingWorkspaceRoute,
-  [ACCOUNTING_REPORTS]: loadAccountingWorkspaceRoute,
-  [ACCOUNTING_FISCAL_COMPLIANCE]: loadAccountingWorkspaceRoute,
-  [ACCOUNTING_MONITOR]: loadAccountingWorkspaceRoute,
-  [ACCOUNTING_PERIOD_CLOSE]: loadAccountingWorkspaceRoute,
-  [HR_PAYROLL_TERM.HR_PAYROLL]: loadHrPayrollWorkspaceRoute,
-  [HR_PAYROLL_TERM.HR_EMPLOYEES]: loadHrPayrollWorkspaceRoute,
+  ...accountingWorkspacePreloaders,
+  ...hrPayrollWorkspacePreloaders,
   [HR_PAYROLL_TERM.HR_COMMISSIONS]: loadHrCommissionsRoute,
-  [HR_PAYROLL_TERM.HR_COMMISSION_PERIODS]: loadHrCommissionPeriodsRoute,
-  [HR_PAYROLL_TERM.HR_COMMISSION_PERIOD_DETAIL]: loadHrCommissionPeriodsRoute,
+  ...hrCommissionPeriodPreloaders,
 
   [INVENTORY_TERM.INVENTORY_ITEMS]: loadInventoryItemsRoute,
   [INVENTORY_TERM.INVENTORY_CONTROL]: loadInventorySessionsListRoute,

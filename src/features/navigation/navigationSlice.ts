@@ -12,7 +12,6 @@ interface LocationObject {
 interface NavigationState {
   history: LocationObject[];
   maxLength: number;
-  skipKey: string | null;
 }
 
 interface NavigationRootState {
@@ -22,7 +21,6 @@ interface NavigationRootState {
 const initialState: NavigationState = {
   history: [], // Array de objetos Location { pathname, search, hash, state, key }
   maxLength: 20, // Puedes configurarlo aquí o pasarlo dinámicamente
-  skipKey: null, // Clave para ignorar al buscar el anterior relevante
 };
 
 const navigationSlice = createSlice({
@@ -51,28 +49,10 @@ const navigationSlice = createSlice({
         }
       }
     },
-    // Podrías añadir otras acciones si necesitas (ej. setMaxLength, setSkipKey)
-    setNavigationOptions: (
-      state: NavigationState,
-      action: PayloadAction<{ maxLength?: number; skipKey?: string | null }>,
-    ) => {
-      if (action.payload.maxLength !== undefined) {
-        state.maxLength = action.payload.maxLength;
-      }
-      if (action.payload.skipKey !== undefined) {
-        state.skipKey = action.payload.skipKey;
-      }
-    },
   },
 });
 
-export const { pushHistory, setNavigationOptions } = navigationSlice.actions;
-
-// Selectores para acceder a los datos desde los componentes
-export const selectNavigationHistory = (state: NavigationRootState) =>
-  state.navigation.history;
-export const selectNavigationSkipKey = (state: NavigationRootState) =>
-  state.navigation.skipKey;
+export const { pushHistory } = navigationSlice.actions;
 
 // Selector Factory: Creates a selector to get the previous relevant route, ignoring a specific path prefix.
 export const makeSelectPreviousRelevantRoute = (pathToIgnore?: string) => {

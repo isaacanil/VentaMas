@@ -1,13 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import * as ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
 const srcRoot = path.dirname(fileURLToPath(import.meta.url));
 const indexPath = path.join(srcRoot, 'index.js');
-
-const importSpecifierPattern =
-  /(?:import|export)\s+(?:[^'"]*?\s+from\s+)?['"]([^'"]+)['"]|import\s*\(\s*['"]([^'"]+)['"]\s*\)|require\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
 
 const intentionallyUnreachableRuntimeRoots = [
   'app/modules/invoice/controllers/invoice.controller.js',
@@ -68,14 +66,62 @@ function resolveSourceFile(importerPath, specifier) {
   return candidates.find((candidate) => fs.existsSync(candidate)) ?? null;
 }
 
-function getRelativeImports(filePath) {
+function getImportSpecifiers(filePath) {
   const source = fs.readFileSync(filePath, 'utf8');
-  return Array.from(source.matchAll(importSpecifierPattern), (match) =>
-    [match[1], match[2], match[3]].find(Boolean),
-  )
-    .filter(Boolean)
+  const sourceFile = ts.createSourceFile(
+    filePath,
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    filePath.endsWith('.ts') ? ts.ScriptKind.TS : ts.ScriptKind.JS,
+  );
+  const specifiers = [];
+
+  const visit = (node) => {
+    if (
+      (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
+      node.moduleSpecifier &&
+      ts.isStringLiteralLike(node.moduleSpecifier)
+    ) {
+      specifiers.push(node.moduleSpecifier.text);
+    }
+
+    if (
+      ts.isCallExpression(node) &&
+      node.arguments.length === 1 &&
+      ts.isStringLiteralLike(node.arguments[0])
+    ) {
+      if (
+        node.expression.kind === ts.SyntaxKind.ImportKeyword ||
+        (ts.isIdentifier(node.expression) && node.expression.text === 'require')
+      ) {
+        specifiers.push(node.arguments[0].text);
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(sourceFile);
+  return specifiers;
+}
+
+function getRelativeImports(filePath) {
+  return getImportSpecifiers(filePath)
+    .filter((specifier) => specifier.startsWith('.'))
     .map((specifier) => resolveSourceFile(filePath, specifier))
     .filter(Boolean);
+}
+
+function getUnresolvedRelativeImports(sourceFiles) {
+  return sourceFiles
+    .flatMap((filePath) =>
+      getImportSpecifiers(filePath)
+        .filter((specifier) => specifier.startsWith('.'))
+        .filter((specifier) => resolveSourceFile(filePath, specifier) === null)
+        .map((specifier) => `${toRelativeSourcePath(filePath)} -> ${specifier}`),
+    )
+    .sort();
 }
 
 function collectReachableFiles(entryPaths) {
@@ -115,6 +161,7 @@ describe('Cloud Functions import graph', () => {
   it('keeps runtime source files reachable from index.js or explicitly allowlisted', () => {
     const sourceFiles = listSourceFiles(srcRoot);
     const allowlistedRootPaths = getAllowlistedRootPaths();
+    const unresolvedRelativeImports = getUnresolvedRelativeImports(sourceFiles);
     const reachableFiles = collectReachableFiles([
       indexPath,
       ...allowlistedRootPaths,
@@ -125,6 +172,7 @@ describe('Cloud Functions import graph', () => {
       .map(toRelativeSourcePath)
       .sort();
 
+    expect(unresolvedRelativeImports).toEqual([]);
     expect(unreachableFiles).toEqual([]);
   });
 });

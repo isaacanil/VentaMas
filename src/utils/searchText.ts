@@ -1,7 +1,7 @@
-import { stripDiacritics } from './text';
+import { normalizeText } from './text';
 
 export const normalizeSearchText = (value: unknown = ''): string =>
-  stripDiacritics(String(value)).toLowerCase();
+  normalizeText(String(value));
 
 export const normalizeTrimmedSearchText = (value: unknown = ''): string =>
   normalizeSearchText(value).trim();

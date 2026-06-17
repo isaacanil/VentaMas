@@ -88,8 +88,9 @@ const {
   ELECTRONIC_TAX_RECEIPT_PROVIDER,
 } = RoutesName.DEV_VIEW_TERM;
 
-// Todas estas rutas se consideran de desarrollo; se filtrarán en producción salvo que se active VITE_ENABLE_DEV_ROUTES
-// Puedes granular alguna con enabledEnvs: ['development','staging'] si quieres que salga en staging únicamente.
+// Todas estas rutas requieren acceso de desarrollador. Solo las rutas con
+// devOnly se filtran por ambiente; algunas herramientas tambien viven en
+// hosting y dependen de permisos reales de desarrollador.
 const Routes: AppRoute[] = [
   {
     path: BUSINESSES,

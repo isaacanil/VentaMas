@@ -3,6 +3,7 @@ import type {
   MembershipStatus,
   UserAccessControl,
 } from '@/types/businessModels';
+import { ensureArray } from '@/utils/array/ensureArray';
 import { asRecord, type UnknownRecord } from '@/utils/object/record';
 import { normalizeRoleId } from '@/utils/roles/normalizeRole';
 import { toCleanString } from '@/utils/text';
@@ -10,9 +11,6 @@ import { toCleanString } from '@/utils/text';
 import type { AvailableBusinessContext } from '@/utils/auth-adapter';
 
 export const ACTIVE_BUSINESS_STORAGE_KEY = 'activeBusinessId';
-
-const toArray = (value: unknown): unknown[] =>
-  Array.isArray(value) ? value : [];
 
 const isActiveStatus = (status: MembershipStatus): boolean => {
   const normalized = String(status || 'active').toLowerCase();
@@ -88,11 +86,11 @@ export const normalizeAvailableBusinesses = (
 ): AvailableBusinessContext[] => {
   const record = asRecord(user);
 
-  const fromAvailableBusinesses = toArray(record.availableBusinesses)
+  const fromAvailableBusinesses = ensureArray(record.availableBusinesses)
     .map((item) => normalizeBusiness(asRecord(item)))
     .filter((item): item is AvailableBusinessContext => item !== null);
 
-  const fromAccessControl = toArray(record.accessControl)
+  const fromAccessControl = ensureArray(record.accessControl)
     .map((item) => normalizeBusiness(asRecord(item)))
     .filter((item): item is AvailableBusinessContext => item !== null);
 

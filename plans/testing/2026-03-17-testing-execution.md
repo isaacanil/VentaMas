@@ -233,7 +233,7 @@ Despues de revisar el repo completo contra el plan, se detectaron familias que a
   - `scroll`
   - `pdf`
 - servicios y hooks faltantes:
-  - `dynamicPermissions`
+  - `src/firebase/permissions/dynamicPermissions.repository.ts`
   - `autoCompletePreorderInvoice`
   - `useInvoice`
   - `useAuthorizationModules`
