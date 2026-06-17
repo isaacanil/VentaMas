@@ -32,6 +32,15 @@ import BackOrdersModal from '@/modules/orderAndPurchase/pages/OrderAndPurchase/P
 import EvidenceUpload from '@/components/common/EvidenceUpload/EvidenceUpload';
 import ProductsTable from '@/modules/orderAndPurchase/pages/OrderAndPurchase/PurchaseManagement/components/ProductsTable';
 import ProductModal from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/ProductModal';
+import {
+  TransactionCardHeader as CardHeader,
+  TransactionFieldGroup as Group,
+  TransactionFooterGrid as FooterGrid,
+  TransactionProductsHeader as ProductsHeader,
+  TransactionProductsSection as ProductsSection,
+  TransactionSectionCard as FooterContainer,
+  TransactionSectionContent as CardContent,
+} from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/components/TransactionGeneralFormLayout/TransactionGeneralFormLayout.styles';
 import { parseTransactionDate } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/utils/transactionDates';
 import type { BackOrder } from '@/models/Warehouse/BackOrder';
 import type { ProviderDataItem, ProviderInfo } from '@/utils/provider/types';
@@ -582,15 +591,6 @@ const GeneralForm = ({
 
 export default GeneralForm;
 
-const Group = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1em;
-
-  @media (width <= 768px) {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  }
-`;
 const InvoiceDetails = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -604,63 +604,4 @@ const InvoiceDetails = styled.div`
   .ant-form-item {
     margin-bottom: 0;
   }
-`;
-
-const ProductsSection = styled.div`
-  margin-top: 2em;
-  padding: 0;
-  border: 1px solid #f0f0f0;
-  border-radius: 12px;
-  background-color: #fff;
-  overflow: hidden;
-`;
-
-const ProductsHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.8pc;
-  border-bottom: 1px solid #f0f0f0;
-
-  .title {
-    margin: 0;
-    font-size: 1pc;
-    font-weight: 600;
-    color: #262626;
-  }
-`;
-
-const FooterGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 1.4em;
-  margin-top: 1.4em;
-`;
-
-const FooterContainer = styled.div`
-  background-color: #fff;
-  border: 1px solid #f0f0f0;
-  border-radius: 12px;
-  padding: 0;
-  height: 100%;
-  overflow: hidden;
-`;
-
-const CardHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.8pc;
-  border-bottom: 1px solid #f0f0f0;
-
-  .title {
-    margin: 0;
-    font-size: 1pc;
-    font-weight: 600;
-    color: #262626;
-  }
-`;
-
-const CardContent = styled.div`
-  padding: 1.2pc;
 `;

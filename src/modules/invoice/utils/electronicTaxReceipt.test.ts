@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  isElectronicTaxReceiptAcceptedForFinancialUse,
   resolveElectronicTaxReceiptDiagnosticText,
   resolveElectronicTaxReceiptFilterStatus,
   resolveElectronicTaxReceiptStatusDisplay,
@@ -157,6 +158,36 @@ describe('electronicTaxReceipt status helpers', () => {
     expect(resolveElectronicTaxReceiptFilterStatus(null, 'issued')).toBe(
       'not_applicable',
     );
+  });
+
+  it('allows financial use only for fiscally accepted electronic receipts', () => {
+    expect(
+      isElectronicTaxReceiptAcceptedForFinancialUse({
+        status: 'issued',
+        dgiiValidationStatus: 'accepted',
+      }),
+    ).toBe(true);
+    expect(
+      isElectronicTaxReceiptAcceptedForFinancialUse({
+        status: 'accepted_conditional',
+      }),
+    ).toBe(true);
+    expect(
+      isElectronicTaxReceiptAcceptedForFinancialUse({
+        status: 'shadow_ready',
+      }),
+    ).toBe(true);
+    expect(
+      isElectronicTaxReceiptAcceptedForFinancialUse({
+        status: 'issued',
+        dgiiValidationStatus: 'rejected',
+      }),
+    ).toBe(false);
+    expect(
+      isElectronicTaxReceiptAcceptedForFinancialUse({
+        status: 'submitted',
+      }),
+    ).toBe(false);
   });
 
   it('builds a compact diagnostic text for rejected electronic receipts', () => {

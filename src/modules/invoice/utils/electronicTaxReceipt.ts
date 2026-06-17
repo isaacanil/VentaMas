@@ -80,6 +80,11 @@ const IN_PROGRESS_STATUSES = new Set([
   'issued',
 ]);
 const RFCE_ACCEPTED_STATUSES = new Set(['accepted', 'accepted_conditional']);
+const FINANCIAL_ACCEPTED_STATUSES = new Set([
+  'accepted',
+  'accepted_conditional',
+  'shadow_ready',
+]);
 const RFCE_ERROR_STATUSES = new Set(['error', 'failed', 'rejected']);
 const ERROR_STATUSES = new Set(['error', 'failed', 'local_failed']);
 
@@ -294,6 +299,13 @@ export const resolveElectronicTaxReceiptStatusDisplay = (
   if (!normalizedFallback) return null;
 
   return FALLBACK_ELECTRONIC_STATUS_DISPLAY[normalizedFallback] ?? null;
+};
+
+export const isElectronicTaxReceiptAcceptedForFinancialUse = (
+  snapshot?: ElectronicTaxReceiptSnapshot | null,
+): boolean => {
+  const statusKey = resolveElectronicTaxReceiptStatusKey(snapshot);
+  return Boolean(statusKey && FINANCIAL_ACCEPTED_STATUSES.has(statusKey));
 };
 
 export const resolveElectronicTaxReceiptFilterStatus = (

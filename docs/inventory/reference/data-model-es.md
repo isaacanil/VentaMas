@@ -27,7 +27,7 @@ Campos de auditoría comunes que se usan en varias colecciones:
 
 Ruta: `businesses/{businessID}/products/{productId}`
 
-Campos principales (según `src/models/Products/Product.ts` y usos actuales):
+Campos principales (según usos actuales):
 
 - `id: string` – Identificador del producto.
 - `name: string` | `productName: string` – Nombre. En la app se usa `name` en la mayoría de flujos; `productName` existe en datos antiguos o utilidades.
@@ -266,7 +266,6 @@ Salida por venta:
 
 ## Recursos relacionados
 
-- `src/models/Products/Product.ts`
 - `functions/src/app/modules/Inventory/functions/reconcileBatchStatusFromStocks.js`
 - `functions/src/app/modules/Inventory/` (servicios y cron)
 - `src/modules/inventory/pages/Inventory/components/Warehouse/…`

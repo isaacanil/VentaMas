@@ -12,6 +12,7 @@ import { buildAccountingEvent } from '../../../versions/v2/accounting/utils/acco
 import {
   resolveAccountingTimestamp as resolveTimestamp,
 } from '../../../versions/v2/accounting/utils/accountingTimestamp.util.js';
+import { canCreateFinancialEffectsForAdjustmentNote } from '../utils/customerAdjustmentNoteFiscalStatus.util.js';
 
 const REGION = 'us-central1';
 const MEMORY = '256MiB';
@@ -160,6 +161,11 @@ export const buildCustomerCreditNoteIssuedAccountingEvent = ({
   if (status && VOID_CREDIT_NOTE_STATUSES.has(status)) {
     return null;
   }
+  if (
+    !canCreateFinancialEffectsForAdjustmentNote(record, { ncfPrefix: 'E34' })
+  ) {
+    return null;
+  }
 
   const monetarySnapshot = resolveCreditNoteMonetarySnapshot(record);
   if (monetarySnapshot.monetary.functionalAmount <= 0) {
@@ -266,6 +272,13 @@ export const syncCustomerCreditNoteIssuedAccountingEvent = onDocumentWritten(
     if (afterStatus !== 'issued' || beforeStatus === 'issued') {
       return null;
     }
+    if (
+      !canCreateFinancialEffectsForAdjustmentNote(afterData, {
+        ncfPrefix: 'E34',
+      })
+    ) {
+      return null;
+    }
 
     if (!(await isAccountingEnabled(businessId))) {
       return null;
@@ -298,6 +311,22 @@ export const syncCustomerCreditNoteApplicationAccountingEvent = onDocumentCreate
   },
   async (event) => {
     const { businessId, applicationId } = event.params;
+    const applicationRecord = asRecord(event.data?.data());
+    const creditNoteId = toCleanString(applicationRecord.creditNoteId);
+    if (creditNoteId) {
+      const creditNoteSnap = await db
+        .doc(`businesses/${businessId}/creditNotes/${creditNoteId}`)
+        .get();
+      if (
+        creditNoteSnap.exists &&
+        !canCreateFinancialEffectsForAdjustmentNote(creditNoteSnap.data(), {
+          ncfPrefix: 'E34',
+        })
+      ) {
+        return null;
+      }
+    }
+
     if (!(await isAccountingEnabled(businessId))) {
       return null;
     }
@@ -305,7 +334,7 @@ export const syncCustomerCreditNoteApplicationAccountingEvent = onDocumentCreate
     const accountingEvent = buildCustomerCreditNoteAppliedAccountingEvent({
       businessId,
       applicationId,
-      applicationRecord: event.data?.data(),
+      applicationRecord,
     });
     if (!accountingEvent) {
       return null;

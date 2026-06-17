@@ -180,6 +180,32 @@ describe('syncCustomerCreditNoteAccountingEvents', () => {
     ).toBeUndefined();
   });
 
+  it('does not create an issued accounting event for an electronic credit note rejected by DGII', async () => {
+    await syncCustomerCreditNoteIssuedAccountingEvent({
+      params: {
+        businessId: 'business-1',
+        creditNoteId: 'credit-note-rejected',
+      },
+      data: {
+        data: () => ({
+          id: 'credit-note-rejected',
+          status: 'issued',
+          ncf: 'E340000000001',
+          electronicTaxReceipt: { status: 'rejected' },
+          totalAmount: 118,
+          client: { id: 'client-1' },
+          createdAt: { seconds: 1772543000, nanoseconds: 0 },
+        }),
+      },
+    });
+
+    expect(
+      documentSnapshots.get(
+        'businesses/business-1/accountingEvents/customer_credit_note.issued__credit-note-rejected',
+      ),
+    ).toBeUndefined();
+  });
+
   it('creates an accounting event when a customer credit note is applied', async () => {
     await syncCustomerCreditNoteApplicationAccountingEvent({
       params: {
@@ -230,5 +256,41 @@ describe('syncCustomerCreditNoteAccountingEvents', () => {
       },
       createdBy: 'user-1',
     });
+  });
+
+  it('does not create an application accounting event for an electronic credit note rejected by DGII', async () => {
+    documentSnapshots.set('businesses/business-1/creditNotes/credit-note-1', {
+      id: 'credit-note-1',
+      status: 'issued',
+      ncf: 'E340000000001',
+      electronicTaxReceipt: { status: 'rejected' },
+      totalAmount: 118,
+      client: { id: 'client-1' },
+    });
+
+    await syncCustomerCreditNoteApplicationAccountingEvent({
+      params: {
+        businessId: 'business-1',
+        applicationId: 'application-rejected',
+      },
+      data: {
+        data: () => ({
+          id: 'application-rejected',
+          creditNoteId: 'credit-note-1',
+          creditNoteNcf: 'E340000000001',
+          invoiceId: 'invoice-1',
+          clientId: 'client-1',
+          amountApplied: 75,
+          previousBalance: 118,
+          newBalance: 43,
+        }),
+      },
+    });
+
+    expect(
+      documentSnapshots.get(
+        'businesses/business-1/accountingEvents/customer_credit_note.applied__application-rejected',
+      ),
+    ).toBeUndefined();
   });
 });

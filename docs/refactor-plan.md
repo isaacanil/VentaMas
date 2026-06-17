@@ -7,7 +7,9 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - No usar Firebase SDK directo en componentes nuevos. Crear un service, repository o hook de dominio que encapsule la lectura/escritura.
 - No poner logica de negocio pesada en componentes visuales. Calculos, normalizadores y validaciones deben vivir en `utils/`, `services/`, `domain/` o en carpetas del dominio.
 - Preferir services/repositories por dominio antes que helpers globales genericos. Si una pieza es de facturacion, inventario, caja o RRHH, debe ser ubicable por ese dominio.
-- Evitar imports profundos entre modulos. Si un modulo necesita una capacidad de otro, extraer un contrato pequeno en `src/shared/types`, `src/shared/lib` o en una capa de dominio neutral.
+- Preferir carpetas owner-locales (`components`, `hooks`, `utils`, `repositories`, `types`) dentro de `src/modules/<dominio>/` antes de subir codigo a buckets compartidos.
+- Usar `src/domain/<dominio>/` solo para contratos neutrales y puros que realmente cruzan owners; no mover ahi logica que dependa de React, Firebase, rutas o estilos.
+- Evitar imports profundos entre modulos. Si un modulo necesita una capacidad de otro, consumir `src/modules/<dominio>/public.ts` o extraer un contrato pequeno en `src/domain/<dominio>` / `src/shared/<area>`.
 - Evitar duplicar componentes compartidos. Si dos componentes mantienen el mismo contrato visual, crear una pieza compartida y dejar wrappers solo cuando ayuden a migrar sin romper imports.
 - Los tipos de router deben vivir fuera del agregador de rutas cuando sean usados por otros archivos del router o del menu. `src/router/types/routeTypes.ts` es el contrato neutral para `AppRoute`.
 
@@ -198,17 +200,23 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - Se elimino el cliente frontend muerto `src/services/accountsReceivable/audit.service.ts`; el endpoint HTTP de auditoria CxC queda como superficie backend/documentada, no como API importada desde `src/services`.
 - `LoginImageConfig` dejo de importar Firebase Storage directo; el acceso a `listAll`, `getDownloadURL`, `deleteObject` y `uploadBytes` vive en `src/modules/controlPanel/AppConfig/repositories/loginImageStorageRepository.ts`.
 - Al retirar `AppVersionBadge`, tambien se elimino el formatter exclusivo de ese badge, manteniendo solo `formatClientAppVersionDate` para `getClientBuildInfo`.
+- `OrderManagement` y `PurchaseManagement` comparten los primitivos visuales de sus `GeneralForm` en `src/modules/orderAndPurchase/pages/OrderAndPurchase/shared/components/TransactionGeneralFormLayout`, dejando `InvoiceDetails` local porque cada flujo tiene requisitos fiscales distintos.
+- `ChangeUserPasswordModal` dejo de sincronizar validez derivada con `setState` dentro de `useEffect`; ahora actualiza el estado de submit desde callbacks del formulario y mantiene el reseteo local al cerrar.
+- Las notas de credito/debito electronicas solo crean efectos financieros cuando DGII/RFCE ya estan en un estado aceptado; el mismo criterio se usa para ocultar notas de credito electronicas rechazadas como medio de pago disponible.
+- Se eliminaron assets scaffold sin referencias (`src/assets/react.svg`, `src/assets/link`) y modelos muertos (`src/models/Products`, `src/models/Sales`), actualizando la referencia de inventario.
 
 ## Guardrails añadidos en esta pasada
 
-- `src/modules/moduleBoundaries.test.ts` protege boundaries entre dominios: bloquea imports desde un modulo hacia carpetas privadas de otro (`pages/`, `components/`, `hooks/`, `utils/`), mantiene vacias las allowlists `allowedLegacyDeepImports` y `allowedLegacyPrivateRouterImports`, y tambien cubre buckets legacy retirados, el adapter HeroUI y ciclos entre modulos.
+- `src/modules/moduleBoundaries.test.ts` protege boundaries entre dominios: bloquea imports desde un modulo hacia carpetas privadas de otro (`pages/`, `components/`, `hooks/`, `utils/`), mantiene vacias las allowlists `allowedLegacyDeepImports` y `allowedLegacyPrivateRouterImports`, y tambien cubre buckets legacy retirados, el adapter HeroUI y ciclos entre modulos. Los ciclos legacy permitidos viven en una lista explicita separada y no deben crecer.
 - `src/modules/publicBarrels.test.ts` fija el contrato runtime exacto de cada `public.ts`: cada modulo debe tener barrel publico registrado y exportar solo los nombres/tipos esperados por el test, para que el barrel sea un contrato acotado y no un indice de carpetas internas.
 - `src/firebase/functions/callableImportGuard.test.ts` obliga a que los wrappers nuevos de Cloud Functions usen `src/firebase/functions/callable.ts` / `createFirebaseCallable`; los imports directos de `httpsCallable` quedan limitados al wrapper compartido y a la deuda enumerada en el test.
+- `src/router/routes/routePreloaders.test.ts`, `routeHandle.test.ts`, `routeVisibility.test.ts` y `src/modules/navigation/components/MenuApp/GlobalMenu/core/createLazyLoader.test.ts` son el guardrail ejecutable de rutas/menu/preloaders. No mantener checklists manuales paralelos salvo como nota temporal de migracion.
+- `npm run test:run:architecture` corre la suite estructural actual: callable wrappers, boundaries, public barrels, rutas y lazy loaders.
 - `tools/deploy.js` y `tools/project.js` bloquean los deploys de todas las Cloud Functions de staging salvo `ALLOW_ALL_FUNCTIONS_DEPLOY=1`. El flujo normal documentado por el helper es `npm run deploy -- staging:functions nombreDeFuncion`, que termina en `--only functions:nombreDeFuncion`.
 
 ## Deuda restante de alto riesgo: no tocar sin QA
 
-- Las allowlists de `moduleBoundaries.test.ts` deben seguir vacias. Cualquier necesidad de cruce entre dominios debe pasar por `@/modules/<modulo>/public` o por una capa neutral compartida, con QA funcional cuando toque flujos operativos sensibles.
+- Las allowlists de deep imports y router privado en `moduleBoundaries.test.ts` deben seguir vacias. Cualquier necesidad de cruce entre dominios debe pasar por `@/modules/<modulo>/public` o por una capa neutral compartida, con QA funcional cuando toque flujos operativos sensibles. La lista de ciclos legacy es deuda acotada: no agregar nuevos ciclos sin dividir primero el contrato compartido.
 - La deuda explícita de `callableImportGuard.test.ts` incluye wrappers de autenticación/sesión/cambio de negocio, contabilidad/DGII/reportes/cierre de periodo, CxC, notas de crédito, facturas, apertura/cierre de caja, tesorería y `src/services/invoice/invoice.service.ts`. No hacer migración masiva a `createFirebaseCallable` sin pruebas de caracterización y QA de cada flujo monetario o fiscal afectado.
 - Los `public.ts` no deben crecer como barrels convenientes. Si un modulo necesita consumir algo de otro dominio, primero confirmar ownership, exponer solo el contrato minimo y actualizar `src/modules/publicBarrels.test.ts`; si el export toca facturacion, pagos, caja, tesoreria, fiscal/NCF o CxC, requiere QA funcional.
 - No cambiar ni usar el bypass `ALLOW_ALL_FUNCTIONS_DEPLOY=1` como parte de limpiezas arquitectónicas. Sirve solo para una decisión explícita de release; para cambios en `functions/`, desplegar funciones específicas.
@@ -222,3 +230,4 @@ Centralizar servicios/API/Firebase por dominio, empezando por dominios de menor 
 3. Mover solo llamadas de lectura simples detras de un service/repository tipado.
 4. Agregar pruebas de contrato para normalizadores o mappers antes de mover escrituras.
 5. Repetir por dominio, evitando barrels globales y evitando imports profundos entre modulos; cuando se use `public.ts`, tratarlo como contrato publico acotado del modulo owner, no como indice general de carpetas internas.
+6. Cerrar cada lote que toque boundaries, public barrels, callables o rutas con `npm run test:run:architecture`.

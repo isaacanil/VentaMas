@@ -12,6 +12,7 @@ import {
 } from '../../../versions/v2/accounting/utils/accountingTimestamp.util.js';
 import { addAccountReceivable } from '../services/addAccountReceivable.js';
 import { addInstallmentReceivable } from '../services/addInstallmentsAccountReceivable.js';
+import { canCreateFinancialEffectsForAdjustmentNote } from '../utils/customerAdjustmentNoteFiscalStatus.util.js';
 
 const REGION = 'us-central1';
 const MEMORY = '256MiB';
@@ -203,6 +204,13 @@ export const ensureCustomerDebitNoteReceivable = async ({
     const debitNoteRecord = asRecord(noteSnap.data());
     const status = toCleanString(debitNoteRecord.status)?.toLowerCase() ?? null;
     if (status !== 'issued') return;
+    if (
+      !canCreateFinancialEffectsForAdjustmentNote(debitNoteRecord, {
+        ncfPrefix: 'E33',
+      })
+    ) {
+      return;
+    }
 
     receivableId = toCleanString(debitNoteRecord.accountsReceivableId);
     if (receivableId) return;
@@ -253,6 +261,11 @@ export const buildCustomerDebitNoteIssuedAccountingEvent = ({
     return null;
   }
   if (status && VOID_DEBIT_NOTE_STATUSES.has(status)) {
+    return null;
+  }
+  if (
+    !canCreateFinancialEffectsForAdjustmentNote(record, { ncfPrefix: 'E33' })
+  ) {
     return null;
   }
 
@@ -312,6 +325,13 @@ export const syncCustomerDebitNoteIssuedAccountingEvent = onDocumentWritten(
     const afterData = asRecord(event.data?.after?.data?.() ?? event.data?.data?.());
     const afterStatus = toCleanString(afterData.status)?.toLowerCase() ?? null;
     if (afterStatus !== 'issued') {
+      return null;
+    }
+    if (
+      !canCreateFinancialEffectsForAdjustmentNote(afterData, {
+        ncfPrefix: 'E33',
+      })
+    ) {
       return null;
     }
 

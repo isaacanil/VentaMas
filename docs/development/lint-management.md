@@ -77,11 +77,13 @@ npm --prefix functions run build
 Usa estos gates segun la superficie tocada:
 
 ```powershell
+npm run test:run:architecture
 npm run test:run
 npm run test:run:functions
 npm run test:run:all
 ```
 
+- Architecture: `npm run test:run:architecture` ejecuta la suite estructural de Vitest para wrappers callable, boundaries de módulos, barrels `public.ts`, rutas/preloaders y lazy loaders del menú. Úsalo cuando cambien contratos entre módulos, rutas, navegación o wrappers de Cloud Functions.
 - Frontend: `npm run test:run` ejecuta Vitest para la app.
 - Functions: `npm run test:run:functions` ejecuta la configuracion de Vitest para Cloud Functions. Si se toca `functions/scripts/data-audit`, agrega `npm run test:run:functions:scripts`.
 - All: `npm run test:run:all` encadena frontend, functions y scripts de functions. Es el gate completo antes de cerrar cambios transversales.

@@ -1,5 +1,5 @@
 import { Form, Input, Modal, Typography, message } from 'antd';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { fbUpdateUserPassword } from '@/firebase/Auth/fbAuthV2/fbUpdateUserPassword';
 
@@ -32,6 +32,11 @@ interface ChangePasswordFormValues {
   confirmPassword: string;
 }
 
+const PASSWORD_FORM_FIELDS: Array<keyof ChangePasswordFormValues> = [
+  'password',
+  'confirmPassword',
+];
+
 interface ChangeUserPasswordModalProps {
   isOpen: boolean;
   user?: ChangePasswordUser | null;
@@ -45,9 +50,8 @@ export const ChangeUserPasswordModal = ({
 }: ChangeUserPasswordModalProps) => {
   const [form] = Form.useForm<ChangePasswordFormValues>();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isFormValid, setIsFormValid] = useState(false);
-
-  const formValues = Form.useWatch<ChangePasswordFormValues>([], form);
+  const [canSubmitPasswordForm, setCanSubmitPasswordForm] = useState(false);
+  const validationRunRef = useRef(0);
 
   const username = useMemo(
     () => user?.name ?? user?.username ?? '',
@@ -56,19 +60,40 @@ export const ChangeUserPasswordModal = ({
   const realName = useMemo(() => user?.realName ?? '', [user?.realName]);
   const displayName = (realName || username || 'Usuario sin nombre').trim();
 
-  // Validar el formulario cuando cambien los valores
-  useEffect(() => {
-    if (isOpen) {
-      form
-        .validateFields({ validateOnly: true })
-        .then(() => setIsFormValid(true))
-        .catch(() => setIsFormValid(false));
+  const updatePasswordFormValidity = useCallback(() => {
+    const validationRun = validationRunRef.current + 1;
+    validationRunRef.current = validationRun;
+
+    const values = form.getFieldsValue(PASSWORD_FORM_FIELDS);
+    const hasRequiredValues = PASSWORD_FORM_FIELDS.every((fieldName) =>
+      Boolean(values[fieldName]),
+    );
+
+    if (!hasRequiredValues) {
+      setCanSubmitPasswordForm(false);
+      return;
     }
-  }, [form, formValues, isOpen]);
+
+    void form
+      .validateFields(PASSWORD_FORM_FIELDS, { validateOnly: true })
+      .then(
+        () => {
+          if (validationRunRef.current === validationRun) {
+            setCanSubmitPasswordForm(true);
+          }
+        },
+        () => {
+          if (validationRunRef.current === validationRun) {
+            setCanSubmitPasswordForm(false);
+          }
+        },
+      );
+  }, [form]);
 
   const resetAndClose = useCallback(() => {
+    validationRunRef.current += 1;
     form.resetFields();
-    setIsFormValid(false);
+    setCanSubmitPasswordForm(false);
     onClose?.();
   }, [form, onClose]);
 
@@ -114,9 +139,14 @@ export const ChangeUserPasswordModal = ({
       onOk={() => form.submit()}
       onCancel={handleCancel}
       confirmLoading={isSubmitting}
-      okButtonProps={{ disabled: !isFormValid || isSubmitting }}
+      okButtonProps={{ disabled: !canSubmitPasswordForm || isSubmitting }}
     >
-      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        onValuesChange={updatePasswordFormValidity}
+      >
         <Typography.Title level={5}>Asignar nueva contraseña</Typography.Title>
         <Form.Item label="Usuario">
           <Input value={username || displayName} disabled />

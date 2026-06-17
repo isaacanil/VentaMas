@@ -8,6 +8,8 @@ La complejidad esencial del negocio es alta: facturación, DGII, CxC, inventario
 
 Alcance de esta auditoría: análisis estático del árbol actual. No se modificó código fuente, no se ejecutaron refactors automáticos y no se validó comportamiento runtime. El árbol de Git ya estaba sucio antes de crear este documento, por lo que los hallazgos describen mantenibilidad y riesgo estructural, no regresiones confirmadas.
 
+Actualización round-2: la dirección vigente ya está más cerrada que el diagnóstico original. El trabajo nuevo debe reforzar ownership local por módulo (`components`, `hooks`, `utils`, `repositories`), contratos neutrales en `src/domain` cuando crucen owners, barrels públicos `public.ts`, wrappers de Cloud Functions sobre `src/firebase/functions/callable.ts` y el gate `npm run test:run:architecture`. La cobertura de rutas debe vivir en guardrails ejecutables, no en checklists manuales paralelos.
+
 ## 2. Mapa de estructura actual
 
 | Carpeta o archivo | Responsabilidad aparente | Observación |
@@ -20,9 +22,9 @@ Alcance de esta auditoría: análisis estático del árbol actual. No se modific
 | `src/services` | Servicios frontend globales. | Solo se observan pocos dominios (`accountsReceivable`, `invoice`), por lo que no funciona todavía como capa de datos consistente. |
 | `src/utils` | Helpers transversales de negocio, formato, fecha, contabilidad, inventario y otros. | Útil, pero algunos archivos ya contienen lógica de dominio pesada que compite con `modules` y `firebase`. |
 | `src/shared` | Contratos y utilidades compartidas. | Buena ubicación para contratos neutrales, pero hay duplicados con `functions/src/shared`. |
-| `src/types`, `src/models`, `src/domain`, `src/schema`, `src/constants`, `src/modules/expenses/validation` | Tipos, modelos, schemas, constantes y validaciones. | La separación conceptual existe, pero algunos conceptos viven en más de una carpeta. |
+| `src/types`, `src/models`, `src/domain`, `src/schema`, `src/constants`, `src/modules/expenses/validation` | Tipos, modelos, schemas, constantes y validaciones. | `src/domain` debe ser la salida preferida para contratos neutrales y puros; si un concepto tiene owner claro, mantenerlo owner-local y exponerlo por `public.ts` solo cuando otro dominio lo necesite. |
 | `src/features` | Redux slices y estado global. | El store central registra muchas features y desactiva `serializableCheck`, lo que aumenta el acoplamiento. |
-| `src/router` | Rutas, nombres, preloaders y procesamiento de rutas. | La metadata de navegación está repartida entre router, menú, preloaders y toolbars. |
+| `src/router` | Rutas, nombres, preloaders y procesamiento de rutas. | La metadata aún vive en varias piezas, pero `routePreloaders.test.ts`, `routeHandle.test.ts` y `routeVisibility.test.ts` ya funcionan como guardrails ejecutables. |
 | `src/design-system`, `src/styles`, `src/theme`, `src/variable.css` | Tokens, temas, estilos globales y normalización visual. | Hay tokens, pero también variables duplicadas y colores hardcodeados en componentes. |
 | `functions/src/app/modules` | Cloud Functions por dominio actual. | Buena intención modular, aunque hay casing inconsistente (`Inventory`) y varios archivos muy grandes. |
 | `functions/src/app/versions/v1` y `functions/src/app/versions/v2` | APIs/versiones previas y actuales. | Conviven con `app/modules`, lo que exige claridad al exponer funciones y desplegar selectivamente. |
@@ -45,7 +47,7 @@ Alcance de esta auditoría: análisis estático del árbol actual. No se modific
 | `settings` concentra demasiados subdominios. | `src/modules/settings`, `src/modules/accounting/hooks/useAccountingConfig.ts`, `src/modules/settings/pages/subscription`, `src/modules/settings/pages/setting` | Configuración general, contable, fiscal, suscripción y usuarios compiten dentro del mismo módulo. | Media-alta | Separar subdominios internos sin cambiar rutas públicas: `settings/accounting`, `settings/fiscal`, `settings/users`, `settings/subscription`. |
 | Sistema UI con direcciones activas mezcladas. | `src/components/ui`, `src/components/heroui`, `src/design-system/registry/components.ts`, múltiples imports AntD | Nuevas pantallas pueden elegir AntD, custom UI o Vm por costumbre, no por arquitectura. | Media | Documentar regla por área: AntD legacy permitido, `Vm/HeroUI` preferido para UI nueva. Migrar solo cuando se toca la pantalla. |
 | Estilos y tokens no están completamente centralizados. | `src/variable.css`, `src/styles/variables.css`, `src/styles/theme.css`, `src/design-system`, componentes con `style={{ ... }}` | Contraste, foco, spacing y estados visuales se vuelven inconsistentes. | Media | Consolidar tokens por uso real y reemplazar hardcodes por superficie, empezando por venta, fiscal y dev/admin. |
-| Rutas, menú, preloaders y toolbars duplican metadata. | `src/router/routes/routesName.ts`, `src/router/routes/routes.tsx`, `src/router/routes/routePreloaders.ts`, `src/modules/navigation/components/MenuApp/GlobalMenu/configs/toolbarConfigs.ts`, `src/modules/navigation/components/MenuApp/MenuData/items/*` | Agregar o mover una ruta puede requerir 4 o 5 cambios manuales. | Media | Crear checklist de registro ahora; luego mover a metadata única por ruta y derivar preloaders/toolbars. |
+| Rutas, menú, preloaders y toolbars duplican metadata. | `src/router/routes/routesName.ts`, `src/router/routes/routes.tsx`, `src/router/routes/routePreloaders.ts`, `src/modules/navigation/components/MenuApp/GlobalMenu/configs/toolbarConfigs.ts`, `src/modules/navigation/components/MenuApp/MenuData/items/*` | Agregar o mover una ruta puede requerir varios cambios, pero los olvidos principales ya deben fallar en pruebas estructurales. | Media | Mantener y ampliar `routePreloaders.test.ts`, `routeHandle.test.ts`, `routeVisibility.test.ts` y el test de `createLazyLoader`; no crear checklist manual paralelo salvo para una migración temporal. |
 | Configuración de calidad deja zonas fuera. | `tsconfig.json`, `tsconfig.typecheck.json`, `functions/tsconfig.json`, `eslint.config.js` | `strict: false`, `allowJs`, `checkJs: false` y exclusiones reducen cobertura real de typecheck. | Media | Hacer pilotos por módulo: `checkJs` en backend nuevo, typecheck dev separado y migración gradual de Functions críticas a TS. |
 | Nombres, typos y casing mixto reducen navegabilidad. | `functions/src/app/modules/Inventory` y otros legacy pendientes. `src/firebase/processAccountsReceivablePayments` ya quedó normalizado desde el typo histórico. | Búsquedas fallan, imports quedan frágiles en filesystems case-sensitive y se facilita duplicar conceptos. | Media | Renombrar por lotes pequeños con pruebas focalizadas y commits de casing separados. |
 | Cobertura de tests desigual por dominio. | `src/modules/inventory`, `src/modules/contacts`, `src/modules/accountsReceivable`, `functions/src/app/modules/invoice`, `functions/src/app/modules/quotation`, `functions/src/app/modules/products` | Refactors de organización en dominios grandes no tienen red suficiente. | Media | Agregar primero tests de helpers/reglas puras, luego hooks críticos y después flujos monetarios de integración. |
@@ -204,6 +206,10 @@ src/
     heroui/              # Vm* como UI nueva por defecto
     ui-legacy/           # wrappers legacy cuando se migren gradualmente
     common/              # shared UI realmente transversal
+  domain/
+    accountsReceivable/  # contratos neutrales puros entre owners
+    cashCount/
+    products/
   modules/
     accounting/
       components/
@@ -212,6 +218,7 @@ src/
       domain/
       utils/
       types/
+      public.ts          # contrato publico acotado del owner
     sales/
       components/
       hooks/
@@ -242,13 +249,15 @@ src/
       types/
     firebase/
       listenDocument.ts
-      callable.ts
     date/
     money/
     payments/
     phone/
     ui/
       tokens/
+  firebase/
+    functions/
+      callable.ts        # createFirebaseCallable / createFirebaseCallableFor
   router/
     metadata/
     routes/
@@ -290,6 +299,8 @@ Principios para aplicar esta estructura:
 - No mover fiscal, caja, pagos, facturación ni NCF sin pruebas de caracterización.
 - No crear helpers globales genéricos si el dominio es claro.
 - Preferir carpetas locales `components`, `hooks`, `utils`, `repositories` dentro del módulo dueño.
+- Usar `src/domain/<dominio>` solo para contratos neutrales y puros que cruzan owners; si el consumidor necesita algo de otro módulo, exponer el mínimo desde `src/modules/<dominio>/public.ts`.
+- Mantener wrappers nuevos de Cloud Functions sobre `src/firebase/functions/callable.ts`; no reintroducir imports directos a `httpsCallable`.
 - Mantener wrappers temporales cuando reduzcan riesgo de migración.
 - Separar renames de casing/typos en cambios pequeños para evitar problemas en Windows/Git.
 
@@ -297,7 +308,7 @@ Principios para aplicar esta estructura:
 
 ### Fase 1: Cambios seguros
 
-1. Crear checklist de registro de rutas: path, route name, preloader, toolbar y menú.
+1. Mantener `npm run test:run:architecture` como gate estructural para rutas, barrels públicos, boundaries de módulos y wrappers callable.
 2. Documentar regla UI: `Vm/HeroUI` para UI nueva; AntD/custom solo legacy.
 3. Restaurar foco visible en `src/components/ui/Button/Button.tsx` con token de diseño.
 4. Auditar usos críticos de `src/components/ui/Select/Select.tsx` y bloquear usos nuevos.
@@ -319,7 +330,7 @@ Principios para aplicar esta estructura:
 7. Separar `FiscalCompliancePanel` en previews, modal, helpers y view model.
 8. Crear agregadores de exports por dominio en `functions/src/app/exports`.
 9. Consolidar fecha/dinero en helpers compartidos con adapters por dominio.
-10. Extraer metadata de rutas para reducir duplicación manual.
+10. Ampliar los guardrails de rutas/preloaders cuando aparezcan nuevas superficies de menú, toolbar o metadata; evitar checklists manuales paralelos.
 
 ### Fase 3: Refactor más profundo
 
@@ -343,6 +354,6 @@ Principios para aplicar esta estructura:
 5. Dividir `FiscalCompliancePanel.tsx` en helpers, previews y view model.
 6. Dividir `InvoiceSummary.tsx` y `ProductCardForCart.tsx` por responsabilidades de checkout.
 7. Reducir `functions/src/index.js` con agregadores por dominio/version.
-8. Documentar metadata/checklist de rutas para evitar olvidos en menú, preloaders y toolbars.
+8. Mantener la suite `npm run test:run:architecture` verde y ampliar sus casos cuando cambien rutas, menú, preloaders, barrels públicos o callable wrappers.
 9. Consolidar tokens de badges/status/focus y sustituir colores hardcodeados en superficies críticas.
 10. Planificar renames de typos/casing en lotes pequeños con pruebas focalizadas.

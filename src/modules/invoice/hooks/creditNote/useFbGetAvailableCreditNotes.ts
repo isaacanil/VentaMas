@@ -13,6 +13,29 @@ import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
 import type { CreditNoteRecord } from '@/types/creditNote';
 import type { UserIdentity } from '@/types/users';
+import { isElectronicTaxReceiptAcceptedForFinancialUse } from '@/modules/invoice/utils/electronicTaxReceipt';
+
+const isElectronicCreditNote = (note: CreditNoteRecord) => {
+  const documentFormat = String(note.documentFormat || '').trim().toLowerCase();
+  const fiscalMode = String(note.fiscalMode || '').trim().toLowerCase();
+  const ncf = String(note.eNcf || note.ncf || '').trim().toUpperCase();
+
+  return (
+    documentFormat === 'electronic' ||
+    fiscalMode === 'electronic_ecf' ||
+    ncf.startsWith('E34') ||
+    Boolean(note.electronicTaxReceipt)
+  );
+};
+
+const canUseCreditNoteAsPayment = (note: CreditNoteRecord) => {
+  if ((note.availableAmount || 0) <= 0) return false;
+  if (!isElectronicCreditNote(note)) return true;
+
+  return isElectronicTaxReceiptAcceptedForFinancialUse(
+    note.electronicTaxReceipt,
+  );
+};
 
 export const useFbGetAvailableCreditNotes = (
   clientId: string | null | undefined,
@@ -50,7 +73,7 @@ export const useFbGetAvailableCreditNotes = (
             availableAmount: data.availableAmount ?? (data.totalAmount || 0),
           };
         });
-        setCreditNotes(list.filter((n) => (n.availableAmount || 0) > 0));
+        setCreditNotes(list.filter(canUseCreditNoteAsPayment));
         setLoading(false);
       },
       (err) => {
