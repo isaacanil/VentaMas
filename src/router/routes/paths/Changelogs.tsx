@@ -19,6 +19,7 @@ const Routes: AppRoute[] = [
   },
   {
     path: CHANGELOG_MANAGE,
+    requiresDevAccess: true,
     element: <ChangelogManage />,
   },
 ];

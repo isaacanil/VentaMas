@@ -100,6 +100,7 @@ const Routes: AppRoute[] = [
   },
   {
     path: PRODUCT_STUDIO,
+    requiresDevAccess: true,
     element: <ProductStudio />,
   },
 ];

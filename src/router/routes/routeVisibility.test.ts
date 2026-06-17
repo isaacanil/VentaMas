@@ -1,5 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 
+import changelogRoutes from './paths/Changelogs';
+import inventoryRoutes from './paths/Inventory';
 import settingRoutes from './paths/Setting';
 import { ROUTE_STATUS } from './routeMeta';
 import {
@@ -12,10 +14,18 @@ import ROUTES_NAME from './routesName';
 const switchBusinessRoute = settingRoutes.find(
   (route) => route.path === ROUTES_NAME.DEV_VIEW_TERM.SWITCH_BUSINESS,
 );
+const productStudioRoute = inventoryRoutes.find(
+  (route) => route.path === ROUTES_NAME.INVENTORY_TERM.PRODUCT_STUDIO,
+);
+const changelogManageRoute = changelogRoutes.find(
+  (route) => route.path === ROUTES_NAME.CHANGELOG_TERM.CHANGELOG_MANAGE,
+);
 
 describe('routeVisibility', () => {
   beforeAll(() => {
     expect(switchBusinessRoute).toBeDefined();
+    expect(productStudioRoute).toBeDefined();
+    expect(changelogManageRoute).toBeDefined();
 
     registerRoutes([
       { path: '/hidden', status: ROUTE_STATUS.HIDDEN },
@@ -33,6 +43,8 @@ describe('routeVisibility', () => {
         },
       },
       switchBusinessRoute,
+      productStudioRoute,
+      changelogManageRoute,
     ] as never);
   });
 
@@ -60,6 +72,19 @@ describe('routeVisibility', () => {
 
   it('marks switch business as requiring dev access', () => {
     expect(getRouteMeta(ROUTES_NAME.DEV_VIEW_TERM.SWITCH_BUSINESS)).toEqual(
+      expect.objectContaining({
+        requiresDevAccess: true,
+      }),
+    );
+  });
+
+  it('marks developer-owned utility routes as requiring dev access', () => {
+    expect(getRouteMeta(ROUTES_NAME.INVENTORY_TERM.PRODUCT_STUDIO)).toEqual(
+      expect.objectContaining({
+        requiresDevAccess: true,
+      }),
+    );
+    expect(getRouteMeta(ROUTES_NAME.CHANGELOG_TERM.CHANGELOG_MANAGE)).toEqual(
       expect.objectContaining({
         requiresDevAccess: true,
       }),
