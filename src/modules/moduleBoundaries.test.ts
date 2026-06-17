@@ -71,6 +71,7 @@ const forbiddenLegacySharedImportPrefixes = [
   '@/hooks/useSearchFilter',
   '@/hooks/useVendorBills',
   '@/hooks/exportToExcel',
+  '@/supabase',
   '@/firebase/Auth/fbAuthV2/fbSignIn/checkSession',
   '@/firebase/Auth/fbAuthV2/fbSignIn/components',
   '@/firebase/Auth/fbAuthV2/fbSignIn/updateUserData',
@@ -99,6 +100,7 @@ const forbiddenLegacySharedImportPrefixes = [
   '@/utils/fiscal/electronicTaxReceiptDocumentTypes',
   '@/utils/fiscal/dgii608ReasonCatalog',
   '@/utils/commissions/collaboratorOptions',
+  '@/services/accountsReceivable',
   '@/notification',
 ];
 
@@ -144,6 +146,7 @@ const retiredLegacySharedSourcePaths = [
   ['src', 'hooks', 'useSearchFilter.ts'],
   ['src', 'hooks', 'useVendorBills.tsx'],
   ['src', 'hooks', 'exportToExcel'],
+  ['src', 'supabase'],
   ['src', 'firebase', 'Auth', 'fbAuthV2', 'fbSignIn', 'checkSession.ts'],
   ['src', 'firebase', 'Auth', 'fbAuthV2', 'fbSignIn', 'components'],
   ['src', 'firebase', 'Auth', 'fbAuthV2', 'fbSignIn', 'updateUserData.ts'],
@@ -182,6 +185,7 @@ const retiredLegacySharedSourcePaths = [
   ['src', 'utils', 'fiscal', 'dgii608ReasonCatalog.ts'],
   ['src', 'utils', 'fiscal', 'dgii608ReasonCatalog.test.ts'],
   ['src', 'utils', 'commissions', 'collaboratorOptions.ts'],
+  ['src', 'services', 'accountsReceivable'],
   ['src', 'notification'],
 ];
 

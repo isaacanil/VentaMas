@@ -10,18 +10,21 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.join(__dirname, '..');
 
 const SCRIPTS = {
-  '🚀 Full Quality Check (Format + Lint + Architecture Tests + Typecheck + Build)': [
-    'format',
-    'lint:fast',
-    'lint:web',
-    'test:run:architecture',
-    'typecheck',
-    'build',
-  ],
+  '🚀 Full Quality Check (Format + Lint + Architecture/Tool Tests + Typecheck + Build)':
+    [
+      'format',
+      'lint:fast',
+      'lint:web',
+      'test:run:architecture',
+      'test:run:tools',
+      'typecheck',
+      'build',
+    ],
   '🧹 Format Code (Prettier)': ['format'],
   '⚡ Fast Lint (Oxlint)': ['lint:fast'],
   '🔍 Web Lint (ESLint)': ['lint:web'],
   '🧱 Architecture Guardrails': ['test:run:architecture'],
+  '🧪 Tool Smoke Tests': ['test:run:tools'],
   '💪 Type Check (TSC)': ['typecheck'],
   '🎨 Styles Check (Stylelint)': ['lint:styles'],
   '📦 Build Application (Vite)': ['build'],

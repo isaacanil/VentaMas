@@ -284,4 +284,44 @@ describe('customerDebitNotes', () => {
 
     expect(reserveNcfMock).not.toHaveBeenCalled();
   });
+
+  it('rechaza ND cuando falta identificacion fiscal en un lado pero el cliente no coincide', async () => {
+    docSnapshots.set('businesses/business-1', {
+      fiscal: {
+        sequenceEngineV2Enabled: true,
+      },
+    });
+    docSnapshots.set('businesses/business-1/invoices/invoice-1', {
+      data: {
+        id: 'invoice-1',
+        NCF: 'B0100000001',
+        numberID: 715,
+        date: '2026-06-16T18:47:42.000Z',
+        client: { id: 'client-1', personalID: '132619201' },
+        totalPurchase: { value: 10457.16 },
+      },
+    });
+
+    await expect(
+      createCustomerDebitNote({
+        data: {
+          businessId: 'business-1',
+          debitNote: {
+            invoiceId: 'invoice-1',
+            client: { id: 'client-2', name: 'OTRO CLIENTE' },
+            totalAmount: 118,
+            taxAmount: 18,
+            reason: 'Diferencia de precio',
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      details: expect.objectContaining({
+        reason: 'debit-note-client-mismatch',
+      }),
+    });
+
+    expect(reserveNcfMock).not.toHaveBeenCalled();
+  });
 });

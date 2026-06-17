@@ -20,20 +20,37 @@ export const useInvoicePanelPaymentBootstrap = ({
   paymentMethods,
 }: UseInvoicePanelPaymentBootstrapArgs) => {
   const didInitPaymentMethodsRef = useRef(false);
+  const previousReceivablesStatusRef = useRef(Boolean(isAddedToReceivables));
 
   useEffect(() => {
+    const isReceivableSale = Boolean(isAddedToReceivables);
+
     if (!invoicePanel) {
       didInitPaymentMethodsRef.current = false;
+      previousReceivablesStatusRef.current = isReceivableSale;
       return;
     }
 
-    if (didInitPaymentMethodsRef.current) return;
+    const shouldBootstrapOnOpen = !didInitPaymentMethodsRef.current;
+    const shouldBootstrapReceivableTransition =
+      didInitPaymentMethodsRef.current &&
+      !previousReceivablesStatusRef.current &&
+      isReceivableSale;
+
+    if (!shouldBootstrapOnOpen && !shouldBootstrapReceivableTransition) {
+      previousReceivablesStatusRef.current = isReceivableSale;
+      return;
+    }
+
     didInitPaymentMethodsRef.current = true;
+    previousReceivablesStatusRef.current = isReceivableSale;
 
     const bootstrapMethod = resolvePaymentMethodBootstrapUpdate({
-      isAddedToReceivables,
+      isAddedToReceivables: isReceivableSale,
       paymentMethods,
-      purchaseTotal: cart?.totalPurchase?.value || 0,
+      purchaseTotal: shouldBootstrapReceivableTransition
+        ? 0
+        : cart?.totalPurchase?.value || 0,
     });
 
     if (bootstrapMethod) {

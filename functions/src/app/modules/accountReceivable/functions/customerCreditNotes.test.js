@@ -479,4 +479,46 @@ describe('customerCreditNotes hardening', () => {
 
     expect(reserveNcfMock).not.toHaveBeenCalled();
   });
+
+  it('rechaza NC cuando falta identificacion fiscal en un lado pero el cliente no coincide', async () => {
+    docSnapshots.set('businesses/business-1', {
+      fiscal: {
+        sequenceEngineV2Enabled: true,
+      },
+    });
+    docSnapshots.set('businesses/business-1/invoices/invoice-1', {
+      data: {
+        id: 'invoice-1',
+        NCF: 'B0100000001',
+        numberID: 714,
+        date: '2026-06-16T18:40:42.000Z',
+        client: { id: 'client-1', personalID: '132619201' },
+        totalPurchase: { value: 100 },
+        products: [{ id: 'product-1', amountToBuy: 1 }],
+      },
+    });
+    docSnapshots.set('businesses/business-1/creditNotes', []);
+
+    await expect(
+      createCustomerCreditNote({
+        data: {
+          businessId: 'business-1',
+          creditNote: {
+            invoiceId: 'invoice-1',
+            client: { id: 'client-2', name: 'OTRO CLIENTE' },
+            items: [{ id: 'product-1', name: 'Servicio', amountToBuy: 0.25 }],
+            totalAmount: 30,
+            reason: 'Devolucion parcial',
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      details: expect.objectContaining({
+        reason: 'credit-note-client-mismatch',
+      }),
+    });
+
+    expect(reserveNcfMock).not.toHaveBeenCalled();
+  });
 });

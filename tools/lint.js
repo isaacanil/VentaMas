@@ -51,12 +51,10 @@ const WEB_LINT_GROUPS = [
     'src/pdf',
     'src/router',
     'src/schema',
-    'src/seo',
     'src/services',
     'src/shared',
     'src/stories',
     'src/styles',
-    'src/supabase',
     'src/theme',
     'src/types',
     'src/utils',
@@ -67,7 +65,9 @@ const WEB_LINT_GROUPS = [
 ];
 
 function isInteractive() {
-  return Boolean(process.stdin.isTTY && process.stdout.isTTY && !process.env.CI);
+  return Boolean(
+    process.stdin.isTTY && process.stdout.isTTY && !process.env.CI,
+  );
 }
 
 const LINT_TARGETS = {
@@ -76,7 +76,8 @@ const LINT_TARGETS = {
     needsPaths: false,
   },
   all: {
-    label: 'Lint completo (web + functions + styles + typecheck + strict pilot)',
+    label:
+      'Lint completo (web + functions + styles + typecheck + strict pilot)',
     needsPaths: false,
   },
   strict: {
@@ -367,7 +368,11 @@ function normalizeTarget(value) {
 }
 
 async function main() {
-  const { target: rawTarget, help, passthrough } = parseArgs(process.argv.slice(2));
+  const {
+    target: rawTarget,
+    help,
+    passthrough,
+  } = parseArgs(process.argv.slice(2));
 
   if (help) {
     process.stdout.write(`${usage()}\n`);

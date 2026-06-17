@@ -34,10 +34,7 @@ import {
   clearCxcAutoRemovalNotification,
   applyPricingPreset,
 } from '@/features/cart/cartSlice';
-import {
-  resolvePaymentMethodBootstrapUpdate,
-  resolvePaymentMethodStatusValue,
-} from '@/utils/payments/paymentMethodBootstrap';
+import { resolvePaymentMethodStatusValue } from '@/utils/payments/paymentMethodBootstrap';
 import type { SupportedDocumentCurrency } from '@/types/products';
 
 type PaymentMethodKey = 'cash' | 'card' | 'transfer' | 'creditNote' | string;
@@ -201,21 +198,6 @@ export const PaymentMethods = () => {
   // CORRECCIÓN 2: ELIMINADO EL useEffect DE AUTO-RELLENADO
   // (El que te impedía borrar el número)
   // ---------------------------------------------------------
-
-  // Auto-selección inicial al añadir a cuentas por cobrar (Esto está bien mantenerlo)
-  useEffect(() => {
-    if (cartData?.isAddedToReceivables) {
-      const bootstrapMethod = resolvePaymentMethodBootstrapUpdate({
-        isAddedToReceivables: true,
-        paymentMethods,
-        purchaseTotal: 0,
-      });
-
-      if (bootstrapMethod) {
-        dispatch(setPaymentMethod(bootstrapMethod));
-      }
-    }
-  }, [cartData?.isAddedToReceivables, paymentMethods, dispatch]);
 
   // Lógica de Tarjeta (Se mantiene, pero ten cuidado si también causa conflictos)
   useEffect(() => {

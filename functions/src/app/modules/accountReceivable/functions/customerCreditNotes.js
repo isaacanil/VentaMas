@@ -136,7 +136,12 @@ const assertCreditNoteClientMatchesInvoice = ({ creditNoteClient, invoiceClient 
 
   const noteClientId = resolveClientRecordId(creditNoteClient);
   const invoiceClientId = resolveClientRecordId(invoiceClient);
-  if (!noteFiscalId && !invoiceFiscalId && noteClientId && invoiceClientId && noteClientId !== invoiceClientId) {
+  if (
+    (!noteFiscalId || !invoiceFiscalId) &&
+    noteClientId &&
+    invoiceClientId &&
+    noteClientId !== invoiceClientId
+  ) {
     throw new HttpsError(
       'failed-precondition',
       'La nota de crédito debe emitirse al mismo cliente de la factura afectada.',

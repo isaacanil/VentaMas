@@ -128,7 +128,12 @@ const assertDebitNoteClientMatchesInvoice = ({ debitNoteClient, invoiceClient })
 
   const noteClientId = resolveClientRecordId(debitNoteClient);
   const invoiceClientId = resolveClientRecordId(invoiceClient);
-  if (!noteFiscalId && !invoiceFiscalId && noteClientId && invoiceClientId && noteClientId !== invoiceClientId) {
+  if (
+    (!noteFiscalId || !invoiceFiscalId) &&
+    noteClientId &&
+    invoiceClientId &&
+    noteClientId !== invoiceClientId
+  ) {
     throw new HttpsError(
       'failed-precondition',
       'La nota de débito debe emitirse al mismo cliente de la factura afectada.',
