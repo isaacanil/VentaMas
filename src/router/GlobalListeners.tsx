@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { useBusinessDataConfig } from '@/features/auth/useBusinessDataConfig';
 import { useBusinessFiscalSync } from '@/features/fiscal/useBusinessFiscalSync';
 import { ReloadImageHiddenSetting } from '@/features/setting/settingSlice';
 import { useHydrateTaxReceiptSettings } from '@/features/taxReceipt/useHydrateTaxReceiptSettings';
@@ -18,7 +17,7 @@ import { useLoadUserAbilities } from '@/hooks/abilities/useAbilities';
 import { useCheckForInternetConnection } from '@/hooks/useCheckForInternetConnection';
 import { usePersistentDeveloperBusiness } from '@/hooks/usePersistentDeveloperBusiness';
 import { useTaxReceiptsFix } from '@/hooks/useTaxReceiptsFix';
-import { useUserDocListener } from '@/modules/auth/public';
+import { useBusinessDataConfig, useUserDocListener } from '@/modules/auth/public';
 import { hasDeveloperAccess } from '@/utils/access/developerAccess';
 
 import { useDeveloperCommands } from './hooks/useDeveloperCommands';

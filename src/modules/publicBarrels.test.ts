@@ -70,6 +70,7 @@ const publicBarrels: PublicBarrelCase[] = [
       resolveDefaultHomeRoute: 'function',
       setStoredActiveBusinessId: 'function',
       useAutomaticLogin: 'function',
+      useBusinessDataConfig: 'function',
       useBusinessMetadata: 'function',
       useUserDocListener: 'function',
       withBusinessManagerQuery: 'function',

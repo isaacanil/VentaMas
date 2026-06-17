@@ -80,9 +80,7 @@ const Dialog = lazy(() => import('@/components/ui/Dialog/Dialog'));
 const ImageViewer = lazy(
   () => import('@/components/ui/ImageViewer/ImageViewer'),
 );
-const NoteModal = lazy(() =>
-  import('@/features/noteModal/components/NoteModal'),
-);
+const NoteModal = lazy(() => import('@/router/components/modals/NoteModal'));
 const ActiveIngredientModal = lazy(loadActiveIngredientModal);
 const AddCategoryModal = lazy(() =>
   import('@/context/CategoryContext/components/AddCategoryModal/AddCategoryModal'),

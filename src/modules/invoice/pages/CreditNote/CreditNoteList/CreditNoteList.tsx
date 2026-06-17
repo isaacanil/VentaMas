@@ -6,13 +6,13 @@ import { useNavigate } from 'react-router-dom';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { selectBusinessData } from '@/features/auth/businessSlice';
-import { useBusinessDataConfig } from '@/features/auth/useBusinessDataConfig';
 import { openCreditNoteModal } from '@/features/creditNote/creditNoteModalSlice';
 import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
 import { useFbGetCreditNotes } from '@/firebase/creditNotes/useFbGetCreditNotes';
 import { fbRefreshElectronicTaxReceiptStatus } from '@/firebase/electronicTaxReceipts/fbRefreshElectronicTaxReceiptStatus';
 import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt';
 import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
+import { useBusinessDataConfig } from '@/modules/auth/public';
 import { MenuApp } from '@/modules/navigation/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 import { resolveBusinessFiscalRollout } from '@/utils/fiscal/fiscalRollout';

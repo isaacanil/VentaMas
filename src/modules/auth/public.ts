@@ -2,6 +2,7 @@ export { ClaimOwnershipModal } from './components/ClaimOwnershipModal';
 export { RequireAuth } from './components/RequireAuth';
 export { SessionExpiredAlertDialog } from './components/SessionExpiredAlertDialog/SessionExpiredAlertDialog';
 export { useAutomaticLogin } from './hooks/useAutomaticLogin';
+export { useBusinessDataConfig } from './hooks/useBusinessDataConfig';
 export { useBusinessMetadata } from './hooks/useBusinessMetadata';
 export { useUserDocListener } from './hooks/useUserDocListener';
 export {

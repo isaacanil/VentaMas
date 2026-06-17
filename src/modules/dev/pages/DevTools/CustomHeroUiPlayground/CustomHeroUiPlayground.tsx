@@ -5,74 +5,74 @@ import {
   VmAccordion,
   VmAlert,
   VmAlertDialog,
-  VmAutocomplete,
   VmAvatar,
   VmBadge,
-  VmBreadcrumbs,
   VmButton,
   VmButtonGroup,
-  VmCalendar,
   VmCard,
   VmCheckbox,
-  VmCheckboxGroup,
   VmChip,
-  VmCloseButton,
-  VmColorArea,
-  VmColorField,
-  VmColorPicker,
-  VmColorSlider,
-  VmColorSwatch,
-  VmColorSwatchPicker,
-  VmComboBox,
   VmDateField,
-  VmDatePicker,
   VmDateRangePicker,
-  VmDescription,
-  VmDisclosure,
-  VmDisclosureGroup,
   VmDropdown,
-  VmErrorMessage,
-  VmFieldError,
-  VmFieldset,
   VmForm,
   VmInput,
   VmInputGroup,
-  VmInputOTP,
-  VmKbd,
   VmLabel,
-  VmLink,
   VmListBox,
-  VmMeter,
   VmNumberField,
   VmPagination,
   VmPopover,
-  VmProgressBar,
-  VmProgressCircle,
-  VmRadio,
-  VmRadioGroup,
   VmRangeCalendar,
-  VmScrollShadow,
   VmSearchField,
   VmSelect,
   VmSeparator,
   VmSkeleton,
-  VmSlider,
   VmSpinner,
   VmSurface,
   VmSwitch,
   VmTable,
   VmTabs,
-  VmTag,
-  VmTagGroup,
   VmTextArea,
-  VmTextField,
-  VmTimeField,
-  VmToast,
-  VmToggleButton,
-  VmToggleButtonGroup,
-  VmToolbar,
   VmTooltip,
 } from '@/components/heroui';
+import { VmAutocomplete } from '@/components/heroui/Autocomplete';
+import { VmBreadcrumbs } from '@/components/heroui/Breadcrumbs';
+import { VmCalendar } from '@/components/heroui/Calendar';
+import { VmCheckboxGroup } from '@/components/heroui/CheckboxGroup';
+import { VmCloseButton } from '@/components/heroui/CloseButton';
+import { VmColorArea } from '@/components/heroui/ColorArea';
+import { VmColorField } from '@/components/heroui/ColorField';
+import { VmColorPicker } from '@/components/heroui/ColorPicker';
+import { VmColorSlider } from '@/components/heroui/ColorSlider';
+import { VmColorSwatch } from '@/components/heroui/ColorSwatch';
+import { VmColorSwatchPicker } from '@/components/heroui/ColorSwatchPicker';
+import { VmComboBox } from '@/components/heroui/ComboBox';
+import { VmDatePicker } from '@/components/heroui/DatePicker';
+import { VmDescription } from '@/components/heroui/Description';
+import { VmDisclosure } from '@/components/heroui/Disclosure';
+import { VmDisclosureGroup } from '@/components/heroui/DisclosureGroup';
+import { VmErrorMessage } from '@/components/heroui/ErrorMessage';
+import { VmFieldError } from '@/components/heroui/FieldError';
+import { VmFieldset } from '@/components/heroui/Fieldset';
+import { VmInputOTP } from '@/components/heroui/InputOTP';
+import { VmKbd } from '@/components/heroui/Kbd';
+import { VmLink } from '@/components/heroui/Link';
+import { VmMeter } from '@/components/heroui/Meter';
+import { VmProgressBar } from '@/components/heroui/ProgressBar';
+import { VmProgressCircle } from '@/components/heroui/ProgressCircle';
+import { VmRadio } from '@/components/heroui/Radio';
+import { VmRadioGroup } from '@/components/heroui/RadioGroup';
+import { VmScrollShadow } from '@/components/heroui/ScrollShadow';
+import { VmSlider } from '@/components/heroui/Slider';
+import { VmTag } from '@/components/heroui/Tag';
+import { VmTagGroup } from '@/components/heroui/TagGroup';
+import { VmTextField } from '@/components/heroui/TextField';
+import { VmTimeField } from '@/components/heroui/TimeField';
+import { VmToast } from '@/components/heroui/Toast';
+import { VmToggleButton } from '@/components/heroui/ToggleButton';
+import { VmToggleButtonGroup } from '@/components/heroui/ToggleButtonGroup';
+import { VmToolbar } from '@/components/heroui/Toolbar';
 import { InfoCircleOutlined } from '@/constants/icons/antd';
 
 const selectItems = [
