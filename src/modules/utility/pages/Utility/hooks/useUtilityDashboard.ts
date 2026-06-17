@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 import type { DateTimeFormatOptions } from 'luxon';
 import { useCallback, useMemo, useState } from 'react';
 
-import type { ChartData, ChartOptions } from '@/components/charts/chartTypes';
+import type { ChartData, ChartOptions } from '@/components/charts';
 import { useLocalFbGetExpenses } from '@/firebase/expenses/Items/useFbGetExpenses';
 import { useFbGetInvoices } from '@/firebase/invoices/fbGetInvoices';
 import { getDateRange } from '@/utils/date/getDateRange';

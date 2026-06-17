@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import styled from 'styled-components';
 
-import { LazyLine } from '@/components/charts/LazyCharts';
+import { LazyLine } from '@/components/charts';
 import { formatCount } from '@/utils/formatCounts';
 import { formatPrice } from '@/utils/format';
 

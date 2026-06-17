@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { LazyBar } from '@/components/charts/LazyCharts';
-import { createSingleDatasetBarData } from '@/components/charts/barChartData';
+import { LazyBar } from '@/components/charts';
+import { createSingleDatasetBarData } from '@/components/charts';
 import styled from 'styled-components';
 import type { SalesRecord } from '../../../utils';
 import {

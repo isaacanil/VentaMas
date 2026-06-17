@@ -4,7 +4,7 @@ import type {
   ServiceCommissionRecord,
   ServiceCommissionSource,
   ServiceCommissionType,
-} from '@/types/commissions';
+} from '@/domain/commissions/types';
 import type { UserIdentity } from '@/types/users';
 import { cleanCommissionString } from '@/utils/commissions/serviceCommissions';
 import { toMillis as toSharedMillis } from '@/utils/date/toMillis';

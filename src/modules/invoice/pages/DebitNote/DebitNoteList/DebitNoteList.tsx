@@ -5,7 +5,7 @@ import { DateTime } from 'luxon';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
+import { AdvancedTable } from '@/components/ui/AdvancedTable';
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import { selectUser } from '@/features/auth/userSlice';
 import { fbRefreshElectronicTaxReceiptStatus } from '@/firebase/electronicTaxReceipts/fbRefreshElectronicTaxReceiptStatus';

@@ -1,7 +1,7 @@
 import type {
   ServiceCommissionCollaboratorRecord,
   ServiceCommissionCollaboratorSnapshot,
-} from '@/types/commissions';
+} from '@/domain/commissions/types';
 
 import {
   cleanCommissionString as toCleanString,

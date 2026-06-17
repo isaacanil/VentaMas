@@ -3,8 +3,8 @@ import { DateTime } from 'luxon';
 import type { JSX } from 'react';
 import styled from 'styled-components';
 
-import type { ChartData, ChartOptions } from '@/components/charts/chartTypes';
-import { LazyLine } from '@/components/charts/LazyCharts';
+import type { ChartData, ChartOptions } from '@/components/charts';
+import { LazyLine } from '@/components/charts';
 import { formatPrice } from '@/utils/format';
 import type { UtilityInvoiceEntry } from '@/modules/utility/types';
 import {

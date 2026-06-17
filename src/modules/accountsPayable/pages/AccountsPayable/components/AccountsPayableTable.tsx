@@ -10,7 +10,7 @@ import { DollarCircleOutlined, HistoryOutlined } from '@ant-design/icons';
 import {
   AdvancedTable,
   type ColumnConfig,
-} from '@/components/ui/AdvancedTable/AdvancedTable';
+} from '@/components/ui/AdvancedTable';
 import { formatPrice } from '@/utils/format/formatPrice';
 
 import type {

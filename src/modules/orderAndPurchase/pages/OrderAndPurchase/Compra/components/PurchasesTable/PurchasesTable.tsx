@@ -15,7 +15,7 @@ import { normalizeTransactionMillis } from '@/modules/orderAndPurchase/pages/Ord
 import type { UserIdentity } from '@/types/users';
 import type { Purchase } from '@/utils/purchase/types';
 import { calculateTotalNewStockFromReplenishments } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/Order/components/OrderListTable/orderTableUtils';
-import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
+import { AdvancedTable } from '@/components/ui/AdvancedTable';
 import {
   RegisterSupplierPaymentModal,
   SupplierPaymentHistoryModal,

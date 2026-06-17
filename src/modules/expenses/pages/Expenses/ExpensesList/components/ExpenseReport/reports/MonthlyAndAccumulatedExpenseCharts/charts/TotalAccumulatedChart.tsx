@@ -3,7 +3,7 @@ import { Bar } from 'react-chartjs-2';
 import type { ChartOptions } from 'chart.js';
 import styled from 'styled-components';
 
-import { createSingleDatasetBarData } from '@/components/charts/barChartData';
+import { createSingleDatasetBarData } from '@/components/charts';
 
 interface TotalAccumulatedChartProps {
     totalAccumulated: number;

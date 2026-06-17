@@ -4,7 +4,7 @@ import { DateTime } from 'luxon';
 import styled from 'styled-components';
 
 import { getRoleLabelById, userRoles } from '@/abilities/roles';
-import type { AdvancedTableProps } from '@/components/ui/AdvancedTable/AdvancedTable';
+import type { AdvancedTableProps } from '@/components/ui/AdvancedTable';
 import { normalizeRoleId } from '@/utils/roles/normalizeRole';
 
 import type {

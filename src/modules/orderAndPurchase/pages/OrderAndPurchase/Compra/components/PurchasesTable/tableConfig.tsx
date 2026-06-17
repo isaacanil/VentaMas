@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { ColumnConfig } from '@/components/ui/AdvancedTable/AdvancedTable';
+import type { ColumnConfig } from '@/components/ui/AdvancedTable';
 import {
   ProviderCell,
   PurchaseActionButtons,

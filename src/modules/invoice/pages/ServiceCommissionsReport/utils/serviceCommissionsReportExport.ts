@@ -7,7 +7,7 @@ import {
 import type {
   ServiceCommissionRecord,
   ServiceCommissionType,
-} from '@/types/commissions';
+} from '@/domain/commissions/types';
 import { saveXlsxFile } from '@/utils/export/xlsx';
 
 import {

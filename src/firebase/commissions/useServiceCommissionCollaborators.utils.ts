@@ -1,7 +1,7 @@
 import type {
   ServiceCommissionCollaboratorRecord,
   ServiceCommissionType,
-} from '@/types/commissions';
+} from '@/domain/commissions/types';
 import {
   cleanCommissionString,
   normalizeCommissionCollaborator,

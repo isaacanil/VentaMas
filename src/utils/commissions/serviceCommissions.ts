@@ -5,7 +5,7 @@ import type {
   ServiceCommissionServiceRule,
   ServiceCommissionsBillingSettings,
   ServiceCommissionType,
-} from '@/types/commissions';
+} from '@/domain/commissions/types';
 import type { InvoiceProduct } from '@/types/invoice';
 import {
   getFunctionalProductDiscount,

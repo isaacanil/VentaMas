@@ -21,7 +21,7 @@ import { normalizeServiceCommissionSettings } from '@/utils/commissions/serviceC
 import type {
   ServiceCommissionsBillingSettings,
   ServiceCommissionType,
-} from '@/types/commissions';
+} from '@/domain/commissions/types';
 
 const Wrapper = styled.div`
   display: grid;

@@ -1,6 +1,6 @@
 import { calculateOrderTotals } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/OrderManagement/utils/orderCalculationsUtil';
 import type { Order } from '@/utils/order/types';
-import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
+import { AdvancedTable } from '@/components/ui/AdvancedTable';
 import {
   calculatePaymentDate,
   calculateTotalNewStockFromReplenishments,

@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import styled from 'styled-components';
 
-import { LazyBar } from '@/components/charts/LazyCharts';
-import { createCurrencyBarChartOptions } from '@/components/charts/currencyBarChartOptions';
-import { createSingleDatasetBarData } from '@/components/charts/barChartData';
+import { LazyBar } from '@/components/charts';
+import { createCurrencyBarChartOptions } from '@/components/charts';
+import { createSingleDatasetBarData } from '@/components/charts';
 import Typography from '@/components/ui/Typography/Typography';
 import type { Purchase, PurchaseReplenishment } from '@/utils/purchase/types';
 import { calculateReplenishmentTotals } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/utils/replenishmentTotals';

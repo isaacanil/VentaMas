@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
+import { AdvancedTable } from '@/components/ui/AdvancedTable';
 import { FilterBar as CommonFilterBar } from '@/components/common/FilterBar';
 import { selectUser } from '@/features/auth/userSlice';
 import { toggleSignUpUser } from '@/features/modals/modalSlice';

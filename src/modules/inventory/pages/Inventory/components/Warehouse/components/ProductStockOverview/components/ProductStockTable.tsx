@@ -11,7 +11,7 @@ import { formatLocaleDate } from '@/utils/date/dateUtils';
 import {
   AdvancedTable,
   type AdvancedTableColumn,
-} from '@/components/ui/AdvancedTable/AdvancedTable';
+} from '@/components/ui/AdvancedTable';
 
 import type { ProductStockItem, StockStatus } from '../types';
 import {

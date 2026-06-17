@@ -1,4 +1,4 @@
-import { createCurrencyBarChartOptions } from '@/components/charts/currencyBarChartOptions';
+import { createCurrencyBarChartOptions } from '@/components/charts';
 
 export const options = createCurrencyBarChartOptions({
     yAxisTitle: 'Monto de Gastos',

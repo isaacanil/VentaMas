@@ -11,7 +11,7 @@ import ROUTES_NAME from '@/router/routes/routesName';
 import {
   AdvancedTable,
   type AdvancedTableColumn,
-} from '@/components/ui/AdvancedTable/AdvancedTable';
+} from '@/components/ui/AdvancedTable';
 import {
   formatInventoryMovementReason,
   getInventoryMovementLocationDisplay,

@@ -13,7 +13,7 @@ import { MenuApp } from '@/modules/navigation/public';
 import {
   AdvancedTable,
   type ColumnConfig,
-} from '@/components/ui/AdvancedTable/AdvancedTable';
+} from '@/components/ui/AdvancedTable';
 
 import { InsuranceTypesDisplay } from './components/InsuranceTypesDisplay';
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ServiceCommissionRecord } from '@/types/commissions';
+import type { ServiceCommissionRecord } from '@/domain/commissions/types';
 
 import {
   buildServiceCommissionsReportExportRows,

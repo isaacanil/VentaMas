@@ -5,7 +5,7 @@ import { truncateString } from '@/utils/text/truncateString';
 
 import { ProviderActionsCell } from './components/ProviderActionsCell';
 
-import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/AdvancedTable';
+import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable';
 import type { ProviderTableRow } from './types';
 
 const formatProviderPhone = (phone?: string) =>

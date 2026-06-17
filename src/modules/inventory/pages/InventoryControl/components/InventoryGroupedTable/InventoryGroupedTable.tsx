@@ -2,7 +2,7 @@ import { Empty } from 'antd';
 import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
-import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
+import { AdvancedTable } from '@/components/ui/AdvancedTable';
 
 import { GroupedLotsModal } from '../GroupedLotsModal/GroupedLotsModal';
 import { formatNumber } from '../inventoryTableUtils';
@@ -18,7 +18,7 @@ import type {
   LocationNamesMap,
   ResolvingMap,
 } from '@/utils/inventory/types';
-import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/AdvancedTable';
+import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable';
 
 type InventoryGroupRow = InventoryGroup & Record<string, unknown>;
 

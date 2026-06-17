@@ -14,8 +14,8 @@ import { PageShell } from '@/components/layout/PageShell';
 import { selectUser } from '@/features/auth/userSlice';
 import { formatDate, toMillis } from '@/utils/date/dateUtils';
 import { MenuApp } from '@/modules/navigation/public';
-import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
-import type { AdvancedTableProps } from '@/components/ui/AdvancedTable/AdvancedTable';
+import { AdvancedTable } from '@/components/ui/AdvancedTable';
+import type { AdvancedTableProps } from '@/components/ui/AdvancedTable';
 import type {
   InventoryEditorInfo,
   InventorySession,

@@ -8,7 +8,7 @@ import {
   getProductsTotalPrice,
   getTotalItems,
 } from '@/utils/pricing';
-import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
+import { AdvancedTable } from '@/components/ui/AdvancedTable';
 import type { InvoiceData } from '@/types/invoice';
 
 import { PreorderModal } from '../PreorderModal/PreorderModal';

@@ -14,7 +14,7 @@ import type {
   InvoiceProcessParams,
   InvoiceServiceError,
 } from '@/services/invoice/types';
-import type { ServiceCommissionsBillingSettings } from '@/types/commissions';
+import type { ServiceCommissionsBillingSettings } from '@/domain/commissions/types';
 import type { InvoiceData } from '@/types/invoice';
 import type { TaxReceiptItem } from '@/types/taxReceipt';
 import type { UserIdentity } from '@/types/users';

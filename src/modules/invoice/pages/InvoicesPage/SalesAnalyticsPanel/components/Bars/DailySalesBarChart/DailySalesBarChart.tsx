@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { LazyBar } from '@/components/charts/LazyCharts';
+import { LazyBar } from '@/components/charts';
 import styled from 'styled-components';
 import type { SalesPeriodType, SalesRecord } from '../../../utils';
 import {

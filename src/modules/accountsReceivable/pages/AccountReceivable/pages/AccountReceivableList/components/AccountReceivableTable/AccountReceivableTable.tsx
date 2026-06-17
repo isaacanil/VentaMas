@@ -2,7 +2,7 @@ import React from 'react';
 
 import useBusiness from '@/hooks/useBusiness';
 import { formatPrice } from '@/utils/format';
-import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
+import { AdvancedTable } from '@/components/ui/AdvancedTable';
 
 import { getColumns } from './columns';
 

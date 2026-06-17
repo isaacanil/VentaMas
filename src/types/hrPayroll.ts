@@ -1,4 +1,4 @@
-import type { ServiceCommissionServiceRule } from './commissions';
+import type { ServiceCommissionServiceRule } from '@/domain/commissions/types';
 
 export type HrEmployeeStatus =
   | 'active'

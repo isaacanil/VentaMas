@@ -1,8 +1,8 @@
 import type { JSX } from 'react';
 import styled from 'styled-components';
 
-import type { ChartData, ChartOptions } from '@/components/charts/chartTypes';
-import { LazyDoughnut } from '@/components/charts/LazyCharts';
+import type { ChartData, ChartOptions } from '@/components/charts';
+import { LazyDoughnut } from '@/components/charts';
 import { SimpleTypography } from '@/components/ui/Typography/SimpleTypography';
 import type {
   UtilityCurrencyFormatter,

@@ -10,7 +10,7 @@ import { formatLocaleDate } from '@/utils/date/dateUtils';
 import {
   AdvancedTable,
   type AdvancedTableProps,
-} from '@/components/ui/AdvancedTable/AdvancedTable';
+} from '@/components/ui/AdvancedTable';
 import { MenuApp } from '@/modules/navigation/public';
 import MovementsFilterBar from './MovementsFilterBar';
 import type { InventoryUser, TimestampLike } from '@/utils/inventory/types';

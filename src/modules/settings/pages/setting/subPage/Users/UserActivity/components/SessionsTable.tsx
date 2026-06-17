@@ -2,8 +2,8 @@ import { MoreOutlined, StopOutlined } from '@/constants/icons/antd';
 import { Button, Dropdown, Tag, type MenuProps } from 'antd';
 import { useMemo, type ReactNode } from 'react';
 
-import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
-import type { AdvancedTableProps } from '@/components/ui/AdvancedTable/AdvancedTable';
+import { AdvancedTable } from '@/components/ui/AdvancedTable';
+import type { AdvancedTableProps } from '@/components/ui/AdvancedTable';
 
 import { DateCell } from './DateCell';
 import type { SessionSummary } from '../utils/activityUtils';

@@ -4,8 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import { fbGetSessionLogs } from '@/firebase/Auth/fbAuthV2/fbGetSessionLogs';
-import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
-import type { AdvancedTableProps } from '@/components/ui/AdvancedTable/AdvancedTable';
+import { AdvancedTable } from '@/components/ui/AdvancedTable';
+import type { AdvancedTableProps } from '@/components/ui/AdvancedTable';
 
 type SessionActor = {
   displayName?: string;

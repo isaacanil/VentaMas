@@ -18,18 +18,16 @@ import {
 
 export function useTaxReceiptsFix() {
   const [taxReceipts, setTaxReceipts] = useState<TaxReceiptRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadedBusinessID, setLoadedBusinessID] = useState<string | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const user = useSelector(selectUser) as UserIdentity | null;
   const businessID = user?.businessID;
   useEffect(() => {
     if (!businessID) {
-      // No businessID available yet, skip initialization
-      setLoading(false);
       return;
     }
 
-    setLoading(true);
+    let isMounted = true;
     const ref = collection(db, 'businesses', businessID, 'taxReceipts');
 
     const unsubscribe = onSnapshot(
@@ -74,17 +72,23 @@ export function useTaxReceiptsFix() {
           };
         });
 
+        if (!isMounted) return;
         setTaxReceipts(receipts);
-        setLoading(false);
+        setError(null);
+        setLoadedBusinessID(businessID);
       },
       (err) => {
         console.error('Snapshot error:', err);
+        if (!isMounted) return;
         setError(err);
-        setLoading(false);
+        setLoadedBusinessID(businessID);
       },
     );
 
-    return () => unsubscribe();
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, [businessID]);
 
   /** Incrementa y persiste data.sequence (número) en Firestore */
@@ -123,5 +127,11 @@ export function useTaxReceiptsFix() {
   }: TaxReceiptRecord) =>
     `${type ?? ''}${serie ?? ''}${String(sequence ?? 0).padStart(sequenceLength ?? 0, '0')}`;
 
-  return { taxReceipts, loading, error, updateSequence, formatNCF };
+  return {
+    taxReceipts: businessID && loadedBusinessID === businessID ? taxReceipts : [],
+    loading: Boolean(businessID) && loadedBusinessID !== businessID,
+    error: businessID && loadedBusinessID === businessID ? error : null,
+    updateSequence,
+    formatNCF,
+  };
 }

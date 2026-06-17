@@ -1,8 +1,8 @@
 import type { JSX } from 'react';
 import styled from 'styled-components';
 
-import type { ChartData, ChartOptions } from '@/components/charts/chartTypes';
-import { LazyBar } from '@/components/charts/LazyCharts';
+import type { ChartData, ChartOptions } from '@/components/charts';
+import { LazyBar } from '@/components/charts';
 import { formatPrice } from '@/utils/format';
 
 interface TotalSalesChartProps {

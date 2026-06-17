@@ -1,7 +1,7 @@
 import { MoreOutlined } from '@/constants/icons/antd';
 import { Dropdown } from 'antd';
 
-import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
+import { AdvancedTable } from '@/components/ui/AdvancedTable';
 
 import { AdvancedFilterModal } from './components/AdvancedFilterModal';
 import BatchViewModal from './components/modals/BatchViewModal';

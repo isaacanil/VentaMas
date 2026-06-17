@@ -7,7 +7,7 @@ import { HR_COMMISSION_TYPE_LABELS as COMMISSION_TYPE_LABELS } from '@/modules/h
 import type {
   ServiceCommissionServiceRule,
   ServiceCommissionType,
-} from '@/types/commissions';
+} from '@/domain/commissions/types';
 import {
   normalizeServiceCommissionServiceRules,
   toFiniteCommissionNumber,

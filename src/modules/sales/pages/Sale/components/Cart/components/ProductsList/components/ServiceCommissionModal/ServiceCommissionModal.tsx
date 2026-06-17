@@ -21,7 +21,7 @@ import type {
 } from '@/features/cart/types';
 import { selectUser } from '@/features/auth/userSlice';
 import { useServiceCommissionCollaborators } from '@/firebase/commissions/useServiceCommissionCollaborators';
-import type { ServiceCommissionCollaboratorSnapshot } from '@/types/commissions';
+import type { ServiceCommissionCollaboratorSnapshot } from '@/domain/commissions/types';
 import type { SupportedDocumentCurrency } from '@/types/products';
 import type { UserIdentity } from '@/types/users';
 import {

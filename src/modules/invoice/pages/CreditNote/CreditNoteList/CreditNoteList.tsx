@@ -11,7 +11,7 @@ import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
 import { useFbGetCreditNotes } from '@/firebase/creditNotes/useFbGetCreditNotes';
 import { fbRefreshElectronicTaxReceiptStatus } from '@/firebase/electronicTaxReceipts/fbRefreshElectronicTaxReceiptStatus';
 import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt';
-import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
+import { AdvancedTable } from '@/components/ui/AdvancedTable';
 import { useBusinessDataConfig } from '@/modules/auth/public';
 import { MenuApp } from '@/modules/navigation/public';
 import ROUTES_NAME from '@/router/routes/routesName';

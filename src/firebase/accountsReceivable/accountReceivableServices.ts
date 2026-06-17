@@ -29,19 +29,18 @@ export const useListenAccountsReceivable = (
   const [accountsReceivable, setAccountsReceivable] = useState<
     AccountsReceivableRecord[]
   >([]);
-  const [loading, setLoading] = useState(true);
+  const [loadedQueryKey, setLoadedQueryKey] = useState<string | null>(null);
   const businessID = user?.businessID ?? null;
   const rangeStart = dateRange?.startDate ?? null;
   const rangeEnd = dateRange?.endDate ?? null;
+  const queryKey = businessID
+    ? [businessID, rangeStart ?? '', rangeEnd ?? '', statusFilter].join('|')
+    : null;
 
   useEffect(() => {
     if (!businessID) {
-      setAccountsReceivable([]);
-      setLoading(false);
       return;
     }
-
-    setLoading(true);
     let isMounted = true;
 
     const accountsReceivableCollection = collection(
@@ -127,15 +126,15 @@ export const useListenAccountsReceivable = (
             }
             return prevAccounts;
           });
+          setLoadedQueryKey(queryKey);
         } catch (error) {
           console.error('Error listening accounts receivable:', error);
-        } finally {
-          if (isMounted) setLoading(false);
+          if (isMounted) setLoadedQueryKey(queryKey);
         }
       },
       (error) => {
         console.error('Accounts receivable snapshot error:', error);
-        if (isMounted) setLoading(false);
+        if (isMounted) setLoadedQueryKey(queryKey);
       },
     );
 
@@ -143,7 +142,11 @@ export const useListenAccountsReceivable = (
       isMounted = false;
       unsubscribe();
     };
-  }, [businessID, rangeStart, rangeEnd, statusFilter]);
+  }, [businessID, queryKey, rangeStart, rangeEnd, statusFilter]);
 
-  return { accountsReceivable, loading };
+  return {
+    accountsReceivable:
+      queryKey !== null && loadedQueryKey === queryKey ? accountsReceivable : [],
+    loading: queryKey !== null && loadedQueryKey !== queryKey,
+  };
 };

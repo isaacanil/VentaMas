@@ -10,7 +10,7 @@ import type {
   AccountReceivableRow,
   TimestampLike,
 } from '@/utils/accountsReceivable/types';
-import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/AdvancedTable';
+import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable';
 
 type AccountReceivableRowRecord = AccountReceivableRow &
   Record<string, unknown>;

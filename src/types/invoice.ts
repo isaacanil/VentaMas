@@ -1,6 +1,6 @@
 import type { ProductPricing } from '@/types/products';
 import type { PaymentMethodEntry, PaymentState } from '@/types/payments';
-import type { ServiceCommissionLineSnapshot } from '@/types/commissions';
+import type { ServiceCommissionLineSnapshot } from '@/domain/commissions/types';
 
 export type DiscountType = 'percentage' | 'fixed';
 

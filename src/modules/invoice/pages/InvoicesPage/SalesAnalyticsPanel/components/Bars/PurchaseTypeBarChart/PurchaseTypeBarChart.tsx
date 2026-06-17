@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import type { SalesRecord } from '../../../utils';
-import { LazyBar } from '@/components/charts/LazyCharts';
+import { LazyBar } from '@/components/charts';
 import styled from 'styled-components';
 
 import Typography from '@/components/ui/Typography/Typography';

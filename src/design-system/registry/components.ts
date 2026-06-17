@@ -720,7 +720,7 @@ export const componentRegistry = [
   {
     id: 'vm.advancedTable',
     displayName: 'AdvancedTable',
-    importPath: '@/components/ui/AdvancedTable/AdvancedTable',
+    importPath: '@/components/ui/AdvancedTable',
     namedExport: 'AdvancedTable',
     category: 'display',
     status: 'ready',

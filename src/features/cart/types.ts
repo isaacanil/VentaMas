@@ -9,7 +9,7 @@ import type {
 import type {
   ServiceCommissionLineSnapshot,
   ServiceCommissionsBillingSettings,
-} from '@/types/commissions';
+} from '@/domain/commissions/types';
 
 export type { SupportedDocumentCurrency };
 

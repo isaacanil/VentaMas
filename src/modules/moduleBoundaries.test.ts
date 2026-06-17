@@ -122,6 +122,7 @@ const forbiddenLegacySharedImportPrefixes = [
   '@/motion',
   '@/constants/paymentDescriptions',
   '@/constants/unitsOfMeasure',
+  '@/types/commissions',
   '@/types/debitNote',
   '@/utils/accountsReceivable/creditLimit',
   '@/utils/accountsReceivable/generateInstallments',
@@ -145,6 +146,42 @@ const forbiddenLegacySharedImportPrefixes = [
 ];
 
 const restrictedSharedImportRules: RestrictedSharedImportRule[] = [
+  {
+    importPrefix: '@/components/ui/AdvancedTable/AdvancedTable',
+    allowedFilePathPrefixes: ['src/components/ui/AdvancedTable/'],
+  },
+  {
+    importPrefix: '@/components/ui/AdvancedTable/components',
+    allowedFilePathPrefixes: ['src/components/ui/AdvancedTable/'],
+  },
+  {
+    importPrefix: '@/components/ui/AdvancedTable/hooks',
+    allowedFilePathPrefixes: ['src/components/ui/AdvancedTable/'],
+  },
+  {
+    importPrefix: '@/components/ui/AdvancedTable/types',
+    allowedFilePathPrefixes: ['src/components/ui/AdvancedTable/'],
+  },
+  {
+    importPrefix: '@/components/charts/LazyCharts',
+    allowedFilePathPrefixes: ['src/components/charts/'],
+  },
+  {
+    importPrefix: '@/components/charts/barChartData',
+    allowedFilePathPrefixes: ['src/components/charts/'],
+  },
+  {
+    importPrefix: '@/components/charts/currencyBarChartOptions',
+    allowedFilePathPrefixes: ['src/components/charts/'],
+  },
+  {
+    importPrefix: '@/components/charts/chartTypes',
+    allowedFilePathPrefixes: ['src/components/charts/'],
+  },
+  {
+    importPrefix: '@/components/charts/loadChart',
+    allowedFilePathPrefixes: ['src/components/charts/'],
+  },
   {
     importPrefix: '@/utils/order/types',
     allowedFilePathPrefixes: ['src/modules/orderAndPurchase/'],
@@ -286,6 +323,7 @@ const retiredLegacySharedSourcePaths = [
   ['src', 'motion'],
   ['src', 'constants', 'paymentDescriptions.ts'],
   ['src', 'constants', 'unitsOfMeasure.ts'],
+  ['src', 'types', 'commissions.ts'],
   ['src', 'types', 'debitNote.ts'],
   ['src', 'utils', 'accountsReceivable', 'creditLimit.ts'],
   ['src', 'utils', 'accountsReceivable', 'creditLimit.test.ts'],

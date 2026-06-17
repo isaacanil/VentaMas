@@ -6,7 +6,7 @@ import type { Product } from '@/features/cart/types';
 import type {
   ServiceCommissionsBillingSettings,
   ServiceCommissionType,
-} from '@/types/commissions';
+} from '@/domain/commissions/types';
 import type { SupportedDocumentCurrency } from '@/types/products';
 import {
   calculateServiceCommissionAmount,

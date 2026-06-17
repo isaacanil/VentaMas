@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ServiceCommissionCollaboratorRecord } from '@/types/commissions';
+import type { ServiceCommissionCollaboratorRecord } from '@/domain/commissions/types';
 
 import { buildServiceCommissionCollaboratorOptions } from './collaboratorOptions';
 

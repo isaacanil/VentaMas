@@ -35,7 +35,7 @@ import type {
 } from '@/utils/expenses/types';
 import { truncateString } from '@/utils/text/truncateString';
 import { ExpenseChart } from '@/modules/expenses/pages/Expenses/ExpensesList/components/ExpenseReport/ExpenseReport';
-import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
+import { AdvancedTable } from '@/components/ui/AdvancedTable';
 import { Button } from '@/components/ui/Button/Button';
 
 import { FilterExpenses } from '../FilterBar/FilterExpenses';

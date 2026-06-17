@@ -9,7 +9,7 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 
 import { db } from '@/firebase/firebaseconfig';
-import type { ServiceCommissionRecord } from '@/types/commissions';
+import type { ServiceCommissionRecord } from '@/domain/commissions/types';
 
 interface UseServiceCommissionsReportArgs {
   businessId?: string | null;

@@ -41,13 +41,15 @@ export function useUserNamesCache({
   countsMeta,
   session,
 }: UseUserNamesCacheParams): UseUserNamesCacheResult {
-  const [currentUserResolvedName, setCurrentUserResolvedName] = useState('');
+  const [resolvedCurrentUser, setResolvedCurrentUser] = useState<{
+    uid: string;
+    name: string;
+  } | null>(null);
   const [usersNameCache, setUsersNameCache] = useState<Record<string, string>>(
     {},
   );
   const [resolvingUIDs, setResolvingUIDs] = useState<ResolvingMap>({});
   const resolvingUIDsRef = useRef<ResolvingMap>({});
-  const [namesBatchLoading, setNamesBatchLoading] = useState(false);
 
   const seededUsersNameCache = useMemo(() => {
     const seed: Record<string, string> = {};
@@ -64,6 +66,14 @@ export function useUserNamesCache({
       ...usersNameCache,
     };
   }, [countsMeta, usersNameCache]);
+
+  const currentUserFallback =
+    user?.displayName || user?.name || user?.email || user?.uid || '';
+  const currentUserResolvedName =
+    user?.uid && resolvedCurrentUser?.uid === user.uid
+      ? resolvedCurrentUser.name || currentUserFallback
+      : currentUserFallback;
+  const namesBatchLoading = Object.values(resolvingUIDs).some(Boolean);
 
   // Helper para resolver un único usuario (esquema flexible users/{uid})
   const resolveUserDisplayName = useCallback(
@@ -111,14 +121,11 @@ export function useUserNamesCache({
     let cancelled = false;
     const run = async () => {
       if (!user?.uid) {
-        if (!cancelled) setCurrentUserResolvedName('');
         return;
       }
       const name = await resolveUserDisplayName(user.uid);
       if (!cancelled) {
-        setCurrentUserResolvedName(
-          name || user.displayName || user.name || user.email || user.uid,
-        );
+        setResolvedCurrentUser({ uid: user.uid, name });
       }
     };
     run();
@@ -153,7 +160,6 @@ export function useUserNamesCache({
     };
     resolvingUIDsRef.current = nextResolvingUIDs;
     setResolvingUIDs(nextResolvingUIDs);
-    setNamesBatchLoading(true);
     (async () => {
       try {
         const loaded = await resolveUserDisplayNamesBatch(
@@ -172,7 +178,6 @@ export function useUserNamesCache({
           missing.forEach((uid) => delete nextResolvingUIDs[uid]);
           resolvingUIDsRef.current = nextResolvingUIDs;
           setResolvingUIDs(nextResolvingUIDs);
-          setNamesBatchLoading(false);
         }
       }
     })();

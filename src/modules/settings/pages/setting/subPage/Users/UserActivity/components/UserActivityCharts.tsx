@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-import { LazyRadar } from '@/components/charts/LazyCharts';
+import { LazyRadar } from '@/components/charts';
 import type { UserActivityStats } from '../hooks/useUserRealActivity';
 
 interface UserActivityChartsProps {

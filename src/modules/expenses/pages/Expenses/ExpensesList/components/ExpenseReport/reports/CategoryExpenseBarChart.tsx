@@ -2,8 +2,8 @@ import React, { useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
 
-import { createCurrencyBarChartOptions } from '@/components/charts/currencyBarChartOptions';
-import { createSingleDatasetBarData } from '@/components/charts/barChartData';
+import { createCurrencyBarChartOptions } from '@/components/charts';
+import { createSingleDatasetBarData } from '@/components/charts';
 import Typography from '@/components/ui/Typography/Typography';
 import type { Expense, ExpenseDoc } from '@/utils/expenses/types';
 

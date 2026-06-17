@@ -7,7 +7,7 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 
 import { db } from '@/firebase/firebaseconfig';
-import type { ServiceCommissionCollaboratorRecord } from '@/types/commissions';
+import type { ServiceCommissionCollaboratorRecord } from '@/domain/commissions/types';
 
 import { normalizeServiceCommissionCollaboratorRecord } from './useServiceCommissionCollaborators.utils';
 

@@ -6,7 +6,7 @@ import { selectUser } from '@/features/auth/userSlice';
 import { setCashCount } from '@/features/cashCount/cashCountManagementSlice';
 import { fbListenCashCounts } from '@/firebase/cashCount/fbGetCashCounts/fbGetCashCounts';
 import { useBusinessUsers } from '@/firebase/users/useBusinessUsers';
-import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
+import { AdvancedTable } from '@/components/ui/AdvancedTable';
 import type { UserIdentity } from '@/types/users';
 import type { CashCountRecord, CashCountState } from '@/utils/cashCount/types';
 import { FilterCashReconciliation } from '../FilterBar/FilterCashReconciliation';
