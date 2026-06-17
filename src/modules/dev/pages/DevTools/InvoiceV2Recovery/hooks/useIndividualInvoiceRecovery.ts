@@ -19,11 +19,11 @@ import {
   formatDateTime,
   parseCounterNumber,
   parseTimestamp,
-} from '@/domain/devtools/invoiceV2Recovery/invoiceV2RecoveryLogic';
+} from '../utils/invoiceV2RecoveryLogic';
 import type {
   InvoiceOptionMeta,
   OptionItem,
-} from '@/domain/devtools/invoiceV2Recovery/invoiceV2RecoveryLogic';
+} from '../utils/invoiceV2RecoveryLogic';
 import {
   AUTO_RECOVERY_REASON,
   AUTO_RECOVERY_TASKS,

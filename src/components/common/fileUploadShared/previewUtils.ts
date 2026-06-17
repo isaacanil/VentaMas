@@ -1,4 +1,4 @@
-import { isImageFile } from '@/utils/fileUtils';
+import { isImageFile } from '@/utils/files';
 
 import type { LightboxSlide, PreviewableFile } from './types';
 

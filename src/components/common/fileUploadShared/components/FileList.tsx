@@ -19,7 +19,7 @@ import {
   PreviewButton,
   TypeTag,
 } from './FileList.styles';
-import { isImageFile, isPDFFile } from '@/utils/fileUtils';
+import { isImageFile, isPDFFile } from '@/utils/files';
 
 import type { PreviewableFile } from '../types';
 

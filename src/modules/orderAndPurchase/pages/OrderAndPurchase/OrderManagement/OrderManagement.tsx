@@ -15,7 +15,7 @@ import { fbUpdateOrder } from '@/firebase/order/fbUpdateOrder';
 import { useListenOrder } from '@/modules/orderAndPurchase/hooks/useOrders';
 import ROUTES_PATH from '@/router/routes/routesName';
 import type { UserIdentity } from '@/types/users';
-import { getLocalURL } from '@/utils/fileUtils';
+import { getLocalURL } from '@/utils/files';
 import type { Order } from '@/utils/order/types';
 import type { PurchaseAttachment } from '@/utils/purchase/types';
 import {

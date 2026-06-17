@@ -61,7 +61,7 @@ Cerrar la lista de dominios top-level del repo para que el plan de testing no de
 - `Parcial`: `accounting`, `accountsReceivable`, `barcode`, `firestore`, `import`, `inventory`, `invoice`, `pricing.ts`, `runtime`, `sorts`
 - `Parcial adicional`: `filterUtils.ts`, `taxReceipt.ts`
 - `Pendiente`: `access`, `array`, `cashCount`, `data`, `date`, `expenses`, `file`, `format`, `number`, `object`, `order`, `pdf`, `perf`, `performance`, `products`, `purchase`, `roles`, `scroll`, `serialization`, `text`, `url`, `users`
-- `Pendiente por archivos raiz`: `auth-adapter.ts`, `files.ts`, `fileUtils.ts`, `fiscalReceiptsUtils.ts`, `flowTrace.ts`, `formatDate.ts`, `formatNumber.ts`, `formatters.ts`, `formRules.ts`, `invoiceValidation.ts`, `lazyWithRetry.ts`, `lodash-minimal.ts`, `menuAccess.ts`, `printPdf.ts`, `reactScan.ts`, `reduxStateUtils.ts`, `referenceUtils.ts`, `sales.ts`, `text.ts`, `userValidation.ts`, `validators.ts`
+- `Pendiente por archivos raiz`: `auth-adapter.ts`, `files.ts`, `fiscalReceiptsUtils.ts`, `flowTrace.ts`, `formatDate.ts`, `formatNumber.ts`, `formatters.ts`, `formRules.ts`, `invoiceValidation.ts`, `lazyWithRetry.ts`, `lodash-minimal.ts`, `menuAccess.ts`, `printPdf.ts`, `reduxStateUtils.ts`, `referenceUtils.ts`, `sales.ts`, `text.ts`, `userValidation.ts`, `validators.ts`
 - `Cubierto en navigation/core`: `createLazyLoader.ts`, `normalizeMatch.ts`
 
 ## Cloud Functions

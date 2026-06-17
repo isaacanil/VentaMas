@@ -103,7 +103,7 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - La logica de ingredientes de pizza salio de `firebaseconfig` y vive en `src/firebase/products/customProduct/ingredientTypePizzaService.ts`, dejando la configuracion Firebase enfocada en inicializacion.
 - Los wrappers simples de Cloud Functions reutilizan `src/firebase/functions/callable.ts`, evitando repetir `httpsCallable` y extraccion manual de `data`.
 - Los renames de carpetas `Components` a `components` quedaron registrados como cambios de casing en Git para evitar fallos en filesystems case-sensitive.
-- `FileUploader/FileList` ahora usa `isImageFile`/`isPDFFile` de `utils/fileUtils`, y `FileUploader` + `EvidenceUpload` comparten los styled-components de lista en `src/components/common/fileUploadShared/components/FileList.styles.ts`.
+- `FileUploader/FileList` ahora usa `isImageFile`/`isPDFFile` de `utils/files`, y `FileUploader` + `EvidenceUpload` comparten los styled-components de lista en `src/components/common/fileUploadShared/components/FileList.styles.ts`.
 - `FilterBar` movio normalizadores de rango numerico, rango de fecha y estado activo a `FilterBar.utils.ts`, dejando el componente principal mas enfocado en layout/render.
 - `CreditNoteModal` comparte `QuantityAvailabilityDisplay`/`QuantityAvailabilityHint` entre tabla y tarjeta de productos, quitando tooltips/estilos inline duplicados sin tocar los calculos.
 - `ProductCard` de `CreditNoteModal` movio sus styled-components a `ProductCard.styles.ts`, dejando el archivo principal centrado en datos, calculos y render.
@@ -228,6 +228,7 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - Los permisos dinamicos separan catalogo puro (`src/domain/permissions/dynamicPermissionsCatalog.ts`) de persistencia Firestore (`src/firebase/permissions/dynamicPermissions.repository.ts`), y los consumidores de usuarios importan solo la capa que necesitan.
 - La metadata de productos de bajo riesgo (categorias, favoritos, ingredientes activos y marcas) se encapsulo en hooks owner-locales de products, sacando imports directos de Firebase de los componentes visuales sin tocar stock, imagenes ni guardados de producto.
 - El modal de pizza personalizada deriva el draft en render con `buildCustomPizzaDraft` y prueba focalizada, en vez de sincronizar estado derivado desde `Header` con `useEffect`.
+- React Scan vive en `src/modules/dev/utils/reactScan.ts` y la logica pura de InvoiceV2Recovery vive owner-local en `src/modules/dev/pages/DevTools/InvoiceV2Recovery/utils/invoiceV2RecoveryLogic.ts`; `src/utils/reactScan.ts` y `src/domain/devtools` quedan retirados y protegidos por `moduleBoundaries.test.ts`.
 - Los paths retirados recientes (`functionsApiClient`, `dynamicPermissions`, `invoiceV2Admin`, `pdfMakeLoader` legacy y `reconcileBatchStatus` bajo functions/inventory) quedaron cubiertos por `moduleBoundaries.test.ts`; los planes históricos de testing deben apuntar a `src/firebase/functions/httpClient.ts`, `src/domain|firebase/permissions/*` y el service owner-local de `InvoiceV2Recovery`.
 
 ## Guardrails añadidos en esta pasada

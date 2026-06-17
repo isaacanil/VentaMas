@@ -14,7 +14,7 @@ import { fbSearchUsers } from '@/firebase/Auth/fbAuthV2/fbGetUsers';
 import {
   getReactScanDevToolsConflictMessage,
   isReactDevToolsDetected,
-} from '@/utils/reactScan';
+} from '@/modules/dev/utils/reactScan';
 import { normalizeRoleId } from '@/utils/roles/normalizeRole';
 import type { CommandProcessorInterface } from '../types';
 import type { SelectionItem } from '../../../types';

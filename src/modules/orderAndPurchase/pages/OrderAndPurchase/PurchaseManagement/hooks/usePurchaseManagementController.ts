@@ -18,7 +18,7 @@ import { useListenOrder } from '@/modules/orderAndPurchase/hooks/useOrders';
 import { useListenPurchase } from '@/modules/orderAndPurchase/hooks/usePurchases';
 import ROUTES_PATH from '@/router/routes/routesName';
 import type { UserIdentity } from '@/types/users';
-import { getLocalURL } from '@/utils/fileUtils';
+import { getLocalURL } from '@/utils/files';
 import type { WarehouseRecord } from '@/utils/inventory/types';
 import type { Purchase } from '@/utils/purchase/types';
 import {

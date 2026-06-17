@@ -2,13 +2,13 @@ import { useCallback, useEffect, useMemo, useReducer } from 'react';
 import type { ChangeEvent, Dispatch, SetStateAction } from 'react';
 
 import {
+  getFileExtension,
   getFileTypeFromUrl,
   getLocalURL,
   isImageFile,
   isPDFFile,
   revokeLocalURL,
-} from '@/utils/fileUtils';
-import { getFileExtension } from '@/utils/files';
+} from '@/utils/files';
 
 import {
   createImageLightboxSlides,
