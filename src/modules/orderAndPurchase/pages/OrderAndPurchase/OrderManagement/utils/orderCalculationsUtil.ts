@@ -2,7 +2,7 @@ import type { PurchaseReplenishment } from '@/utils/purchase/types';
 import {
   calculateReplenishmentTotals,
   type ReplenishmentTotals,
-} from '@/utils/order/totals';
+} from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/utils/replenishmentTotals';
 
 export const calculateOrderTotals = (
   items: PurchaseReplenishment[] = [],

@@ -11,6 +11,7 @@ import {
   resolvePostingProfileForEvent,
   validateProjectedLines,
 } from './utils/accountingProjection.util.js';
+import { isJournalEntryBalanced } from './utils/journalEntry.util.js';
 import { buildAccountingPeriodKey } from './utils/periodClosure.util.js';
 
 export const PROJECTOR_VERSION = 1;
@@ -143,6 +144,7 @@ const buildDeadLetterRecord = ({
   sourceId: toCleanString(accountingEvent.sourceId),
   sourceDocumentType: toCleanString(accountingEvent.sourceDocumentType),
   sourceDocumentId: toCleanString(accountingEvent.sourceDocumentId),
+  periodKey: resolveEventPeriodKey(accountingEvent, now),
   projectionStatus: projectionUpdate.projection.status,
   journalEntryId: toCleanString(projectionUpdate.projection.journalEntryId),
   projectorVersion: projectionUpdate.projection.projectorVersion,
@@ -185,6 +187,118 @@ const persistDeadLetter = async ({
     }),
     { merge: true },
   );
+};
+
+const buildExistingJournalEntryValidationError = ({
+  businessId,
+  entry,
+  event,
+  eventId,
+  now,
+}) => {
+  const entryBusinessId = toCleanString(entry.businessId);
+  if (entryBusinessId && entryBusinessId !== businessId) {
+    return buildProjectionError({
+      code: 'existing-journal-entry-invalid',
+      message: 'El asiento existente pertenece a otro negocio.',
+      now,
+      details: {
+        expectedBusinessId: businessId,
+        foundBusinessId: entryBusinessId,
+      },
+    });
+  }
+
+  const entryEventId = toCleanString(entry.eventId);
+  if (entryEventId && entryEventId !== eventId) {
+    return buildProjectionError({
+      code: 'existing-journal-entry-invalid',
+      message: 'El asiento existente no corresponde al evento contable.',
+      now,
+      details: { expectedEventId: eventId, foundEventId: entryEventId },
+    });
+  }
+
+  const entryEventType = toCleanString(entry.eventType);
+  const eventType = toCleanString(event.eventType);
+  if (entryEventType && eventType && entryEventType !== eventType) {
+    return buildProjectionError({
+      code: 'existing-journal-entry-invalid',
+      message: 'El asiento existente no coincide con el tipo de evento.',
+      now,
+      details: {
+        expectedEventType: eventType,
+        foundEventType: entryEventType,
+      },
+    });
+  }
+
+  if (toCleanString(entry.status) === 'reversed') {
+    return buildProjectionError({
+      code: 'existing-journal-entry-invalid',
+      message: 'El asiento existente esta reversado y no puede reutilizarse.',
+      now,
+      details: { status: 'reversed' },
+    });
+  }
+
+  if (!isJournalEntryBalanced(entry)) {
+    return buildProjectionError({
+      code: 'existing-journal-entry-invalid',
+      message: 'El asiento existente esta descuadrado.',
+      now,
+      details: { journalEntryId: toCleanString(entry.id) ?? eventId },
+    });
+  }
+
+  const entryPeriodKey = toCleanString(entry.periodKey);
+  const eventPeriodKey = resolveEventPeriodKey(event, now);
+  if (entryPeriodKey && eventPeriodKey && entryPeriodKey !== eventPeriodKey) {
+    return buildProjectionError({
+      code: 'existing-journal-entry-invalid',
+      message: 'El asiento existente pertenece a otro periodo contable.',
+      now,
+      details: {
+        expectedPeriodKey: eventPeriodKey,
+        foundPeriodKey: entryPeriodKey,
+      },
+    });
+  }
+
+  const entryCurrency = toCleanString(entry.currency);
+  const eventCurrency = toCleanString(event.currency);
+  if (entryCurrency && eventCurrency && entryCurrency !== eventCurrency) {
+    return buildProjectionError({
+      code: 'existing-journal-entry-invalid',
+      message: 'El asiento existente no coincide con la moneda del evento.',
+      now,
+      details: {
+        expectedCurrency: eventCurrency,
+        foundCurrency: entryCurrency,
+      },
+    });
+  }
+
+  const entryFunctionalCurrency = toCleanString(entry.functionalCurrency);
+  const eventFunctionalCurrency = toCleanString(event.functionalCurrency);
+  if (
+    entryFunctionalCurrency &&
+    eventFunctionalCurrency &&
+    entryFunctionalCurrency !== eventFunctionalCurrency
+  ) {
+    return buildProjectionError({
+      code: 'existing-journal-entry-invalid',
+      message:
+        'El asiento existente no coincide con la moneda funcional del evento.',
+      now,
+      details: {
+        expectedFunctionalCurrency: eventFunctionalCurrency,
+        foundFunctionalCurrency: entryFunctionalCurrency,
+      },
+    });
+  }
+
+  return null;
 };
 
 export const runAccountingEventProjection = async ({
@@ -269,6 +383,49 @@ export const runAccountingEventProjection = async ({
     ]);
 
   if (entrySnap.exists) {
+    const existingEntry = {
+      id: entrySnap.id,
+      ...asRecord(entrySnap.data()),
+    };
+    const existingEntryError = buildExistingJournalEntryValidationError({
+      businessId: normalizedBusinessId,
+      entry: existingEntry,
+      event: eventRecord,
+      eventId: normalizedEventId,
+      now,
+    });
+    if (existingEntryError) {
+      const projectionUpdate = buildProjectionUpdate({
+        accountingEvent: eventRecord,
+        status: 'failed',
+        now,
+        projectorVersion: PROJECTOR_VERSION,
+        journalEntryId: normalizedEventId,
+        lastError: existingEntryError,
+        replayRequestedBy,
+      });
+      await eventRef.update(projectionUpdate);
+      await persistDeadLetter({
+        deadLetterRef,
+        businessId: normalizedBusinessId,
+        eventId: normalizedEventId,
+        accountingEvent: eventRecord,
+        projectionUpdate,
+        lastError: existingEntryError,
+        replayRequestedBy,
+        now,
+      });
+
+      return {
+        ok: false,
+        status: 'failed',
+        journalEntryId: normalizedEventId,
+        reusedExistingEntry: false,
+        deadLetterId: normalizedEventId,
+        lastError: existingEntryError,
+      };
+    }
+
     const projectionUpdate = buildProjectionUpdate({
       accountingEvent: eventRecord,
       status: 'projected',

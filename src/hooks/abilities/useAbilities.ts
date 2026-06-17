@@ -2,7 +2,7 @@ import { useAbility } from '@casl/react';
 import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { AbilityContext } from '@/Context/AbilityContext/context';
+import { AbilityContext } from '@/context/AbilityContext/context';
 import {
   selectAbilities,
   selectAbilitiesLoading,

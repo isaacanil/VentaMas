@@ -6,7 +6,7 @@ import type { MenuProps } from 'antd';
 import { useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 
-import type { LocationNamesMap, TimestampLike } from '@/utils/inventory/types';
+import type { LocationNamesMap } from '@/utils/inventory/types';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
 import {
   AdvancedTable,
@@ -14,6 +14,12 @@ import {
 } from '@/components/ui/AdvancedTable/AdvancedTable';
 
 import type { ProductStockItem, StockStatus } from '../types';
+import {
+  formatBatchLabel,
+  formatStockQuantity,
+  toStockDateMs,
+  type StockBatchDisplayValue,
+} from '../utils/stockDisplay';
 
 type ProductStockTableProps = {
   stocks: ProductStockItem[];
@@ -29,24 +35,6 @@ type ProductStockRow = ProductStockItem & {
   expirationDateMs: number | null;
   quantityNumber: number;
   actions: string;
-};
-
-const toDateMs = (value: TimestampLike | undefined | null): number | null => {
-  if (!value) return null;
-  if (value instanceof Date)
-    return Number.isNaN(value.getTime()) ? null : value.getTime();
-  if (typeof value === 'number' || typeof value === 'string') {
-    const parsed = new Date(value);
-    return Number.isNaN(parsed.getTime()) ? null : parsed.getTime();
-  }
-  if (typeof (value as { seconds?: number }).seconds === 'number') {
-    return (value as { seconds: number }).seconds * 1000;
-  }
-  if (typeof (value as { toDate?: () => Date }).toDate === 'function') {
-    const parsed = (value as { toDate: () => Date }).toDate();
-    return Number.isNaN(parsed.getTime()) ? null : parsed.getTime();
-  }
-  return null;
 };
 
 const ProductStockTable = ({
@@ -67,7 +55,7 @@ const ProductStockTable = ({
           ...stock,
           id: rowId,
           raw: stock,
-          expirationDateMs: toDateMs(stock.expirationDate),
+          expirationDateMs: toStockDateMs(stock.expirationDate),
           quantityNumber: Number(stock.quantity ?? 0),
           actions: rowId,
         };
@@ -150,11 +138,12 @@ const ProductStockTable = ({
         minWidth: '120px',
         maxWidth: '100px',
         sortable: true,
-        cell: ({ value }) => (
-          <BatchBadge $empty={!value}>
-            {value ? `#${value}` : 'Sin lote'}
-          </BatchBadge>
-        ),
+        cell: ({ value }) => {
+          const batchValue = value as StockBatchDisplayValue;
+          const batchLabel = formatBatchLabel(batchValue, { prefix: '#' });
+
+          return <BatchBadge $empty={!batchValue}>{batchLabel}</BatchBadge>;
+        },
       },
       {
         Header: 'Vencimiento',
@@ -177,9 +166,7 @@ const ProductStockTable = ({
         cell: ({ row }) => {
           const record = row?.raw;
           const status = getStockStatus(record?.quantity);
-          const formattedQuantity = Number(
-            record?.quantity ?? 0,
-          ).toLocaleString();
+          const formattedQuantity = formatStockQuantity(record?.quantity);
           return (
             <Tooltip title={status.label}>
               <QuantityBadge $status={status}>

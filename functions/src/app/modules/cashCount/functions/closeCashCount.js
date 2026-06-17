@@ -11,48 +11,39 @@ import { buildAccountingEvent } from '../../../versions/v2/accounting/utils/acco
 import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 import { incrementBusinessUsageMetric } from '../../../versions/v2/billing/services/usage.service.js';
-import { toCleanString, toFiniteNumber } from '../../../versions/v2/billing/utils/billingCommon.util.js';
+import {
+  toCleanString,
+  toFiniteNumber,
+} from '../../../versions/v2/billing/utils/billingCommon.util.js';
+import {
+  asRecord,
+  resolveCashCountEmployeeId,
+  toMillis,
+  toUserRef,
+} from '../utils/cashCountCallable.util.js';
 
 const MANAGER_ROLES = new Set(['owner', 'admin', 'manager', 'dev']);
-
-const asRecord = (value) =>
-  value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-
-const toMillis = (value) => {
-  if (!value) return null;
-  if (typeof value?.toMillis === 'function') return value.toMillis();
-  const numeric = Number(value);
-  return Number.isFinite(numeric) ? numeric : null;
-};
 
 const roundToTwoDecimals = (value) =>
   Math.round(toFiniteNumber(value, 0) * 100) / 100;
 
-const toUserRef = (userId) => {
-  const normalized = toCleanString(userId);
-  return normalized ? db.doc(`users/${normalized}`) : null;
-};
-
-const resolveEmployeeId = (employee) => {
-  if (!employee) return null;
-  if (typeof employee === 'string') {
-    const parts = employee.split('/');
-    return parts[parts.length - 1] || null;
-  }
-  if (Array.isArray(employee?._path?.segments)) {
-    return employee._path.segments.slice(-1)[0] || null;
-  }
-  if (Array.isArray(employee?._key?.path?.segments)) {
-    return employee._key.path.segments.slice(-1)[0] || null;
-  }
-  return (
-    toCleanString(employee.id) ||
-    toCleanString(employee.uid) ||
-    toCleanString(employee.userId) ||
-    null
+const assertPayloadEmployeeMatchesActor = ({ payload, authUid }) => {
+  const requestedEmployeeIds = [
+    toCleanString(payload.employeeID),
+    toCleanString(payload.employeeId),
+  ].filter(Boolean);
+  const mismatchedEmployeeId = requestedEmployeeIds.find(
+    (employeeId) => employeeId !== authUid,
   );
+
+  if (mismatchedEmployeeId) {
+    throw new HttpsError(
+      'permission-denied',
+      'No puedes cerrar caja para otro empleado',
+    );
+  }
 };
 
 export const buildCashOverShortAccountingEvent = ({
@@ -123,18 +114,20 @@ export const closeCashCount = onCall(async (request) => {
     toCleanString(payload.cashCountId) ||
     toCleanString(cashCountInput.id) ||
     null;
-  const employeeId =
+  assertPayloadEmployeeMatchesActor({ payload, authUid });
+  const requestedEmployeeId =
     toCleanString(payload.employeeID) ||
     toCleanString(payload.employeeId) ||
-    authUid;
-  const approvalEmployeeId =
+    null;
+  const requestedApprovalEmployeeId =
     toCleanString(payload.approvalEmployeeID) ||
     toCleanString(payload.approvalEmployeeId) ||
     null;
+  const approvalEmployeeId = authUid;
   const clientBuildId = toCleanString(payload.clientBuildId) || null;
   const clientAppVersion = toCleanString(payload.clientAppVersion) || null;
 
-  if (!businessId || !cashCountId || !approvalEmployeeId) {
+  if (!businessId || !cashCountId || !requestedApprovalEmployeeId) {
     throw new HttpsError(
       'invalid-argument',
       'businessId, cashCountId y approvalEmployeeID son requeridos',
@@ -148,13 +141,15 @@ export const closeCashCount = onCall(async (request) => {
   let resolvedMembershipRole = null;
   let resolvedMembershipSource = null;
   let resolvedClosingMillis = null;
+  let resolvedClosingEmployeeId = null;
 
   logger.info('[closeCashCount] request received', {
     authUid,
     businessId,
     cashCountId,
-    employeeId,
+    requestedEmployeeId,
     approvalEmployeeId,
+    requestedApprovalEmployeeId,
     clientBuildId,
     clientAppVersion,
     hasClosingPayload: Boolean(cashCountInput.closing),
@@ -182,7 +177,9 @@ export const closeCashCount = onCall(async (request) => {
       clientAppVersion,
     });
 
-    const cashCountRef = db.doc(`businesses/${businessId}/cashCounts/${cashCountId}`);
+    const cashCountRef = db.doc(
+      `businesses/${businessId}/cashCounts/${cashCountId}`,
+    );
     let shouldDecrementOpenCashRegisters = false;
     let responsePayload = {
       ok: true,
@@ -198,9 +195,10 @@ export const closeCashCount = onCall(async (request) => {
 
       resolvedCurrentState =
         toCleanString(cashCountSnap.get('cashCount.state')) || 'open';
-      resolvedOpeningEmployeeId = resolveEmployeeId(
+      resolvedOpeningEmployeeId = resolveCashCountEmployeeId(
         cashCountSnap.get('cashCount.opening.employee'),
       );
+      resolvedClosingEmployeeId = resolvedOpeningEmployeeId || authUid;
       resolvedActorRole = toCleanString(membership?.role)?.toLowerCase() || '';
       resolvedCanManage =
         resolvedOpeningEmployeeId === authUid ||
@@ -254,7 +252,7 @@ export const closeCashCount = onCall(async (request) => {
         'cashCount.updatedAt': Timestamp.fromMillis(Date.now()),
         'cashCount.closing': {
           ...asRecord(cashCountInput.closing),
-          employee: toUserRef(employeeId),
+          employee: toUserRef(resolvedClosingEmployeeId),
           approvalEmployee: toUserRef(approvalEmployeeId),
           initialized: true,
           date: Timestamp.fromMillis(closingMillis),
@@ -264,7 +262,10 @@ export const closeCashCount = onCall(async (request) => {
           cashCountInput.totalTransfer,
           0,
         ),
-        'cashCount.totalCharged': toFiniteNumber(cashCountInput.totalCharged, 0),
+        'cashCount.totalCharged': toFiniteNumber(
+          cashCountInput.totalCharged,
+          0,
+        ),
         'cashCount.totalReceivables': toFiniteNumber(
           cashCountInput.totalReceivables,
           0,
@@ -338,7 +339,9 @@ export const closeCashCount = onCall(async (request) => {
 
       if (accountingEvent) {
         await db
-          .doc(`businesses/${businessId}/accountingEvents/${accountingEvent.id}`)
+          .doc(
+            `businesses/${businessId}/accountingEvents/${accountingEvent.id}`,
+          )
           .set(accountingEvent, { merge: true });
       }
     }
@@ -359,8 +362,10 @@ export const closeCashCount = onCall(async (request) => {
       authUid,
       businessId,
       cashCountId,
-      employeeId,
+      requestedEmployeeId,
+      resolvedClosingEmployeeId,
       approvalEmployeeId,
+      requestedApprovalEmployeeId,
       clientBuildId,
       clientAppVersion,
       membershipRole: resolvedMembershipRole,

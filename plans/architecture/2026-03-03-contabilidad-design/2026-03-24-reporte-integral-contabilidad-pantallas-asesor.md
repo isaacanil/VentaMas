@@ -318,8 +318,7 @@ En ese momento si convendra un modulo aparte de tesoreria/bancos.
 
 Piezas visibles:
 
-- `ExchangeRateList.tsx`
-- `ExchangeRateMarketReference.tsx`
+- `ExchangeRatesWorkspace.tsx`
 - `AddExchangeRateModal.tsx`
 - `useAccountingConfig.ts`
 
@@ -710,7 +709,7 @@ Pantallas principales:
 Piezas visibles:
 
 - `CashReconciliation.tsx`
-- `CashRecociliationTable`
+- `CashReconciliationTable`
 - `CashRegisterOpening.tsx`
 - `CashRegisterClosure.tsx`
 - `CashupInvoicesOverview.tsx`
@@ -774,8 +773,8 @@ Pantalla principal:
 
 Piezas visibles:
 
-- `TaxReceIptSetting.tsx`
-- `ReceiptSettingsSection`
+- `TaxReceiptSetting.tsx`
+- `TaxReceiptSetting`
 - `ReceiptTableSection`
 - `TaxReceiptForm`
 - `TaxReceiptAuthorizationModal`
@@ -970,13 +969,13 @@ Recomendacion:
 - `src/router/routes/paths/Sales.tsx`
 - `src/router/routes/paths/Purchases.tsx`
 - `src/router/routes/paths/AccountReceivable.tsx`
-- `src/router/routes/paths/CashReconciliztion.tsx`
+- `src/router/routes/paths/CashReconciliation.tsx`
 - `src/modules/settings/components/GeneralConfig/configs/AccountingConfig/AccountingConfig.tsx`
 - `src/modules/settings/components/GeneralConfig/configs/AccountingConfig/components/AccountingSettingsForm.tsx`
 - `src/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useAccountingConfig.ts`
 - `src/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useChartOfAccounts.ts`
 - `src/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useAccountingPostingProfiles.ts`
-- `src/modules/settings/pages/setting/subPage/TaxReceipts/TaxReceIptSetting.tsx`
+- `src/modules/settings/pages/setting/subPage/TaxReceipts/TaxReceiptSetting.tsx`
 - `src/modules/invoice/pages/InvoicesPage/InvoicesPage.tsx`
 - `src/modules/accountsReceivable/components/PaymentForm/PaymentForm.tsx`
 - `src/modules/accountsReceivable/pages/AccountReceivable/pages/AccountReceivableList/AccountReceivableList.tsx`

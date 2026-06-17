@@ -7,9 +7,9 @@ import {
   approveAuthorizationRequest,
   rejectAuthorizationRequest,
 } from '@/firebase/authorizations/invoiceEditAuthorizations';
+import { resolveModuleMeta } from '@/modules/authorizations/utils/moduleMeta';
 
 import { formatDateTime } from '../constants/constants';
-import { resolveModuleMeta } from '../utils/utils';
 
 import type {
   AppUser,
@@ -99,15 +99,41 @@ export const useAuthorizationRequests = (
   user: AppUser | null | undefined,
   searchTerm = '',
   dateRange: [string, string] | null = null,
+  statusFilter: StatusFilterValue = 'pending',
 ) => {
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<AuthorizationRequest[]>([]);
-  const [statusFilter, setStatusFilter] =
-    useState<StatusFilterValue>('pending');
   const [pendingApproval, setPendingApproval] = useState<string | null>(null);
-  const [detailRequest, setDetailRequest] =
-    useState<AuthorizationRequest | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [detailRequestKey, setDetailRequestKey] = useState<string | null>(null);
+  const paginationScopeKey = [
+    searchTerm,
+    statusFilter,
+    dateRange?.[0] ?? '',
+    dateRange?.[1] ?? '',
+  ].join('\u0000');
+  const [pageState, setPageState] = useState({
+    scopeKey: paginationScopeKey,
+    page: 1,
+  });
+  const currentPage =
+    pageState.scopeKey === paginationScopeKey ? pageState.page : 1;
+  const setCurrentPage = useCallback(
+    (pageOrUpdater: number | ((page: number) => number)) => {
+      setPageState((current) => {
+        const currentPageForScope =
+          current.scopeKey === paginationScopeKey ? current.page : 1;
+        const page =
+          typeof pageOrUpdater === 'function'
+            ? pageOrUpdater(currentPageForScope)
+            : pageOrUpdater;
+        return {
+          scopeKey: paginationScopeKey,
+          page,
+        };
+      });
+    },
+    [paginationScopeKey],
+  );
 
   const load = useCallback(
     async (statusArg?: StatusFilterValue) => {
@@ -146,17 +172,10 @@ export const useAuthorizationRequests = (
     void load();
   }, [user?.businessID, statusFilter, dateRange, load]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, statusFilter, dateRange]);
-
-  useEffect(() => {
-    if (!detailRequest?.key) return;
-    const updated = rows.find((row) => row.key === detailRequest.key);
-    if (updated && updated !== detailRequest) {
-      setDetailRequest(updated);
-    }
-  }, [rows, detailRequest]);
+  const detailRequest = useMemo(() => {
+    if (!detailRequestKey) return null;
+    return rows.find((row) => row.key === detailRequestKey) ?? null;
+  }, [rows, detailRequestKey]);
 
   const performApproval = async (id: string, authorizer: AppUser) => {
     try {
@@ -292,12 +311,12 @@ export const useAuthorizationRequests = (
   };
 
   const handleViewDetails = (request: AuthorizationRequest) => {
-    if (request) {
-      setDetailRequest(request);
+    if (request?.key) {
+      setDetailRequestKey(request.key);
     }
   };
 
-  const closeDetailModal = () => setDetailRequest(null);
+  const closeDetailModal = () => setDetailRequestKey(null);
 
   const requestsForUi = useMemo<AuthorizationRequestListItem[]>(
     () =>
@@ -420,7 +439,6 @@ export const useAuthorizationRequests = (
     loading,
     rows,
     statusFilter,
-    setStatusFilter,
     pendingApproval,
     setPendingApproval,
     detailRequest,

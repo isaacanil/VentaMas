@@ -12,6 +12,12 @@ import {
   buildAiBusinessSeedingExecutionRequestHash,
   normalizeAiBusinessSeedingExecuteRequestId,
 } from '../utils/aiBusinessSeedingExecutionIdempotency.js';
+import {
+  readAiBusinessSeedingString as readString,
+} from '../utils/aiBusinessSeedingText.util.js';
+import {
+  readAiCallableObject as readObject,
+} from '../utils/aiCallablePayload.util.js';
 import { buildAiBusinessSeedingUsernameSuggestions } from '../utils/aiBusinessSeedingUsernameSuggestions.js';
 import { assertAiBusinessSeedingDeveloperAccess } from './aiBusinessSeedingAccess.js';
 
@@ -24,12 +30,6 @@ const ALLOWED_ROLES = new Set([
 ]);
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 const IDEMPOTENCY_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-
-const readObject = (value) =>
-  value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-
-const readString = (value) =>
-  typeof value === 'string' && value.trim() ? value.trim() : '';
 
 const readUsersArray = (value) =>
   Array.isArray(value)

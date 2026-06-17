@@ -64,6 +64,15 @@ export async function addBillToCashCountById(
   }
 
   const cashCountRef = cashCountSnap.ref;
+  const fallbackCashCountId = cashCountSnap.id || cashCountRef.id || 'unknown';
+
+  if (!cashCountSnap.exists) {
+    throw new https.HttpsError(
+      'not-found',
+      `CashCount ${fallbackCashCountId} no existe`,
+    );
+  }
+
   const cashCount = cashCountSnap.data().cashCount;
   const cashCountId = cashCount?.id;
 
@@ -75,13 +84,6 @@ export async function addBillToCashCountById(
   }
   const state = cashCount.state;
   const sales = cashCount.sales || [];
-
-  if (!cashCountSnap.exists) {
-    throw new https.HttpsError(
-      'not-found',
-      `CashCount ${cashCountId} no existe`,
-    );
-  }
 
   if (state !== 'open') {
     throw new https.HttpsError(

@@ -1,6 +1,6 @@
 import { Table } from 'antd';
 import styled from 'styled-components';
-import type { ColumnsType } from 'antd/es/table';
+import type { TableColumnsType as ColumnsType } from 'antd';
 import type { QuotationData } from '@/pdf/invoicesAndQuotation/types';
 import type { InvoiceProduct } from '@/types/invoice';
 import {

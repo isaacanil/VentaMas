@@ -1,7 +1,5 @@
-import { httpsCallable } from 'firebase/functions';
-
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 import type { ProductRecord } from '@/types/products';
 import type { UserWithBusiness } from '@/types/users';
 
@@ -23,10 +21,10 @@ type CreateProductResponse = {
   businessId?: string;
 };
 
-const createProductCallable = httpsCallable<
+const createProductCallable = createFirebaseCallable<
   CreateProductRequest,
   CreateProductResponse
->(functions, 'createProduct');
+>('createProduct');
 
 export const fbAddProduct = async (
   data: ProductWithStock,

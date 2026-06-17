@@ -3,9 +3,8 @@ import { Button, Dropdown, InputNumber, Modal, Tag, Tooltip } from 'antd';
 import { DateTime } from 'luxon';
 import type { ReactNode } from 'react';
 
-import { ActionMenuButton } from '@/components/ActionMenuButton';
 import DatePicker from '@/components/DatePicker';
-import { CLEAR_SENTINEL } from '@/utils/inventory/constants';
+import { CLEAR_SENTINEL } from '@/modules/inventory/utils/constants';
 
 import { EditorsList } from '../../../../inventoryTableComponents';
 import {
@@ -17,11 +16,12 @@ import {
   formatInputDate,
   formatNumber,
   getTsMs,
-  shortenLocationPath,
   Diff,
   TagsWrap,
 } from '../../../../inventoryTableUtils';
+import { ActionMenuButton } from '../../../components/ActionMenuButton';
 import { ProductNameCell } from '../../../components/ProductNameCell';
+import { shortenLocationPath } from '@/utils/inventory/locations';
 
 import type {
   InventoryGroup,

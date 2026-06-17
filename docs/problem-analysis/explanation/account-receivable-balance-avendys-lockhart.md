@@ -43,26 +43,26 @@ Las capturas se encuentran adjuntas en el hilo original (ver referencia en la co
 
 - Colección principal: `businesses/{businessId}/accountsReceivable`.
 - Campo que acumula el saldo en el cliente: `businesses/{businessId}/clients/{clientId}.generalBalance`.
-- Cloud Function relacionada con la creación del saldo: `functions/src/modules/accountReceivable/services/addAccountReceivable.js` (actualiza `arBalance`, `paymentDate`, etc.).
+- Cloud Function relacionada con la creación del saldo: `functions/src/app/modules/accountReceivable/services/addAccountReceivable.js` (actualiza `arBalance`, `paymentDate`, etc.).
 - El crédito disponible se calcula como `creditLimit - generalBalance`.
 
 ## 🔍 Cómo se crea y se actualiza el saldo
 
 ### Al facturar (alta de CxC)
 
-1. El frontend invoca `processInvoice` (`src/services/invoice/invoiceService.js`) y, si `receivableStatus` está activo, envía `accountsReceivable` con `totalReceivable`, `totalInstallments`, `paymentFrequency`, `dueDate`, etc.
-2. La callable `handleInvoiceRequest` ejecuta `processInvoiceData` (`functions/src/modules/invoice/services/invoice.service.js:25`). Dentro de la transacción:
+1. El frontend invoca `processInvoice` desde `src/services/invoice/useInvoice.ts` y `src/services/invoice/invoice.service.ts`; si `receivableStatus` está activo, envía `accountsReceivable` con `totalReceivable`, `totalInstallments`, `paymentFrequency`, `dueDate`, etc.
+2. La callable `createInvoiceV2` ejecuta `processInvoiceData` (`functions/src/app/modules/invoice/services/invoice.service.js:25`). Dentro de la transacción:
    - Se genera la factura (`generateFinalInvoice` o `generateInvoiceFromPreorder`).
    - Se ajusta inventario y se reserva el NCF.
-   - Finalmente se llama a `manageReceivableAccounts` (`functions/src/modules/accountReceivable/services/accountReceivable.service.js:6`).
+   - Finalmente se llama a `manageReceivableAccounts` (`functions/src/app/modules/accountReceivable/services/accountReceivable.service.js:6`).
 3. `manageReceivableAccounts` obtiene el siguiente correlativo (`collectReceivablePrereqs`) y llama a:
-   - `addAccountReceivable` (`functions/src/modules/accountReceivable/services/addAccountReceivable.js`) → crea el documento `accountsReceivable/{arId}` con `arBalance = totalReceivable`, `isActive = true` y `paidInstallments = []`.
-   - `addInstallmentReceivable` (`functions/src/modules/accountReceivable/services/addInstallmentsAccountReceivable.js`) → persiste las cuotas en `accountsReceivableInstallments` calculadas por `generateInstallments`.
+   - `addAccountReceivable` (`functions/src/app/modules/accountReceivable/services/addAccountReceivable.js`) crea el documento `accountsReceivable/{arId}` con `arBalance = totalReceivable`, `isActive = true` y `paidInstallments = []`.
+   - `addInstallmentReceivable` (`functions/src/app/modules/accountReceivable/services/addInstallmentsAccountReceivable.js`) persiste las cuotas en `accountsReceivableInstallments` calculadas por `generateInstallments`.
 
 ### Al registrar pagos
 
-1. En la ficha del cliente, el botón “Pagar” abre el panel de CxC y dispara `fbProcessClientPaymentAR` (`src/firebase/proccessAccountsReceivablePayments/fbProccessClientPaymentAR.js`), que enruta la acción según `paymentScope` y `paymentOption`.
-2. Para cancelar todo el balance se usa `fbPayBalanceForAccounts` (`src/firebase/proccessAccountsReceivablePayments/fbPayBalanceForAccounts.js`):
+1. En la ficha del cliente, el botón “Pagar” abre el panel de CxC y dispara `fbProcessClientPaymentAR` (`src/firebase/processAccountsReceivablePayments/fbProcessClientPaymentAR.ts`), que enruta la acción según `paymentScope` y `paymentOption`.
+2. Para cancelar todo el balance se usa `fbPayBalanceForAccounts` (`src/firebase/processAccountsReceivablePayments/fbPayBalanceForAccounts.ts`):
    - Obtiene las cuentas abiertas ordenadas por fecha (`getSortedClientAccountsAR`).
    - Recorre cuotas activas (`getActiveInstallmentsByArId`) y aplica el pago con `processInstallmentPayment`, reduciendo `installmentBalance` y acumulando `paidInstallments`.
    - Invoca `updateAccountReceivableState` para bajar `arBalance`, marcar `isActive/isClosed` y registrar `lastPaymentDate` en el documento principal de la cuenta.
@@ -71,8 +71,8 @@ Las capturas se encuentran adjuntas en el hilo original (ver referencia en la co
 
 ### Cómo se recalcula “Balance General” en la app
 
-- Cada vez que un documento `accountsReceivable/{arId}` cambia, la Cloud Function `updatePendingBalance` (`functions/src/versions/v1/modules/accountsReceivable/triggers/updatePendingBalance.js`) suma los `arBalance` de todas las cuentas activas de ese cliente y escribe el resultado en `clients/{clientId}.client.pendingBalance`.
-- El frontend escucha ese campo mediante `useClientPendingBalance` y `useGetPendingBalance` (`src/firebase/accountsReceivable/useClientPendingBalance.js` y `fbGetPendingBalance.js`), y lo muestra como **Balance General** en `ClientBalanceInfo.jsx` y en el modal de CxC.
+- Cada vez que un documento `accountsReceivable/{arId}` cambia, la Cloud Function `updatePendingBalance` (`functions/src/app/versions/v1/modules/accountsReceivable/triggers/updatePendingBalance.js`) suma los `arBalance` de todas las cuentas activas de ese cliente y escribe el resultado en `clients/{clientId}.client.pendingBalance`.
+- El frontend escucha ese campo mediante `useClientPendingBalance` y `useGetPendingBalance` (`src/firebase/accountsReceivable/useClientPendingBalance.ts` y `src/firebase/accountsReceivable/fbGetPendingBalance.ts`), y lo muestra como **Balance General** en `ClientBalanceInfo.tsx` y en el modal de CxC.
 - El “Crédito disponible” simplemente hace `creditLimit - pendingBalance`, por lo que cualquier desajuste en el campo agregado afecta directamente lo que ve el usuario.
 
 ### Checklist rápido si el balance no baja

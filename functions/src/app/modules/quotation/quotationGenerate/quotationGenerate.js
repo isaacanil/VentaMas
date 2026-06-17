@@ -11,65 +11,30 @@ import {
   calcFooterHeight,
   calcHeaderHeight,
 } from './utils/documentHeightCalculator.js';
+import { fetchLogoDataUri } from '../../../core/utils/pdfLogo.util.js';
+import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.util.js';
+import {
+  MEMBERSHIP_ROLE_GROUPS,
+  assertUserAccess,
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const fontsPath = path.join(__dirname, '../../../../../fonts');
-const ALLOWED_LOGO_HOSTS = new Set([
-  'firebasestorage.googleapis.com',
-  'storage.googleapis.com',
-]);
-const LOGO_FETCH_TIMEOUT_MS = 5000;
-const MAX_LOGO_BYTES = 1_000_000;
-const SUPPORTED_LOGO_MIME_TYPES = new Set(['image/jpeg', 'image/png']);
 
 let printer = null;
 let printerPromise = null;
 
-function isAllowedLogoUrl(rawUrl) {
-  try {
-    const url = new URL(String(rawUrl));
-    return url.protocol === 'https:' && ALLOWED_LOGO_HOSTS.has(url.hostname);
-  } catch {
-    return false;
-  }
-}
+const asRecord = (value) =>
+  value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 
-async function fetchLogoDataUri(rawUrl) {
-  if (!rawUrl || !isAllowedLogoUrl(rawUrl)) return null;
+const toCleanString = (value) =>
+  typeof value === 'string' && value.trim().length ? value.trim() : null;
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), LOGO_FETCH_TIMEOUT_MS);
-
-  try {
-    const resp = await fetch(rawUrl, { signal: controller.signal });
-    if (!resp.ok) {
-      throw new Error(`Failed to fetch logo: ${resp.statusText}`);
-    }
-
-    const contentType = (resp.headers.get('content-type') || '')
-      .split(';')[0]
-      .trim()
-      .toLowerCase();
-    if (!SUPPORTED_LOGO_MIME_TYPES.has(contentType)) {
-      throw new Error(`Unsupported logo content type: ${contentType || 'unknown'}`);
-    }
-
-    const contentLength = Number(resp.headers.get('content-length'));
-    if (Number.isFinite(contentLength) && contentLength > MAX_LOGO_BYTES) {
-      throw new Error('Logo exceeds maximum allowed size');
-    }
-
-    const arrayBuffer = await resp.arrayBuffer();
-    if (arrayBuffer.byteLength > MAX_LOGO_BYTES) {
-      throw new Error('Logo exceeds maximum allowed size');
-    }
-
-    return `data:${contentType};base64,${Buffer.from(arrayBuffer).toString('base64')}`;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
+const toCallableAuthRequest = (data, context) => ({
+  data,
+  auth: context?.auth ?? null,
+});
 
 async function getPrinter() {
   if (printer) return printer;
@@ -100,8 +65,39 @@ async function getPrinter() {
   }
 }
 
-export const quotationPdf = https.onCall(async (req) => {
-  const { business: biz, data: d } = req.data;
+export const quotationPdf = https.onCall(async (data, context) => {
+  const request = toCallableAuthRequest(data, context);
+  const authUid = toCleanString(await resolveCallableAuthUid(request));
+  if (!authUid) {
+    throw new https.HttpsError('unauthenticated', 'Usuario no autenticado');
+  }
+
+  const payload = asRecord(request.data);
+  const biz = asRecord(payload.business);
+  const d = asRecord(payload.data);
+  const businessId =
+    toCleanString(payload.businessId) ||
+    toCleanString(biz.id) ||
+    toCleanString(biz.businessId) ||
+    toCleanString(biz.businessID) ||
+    null;
+
+  if (!businessId) {
+    throw new https.HttpsError('invalid-argument', 'businessId es requerido');
+  }
+
+  if (!Object.keys(biz).length || !Object.keys(d).length) {
+    throw new https.HttpsError(
+      'invalid-argument',
+      'business y data son requeridos',
+    );
+  }
+
+  await assertUserAccess({
+    authUid,
+    businessId,
+    allowedRoles: MEMBERSHIP_ROLE_GROUPS.INVOICE_OPERATOR,
+  });
 
   const images = {};
 

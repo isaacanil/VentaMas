@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Button, Typography, Space } from 'antd';
-import { ProductFormV2 } from '@/components/modals/ProductFormV2/ProductFormV2';
+import { ProductFormV2 } from './ProductFormV2/ProductFormV2';
 
 const { Title, Paragraph } = Typography;
 

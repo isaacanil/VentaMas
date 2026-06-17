@@ -11,10 +11,11 @@ import {
 } from '@/features/cashCount/cashCountManagementSlice';
 import { fbCashCountChangeState } from '@/firebase/cashCount/closing/fbCashCountClosing';
 import { useFbGetCashCount } from '@/firebase/cashCount/fbGetCashCount';
-import { useAuthorizationModules } from '@/hooks/useAuthorizationModules';
-import { useAuthorizationPin } from '@/hooks/useAuthorizationPin';
-import { PeerReviewAuthorization } from '@/components/modals/PeerReviewAuthorization/PeerReviewAuthorization';
-import { PinAuthorizationModal } from '@/components/modals/PinAuthorizationModal/PinAuthorizationModal';
+import {
+  PinAuthorizationModal,
+  useAuthorizationModules,
+  useAuthorizationPin,
+} from '@/modules/authorizations/public';
 import { selectUser } from '@/features/auth/userSlice';
 import type { CashCountRecord } from '@/utils/cashCount/types';
 import type { UserIdentity } from '@/types/users';
@@ -25,6 +26,7 @@ import { CASH_COUNT_AUTHORIZATION_ROLES } from '@/utils/roles/roleGroups';
 import { Body } from './components/Body/Body';
 import { Footer } from './components/Footer/Footer';
 import { Header } from './components/Header/Header';
+import { PeerReviewAuthorization } from '../../resource/PeerReviewAuthorization/PeerReviewAuthorization';
 import { completeCashRegisterClosure } from './utils/completeCashRegisterClosure';
 
 interface CashCountDocSnapshot {

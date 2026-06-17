@@ -1,5 +1,5 @@
 import type { PdfColumnsBlock, PdfContent } from '@/pdf/types';
-import type { CreditNoteData } from '../../../types.js';
+import type { CreditNoteData } from '../../../types';
 
 export function buildClientBlock(d: CreditNoteData): PdfColumnsBlock | null {
   const rawName = d.client?.name?.trim() || '';

@@ -1,4 +1,8 @@
-import type { LocationPathParts, LocationRefLike } from './types';
+import type {
+  InventoryStockItem,
+  LocationPathParts,
+  LocationRefLike,
+} from './types';
 
 const toPathPart = (value: unknown): string | null => {
   if (typeof value === 'string') {
@@ -50,6 +54,93 @@ export function normalizeLocationKey(value: string): string {
   return [warehouseId, shelfId, rowId, segmentId].filter(Boolean).join('/');
 }
 
+type ResolveInventoryLocationPathOptions = {
+  normalize?: boolean;
+};
+
+export function resolveInventoryLocationPath(
+  rawLocation: LocationRefLike | LocationPathParts | string | null | undefined,
+  options: ResolveInventoryLocationPathOptions = {},
+): string {
+  if (!rawLocation) return '';
+
+  let path = '';
+  if (typeof rawLocation === 'string') {
+    path = rawLocation.trim();
+  } else if (typeof rawLocation === 'object') {
+    if ('path' in rawLocation && typeof rawLocation.path === 'string') {
+      path = rawLocation.path.trim();
+    } else if (
+      'pathSegments' in rawLocation &&
+      Array.isArray(rawLocation.pathSegments)
+    ) {
+      path = rawLocation.pathSegments
+        .map((segment) => toPathPart(segment))
+        .filter(Boolean)
+        .join('/');
+    } else {
+      const location = rawLocation as LocationRefLike & LocationPathParts;
+      const warehouse = toPathPart(location.warehouse ?? location.warehouseId);
+      const shelf = toPathPart(location.shelf ?? location.shelfId);
+      const row = toPathPart(
+        location.row ??
+          location.rowId ??
+          location.rowShelf ??
+          location.rowShelfId,
+      );
+      const segment = toPathPart(location.segment ?? location.segmentId);
+      path = [warehouse, shelf, row, segment].filter(Boolean).join('/');
+    }
+  }
+
+  if (!path) return '';
+  return options.normalize ? normalizeLocationKey(path) : path;
+}
+
+export function resolveInventoryItemLocationPath(
+  item: Partial<InventoryStockItem> | null | undefined,
+  options: ResolveInventoryLocationPathOptions = {},
+): string {
+  if (!item) return '';
+
+  if (typeof item.location === 'object' && item.location) {
+    const key = resolveInventoryLocationPath(item.location, options);
+    if (key) return key;
+  }
+
+  if (typeof item.location === 'string' && item.location.includes('/')) {
+    return resolveInventoryLocationPath(item.location, options);
+  }
+
+  if (item.shelfId || item.rowId || item.rowShelfId || item.segmentId) {
+    const { warehouseId, shelfId, rowId, rowShelfId, segmentId } = item;
+    let resolvedWarehouseId = warehouseId;
+    if (!resolvedWarehouseId && typeof item.location === 'string') {
+      resolvedWarehouseId = item.location;
+    }
+    return resolveInventoryLocationPath(
+      {
+        warehouseId: resolvedWarehouseId,
+        shelfId,
+        rowId,
+        rowShelfId,
+        segmentId,
+      },
+      options,
+    );
+  }
+
+  if (typeof item.location === 'string' && item.location) {
+    return resolveInventoryLocationPath(item.location, options);
+  }
+
+  if (item.warehouseId) {
+    return resolveInventoryLocationPath(item.warehouseId, options);
+  }
+
+  return '';
+}
+
 export function buildLocationPath(
   rawLocation: LocationRefLike | LocationPathParts | string | null | undefined,
 ): string {
@@ -59,29 +150,7 @@ export function buildLocationPath(
     return normalized || rawLocation.trim();
   }
   if (typeof rawLocation === 'object') {
-    if ('path' in rawLocation && typeof rawLocation.path === 'string') {
-      return rawLocation.path.trim();
-    }
-    if (
-      'pathSegments' in rawLocation &&
-      Array.isArray(rawLocation.pathSegments)
-    ) {
-      const normalizedSegments = rawLocation.pathSegments
-        .map((segment) => toPathPart(segment))
-        .filter(Boolean);
-      return normalizedSegments.join('/');
-    }
-    const location = rawLocation as LocationRefLike & LocationPathParts;
-    const warehouse = toPathPart(location.warehouse ?? location.warehouseId);
-    const shelf = toPathPart(location.shelf ?? location.shelfId);
-    const row = toPathPart(
-      location.row ??
-        location.rowId ??
-        location.rowShelf ??
-        location.rowShelfId,
-    );
-    const segment = toPathPart(location.segment ?? location.segmentId);
-    return [warehouse, shelf, row, segment].filter(Boolean).join('/');
+    return resolveInventoryLocationPath(rawLocation);
   }
   return '';
 }
@@ -98,4 +167,26 @@ export function parseLocationPath(value: string): {
     .split('/')
     .filter(Boolean);
   return { warehouseId, shelfId, rowId, segmentId };
+}
+
+export function shortenLocationPath(path?: string) {
+  if (!path || typeof path !== 'string') return path;
+  if (!path.includes('/')) return path;
+  const parts = path.split('/').filter(Boolean);
+  if (parts.length <= 1) return truncateLocationSegment(parts[0]);
+  const MAX_SEGMENT_LENGTH = 14;
+  const first = truncateLocationSegment(parts[0], MAX_SEGMENT_LENGTH);
+  const last = truncateLocationSegment(
+    parts[parts.length - 1],
+    MAX_SEGMENT_LENGTH,
+  );
+  if (parts.length <= 2) return `${first}/${last}`;
+  return `${first}/.../${last}`;
+}
+
+function truncateLocationSegment(segment: string, limit = 14) {
+  if (!segment) return '';
+  if (segment.length <= limit) return segment;
+  if (limit <= 1) return '…';
+  return `${segment.slice(0, limit - 1)}…`;
 }

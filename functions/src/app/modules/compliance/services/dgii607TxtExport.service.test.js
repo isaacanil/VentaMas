@@ -74,6 +74,43 @@ describe('dgii607TxtExport.service', () => {
     ).toBe(false);
   });
 
+  it('serializa notas de debito con NCF modificado y forma de venta', () => {
+    const row = buildDgii607TxtRow({
+      record: {
+        counterparty: {
+          identification: {
+            number: '101010101',
+          },
+        },
+        data: {
+          NCF: 'E330000000001',
+        },
+        issuedAt: '2026-04-07T10:00:00.000Z',
+        totals: {
+          total: 118,
+          tax: 18,
+        },
+        paymentBreakdown: {
+          creditSale: 118,
+        },
+      },
+      firestoreDoc: {
+        paymentBreakdown: {
+          creditSale: 118,
+        },
+      },
+      isDebit: true,
+      originalNcf: 'E310000000008',
+    });
+
+    const columns = row.split('|');
+
+    expect(columns).toHaveLength(23);
+    expect(columns[2]).toBe('E330000000001');
+    expect(columns[3]).toBe('E310000000008');
+    expect(columns[19]).toBe('118.00');
+  });
+
   it('rechaza facturas detalladas sin identificación válida', () => {
     expect(() =>
       buildDgii607TxtRow({

@@ -3,6 +3,7 @@ import {
   flip,
   offset as floatingOffset,
   shift,
+  size,
   useFloating,
 } from '@floating-ui/react';
 import { Button, message, Tooltip, Typography, Tag } from 'antd';
@@ -177,7 +178,18 @@ const InvoiceTemplateSelector = ({
   const { refs, floatingStyles } = useFloating({
     placement: 'bottom-start',
     whileElementsMounted: autoUpdate,
-    middleware: [floatingOffset(10), flip({ padding: 8 }), shift({ padding: 8 })],
+    middleware: [
+      floatingOffset(10),
+      flip({ padding: 8 }),
+      shift({ padding: 8 }),
+      size({
+        apply({ rects, elements }) {
+          Object.assign(elements.floating.style, {
+            width: `${rects.reference.width}px`,
+          });
+        },
+      }),
+    ],
   });
   const isTemplateV2Enabled =
     isFrontendFeatureEnabled('invoiceTemplateV2Beta') ||
@@ -226,10 +238,6 @@ const InvoiceTemplateSelector = ({
       invoiceTemplates[0],
     [invoiceTemplates, selectedTemplate],
   );
-  const referenceWidth =
-    refs.reference.current instanceof HTMLElement
-      ? refs.reference.current.getBoundingClientRect().width
-      : null;
   const setReference = useCallback(
     (node: HTMLElement | null) => refs.setReference(node),
     [refs],
@@ -309,10 +317,7 @@ const InvoiceTemplateSelector = ({
       {isOpen && (
         <FloatingPanel
           ref={setFloating}
-          style={{
-            ...floatingStyles,
-            width: referenceWidth ?? undefined,
-          }}
+          style={floatingStyles}
         >
           <OptionList>
             {invoiceTemplates.map((item) => (

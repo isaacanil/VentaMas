@@ -5,6 +5,10 @@ import { onSchedule } from 'firebase-functions/v2/scheduler';
 
 import { db, Timestamp, FieldValue } from '../../../../core/config/firebase.js';
 import { MAIL_SECRETS } from '../../../../core/config/secrets.js';
+import {
+  escapeHtml,
+  sanitizeMailHeader,
+} from '../../../../core/utils/emailContent.util.js';
 import { logPinAction } from '../pin/pin.audit.js';
 import {
   ADMIN_CAN_GENERATE_ROLES,
@@ -31,19 +35,6 @@ import {
   ensureBusinessMatch,
 } from '../pin/pin.users.js';
 import { extractUserData } from '../pin/pin.utils.js';
-
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function sanitizeMailHeader(value) {
-  return String(value ?? '').replace(/[\r\n]+/g, ' ').trim();
-}
 
 export const autoRotateModulePins = onSchedule(
   {
@@ -968,9 +959,12 @@ export const sendPinByEmail = onCall(
 
       const text = `PIN de Autorización - VentaMax\n\nHola ${displayName},\n\nTus PINs de autorización:\n${plainPinList}\n\nIMPORTANTE: Este PIN es confidencial. Se invalida automáticamente a las 24 horas.`;
 
-      let mailer;
+      let sendRequiredMail;
+      let isMailDeliveryError;
       try {
-        mailer = await import('../../../../core/config/mailer.js');
+        ({ sendRequiredMail, isMailDeliveryError } = await import(
+          '../../../../core/config/mailer.js'
+        ));
       } catch {
         throw new HttpsError(
           'internal',
@@ -978,29 +972,29 @@ export const sendPinByEmail = onCall(
         );
       }
 
-      if (typeof mailer.getTransport === 'function') {
-        const transport = await mailer.getTransport();
-        if (!transport) {
+      try {
+        await sendRequiredMail(
+          {
+            to: targetEmail,
+            subject: 'Tu PIN de Autorización - VentaMax',
+            html,
+            text,
+          },
+          {
+            logMessage: '[pinAuth] Error enviando PIN por correo',
+            logContext: {
+              targetUserId,
+              email: targetEmail,
+            },
+          },
+        );
+      } catch (err) {
+        if (isMailDeliveryError?.(err, 'transport-unavailable')) {
           throw new HttpsError(
             'failed-precondition',
             'Servicio de correo no configurado.',
           );
         }
-      }
-
-      try {
-        await mailer.sendMail({
-          to: targetEmail,
-          subject: 'Tu PIN de Autorización - VentaMax',
-          html,
-          text,
-        });
-      } catch (err) {
-        logger.error('[pinAuth] Error enviando PIN por correo', {
-          targetUserId,
-          email: targetEmail,
-          error: String(err?.message || err),
-        });
         throw new HttpsError(
           'internal',
           'No se pudo enviar el correo. Intenta de nuevo más tarde.',

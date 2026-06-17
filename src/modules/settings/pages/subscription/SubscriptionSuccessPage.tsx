@@ -26,9 +26,11 @@ import {
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import { selectUser } from '@/features/auth/userSlice';
 import { requestVerifySubscriptionCheckoutSession } from '@/firebase/billing/billingManagement';
-import { resolveCurrentActiveBusinessId } from '@/modules/auth/utils/businessContext';
-import { withBusinessManagerQuery } from '@/modules/auth/utils/businessManagerRoute';
-import { resolveDefaultHomeRoute } from '@/modules/auth/utils/defaultHomeRoute';
+import {
+  resolveCurrentActiveBusinessId,
+  resolveDefaultHomeRoute,
+  withBusinessManagerQuery,
+} from '@/modules/auth/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 
 import { formatLimit } from './subscription.utils';

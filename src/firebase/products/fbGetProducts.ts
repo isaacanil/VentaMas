@@ -14,7 +14,7 @@ import {
   SelectActiveIngredients,
   SelectCategories,
   SelectCategoryStatus,
-} from '@/features/category/categorySlicer';
+} from '@/features/category/categorySlice';
 import {
   DEFAULT_FILTER_CONTEXT,
   selectCriterio,
@@ -32,6 +32,11 @@ import {
   type FilterRootState,
 } from '@/features/filterProduct/filterProductsSlice';
 import { db } from '@/firebase/firebaseconfig';
+import {
+  isProductExplicitlyInventoryTracked,
+  isProductExplicitlyNotInventoryTracked,
+  resolveProductInventoryItemType,
+} from '@/domain/products/productInventoryLogic';
 import { getTax } from '@/utils/pricing';
 import type { ProductRecord } from '@/types/products';
 import type { UserWithBusiness } from '@/types/users';
@@ -47,27 +52,6 @@ const normalizeTaxValue = (value: unknown): number | null => {
   if (!Number.isFinite(numeric)) return null;
   const scaled = Math.abs(numeric) < 1 ? numeric * 100 : numeric;
   return Math.round(scaled * 100) / 100;
-};
-
-const normalizeItemTypeValue = (product: ProductRecord): string => {
-  const itemType =
-    typeof product.itemType === 'string'
-      ? product.itemType.trim().toLowerCase()
-      : '';
-  if (
-    itemType === 'product' ||
-    itemType === 'service' ||
-    itemType === 'combo'
-  ) {
-    return itemType;
-  }
-
-  const type =
-    typeof product.type === 'string' ? product.type.trim().toLowerCase() : '';
-  if (type.includes('serv')) return 'service';
-  if (type.includes('combo') || type.includes('kit')) return 'combo';
-
-  return 'product';
 };
 
 function filterProducts(
@@ -89,19 +73,17 @@ function filterProducts(
 ): ProductRecord[] {
   if (itemType && itemType !== 'todos') {
     productsArray = productsArray.filter(
-      (product) => normalizeItemTypeValue(product) === itemType,
+      (product) => resolveProductInventoryItemType(product) === itemType,
     );
   }
 
   // Filtro por Inventariable
   if (!serverApplied.inventariable) {
     if (inventariable === 'si') {
-      productsArray = productsArray.filter(
-        (product) => product.trackInventory === true,
-      );
+      productsArray = productsArray.filter(isProductExplicitlyInventoryTracked);
     } else if (inventariable === 'no') {
       productsArray = productsArray.filter(
-        (product) => product.trackInventory === false,
+        isProductExplicitlyNotInventoryTracked,
       );
     }
   }
@@ -197,7 +179,9 @@ function filterProducts(
       : Math.min(low, 10);
 
     productsArray = productsArray.filter((product) => {
-      if (!product.trackInventory) return stockAlertLevel === 'normal';
+      if (!isProductExplicitlyInventoryTracked(product)) {
+        return stockAlertLevel === 'normal';
+      }
       const stock = product.stock ?? 0;
       if (stock <= 0) {
         return stockAlertLevel === 'critico';

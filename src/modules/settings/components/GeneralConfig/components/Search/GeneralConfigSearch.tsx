@@ -9,6 +9,7 @@ import {
 import { createPortal } from 'react-dom';
 
 import { icons } from '@/constants/icons/icons';
+import { normalizeSearchText } from '@/utils/searchText';
 
 import type {
   GeneralConfigSearchEntry,
@@ -38,12 +39,6 @@ const EMPTY_RESULTS_TEXT = 'Sin resultados';
 const SHORTCUT_LABEL = navigator.platform.includes('Mac') ? 'Cmd K' : 'Ctrl K';
 
 const EMPTY_GENERAL_CONFIG_RECORDS: GeneralConfigSearchRecord[] = [];
-
-const normalizeSearchText = (value: string) =>
-  value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
 
 interface TriggerProps {
   onOpen: () => void;

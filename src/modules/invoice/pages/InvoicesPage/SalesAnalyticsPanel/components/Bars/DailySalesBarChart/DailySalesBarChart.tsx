@@ -13,7 +13,7 @@ import {
 } from '../../../utils';
 
 import { formatPrice } from '@/utils/format';
-import Typography from '@/components/ui/Typografy/Typografy';
+import Typography from '@/components/ui/Typography/Typography';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 type SalesByDayEntry = {

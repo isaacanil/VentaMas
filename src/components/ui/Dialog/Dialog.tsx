@@ -3,10 +3,10 @@ import { AnimatePresence } from 'framer-motion';
 import { useCallback, useId, useRef, useState } from 'react';
 
 import { icons } from '@/constants/icons/icons';
-import { useDialog } from '@/Context/Dialog/useDialog';
-import type { DialogSize, DialogType } from '@/Context/Dialog/contextState';
+import { useDialog } from '@/context/Dialog/useDialog';
+import type { DialogSize, DialogType } from '@/context/Dialog/contextState';
 import { ButtonGroup } from '@/components/ui/Button/Button';
-import Typography from '@/components/ui/Typografy/Typografy';
+import Typography from '@/components/ui/Typography/Typography';
 import { useModalFocusTrap } from '@/hooks/useModalFocusTrap';
 
 import { iconTypes } from './Dialog.config';

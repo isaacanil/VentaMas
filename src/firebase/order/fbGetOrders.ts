@@ -8,35 +8,13 @@ import type {
 } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
-import { createReference, getDocFromRef } from '@/utils/referenceUtils';
+import { getProviderPayloadById } from '@/firebase/provider/providerLookup';
 import { normalizeOrderRecord } from '@/utils/order/status';
-
-type TimestampLike =
-  | {
-      seconds?: number;
-    }
-  | number;
 
 type OrderFilters = {
   status?: string;
   condition?: string;
   providerId?: string;
-};
-
-export const convertFirestoreTimestamps = (
-  dates: Record<string, TimestampLike | undefined>,
-  fields: string[],
-): void => {
-  fields.forEach((field) => {
-    const value = dates[field];
-    const timestamp =
-      typeof value === 'object' && value !== null && 'seconds' in value
-        ? (value as { seconds?: number }).seconds
-        : undefined;
-    if (typeof timestamp === 'number') {
-      dates[field] = timestamp * 1000;
-    }
-  });
 };
 
 export const subscribeToOrder = (
@@ -68,19 +46,6 @@ export const subscribeToOrder = (
   return onSnapshot(q, callback);
 };
 
-export const getProvider = async (
-  businessID: string,
-  providerId: string,
-): Promise<Record<string, unknown>> => {
-  if (!providerId) return {};
-  const providerRef = createReference(
-    ['businesses', businessID, 'providers'],
-    providerId,
-  );
-  const providerDoc = await getDocFromRef(providerRef);
-  return (providerDoc?.provider || {}) as Record<string, unknown>;
-};
-
 export const processOrder = async (
   data: Record<string, unknown> | undefined,
   businessID: string,
@@ -91,6 +56,6 @@ export const processOrder = async (
     typeof normalizedOrder?.provider === 'string'
       ? normalizedOrder.provider
       : '';
-  const provider = await getProvider(businessID, providerId);
+  const provider = await getProviderPayloadById(businessID, providerId);
   return { ...normalizedOrder, provider };
 };

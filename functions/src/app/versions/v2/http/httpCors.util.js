@@ -50,3 +50,36 @@ export const applyHttpCors = (
   res.set('Access-Control-Allow-Origin', origin);
   return true;
 };
+
+export const handleHttpCorsPreflightAndMethod = (
+  req,
+  res,
+  {
+    allowedMethod = 'POST',
+    methods = `${allowedMethod}, OPTIONS`,
+    headers = 'Content-Type, Authorization',
+  } = {},
+) => {
+  const corsAllowed = applyHttpCors(req, res, { methods, headers });
+
+  if (req.method === 'OPTIONS') {
+    if (!corsAllowed) {
+      res.status(403).send('');
+      return true;
+    }
+    res.status(204).send('');
+    return true;
+  }
+
+  if (!corsAllowed) {
+    res.status(403).json({ error: 'Origin not allowed' });
+    return true;
+  }
+
+  if (req.method !== allowedMethod) {
+    res.status(405).json({ error: 'Method Not Allowed' });
+    return true;
+  }
+
+  return false;
+};

@@ -34,7 +34,7 @@ import type {
   PurchaseAttachment,
   PurchaseReplenishment,
 } from '@/utils/purchase/types';
-import { syncVendorBillFromPurchase } from '@/firebase/vendorBills/fbUpsertVendorBill';
+import { syncVendorBillFromPurchase } from './syncVendorBillFromPurchase';
 import { fbUpdateProdStockForReplenish } from './fbUpdateProdStockForReplenish';
 
 interface AddPurchaseParams {

@@ -2,7 +2,7 @@ import type { Dispatch, SetStateAction } from 'react';
 
 import { VmPagination } from '@/components/heroui';
 
-import { FooterMeta } from '../ServiceCommissionsReport.styles';
+import { PaginationMeta } from './ReportPagination.styles';
 
 const getVisiblePages = (currentPage: number, totalPages: number) =>
   Array.from({ length: totalPages }, (_, index) => index + 1).filter(
@@ -23,7 +23,7 @@ export const ReportPagination = ({
   setCurrentPage,
   totalPages,
 }: ReportPaginationProps) => {
-  if (totalPages <= 1) return <FooterMeta>Página 1 de 1</FooterMeta>;
+  if (totalPages <= 1) return <PaginationMeta>Página 1 de 1</PaginationMeta>;
 
   const visiblePages = getVisiblePages(currentPage, totalPages);
 

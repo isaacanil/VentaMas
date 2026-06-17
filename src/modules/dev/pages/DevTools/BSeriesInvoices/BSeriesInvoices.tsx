@@ -15,11 +15,11 @@ import {
 } from 'antd';
 import { DateTime } from 'luxon';
 import React, { useMemo, useState } from 'react';
-import type { ColumnsType } from 'antd/es/table';
+import type { TableColumnsType as ColumnsType } from 'antd';
 
 import { useFbGetInvoicesBySerie } from '@/firebase/invoices/useFbGetInvoicesBySerie';
 import type { InvoiceDocWithId } from '@/firebase/invoices/types';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 const { Title, Paragraph, Text } = Typography;
 

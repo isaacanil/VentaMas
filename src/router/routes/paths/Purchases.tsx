@@ -1,31 +1,19 @@
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
+import {
+  loadBackOrdersRoute,
+  loadPurchaseManagementRoute,
+  loadPurchasesAnalyticsRoute,
+  loadPurchasesRoute,
+} from '@/modules/orderAndPurchase/public';
 
 import ROUTES_NAME from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/types/routeTypes';
 
 // Lazy load components
-const Purchases = lazy(() =>
-  import('@/modules/orderAndPurchase/pages/OrderAndPurchase/Compra/Purchases').then(
-    (module) => ({
-      default: module.Purchases,
-    }),
-  ),
-);
-const PurchasesAnalyticsPage = lazy(() =>
-  import('@/modules/orderAndPurchase/pages/OrderAndPurchase/Compra/PurchasesAnalyticsPage').then(
-    (module) => ({
-      default: module.PurchasesAnalyticsPage,
-    }),
-  ),
-);
-const PurchaseManagement = lazy(
-  () =>
-    import('@/modules/orderAndPurchase/pages/OrderAndPurchase/PurchaseManagement/PurchaseManagement'),
-);
-const BackOrders = lazy(
-  () =>
-    import('@/modules/orderAndPurchase/pages/OrderAndPurchase/BackOrders/BackOrders'),
-);
+const Purchases = lazy(loadPurchasesRoute);
+const PurchasesAnalyticsPage = lazy(loadPurchasesAnalyticsRoute);
+const PurchaseManagement = lazy(loadPurchaseManagementRoute);
+const BackOrders = lazy(loadBackOrdersRoute);
 
 const {
   PURCHASES,
@@ -47,7 +35,7 @@ const routes: AppRoute[] = [
   {
     path: PURCHASES_ANALYTICS,
     element: <PurchasesAnalyticsPage />,
-    title: 'Analisis de Compras - Ventamax',
+    title: 'Análisis de Compras - Ventamax',
     metaDescription:
       'Explora tendencias, suplidores, categorias y comportamiento del gasto en compras dentro de Ventamax POS.',
   },

@@ -13,7 +13,12 @@ import {
   scheduleRepairTasks,
 } from '../services/repairTasks.service.js';
 import { assertBusinessSubscriptionAccess } from '../../billing/utils/subscriptionAccess.util.js';
-import { applyHttpCors } from '../../http/httpCors.util.js';
+import { handleHttpCorsPreflightAndMethod } from '../../http/httpCors.util.js';
+import { mapHttpsErrorToHttpStatus } from '../../http/httpError.util.js';
+import {
+  expectsAccountsReceivable,
+  hasAccountsReceivable,
+} from '../../accountsReceivable/utils/receivableInvoiceState.util.js';
 
 const MAX_BUSINESS_LIMIT = 50;
 const MAX_INVOICE_LIMIT = 50;
@@ -37,52 +42,6 @@ const parseBoolean = (value, fallback = false) => {
   }
   return fallback;
 };
-
-const extractNumber = (value) => {
-  const numeric = Number(value);
-  return Number.isFinite(numeric) ? numeric : null;
-};
-
-function getReceivableMetadata(invoice) {
-  const snapshot = invoice?.snapshot || {};
-  const cart = snapshot?.cart || {};
-  const candidates = [
-    snapshot?.accountsReceivable,
-    cart?.accountsReceivable,
-    invoice?.accountsReceivable,
-    invoice?.snapshot?.accountsReceivable,
-  ].filter(Boolean);
-  let totalInstallments = 0;
-  candidates.forEach((candidate) => {
-    const numeric = extractNumber(candidate?.totalInstallments);
-    if (numeric && numeric > totalInstallments) {
-      totalInstallments = numeric;
-    }
-  });
-  const isAdded =
-    Boolean(cart?.isAddedToReceivables) ||
-    Boolean(snapshot?.isAddedToReceivables) ||
-    Boolean(invoice?.isAddedToReceivables) ||
-    candidates.some((candidate) => Boolean(candidate?.isAddedToReceivables));
-  return {
-    totalInstallments,
-    isAdded,
-  };
-}
-
-function expectsAccountsReceivable(invoice) {
-  const meta = getReceivableMetadata(invoice);
-  return Boolean(meta.isAdded && meta.totalInstallments > 0);
-}
-
-async function hasAccountsReceivable({ businessId, invoiceId }) {
-  const arSnap = await db
-    .collection(`businesses/${businessId}/accountsReceivable`)
-    .where('invoiceId', '==', invoiceId)
-    .limit(1)
-    .get();
-  return !arSnap.empty;
-}
 
 async function evaluateInvoiceNeeds({ businessId, invoiceId, invoice }) {
   try {
@@ -140,17 +99,13 @@ function buildInvoiceQuery({ businessId, limit, startAfterId }) {
 }
 
 export const autoRepairInvoiceV2Http = https.onRequest(async (req, res) => {
-  const corsAllowed = applyHttpCors(req, res, {
+  const httpGuardHandled = handleHttpCorsPreflightAndMethod(req, res, {
+    allowedMethod: 'POST',
     methods: 'POST, OPTIONS',
     headers: 'Content-Type, Authorization, X-Session-Token',
   });
-  if (req.method === 'OPTIONS') {
-    if (!corsAllowed) return res.status(403).send('');
-    return res.status(204).send('');
-  }
-  if (!corsAllowed) return res.status(403).json({ error: 'Origin not allowed' });
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+  if (httpGuardHandled) {
+    return;
   }
 
   try {
@@ -338,7 +293,7 @@ export const autoRepairInvoiceV2Http = https.onRequest(async (req, res) => {
       stack: err?.stack,
     });
     if (err instanceof https.HttpsError) {
-      return res.status(mapHttpsErrorToStatus(err.code)).json({
+      return res.status(mapHttpsErrorToHttpStatus(err.code)).json({
         error: err.message,
         code: err.code,
       });
@@ -348,23 +303,3 @@ export const autoRepairInvoiceV2Http = https.onRequest(async (req, res) => {
     });
   }
 });
-
-function mapHttpsErrorToStatus(code) {
-  switch (code) {
-  case 'permission-denied':
-    return 403;
-  case 'unauthenticated':
-    return 401;
-  case 'not-found':
-    return 404;
-  case 'failed-precondition':
-    return 412;
-  case 'resource-exhausted':
-    return 429;
-  case 'already-exists':
-    return 409;
-  case 'invalid-argument':
-  default:
-    return 400;
-  }
-}

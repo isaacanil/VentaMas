@@ -1,11 +1,11 @@
 import { Alert, Tabs, Typography } from 'antd';
 import type { TabsProps } from 'antd';
 
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 import { MaintenanceToolsPanel } from './components/MaintenanceToolsPanel';
 import { useTestPlaygroundController } from './hooks/useTestPlaygroundController';
-import SessionTokensCleanup from '../test/pages/sessionTokensCleanup/SessionTokensCleanup';
+import SessionTokensCleanup from './sessionTokensCleanup/SessionTokensCleanup';
 
 const { Title, Paragraph, Text } = Typography;
 

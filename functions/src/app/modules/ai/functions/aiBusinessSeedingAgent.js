@@ -6,12 +6,12 @@ import {
   readAiBusinessSeedingOperation,
   resolveAiBusinessSeedingOperationTarget,
 } from '../utils/aiBusinessSeedingOperations.js';
+import {
+  readAiCallableObject as readObject,
+} from '../utils/aiCallablePayload.util.js';
 import { aiBusinessSeedingAgentAnalyze } from './aiBusinessSeedingAgentAnalyze.js';
 import { aiBusinessSeedingAgentExecute } from './aiBusinessSeedingAgentExecute.js';
-import { aiBusinessSeedingAgentStatus } from './aiBusinessSeedingAgentStatus.js';
-
-const readObject = (value) =>
-  value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+import { handleAiBusinessSeedingAgentStatus } from './aiBusinessSeedingAgentStatus.js';
 
 export const aiBusinessSeedingAgent = onCall(
   buildAiAgentCallableOptions({
@@ -26,10 +26,7 @@ export const aiBusinessSeedingAgent = onCall(
     const target = resolveAiBusinessSeedingOperationTarget(operation);
 
     if (target === AI_BUSINESS_SEEDING_OPERATIONS.STATUS) {
-      if (typeof aiBusinessSeedingAgentStatus.run !== 'function') {
-        throw new HttpsError('internal', 'Dispatcher status unavailable.');
-      }
-      return aiBusinessSeedingAgentStatus.run(request);
+      return handleAiBusinessSeedingAgentStatus(request);
     }
 
     if (target === AI_BUSINESS_SEEDING_OPERATIONS.ANALYZE) {

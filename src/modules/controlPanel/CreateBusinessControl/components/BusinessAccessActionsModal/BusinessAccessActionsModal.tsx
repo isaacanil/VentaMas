@@ -23,6 +23,7 @@ import {
 } from '@/firebase/dev/businesses/fbUpdateBusinessAccess';
 
 import type { BusinessInfo } from '../../types';
+import { getBusinessAccessStatusDisplay } from '../../utils/businessStatusDisplay';
 
 type BusinessAccessActionsModalProps = {
   business: BusinessInfo | null;
@@ -40,13 +41,6 @@ const BLOCKING_STATUSES = new Set<BusinessAccessStatus>([
 
 const DEFAULT_STATUS: BusinessAccessStatus = 'suspended';
 const FORM_ID = 'business-access-actions-form';
-
-const getStatusLabel = (status?: string | null) => {
-  const match = BUSINESS_ACCESS_STATUS_OPTIONS.find(
-    (option) => option.value === status,
-  );
-  return match?.label || status || 'Activo';
-};
 
 export const BusinessAccessActionsModal = ({
   business,
@@ -119,7 +113,11 @@ export const BusinessAccessActionsModal = ({
           reason: cleanReason,
         });
         message.success(
-          `Acceso actualizado a ${getStatusLabel(response.status || status)}.`,
+          `Acceso actualizado a ${
+            getBusinessAccessStatusDisplay(response.status || status, {
+              includeLegacyStatusLabels: false,
+            }).label
+          }.`,
         );
         onUpdated?.(response);
         resetDraft();
@@ -191,7 +189,13 @@ export const BusinessAccessActionsModal = ({
           </SummaryItem>
           <SummaryItem>
             <SummaryLabel>Estado actual</SummaryLabel>
-            <SummaryValue>{getStatusLabel(currentStatus)}</SummaryValue>
+            <SummaryValue>
+              {
+                getBusinessAccessStatusDisplay(currentStatus, {
+                  includeLegacyStatusLabels: false,
+                }).label
+              }
+            </SummaryValue>
           </SummaryItem>
         </SummaryGrid>
 

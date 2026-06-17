@@ -3,25 +3,13 @@ import type {
   MembershipStatus,
   UserAccessControl,
 } from '@/types/models';
+import { asRecord, type UnknownRecord } from '@/utils/object/record';
 import { normalizeRoleId } from '@/utils/roles/normalizeRole';
+import { toCleanString } from '@/utils/text';
 
 import type { AvailableBusinessContext } from '@/utils/auth-adapter';
 
-type UnknownRecord = Record<string, unknown>;
-
 export const ACTIVE_BUSINESS_STORAGE_KEY = 'activeBusinessId';
-
-const isRecord = (value: unknown): value is UnknownRecord =>
-  value !== null && typeof value === 'object' && !Array.isArray(value);
-
-const asRecord = (value: unknown): UnknownRecord =>
-  isRecord(value) ? value : {};
-
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
 
 const toArray = (value: unknown): unknown[] =>
   Array.isArray(value) ? value : [];

@@ -10,6 +10,7 @@ const {
   getPilotAccountingSettingsForBusinessMock,
   isAccountingRolloutEnabledForBusinessMock,
   MockHttpsError,
+  MockTimestamp,
   resolveCallableAuthUidMock,
   resolvePilotMonetarySnapshotForBusinessMock,
   runTransactionMock,
@@ -38,6 +39,28 @@ const {
       super(message);
       this.code = code;
       this.details = details;
+    }
+  }
+
+  class HoistedTimestamp {
+    constructor(millis) {
+      this.millis = millis;
+    }
+
+    static fromDate(date) {
+      return new HoistedTimestamp(date.getTime());
+    }
+
+    static now() {
+      return new HoistedTimestamp(Date.parse('2026-04-13T09:00:00.000Z'));
+    }
+
+    toMillis() {
+      return this.millis;
+    }
+
+    toDate() {
+      return new Date(this.millis);
     }
   }
 
@@ -77,6 +100,7 @@ const {
     isAccountingRolloutEnabledForBusinessMock:
       hoistedIsAccountingRolloutEnabledForBusinessMock,
     MockHttpsError: HoistedHttpsError,
+    MockTimestamp: HoistedTimestamp,
     resolveCallableAuthUidMock: hoistedResolveCallableAuthUidMock,
     resolvePilotMonetarySnapshotForBusinessMock:
       hoistedResolvePilotMonetarySnapshotForBusinessMock,
@@ -94,27 +118,7 @@ vi.mock('firebase-functions/v2/https', () => ({
 }));
 
 vi.mock('../../../core/config/firebase.js', () => ({
-  Timestamp: class MockTimestamp {
-    constructor(millis) {
-      this.millis = millis;
-    }
-
-    static fromDate(date) {
-      return new MockTimestamp(date.getTime());
-    }
-
-    static now() {
-      return new MockTimestamp(Date.parse('2026-04-13T09:00:00.000Z'));
-    }
-
-    toMillis() {
-      return this.millis;
-    }
-
-    toDate() {
-      return new Date(this.millis);
-    }
-  },
+  Timestamp: MockTimestamp,
   FieldValue: {
     arrayUnion: (...values) => ({
       kind: 'arrayUnion',
@@ -132,7 +136,7 @@ vi.mock('../../../core/utils/callableSessionAuth.util.js', () => ({
   resolveCallableAuthUid: (...args) => resolveCallableAuthUidMock(...args),
 }));
 
-vi.mock('../../../versions/v2/invoice/services/repairTasks.service.js', () => ({
+vi.mock('../../../versions/v2/auth/services/userAccess.service.js', () => ({
   MEMBERSHIP_ROLE_GROUPS: {
     INVOICE_OPERATOR: ['invoice-operator'],
   },
@@ -536,6 +540,12 @@ describe('processAccountsReceivablePayment', () => {
       {
         id: 'receipt-existing',
         totalAmount: 100,
+        createdAt: new MockTimestamp(1776080400000),
+        nested: {
+          keep: 'visible',
+          omitted: undefined,
+        },
+        list: [new MockTimestamp(1776080460000)],
       },
     );
 
@@ -568,6 +578,11 @@ describe('processAccountsReceivablePayment', () => {
         receipt: expect.objectContaining({
           id: 'receipt-existing',
           totalAmount: 100,
+          createdAt: 1776080400000,
+          nested: {
+            keep: 'visible',
+          },
+          list: [1776080460000],
         }),
       }),
     );

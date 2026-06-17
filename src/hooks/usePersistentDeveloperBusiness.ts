@@ -11,14 +11,9 @@ import {
 import { fbGetDeveloperBusinessImpersonationStatus } from '@/firebase/Auth/fbAuthV2/fbSwitchDeveloperBusiness';
 import type { UserIdentity } from '@/types/users';
 import { hasDeveloperAccess } from '@/utils/access/developerAccess';
+import { toCleanString } from '@/utils/text';
 
 const STATUS_POLL_INTERVAL_MS = 60_000;
-
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
 
 export const usePersistentDeveloperBusiness = () => {
   const dispatch = useDispatch();

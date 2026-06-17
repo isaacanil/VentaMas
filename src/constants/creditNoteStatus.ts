@@ -3,6 +3,8 @@ export const CREDIT_NOTE_STATUS = {
   APPLIED: 'applied',
   FULLY_USED: 'fully_used',
   CANCELLED: 'cancelled',
+  ELECTRONIC_PENDING: 'electronic_pending',
+  ELECTRONIC_FAILED: 'electronic_failed',
 };
 
 export const CREDIT_NOTE_STATUS_LABEL = {
@@ -10,6 +12,8 @@ export const CREDIT_NOTE_STATUS_LABEL = {
   [CREDIT_NOTE_STATUS.APPLIED]: 'Aplicada',
   [CREDIT_NOTE_STATUS.FULLY_USED]: 'Utilizada Completamente',
   [CREDIT_NOTE_STATUS.CANCELLED]: 'Anulada',
+  [CREDIT_NOTE_STATUS.ELECTRONIC_PENDING]: 'Pendiente e-CF',
+  [CREDIT_NOTE_STATUS.ELECTRONIC_FAILED]: 'e-CF Fallido',
 };
 
 export const CREDIT_NOTE_STATUS_COLOR = {
@@ -17,4 +21,6 @@ export const CREDIT_NOTE_STATUS_COLOR = {
   [CREDIT_NOTE_STATUS.APPLIED]: 'green',
   [CREDIT_NOTE_STATUS.FULLY_USED]: 'orange',
   [CREDIT_NOTE_STATUS.CANCELLED]: 'red',
+  [CREDIT_NOTE_STATUS.ELECTRONIC_PENDING]: 'gold',
+  [CREDIT_NOTE_STATUS.ELECTRONIC_FAILED]: 'red',
 };

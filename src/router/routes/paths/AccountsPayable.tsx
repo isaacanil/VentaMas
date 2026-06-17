@@ -1,15 +1,10 @@
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
 
+import { loadAccountsPayableListRoute } from '@/modules/accountsPayable/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/types/routeTypes';
 
-const AccountsPayable = lazy(() =>
-  import('@/modules/accountsPayable/pages/AccountsPayable/AccountsPayable').then(
-    (module) => ({
-      default: module.AccountsPayable,
-    }),
-  ),
-);
+const AccountsPayable = lazy(loadAccountsPayableListRoute);
 
 const { ACCOUNT_PAYABLE_LIST } = ROUTES_NAME.ACCOUNT_PAYABLE;
 

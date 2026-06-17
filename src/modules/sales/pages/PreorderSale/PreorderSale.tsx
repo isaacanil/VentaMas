@@ -6,7 +6,7 @@ import { selectUser } from '@/features/auth/userSlice';
 import { PageBody } from '@/components/layout/PageShell';
 import { fbGetPreorders } from '@/firebase/invoices/fbGetPreorders';
 import { InvoicePanel } from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/InvoicePanel';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import type { InvoiceClient } from '@/types/invoice';
 import type { UserIdentity } from '@/types/users';
 

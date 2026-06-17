@@ -9,12 +9,12 @@ import {
   selectBusinessLoading,
 } from '@/features/auth/businessSlice';
 import { selectUser } from '@/features/auth/userSlice';
-import { MenuWebsite } from '@/modules/home/components/MenuWebsite/MenuWebsite';
-import { normalizeAvailableBusinesses } from '@/modules/auth/utils/businessContext';
+import { MenuWebsite } from './components/MenuWebsite/MenuWebsite';
 import {
   hasBusinessManagerQuery,
+  normalizeAvailableBusinesses,
   withoutBusinessManagerQuery,
-} from '@/modules/auth/utils/businessManagerRoute';
+} from '@/modules/auth/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 import type { UserRoleLike } from '@/types/users';
 import { hasBusinessOwnershipClaimIssueAccess } from '@/utils/access/businessOwnershipClaimIssueAccess';

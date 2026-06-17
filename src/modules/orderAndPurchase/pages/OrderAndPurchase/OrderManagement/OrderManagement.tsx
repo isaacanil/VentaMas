@@ -12,20 +12,20 @@ import {
 import { selectUser } from '@/features/auth/userSlice';
 import { addOrder } from '@/firebase/order/fbAddOrder';
 import { fbUpdateOrder } from '@/firebase/order/fbUpdateOrder';
-import { useListenOrder } from '@/hooks/useOrders';
+import { useListenOrder } from '@/modules/orderAndPurchase/hooks/useOrders';
 import ROUTES_PATH from '@/router/routes/routesName';
 import type { UserIdentity } from '@/types/users';
 import { getLocalURL } from '@/utils/fileUtils';
-import type { Order } from '@/utils/order/types';
+import type { Order } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/orderTypes';
 import type { PurchaseAttachment } from '@/utils/purchase/types';
 import {
   resolveUserIdentityBusinessId,
   resolveUserIdentityUid,
 } from '@/utils/users/userIdentityAccess';
 import type { EvidenceFileInput } from '@/components/common/EvidenceUpload/types';
-import Loader from '@/components/common/Loader/Loader';
 import { getBackOrderAssociationId } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/PurchaseManagement/purchaseManagementUtils';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import ManagementLoader from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/components/ManagementLoader/ManagementLoader';
+import { MenuApp } from '@/modules/navigation/public';
 import { PageShell } from '@/components/layout/PageShell';
 
 import GeneralForm from './components/GeneralForm/GeneralForm';
@@ -297,7 +297,7 @@ const OrderManagement = () => {
         showBackButton={false}
         sectionName={mode === 'create' ? 'Nuevo Pedido' : 'Editar Pedido'}
       />
-      <Loader loading={orderLoading} minHeight="200px">
+      <ManagementLoader loading={orderLoading} minHeight="200px">
         <Body>
           <Form layout="vertical">
             <GeneralForm
@@ -311,7 +311,7 @@ const OrderManagement = () => {
             />
           </Form>
         </Body>
-      </Loader>
+      </ManagementLoader>
       <ButtonsContainer>
         <InnerActions>
           <Button onClick={handleCancel}>Cancelar</Button>

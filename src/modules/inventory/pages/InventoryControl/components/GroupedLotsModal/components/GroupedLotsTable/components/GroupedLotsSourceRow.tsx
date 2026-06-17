@@ -8,14 +8,14 @@ import {
   formatNumber,
   getEffectiveCount,
   normalizeExpirationValue,
-  shortenLocationPath,
 } from '../../../../inventoryTableUtils';
 
 import { LotNameCell } from './LotNameCell';
 import { SourceActionsMenu } from './GroupedLotsSourceRow/SourceActionsMenu';
 import { SourceExpirationCell } from './GroupedLotsSourceRow/SourceExpirationCell';
 
-import { CLEAR_SENTINEL } from '@/utils/inventory/constants';
+import { CLEAR_SENTINEL } from '@/modules/inventory/utils/constants';
+import { shortenLocationPath } from '@/utils/inventory/locations';
 import type {
   CountsMap,
   CountsMetaMap,

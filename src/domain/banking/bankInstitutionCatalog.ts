@@ -1,3 +1,5 @@
+import { normalizeText } from '@/utils/text';
+
 export const DEFAULT_BANK_INSTITUTION_COUNTRY_CODE = 'DO' as const;
 export const CUSTOM_BANK_INSTITUTION_CODE = 'CUSTOM' as const;
 
@@ -26,11 +28,7 @@ const toCleanString = (value: unknown): string | null => {
 export const normalizeBankInstitutionName = (
   value: unknown,
 ) =>
-  (toCleanString(value) ?? '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim();
+  normalizeText(toCleanString(value) ?? '').trim();
 
 export const normalizeBankInstitutionCountryCode = (
   value: unknown,

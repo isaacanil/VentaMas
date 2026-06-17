@@ -1,8 +1,8 @@
 import { Empty } from 'antd';
-import { Pagination, Table } from '@heroui/react';
 import type { Dispatch, SetStateAction } from 'react';
 import styled from 'styled-components';
 
+import { VmPagination, VmTable } from '@/components/heroui';
 import { formatAccountingDate } from '../../../utils/accountingWorkspace';
 import { JOURNAL_BOOK_PAGE_SIZE } from '../constants';
 import {
@@ -54,24 +54,24 @@ export const JournalBookTable = ({
     <JournalTableFrame>
       <JournalTable>
         <JournalScrollViewport>
-          <Table.ScrollContainer>
-            <Table.Content aria-label="Libro Diario" className="min-w-[1080px]">
+          <VmTable.ScrollContainer>
+            <VmTable.Content aria-label="Libro Diario" className="min-w-[1080px]">
               <JournalTableHeader>
-                <Table.Column>Fecha</Table.Column>
-                <Table.Column>Asiento</Table.Column>
-                <Table.Column>Tipo</Table.Column>
-                <Table.Column>Cuenta</Table.Column>
-                <Table.Column>Descripcion</Table.Column>
-                <Table.Column>Usuario</Table.Column>
-                <Table.Column>Debito</Table.Column>
-                <Table.Column>Credito</Table.Column>
+                <VmTable.Column>Fecha</VmTable.Column>
+                <VmTable.Column>Asiento</VmTable.Column>
+                <VmTable.Column>Tipo</VmTable.Column>
+                <VmTable.Column>Cuenta</VmTable.Column>
+                <VmTable.Column>Descripcion</VmTable.Column>
+                <VmTable.Column>Usuario</VmTable.Column>
+                <VmTable.Column>Debito</VmTable.Column>
+                <VmTable.Column>Credito</VmTable.Column>
               </JournalTableHeader>
-              <Table.Body>
+              <VmTable.Body>
                 {pagedRecords.flatMap((record) => {
                   const [primaryLine, ...derivedLines] = record.lines;
                   const selected = selectedRecordId === record.id;
                   const rows = [
-                    <Table.Row
+                    <VmTable.Row
                       key={record.id}
                       id={record.id}
                       className={
@@ -81,12 +81,12 @@ export const JournalBookTable = ({
                       }
                       onClick={() => onSelectRecord(record)}
                     >
-                      <Table.Cell>
+                      <VmTable.Cell>
                         <DateCell>
                           {formatAccountingDate(record.entryDate)}
                         </DateCell>
-                      </Table.Cell>
-                      <Table.Cell>
+                      </VmTable.Cell>
+                      <VmTable.Cell>
                         <EntryCell>
                           <EntryBusinessReference>
                             {formatEntryFolio(record)}
@@ -98,49 +98,49 @@ export const JournalBookTable = ({
                           </EntryDocumentReference>
                           <EntryStatus>{record.statusLabel}</EntryStatus>
                         </EntryCell>
-                      </Table.Cell>
-                      <Table.Cell>
+                      </VmTable.Cell>
+                      <VmTable.Cell>
                         <TypeCell>
                           <TypeBadge>
                             <TypeDot />
                             <span>{record.journalTypeLabel}</span>
                           </TypeBadge>
                         </TypeCell>
-                      </Table.Cell>
-                      <Table.Cell>
+                      </VmTable.Cell>
+                      <VmTable.Cell>
                         <AccountCell>{formatAccountLabel(primaryLine)}</AccountCell>
-                      </Table.Cell>
-                      <Table.Cell>
+                      </VmTable.Cell>
+                      <VmTable.Cell>
                         <DescriptionCell>
                           <strong>
                             {primaryLine?.description ?? record.description}
                           </strong>
                           <span>{record.title}</span>
                         </DescriptionCell>
-                      </Table.Cell>
-                      <Table.Cell>
+                      </VmTable.Cell>
+                      <VmTable.Cell>
                         <UserCell>
                           <CompactMeta title={record.userLabel ?? undefined}>
                             {formatUserLabel(record)}
                           </CompactMeta>
                         </UserCell>
-                      </Table.Cell>
-                      <Table.Cell>
+                      </VmTable.Cell>
+                      <VmTable.Cell>
                         <AmountCell $tone="debit">
                           {formatJournalAmount(primaryLine?.debit ?? 0)}
                         </AmountCell>
-                      </Table.Cell>
-                      <Table.Cell>
+                      </VmTable.Cell>
+                      <VmTable.Cell>
                         <AmountCell $tone="credit">
                           {formatJournalAmount(primaryLine?.credit ?? 0)}
                         </AmountCell>
-                      </Table.Cell>
-                    </Table.Row>,
+                      </VmTable.Cell>
+                    </VmTable.Row>,
                   ];
 
                   derivedLines.forEach((line) => {
                     rows.push(
-                      <Table.Row
+                      <VmTable.Row
                         key={`${record.id}:${line.lineNumber}`}
                         className={
                           selected
@@ -149,42 +149,42 @@ export const JournalBookTable = ({
                         }
                         onClick={() => onSelectRecord(record)}
                       >
-                        <Table.Cell>
+                        <VmTable.Cell>
                           <DerivedMarkerCell>↳</DerivedMarkerCell>
-                        </Table.Cell>
-                        <Table.Cell>-</Table.Cell>
-                        <Table.Cell>-</Table.Cell>
-                        <Table.Cell>
+                        </VmTable.Cell>
+                        <VmTable.Cell>-</VmTable.Cell>
+                        <VmTable.Cell>-</VmTable.Cell>
+                        <VmTable.Cell>
                           <AccountCell>{formatAccountLabel(line)}</AccountCell>
-                        </Table.Cell>
-                        <Table.Cell>
+                        </VmTable.Cell>
+                        <VmTable.Cell>
                           <DescriptionCell>
                             <strong>{line.description ?? record.description}</strong>
                             <span>Linea {line.lineNumber}</span>
                           </DescriptionCell>
-                        </Table.Cell>
-                        <Table.Cell>-</Table.Cell>
-                        <Table.Cell>
+                        </VmTable.Cell>
+                        <VmTable.Cell>-</VmTable.Cell>
+                        <VmTable.Cell>
                           <AmountCell $tone="debit">
                             {formatJournalAmount(line.debit)}
                           </AmountCell>
-                        </Table.Cell>
-                        <Table.Cell>
+                        </VmTable.Cell>
+                        <VmTable.Cell>
                           <AmountCell $tone="credit">
                             {formatJournalAmount(line.credit)}
                           </AmountCell>
-                        </Table.Cell>
-                      </Table.Row>,
+                        </VmTable.Cell>
+                      </VmTable.Row>,
                     );
                   });
 
                   return rows;
                 })}
-              </Table.Body>
-            </Table.Content>
-          </Table.ScrollContainer>
+              </VmTable.Body>
+            </VmTable.Content>
+          </VmTable.ScrollContainer>
         </JournalScrollViewport>
-        <Table.Footer>
+        <VmTable.Footer>
           <JournalTableFooter>
             <FooterMetrics>
               <FooterMetric>
@@ -205,18 +205,18 @@ export const JournalBookTable = ({
 
             <FooterPagination aria-label="Paginacion del libro diario">
               {filteredRecords.length > JOURNAL_BOOK_PAGE_SIZE ? (
-                <Pagination>
-                  <Pagination.Content>
-                    <Pagination.Item>
-                      <Pagination.Previous
+                <VmPagination>
+                  <VmPagination.Content>
+                    <VmPagination.Item>
+                      <VmPagination.Previous
                         isDisabled={safeCurrentPage === 1}
                         onPress={() =>
                           onPageChange((page) => Math.max(1, page - 1))
                         }
                       >
-                        <Pagination.PreviousIcon />
-                      </Pagination.Previous>
-                    </Pagination.Item>
+                        <VmPagination.PreviousIcon />
+                      </VmPagination.Previous>
+                    </VmPagination.Item>
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                       (page) => {
                         if (
@@ -226,14 +226,14 @@ export const JournalBookTable = ({
                             page <= safeCurrentPage + 1)
                         ) {
                           return (
-                            <Pagination.Item key={page}>
-                              <Pagination.Link
+                            <VmPagination.Item key={page}>
+                              <VmPagination.Link
                                 isActive={page === safeCurrentPage}
                                 onPress={() => onPageChange(page)}
                               >
                                 {page}
-                              </Pagination.Link>
-                            </Pagination.Item>
+                              </VmPagination.Link>
+                            </VmPagination.Item>
                           );
                         }
 
@@ -242,27 +242,27 @@ export const JournalBookTable = ({
                           page === safeCurrentPage + 2
                         ) {
                           return (
-                            <Pagination.Item key={page}>
-                              <Pagination.Ellipsis />
-                            </Pagination.Item>
+                            <VmPagination.Item key={page}>
+                              <VmPagination.Ellipsis />
+                            </VmPagination.Item>
                           );
                         }
 
                         return null;
                       },
                     )}
-                    <Pagination.Item>
-                      <Pagination.Next
+                    <VmPagination.Item>
+                      <VmPagination.Next
                         isDisabled={safeCurrentPage === totalPages}
                         onPress={() =>
                           onPageChange((page) => Math.min(totalPages, page + 1))
                         }
                       >
-                        <Pagination.NextIcon />
-                      </Pagination.Next>
-                    </Pagination.Item>
-                  </Pagination.Content>
-                </Pagination>
+                        <VmPagination.NextIcon />
+                      </VmPagination.Next>
+                    </VmPagination.Item>
+                  </VmPagination.Content>
+                </VmPagination>
               ) : (
                 <FooterPageText>Pagina 1 de 1</FooterPageText>
               )}
@@ -283,7 +283,7 @@ export const JournalBookTable = ({
               </FooterMetric>
             </FooterTotals>
           </JournalTableFooter>
-        </Table.Footer>
+        </VmTable.Footer>
       </JournalTable>
     </JournalTableFrame>
   );
@@ -297,7 +297,7 @@ const JournalTableFrame = styled.div`
   min-height: 0;
 `;
 
-const JournalTable = styled(Table)`
+const JournalTable = styled(VmTable)`
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -330,7 +330,7 @@ const JournalScrollViewport = styled.div`
   overflow: auto;
 `;
 
-const JournalTableHeader = styled(Table.Header)`
+const JournalTableHeader = styled(VmTable.Header)`
   position: sticky;
   top: 0;
   z-index: 5;

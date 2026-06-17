@@ -202,13 +202,13 @@ Aplicado a VentaMas:
 
 ### Capa 3. Edición operativa de settings
 
-- `src/modules/settings/pages/setting/subPage/TaxReceipts/TaxReceIptSetting.tsx`
-- `src/modules/settings/pages/setting/subPage/TaxReceipts/taxConfigTable.tsx`
+- `src/modules/settings/pages/setting/subPage/TaxReceipts/TaxReceiptSetting.tsx`
+- `src/modules/settings/pages/setting/subPage/TaxReceipts/components/TableTaxReceipt/TableTaxReceipt.tsx`
+- `src/modules/settings/pages/setting/subPage/TaxReceipts/components/ReceiptTableSection/ReceiptTableSection.tsx`
 - `src/modules/settings/pages/setting/subPage/TaxReceipts/components/*`
 - `src/firebase/taxReceipt/addTaxReceipt.ts`
 - `src/firebase/taxReceipt/fbCreateTaxReceipt.ts`
 - `src/firebase/taxReceipt/fbUpdateTaxReceipt.ts`
-- `src/firebase/taxReceipt/fbDeteteTaxReceipt.ts`
 
 ### Capa 4. Ledger, validaciones e inspección de secuencia
 
@@ -269,7 +269,7 @@ La regla usada aquí es:
 | `src/firebase/taxReceipt/addTaxReceipt.ts` | alta de comprobante | `se refactoriza` | `settings fiscal data access` | Normalizar IDs y shape. |
 | `src/firebase/taxReceipt/fbCreateTaxReceipt.ts` | alta con `nanoid` | `se refactoriza` | `settings fiscal data access` | Hoy compite con IDs por `serie`. Debe unificarse. |
 | `src/firebase/taxReceipt/fbUpdateTaxReceipt.ts` | batch de actualización | `se refactoriza` | `settings fiscal data access` | No debe asumir que `serie` siempre es el ID final. |
-| `src/firebase/taxReceipt/fbDeteteTaxReceipt.ts` | borrado | `se queda` | `settings fiscal data access` | Mantener con guardas de integridad. |
+| `src/firebase/taxReceipt/fbDeteteTaxReceipt.ts` | borrado | `retirado` | `settings fiscal data access` | Retirado como stub huérfano sin consumidores. |
 | `src/firebase/taxReceipt/fbAutoCreateDefaultReceipt.ts` | auto seed desde cliente | `se reemplaza luego` | `legacy bootstrap` | El seed debe consolidarse en backend/provisioning. |
 | `src/firebase/taxReceipt/taxReceiptsDefault.ts` | defaults locales | `se mueve` | `fiscal localization catalogs` | Convertir en catálogo inicial, no seed operativo disperso. |
 | `src/firebase/taxReceipt/taxReceiptTemplates.ts` | plantillas por país | `se queda y evoluciona` | `fiscal localization catalogs` | Buena base para localización; ampliar a `traditional/electronic`. |
@@ -285,13 +285,13 @@ La regla usada aquí es:
 | `src/components/modals/ProductForm/components/sections/PriceInfo.tsx` | mensaje de impuesto condicionado por NCF | `se refactoriza` | `catalog/product pricing ui` | El copy actual refuerza un modelo incorrecto. |
 | `src/components/modals/ProductForm/components/sections/PriceCalculator.tsx` | cálculo condicional local | `se refactoriza` | `catalog/product pricing ui` | Debe alinearse con un motor tributario aparte. |
 | `src/components/modals/CreditNoteModal/*` | depende de receipts y taxes | `se refactoriza` | `sales adjustments` | Mantener consumo de documentos fiscales, no cálculo tributario basado en toggle. |
-| `src/modules/settings/pages/setting/subPage/TaxReceipts/TaxReceIptSetting.tsx` | pantalla principal | `se queda y se renombra luego` | `Settings > Fiscal > Documentos fiscales` | Buena ubicación. Cambia el framing, no necesariamente la ruta inicial. |
-| `src/modules/settings/pages/setting/subPage/TaxReceipts/taxConfigTable.tsx` | tabla de configuración | `se queda` | `settings fiscal ui` | Reusable con modelo v2. |
+| `src/modules/settings/pages/setting/subPage/TaxReceipts/TaxReceiptSetting.tsx` | pantalla principal | `se queda` | `Settings > Fiscal > Documentos fiscales` | Buena ubicación. Cambia el framing, no necesariamente la ruta inicial. |
+| `src/modules/settings/pages/setting/subPage/TaxReceipts/components/TableTaxReceipt/TableTaxReceipt.tsx` | tabla de configuración | `se queda` | `settings fiscal ui` | Reusable con modelo v2. |
 | `src/modules/settings/pages/setting/subPage/TaxReceipts/components/AddReceiptModal/*` | alta de plantillas | `se queda` | `settings fiscal ui` | Consumirá catálogos v2. |
-| `src/modules/settings/pages/setting/subPage/TaxReceipts/components/DisabledReceiptsModal/*` | gestión de deshabilitados | `se queda` | `settings fiscal ui` | Mantener como UI. |
+| `src/modules/settings/pages/setting/subPage/TaxReceipts/components/DisabledReceiptsModal/*` | gestión de deshabilitados | `retirado / histórico` | `settings fiscal ui` | Referencia histórica tras la poda de huérfanos; no hay componente activo equivalente confirmado. |
 | `src/modules/settings/pages/setting/subPage/TaxReceipts/components/FiscalReceiptsAlertSettings/*` | alertas | `se queda` | `settings fiscal ui` | Encaja con settings fiscal. |
 | `src/modules/settings/pages/setting/subPage/TaxReceipts/components/FiscalReceiptsAlertWidget/*` | widget de alertas | `se queda` | `settings fiscal ui` | Encaja con settings fiscal. |
-| `src/modules/settings/pages/setting/subPage/TaxReceipts/components/ReceiptSettingsSection/*` | toggle y ajustes | `se refactoriza` | `settings fiscal ui` | Separar “activar secuencias” de “política de impuesto”. |
+| `src/modules/settings/pages/setting/subPage/TaxReceipts/TaxReceiptSetting.tsx` | acciones de capacidad fiscal | `se queda` | `settings fiscal ui` | La pantalla activa concentra acciones y secciones especializadas. |
 | `src/modules/settings/pages/setting/subPage/TaxReceipts/components/ReceiptTableSection/*` | listado editable | `se queda` | `settings fiscal ui` | Mantener. |
 | `src/modules/settings/pages/setting/subPage/TaxReceipts/components/TableTaxReceipt/*` | tabla | `se queda` | `settings fiscal ui` | Mantener. |
 | `src/modules/settings/pages/setting/subPage/TaxReceipts/components/TaxReceiptAuthorizationModal/*` | autorización y secuencias | `se queda y evoluciona` | `settings fiscal ui` | Punto natural para autorizaciones futuras y e-CF. |

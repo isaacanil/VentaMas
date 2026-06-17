@@ -13,16 +13,17 @@ import { DatePicker as RangeDatePicker } from '@/components/common/DatePicker/Da
 import { PageShell } from '@/components/layout/PageShell';
 import { selectUser } from '@/features/auth/userSlice';
 import { formatDate, toMillis } from '@/utils/date/dateUtils';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
 import type { AdvancedTableProps } from '@/components/ui/AdvancedTable/AdvancedTable';
-import { useInventorySessionsList } from '@/hooks/inventory/useInventorySessionsList';
 import type {
   InventoryEditorInfo,
   InventorySession,
   InventoryUser,
   TimestampLike,
 } from '@/utils/inventory/types';
+
+import { useInventorySessionsList } from './hooks/useInventorySessionsList';
 
 type EmbeddedUser = {
   realName?: string;

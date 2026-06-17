@@ -1,10 +1,10 @@
 import { Form, Button, Segmented, notification } from 'antd';
-import { AppModal } from '@/components/ui/AppModal/AppModal';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { OPERATION_MODES } from '@/constants/modes';
+import { selectBusinessData } from '@/features/auth/businessSlice';
 import { selectUser } from '@/features/auth/userSlice';
 import {
   addClient,
@@ -20,6 +20,7 @@ import type {
 import type { UserIdentity, UserWithBusiness } from '@/types/users';
 import { submitClientForm } from './utils/submitClientForm';
 
+import { AppModal } from './components/AppModal/AppModal';
 import ClientFinancialInfo from './components/ClientFinancialInfo/ClientFinancialInfo';
 import { ClientGeneralInfo } from './components/ClientGeneralInfo';
 
@@ -31,6 +32,7 @@ type ClientFormAntProps = {
 };
 
 type UserRootState = Parameters<typeof selectUser>[0];
+type BusinessRootState = Parameters<typeof selectBusinessData>[0];
 type ClientRootState = Parameters<typeof selectCartClient>[0];
 type ClientCartClient = Parameters<typeof addClient>[0];
 
@@ -69,6 +71,10 @@ const ClientFormAnt = ({
   const clientData = form.getFieldsValue() as Partial<ClientInput>;
   const dispatch = useDispatch();
   const user = useSelector<UserRootState, UserIdentity | null>(selectUser);
+  const business = useSelector<
+    BusinessRootState,
+    ReturnType<typeof selectBusinessData>
+  >(selectBusinessData);
   const selectedClient = useSelector<
     ClientRootState,
     ReturnType<typeof selectCartClient>
@@ -130,6 +136,7 @@ const ClientFormAnt = ({
     setLoading(true);
     const result = await submitClientForm({
       customerData,
+      businessCountry: business?.country,
       form,
       isUpdating,
       selectedClientId: selectedClient?.id ?? null,
@@ -228,6 +235,7 @@ const ClientFormAnt = ({
           <ClientGeneralInfo
             form={form}
             customerData={customerData}
+            businessCountry={business?.country}
             onRncPanelChange={setHasRncPanel}
           />
         ) : (

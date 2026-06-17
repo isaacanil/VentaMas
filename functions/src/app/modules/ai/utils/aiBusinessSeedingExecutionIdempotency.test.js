@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  buildIdempotencyRequestHash,
+} from '../../../core/utils/idempotencyRequestHash.util.js';
+import {
   buildAiBusinessSeedingExecutionRequestHash,
   normalizeAiBusinessSeedingExecuteRequestId,
 } from './aiBusinessSeedingExecutionIdempotency.js';
@@ -40,5 +43,20 @@ describe('aiBusinessSeedingExecutionIdempotency helpers', () => {
     });
 
     expect(second).not.toBe(first);
+  });
+
+  it('matches the core idempotency hash output for legacy AI payloads', () => {
+    const payload = {
+      business: { name: 'Demo', address: 'A', optional: undefined },
+      users: [{ name: 'owner', role: 'owner' }],
+      flags: { draft: false, count: 2 },
+    };
+
+    expect(buildAiBusinessSeedingExecutionRequestHash(payload)).toBe(
+      buildIdempotencyRequestHash(payload),
+    );
+    expect(buildAiBusinessSeedingExecutionRequestHash(payload)).toBe(
+      'c48cea79cd26179da8a0895699b0fa542bc60ce13eaba9f189f5ecaf9287668d',
+    );
   });
 });

@@ -129,6 +129,7 @@ describe('validateInvoiceSubmissionGuards', () => {
     }
     expect(result.description).toContain('2 ubicaciones');
     expect(result.product.id).toBe('product-1');
+    expect(result.availableStocks).toHaveLength(2);
     expect(getProductStockByProductId).toHaveBeenCalledWith(user, {
       productId: 'product-1',
     });

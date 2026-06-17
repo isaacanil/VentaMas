@@ -1,8 +1,19 @@
+import {
+  PRODUCT_ITEM_TYPE_OPTIONS,
+} from '@/domain/products/productDefaults';
+import type { ProductItemType } from '@/types/products';
+
 type FilterOptionValue = string | number | boolean;
 
 type FilterOption = {
   valor: FilterOptionValue;
   etiqueta: string;
+};
+
+const PRODUCT_ITEM_TYPE_FILTER_LABELS: Record<ProductItemType, string> = {
+  product: 'Productos',
+  service: 'Servicios',
+  combo: 'Combos',
 };
 
 export const ordenAlfabetico: FilterOption[] = [
@@ -48,9 +59,10 @@ export const opcionesInventariable: FilterOption[] = [
 
 export const opcionesItemType: FilterOption[] = [
   { valor: 'todos', etiqueta: 'Todos' },
-  { valor: 'product', etiqueta: 'Productos' },
-  { valor: 'service', etiqueta: 'Servicios' },
-  { valor: 'combo', etiqueta: 'Combos' },
+  ...PRODUCT_ITEM_TYPE_OPTIONS.map(({ value }) => ({
+    valor: value,
+    etiqueta: PRODUCT_ITEM_TYPE_FILTER_LABELS[value],
+  })),
 ];
 
 export const opcionesItbis: FilterOption[] = [

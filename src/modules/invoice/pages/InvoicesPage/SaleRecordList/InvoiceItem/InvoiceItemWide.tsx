@@ -23,7 +23,7 @@ import {
   getInvoicePaymentInfo,
 } from '@/utils/invoice';
 import { prepareInvoiceForEdit } from '@/utils/invoice';
-import { Receipt } from '@/modules/checkout/pages/checkout/Receipt';
+import { Receipt } from '@/modules/checkout/public';
 import useInvoiceEditAuthorization from '@/modules/invoice/pages/InvoicesPage/hooks/useInvoiceEditAuthorization';
 import { resolveTimestampSeconds } from '@/modules/invoice/pages/InvoicesPage/SalesAnalyticsPanel/utils';
 

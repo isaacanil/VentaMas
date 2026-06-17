@@ -8,7 +8,7 @@ import {
   PanelMetaLabel,
   PanelMetaValue,
 } from './PanelPrimitives';
-import type { SimplePanelHeaderProps } from '@/types/ui';
+import type { SimplePanelHeaderProps } from '../types';
 
 const EMPTY_META_ITEMS: NonNullable<SimplePanelHeaderProps['metaItems']> = [];
 

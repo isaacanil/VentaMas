@@ -2,8 +2,13 @@ import { RightOutlined } from '@/constants/icons/antd';
 import { Badge } from 'antd';
 import styled from 'styled-components';
 
+import {
+  PanelHeader as PanelHeaderContainer,
+  PanelTitle,
+} from '@/modules/notification/components/NotificationCenter/components/panels/shared/PanelPrimitives';
+
 const AuthorizationsHeader = ({ pendingCount, isAdmin, onNavigate }) => (
-  <PanelHeader>
+  <PanelHeaderContainer>
     <PanelTitle>
       Autorizaciones
       {isAdmin && pendingCount > 0 && (
@@ -19,27 +24,10 @@ const AuthorizationsHeader = ({ pendingCount, isAdmin, onNavigate }) => (
         <RightOutlined />
       </NavigateButton>
     )}
-  </PanelHeader>
+  </PanelHeaderContainer>
 );
 
 export default AuthorizationsHeader;
-
-const PanelHeader = styled.div`
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const PanelTitle = styled.h3`
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #1f2937;
-`;
 
 const NavigateButton = styled.button`
   display: flex;

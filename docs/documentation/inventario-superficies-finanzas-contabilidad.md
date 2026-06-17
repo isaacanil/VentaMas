@@ -15,7 +15,7 @@ Sirve para:
 ## Alcance
 
 Se incluyeron:
-- `http://localhost:5173/contabilidad/...`
+- `http://localhost:5173/accounting/...`
 - `http://localhost:5173/settings/accounting/...`
 - ventas, facturas, preventas
 - gastos
@@ -32,20 +32,20 @@ No se encontro una pantalla dedicada independiente para cuentas por pagar. Hoy e
 | Pantalla | URL canonica |
 | --- | --- |
 | Settings de contabilidad | `/settings/accounting` |
-| Catalogo de cuentas | `/settings/accounting/catalogo` |
-| Perfiles contables | `/settings/accounting/perfiles-contables` |
-| Tipos de cambio | `/settings/accounting/tasa-cambio` |
+| Catalogo de cuentas | `/settings/accounting/chart-of-accounts` |
+| Perfiles contables | `/settings/accounting/posting-profiles` |
+| Tipos de cambio | `/settings/exchange-rates` |
 
 ### Workspace contable
 
 | Pantalla | URL canonica |
 | --- | --- |
-| Contabilidad root | `/contabilidad` |
-| Libro diario | `/contabilidad/libro-diario` |
-| Libro mayor | `/contabilidad/libro-mayor` |
-| Asientos manuales | `/contabilidad/asientos-manuales` |
-| Reportes | `/contabilidad/reportes` |
-| Cierre de periodo | `/contabilidad/cierre-periodo` |
+| Contabilidad root | `/accounting` |
+| Libro diario | `/accounting/journal-book` |
+| Libro mayor | `/accounting/general-ledger` |
+| Asientos manuales | `/accounting/manual-entries` |
+| Reportes | `/accounting/reports` |
+| Cierre de periodo | `/accounting/period-close` |
 
 ### Operacion financiera relacionada
 
@@ -79,14 +79,14 @@ No se encontro una pantalla dedicada independiente para cuentas por pagar. Hoy e
 
 La aplicacion mantiene varios aliases historicos que redirigen a las rutas canonicas actuales:
 - `/settings/contabilidad` -> `/settings/accounting`
-- `/settings/contabilidad/tasa-cambio` -> `/settings/tasa-cambio`
-- `/settings/contabilidad/catalogo` -> `/settings/accounting/catalogo`
-- `/settings/contabilidad/perfiles-contables` -> `/settings/accounting/perfiles-contables`
+- `/settings/contabilidad/tasa-cambio` -> `/settings/exchange-rates`
+- `/settings/contabilidad/catalogo` -> `/settings/accounting/chart-of-accounts`
+- `/settings/contabilidad/perfiles-contables` -> `/settings/accounting/posting-profiles`
 - `/settings/general-config/accounting` -> `/settings/accounting`
 - `/general-config/contabilidad` -> `/settings/accounting`
 
 Observacion:
-- La ruta canonica de tipos de cambio se mantiene en `/settings/tasa-cambio`, aunque funcionalmente pertenece al modulo de accounting y tambien se monta dentro de `AccountingConfig`.
+- La ruta canonica de tipos de cambio se mantiene en `/settings/exchange-rates`, aunque funcionalmente pertenece al modulo de accounting y tambien se monta dentro de `AccountingConfig`.
 
 ## Superficies de Settings / Accounting
 
@@ -119,7 +119,7 @@ Observacion:
 ### 2. Catalogo de cuentas
 
 **URL**
-- `/settings/accounting/catalogo`
+- `/settings/accounting/chart-of-accounts`
 
 **Proposito**
 - definir la estructura base del plan de cuentas
@@ -158,7 +158,7 @@ Observacion:
 ### 3. Perfiles contables
 
 **URL**
-- `/settings/accounting/perfiles-contables`
+- `/settings/accounting/posting-profiles`
 
 **Proposito**
 - mapear eventos del negocio a reglas de contabilizacion
@@ -220,7 +220,7 @@ Observacion:
 ### 5. Tipos de cambio
 
 **URL**
-- `/settings/accounting/tasa-cambio`
+- `/settings/exchange-rates`
 - alias historico: `/settings/tasa-cambio`
 
 **Proposito**
@@ -255,14 +255,14 @@ Observacion:
 ### 6. Contabilidad root
 
 **URL**
-- `/contabilidad`
+- `/accounting`
 
 **Proposito**
 - shell del workspace contable
 - redirige al panel por defecto del workspace
 
 **Comportamiento**
-- si se entra a `/contabilidad`, redirige a `/contabilidad/libro-diario`
+- si se entra a `/accounting`, redirige a `/accounting/journal-book`
 - monta tabs internas para:
   - libro diario
   - libro mayor
@@ -278,7 +278,7 @@ Observacion:
 ### 7. Libro diario
 
 **URL**
-- `/contabilidad/libro-diario`
+- `/accounting/journal-book`
 
 **Proposito**
 - consultar historial de asientos contables y navegar al detalle de cada movimiento
@@ -305,7 +305,7 @@ Observacion:
 ### 8. Libro mayor
 
 **URL**
-- `/contabilidad/libro-mayor`
+- `/accounting/general-ledger`
 
 **Proposito**
 - ver el mayor por cuenta con saldo corrido y exportarlo
@@ -331,7 +331,7 @@ Observacion:
 ### 9. Asientos manuales
 
 **URL**
-- `/contabilidad/asientos-manuales`
+- `/accounting/manual-entries`
 
 **Proposito**
 - registrar ajustes manuales y reclasificaciones
@@ -357,7 +357,7 @@ Observacion:
 ### 10. Reportes
 
 **URL**
-- `/contabilidad/reportes`
+- `/accounting/reports`
 
 **Proposito**
 - generar vistas financieras consolidadas por periodo
@@ -385,7 +385,7 @@ Observacion:
 ### 11. Cierre de periodo
 
 **URL**
-- `/contabilidad/cierre-periodo`
+- `/accounting/period-close`
 
 **Proposito**
 - cerrar meses contables y dejar historial de cierres
@@ -906,5 +906,5 @@ Este inventario se construyo leyendo rutas y componentes en:
 - `src/router/routes/paths/Purchases.tsx`
 - `src/router/routes/paths/Expenses.tsx`
 - `src/router/routes/paths/AccountReceivable.tsx`
-- `src/router/routes/paths/CashReconciliztion.tsx`
+- `src/router/routes/paths/CashReconciliation.tsx`
 - y las pantallas/componentes principales de cada modulo funcional

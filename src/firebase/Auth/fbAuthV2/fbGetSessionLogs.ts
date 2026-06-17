@@ -1,6 +1,4 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 import { buildSessionInfo, getStoredSession } from './sessionClient';
 
@@ -24,10 +22,10 @@ type SessionLogsResponse = {
   logs?: unknown[];
 };
 
-const listSessionLogsCallable = httpsCallable<
+const listSessionLogsCallable = createFirebaseCallable<
   SessionLogsCallableRequest,
   SessionLogsResponse
->(functions, 'clientListSessionLogs');
+>('clientListSessionLogs');
 
 /**
  * Obtiene los registros de sesiones del usuario actual o de un usuario objetivo (si se permiten privilegios).
@@ -45,7 +43,7 @@ export const fbGetSessionLogs = async ({
     throw new Error('Sesión no disponible. Inicia sesión nuevamente.');
   }
 
-  const response = await listSessionLogsCallable({
+  const data = await listSessionLogsCallable({
     sessionToken,
     targetUserId: userId,
     limit,
@@ -56,8 +54,6 @@ export const fbGetSessionLogs = async ({
       },
     }),
   });
-
-  const data = response?.data || {};
 
   if (!data.ok) {
     throw new Error(

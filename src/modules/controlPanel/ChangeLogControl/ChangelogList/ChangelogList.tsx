@@ -1,9 +1,9 @@
 import { Fragment, useMemo } from 'react';
 
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 import { Container, Wrapper } from './ChangelogList.styles';
-import { ChangelogListItem } from './components/ChangelogListItem';
+import { ChangelogListItem } from './components/ChangelogListItem/ChangelogListItem';
 import { useChangelogList } from './hooks/useChangelogList';
 
 export const ChangelogList = () => {

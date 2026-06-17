@@ -24,8 +24,8 @@ consolidar en `src/modules/*` y `src/components/*` y dejar una estructura modern
 ## Fase 1 — Bloques con mínima dependencia
 
 1. Templates antiguos con 0–1 import externo:
-   - Account → `components/common/Account` (hecho).
-   - ErrorMassage → `components/common/ErrorMassage` (hecho).
+   - Account → retirado al quedar sin consumidores activos.
+   - ErrorMassage → retirado al quedar sin consumidores.
    - Modal → `components/common/Modal` (hecho).
 2. Componentes antiguos con 0–1 import externo:
    - DetailSummary → `modules/accountsReceivable/components/DetailSummary` (hecho).
@@ -38,7 +38,7 @@ consolidar en `src/modules/*` y `src/components/*` y dejar una estructura modern
 ## Fase 2 — Bloques de baja/mediana dependencia
 
 1. **2 imports**:
-   - Carrusel, CategorySelector, contact, PillButton, ProductCategoryBar, ResizebleSidebar.
+   - Carrusel, CategorySelector, contact, PillButton, ProductCategoryBar, ResizableSidebar.
    - Decidir: shared → `components/common`, o por módulo (ej. `modules/contact`).
 2. **4 imports**:
    - Badge, Loader, Rnc.
@@ -79,6 +79,11 @@ consolidar en `src/modules/*` y `src/components/*` y dejar una estructura modern
 2. Revisar `rg "views/"` → debe quedar 0.
 3. Ajustar documentación interna si existe.
 
+## Nota de limpieza 2026-06-15
+
+- Se retiraron componentes legacy sin consumidores: `Account`, `CardList`, `UploadImg`, el `RncPanel` raiz antiguo, `ProcessViewer`, `PageTransition` y el alias `components/ui/MainLayoutModal`.
+- Se elimino el placeholder `components/common/SearchBar/Container` y su entrada `vm.searchBar` del registry de design system; las recetas ya no referencian un componente inexistente o prohibido.
+
 ## Checklist técnico por bloque
 
 - [ ] Mover carpeta/archivo
@@ -89,7 +94,7 @@ consolidar en `src/modules/*` y `src/components/*` y dejar una estructura modern
 
 ## Orden sugerido restante (de menor a mayor dependencia)
 
-1. Carrusel, CategorySelector, contact, PillButton, ProductCategoryBar, ResizebleSidebar
+1. Carrusel, CategorySelector, contact, PillButton, ProductCategoryBar, ResizableSidebar
 2. Badge, Loader, Rnc
 3. GeneralConfig, tree
 4. Modals (por dominio)

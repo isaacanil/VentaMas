@@ -2,6 +2,10 @@ import {
   buildAccountingEvent,
   resolveAccountingPaymentChannel,
 } from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
+import {
+  buildExpenseSourceAuditMetadata,
+  EXPENSE_DERIVED_RECORD_ACTOR,
+} from './expenseDerivedAudit.shared.js';
 
 const RECORDED_EXPENSE_STATUSES = new Set([
   'active',
@@ -449,9 +453,7 @@ export const buildExpenseRecordedAccountingEvent = ({
       dates.expenseDate ??
       nextExpense.expenseDate ??
       nextExpense.updatedAt,
-    createdBy:
-      toCleanString(nextExpense.updatedBy) ??
-      toCleanString(nextExpense.createdBy) ??
-      null,
+    createdBy: EXPENSE_DERIVED_RECORD_ACTOR,
+    metadata: buildExpenseSourceAuditMetadata(nextExpense),
   });
 };

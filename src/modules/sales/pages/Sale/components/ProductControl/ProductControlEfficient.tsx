@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-import { ProductCategoryBar } from '@/modules/products/components/ProductCategoryBar/ProductCategoryBar';
+import { ProductCategoryBar } from '@/modules/products/public';
 import type { ProductRecord } from '@/types/products';
 
 import { ProductList } from './components/ProductList';

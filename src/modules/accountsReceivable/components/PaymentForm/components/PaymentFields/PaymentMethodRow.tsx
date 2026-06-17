@@ -1,5 +1,4 @@
-import { Checkbox, Input, InputNumber } from 'antd';
-import type { InputNumberRef } from '@rc-component/input-number';
+import { Checkbox, Input, InputNumber, type GetRef } from 'antd';
 import React from 'react';
 
 import { formatNumber } from '@/utils/formatNumber';
@@ -20,6 +19,7 @@ type PaymentInfo = {
 };
 
 type PaymentFieldKey = 'status' | 'value' | 'reference' | 'bankAccountId';
+type InputNumberRef = GetRef<typeof InputNumber>;
 
 interface PaymentMethodRowProps {
   paymentMethod: AccountsReceivablePaymentMethod;

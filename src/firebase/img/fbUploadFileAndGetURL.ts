@@ -223,10 +223,10 @@ export const fbUploadFiles = async (
     return sum + (file?.size || 0);
   }, 0);
 
-  let totalBytesTransferred = 0;
+  const bytesTransferredByFile = new Map<number, number>();
 
   const results = await Promise.allSettled(
-    files.map(async (fileObj) => {
+    files.map(async (fileObj, fileIndex) => {
       const file = resolveFile(fileObj, fileProperty);
 
       try {
@@ -252,11 +252,17 @@ export const fbUploadFiles = async (
           metadata,
           onProgress,
           (snapshot) => {
-            totalBytesTransferred += snapshot.bytesTransferred;
+            bytesTransferredByFile.set(fileIndex, snapshot.bytesTransferred);
+            const totalBytesTransferred = [
+              ...bytesTransferredByFile.values(),
+            ].reduce((sum, bytesTransferred) => sum + bytesTransferred, 0);
             updateGlobalProgress({
               totalBytes,
               totalBytesTransferred,
-              progress: (totalBytesTransferred / totalBytes) * 100,
+              progress:
+                totalBytes > 0
+                  ? Math.min(100, (totalBytesTransferred / totalBytes) * 100)
+                  : 100,
             });
           },
         );

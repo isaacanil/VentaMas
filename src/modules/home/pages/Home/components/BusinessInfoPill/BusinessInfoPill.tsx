@@ -1,8 +1,8 @@
 import { memo, useMemo, useState } from 'react';
-import { Badge } from '@heroui/react';
 import { shallowEqual, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { VmBadge } from '@/components/heroui';
 import { DownOutlined } from '@/constants/icons/antd';
 import { selectUser } from '@/features/auth/userSlice';
 import { BusinessWorkspaceModal } from './BusinessWorkspaceModal';
@@ -105,19 +105,19 @@ export const BusinessInfoPill = memo(
 
     return (
       <>
-        <Badge.Anchor className={className}>
+        <VmBadge.Anchor className={className}>
           {businessPill}
           {ownershipIssueCount > 0 ? (
-            <Badge
+            <VmBadge
               color="danger"
               placement="top-right"
               size="sm"
               aria-hidden="true"
             >
               {ownershipIssueCount}
-            </Badge>
+            </VmBadge>
           ) : null}
-        </Badge.Anchor>
+        </VmBadge.Anchor>
         <BusinessWorkspaceModal
           isOpen={isModalOpen}
           onClose={() => handleOpenChange(false)}

@@ -1,32 +1,21 @@
-import { PureAbility } from '@casl/ability';
-
-import { defineAbilitiesFor } from '@/abilities';
-
-const createAbility = (user: unknown) => {
-  if (!user || typeof user !== 'object') return null;
-  return new PureAbility(defineAbilitiesFor(user));
-};
+import { canBaseAbility } from './baseAbility';
 
 export const hasAuthorizationApproveAccess = (user: unknown): boolean => {
-  const ability = createAbility(user);
-  return ability?.can('authorizationApprove', 'all') ?? false;
+  return canBaseAbility(user, 'authorizationApprove', 'all');
 };
 
 export const hasAuthorizationRequestsViewAccess = (user: unknown): boolean => {
-  const ability = createAbility(user);
-  return ability?.can('authorizationRequestsView', 'all') ?? false;
+  return canBaseAbility(user, 'authorizationRequestsView', 'all');
 };
 
 export const hasAuthorizationPinSelfGenerateAccess = (
   user: unknown,
 ): boolean => {
-  const ability = createAbility(user);
-  return ability?.can('authorizationPinSelfGenerate', 'all') ?? false;
+  return canBaseAbility(user, 'authorizationPinSelfGenerate', 'all');
 };
 
 export const hasAuthorizationPinUsersManageAccess = (
   user: unknown,
 ): boolean => {
-  const ability = createAbility(user);
-  return ability?.can('authorizationPinUsersManage', 'all') ?? false;
+  return canBaseAbility(user, 'authorizationPinUsersManage', 'all');
 };

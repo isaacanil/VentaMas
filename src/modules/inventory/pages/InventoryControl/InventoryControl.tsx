@@ -4,8 +4,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { selectUser } from '@/features/auth/userSlice';
-import { db } from '@/firebase/firebaseconfig';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 import {
   Container,
@@ -20,7 +19,7 @@ import { useInventoryCounts } from './hooks/useInventoryCounts';
 import { useInventoryPresence } from './hooks/useInventoryPresence';
 import { useInventorySession } from './hooks/useInventorySession';
 import { useInventoryStocksProducts } from './hooks/useInventoryStocksProducts';
-import { useLocationNames } from './hooks/useLocationNames';
+import { useInventoryLocationNames } from './hooks/useInventoryLocationNames';
 import { useUserNamesCache } from './hooks/useUserNamesCache';
 import { buildInventoryGroups } from './utils/buildInventoryGroups';
 import { exportInventoryToExcel } from './utils/exportInventoryToExcel';
@@ -51,7 +50,6 @@ export const InventoryControl = () => {
 
   // Data hooks
   const { stocks, augmentedStocks, loading } = useInventoryStocksProducts({
-    db,
     businessID: user?.businessID,
   });
   const {
@@ -64,14 +62,12 @@ export const InventoryControl = () => {
     hasChanges,
     saving,
     saveCounts,
-  } = useInventoryCounts({ db, user, sessionId });
+  } = useInventoryCounts({ user, sessionId });
   const { session } = useInventorySession({
-    db,
     businessID: user?.businessID,
     sessionId,
   });
   const { finalizing, finalize } = useFinalizeInventory({
-    db,
     user,
     sessionId,
     navigate,
@@ -88,7 +84,6 @@ export const InventoryControl = () => {
   // User names cache for table badges
   const { currentUserResolvedName, usersNameCache, resolvingUIDs } =
     useUserNamesCache({
-      db,
       user,
       countsMeta,
       session,
@@ -97,7 +92,6 @@ export const InventoryControl = () => {
   // Presence indicator (active while session open)
   // Presence solo cuando la sesión está abierta (no en procesamiento ni cerrada)
   useInventoryPresence({
-    db,
     user,
     sessionId,
     currentUserResolvedName,
@@ -116,7 +110,7 @@ export const InventoryControl = () => {
   }, [augmentedStocks, deferredSearch]);
 
   // Location names (resolved labels)
-  const { locationNames, resolvingLocations } = useLocationNames({
+  const { locationNames, resolvingLocations } = useInventoryLocationNames({
     businessID: user?.businessID,
     filteredItems: filtered,
   });

@@ -1,12 +1,11 @@
 import { HttpsError } from 'firebase-functions/v2/https';
 
 import { db } from '../../../core/config/firebase.js';
+import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.util.js';
+import { readAiBusinessSeedingString as readString } from '../utils/aiBusinessSeedingText.util.js';
 
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-
-const readString = (value) =>
-  typeof value === 'string' && value.trim() ? value.trim() : '';
 
 const normalizeRole = (value) => readString(value).toLowerCase();
 
@@ -24,7 +23,7 @@ const hasAiBusinessSeedingDeveloperAccess = (userData) => {
 };
 
 export const assertAiBusinessSeedingDeveloperAccess = async (request) => {
-  const uid = readString(request?.auth?.uid);
+  const uid = readString(await resolveCallableAuthUid(request));
   if (!uid) {
     throw new HttpsError(
       'unauthenticated',

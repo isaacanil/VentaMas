@@ -1,40 +1,20 @@
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
 
+import {
+  loadInvoicesPageRoute,
+  loadSalesAnalyticsPageRoute,
+  loadServiceCommissionsReportRoute,
+} from '@/modules/invoice/public';
+import { loadPreorderSaleRoute, loadSalesRoute } from '@/modules/sales/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/types/routeTypes';
 
 // Lazy load components
-const InvoicesPage = lazy(() =>
-  import('@/modules/invoice/pages/InvoicesPage/InvoicesPage').then(
-    (module) => ({
-      default: module.InvoicesPage,
-    }),
-  ),
-);
-const SalesAnalyticsPage = lazy(() =>
-  import('@/modules/invoice/pages/InvoicesPage/SalesAnalyticsPage').then(
-    (module) => ({
-      default: module.SalesAnalyticsPage,
-    }),
-  ),
-);
-const ServiceCommissionsReport = lazy(() =>
-  import('@/modules/invoice/pages/ServiceCommissionsReport/ServiceCommissionsReport').then(
-    (module) => ({
-      default: module.ServiceCommissionsReport,
-    }),
-  ),
-);
-const Preorder = lazy(() =>
-  import('@/modules/sales/pages/PreorderSale/PreorderSale').then((module) => ({
-    default: module.Preorder,
-  })),
-);
-const Sales = lazy(() =>
-  import('@/modules/sales/pages/Sale/Sale').then((module) => ({
-    default: module.Sales,
-  })),
-);
+const InvoicesPage = lazy(loadInvoicesPageRoute);
+const SalesAnalyticsPage = lazy(loadSalesAnalyticsPageRoute);
+const ServiceCommissionsReport = lazy(loadServiceCommissionsReportRoute);
+const Preorder = lazy(loadPreorderSaleRoute);
+const Sales = lazy(loadSalesRoute);
 
 const { SALES, BILLS, BILLS_ANALYTICS, SERVICE_COMMISSIONS, PREORDERS } =
   ROUTES_NAME.SALES_TERM;

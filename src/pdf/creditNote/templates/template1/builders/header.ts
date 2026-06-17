@@ -1,6 +1,6 @@
-import { formatDate } from '../utils/formatters.js';
+import { formatDate } from '../utils/formatters';
 
-import { buildClientBlock } from './clientBlock.js';
+import { buildClientBlock } from './clientBlock';
 
 import type {
   PdfContent,
@@ -8,7 +8,7 @@ import type {
   PdfImageMap,
   PdfTableBody,
 } from '@/pdf/types';
-import type { CreditNoteBusinessInfo, CreditNoteData } from '../../../types.js';
+import type { CreditNoteBusinessInfo, CreditNoteData } from '../../../types';
 
 const compact = <T>(items: Array<T | null | undefined | false>): T[] =>
   items.filter(Boolean) as T[];

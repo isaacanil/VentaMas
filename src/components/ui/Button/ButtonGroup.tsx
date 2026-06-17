@@ -1,10 +1,18 @@
-import React from 'react';
+import { forwardRef, type HTMLAttributes } from 'react';
 import styled from 'styled-components';
-import type { ButtonGroupProps } from '@/types/ui';
+import type { ButtonGroupProps } from './types';
 
-export const ButtonGroup = ({ children, position }: ButtonGroupProps) => {
-  return <Container $position={position}>{children}</Container>;
-};
+type ButtonGroupCompatProps = ButtonGroupProps & HTMLAttributes<HTMLDivElement>;
+
+export const ButtonGroup = forwardRef<HTMLDivElement, ButtonGroupCompatProps>(
+  function ButtonGroup({ children, position, ...containerProps }, ref) {
+    return (
+      <Container {...containerProps} ref={ref} $position={position}>
+        {children}
+      </Container>
+    );
+  }
+);
 
 type ContainerProps = {
   $position?: ButtonGroupProps['position'];

@@ -47,6 +47,13 @@ export const ACCOUNTING_TREASURY_PAYMENT_CHANNEL_VALUES = [
   'other',
 ];
 
+const DEFAULT_ACCOUNTING_TREASURY_SNAPSHOT = {
+  cashAccountId: null,
+  cashCountId: null,
+  bankAccountId: null,
+  paymentChannel: null,
+};
+
 const trimString = (value) => {
   if (typeof value !== 'string') return value;
   const trimmed = value.trim();
@@ -115,7 +122,7 @@ export const AccountingEventErrorSchema = z
     code: trimmedStringSchema,
     message: trimmedStringSchema,
     at: timestampLikeSchema,
-    details: z.record(z.unknown()).optional().default({}),
+    details: z.record(z.string(), z.unknown()).optional().default({}),
   })
   .passthrough();
 
@@ -153,8 +160,8 @@ export const AccountingEventMonetarySnapshotSchema = z
 
 export const AccountingEventTreasurySnapshotSchema = z
   .object({
-    cashAccountId: nullableTrimmedStringSchema.optional().default(null),
     cashCountId: nullableTrimmedStringSchema.optional().default(null),
+    cashAccountId: nullableTrimmedStringSchema.optional().default(null),
     bankAccountId: nullableTrimmedStringSchema.optional().default(null),
     paymentChannel: z
       .union([z.enum(ACCOUNTING_TREASURY_PAYMENT_CHANNEL_VALUES), z.null()])
@@ -181,8 +188,10 @@ export const AccountingEventSchema = z
     currency: nullableTrimmedStringSchema.optional().default(null),
     functionalCurrency: nullableTrimmedStringSchema.optional().default(null),
     monetary: AccountingEventMonetarySnapshotSchema.optional().default({}),
-    treasury: AccountingEventTreasurySnapshotSchema.optional().default({}),
-    payload: z.record(z.unknown()).optional().default({}),
+    treasury: AccountingEventTreasurySnapshotSchema.optional().default(
+      DEFAULT_ACCOUNTING_TREASURY_SNAPSHOT,
+    ),
+    payload: z.record(z.string(), z.unknown()).optional().default({}),
     dedupeKey: nullableTrimmedStringSchema.optional().default(null),
     idempotencyKey: nullableTrimmedStringSchema.optional().default(null),
     projection: AccountingEventProjectionSchema.optional().default({
@@ -196,7 +205,7 @@ export const AccountingEventSchema = z
     reversalOfEventId: nullableTrimmedStringSchema.optional().default(null),
     createdAt: timestampLikeSchema,
     createdBy: nullableTrimmedStringSchema.optional().default(null),
-    metadata: z.record(z.unknown()).optional().default({}),
+    metadata: z.record(z.string(), z.unknown()).optional().default({}),
   })
   .passthrough();
 

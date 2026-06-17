@@ -17,8 +17,6 @@
     "src/types/dev-globals.d.ts",
     "src/types/typecheck-empty-module.d.ts",
     "src/types/typecheck-empty-routes.ts",
-    "src/dev/**/*.ts",
-    "src/dev/**/*.tsx",
     "src/modules/dev/**/*.ts",
     "src/modules/dev/**/*.tsx",
     "src/router/routes/paths/Dev.tsx",

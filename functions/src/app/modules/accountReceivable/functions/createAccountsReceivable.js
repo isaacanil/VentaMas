@@ -6,7 +6,7 @@ import { getNextIDTransactionalSnap } from '../../../core/utils/getNextID.js';
 import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 import { assertBusinessSubscriptionAccess } from '../../../versions/v2/billing/utils/subscriptionAccess.util.js';
 import { toCleanString } from '../../../versions/v2/billing/utils/billingCommon.util.js';
 import { addAccountReceivable } from '../services/addAccountReceivable.js';

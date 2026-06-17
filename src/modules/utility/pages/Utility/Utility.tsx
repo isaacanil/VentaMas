@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import { designSystemV2 } from '@/theme/designSystemV2';
 import { PageShell } from '@/components/layout/PageShell';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 import { BestDayHighlightCard } from './components/BestDayHighlightCard';
 import { DailyPerformanceChart } from './components/DailyPerformanceChart';

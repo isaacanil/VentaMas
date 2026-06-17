@@ -19,7 +19,7 @@ import {
 import type {
   AccountingManualRatesByCurrency,
   SupportedDocumentCurrency,
-} from '../utils/accountingConfig';
+} from '@/modules/accounting/public';
 
 const { Text } = Typography;
 

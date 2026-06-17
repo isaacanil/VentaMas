@@ -1,8 +1,8 @@
-import BusinessFeatureRouteGate from '@/components/availability/BusinessFeatureRouteGate';
+import BusinessFeatureRouteGate from '@/router/guards/availability/BusinessFeatureRouteGate';
 import { PageLayout } from '@/components/layout/PageShell';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import ROUTES_NAME from '@/router/routes/routesName';
-import TreasuryBankAccountsWorkspace from './components/TreasuryBankAccountsWorkspace';
+import TreasuryBankAccountsWorkspace from './TreasuryBankAccountsPage/components/TreasuryBankAccountsWorkspace';
 
 export default function TreasuryBankAccountsPage() {
   return (

@@ -28,7 +28,7 @@ import { openProductStockSimple } from '@/features/productStock/productStockSimp
 import { clearTaxReceiptData } from '@/features/taxReceipt/taxReceiptSlice';
 import { useIsOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
 import { useGetProducts } from '@/firebase/products/fbGetProducts';
-import { useBarcodeScanner } from '@/hooks/barcode/useBarcodeScanner';
+import { useBarcodeScanner } from '@/shared/barcode/useBarcodeScanner';
 import useViewportWidth from '@/hooks/windows/useViewportWidth';
 import {
   normalizeSupportedDocumentCurrency,
@@ -43,10 +43,13 @@ import {
   normalizeBarcodeDigits,
   normalizeBarcodeValue,
 } from '@/utils/barcode';
-import { resolveProductStockSelection } from '@/utils/inventory/productStockSelection';
-import { ClientSelector } from '@/modules/contacts/components/ClientControl/ClientSelector/ClientSelector';
-import { ProductBatchModal } from '@/modules/inventory/pages/Inventory/components/Warehouse/components/ProductBatchModal/ProductBatchModal';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import {
+  resolveProductStockSelection,
+  shouldResolveProductStockSelection,
+} from '@/modules/sales/pages/Sale/utils/productStockSelection';
+import { ClientSelector } from '@/modules/contacts/public';
+import { ProductBatchModal } from '@/modules/inventory/public';
+import { MenuApp } from '@/modules/navigation/public';
 import { MenuComponents } from '@/modules/sales/components/MenuComponents/MenuComponents';
 
 import { Cart } from './components/Cart/Cart';
@@ -397,6 +400,11 @@ export const Sales = (): JSX.Element => {
           }
         : (product as ProductRecord);
 
+    if (!shouldResolveProductStockSelection(scannedProduct)) {
+      dispatchResolvedScannedProduct(scannedProduct);
+      return;
+    }
+
     void resolveProductStockSelection({
       product: scannedProduct,
       user,
@@ -441,9 +449,11 @@ export const Sales = (): JSX.Element => {
           placement: 'top',
         });
         dispatch(
-          openProductStockSimple(
-            (existingCartProduct as ProductRecord | null) ?? scannedProduct,
-          ),
+          openProductStockSimple({
+            product:
+              (existingCartProduct as ProductRecord | null) ?? scannedProduct,
+            initialStocks: selection.availableStocks,
+          }),
         );
       })
       .catch((error) => {

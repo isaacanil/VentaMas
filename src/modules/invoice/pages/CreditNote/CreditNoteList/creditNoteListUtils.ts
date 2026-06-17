@@ -34,8 +34,11 @@ export const canEditCreditNoteRecord = (record: CreditNoteRecord) => {
     record.status === CREDIT_NOTE_STATUS.FULLY_USED ||
     (record.availableAmount !== undefined &&
       record.availableAmount < record.totalAmount);
+  const hasLockedElectronicStatus =
+    record.status === CREDIT_NOTE_STATUS.ELECTRONIC_PENDING ||
+    record.status === CREDIT_NOTE_STATUS.ELECTRONIC_FAILED;
 
-  return isTimeAllowed && !hasApplications;
+  return isTimeAllowed && !hasApplications && !hasLockedElectronicStatus;
 };
 
 export const buildDefaultCreditNoteFilters = () => ({

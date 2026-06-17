@@ -14,7 +14,7 @@ import styled from 'styled-components';
 import { VmButton, VmCard, VmChip, VmDropdown } from '@/components/heroui';
 import type { InvoiceData } from '@/types/invoice';
 import type { getInvoicePaymentInfo } from '@/utils/invoice';
-import { resolveFiscalDocumentNumber } from '@/utils/invoice/electronicTaxReceipt';
+import { resolveFiscalDocumentNumber } from '@/modules/invoice/utils/electronicTaxReceipt';
 import {
   formatWorkspaceAmount,
   formatWorkspaceDate,

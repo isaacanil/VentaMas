@@ -1,20 +1,10 @@
-import { URL } from 'node:url';
-
 import { toCleanString } from '../utils/billingCommon.util.js';
+import { appendQueryParams } from '../utils/queryParams.util.js';
 
 const DEFAULT_CHECKOUT_RETURN_URL =
   'https://ventamax.web.app/settings/account/subscription';
 const DEFAULT_PORTAL_RETURN_URL =
   'https://ventamax.web.app/settings/account/subscription/billing';
-
-const appendQueryParams = (baseUrl, params) => {
-  const url = new URL(baseUrl);
-  Object.entries(params || {}).forEach(([key, value]) => {
-    if (value == null) return;
-    url.searchParams.set(key, String(value));
-  });
-  return url.toString();
-};
 
 export const manualProviderAdapter = {
   providerId: 'manual',

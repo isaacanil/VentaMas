@@ -2,10 +2,11 @@ import { HttpsError, onCall } from 'firebase-functions/v2/https';
 
 import { db } from '../../../core/config/firebase.js';
 import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.util.js';
+import { sanitizeForResponse } from '../../../core/utils/responseSerialization.util.js';
 import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 import {
   getPilotAccountingSettingsForBusiness,
   isAccountingRolloutEnabledForBusiness,
@@ -28,25 +29,6 @@ const toCleanString = (value) => {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
   return trimmed.length ? trimmed : null;
-};
-
-const sanitizeForResponse = (value) => {
-  if (Array.isArray(value)) {
-    return value.map((item) => sanitizeForResponse(item));
-  }
-  if (!value || typeof value !== 'object') {
-    return value;
-  }
-  if (typeof value?.toMillis === 'function') {
-    return value.toMillis();
-  }
-
-  const next = {};
-  Object.entries(value).forEach(([key, nestedValue]) => {
-    if (nestedValue === undefined) return;
-    next[key] = sanitizeForResponse(nestedValue);
-  });
-  return next;
 };
 
 export const replayAccountingEventProjection = onCall(

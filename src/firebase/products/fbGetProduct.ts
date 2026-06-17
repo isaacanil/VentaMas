@@ -66,45 +66,54 @@ export const fbListenProduct = (
 };
 
 // Hook para escuchar el producto
+type ProductSnapshotState = {
+  scopeKey: string | null;
+  data: ProductRecord | null;
+  error: string | null;
+};
+
 export const useListenProduct = (productId: string | null | undefined) => {
   const user = useSelector(selectUser) as UserWithBusiness | null | undefined;
-  const [data, setData] = useState<ProductRecord | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const [prevProductId, setPrevProductId] = useState<string | null | undefined>(
-    productId,
-  );
-  const [prevBusinessID, setPrevBusinessID] = useState<
-    string | null | undefined
-  >(user?.businessID);
-
-  if (productId !== prevProductId || user?.businessID !== prevBusinessID) {
-    setPrevProductId(productId);
-    setPrevBusinessID(user?.businessID);
-    setData(null);
-    setError(null);
-    if (productId && user?.businessID) {
-      setLoading(true);
-    } else {
-      setLoading(false);
-    }
-  }
+  const businessID = user?.businessID ?? null;
+  const scopeKey = businessID && productId ? `${businessID}:${productId}` : null;
+  const [snapshotState, setSnapshotState] = useState<ProductSnapshotState>({
+    scopeKey: null,
+    data: null,
+    error: null,
+  });
 
   useEffect(() => {
-    if (!productId || !user?.businessID) {
+    if (!productId || !businessID || !scopeKey) {
       return;
     }
 
+    const scopedUser: UserWithBusiness = { businessID };
     const unsubscribe = fbListenProduct(
-      user,
+      scopedUser,
       productId,
-      setData,
-      setError,
-      setLoading,
+      (data) => {
+        setSnapshotState({
+          scopeKey,
+          data,
+          error: null,
+        });
+      },
+      (error) => {
+        setSnapshotState((current) => ({
+          scopeKey,
+          data: current.scopeKey === scopeKey ? current.data : null,
+          error,
+        }));
+      },
+      () => undefined,
     );
     return () => unsubscribe(); // Cleanup al desmontar
-  }, [productId, user]);
+  }, [businessID, productId, scopeKey]);
+
+  const isCurrentSnapshot = snapshotState.scopeKey === scopeKey;
+  const data = scopeKey && isCurrentSnapshot ? snapshotState.data : null;
+  const loading = Boolean(scopeKey) && !isCurrentSnapshot;
+  const error = isCurrentSnapshot ? snapshotState.error : null;
 
   return { data, loading, error };
 };

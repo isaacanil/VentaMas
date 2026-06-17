@@ -1,11 +1,11 @@
 import { signInWithCustomToken, signOut } from 'firebase/auth';
-import { httpsCallable } from 'firebase/functions';
 
 import {
   buildSessionInfo,
   storeSessionLocally,
 } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { auth, functions } from '@/firebase/firebaseconfig';
+import { auth } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 import { normalizeCurrentUserContext } from '@/utils/auth-adapter';
 
 export interface PublicSignUpInput {
@@ -27,7 +27,18 @@ export interface PublicSignUpResponse {
   firebaseCustomToken?: string;
 }
 
-const clientPublicSignUpCallable = httpsCallable(functions, 'clientPublicSignUp');
+type PublicSignUpPayload = {
+  name?: string;
+  realName?: string | null;
+  email: string;
+  password: string;
+  sessionInfo: ReturnType<typeof buildSessionInfo>;
+};
+
+const clientPublicSignUpCallable = createFirebaseCallable<
+  PublicSignUpPayload,
+  PublicSignUpResponse
+>('clientPublicSignUp');
 
 const toLegacyCompatibleAuthPayload = (userData: Record<string, unknown>) => {
   const normalized = normalizeCurrentUserContext(userData);
@@ -98,7 +109,7 @@ export const fbPublicSignUp = async (
   input: PublicSignUpInput,
 ): Promise<{ user: Record<string, unknown> }> => {
   const sessionInfo = buildSessionInfo();
-  const response = await clientPublicSignUpCallable({
+  const payload = await clientPublicSignUpCallable({
     ...(input.name ? { name: input.name } : {}),
     ...(input.realName !== undefined ? { realName: input.realName } : {}),
     email: input.email,
@@ -106,7 +117,6 @@ export const fbPublicSignUp = async (
     sessionInfo,
   });
 
-  const payload = (response?.data || {}) as PublicSignUpResponse;
   if (!payload.ok || !payload.user) {
     throw new Error('No se pudo crear la cuenta.');
   }

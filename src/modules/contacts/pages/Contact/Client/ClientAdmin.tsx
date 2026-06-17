@@ -7,7 +7,7 @@ import {
 } from '@/components/common/FilterBar/FilterBar';
 import { useFbGetClients } from '@/firebase/client/useFbGetClients';
 import { filterData } from '@/hooks/search/useSearch';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 import { ClientsListTable } from './components/OrderListTable/ClientsListTable';
 

@@ -119,5 +119,5 @@ Esta implementación convierte VentaMax en una solución completamente compatibl
 ## Referencias
 
 - `docs/barcode/reference/gs1-implementation.md`
-- `src/views/pages/Products/components/BarcodePrinter/*`
+- Referencia histórica: el antiguo componente `BarcodePrinter` no tiene equivalente actual localizado por `rg`.
 - `React-Barcode` documentación oficial

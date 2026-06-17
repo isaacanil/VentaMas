@@ -10,9 +10,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.join(__dirname, '..');
 const FIREBASE_CLI_ARGS = ['-y', 'firebase-tools@latest'];
+const ALLOW_ALL_FUNCTIONS_DEPLOY_ENV = 'ALLOW_ALL_FUNCTIONS_DEPLOY';
+const ALLOW_ALL_FUNCTIONS_DEPLOY_VALUE = '1';
 
 function isInteractive() {
   return Boolean(process.stdin.isTTY && process.stdout.isTTY && !process.env.CI);
+}
+
+function isAllFunctionsDeployAllowed() {
+  return process.env[ALLOW_ALL_FUNCTIONS_DEPLOY_ENV] === ALLOW_ALL_FUNCTIONS_DEPLOY_VALUE;
 }
 
 function parseArgs(argv) {
@@ -65,22 +71,41 @@ function parseArgs(argv) {
 }
 
 function usage() {
-  return [
+  const baseTargets = 'prod|staging|prod:functions|staging:functions|beta|vercel';
+  const allFunctionsTargets = isAllFunctionsDeployAllowed()
+    ? '|staging:all|staging:functions:all'
+    : '';
+  const examples = [
     'Usage:',
     '  node tools/deploy.js',
-    '  node tools/deploy.js <prod|staging|staging:all|prod:functions|staging:functions|beta|vercel> [--build|--no-build|--dry-run] [function names or firebase args]',
+    `  node tools/deploy.js <${baseTargets}${allFunctionsTargets}> [--build|--no-build|--dry-run] [function names or firebase args]`,
     '',
     'Examples:',
     '  npm run deploy',
     '  npm run deploy -- --help',
     '  npm run deploy -- staging',
-    '  npm run deploy -- staging:all',
-    '  npm run deploy -- staging:functions:all',
     '  npm run deploy -- staging:functions reserveCreditNoteNcf,createBusiness',
     '  npm run deploy -- prod:functions reserveCreditNoteNcf',
     '  npm run deploy -- staging:functions reserveCreditNoteNcf --dry-run',
     '  npm run deploy -- prod --no-build',
-  ].join('\n');
+  ];
+
+  if (isAllFunctionsDeployAllowed()) {
+    examples.splice(
+      8,
+      0,
+      '  npm run deploy -- staging:all',
+      '  npm run deploy -- staging:functions:all',
+    );
+  } else {
+    examples.push(
+      '',
+      `All-functions deploy targets are hidden and blocked unless ${ALLOW_ALL_FUNCTIONS_DEPLOY_ENV}=${ALLOW_ALL_FUNCTIONS_DEPLOY_VALUE}.`,
+      'Use a normal scoped path instead: npm run deploy -- staging:functions nombreDeFuncion (or prod:functions nombreDeFuncion).',
+    );
+  }
+
+  return examples.join('\n');
 }
 
 const DEPLOY_ENVIRONMENTS = {
@@ -128,6 +153,7 @@ const DEPLOYS = {
       'hosting:staging,functions',
     ],
     requiresDist: true,
+    requiresAllFunctionsDeployGuard: true,
   },
   'staging:functions': {
     label: 'Firebase staging functions especificas (ventamax-staging)',
@@ -154,6 +180,7 @@ const DEPLOYS = {
       'functions',
     ],
     requiresDist: false,
+    requiresAllFunctionsDeployGuard: true,
   },
   prod: {
     label: 'Firebase produccion hosting (ventamaxpos)',
@@ -253,10 +280,16 @@ async function promptDeploySelection(environment) {
     name: 'deploySelection',
     message: `Selecciona accion para ${DEPLOY_ENVIRONMENTS[environment].label}`,
     choices: [
-      ...deployKeys.map((env) => ({
-        name: env,
-        message: DEPLOYS[env].label,
-      })),
+      ...deployKeys
+        .filter(
+          (env) =>
+            !DEPLOYS[env].requiresAllFunctionsDeployGuard ||
+            isAllFunctionsDeployAllowed(),
+        )
+        .map((env) => ({
+          name: env,
+          message: DEPLOYS[env].label,
+        })),
       { name: 'help', message: 'Ver ayuda / ejemplos' },
       { name: 'back', message: 'Volver a ambientes' },
       { name: 'exit', message: 'Salir' },
@@ -264,6 +297,29 @@ async function promptDeploySelection(environment) {
   });
 
   return await prompt.run();
+}
+
+function assertAllFunctionsDeployGuard(env, cfg, deployArgs = null) {
+  const targetRequiresGuard = Boolean(cfg.requiresAllFunctionsDeployGuard);
+  const argsRequireGuard = deployArgs
+    ? deployArgsDeployAllFunctions(cfg, deployArgs)
+    : false;
+
+  if (
+    (!targetRequiresGuard && !argsRequireGuard) ||
+    isAllFunctionsDeployAllowed()
+  ) {
+    return;
+  }
+
+  consola.error(
+    [
+      `Deploy all Cloud Functions bloqueado para "${env}".`,
+      `Define ${ALLOW_ALL_FUNCTIONS_DEPLOY_ENV}=${ALLOW_ALL_FUNCTIONS_DEPLOY_VALUE} solo si quieres desplegar todas las Cloud Functions.`,
+      `Camino normal: npm run deploy -- ${cfg.environment}:functions nombreDeFuncion`,
+    ].join('\n'),
+  );
+  process.exit(1);
 }
 
 async function promptBuildMode({ buildScript }) {
@@ -286,6 +342,34 @@ async function promptBuildMode({ buildScript }) {
 
 function hasOnlyArg(args) {
   return args.includes('--only') || args.some((arg) => arg.startsWith('--only='));
+}
+
+function getOnlyArgValues(args) {
+  const values = [];
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === '--only' && typeof args[index + 1] === 'string') {
+      values.push(args[index + 1]);
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith('--only=')) {
+      values.push(arg.slice('--only='.length));
+    }
+  }
+  return values;
+}
+
+function onlyArgDeploysAllFunctions(value) {
+  return value
+    .split(',')
+    .map((target) => target.trim())
+    .some((target) => target === 'functions');
+}
+
+function deployArgsDeployAllFunctions(cfg, deployArgs) {
+  if (!['prod', 'staging'].includes(cfg.environment)) return false;
+  return getOnlyArgValues(deployArgs).some(onlyArgDeploysAllFunctions);
 }
 
 function normalizeFunctionTargets(rawNames) {
@@ -456,7 +540,10 @@ async function main() {
     process.exit(1);
   }
 
+  assertAllFunctionsDeployGuard(env, cfg);
+
   const deployArgs = await resolveDeployArgs(cfg, passthrough, canPrompt);
+  assertAllFunctionsDeployGuard(env, cfg, deployArgs);
 
   consola.box({
     title: 'Deploy',

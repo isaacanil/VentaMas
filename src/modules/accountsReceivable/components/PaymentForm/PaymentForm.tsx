@@ -1,18 +1,27 @@
-import { Button, Checkbox, DatePicker, Form, InputNumber, Modal as PaymentModal, Select } from 'antd';
+import {
+  Button,
+  Checkbox,
+  DatePicker,
+  Form,
+  InputNumber,
+  Modal as PaymentModal,
+  Select,
+} from 'antd';
 import styled from 'styled-components';
 import dayjs from 'dayjs';
 
 import { ShowcaseList } from '@/components/ui/ShowCase/ShowcaseList';
-import { Receipt } from '@/modules/checkout/pages/checkout/Receipt';
-import { AccountsReceivablePaymentReceipt } from '@/modules/checkout/pages/checkout/receipts/AccountsReceivablePaymentReceipt/AccountsReceivablePaymentReceipt';
-import CreditSelector from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/components/CreditSelector/CreditSelector';
-import { TaxReceiptDepletedModal } from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/components/TaxReceiptDepletedModal/TaxReceiptDepletedModal';
-import { modalStyles } from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/constants/modalStyles';
+import {
+  AccountsReceivablePaymentReceipt,
+  Receipt,
+} from '@/modules/checkout/public';
+import { CreditSelector, TaxReceiptDepletedModal } from '@/modules/invoice/public';
 
 import { AutoCompleteResultModal } from './components/AutoCompleteResultModal';
 import { AutoCompletingHint } from './components/AutoCompletingHint';
 import { PaymentContextSummary } from './components/PaymentContextSummary';
 import { PaymentFields } from './components/PaymentFields';
+import { paymentModalStyles } from './constants/paymentModalStyles';
 import { usePaymentFormController } from './hooks/usePaymentFormController';
 
 const { Option } = Select;
@@ -65,7 +74,7 @@ export const PaymentForm = () => {
           if (autoCompleting) return;
           handleClear();
         }}
-        styles={modalStyles}
+        styles={paymentModalStyles}
         footer={[
           <Button key="back" onClick={handleClear} disabled={autoCompleting}>
             Cancelar
@@ -145,7 +154,9 @@ export const PaymentForm = () => {
 
             {paymentDetails.paymentScope === 'account' ? (
               <RetentionSection>
-                <RetentionTitle>Retenciones sufridas por terceros</RetentionTitle>
+                <RetentionTitle>
+                  Retenciones sufridas por terceros
+                </RetentionTitle>
                 <RetentionFields>
                   <Form.Item
                     label="Fecha de retención"
@@ -156,7 +167,10 @@ export const PaymentForm = () => {
                       format="YYYY-MM-DD"
                       value={
                         paymentDetails.thirdPartyWithholding?.retentionDate
-                          ? dayjs(paymentDetails.thirdPartyWithholding.retentionDate)
+                          ? dayjs(
+                              paymentDetails.thirdPartyWithholding
+                                .retentionDate,
+                            )
                           : null
                       }
                       onChange={(value) =>
@@ -172,7 +186,9 @@ export const PaymentForm = () => {
                       min={0}
                       precision={2}
                       style={{ width: '100%' }}
-                      value={paymentDetails.thirdPartyWithholding?.itbisWithheld ?? 0}
+                      value={
+                        paymentDetails.thirdPartyWithholding?.itbisWithheld ?? 0
+                      }
                       onChange={(value) =>
                         handleThirdPartyWithholdingChange(
                           'itbisWithheld',
@@ -187,7 +203,8 @@ export const PaymentForm = () => {
                       precision={2}
                       style={{ width: '100%' }}
                       value={
-                        paymentDetails.thirdPartyWithholding?.incomeTaxWithheld ?? 0
+                        paymentDetails.thirdPartyWithholding
+                          ?.incomeTaxWithheld ?? 0
                       }
                       onChange={(value) =>
                         handleThirdPartyWithholdingChange(
@@ -275,13 +292,18 @@ export const PaymentForm = () => {
         loading={autoCompleting}
         onSelectReceipt={handleSelectTaxReceiptFromModal}
         onRetry={() => void handleRetryAutoCompleteWithSelectedReceipt()}
-        onContinueWithout={() => void handleContinueAutoCompleteWithoutReceipt()}
+        onContinueWithout={() =>
+          void handleContinueAutoCompleteWithoutReceipt()
+        }
         onCancel={handleCloseTaxReceiptModal}
       />
 
       <div style={{ display: 'none' }}>
         {autoCompleteModalState?.invoice ? (
-          <Receipt ref={invoiceToPrintRef} data={autoCompleteModalState.invoice} />
+          <Receipt
+            ref={invoiceToPrintRef}
+            data={autoCompleteModalState.invoice}
+          />
         ) : null}
       </div>
     </>

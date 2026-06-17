@@ -5,15 +5,16 @@ import {
 } from '@/constants/icons/antd';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { ActionIcon } from '@/components/common/ActionIcon';
-import { useDialog } from '@/Context/Dialog/useDialog';
+import { useDialog } from '@/context/Dialog/useDialog';
 import { selectUser } from '@/features/auth/userSlice';
 import { fbDeleteOrder } from '@/firebase/order/fbDeleteOrder';
 import { replacePathParams } from '@/router/routes/replacePathParams';
 import { ROUTES } from '@/router/routes/routesName';
 import type { UserIdentity } from '@/types/users';
-import type { Order } from '@/utils/order/types';
+import type { Order } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/orderTypes';
 import { resolveOrderStatus } from '@/utils/order/status';
+
+import { ActionIcon } from '../../../shared/components/ActionIcon/ActionIcon';
 
 interface OrderActionButtonsProps {
   order: Order;

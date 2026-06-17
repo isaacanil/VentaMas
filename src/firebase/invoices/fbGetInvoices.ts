@@ -21,26 +21,30 @@ type TimeRange = {
   endDate?: string | number | Date;
 };
 
-export const useFbGetInvoices = (time: TimeRange | null | undefined) => {
-  const [loading, setLoading] = useState(() =>
-    Boolean(time?.startDate && time?.endDate),
-  );
-  const [invoices, setInvoices] = useState<InvoiceDoc[]>([]);
-  const user = useSelector((state: UserRootState) => selectUser(state));
+type InvoicesSnapshotState = {
+  queryKey: string | null;
+  invoices: InvoiceDoc[];
+};
 
-  if (
-    (!time?.startDate || !time?.endDate || !user?.businessID) &&
-    (invoices.length > 0 || loading)
-  ) {
-    if (invoices.length > 0) setInvoices([]);
-    if (loading) setLoading(false);
-  }
+export const useFbGetInvoices = (time: TimeRange | null | undefined) => {
+  const user = useSelector((state: UserRootState) => selectUser(state));
+  const [snapshotState, setSnapshotState] = useState<InvoicesSnapshotState>({
+    queryKey: null,
+    invoices: [],
+  });
+
+  const businessID = user?.businessID ?? null;
+  const uid = user?.uid ?? null;
+  const role = user?.role ?? null;
+  const startDate = time?.startDate ?? null;
+  const endDate = time?.endDate ?? null;
+  const queryKey =
+    businessID && startDate && endDate
+      ? `${businessID}|${uid ?? ''}|${role ?? ''}|${String(startDate)}|${String(endDate)}`
+      : null;
 
   useEffect(() => {
-    const hasValidRange = Boolean(time?.startDate && time?.endDate);
-    const hasValidUser = Boolean(user?.businessID);
-
-    if (!hasValidRange || !hasValidUser) {
+    if (!user || !businessID || !startDate || !endDate || !queryKey) {
       return undefined;
     }
 
@@ -49,8 +53,8 @@ export const useFbGetInvoices = (time: TimeRange | null | undefined) => {
         validateUser(user);
         const { businessID, uid, role } = user;
 
-        const start = new Date(time.startDate);
-        const end = new Date(time.endDate);
+        const start = new Date(startDate);
+        const end = new Date(endDate);
         const restrictionStartDate = new Date('2024-01-21T14:41:00');
 
         const invoicesRef = collection(
@@ -93,23 +97,20 @@ export const useFbGetInvoices = (time: TimeRange | null | undefined) => {
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
           if (snapshot.empty) {
-            setInvoices([]);
-            setLoading(false);
+            setSnapshotState({ queryKey, invoices: [] });
             return;
           }
           const data = snapshot.docs
             .map((item) => item.data() as InvoiceDoc)
             .filter((item) => item?.data?.status !== 'cancelled');
 
-          setInvoices(data);
-          setLoading(false);
+          setSnapshotState({ queryKey, invoices: data });
         });
 
         return unsubscribe;
       } catch (error) {
         console.error('Error fetching invoices:', error);
-        setInvoices([]);
-        setLoading(false);
+        setSnapshotState({ queryKey, invoices: [] });
         return undefined;
       }
     };
@@ -122,13 +123,18 @@ export const useFbGetInvoices = (time: TimeRange | null | undefined) => {
       }
     };
   }, [
-    time?.startDate,
-    time?.endDate,
-    user?.businessID,
-    user?.uid,
-    user?.role,
+    businessID,
+    startDate,
+    endDate,
+    queryKey,
+    uid,
+    role,
     user,
   ]);
+
+  const isCurrentSnapshot = snapshotState.queryKey === queryKey;
+  const invoices = queryKey && isCurrentSnapshot ? snapshotState.invoices : [];
+  const loading = Boolean(queryKey) && !isCurrentSnapshot;
 
   return { invoices, loading };
 };

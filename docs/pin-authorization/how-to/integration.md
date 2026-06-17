@@ -50,8 +50,7 @@ El sistema de autorización con PIN permite a los usuarios autorizarse rápidame
 ### Opción 1: Usando el Hook (Recomendado)
 
 ```jsx
-import { useAuthorizationPin } from '../hooks/useAuthorizationPin';
-import { PinAuthorizationModal } from '../views/component/modals/PinAuthorizationModal/PinAuthorizationModal';
+import { PinAuthorizationModal, useAuthorizationPin } from '@/modules/authorizations/public';
 
 function MiComponente() {
   const { showModal, modalProps } = useAuthorizationPin({
@@ -94,7 +93,7 @@ Cada autorización debe dejar trazabilidad en Firestore. Utiliza el helper
 autorizó.
 
 ```jsx
-import { fbRecordAuthorizationApproval } from '../firebase/authorization/approvalLogs';
+import { fbRecordAuthorizationApproval } from '@/firebase/authorization/approvalLogs';
 
 const { showModal, modalProps } = useAuthorizationPin({
   onAuthorized: async (authorizer) => {
@@ -120,7 +119,7 @@ const { showModal, modalProps } = useAuthorizationPin({
 
 ```jsx
 import { useState } from 'react';
-import { PinAuthorizationModal } from '../views/component/modals/PinAuthorizationModal/PinAuthorizationModal';
+import { PinAuthorizationModal } from '@/modules/authorizations/public';
 
 function MiComponente() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -163,8 +162,7 @@ termina de generarse, de modo que el número de comprobante queda enlazado al ev
 
 import { useState } from 'react';
 import { Button, message } from 'antd';
-import { useAuthorizationPin } from '../../../hooks/useAuthorizationPin';
-import { PinAuthorizationModal } from '../../../views/component/modals/PinAuthorizationModal/PinAuthorizationModal';
+import { PinAuthorizationModal, useAuthorizationPin } from '@/modules/authorizations/public';
 import { fbCancelAccountReceivable } from '../../../firebase/accountsReceivable/...';
 
 export const AccountReceivableActions = ({ account }) => {
@@ -254,7 +252,7 @@ Recibe un objeto de configuración con las mismas props que el modal (excepto `i
 ### Generar PIN
 
 ```javascript
-import { fbGenerateUserPin } from '../firebase/authorization/pinAuth';
+import { fbGenerateUserPin } from '@/firebase/authorization/pinAuth';
 
 const result = await fbGenerateUserPin(currentUser, targetUserId, [
   'invoices',
@@ -268,7 +266,7 @@ console.log('Expira:', result.expiresAt);
 ### Validar PIN
 
 ```javascript
-import { fbValidateUserPin } from '../firebase/authorization/pinAuth';
+import { fbValidateUserPin } from '@/firebase/authorization/pinAuth';
 
 const result = await fbValidateUserPin(
   currentUser,
@@ -287,7 +285,7 @@ if (result.valid) {
 ### Obtener Estado de PIN
 
 ```javascript
-import { fbGetUserPinStatus } from '../firebase/authorization/pinAuth';
+import { fbGetUserPinStatus } from '@/firebase/authorization/pinAuth';
 
 const status = await fbGetUserPinStatus(currentUser, targetUserId);
 
@@ -314,7 +312,7 @@ Esto incluye:
 Los logs se pueden consultar con:
 
 ```javascript
-import { fbGetPinAuthLogs } from '../firebase/authorization/pinAuth';
+import { fbGetPinAuthLogs } from '@/firebase/authorization/pinAuth';
 
 const logs = await fbGetPinAuthLogs(currentUser, { limit: 100 });
 ```
@@ -415,7 +413,7 @@ Cajero puede editar factura
 
 ## Referencias
 
-- `src/hooks/useAuthorizationPin.js`
-- `src/views/component/modals/PinAuthorizationModal/PinAuthorizationModal.jsx`
-- `src/firebase/authorization/pinAuth.js`
+- `src/modules/authorizations/hooks/useAuthorizationPin.ts`
+- `src/modules/authorizations/components/PinAuthorizationModal/PinAuthorizationModal.tsx`
+- `src/firebase/authorization/pinAuth.ts`
 - `docs/pin-authorization/reference/summary.md`

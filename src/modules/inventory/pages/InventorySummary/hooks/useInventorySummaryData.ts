@@ -2,6 +2,11 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { useGetProducts } from '@/firebase/products/fbGetProducts';
 import type { ProductRecord } from '@/types/products';
+import {
+  createCountFormatter,
+  toFiniteDisplayNumber,
+} from '@/utils/formatCounts';
+import { formatLocaleCurrency } from '@/utils/format/currency';
 
 import {
   exportInventorySummaryToExcel,
@@ -38,16 +43,14 @@ export type TopProductRow = {
 };
 
 const formatCurrency = (value: number, currency = 'DOP') =>
-  new Intl.NumberFormat('es-DO', {
-    style: 'currency',
-    currency,
+  formatLocaleCurrency(Number(value) || 0, currency, {
     maximumFractionDigits: 2,
-  }).format(Number(value) || 0);
+  });
+
+const integerFormatter = createCountFormatter({ maximumFractionDigits: 0 });
 
 const formatInteger = (value: number) =>
-  new Intl.NumberFormat('es-DO', { maximumFractionDigits: 0 }).format(
-    Number(value) || 0,
-  );
+  integerFormatter.format(toFiniteDisplayNumber(value));
 
 const getNumber = (n: unknown, def = 0) => {
   const value = Number(n);

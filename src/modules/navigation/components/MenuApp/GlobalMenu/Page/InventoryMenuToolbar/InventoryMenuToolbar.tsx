@@ -14,16 +14,14 @@ import styled from 'styled-components';
 import { selectUser } from '@/features/auth/userSlice';
 import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
 import { useGetProducts } from '@/firebase/products/fbGetProducts';
-import { ExportProducts } from '@/hooks/exportToExcel/useExportProducts';
+import { ExportProducts } from '@/utils/export/excel/useExportProducts';
 import useViewportWidth from '@/hooks/windows/useViewportWidth';
 import ROUTES_NAME from '@/router/routes/routesName';
 import { getProducts } from '@/utils/pricing';
-import ImportModal from '@/components/modals/ImportModal/ImportModal';
-import ImportProgressModal from '@/components/modals/ImportProgressModal/ImportProgressModal';
-import { InventoryFilterAndSort } from '@/modules/inventory/pages/Inventario/pages/ItemsManager/components/InventoryFilterAndSort/InventoryFilterAndSort';
-import { AddProductButton } from '@/components/ui/Button/AddProductButton';
+import { InventoryFilterAndSort } from '@/modules/inventory/public';
+import { AddProductButton } from '@/modules/products/public';
 import { ButtonGroup } from '@/components/ui/Button/Button';
-import { DropdownMenu } from '@/components/ui/DropdownMenu/DropdowMenu';
+import { DropdownMenu } from '@/components/ui/DropdownMenu/DropdownMenu';
 import type { ToolbarComponentProps } from '@/modules/navigation/components/MenuApp/GlobalMenu/types';
 import type { UserIdentity, UserWithBusiness } from '@/types/users';
 import type { ProductRecord } from '@/types/products';
@@ -38,25 +36,13 @@ import {
   runInventoryTaxNormalization,
   runInventoryTrackNormalization,
 } from './utils/normalizeInventory';
-
-export type ImportProgressStats = {
-  totalProducts: number;
-  processedProducts: number;
-  updatedProducts: number;
-  newProducts: number;
-  newCategories: number;
-  newIngredients: number;
-  updatedIngredients: number;
-};
-
-export type ImportOptions = {
-  dryRun?: boolean;
-};
-
-export type InventoryProduct = {
-  activeIngredients?: string | null;
-  pricing?: { tax?: number | string | null };
-} & Record<string, unknown>;
+import ImportModal from './components/ImportModal/ImportModal';
+import ImportProgressModal from './components/ImportProgressModal';
+import type {
+  ImportOptions,
+  ImportProgressStats,
+  InventoryProduct,
+} from './types';
 
 export const InventoryMenuToolbar = ({
   side = 'left',
@@ -166,42 +152,44 @@ export const InventoryMenuToolbar = ({
       content: 'Normalizando impuestos de productos...',
       duration: 0,
     });
-    void runInventoryTaxNormalization(user as UserWithBusiness).then((result) => {
-      if (result.status === 'error') {
+    void runInventoryTaxNormalization(user as UserWithBusiness).then(
+      (result) => {
+        if (result.status === 'error') {
+          message.open({
+            key,
+            type: 'error',
+            content: result.errorMessage,
+            duration: 6,
+          });
+          return;
+        }
+
+        const {
+          productsUpdated,
+          mainUpdated,
+          saleUnitsUpdated,
+          selectedUnitUpdated,
+        } = result.summary;
+        const details = [
+          productsUpdated ? `${productsUpdated} productos` : null,
+          mainUpdated ? `${mainUpdated} precios base` : null,
+          saleUnitsUpdated ? `${saleUnitsUpdated} unidades de venta` : null,
+          selectedUnitUpdated
+            ? `${selectedUnitUpdated} unidades seleccionadas`
+            : null,
+        ]
+          .filter(Boolean)
+          .join(', ');
         message.open({
           key,
-          type: 'error',
-          content: result.errorMessage,
-          duration: 6,
+          type: 'success',
+          content: details
+            ? `Impuestos normalizados: ${details}.`
+            : 'No se encontraron impuestos para actualizar.',
+          duration: 4,
         });
-        return;
-      }
-
-      const {
-        productsUpdated,
-        mainUpdated,
-        saleUnitsUpdated,
-        selectedUnitUpdated,
-      } = result.summary;
-      const details = [
-        productsUpdated ? `${productsUpdated} productos` : null,
-        mainUpdated ? `${mainUpdated} precios base` : null,
-        saleUnitsUpdated ? `${saleUnitsUpdated} unidades de venta` : null,
-        selectedUnitUpdated
-          ? `${selectedUnitUpdated} unidades seleccionadas`
-          : null,
-      ]
-        .filter(Boolean)
-        .join(', ');
-      message.open({
-        key,
-        type: 'success',
-        content: details
-          ? `Impuestos normalizados: ${details}.`
-          : 'No se encontraron impuestos para actualizar.',
-        duration: 4,
-      });
-    });
+      },
+    );
   };
   const handleNormalizeTrackInventory = () => {
     if (!user?.businessID) {

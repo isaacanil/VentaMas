@@ -7,14 +7,14 @@ import { I18nextProvider } from 'react-i18next';
 import { Provider } from 'react-redux';
 
 import '@/firebase/firebaseconfig';
-import { AntConfigProvider } from '@/ant/AntConfigProvider';
 import App from '@/App';
+import { AntConfigProvider } from '@/design-system/adapters/ant/AntConfigProvider';
 import { injectTokens } from '@/design-system';
 import '@/styles/global.css';
 
 injectTokens();
 import { store } from '@/app/store';
-import AppProviders from '@/Context/AppProviders';
+import AppProviders from '@/context/AppProviders';
 import i18n from '@/i18n';
 import { ReducedMotionProvider } from '@/motion/ReducedMotionProvider';
 import { initFlowTrace } from '@/utils/flowTrace';

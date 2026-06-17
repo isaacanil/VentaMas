@@ -80,7 +80,7 @@ Varias pantallas escuchan colecciones completas y luego filtran/ordenan en memor
 Archivos afectados:
 
 - `src/firebase/products/fbGetProducts.ts:596`: `useGetProducts` abre `onSnapshot(query(productsRef))` para todos los productos.
-- `src/hooks/products/useGetProductsWithBatch.ts:37`: listener de todos los productos con lote.
+- `src/modules/inventory/pages/Inventory/components/Warehouse/forms/ProductStockForm/hooks/useGetProductsWithBatch.ts:37`: listener de todos los productos con lote.
 - `src/modules/inventory/pages/InventoryControl/hooks/useInventoryStocksProducts.ts:52`: listener de `productsStock` ordenado por `updatedAt` sin `limit`.
 - `src/modules/inventory/pages/InventoryControl/hooks/useInventoryStocksProducts.ts:91`: listener de todos los `products`.
 - `src/firebase/warehouse/productStockService.ts:472`: listener de stocks activos sin limite.
@@ -120,8 +120,8 @@ Archivos afectados:
 - `functions/src/app/versions/v2/inventory/syncProductsStockCron.js:591`: lee todos los negocios y sincroniza inventario por negocio.
 - `functions/src/app/modules/Inventory/functions/quantityZeroToInactivePerBusiness.js:63`: collection group scan sobre `batches` y `productsStock`.
 - `functions/src/app/scheduled/expireAuthorizationRequests.ts:58`: cada 5 minutos lee todos los negocios y revisa autorizaciones pendientes.
-- `functions/src/app/billing/billingMaintenanceCron.js:48`: reconciliacion diaria lee todos los negocios.
-- `functions/src/app/billing/billingMaintenanceCron.js:100`: reset mensual lee todos los negocios y escribe mirrors.
+- `functions/src/app/versions/v2/billing/billingMaintenanceCron.js:41`: reconciliacion diaria lee todos los negocios (ruta actual).
+- `functions/src/app/versions/v2/billing/billingMaintenanceCron.js:92`: reset mensual lee todos los negocios y escribe mirrors (ruta actual).
 - `functions/src/app/versions/v2/accountsReceivable/reconcilePendingBalanceCron.js:143`: lee todos los negocios y reconcilia AR/clientes.
 
 Por que sube el costo:
@@ -283,13 +283,13 @@ Los reportes fiscales mensuales consultan colecciones por rango de fecha y luego
 
 Archivos afectados:
 
-- `functions/src/app/modules/dgii/services/dgii606MonthlyReport.service.js:122`: tres consultas por campos de fecha para gastos.
-- `functions/src/app/modules/dgii/services/dgii606MonthlyReport.service.js:815`: enriquecimiento de proveedores N+1.
-- `functions/src/app/modules/dgii/services/dgii606MonthlyReport.service.js:883`: carga de compras vinculadas N+1.
-- `functions/src/app/modules/dgii/services/dgii606MonthlyReport.service.js:1044`: consultas mensuales de compras/gastos/pagos AP.
-- `functions/src/app/modules/dgii/services/dgii607MonthlyReport.service.js:568`: enriquecimiento de NCF de factura N+1.
-- `functions/src/app/modules/dgii/services/dgii607MonthlyReport.service.js:642`: carga de facturas vinculadas N+1.
-- `functions/src/app/modules/dgii/services/dgii607MonthlyReport.service.js:711`: consultas mensuales de facturas/notas/retenciones.
+- `functions/src/app/modules/compliance/services/dgii606MonthlyReport.service.js:65`: tres consultas por campos de fecha para gastos (ruta actual de `modules/dgii`).
+- `functions/src/app/modules/compliance/services/dgii606MonthlyReport.service.js:698`: enriquecimiento de proveedores N+1 (ruta actual).
+- `functions/src/app/modules/compliance/services/dgii606MonthlyReport.service.js:763`: carga de compras vinculadas N+1 (ruta actual).
+- `functions/src/app/modules/compliance/services/dgii606MonthlyReport.service.js:934`: consultas mensuales de compras/gastos/pagos AP (ruta actual).
+- `functions/src/app/modules/compliance/services/dgii607MonthlyReport.service.js:455`: enriquecimiento de NCF de factura N+1 (ruta actual).
+- `functions/src/app/modules/compliance/services/dgii607MonthlyReport.service.js:520`: carga de facturas vinculadas N+1 (ruta actual).
+- `functions/src/app/modules/compliance/services/dgii607MonthlyReport.service.js:601`: consultas mensuales de facturas/notas/retenciones (ruta actual).
 
 Por que sube el costo:
 
@@ -408,15 +408,15 @@ Fix recomendado:
 | P0 | `expireAuthorizationRequests` | `functions/src/app/scheduled/expireAuthorizationRequests.ts:52` | Cada 5 min | Lee todos los negocios, luego pendientes por negocio | Collection group por `status/expiresAt`, TTL o task queue |
 | P1 | `stockAlertsDailyDigest` | `functions/src/app/modules/Inventory/functions/stockAlertsDailyDigest.js:92` | Schedule | Hasta 100 negocios por defecto, multiples queries por negocio con limite 500 | Cursor, shard por negocio, metricas de truncamiento |
 | P1 | `reconcilePendingBalanceCron` | `functions/src/app/versions/v2/accountsReceivable/reconcilePendingBalanceCron.js:135` | Schedule diario | Todos los negocios, AR paginada y clientes con pendingBalance | Procesar negocios activos/dirty only |
-| P1 | `billingDailyReconcile` | `functions/src/app/billing/billingMaintenanceCron.js:41` | Schedule diario | Todos los negocios y billing accounts | Cursor y cambios incrementales |
-| P1 | `billingMonthlyUsageReset` | `functions/src/app/billing/billingMaintenanceCron.js:92` | Schedule mensual | Promise.allSettled sobre todos los negocios | Limitar concurrencia y paginar |
+| P1 | `reconcileBillingSubscriptionsCron` | `functions/src/app/versions/v2/billing/billingMaintenanceCron.js:41` | Schedule diario | Todos los negocios y billing accounts | Cursor y cambios incrementales |
+| P1 | `resetMonthlyBillingUsageCron` | `functions/src/app/versions/v2/billing/billingMaintenanceCron.js:92` | Schedule mensual | Promise.allSettled sobre todos los negocios | Limitar concurrencia y paginar |
 | P1 | `syncProductNameOnUpdate` | `functions/src/app/modules/Inventory/functions/syncProductNameOnUpdate.js:26` | Product update | Fan-out a stocks/lotes/movimientos/backorders | Job asincrono con progreso para catalogos grandes |
 | P1 | `syncCategoryOnUpdate` | `functions/src/app/modules/Inventory/functions/syncCategoryOnUpdate.js:24` | Category update | Fan-out a productos | Bulk con limite y metricas |
 | P1 | `syncProductBrandOnUpdate` | `functions/src/app/modules/Inventory/functions/syncProductBrandOnUpdate.js:17` | Brand update | Fan-out por `brandId` y nombre viejo | Evitar nombre denormalizado si no es necesario |
-| P1 | `runMonthlyComplianceReport` | `functions/src/app/modules/dgii/functions/runMonthlyComplianceReport.js:20` | Callable | Reporte mensual bajo demanda con consultas y N+1 | Cache por periodo, batch reads |
-| P2 | `createInvoiceV2Http` | `functions/src/app/versions/v2/invoices/http/createInvoiceHttp.controller.js:58` | HTTP | Bien autenticado/idempotente; sin rate limiting explicito | Rate limit por negocio/usuario si hay abuso |
-| P2 | `getInvoiceV2Http` | `functions/src/app/versions/v2/invoices/http/getInvoiceHttp.controller.js:108` | HTTP | Queries auxiliares por factura | Cache o proyeccion si se consulta mucho |
-| P2 | `azulWebhookAuth2` | `functions/src/app/modules/billing/functions/webhookManagement.controller.js:68` | HTTP webhook | Verificacion HMAC correcta; sin rate limit explicito | Mantener HMAC, agregar logging de abuso |
+| P1 | `runMonthlyComplianceReport` | `functions/src/app/modules/compliance/functions/runMonthlyComplianceReport.js:20` | Callable | Reporte mensual bajo demanda con consultas y N+1 | Cache por periodo, batch reads |
+| P2 | `createInvoiceV2Http` | `functions/src/app/versions/v2/invoice/controllers/createInvoiceHttp.controller.js:58` | HTTP | Bien autenticado/idempotente; sin rate limiting explicito | Rate limit por negocio/usuario si hay abuso |
+| P2 | `getInvoiceV2Http` | `functions/src/app/versions/v2/invoice/controllers/getInvoiceHttp.controller.js:108` | HTTP | Queries auxiliares por factura | Cache o proyeccion si se consulta mucho |
+| P2 | `azulWebhookAuth2` | `functions/src/app/versions/v2/billing/controllers/webhookManagement.controller.js:68` | HTTP webhook | Verificacion HMAC correcta; sin rate limit explicito | Mantener HMAC, agregar logging de abuso |
 
 Nota de despliegue futuro: esta auditoria no modifica `functions/`, por lo que no requiere deploy. Si se corrige una funcion, desplegar solo la afectada. Ejemplos PowerShell:
 
@@ -513,7 +513,7 @@ npm run test:run
 1. `syncProductsStockCron`: cursor por negocio y max docs por run.
 2. `quantityZeroToInactivePerBusiness`: queue por negocio o solo documentos marcados como pendientes.
 3. `expireAuthorizationRequests`: collection group por `status/expiresAt` o TTL.
-4. `billingMonthlyUsageReset`: limitar concurrencia.
+4. `resetMonthlyBillingUsageCron`: limitar concurrencia.
 
 Validacion sugerida:
 
@@ -585,7 +585,7 @@ npm --prefix functions run build
 - `firestore.indexes.json`
 - `src/firebase/firebaseconfig.tsx`
 - `src/firebase/products/fbGetProducts.ts`
-- `src/hooks/products/useGetProductsWithBatch.ts`
+- `src/modules/inventory/pages/Inventory/components/Warehouse/forms/ProductStockForm/hooks/useGetProductsWithBatch.ts`
 - `src/firebase/warehouse/productStockService.ts`
 - `src/firebase/warehouse/stockSyncService.ts`
 - `src/modules/inventory/pages/InventoryControl/hooks/useInventoryStocksProducts.ts`
@@ -614,15 +614,15 @@ npm --prefix functions run build
 - `functions/src/app/modules/Inventory/functions/syncActiveIngredientOnUpdate.js`
 - `functions/src/app/scheduled/expireAuthorizationRequests.ts`
 - `functions/src/app/versions/v2/accountsReceivable/reconcilePendingBalanceCron.js`
-- `functions/src/app/billing/billingMaintenanceCron.js`
-- `functions/src/app/modules/dgii/functions/runMonthlyComplianceReport.js`
-- `functions/src/app/modules/dgii/services/dgii606MonthlyReport.service.js`
-- `functions/src/app/modules/dgii/services/dgii607MonthlyReport.service.js`
-- `functions/src/app/versions/v2/invoices/http/createInvoiceHttp.controller.js`
-- `functions/src/app/versions/v2/invoices/http/getInvoiceHttp.controller.js`
-- `functions/src/app/modules/billing/functions/webhookManagement.controller.js`
-- `functions/src/app/versions/v2/invoices/workers/outbox.worker.js`
-- `functions/src/app/versions/v2/invoices/workers/compensation.worker.js`
+- `functions/src/app/versions/v2/billing/billingMaintenanceCron.js`
+- `functions/src/app/modules/compliance/functions/runMonthlyComplianceReport.js`
+- `functions/src/app/modules/compliance/services/dgii606MonthlyReport.service.js`
+- `functions/src/app/modules/compliance/services/dgii607MonthlyReport.service.js`
+- `functions/src/app/versions/v2/invoice/controllers/createInvoiceHttp.controller.js`
+- `functions/src/app/versions/v2/invoice/controllers/getInvoiceHttp.controller.js`
+- `functions/src/app/versions/v2/billing/controllers/webhookManagement.controller.js`
+- `functions/src/app/versions/v2/invoice/triggers/outbox.worker.js`
+- `functions/src/app/versions/v2/invoice/triggers/compensation.worker.js`
 - `functions/src/app/modules/accounting/functions/syncPurchaseCommittedAccountingEvent.js`
 - `functions/src/app/modules/accounting/functions/syncExpenseAccountingEvent.js`
 - `functions/src/app/modules/accounting/functions/projectAccountingEventToJournalEntry.js`
@@ -657,4 +657,3 @@ Get-Content -LiteralPath "firestore.indexes.json"
 3. Medir Storage: tamano promedio de imagen por tipo y egress mensual.
 4. Revisar Billing por producto: Firestore reads, writes, Storage egress, Functions invocations.
 5. Validar si las herramientas masivas de `src/` estan en rutas productivas.
-

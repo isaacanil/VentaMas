@@ -5,7 +5,9 @@ import { m, useReducedMotion } from 'framer-motion';
 import { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
-import { FeatureCard, type FeatureCardData } from './FeatureCard';
+import type { FeatureCardData } from '@/modules/home/types/featureCard';
+
+import { FeatureCard } from './FeatureCard';
 
 import type { JSX } from 'react';
 

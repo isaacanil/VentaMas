@@ -35,6 +35,7 @@ const fbCreateManualJournalEntryMock = vi.hoisted(() => vi.fn());
 const fbCloseAccountingPeriodMock = vi.hoisted(() => vi.fn());
 const fbReplayAccountingEventProjectionMock = vi.hoisted(() => vi.fn());
 const fbReverseJournalEntryMock = vi.hoisted(() => vi.fn());
+const resolveUserDisplayNamesBatchMock = vi.hoisted(() => vi.fn());
 
 vi.mock('react-redux', () => ({
   useSelector: (...args: unknown[]) => useSelectorMock(...args),
@@ -76,34 +77,20 @@ vi.mock('@/firebase/accounting/fbReplayAccountingEventProjection', () => ({
     fbReplayAccountingEventProjectionMock(...args),
 }));
 
-vi.mock(
-  '@/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useAccountingConfig',
-  () => ({
-    useAccountingConfig: (...args: unknown[]) =>
-      useAccountingConfigMock(...args),
-  }),
-);
+vi.mock('@/utils/users/resolveUserDisplayNamesBatch', () => ({
+  resolveUserDisplayNamesBatch: (...args: unknown[]) =>
+    resolveUserDisplayNamesBatchMock(...args),
+}));
 
-vi.mock(
-  '@/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useChartOfAccounts',
-  () => ({
-    useChartOfAccounts: () => currentChartMock,
-  }),
-);
-
-vi.mock(
-  '@/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useAccountingPostingProfiles',
-  () => ({
-    useAccountingPostingProfiles: () => currentPostingProfilesMock,
-  }),
-);
-
-vi.mock('@/modules/treasury/hooks/useCashAccounts', () => ({
+vi.mock('@/modules/accounting/public', () => ({
+  useAccountingConfig: (...args: unknown[]) => useAccountingConfigMock(...args),
+  useAccountingPostingProfiles: () => currentPostingProfilesMock,
   useCashAccounts: () => ({
     cashAccounts: [],
     error: null,
     loading: false,
   }),
+  useChartOfAccounts: () => currentChartMock,
 }));
 
 import { useAccountingWorkspace } from './useAccountingWorkspace';
@@ -119,6 +106,7 @@ describe('useAccountingWorkspace loading', () => {
     fbCloseAccountingPeriodMock.mockReset();
     fbReplayAccountingEventProjectionMock.mockReset();
     fbReverseJournalEntryMock.mockReset();
+    resolveUserDisplayNamesBatchMock.mockReset();
     onSnapshotMock.mockReset();
     useAccountingConfigMock.mockReset();
     useSelectorMock.mockReset();
@@ -209,6 +197,73 @@ describe('useAccountingWorkspace loading', () => {
       expect(result.current.journalLoading).toBe(false);
       expect(result.current.periodLoading).toBe(false);
     });
+
+    unmount();
+  });
+
+  it('does not re-run accounting user name resolution after cache state updates', async () => {
+    useSelectorMock.mockReturnValue({
+      businessID: 'business-1',
+      uid: 'user-1',
+    });
+    resolveUserDisplayNamesBatchMock.mockResolvedValue({
+      'user-2': 'Usuario Dos',
+    });
+    onSnapshotMock.mockImplementation(
+      (
+        ref: { path: string },
+        onNext: (snapshot: { docs: unknown[] }) => void,
+      ) => {
+        if (ref.path === 'businesses/business-1/accountingEvents') {
+          onNext({
+            docs: [
+              {
+                data: () => ({
+                  createdBy: 'user-2',
+                  eventType: 'manual.entry.recorded',
+                  sourceId: 'entry-1',
+                }),
+                id: 'event-1',
+              },
+            ],
+          });
+        }
+        if (
+          ref.path ===
+          'businesses/business-1/accountingEventProjectionDeadLetters'
+        ) {
+          onNext({ docs: [] });
+        }
+        if (ref.path === 'businesses/business-1/journalEntries') {
+          onNext({ docs: [] });
+        }
+        if (ref.path === 'businesses/business-1/accountingPeriodClosures') {
+          onNext({ docs: [] });
+        }
+        return vi.fn();
+      },
+    );
+
+    const { result, unmount } = renderHook(() => useAccountingWorkspace());
+
+    await waitFor(() => {
+      expect(result.current.journalLoading).toBe(false);
+    });
+    await waitFor(() => {
+      expect(resolveUserDisplayNamesBatchMock).toHaveBeenCalledTimes(1);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(resolveUserDisplayNamesBatchMock).toHaveBeenCalledTimes(1);
+    expect(resolveUserDisplayNamesBatchMock).toHaveBeenCalledWith(
+      dbMock,
+      ['user-2'],
+      {},
+    );
 
     unmount();
   });

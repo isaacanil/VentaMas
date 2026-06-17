@@ -4,7 +4,7 @@ import { toNumber } from '../../../utils';
 import { LazyBar } from '@/components/charts/LazyCharts';
 import styled from 'styled-components';
 
-import Typography from '@/components/ui/Typografy/Typografy';
+import Typography from '@/components/ui/Typography/Typography';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 // Hook para detectar tamaño de pantalla

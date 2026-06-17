@@ -1,7 +1,8 @@
-export const AI_BUSINESS_SEEDING_FIRESTORE_IN_QUERY_LIMIT = 10;
+import {
+  readAiBusinessSeedingString as readString,
+} from './aiBusinessSeedingText.util.js';
 
-const readString = (value) =>
-  typeof value === 'string' && value.trim() ? value.trim() : '';
+export const AI_BUSINESS_SEEDING_FIRESTORE_IN_QUERY_LIMIT = 10;
 
 export const normalizeAvailabilityValues = (values = []) => [
   ...new Set(

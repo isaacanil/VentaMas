@@ -12,9 +12,9 @@ import {
   getEffectiveCount,
   getPersistedCount,
   normalizeExpirationValue,
-  shortenLocationPath,
 } from '../../../../inventoryTableUtils';
-import { CLEAR_SENTINEL } from '@/utils/inventory/constants';
+import { CLEAR_SENTINEL } from '@/modules/inventory/utils/constants';
+import { shortenLocationPath } from '@/utils/inventory/locations';
 
 import { LotNameCell } from './LotNameCell';
 

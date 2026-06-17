@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import type { ChartData, ChartOptions } from '@/components/charts/chartTypes';
 import { LazyLine } from '@/components/charts/LazyCharts';
-import { SimpleTypography } from '@/components/ui/Typografy/SimpleTypography';
+import { SimpleTypography } from '@/components/ui/Typography/SimpleTypography';
 
 import { EmptyState } from './EmptyState';
 

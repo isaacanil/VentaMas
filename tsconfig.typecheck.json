@@ -24,7 +24,6 @@
     "coverage",
     "storybook-static",
     ".storybook",
-    "src/dev/**",
     "src/modules/dev/**",
     "src/router/routes/paths/Dev.tsx",
     "src/setupTests.ts",

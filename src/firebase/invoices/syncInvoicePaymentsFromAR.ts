@@ -12,7 +12,7 @@ import { db } from '@/firebase/firebaseconfig';
 import {
   THRESHOLD,
   roundToTwoDecimals,
-} from '@/firebase/proccessAccountsReceivablePayments/financeUtils';
+} from '@/firebase/processAccountsReceivablePayments/financeUtils';
 import type { UserIdentity } from '@/types/users';
 
 import { isInvoiceUser, type InvoiceDoc } from './types';

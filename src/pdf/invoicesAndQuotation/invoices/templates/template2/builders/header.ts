@@ -1,8 +1,8 @@
-import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity.js';
+import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity';
 
-import { formatDate } from '../utils/formatters.js';
+import { formatDate } from '../utils/formatters';
 
-import { buildClientBlock } from './clientBlock.js';
+import { buildClientBlock } from './clientBlock';
 
 import type {
   PdfContent,

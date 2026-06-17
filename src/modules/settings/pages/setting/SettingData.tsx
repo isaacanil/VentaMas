@@ -2,8 +2,13 @@ import { icons } from '@/constants/icons/icons';
 import ROUTES_NAME from '@/router/routes/routesName';
 import type { ReactNode } from 'react';
 
-const { TAX_RECEIPT, BUSINESS_INFO, APP_INFO, USERS, USERS_LIST, SETTINGS } =
-  ROUTES_NAME.SETTING_TERM;
+const {
+  GENERAL_CONFIG_APP_INFO,
+  GENERAL_CONFIG_BUSINESS,
+  GENERAL_CONFIG_TAX_RECEIPT,
+  USERS,
+  USERS_LIST,
+} = ROUTES_NAME.SETTING_TERM;
 const category = {
   BUSINESS_INFO: 'Configuración de la Empresa',
   APP_INFO: 'Aplicación',
@@ -25,7 +30,7 @@ const getRoute = (routeName: string, alt?: 'users') => {
     case 'users':
       return USERS + '/' + routeName;
     default:
-      return SETTINGS + routeName;
+      return routeName;
   }
 };
 
@@ -37,7 +42,7 @@ export const getSettingData = (): SettingItem[] => {
       type: 'empresa',
       icon: icons.settings.businessInfo,
       category: category.BUSINESS_INFO,
-      route: getRoute(BUSINESS_INFO),
+      route: getRoute(GENERAL_CONFIG_BUSINESS),
     },
     {
       title: 'Comprobante Fiscal',
@@ -45,7 +50,7 @@ export const getSettingData = (): SettingItem[] => {
       type: 'fiscal',
       icon: icons.settings.taxReceipt,
       category: category.BUSINESS_INFO,
-      route: getRoute(TAX_RECEIPT),
+      route: getRoute(GENERAL_CONFIG_TAX_RECEIPT),
     },
     {
       title: 'Administración de Usuarios',
@@ -68,7 +73,7 @@ export const getSettingData = (): SettingItem[] => {
       type: 'aplicación',
       icon: icons.settings.appInfo,
       category: category.APP_INFO,
-      route: getRoute(APP_INFO),
+      route: getRoute(GENERAL_CONFIG_APP_INFO),
     },
   ];
 };

@@ -1,11 +1,11 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockState, useAccountingRolloutEnabledMock } = vi.hoisted(() => ({
+const { mockState, useAccountingSettingsSnapshotMock } = vi.hoisted(() => ({
   mockState: {
     user: null as unknown,
   },
-  useAccountingRolloutEnabledMock: vi.fn(),
+  useAccountingSettingsSnapshotMock: vi.fn(),
 }));
 
 vi.mock('react-redux', () => ({
@@ -16,9 +16,14 @@ vi.mock('@/features/auth/userSlice', () => ({
   selectUser: () => mockState.user,
 }));
 
-vi.mock('./useAccountingRolloutEnabled', () => ({
-  useAccountingRolloutEnabled: (...args: unknown[]) =>
-    useAccountingRolloutEnabledMock(...args),
+vi.mock('./useAccountingSettingsSnapshot', () => ({
+  toCleanBusinessId: (businessId: string | null | undefined) => {
+    if (typeof businessId !== 'string') return null;
+    const trimmed = businessId.trim();
+    return trimmed.length ? trimmed : null;
+  },
+  useAccountingSettingsSnapshot: (...args: unknown[]) =>
+    useAccountingSettingsSnapshotMock(...args),
 }));
 
 import { useBusinessFeatureEnabled } from './useBusinessFeatureEnabled';
@@ -27,7 +32,12 @@ describe('useBusinessFeatureEnabled', () => {
   beforeEach(() => {
     mockState.user = null;
     vi.clearAllMocks();
-    useAccountingRolloutEnabledMock.mockReturnValue(false);
+    useAccountingSettingsSnapshotMock.mockImplementation((businessId) => ({
+      businessId,
+      status: 'ready',
+      data: { rolloutEnabled: false },
+      error: null,
+    }));
   });
 
   it('uses the active business id from the current user for accounting rollout', () => {
@@ -35,12 +45,17 @@ describe('useBusinessFeatureEnabled', () => {
       activeBusinessId: 'business-active',
       businessID: 'business-legacy',
     };
-    useAccountingRolloutEnabledMock.mockReturnValue(true);
+    useAccountingSettingsSnapshotMock.mockImplementation((businessId) => ({
+      businessId,
+      status: 'ready',
+      data: { rolloutEnabled: true },
+      error: null,
+    }));
 
     const { result } = renderHook(() => useBusinessFeatureEnabled('accounting'));
 
     expect(result.current).toBe(true);
-    expect(useAccountingRolloutEnabledMock).toHaveBeenCalledWith(
+    expect(useAccountingSettingsSnapshotMock).toHaveBeenCalledWith(
       'business-active',
       true,
     );
@@ -55,7 +70,7 @@ describe('useBusinessFeatureEnabled', () => {
       useBusinessFeatureEnabled('accounting', '  business-override  '),
     );
 
-    expect(useAccountingRolloutEnabledMock).toHaveBeenCalledWith(
+    expect(useAccountingSettingsSnapshotMock).toHaveBeenCalledWith(
       'business-override',
       true,
     );

@@ -7,7 +7,7 @@ import styled, { keyframes } from 'styled-components';
 
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 
-import logo from './ventamax.svg';
+import logo from '@/assets/logo/ventamax.svg';
 
 // registra los plugins una sola vez
 gsap.registerPlugin(SplitText);

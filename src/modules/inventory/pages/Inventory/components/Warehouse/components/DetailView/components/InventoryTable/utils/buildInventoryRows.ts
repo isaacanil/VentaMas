@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon';
 
-import { toMillis } from '@/utils/inventory/dates';
+import { formatBatchLabel } from '@/modules/inventory/utils/format';
+import { toMillis } from '@/modules/inventory/utils/dates';
 
 import { NO_BATCH_VALUE, getProductFilterKey } from './productFilterUtils';
 import type {
@@ -67,7 +68,7 @@ const toInventoryRow = (stock: ProductStockLike, todayStartMillis: number) => {
     productId: stock.productId || '',
     quantity: stock.quantity ?? 0,
     batch: {
-      batchNumberId: stock.batchNumberId || 'Sin lote',
+      batchNumberId: formatBatchLabel(stock.batchNumberId),
       batchId: stock.batchId ?? null,
     },
     batchId: stock.batchId ?? null,

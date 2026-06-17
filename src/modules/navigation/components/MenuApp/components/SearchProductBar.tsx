@@ -3,7 +3,6 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { toggleMode } from '@/features/appModes/appModeSlice';
-// import { SearchClient } from '@/components/ui/Inputs/SearchClient' // TODO: Component not found
 
 interface SearchProductBarProps {
   searchData: string;
@@ -39,7 +38,6 @@ export const SearchProductBar = ({
   };
   return (
     <div>
-      {/* TODO: SearchClient component not found */}
       <input
         type="search"
         placeholder="Buscar Producto"
@@ -47,12 +45,5 @@ export const SearchProductBar = ({
         onChange={(e) => handleSearchChange(e.target.value)}
       />
     </div>
-    // <SearchClient
-    // title={searchData}
-    // label={'Buscar Producto'}
-    // fn={handleClearInput}
-    // onChange={(e) =>  setSearchData(e.target.value)
-    // }
-    // />
   );
 };

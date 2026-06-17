@@ -2,6 +2,13 @@
 
 Fecha: 2026-03-17
 
+## Actualizacion 2026-06-15
+
+- Cobertura estructural nueva: `src/modules/publicBarrels.test.ts` valida los contratos runtime de `src/modules/<dominio>/public.ts`. El test falla si un contrato pierde exports esperados, cambia el tipo runtime de un export o expone exports extra.
+- Contratos `public.ts` cubiertos hoy: `accounting`, `accountsPayable`, `accountsReceivable`, `app`, `auth`, `authorizations`, `cashReconciliation`, `checkout`, `contacts`, `inventory`, `invoice`, `navigation`, `orderAndPurchase`, `products`, `settings`, `treasury`.
+- Gates de cierre: frontend `npm run test:run`; functions `npm run test:run:functions`; completo `npm run test:run:all` (incluye `npm run test:run:functions:scripts`).
+- Pendientes reales: esta cobertura no reemplaza casos de negocio. Siguen pendientes checklists de regresion para dominios sin cobertura suficiente, especialmente `controlPanel`, `dev`, `expenses`, `home`, `hrPayroll`, `insurance`, `notification`, `sales`, `utility` y `welcome`, ademas de casos negativos en dinero, permisos, stock y escrituras remotas.
+
 ## Objetivo
 
 Cerrar la lista de dominios top-level del repo para que el plan de testing no deje familias fuera por omision. Este documento audita modulos raiz, features, capas de acceso a datos, servicios, hooks y Cloud Functions. No reemplaza el plan principal: lo complementa con inventario.
@@ -31,7 +38,7 @@ Cerrar la lista de dominios top-level del repo para que el plan de testing no de
 ### `src/firebase`
 
 - `Parcial`: `accountsReceivable`, `billing`, `cashCount`, `warehouse`
-- `Pendiente`: `app`, `AppUpdate`, `Auth`, `authorization`, `authorizations`, `barcode`, `businessInfo`, `categories`, `client`, `creditNotes`, `dev`, `doctors`, `emulator`, `errors`, `expenses`, `firebaseconfig.tsx`, `firebaseOperations.ts`, `functions`, `img`, `insurance`, `inventory`, `inventoryDataCleaner`, `invoices`, `order`, `presence`, `proccessAccountsReceivablePayments`, `ProductOutflow`, `products`, `provider`, `purchase`, `quotation`, `rnc`, `Settings`, `taxReceipt`, `Tools`, `tranfer`, `users`, `utils`
+- `Pendiente`: `app`, `AppUpdate`, `Auth`, `authorization`, `authorizations`, `barcode`, `businessInfo`, `categories`, `client`, `creditNotes`, `dev`, `doctors`, `emulator`, `errors`, `expenses`, `firebaseconfig.tsx`, `firebaseOperations.ts`, `functions`, `img`, `insurance`, `inventory`, `inventoryDataCleaner`, `invoices`, `order`, `presence`, `processAccountsReceivablePayments`, `ProductOutflow`, `products`, `provider`, `purchase`, `quotation`, `rnc`, `Settings`, `taxReceipt`, `Tools`, `transfer`, `users`, `utils`
 
 ### `src/services`
 
@@ -49,8 +56,10 @@ Cerrar la lista de dominios top-level del repo para que el plan de testing no de
 ### `src/utils`
 
 - `Parcial`: `accounting`, `accountsReceivable`, `barcode`, `firestore`, `import`, `inventory`, `invoice`, `pricing.ts`, `runtime`, `sorts`
-- `Pendiente`: `access`, `array`, `cashCount`, `data`, `date`, `expenses`, `file`, `format`, `number`, `object`, `order`, `pdf`, `perf`, `performance`, `products`, `provider`, `purchase`, `roles`, `scroll`, `serialization`, `taxReceipt`, `text`, `url`, `users`
-- `Pendiente por archivos raiz`: `auth-adapter.ts`, `createLazyLoader.ts`, `files.ts`, `fileUtils.ts`, `filterUtils.ts`, `fiscalReceiptsUtils.ts`, `flowTrace.ts`, `formatDate.ts`, `formatNumber.ts`, `formatters.ts`, `formRules.ts`, `invoiceValidation.ts`, `lazyWithRetry.ts`, `lodash-minimal.ts`, `menuAccess.ts`, `normalizeMatch.ts`, `printPdf.ts`, `reactScan.ts`, `reduxStateUtils.ts`, `refereceUtils.ts`, `sales.ts`, `taxReceipt.ts`, `text.ts`, `userValidation.ts`, `validators.ts`
+- `Parcial adicional`: `filterUtils.ts`, `taxReceipt.ts`
+- `Pendiente`: `access`, `array`, `cashCount`, `data`, `date`, `expenses`, `file`, `format`, `number`, `object`, `order`, `pdf`, `perf`, `performance`, `products`, `provider`, `purchase`, `roles`, `scroll`, `serialization`, `text`, `url`, `users`
+- `Pendiente por archivos raiz`: `auth-adapter.ts`, `files.ts`, `fileUtils.ts`, `fiscalReceiptsUtils.ts`, `flowTrace.ts`, `formatDate.ts`, `formatNumber.ts`, `formatters.ts`, `formRules.ts`, `invoiceValidation.ts`, `lazyWithRetry.ts`, `lodash-minimal.ts`, `menuAccess.ts`, `printPdf.ts`, `reactScan.ts`, `reduxStateUtils.ts`, `referenceUtils.ts`, `sales.ts`, `text.ts`, `userValidation.ts`, `validators.ts`
+- `Cubierto en navigation/core`: `createLazyLoader.ts`, `normalizeMatch.ts`
 
 ## Cloud Functions
 

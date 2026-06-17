@@ -2,12 +2,12 @@ import { Button, Cascader, Form, Select } from 'antd';
 import { useMemo, type Dispatch, type SetStateAction } from 'react';
 import styled from 'styled-components';
 
-import { useWarehouseHierarchy } from '@/firebase/warehouse/warehouseNestedServise';
-import { shortenLocationPath } from '@/modules/inventory/pages/InventoryControl/components/inventoryTableUtils';
+import { useWarehouseHierarchy } from '@/firebase/warehouse/warehouseNestedService';
+import { shortenLocationPath } from '@/utils/inventory/locations';
 import {
   DatePicker,
   type DateRangeValue,
-} from '@/components/ui/Dates/DatePicker/DatePicker';
+} from '@/components/common/DatePicker/adapters/MillisRangeDatePicker/DatePicker';
 
 type MovementFilterType = 'in' | 'out' | null;
 
@@ -36,7 +36,6 @@ interface MovementsFilterBarProps {
   loading?: boolean;
   dates: DateRange;
   setDates: Dispatch<SetStateAction<DateRange>>;
-  defaultDate?: DateRange;
   type?: MovementFilterType;
   onTypeChange?: (value: MovementFilterType) => void;
 }
@@ -78,7 +77,6 @@ const MovementsFilterBar = ({
   loading,
   dates,
   setDates,
-  // defaultDate, // removing this as it's not compatible with DatePicker's datesDefault
   type,
   onTypeChange,
 }: MovementsFilterBarProps) => {

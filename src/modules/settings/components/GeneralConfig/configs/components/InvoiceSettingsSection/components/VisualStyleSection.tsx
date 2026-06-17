@@ -1,4 +1,4 @@
-import InvoiceTemplates from '@/modules/invoice/components/Invoice/components/InvoiceTemplates/InvoiceTemplates';
+import { InvoiceTemplates } from '@/modules/invoice/public';
 
 import { SectionHeader, SectionWrapper } from '../styles';
 

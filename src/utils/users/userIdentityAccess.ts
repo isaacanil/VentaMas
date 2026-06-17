@@ -1,10 +1,5 @@
 import type { UserIdentity, UserRoleLike } from '@/types/users';
-
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
+import { toCleanString } from '@/utils/text';
 
 export const resolveUserIdentityUid = (
   user: UserIdentity | null | undefined,

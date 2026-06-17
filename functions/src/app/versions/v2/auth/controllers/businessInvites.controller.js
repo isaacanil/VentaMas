@@ -12,20 +12,17 @@ import {
   assertActiveMembershipForBusiness,
   assertMembershipRole,
   findMembershipForBusiness,
+  INACTIVE_MEMBERSHIP_STATUSES,
   normalizeMembershipEntries,
   toCleanString,
 } from '../utils/membershipContext.util.js';
+import { resolveCallableAuthUid } from '../../../../core/utils/callableSessionAuth.util.js';
 import {
   assertMembershipWritePolicy,
   resolveMembershipWritePolicy,
 } from '../utils/membershipWritePolicy.util.js';
-import {
-  resolveUserIdFromSessionToken,
-  toMillis,
-} from '../utils/sessionAuth.util.js';
-import {
-  upsertAccessControlEntry,
-} from '../utils/membershipMirror.util.js';
+import { toMillis } from '../utils/sessionAuth.util.js';
+import { upsertAccessControlEntry } from '../utils/membershipMirror.util.js';
 import { LIMIT_OPERATION_KEYS } from '../../billing/config/limitOperations.config.js';
 import { incrementBusinessUsageMetric } from '../../billing/services/usage.service.js';
 import { assertBusinessSubscriptionAccess } from '../../billing/utils/subscriptionAccess.util.js';
@@ -35,27 +32,77 @@ const BUSINESS_INVITES_COLLECTION = 'businessInvites';
 const INVITE_DEFAULT_HOURS = 72;
 const INVITE_MAX_HOURS = 24 * 7;
 const INVITE_MIN_HOURS = 1;
-const INVITE_ALLOWED_CREATOR_ROLES = new Set([ROLE.OWNER, ROLE.ADMIN, ROLE.DEV]);
+const INVITE_ALLOWED_CREATOR_ROLES = new Set([
+  ROLE.OWNER,
+  ROLE.ADMIN,
+  ROLE.DEV,
+]);
 const usersCol = db.collection(USERS_COLLECTION);
 const businessInvitesCol = db.collection(BUSINESS_INVITES_COLLECTION);
 
-const resolveUserIdFromSession = async (request) => {
-  return resolveUserIdFromSessionToken({
-    sessionToken: toCleanString(request?.data?.sessionToken),
-    normalizeUserId: toCleanString,
-    createAuthError: (message) =>
-      new HttpsError('unauthenticated', message),
-  });
-};
-
 const resolveAuthUserId = async (request) => {
-  const fromSession = await resolveUserIdFromSession(request);
-  return fromSession || request?.auth?.uid || null;
+  return toCleanString(await resolveCallableAuthUid(request));
 };
 
 const normalizeInviteRole = (rawRole) => {
   const role = normalizeRole(rawRole || ROLE.CASHIER) || ROLE.CASHIER;
   return role;
+};
+
+const normalizeMembershipStatus = (rawStatus, rawActive) => {
+  const status = toCleanString(rawStatus);
+  if (status) return status.toLowerCase();
+  if (rawActive === false) return 'inactive';
+  return 'active';
+};
+
+const normalizeCanonicalActorMembership = (membershipData, businessId) => {
+  const root = asRecord(membershipData);
+  return {
+    businessId,
+    role:
+      normalizeRole(root.role || root.activeRole || ROLE.CASHIER) ||
+      ROLE.CASHIER,
+    status: normalizeMembershipStatus(root.status, root.active),
+  };
+};
+
+const assertInviteCreatorMembership = ({
+  actorUserData,
+  canonicalMemberSnap,
+  businessId,
+}) => {
+  if (canonicalMemberSnap?.exists) {
+    const actorMembership = normalizeCanonicalActorMembership(
+      canonicalMemberSnap.data() || {},
+      businessId,
+    );
+    if (INACTIVE_MEMBERSHIP_STATUSES.has(actorMembership.status)) {
+      throw new HttpsError(
+        'permission-denied',
+        'No tienes acceso activo al negocio',
+      );
+    }
+    assertMembershipRole(
+      actorMembership,
+      INVITE_ALLOWED_CREATOR_ROLES,
+      'Solo owner/admin/dev pueden generar invitaciones',
+    );
+    return actorMembership;
+  }
+
+  const actorEntries = normalizeMembershipEntries(actorUserData || {});
+  const actorMembership = assertActiveMembershipForBusiness(
+    actorEntries,
+    businessId,
+    'No tienes acceso activo al negocio',
+  );
+  assertMembershipRole(
+    actorMembership,
+    INVITE_ALLOWED_CREATOR_ROLES,
+    'Solo owner/admin/dev pueden generar invitaciones',
+  );
+  return actorMembership;
 };
 
 const resolveExpiresAt = (rawHours) => {
@@ -93,22 +140,19 @@ export const createBusinessInvite = onCall(async (request) => {
     throw new HttpsError('unauthenticated', 'Usuario no autenticado');
   }
 
-  const actorSnap = await usersCol.doc(actorUserId).get();
+  const [actorSnap, canonicalMemberSnap] = await Promise.all([
+    usersCol.doc(actorUserId).get(),
+    db.doc(`businesses/${businessId}/members/${actorUserId}`).get(),
+  ]);
   if (!actorSnap.exists) {
     throw new HttpsError('not-found', 'Usuario actor no encontrado');
   }
 
-  const actorEntries = normalizeMembershipEntries(actorSnap.data() || {});
-  const actorMembership = assertActiveMembershipForBusiness(
-    actorEntries,
+  assertInviteCreatorMembership({
+    actorUserData: actorSnap.data() || {},
+    canonicalMemberSnap,
     businessId,
-    'No tienes acceso activo al negocio',
-  );
-  assertMembershipRole(
-    actorMembership,
-    INVITE_ALLOWED_CREATOR_ROLES,
-    'Solo owner/admin/dev pueden generar invitaciones',
-  );
+  });
 
   const expiresAt = resolveExpiresAt(request?.data?.expiresInHours);
   const inviteCode = createInviteCode();
@@ -215,9 +259,13 @@ export const redeemBusinessInvite = onCall(async (request) => {
   const existingEntries = normalizeMembershipEntries(userData, {
     includeBusinessName: true,
   });
-  const existingMembership = findMembershipForBusiness(existingEntries, businessId, {
-    activeOnly: true,
-  });
+  const existingMembership = findMembershipForBusiness(
+    existingEntries,
+    businessId,
+    {
+      activeOnly: true,
+    },
+  );
 
   // Regla adoptada: si ya pertenece al negocio, no consumir el código.
   if (existingMembership) {
@@ -313,7 +361,9 @@ export const redeemBusinessInvite = onCall(async (request) => {
     });
 
     const existingBusinessId =
-      toCleanString(userDataTx.businessID) || toCleanString(userDataTx.businessId) || null;
+      toCleanString(userDataTx.businessID) ||
+      toCleanString(userDataTx.businessId) ||
+      null;
 
     const userUpdatePayload = {
       accessControl: mergedEntries,
@@ -322,9 +372,9 @@ export const redeemBusinessInvite = onCall(async (request) => {
       ...(existingBusinessId
         ? {}
         : {
-          activeBusinessId: businessId,
-          activeRole: role,
-        }),
+            activeBusinessId: businessId,
+            activeRole: role,
+          }),
     };
 
     tx.set(userRef, userUpdatePayload, { merge: true });

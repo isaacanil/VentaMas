@@ -10,7 +10,23 @@ import { Button } from 'antd';
 import { DateTime } from 'luxon';
 import styled from 'styled-components';
 
-import { resolveModuleMeta } from '@/modules/authorizations/pages/Authorizations/components/AuthorizationRequests/utils/utils';
+import { resolveModuleMeta } from '@/modules/authorizations/public';
+import { getAuthorizationTimestampMillis } from '@/modules/notification/components/NotificationCenter/components/panels/AuthorizationsPanel/utils/authorizationsPanel';
+import {
+  MetaLabel,
+  MetaValue,
+  ModuleIcon,
+  ModuleInfo,
+  ModuleTitle,
+  PanelRow,
+  ReferenceLabel,
+  ReferenceValue,
+  RowActions,
+  RowMain,
+  RowMeta,
+  RowStatus,
+  StatusPill,
+} from '@/modules/notification/components/NotificationCenter/components/panels/shared/PanelPrimitives';
 
 interface StatusConfigItem {
   icon: React.ReactNode;
@@ -49,25 +65,8 @@ const STATUS_CONFIG: Record<string, StatusConfigItem> = {
 const getStatusConfig = (status: string): StatusConfigItem =>
   STATUS_CONFIG[status] || STATUS_CONFIG.pending;
 
-const toMillis = (value: any): number => {
-  if (!value) return 0;
-  if (typeof value === 'number') {
-    return value > 1e12 ? value : value * 1000;
-  }
-  if (value && typeof value.toMillis === 'function') {
-    return value.toMillis();
-  }
-  if (value instanceof Date) {
-    return value.getTime();
-  }
-  if (value && typeof value === 'object' && typeof value.seconds === 'number') {
-    return value.seconds * 1000;
-  }
-  return 0;
-};
-
 const formatTimeAgo = (timestamp: any): string => {
-  const millis = toMillis(timestamp);
+  const millis = getAuthorizationTimestampMillis(timestamp);
   if (!millis) return '';
   return DateTime.fromMillis(millis).setLocale('es').toRelative() || '';
 };
@@ -116,8 +115,8 @@ const AuthorizationRow = ({
   const showActions = isAdmin && isPending;
 
   return (
-    <AuthorizationRowContainer>
-      <ModuleCell>
+    <PanelRow>
+      <RowMain>
         <ModuleIcon>
           <FontAwesomeIcon icon={moduleMeta.icon} />
         </ModuleIcon>
@@ -128,12 +127,12 @@ const AuthorizationRow = ({
             <ReferenceValue>{referenceValue}</ReferenceValue>
           </ReferenceLabel>
         </ModuleInfo>
-      </ModuleCell>
+      </RowMain>
 
-      <RequesterCell>
+      <RowMeta>
         <MetaLabel>Solicitó</MetaLabel>
         <MetaValue title={requestedByName}>{requestedByName}</MetaValue>
-      </RequesterCell>
+      </RowMeta>
 
       <StatusCell>
         <StatusPill $color={statusConfig.color}>{statusConfig.text}</StatusPill>
@@ -162,122 +161,16 @@ const AuthorizationRow = ({
           </Button>
         </ActionsCell>
       )}
-    </AuthorizationRowContainer>
+    </PanelRow>
   );
 };
 
 export default AuthorizationRow;
 
-const AuthorizationRowContainer = styled.div`
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  padding: 10px 14px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  transition:
-    background 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-
-  &:hover {
-    background: #fff;
-    border-color: #cbd5e1;
-    box-shadow: 0 8px 20px rgb(15 23 42 / 12%);
-  }
-
-  @media (width <= 960px) {
-    flex-wrap: wrap;
-    row-gap: 10px;
-    align-items: flex-start;
-  }
-`;
-
-const ModuleCell = styled.div`
-  display: flex;
-  flex: 1 1 240px;
-  gap: 12px;
-  align-items: center;
-  min-width: 0;
-`;
-
-const ModuleIcon = styled.div`
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  font-size: 16px;
-  color: #2563eb;
-  background: #eff6ff;
-  border-radius: 10px;
-`;
-
-const ModuleInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-`;
-
-const ModuleTitle = styled.div`
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 14px;
-  font-weight: 600;
-  color: #1f2937;
-  white-space: nowrap;
-`;
-
-const ReferenceLabel = styled.div`
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 12px;
-  color: #64748b;
-  white-space: nowrap;
-
-  strong {
-    font-weight: 600;
-    color: #0f172a;
-  }
-`;
-
-const ReferenceValue = styled.span`
-  font-weight: 600;
-  color: #1f2937;
-`;
-
-const RequesterCell = styled.div`
-  display: flex;
-  flex: 0 0 160px;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 120px;
-`;
-
-const StatusCell = styled.div`
-  display: flex;
-  flex: 0 0 120px;
-  flex-direction: column;
+const StatusCell = styled(RowStatus)`
+  flex-basis: 120px;
   gap: 4px;
-  align-items: flex-start;
   min-width: 110px;
-`;
-
-interface StatusPillProps {
-  $color?: string;
-}
-
-const StatusPill = styled.span<StatusPillProps>`
-  padding: 3px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  color: ${({ $color }: StatusPillProps) => $color || '#2563eb'};
-  text-transform: capitalize;
-  background: ${({ $color }: StatusPillProps) => `${$color || '#2563eb'}1a`};
-  border-radius: 999px;
 `;
 
 const TimeAgo = styled.span`
@@ -285,29 +178,7 @@ const TimeAgo = styled.span`
   color: #64748b;
 `;
 
-const MetaLabel = styled.span`
-  font-size: 11px;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-`;
-
-const MetaValue = styled.span`
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 13px;
-  font-weight: 500;
-  color: #1f2937;
-  white-space: nowrap;
-`;
-
-const ActionsCell = styled.div`
-  display: flex;
-  flex: 0 0 auto;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: flex-end;
-
+const ActionsCell = styled(RowActions)`
   button {
     min-width: 72px;
   }

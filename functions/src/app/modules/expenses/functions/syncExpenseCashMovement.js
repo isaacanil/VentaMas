@@ -7,6 +7,10 @@ import {
   buildExpenseCashMovement,
   buildExpenseCashMovementId,
 } from '../../../versions/v2/accounting/utils/cashMovement.util.js';
+import {
+  EXPENSE_DERIVED_RECORD_ACTOR,
+  mergeExpenseSourceAuditMetadata,
+} from './expenseDerivedAudit.shared.js';
 
 const REGION = 'us-central1';
 const MEMORY = '256MiB';
@@ -53,7 +57,7 @@ export const syncExpenseCashMovement = onDocumentWritten(
         afterExpense?.createdAt ??
         afterExpense?.dates?.expenseDate ??
         null,
-      createdBy: afterExpense?.createdBy ?? null,
+      createdBy: EXPENSE_DERIVED_RECORD_ACTOR,
     });
 
     if (!movement) {
@@ -70,7 +74,16 @@ export const syncExpenseCashMovement = onDocumentWritten(
       return null;
     }
 
-    await movementRef.set(movement, { merge: true });
+    await movementRef.set(
+      {
+        ...movement,
+        metadata: mergeExpenseSourceAuditMetadata(
+          movement.metadata,
+          afterExpense,
+        ),
+      },
+      { merge: true },
+    );
     return null;
   },
 );

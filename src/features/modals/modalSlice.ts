@@ -21,11 +21,6 @@ interface ModalToggleProviderState {
   data: any;
 }
 
-interface ModalToggleOrderNoteState {
-  isOpen: boolean;
-  data: any;
-}
-
 interface ModalToggleAddCategoryState {
   isOpen: boolean;
   data: any;
@@ -35,11 +30,6 @@ interface ModalToggleSignUpState {
   isOpen: boolean;
   data: any;
   businessID: string | null;
-}
-
-interface ModalFileListState {
-  isOpen: boolean;
-  fileList: any[];
 }
 
 interface ModalDeveloperState {
@@ -58,12 +48,10 @@ interface ModalState {
   modalSetCustomPizza: { isOpen: boolean };
   modalToggleClient: ModalToggleClientState;
   modalToggleProvider: ModalToggleProviderState;
-  modalToggleOrderNote: ModalToggleOrderNoteState;
   modalToggleAddCategory: ModalToggleAddCategoryState;
   modalToggleAddProductOutflow: { isOpen: boolean };
   modalToggleSignUp: ModalToggleSignUpState;
   modalConfirmOpenCashReconciliation: { isOpen: boolean };
-  modalFileList: ModalFileListState;
   modalDeveloper: ModalDeveloperState;
   modalBilling: { isOpen: boolean }; // Added because it was used in selectors but missing in state
 }
@@ -110,10 +98,6 @@ const initialState: ModalState = {
     mode: 'create',
     data: null,
   },
-  modalToggleOrderNote: {
-    isOpen: false,
-    data: null,
-  },
   modalToggleAddCategory: {
     isOpen: false,
     data: null,
@@ -128,10 +112,6 @@ const initialState: ModalState = {
   },
   modalConfirmOpenCashReconciliation: {
     isOpen: false,
-  },
-  modalFileList: {
-    isOpen: false,
-    fileList: [],
   },
   modalDeveloper: {
     isOpen: false,
@@ -200,14 +180,18 @@ const modalSlice = createSlice({
     ) => {
       const { mode, addClientToCart } = actions.payload;
       const isOpen = state.modalToggleClient.isOpen;
-      state.modalToggleClient.isOpen = !isOpen;
-      if (isOpen === false) {
+      const nextIsOpen = !isOpen;
+      state.modalToggleClient.isOpen = nextIsOpen;
+
+      if (!nextIsOpen) {
         state.modalToggleClient.mode = OPERATION_MODES.CREATE.id;
         state.modalToggleClient.data = null;
+        state.modalToggleClient.addClientToCart = false;
+        return;
       }
-      if (addClientToCart) {
-        state.modalToggleClient.addClientToCart = addClientToCart;
-      }
+
+      state.modalToggleClient.addClientToCart = Boolean(addClientToCart);
+
       if (mode === OPERATION_MODES.CREATE.id) {
         state.modalToggleClient.mode = mode;
         state.modalToggleClient.data = null;
@@ -241,28 +225,6 @@ const modalSlice = createSlice({
       if (mode === update) {
         state.modalToggleProvider.mode = mode;
         state.modalToggleProvider.data = actions.payload.data;
-        return;
-      }
-    },
-    toggleViewOrdersNotes: (
-      state: ModalState,
-      action: PayloadAction<{ data: any; isOpen: boolean }>,
-    ) => {
-      const { data, isOpen } = action.payload;
-      state.modalToggleOrderNote.isOpen = !isOpen;
-
-      if (isOpen === false) {
-        state.modalToggleOrderNote.data = null;
-        return;
-      }
-      if (data !== null && data !== false && isOpen === true) {
-        state.modalToggleOrderNote.data = data;
-        state.modalToggleOrderNote.isOpen = true;
-        if (data == null || data == false) {
-          state.modalToggleOrderNote.isOpen = false;
-          state.modalToggleOrderNote.data = null;
-          return;
-        }
         return;
       }
     },
@@ -324,20 +286,6 @@ const modalSlice = createSlice({
       state.modalConfirmOpenCashReconciliation.isOpen =
         !state.modalConfirmOpenCashReconciliation.isOpen;
     },
-    toggleFileListModal: (
-      state: ModalState,
-      action: PayloadAction<{ fileList: any[] } | undefined>,
-    ) => {
-      const isOpen = !state.modalFileList.isOpen;
-
-      state.modalFileList.isOpen = isOpen;
-
-      if (isOpen === false) {
-        state.modalFileList.fileList = [];
-      } else {
-        state.modalFileList.fileList = action.payload?.fileList || [];
-      }
-    },
     toggleDeveloperModal: (
       state: ModalState,
       action: PayloadAction<{ activeTab?: string } | undefined>,
@@ -354,61 +302,33 @@ const modalSlice = createSlice({
 export const {
   openModalAddClient,
   closeModalAddClient,
-  openModalAddProd,
-  closeModalAddProd,
   openModalAddOrder,
-  closeModalAddOrder,
   openModalUpdateProd,
   closeModalUpdateProd,
-  openModalCategory,
-  closeModalCategory,
-  openModalAddProvider,
   handleModalSetCustomPizza,
   toggleAddPurchaseModal,
   toggleProviderModal,
   toggleClientModal,
-  toggleViewOrdersNotes,
   toggleAddCategory,
   toggleAddProductOutflow,
   toggleSignUpUser,
-  toggleConfirmOpenCashReconciliation,
-  toggleFileListModal,
   toggleDeveloperModal,
 } = modalSlice.actions;
 
-export const SelectBillingModal = (state: ModalRootState) =>
-  state.modal.modalBilling.isOpen;
-export const SelectAddPurchaseModal = (state: ModalRootState) =>
-  state.modal.modalAddPurchase.isOpen;
-export const SelectAddProdModal = (state: ModalRootState) =>
-  state.modal.modalAddProd.isOpen;
 export const SelectAddClientModal = (state: ModalRootState) =>
   state.modal.modalAddClient.isOpen;
 export const SelectUpdateProdModal = (state: ModalRootState) =>
   state.modal.modalUpdateProd.isOpen;
-export const SelectCategoryModal = (state: ModalRootState) =>
-  state.modal.modalCategory.isOpen;
-export const SelectAddOrderModal = (state: ModalRootState) =>
-  state.modal.modalAddOrder.isOpen;
 export const SelectSetCustomPizzaModal = (state: ModalRootState) =>
   state.modal.modalSetCustomPizza.isOpen;
 export const SelectClientModalData = (state: ModalRootState) =>
   state.modal.modalToggleClient;
 export const SelectProviderModalData = (state: ModalRootState) =>
   state.modal.modalToggleProvider;
-export const SelectViewOrdersNotesModalData = (state: ModalRootState) =>
-  state.modal.modalToggleOrderNote;
-export const SelectAddCategoryModal = (state: ModalRootState) =>
-  state.modal.modalToggleAddCategory;
 export const SelectAddProductOutflowModal = (state: ModalRootState) =>
   state.modal.modalToggleAddProductOutflow;
 export const SelectSignUpUserModal = (state: ModalRootState) =>
   state.modal.modalToggleSignUp;
-export const SelectConfirmOpenCashReconciliationModal = (
-  state: ModalRootState,
-) => state.modal.modalConfirmOpenCashReconciliation;
-export const SelectFileListModal = (state: ModalRootState) =>
-  state.modal.modalFileList;
 export const SelectDeveloperModal = (state: ModalRootState) =>
   state.modal.modalDeveloper;
 export default modalSlice.reducer;

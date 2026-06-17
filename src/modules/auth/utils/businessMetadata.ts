@@ -1,20 +1,12 @@
+import { asRecord } from '@/utils/object/record';
+import { toCleanString } from '@/utils/text';
+
 export interface BusinessMetadata {
   name: string | null;
   subscriptionStatus: string | null;
   subscriptionPlanId: string | null;
   ownerUid: string | null;
 }
-
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
-
-const asRecord = (value: unknown): Record<string, unknown> =>
-  value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
 
 export const resolveBusinessMetadataFromSnapshot = (
   snapshotData: unknown,

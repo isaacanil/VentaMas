@@ -1,4 +1,3 @@
-import { ListBox, ListBoxItem } from '@heroui/react';
 import { message } from 'antd';
 import type { Key } from 'react';
 import { useState } from 'react';
@@ -8,6 +7,7 @@ import styled from 'styled-components';
 import {
   VmAlert,
   VmCard,
+  VmListBox,
   VmNumberField,
   VmSelect,
   VmSwitch,
@@ -93,7 +93,7 @@ const CommissionSelect = styled(VmSelect)`
   width: 100%;
 `;
 
-const CommissionListBox = styled(ListBox)`
+const CommissionListBox = styled(VmListBox)`
   min-width: 220px;
 `;
 
@@ -263,14 +263,14 @@ const ServiceCommissionSettingsSection = () => {
             <VmSelect.Popover>
               <CommissionListBox aria-label="Tipo predeterminado de comisión">
                 {COMMISSION_TYPE_OPTIONS.map((option) => (
-                  <ListBoxItem
+                  <VmListBox.Item
                     key={option.value}
                     id={option.value}
                     textValue={option.label}
                   >
                     {option.label}
-                    <ListBoxItem.Indicator />
-                  </ListBoxItem>
+                    <VmListBox.ItemIndicator />
+                  </VmListBox.Item>
                 ))}
               </CommissionListBox>
             </VmSelect.Popover>

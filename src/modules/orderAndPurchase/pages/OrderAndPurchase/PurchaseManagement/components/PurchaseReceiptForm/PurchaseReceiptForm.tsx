@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { PurchasePill } from '../PurchasePill/PurchasePill';
+import { PurchasePill } from '../../../shared/components/PurchasePill/PurchasePill';
 
 const DetailGrid = styled.div`
   display: grid;

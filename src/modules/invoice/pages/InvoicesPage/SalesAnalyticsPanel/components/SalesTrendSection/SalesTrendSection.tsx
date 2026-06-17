@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import styled from 'styled-components';
 
 import { LazyLine } from '@/components/charts/LazyCharts';
+import { formatCount } from '@/utils/formatCounts';
 import { formatPrice } from '@/utils/format';
 
 import {
@@ -117,7 +118,7 @@ export const SalesTrendSection = ({ summary }: SalesTrendSectionProps) => {
     },
     {
       label: 'Items vendidos',
-      value: new Intl.NumberFormat('es-DO').format(summary.totals.items),
+      value: formatCount(summary.totals.items),
     },
     {
       label: 'Descuentos otorgados',

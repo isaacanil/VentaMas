@@ -4,9 +4,8 @@ import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import { buildAiAgentCallableOptions } from '../config/aiCallableOptions.js';
 import { createBusinessWithAiFlow } from '../flows/businessCreator.flow.js';
 import { buildSuggestedBusinessDraft } from '../utils/businessDraft.util.js';
-
-const readObject = (value) =>
-  value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+import { readAiCallableObject as readObject } from '../utils/aiCallablePayload.util.js';
+import { assertAiBusinessSeedingDeveloperAccess } from './aiBusinessSeedingAccess.js';
 
 export const aiCreateBusinessAgent = onCall(
   buildAiAgentCallableOptions({
@@ -14,6 +13,8 @@ export const aiCreateBusinessAgent = onCall(
     memory: '512MiB',
   }),
   async (request) => {
+    await assertAiBusinessSeedingDeveloperAccess(request);
+
     const payload = readObject(request.data);
     const draftInput = readObject(payload.draftInput);
 

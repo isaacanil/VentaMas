@@ -1,8 +1,8 @@
 import { memo, useMemo } from 'react';
 import styled from 'styled-components';
 
-import { CustomProduct } from '@/components/ui/Product/CustomProduct';
-import { Product } from '@/components/ui/Product/Product/Product';
+import { CustomProduct } from './ProductCard/CustomProduct';
+import { Product } from './ProductCard/Product/Product';
 import type { ProductRecord } from '@/types/products';
 
 type VirtualRow = {

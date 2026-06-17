@@ -1,5 +1,8 @@
 import { DateTime } from 'luxon';
 
+import { toMillis } from '@/utils/date/toMillis';
+import type { TimestampLike } from '@/utils/date/types';
+
 export type OptionItem = {
   value: string;
   label: string;
@@ -19,30 +22,44 @@ export type InvoiceOptionEntry = OptionItem & {
   meta: InvoiceOptionMeta;
 };
 
-type TimestampLike = {
+type InvoiceRecoveryTimestampLike = {
   seconds?: number;
   _seconds?: number;
   toDate?: () => Date;
 };
 
+const parseCentralMillis = (value: TimestampLike): DateTime | null => {
+  const millis = toMillis(value);
+  return typeof millis === 'number' ? DateTime.fromMillis(millis) : null;
+};
+
 export const parseTimestamp = (value: unknown): DateTime | null => {
   if (!value) return null;
   if (DateTime.isDateTime(value)) return value;
-  if (typeof value === 'number') return DateTime.fromMillis(value);
+  if (typeof value === 'number') {
+    return parseCentralMillis(value) ?? DateTime.fromMillis(value);
+  }
   if (typeof value === 'string') {
     const iso = DateTime.fromISO(value);
     return iso.isValid ? iso : DateTime.fromJSDate(new Date(value));
   }
   if (typeof value === 'object') {
-    const timestamp = value as TimestampLike;
+    const timestamp = value as InvoiceRecoveryTimestampLike;
     if (typeof timestamp.seconds === 'number') {
-      return DateTime.fromSeconds(timestamp.seconds);
+      return (
+        parseCentralMillis({ seconds: timestamp.seconds }) ??
+        DateTime.fromSeconds(timestamp.seconds)
+      );
     }
     if (typeof timestamp._seconds === 'number') {
-      return DateTime.fromSeconds(timestamp._seconds);
+      return (
+        parseCentralMillis({ _seconds: timestamp._seconds }) ??
+        DateTime.fromSeconds(timestamp._seconds)
+      );
     }
     if (typeof timestamp.toDate === 'function') {
-      return DateTime.fromJSDate(timestamp.toDate());
+      const date = timestamp.toDate();
+      return parseCentralMillis(date) ?? DateTime.fromJSDate(date);
     }
   }
   return null;
@@ -120,8 +137,8 @@ export function buildInvoiceV2Suggestions(params: {
       hasCanonical &&
       Boolean(
         v2CreatedAtTs &&
-          canonicalDateTs &&
-          canonicalDateTs.toMillis() !== v2CreatedAtTs.toMillis(),
+        canonicalDateTs &&
+        canonicalDateTs.toMillis() !== v2CreatedAtTs.toMillis(),
       );
 
     const labelParts: string[] = [];
@@ -203,4 +220,3 @@ export function buildInvoiceNumberUpdates(parsedNumber: number): {
     },
   };
 }
-

@@ -4,15 +4,12 @@ import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { db, FieldValue, Timestamp } from '../../../../core/config/firebase.js';
 import { GISYS_FACT_SECRETS } from '../../../../core/config/secrets.js';
 import {
-  buildClientWritePayload,
-  CLIENT_ROOT_FIELDS,
-  extractNormalizedClient,
-} from '../../../../modules/client/utils/clientNormalizer.js';
-import {
   isAccountingRolloutEnabledForBusiness,
   normalizePilotMonetarySnapshot,
 } from '../../accounting/utils/accountingRollout.util.js';
 import { buildInvoicePosCashMovements } from '../../accounting/utils/cashMovement.util.js';
+import { upsertClientTx } from '../services/client.service.js';
+import { resolveInvoiceTriggerActorUid } from './invoiceTriggerActor.util.js';
 
 let depsPromise;
 async function loadDeps() {
@@ -144,6 +141,37 @@ const pickFirstNumber = (candidates) => {
     if (parsed !== null) return parsed;
   }
   return null;
+};
+
+const asPlainRecord = (value) =>
+  value && typeof value === 'object' && !Array.isArray(value) ? value : null;
+
+const hasRecordData = (value) => {
+  const record = asPlainRecord(value);
+  return Boolean(record && Object.keys(record).length > 0);
+};
+
+const isNonTransportElectronicSnapshot = (value) => {
+  const snapshot = asPlainRecord(value);
+  if (!snapshot) return false;
+  if (snapshot.transportEnabled === false) return true;
+  return String(snapshot.mode || '').trim().toLowerCase() === 'shadow';
+};
+
+const resolveFrontendElectronicProjection = ({
+  existingCanonical,
+  invoice,
+}) => {
+  const existingFiscal = asPlainRecord(existingCanonical?.fiscal);
+  const existingElectronic =
+    asPlainRecord(existingCanonical?.electronicTaxReceipt) ||
+    asPlainRecord(existingFiscal?.electronic);
+  if (hasRecordData(existingElectronic)) return existingElectronic;
+
+  const initialElectronic = invoice?.snapshot?.electronicTaxReceipt;
+  if (!isNonTransportElectronicSnapshot(initialElectronic)) return null;
+
+  return initialElectronic;
 };
 
 export const processInvoiceOutbox = onDocumentCreated(
@@ -282,6 +310,18 @@ export const processInvoiceOutbox = onDocumentCreated(
 
         const invoice = invoiceSnap.data();
         let invoiceStatus = invoice?.status || null;
+        const payload = t.payload || {};
+        const actorUid = resolveInvoiceTriggerActorUid({
+          invoice,
+          payload,
+          logger,
+          context: {
+            businessId,
+            invoiceId,
+            taskId,
+            type,
+          },
+        });
         const ensureTaskStart = (() => {
           let logged = false;
           return () => {
@@ -307,9 +347,8 @@ export const processInvoiceOutbox = onDocumentCreated(
           };
         })();
 
-        const payload = t.payload || {};
         const user = {
-          uid: payload.userId,
+          uid: actorUid,
           businessID: payload.businessId || businessId,
         };
 
@@ -384,10 +423,11 @@ export const processInvoiceOutbox = onDocumentCreated(
             invoiceStatus === 'frontend_ready' ||
             Boolean(invoice?.frontendReadyAt);
 
-          let clientRef = null;
           let clientSnap = null;
           if (client?.id) {
-            clientRef = db.doc(`businesses/${businessId}/clients/${client.id}`);
+            const clientRef = db.doc(
+              `businesses/${businessId}/clients/${client.id}`,
+            );
             clientSnap = await tx.get(clientRef);
           }
 
@@ -445,32 +485,8 @@ export const processInvoiceOutbox = onDocumentCreated(
 
           ensureTaskStart();
 
-          if (clientRef) {
-            const snapshotData = clientSnap?.exists
-              ? clientSnap.data() || {}
-              : {};
-            const existingClient = clientSnap?.exists
-              ? extractNormalizedClient(snapshotData)
-              : {};
-            const mergedClient = {
-              ...existingClient,
-              ...client,
-              updatedAt: FieldValue.serverTimestamp(),
-            };
-            if (!clientSnap?.exists) {
-              mergedClient.createdAt = FieldValue.serverTimestamp();
-            }
-
-            const { payload } = buildClientWritePayload(mergedClient);
-            const extras = {};
-            for (const [key, value] of Object.entries(snapshotData)) {
-              if (key === 'client') continue;
-              if (!CLIENT_ROOT_FIELDS.has(key)) {
-                extras[key] = value;
-              }
-            }
-
-            tx.set(clientRef, { ...payload, ...extras }, { merge: true });
+          if (client?.id) {
+            await upsertClientTx(tx, { businessId, client, clientSnap });
           }
 
           const historyFromCart = Array.isArray(cart?.history)
@@ -546,7 +562,7 @@ export const processInvoiceOutbox = onDocumentCreated(
                 cart?.monetary ??
                   existingCanon?.monetary ??
                   invoice?.snapshot?.monetary,
-                { capturedBy: payload.userId },
+                { capturedBy: user.uid },
               )
               : null;
 
@@ -584,6 +600,21 @@ export const processInvoiceOutbox = onDocumentCreated(
 
           if (resolvedMonetary) {
             canonicalData.monetary = resolvedMonetary;
+          }
+
+          const frontendElectronicProjection =
+            resolveFrontendElectronicProjection({
+              existingCanonical: existingCanon,
+              invoice,
+            });
+          if (frontendElectronicProjection) {
+            canonicalData.electronicTaxReceipt = frontendElectronicProjection;
+            canonicalData.fiscal = {
+              ...asPlainRecord(existingCanon?.fiscal),
+              electronic: frontendElectronicProjection,
+            };
+            canonicalData.fiscalMode = 'electronic_ecf';
+            canonicalData.documentFormat = 'electronic';
           }
 
           if (numberID != null) {
@@ -631,7 +662,7 @@ export const processInvoiceOutbox = onDocumentCreated(
               ? sanitizedCanonicalData.products
               : [],
             settings: billingSettings,
-            userId: payload.userId || user.uid,
+            userId: user.uid,
           });
 
           const timelineEntries = [
@@ -918,7 +949,7 @@ export const processInvoiceOutbox = onDocumentCreated(
               cashCountId: resolvedCashCountId,
               createdAt: invoiceCreatedAt,
               createdBy:
-                payload?.userId ||
+                user.uid ||
                 invoiceMovementSource?.userID ||
                 invoice?.createdBy ||
                 null,

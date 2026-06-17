@@ -3,8 +3,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Tooltip, Typography } from 'antd';
 import styled from 'styled-components';
 
-// import { ClientFilterDropdown } from './ClientFilterDropdown' // TODO: Componente no existe
-
 const { Title } = Typography;
 
 const Header = styled.div`
@@ -42,11 +40,6 @@ export const ClientSelectorHeader = ({
         Seleccionar Cliente
       </Title>
       <ButtonGroup>
-        {/* <ClientFilterDropdown
-          filter={filter}
-          filteredClientsToShow={filteredClientsToShow}
-          handleMenuClick={handleMenuClick}
-        /> */}
         <Tooltip title="Crear cliente">
           <Button
             onClick={openAddClientModal}

@@ -60,7 +60,7 @@ vi.mock('../../../core/utils/callableSessionAuth.util.js', () => ({
   resolveCallableAuthUid: (...args) => resolveCallableAuthUidMock(...args),
 }));
 
-vi.mock('../../../versions/v2/invoice/services/repairTasks.service.js', () => ({
+vi.mock('../../../versions/v2/auth/services/userAccess.service.js', () => ({
   getUserAccessProfile: (...args) => getUserAccessProfileMock(...args),
 }));
 

@@ -13,7 +13,7 @@ import styled from 'styled-components';
 
 import { PageShell } from '@/components/layout/PageShell';
 import { selectUser } from '@/features/auth/userSlice';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 import { DomainTable } from './components/DomainTable';
 import { useAccountingAudit } from './hooks/useAccountingAudit';

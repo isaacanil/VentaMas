@@ -6,9 +6,9 @@ import styled from 'styled-components';
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import { formatDateTime } from '@/utils/date/dateUtils';
 import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
-import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity.js';
+import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity';
 import type { TimestampLike } from '@/utils/date/types';
-import { InfoItem, Spacing } from '@/modules/checkout/pages/checkout/Style';
+import { InfoItem, Spacing } from '@/modules/checkout/pages/checkout/CheckoutReceipt.styles';
 import type { InvoiceData } from '@/types/invoice';
 import type { AccountsReceivablePaymentReceipt } from '@/utils/accountsReceivable/types';
 

@@ -70,7 +70,7 @@ Ejemplo:
 
 Ruta: `businesses/{businessID}/batches/{batchId}`
 
-Campos principales (según `src/models/Warehouse/Batch.ts` y creación en `fbCompletePurchase.js` / `batchService`):
+Campos principales (según `src/models/Warehouse/Batch.ts` y creación en `fbCompletePurchase.ts` / `batchService`):
 
 - `id: string`
 - `productId: string` – Referencia al producto.
@@ -157,7 +157,7 @@ Enums (ver `src/models/Warehouse/Movement.ts`):
 - `movementType: 'in' | 'out'`
 - `movementReason: 'sale' | 'purchase' | 'adjustment' | 'return' | 'initial_stock' | 'damaged' | 'expired' | 'lost' | 'transfer' | 'backorder'`
 
-Campos principales (según `productMovementService`, `fbCompletePurchase.js` y funciones de inventario):
+Campos principales (según `productMovementService`, `fbCompletePurchase.ts` y funciones de inventario):
 
 - `id: string`
 - `productId: string`
@@ -253,10 +253,10 @@ Salida por venta:
 
 ## APIs / rutas
 
-- `src/firebase/products/fbGetProducts.js`: lecturas de productos.
-- `src/firebase/functions/inventory/reconcileBatchStatus.js`: reconcilia lotes/batches.
-- `functions/src/modules/Inventory/services/Inventory.service.js` y `getInventory.service.js`: operaciones backend.
-- `src/views/pages/Inventory/...`: tablas y modales que consumen estas colecciones.
+- `src/firebase/products/fbGetProducts.ts`: lecturas de productos.
+- `src/firebase/functions/inventory/reconcileBatchStatus.ts`: reconcilia lotes/batches.
+- `functions/src/app/modules/Inventory/services/Inventory.service.js` y `getInventory.service.js`: operaciones backend.
+- `src/modules/inventory/pages/Inventory/...`: tablas y modales que consumen estas colecciones.
 
 ## Versionado / compatibilidad
 
@@ -267,6 +267,6 @@ Salida por venta:
 ## Recursos relacionados
 
 - `src/models/Products/Product.ts`
-- `functions/src/modules/Inventory/functions/reconcileBatchStatusFromStocks.js`
-- `functions/src/modules/Inventory/` (servicios y cron)
-- `src/views/pages/Inventory/components/Warehouse/…`
+- `functions/src/app/modules/Inventory/functions/reconcileBatchStatusFromStocks.js`
+- `functions/src/app/modules/Inventory/` (servicios y cron)
+- `src/modules/inventory/pages/Inventory/components/Warehouse/…`

@@ -1,6 +1,6 @@
-import { formatDate } from '../utils/formatters.js';
+import { formatDate } from '../utils/formatters';
 
-import { buildClientBlock } from './clientBlock.js';
+import { buildClientBlock } from './clientBlock';
 
 import type { PdfContent, PdfHeaderFooter, PdfTableBody } from '@/pdf/types';
 import type {

@@ -1,10 +1,10 @@
-import { createLazyLoader } from '@/utils/createLazyLoader';
-import { normalizeMatch } from '@/utils/normalizeMatch';
+import { createLazyLoader } from './createLazyLoader';
+import { normalizeMatch } from './normalizeMatch';
 
 import type {
   RegisterToolbarArgs,
   ToolbarRegistryEntry,
-} from '@/modules/navigation/components/MenuApp/GlobalMenu/types';
+} from '../types';
 
 /**
  * Registers a toolbar component with its route patterns

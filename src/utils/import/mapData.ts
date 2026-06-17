@@ -1,43 +1,29 @@
 import { normalizeHeaderKey } from './normalizeHeaderKey';
+import { coerceMappedValue, setNestedValue } from './mappedRecord';
 import type {
   HeaderAliases,
   MappedData,
-  MappedValue,
   MappedRecord,
   MapDataParams,
 } from './types';
 
-// mapData.js
-const HEADER_ALIASES: HeaderAliases = {
-  es: {
-    codigo: 'codigo de barras',
-    'codigo de barra': 'codigo de barras',
-    facturable: 'es visible',
-    inventariable: 'rastreo de inventario',
-  },
-};
-
-const resolveNormalizedHeader = (value: unknown, language: string) => {
+const resolveNormalizedHeader = (
+  value: unknown,
+  language: string,
+  headerAliases?: HeaderAliases,
+) => {
   const normalized = normalizeHeaderKey(value);
   if (!normalized) return '';
-  return HEADER_ALIASES[language]?.[normalized] ?? normalized;
-};
+  const alias = headerAliases?.[language]?.[normalized];
+  if (!alias) return normalized;
 
-const isMappedRecord = (value: unknown): value is MappedRecord =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
-const coerceMappedValue = (value: unknown): MappedValue => {
-  if (value === null || value === undefined) return null;
-  if (value instanceof Date) return value;
-  if (typeof value === 'string' || typeof value === 'number') return value;
-  if (typeof value === 'boolean') return value;
-  if (isMappedRecord(value)) return value;
-  return String(value);
+  return normalizeHeaderKey(alias) || normalized;
 };
 
 export const mapData = ({
   data,
   headerMapping,
+  headerAliases,
   language = 'es',
 }: MapDataParams): MappedData => {
   if (!headerMapping?.[language]) return [];
@@ -57,7 +43,11 @@ export const mapData = ({
   return data.map((item) => {
     const mappedItem: MappedRecord = {};
     Object.entries(item).forEach(([headerKey, rawValue]) => {
-      const normalizedHeader = resolveNormalizedHeader(headerKey, language);
+      const normalizedHeader = resolveNormalizedHeader(
+        headerKey,
+        language,
+        headerAliases,
+      );
       const mappedKey = normalizedMapping[normalizedHeader];
       if (!mappedKey) return;
 
@@ -74,20 +64,3 @@ export const mapData = ({
     return mappedItem;
   });
 };
-
-// Helper function to safely set nested values
-function setNestedValue(obj: MappedRecord, path: string, value: MappedValue) {
-  const keys = path.split('.');
-  let current = obj;
-
-  for (let i = 0; i < keys.length - 1; i++) {
-    const key = keys[i];
-    const existing = current[key];
-    if (!isMappedRecord(existing)) {
-      current[key] = {};
-    }
-    current = current[key] as MappedRecord;
-  }
-
-  current[keys[keys.length - 1]] = value;
-}

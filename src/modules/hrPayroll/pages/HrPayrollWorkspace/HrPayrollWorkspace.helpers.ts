@@ -1,5 +1,6 @@
 import { cleanString as toCleanString } from '@/modules/hrPayroll/utils/hrPayrollDisplay';
 import type { HrEmployeeRecord } from '@/types/hrPayroll';
+import { getErrorMessage as getSharedErrorMessage } from '@/utils/errors';
 import type {
   HrEmployeeFormValues,
   HrLinkedUserOption,
@@ -80,11 +81,8 @@ export const buildUserLabelMap = (
 ): Map<string, string> =>
   new Map(options.map((option) => [option.value, option.label]));
 
-export const getErrorMessage = (error: unknown): string => {
-  if (error instanceof Error) return error.message;
-  if (typeof error === 'string') return error;
-  return 'No se pudo completar la operacion.';
-};
+export const getErrorMessage = (error: unknown): string =>
+  getSharedErrorMessage(error, 'No se pudo completar la operacion.');
 
 export const buildInitialValues = (
   employee: HrEmployeeRecord | null,

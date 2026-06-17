@@ -1,9 +1,9 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 
 import { db } from '../../../core/config/firebase.js';
-import { ensureDefaultWarehouse } from '../../../versions/v1/modules/warehouse/services/warehouse.service.js';
-
-const ALLOWED_ROLES = new Set(['dev', 'admin', 'owner']);
+import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.util.js';
+import { getUserAccessProfile } from '../../../versions/v2/auth/services/userAccess.service.js';
+import { ensureDefaultWarehouse } from '../../warehouse/services/defaultWarehouse.service.js';
 
 const resolveLimit = (value, fallback = 200) => {
   const limit = Number(value);
@@ -12,22 +12,17 @@ const resolveLimit = (value, fallback = 200) => {
 };
 
 export const ensureDefaultWarehousesForBusinesses = onCall(async (req) => {
-  const uid = req.auth?.uid || req.data?.user?.uid || null;
+  const uid = await resolveCallableAuthUid(req);
   if (!uid) {
     throw new HttpsError('unauthenticated', 'Usuario no autenticado');
   }
 
-  const userSnap = await db.doc(`users/${uid}`).get();
-  if (!userSnap.exists) {
+  const accessProfile = await getUserAccessProfile(uid);
+  if (!accessProfile.userSnap?.exists) {
     throw new HttpsError('permission-denied', 'Usuario no encontrado');
   }
 
-  const role = String(
-    userSnap.get('activeRole') ||
-      userSnap.get('role') ||
-      '',
-  ).toLowerCase();
-  if (!ALLOWED_ROLES.has(role)) {
+  if (!accessProfile.hasGlobalUnscopedAccess) {
     throw new HttpsError(
       'permission-denied',
       'No tienes permisos para ejecutar esta accion',

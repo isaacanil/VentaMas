@@ -8,8 +8,9 @@ import {
   useDeveloperFeaturesData,
   useMenuCardData,
 } from '@/modules/home/pages/Home/CardData';
+import { normalizeFeatureCardData } from '@/modules/home/utils/homeShortcutUtils';
 
-import type { FeatureCardData } from '@/modules/home/pages/Home/components/FeatureCardList/FeatureCard';
+import type { FeatureCardData } from '@/modules/home/types/featureCard';
 import type { JSX } from 'react';
 
 interface HomeQuickActionsProps {
@@ -27,24 +28,16 @@ const PRIORITY_TITLES = [
   'Gastos',
 ];
 
-const normalizeCardData = (data: unknown): FeatureCardData[] =>
-  Array.isArray(data)
-    ? data.filter(
-        (item): item is FeatureCardData =>
-          Boolean(item) &&
-          typeof item === 'object' &&
-          typeof (item as FeatureCardData).title === 'string',
-      )
-    : [];
-
 export const HomeQuickActions = ({
   includeDeveloperFeatures = false,
 }: HomeQuickActionsProps): JSX.Element => {
   const user = useSelector(selectUser);
-  const menuItems = normalizeCardData(useMenuCardData(user));
-  const developerItems = normalizeCardData(useDeveloperFeaturesData());
+  const menuItems = normalizeFeatureCardData(useMenuCardData(user));
+  const developerItems = normalizeFeatureCardData(useDeveloperFeaturesData());
   const actions = useMemo(() => {
-    const routeItems = menuItems.filter((item) => typeof item.route === 'string');
+    const routeItems = menuItems.filter(
+      (item) => typeof item.route === 'string',
+    );
     const picked = PRIORITY_TITLES.map((title) =>
       routeItems.find((item) => item.title === title),
     ).filter(Boolean) as FeatureCardData[];
@@ -57,7 +50,9 @@ export const HomeQuickActions = ({
     if (!includeDeveloperFeatures) return baseActions;
     return [
       ...baseActions,
-      ...developerItems.filter((item) => typeof item.route === 'string').slice(0, 2),
+      ...developerItems
+        .filter((item) => typeof item.route === 'string')
+        .slice(0, 2),
     ].slice(0, 10);
   }, [developerItems, includeDeveloperFeatures, menuItems]);
 
@@ -71,7 +66,10 @@ export const HomeQuickActions = ({
       </PanelHeader>
       <ActionGrid>
         {actions.map((action) => (
-          <ActionLink key={`${action.title}-${action.route}`} to={action.route ?? '#'}>
+          <ActionLink
+            key={`${action.title}-${action.route}`}
+            to={action.route ?? '#'}
+          >
             <ActionIcon>{action.icon}</ActionIcon>
             <ActionText>
               <ActionTitle>{action.title}</ActionTitle>

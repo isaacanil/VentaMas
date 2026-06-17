@@ -3,6 +3,87 @@ import { https } from 'firebase-functions';
 
 import { db } from '../../../core/config/firebase.js';
 
+const normalizeId = (value) => {
+  if (value == null) return '';
+  return String(value).trim();
+};
+
+const hasSelectedPhysicalStock = (product) =>
+  Boolean(normalizeId(product?.productStockId) && normalizeId(product?.batchId));
+
+const shouldResolveInventoryLine = (product) =>
+  Boolean(product?.trackInventory) || hasSelectedPhysicalStock(product);
+
+const getPhysicalStockQuantity = (data = {}) => {
+  const rawQuantity = data.quantity;
+  const quantity = Number(rawQuantity);
+  if (
+    rawQuantity !== undefined &&
+    rawQuantity !== null &&
+    Number.isFinite(quantity)
+  ) {
+    return Math.max(quantity, 0);
+  }
+
+  const legacyStock = Number(data.stock);
+  return Number.isFinite(legacyStock) ? Math.max(legacyStock, 0) : 0;
+};
+
+const readSnapshotId = (snapshot, ...fieldPaths) => {
+  for (const fieldPath of fieldPaths) {
+    const value = snapshot?.get?.(fieldPath);
+    const normalized = normalizeId(value);
+    if (normalized) return normalized;
+  }
+
+  return '';
+};
+
+const assertMatchingInventoryRefs = ({
+  productId,
+  productStockId,
+  productStockSnap,
+  batchId,
+  batchSnap,
+}) => {
+  const normalizedProductId = normalizeId(productId);
+  const normalizedBatchId = normalizeId(batchId);
+  const stockProductId = readSnapshotId(
+    productStockSnap,
+    'productId',
+    'productID',
+    'idProduct',
+  );
+  const stockBatchId = readSnapshotId(productStockSnap, 'batchId');
+  const batchProductId = readSnapshotId(
+    batchSnap,
+    'productId',
+    'productID',
+    'idProduct',
+  );
+
+  if (stockProductId && stockProductId !== normalizedProductId) {
+    throw new https.HttpsError(
+      'failed-precondition',
+      `El stock ${productStockId} no pertenece al producto ${productId}.`,
+    );
+  }
+
+  if (stockBatchId && normalizedBatchId && stockBatchId !== normalizedBatchId) {
+    throw new https.HttpsError(
+      'failed-precondition',
+      `El stock ${productStockId} no pertenece al lote ${batchId}.`,
+    );
+  }
+
+  if (batchProductId && batchProductId !== normalizedProductId) {
+    throw new https.HttpsError(
+      'failed-precondition',
+      `El lote ${batchId} no pertenece al producto ${productId}.`,
+    );
+  }
+};
+
 /**
  * Devuelve el DocumentSnapshot del producto dentro de la transacción.
  * @param {FirebaseFirestore.Transaction} tx
@@ -115,7 +196,7 @@ export async function collectInventoryPrereqs(tx, { user, products }) {
 
   for (let index = 0; index < products.length; index += 1) {
     const prod = products[index];
-    if (!prod?.trackInventory) continue;
+    if (!shouldResolveInventoryLine(prod)) continue;
 
     const productId = prod.id;
     if (!productId) {
@@ -139,36 +220,35 @@ export async function collectInventoryPrereqs(tx, { user, products }) {
     let batchId = prod.batchId;
 
     if (!productStockId || !batchId) {
-      if (restrictSale) {
-        // Attempt to auto-resolve stock if missing and sale is restricted
-        try {
-          const stockQuery = db
-            .collection(`businesses/${user.businessID}/productsStock`)
-            .where('productId', '==', productId)
-            .where('status', '==', 'active')
-            .limit(5); // Fetch a few to filter in memory
+      try {
+        const stockQuery = db
+          .collection(`businesses/${user.businessID}/productsStock`)
+          .where('productId', '==', productId)
+          .where('status', '==', 'active')
+          .limit(5); // Fetch a few to filter in memory
 
-          const stockSnap = await tx.get(stockQuery);
-          // Find first valid stock (quantity > 0, not deleted)
-          // Ideally sort by createdAt ASC for FIFO, but we avoid extra index dependencies here
-          const validStock = stockSnap.docs.find((doc) => {
-            const data = doc.data();
-            return !data.isDeleted && data.quantity > 0 && data.batchId;
-          });
-
-          if (validStock) {
-            const data = validStock.data();
-            productStockId = validStock.id;
-            batchId = data.batchId;
-            // Pre-fill cache since we already fetched it
-            stockCache.set(productStockId, validStock);
-          }
-        } catch (err) {
-          console.warn(
-            `[collectInventoryPrereqs] Failed to auto-resolve stock for ${productId}`,
-            err,
+        const stockSnap = await tx.get(stockQuery);
+        // Ideally sort by createdAt ASC for FIFO, but we avoid extra index dependencies here.
+        const validStock = stockSnap.docs.find((doc) => {
+          const data = doc.data();
+          return (
+            !data.isDeleted &&
+            getPhysicalStockQuantity(data) > 0 &&
+            data.batchId
           );
+        });
+
+        if (validStock) {
+          const data = validStock.data();
+          productStockId = validStock.id;
+          batchId = data.batchId;
+          stockCache.set(productStockId, validStock);
         }
+      } catch (err) {
+        console.warn(
+          `[collectInventoryPrereqs] Failed to auto-resolve stock for ${productId}`,
+          err,
+        );
       }
     }
 
@@ -206,6 +286,14 @@ export async function collectInventoryPrereqs(tx, { user, products }) {
       batchSnap = await getBatchDocFromTx(tx, user.businessID, batchId);
       batchCache.set(batchId, batchSnap);
     }
+
+    assertMatchingInventoryRefs({
+      productId,
+      productStockId,
+      productStockSnap,
+      batchId,
+      batchSnap,
+    });
 
     prereqs.push({
       index,

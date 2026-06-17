@@ -3,34 +3,11 @@ import type {
   BankStatementLine,
   LiquidityLedgerEntry,
 } from '@/types/accounting';
+import { formatDateTimeIso } from '@/modules/treasury/utils/formatters';
 import type { TreasuryLiquidityAccount } from '@/modules/treasury/utils/liquidity';
-import { toMillis } from '@/utils/firebase/toTimestamp';
+import { buildCsvFromRecords } from '@/utils/export/csv';
 
-const escapeCsvCell = (value: unknown) => {
-  const normalized = String(value ?? '');
-  if (!/[",\n]/.test(normalized)) {
-    return normalized;
-  }
-  return `"${normalized.replace(/"/g, '""')}"`;
-};
-
-const buildCsv = (rows: Array<Record<string, unknown>>) => {
-  if (!rows.length) return '';
-
-  const headers = Object.keys(rows[0]);
-  return [
-    headers.join(','),
-    ...rows.map((row) =>
-      headers.map((header) => escapeCsvCell(row[header])).join(','),
-    ),
-  ].join('\n');
-};
-
-const formatDate = (value: unknown) => {
-  const millis = toMillis(value as never);
-  if (millis == null) return '';
-  return new Date(millis).toISOString();
-};
+export { downloadCsvFile } from '@/utils/export/csv';
 
 const formatSignedAmount = ({
   amount,
@@ -48,24 +25,6 @@ const slugify = (value: string) =>
     .replace(/^-+|-+$/g, '')
     .toLowerCase();
 
-export const downloadCsvFile = ({
-  csv,
-  fileName,
-}: {
-  csv: string;
-  fileName: string;
-}) => {
-  const blob = new Blob([csv], {
-    type: 'text/csv;charset=utf-8;',
-  });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = fileName;
-  anchor.click();
-  URL.revokeObjectURL(url);
-};
-
 export const buildTreasuryCockpitCsv = ({
   accounts,
   currentBalancesByAccountKey,
@@ -80,7 +39,7 @@ export const buildTreasuryCockpitCsv = ({
   >;
   statementLinesByBankAccountId: Record<string, BankStatementLine[]>;
 }) =>
-  buildCsv(
+  buildCsvFromRecords(
     accounts.map((account) => {
       const statementLines =
         account.kind === 'bank'
@@ -101,15 +60,15 @@ export const buildTreasuryCockpitCsv = ({
           account.kind === 'bank'
             ? account.institutionName || ''
             : account.location || '',
-        latestReconciliationDate: formatDate(
+        latestReconciliationDate: formatDateTimeIso(
           latestReconciliation?.statementDate ?? null,
         ),
-        latestReconciliationPeriodEnd: formatDate(
+        latestReconciliationPeriodEnd: formatDateTimeIso(
           latestReconciliation?.periodEnd ??
             latestReconciliation?.statementDate ??
             null,
         ),
-        latestReconciliationPeriodStart: formatDate(
+        latestReconciliationPeriodStart: formatDateTimeIso(
           latestReconciliation?.periodStart ?? null,
         ),
         latestStatementMovementTotal:
@@ -141,7 +100,7 @@ export const buildLiquidityLedgerCsv = ({
   account: TreasuryLiquidityAccount;
   entries: LiquidityLedgerEntry[];
 }) =>
-  buildCsv(
+  buildCsvFromRecords(
     entries.map((entry) => ({
       account: account.label,
       accountKind: account.kind,
@@ -149,11 +108,11 @@ export const buildLiquidityLedgerCsv = ({
         amount: entry.amount,
         direction: entry.direction,
       }),
-      createdAt: formatDate(entry.createdAt ?? null),
+      createdAt: formatDateTimeIso(entry.createdAt ?? null),
       currency: entry.currency,
       description: entry.description ?? '',
       direction: entry.direction,
-      occurredAt: formatDate(entry.occurredAt),
+      occurredAt: formatDateTimeIso(entry.occurredAt),
       reconciliationStatus: entry.reconciliationStatus ?? '',
       reference: entry.reference ?? '',
       sourceId: entry.sourceId ?? '',
@@ -169,19 +128,19 @@ export const buildBankStatementLinesCsv = ({
   account: TreasuryLiquidityAccount;
   statementLines: BankStatementLine[];
 }) =>
-  buildCsv(
+  buildCsvFromRecords(
     statementLines.map((line) => ({
       account: account.label,
       amountSigned: formatSignedAmount({
         amount: Number(line.amount ?? 0),
         direction: line.direction === 'out' ? 'out' : 'in',
       }),
-      createdAt: formatDate(line.createdAt ?? null),
+      createdAt: formatDateTimeIso(line.createdAt ?? null),
       description: line.description ?? '',
       direction: line.direction ?? '',
       lineType: line.lineType,
       reference: line.reference ?? '',
-      statementDate: formatDate(line.statementDate),
+      statementDate: formatDateTimeIso(line.statementDate),
       status: line.status,
     })),
   );

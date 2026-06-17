@@ -8,7 +8,7 @@ import {
   fbEqualizeProductPrice,
   fbEqualizeProductsPrice,
 } from '@/firebase/products/fbEqualizeProductPrice';
-import { useGetProducts } from '@/firebase/products/fbGetProducts.js';
+import { useGetProducts } from '@/firebase/products/fbGetProducts';
 
 import { PriceAuditTable } from './components/PriceAuditTable';
 import { PriceAuditToolbar } from './components/PriceAuditToolbar';

@@ -1,7 +1,3 @@
-import {
-  getOrderConditionByID,
-  getOrderStateByID,
-} from '@/constants/orderAndPurchaseState';
 import type { ReactElement } from 'react';
 import type { ColumnConfig } from '@/components/ui/AdvancedTable/types/ColumnTypes';
 import { OrderActionButtons } from './tableCells';
@@ -9,13 +5,6 @@ import { OrderActionButtons } from './tableCells';
 type CellRenderer = (args: { value: unknown }) => ReactElement | null;
 
 type OrderTableColumn = Omit<ColumnConfig, 'cell'> & { cell?: CellRenderer };
-
-interface FilterConfigItem {
-  label: string;
-  accessor: string;
-  format?: (value: unknown) => string;
-  defaultValue?: string;
-}
 
 export const columns: OrderTableColumn[] = [
   {
@@ -96,26 +85,5 @@ export const columns: OrderTableColumn[] = [
     cell: ({ value }) => (
       <OrderActionButtons order={value as { id?: string }} />
     ),
-  },
-];
-
-export const filterConfig: FilterConfigItem[] = [
-  {
-    label: 'Proveedor',
-    accessor: 'provider',
-  },
-  {
-    label: 'Estado',
-    accessor: 'state',
-    format: (value) => {
-      const state = getOrderStateByID(value as string);
-      return typeof state === 'string' ? state : `${state?.name || ''}`;
-    },
-    defaultValue: 'state_2',
-  },
-  {
-    label: 'Condición',
-    accessor: 'condition',
-    format: (value) => `${getOrderConditionByID(value as string) || ''}`,
   },
 ];

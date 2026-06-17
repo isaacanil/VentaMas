@@ -1,11 +1,13 @@
 import { logger } from 'firebase-functions';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 
+import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.util.js';
 import {
   assertUserAccess,
   MEMBERSHIP_ROLE_GROUPS,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 import { assertBusinessSubscriptionAccess } from '../../../versions/v2/billing/utils/subscriptionAccess.util.js';
+import { normalizePositiveStockQuantity } from '../utils/stockQuantity.util.js';
 
 let firebaseModulePromise = null;
 
@@ -17,12 +19,6 @@ const getFirebase = async () => {
 };
 
 const MAX_IN_FILTER = 10;
-
-const sanitizeQuantity = (value) => {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) return 0;
-  return parsed;
-};
 
 const chunkArray = (items = [], size = 10) => {
   const chunks = [];
@@ -62,7 +58,7 @@ const processStockDoc = (doc, perBatch, stats) => {
 
   const isDeleted = data.isDeleted === true;
   const isActive = data.status === 'active' && !isDeleted;
-  const qty = sanitizeQuantity(data.quantity);
+  const qty = normalizePositiveStockQuantity(data.quantity);
 
   if (isActive) {
     entry.activeChildren += 1;
@@ -104,7 +100,7 @@ export const reconcileBatchStatusFromStocks = onCall(
       user: userPayload,
     } = req.data || {};
 
-    const authUid = req.auth?.uid || null;
+    const authUid = await resolveCallableAuthUid(req);
     if (!authUid) {
       throw new HttpsError('unauthenticated', 'Usuario no autenticado.');
     }
@@ -239,7 +235,7 @@ export const reconcileBatchStatusFromStocks = onCall(
         else stats.deactivatedBatches += 1;
       }
 
-      const currentQty = sanitizeQuantity(data.quantity);
+      const currentQty = normalizePositiveStockQuantity(data.quantity);
       if (currentQty !== expectedQty) {
         updates.quantity = expectedQty;
         stats.quantityAdjusted += 1;

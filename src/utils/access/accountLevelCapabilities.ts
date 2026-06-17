@@ -1,22 +1,14 @@
-import { PureAbility } from '@casl/ability';
+import { toCleanString } from '@/utils/text';
 
-import { defineAbilitiesFor } from '@/abilities';
+import { canBaseAbility } from './baseAbility';
 
 const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
 
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
-
 const canAction = (user: unknown, action: string): boolean => {
-  if (!user || typeof user !== 'object') return false;
-  const ability = new PureAbility(defineAbilitiesFor(user));
-  return ability.can(action, 'all');
+  return canBaseAbility(user, action, 'all');
 };
 
 export const isBusinessAccountOwner = (

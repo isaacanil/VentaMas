@@ -9,8 +9,8 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
-import { useCategoryState } from '@/Context/CategoryContext/useCategoryState';
-import { SelectCategoryList } from '@/features/category/categorySlicer';
+import { useCategoryState } from '@/context/CategoryContext/useCategoryState';
+import { SelectCategoryList } from '@/features/category/categorySlice';
 import { useFbGetCategories } from '@/firebase/categories/useFbGetCategories';
 import type { CategoryDocument } from '@/firebase/categories/types';
 import { useElementSize } from '@/hooks/useElementSize';

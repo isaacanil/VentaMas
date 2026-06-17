@@ -1,5 +1,5 @@
 import { Alert, Form, message } from 'antd';
-import type { InputNumberRef } from '@rc-component/input-number';
+import type { GetRef, InputNumber } from 'antd';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -14,9 +14,13 @@ import {
 } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
 import { useAccountingRolloutEnabled } from '@/hooks/useAccountingRolloutEnabled';
 import { useAccountingBankingSettings } from '@/hooks/useAccountingBankPaymentPolicy';
-import { useActiveBankAccounts } from '@/modules/expenses/pages/Expenses/ExpensesForm/hooks/useActiveBankAccounts';
+import { useActiveBankAccounts } from '@/modules/accounting/public';
 import { resolveConfiguredBankAccountId } from '@/utils/payments/bankPaymentPolicy';
 import { paymentMethodRequiresBankAccount } from '@/utils/payments/methods';
+import {
+  resolvePaymentMethodBootstrapUpdate,
+  resolvePaymentMethodStatusValue,
+} from '@/utils/payments/paymentMethodBootstrap';
 
 import { PaymentMethodRow } from './PaymentFields/PaymentMethodRow';
 import { Container, Items } from './PaymentFields/styles';
@@ -39,6 +43,7 @@ type PaymentInfo = {
 };
 
 type PaymentFieldKey = 'status' | 'value' | 'reference' | 'bankAccountId';
+type InputNumberRef = GetRef<typeof InputNumber>;
 
 export const PaymentFields = () => {
   const cashInputRef = useRef<InputNumberRef | null>(null);
@@ -132,47 +137,40 @@ export const PaymentFields = () => {
     }
   }, [visiblePaymentMethods]);
 
-  // Auto-rellenar efectivo si no hay ningún método de pago seleccionado
   useEffect(() => {
-    const totalPaymentValue = visiblePaymentMethods.reduce((total, method) => {
-      return method.status ? total + (Number(method.value) || 0) : total;
-    }, 0);
-
     const totalAmount = paymentDetails.totalAmount || 0;
+    if (totalAmount <= 0) return;
 
-    // Solo auto-activar si no hay ningún método activo y hay un monto a pagar
-    if (totalPaymentValue === 0 && totalAmount > 0) {
-      const cashMethod = visiblePaymentMethods.find(
-        (method) => method.method === 'cash',
+    const bootstrapMethod = resolvePaymentMethodBootstrapUpdate({
+      isAddedToReceivables: false,
+      paymentMethods: visiblePaymentMethods,
+      purchaseTotal: totalAmount,
+    });
+    if (!bootstrapMethod) return;
+
+    const currentMethod = visiblePaymentMethods.find(
+      (method) => method.method === bootstrapMethod.method,
+    );
+
+    if (!currentMethod?.status) {
+      dispatch(
+        updatePaymentMethod({
+          method: bootstrapMethod.method,
+          key: 'status',
+          value: true,
+        }),
       );
-      if (cashMethod && !cashMethod.status) {
-        // Activar efectivo automáticamente y asignar el monto total
-        dispatch(
-          updatePaymentMethod({
-            method: cashMethod.method,
-            key: 'status',
-            value: true,
-          }),
-        );
-        dispatch(
-          updatePaymentMethod({
-            method: cashMethod.method,
-            key: 'value',
-            value: totalAmount,
-          }),
-        );
-      } else if (cashMethod && cashMethod.status && cashMethod.value === 0) {
-        // Si ya está activo pero sin valor, asignar el monto total
-        dispatch(
-          updatePaymentMethod({
-            method: cashMethod.method,
-            key: 'value',
-            value: totalAmount,
-          }),
-        );
-      }
     }
-  }, [dispatch, paymentDetails.totalAmount, visiblePaymentMethods]); // Usar visiblePaymentMethods
+    if (Number(currentMethod?.value) !== Number(bootstrapMethod.value)) {
+      dispatch(
+        updatePaymentMethod({
+          method: bootstrapMethod.method,
+          key: 'value',
+          value: bootstrapMethod.value,
+        }),
+      );
+    }
+  }, [dispatch, paymentDetails.totalAmount, visiblePaymentMethods]);
 
   const setErrors = (
     method: string,
@@ -248,15 +246,14 @@ export const PaymentFields = () => {
     let newValue = method.value;
 
     if (status && (!newValue || newValue === 0 || autoValue)) {
-      const currentTotal = visiblePaymentMethods.reduce((total, m) => {
-        if (m.status && m.method !== method.method) {
-          return total + (Number(m.value) || 0);
-        }
-        return total;
-      }, 0);
-
-      const remaining = (paymentDetails.totalAmount || 0) - currentTotal;
-      newValue = autoValue || (remaining > 0 ? remaining : 0);
+      newValue =
+        autoValue ||
+        resolvePaymentMethodStatusValue({
+          method,
+          paymentMethods: visiblePaymentMethods,
+          status,
+          totalPurchase: paymentDetails.totalAmount || 0,
+        });
     }
 
     // Validar que al menos un método esté seleccionado

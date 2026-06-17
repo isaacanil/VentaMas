@@ -124,4 +124,46 @@ describe('dgii607ValidationEngine.service', () => {
       ]),
     );
   });
+
+  it('rechaza nota de debito sin NCF modificado', () => {
+    const draft = buildDgii607Draft({
+      record: {
+        counterparty: {
+          identification: {
+            number: '101010101',
+          },
+        },
+        data: {
+          NCF: 'B0300000009',
+        },
+        issuedAt: '2026-04-10T09:30:00.000Z',
+        totals: {
+          total: 350,
+          tax: 0,
+        },
+        paymentBreakdown: {
+          creditSale: 350,
+        },
+      },
+      firestoreDoc: {
+        paymentBreakdown: {
+          creditSale: 350,
+        },
+      },
+      isDebit: true,
+      originalNcf: '',
+    });
+
+    const validation = validateDgii607Draft(draft);
+
+    expect(validation.ok).toBe(false);
+    expect(validation.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          fieldKey: 'modifiedNcf',
+          code: 'missing-modified-ncf',
+        }),
+      ]),
+    );
+  });
 });

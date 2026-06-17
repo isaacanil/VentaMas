@@ -1,13 +1,13 @@
-import {
-  Alert,
-  Button,
-  Card,
-  SearchField,
-  Surface,
-} from '@heroui/react';
 import { message } from 'antd';
 import { useState } from 'react';
 
+import {
+  VmAlert,
+  VmButton,
+  VmCard,
+  VmSearchField,
+  VmSurface,
+} from '@/components/heroui';
 import { FileExcelOutlined, InfoCircleOutlined } from '@/constants/icons/antd';
 
 import {
@@ -78,7 +78,7 @@ export const FinancialReportsPanel = ({
     <div className="flex flex-col gap-5 py-6 pb-8">
       {selectedPeriodKey && reports ? (
         <>
-          <Surface
+          <VmSurface
             variant="secondary"
             className="flex flex-wrap items-center justify-between gap-3 rounded-xl p-4 shadow-sm"
           >
@@ -98,24 +98,24 @@ export const FinancialReportsPanel = ({
                 ))}
               </select>
 
-              <SearchField
+              <VmSearchField
                 variant="secondary"
                 aria-label="Buscar cuenta"
                 value={searchQuery}
                 onChange={setSearchQuery}
               >
-                <SearchField.Group>
-                  <SearchField.SearchIcon />
-                  <SearchField.Input
+                <VmSearchField.Group>
+                  <VmSearchField.SearchIcon />
+                  <VmSearchField.Input
                     className="w-[240px]"
                     placeholder="Buscar cuenta o código..."
                   />
-                  <SearchField.ClearButton />
-                </SearchField.Group>
-              </SearchField>
+                  <VmSearchField.ClearButton />
+                </VmSearchField.Group>
+              </VmSearchField>
             </div>
 
-            <Button
+            <VmButton
               variant="outline"
               isPending={exporting}
               onPress={() => {
@@ -124,8 +124,8 @@ export const FinancialReportsPanel = ({
             >
               {exporting ? null : <FileExcelOutlined />}
               Exportar Excel
-            </Button>
-          </Surface>
+            </VmButton>
+          </VmSurface>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <SummaryCard
@@ -146,7 +146,7 @@ export const FinancialReportsPanel = ({
             />
           </div>
 
-          <Card className="flex flex-col gap-3 p-5">
+          <VmCard className="flex flex-col gap-3 p-5">
             <h3 className="m-0 text-md font-semibold text-primary">
               Balanza de comprobación
             </h3>
@@ -199,10 +199,10 @@ export const FinancialReportsPanel = ({
                 </tbody>
               </table>
             </div>
-          </Card>
+          </VmCard>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <Card className="flex flex-col gap-3 p-5">
+            <VmCard className="flex flex-col gap-3 p-5">
               <h3 className="m-0 text-md font-semibold text-primary">
                 Estado de resultados
               </h3>
@@ -225,9 +225,9 @@ export const FinancialReportsPanel = ({
                   </strong>
                 </div>
               </div>
-            </Card>
+            </VmCard>
 
-            <Card className="flex flex-col gap-3 p-5">
+            <VmCard className="flex flex-col gap-3 p-5">
               <h3 className="m-0 text-md font-semibold text-primary">
                 Balance general
               </h3>
@@ -255,19 +255,19 @@ export const FinancialReportsPanel = ({
                   </strong>
                 </div>
               </div>
-            </Card>
+            </VmCard>
           </div>
         </>
       ) : error ? (
-        <Alert status="danger">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Title>
+        <VmAlert status="danger">
+          <VmAlert.Indicator />
+          <VmAlert.Content>
+            <VmAlert.Title>
               No se pudieron cargar los reportes financieros.
-            </Alert.Title>
-            <Alert.Description>{error}</Alert.Description>
-          </Alert.Content>
-        </Alert>
+            </VmAlert.Title>
+            <VmAlert.Description>{error}</VmAlert.Description>
+          </VmAlert.Content>
+        </VmAlert>
       ) : (
         <p className="m-0 text-base leading-normal text-secondary">
           {loading
@@ -290,7 +290,7 @@ const SummaryCard = ({
   tooltip: string;
   isNegative?: boolean;
 }) => (
-  <Card
+  <VmCard
     className={`flex flex-col gap-1 p-4 ${
       isNegative ? 'border-danger-subtle bg-danger-subtle' : ''
     }`}
@@ -311,7 +311,7 @@ const SummaryCard = ({
     >
       {value}
     </strong>
-  </Card>
+  </VmCard>
 );
 
 const CompactRow = ({

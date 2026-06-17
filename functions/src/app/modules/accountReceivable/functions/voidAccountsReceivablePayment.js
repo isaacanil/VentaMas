@@ -2,10 +2,11 @@ import { HttpsError, onCall } from 'firebase-functions/v2/https';
 
 import { db, Timestamp, FieldValue } from '../../../core/config/firebase.js';
 import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.util.js';
+import { sanitizeForResponse } from '../../../core/utils/responseSerialization.util.js';
 import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 import { LIMIT_OPERATION_KEYS } from '../../../versions/v2/billing/config/limitOperations.config.js';
 import { assertBusinessSubscriptionAccess } from '../../../versions/v2/billing/utils/subscriptionAccess.util.js';
 import { toCleanString } from '../../../versions/v2/billing/utils/billingCommon.util.js';
@@ -23,6 +24,9 @@ import { assertAccountingPeriodOpenInTransaction } from '../../../versions/v2/ac
 import { buildReceivablePaymentVoidCashMovements } from '../../../versions/v2/accounting/utils/cashMovement.util.js';
 import { buildClientPendingBalanceUpdate } from '../utils/clientPendingBalance.util.js';
 import { buildVoidReceivablePaymentPlan } from '../utils/receivablePaymentVoid.util.js';
+import {
+  isCashMovementReconciledOrLinked,
+} from '../../treasury/utils/cashMovementReconciliation.util.js';
 
 const THRESHOLD = 0.01;
 
@@ -145,25 +149,6 @@ const buildReceivableFxSettlementVoidAccountingEvent = ({
   });
 };
 
-const sanitizeForResponse = (value) => {
-  if (value instanceof Timestamp) {
-    return value.toMillis();
-  }
-  if (Array.isArray(value)) {
-    return value.map((item) => sanitizeForResponse(item));
-  }
-  if (!value || typeof value !== 'object') {
-    return value;
-  }
-
-  const next = {};
-  Object.entries(value).forEach(([key, nestedValue]) => {
-    if (nestedValue === undefined) return;
-    next[key] = sanitizeForResponse(nestedValue);
-  });
-  return next;
-};
-
 const toEpochMillis = (value) => {
   if (value instanceof Timestamp) {
     return value.toMillis();
@@ -256,14 +241,6 @@ const paymentMethodsRequireCashCount = (paymentMethods) =>
     const methodCode = toCleanString(method?.method)?.toLowerCase() || null;
     return methodCode === 'cash' || methodCode === 'open_cash';
   });
-
-const isReconciledMovement = (movementRecord) =>
-  Boolean(
-    toCleanString(movementRecord.reconciliationId) ||
-      toCleanString(movementRecord.bankStatementLineId) ||
-      toCleanString(movementRecord.reconciliationStatus)?.toLowerCase() ===
-        'reconciled',
-  );
 
 const resolvePaymentAmount = (paymentRecord) => {
   const totalApplied = roundToTwoDecimals(paymentRecord?.totalApplied);
@@ -627,7 +604,7 @@ export const voidAccountsReceivablePayment = onCall(async (request) => {
     }
 
     const reconciledMovement = cashMovementsSnap.docs.find((docSnap) =>
-      isReconciledMovement(asRecord(docSnap.data())),
+      isCashMovementReconciledOrLinked(asRecord(docSnap.data())),
     );
     if (reconciledMovement) {
       throw new HttpsError(

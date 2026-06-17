@@ -1,5 +1,6 @@
-import { saveAs } from 'file-saver';
 import { DateTime } from 'luxon';
+
+import { saveXlsxFile } from '@/utils/export/xlsx';
 
 /**
  * Export Inventory Summary rows to an Excel file using exceljs.
@@ -120,13 +121,10 @@ export async function exportInventorySummaryToExcel(
   sheet.getColumn('inventoryValueListPrice').numFmt = '$#,##0.00';
 
   const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], {
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  saveXlsxFile({
+    content: buffer,
+    fileName: `${filenamePrefix}_${DateTime.local().toFormat('yyyy-LL-dd')}.xlsx`,
   });
-  saveAs(
-    blob,
-    `${filenamePrefix}_${DateTime.local().toFormat('yyyy-LL-dd')}.xlsx`,
-  );
 }
 
 export default exportInventorySummaryToExcel;

@@ -33,9 +33,9 @@ import type {
   HrPayrollEmployeeLineRecord,
   HrPayrollRunStatus,
 } from '@/types/hrPayroll';
-import { formatHrDepositAccount } from '@/utils/hrPayroll/depositAccounts';
+import { formatHrDepositAccount } from '@/domain/hrPayroll/depositAccounts';
+import { DetailLinkButton } from './HrCommissionPeriodsPage.columns.styles';
 import {
-  DetailLinkButton,
   ExportMenuItemContent,
   ExportMenuItemDescription,
   ExportMenuItemTitle,

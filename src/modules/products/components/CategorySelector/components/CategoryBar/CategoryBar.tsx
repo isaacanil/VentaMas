@@ -4,9 +4,9 @@ import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
-import { deleteItem } from '@/features/category/categorySlicer';
-import { useMoveScroll } from '@/utils/scroll/moveScroll';
+import { deleteItem } from '@/features/category/categorySlice';
 import { categoryColors } from '../../categoryColors';
+import { useMoveScroll } from './useMoveScroll';
 
 interface CategorySelectionItem {
   id: string;

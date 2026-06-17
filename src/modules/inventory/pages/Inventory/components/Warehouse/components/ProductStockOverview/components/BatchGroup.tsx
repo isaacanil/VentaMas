@@ -10,29 +10,16 @@ import type { MenuProps } from 'antd';
 import { useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 
-import type { LocationNamesMap, TimestampLike } from '@/utils/inventory/types';
+import type { LocationNamesMap } from '@/utils/inventory/types';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
 
 import ProductStock from './ProductStock';
 import type { BatchGroupData, ProductStockItem, StockStatus } from '../types';
-
-const toDateMs = (value: TimestampLike): number | null => {
-  if (!value) return null;
-  if (value instanceof Date)
-    return Number.isNaN(value.getTime()) ? null : value.getTime();
-  if (typeof value === 'number' || typeof value === 'string') {
-    const parsed = new Date(value);
-    return Number.isNaN(parsed.getTime()) ? null : parsed.getTime();
-  }
-  if (typeof (value as { seconds?: number }).seconds === 'number') {
-    return (value as { seconds: number }).seconds * 1000;
-  }
-  if (typeof (value as { toDate?: () => Date }).toDate === 'function') {
-    const parsed = (value as { toDate: () => Date }).toDate();
-    return Number.isNaN(parsed.getTime()) ? null : parsed.getTime();
-  }
-  return null;
-};
+import {
+  formatBatchLabel,
+  formatStockQuantity,
+  toStockDateMs,
+} from '../utils/stockDisplay';
 
 const BatchContainer = styled.div`
   padding: 6px;
@@ -181,13 +168,17 @@ const BatchGroup = ({
     [getStockStatus, group.total],
   );
   const formattedTotal = useMemo(
-    () => Number(group.total ?? 0).toLocaleString(),
+    () => formatStockQuantity(group.total),
     [group.total],
   );
   const expirationDateMs = useMemo(
-    () => toDateMs(group.expirationDate),
+    () => toStockDateMs(group.expirationDate),
     [group.expirationDate],
   );
+  const batchLabel = formatBatchLabel(group.batchNumberId, {
+    noBatchLabel: 'Sin lote asignado',
+    prefix: 'Lote #',
+  });
 
   const menuItems: MenuProps['items'] = useMemo(
     () => [
@@ -214,11 +205,7 @@ const BatchGroup = ({
     <BatchContainer>
       <div className="batch-header">
         <div className="batch-info">
-          <div className="batch-number">
-            {group.batchNumberId
-              ? `Lote #${group.batchNumberId}`
-              : 'Sin lote asignado'}
-          </div>
+          <div className="batch-number">{batchLabel}</div>
           <div className="batch-meta">
             {expirationDateMs ? (
               <span className="meta-item">

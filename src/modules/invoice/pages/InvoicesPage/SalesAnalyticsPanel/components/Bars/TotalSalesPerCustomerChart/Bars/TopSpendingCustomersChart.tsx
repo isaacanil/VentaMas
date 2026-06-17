@@ -2,9 +2,10 @@ import React, { useMemo } from 'react';
 import type { SalesRecord } from '../../../../utils';
 import { toNumber } from '../../../../utils';
 import { LazyBar } from '@/components/charts/LazyCharts';
+import { createSingleDatasetBarData } from '@/components/charts/barChartData';
 import styled from 'styled-components';
 
-import Typography from '@/components/ui/Typografy/Typografy';
+import Typography from '@/components/ui/Typography/Typography';
 
 const options = {
   responsive: true,
@@ -60,18 +61,13 @@ export const TopSpendingCustomersChart = ({
     const labels = Object.keys(top20SpendingCustomers);
     const dataTotals = labels.map((label) => top20SpendingCustomers[label]);
 
-    return {
+    return createSingleDatasetBarData({
       labels,
-      datasets: [
-        {
-          label: 'Ventas ($)',
-          data: dataTotals,
-          backgroundColor: 'rgba(54, 162, 235, 0.2)',
-          borderColor: 'rgba(54, 162, 235, 1)',
-          borderWidth: 1,
-        },
-      ],
-    };
+      values: dataTotals,
+      datasetLabel: 'Ventas ($)',
+      backgroundColor: 'rgba(54, 162, 235, 0.2)',
+      borderColor: 'rgba(54, 162, 235, 1)',
+    });
   }, [top20SpendingCustomers]);
 
   if (!normalizedSales.length) {

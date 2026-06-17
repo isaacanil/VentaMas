@@ -1,24 +1,17 @@
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
+import {
+  loadOrderManagementRoute,
+  loadOrdersRoute,
+  loadPurchaseManagementRoute,
+} from '@/modules/orderAndPurchase/public';
 
 import ROUTES_NAME from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/types/routeTypes';
 
 // Lazy load components
-const Orders = lazy(() =>
-  import('@/modules/orderAndPurchase/pages/OrderAndPurchase/Order/Orders').then(
-    (module) => ({
-      default: module.Orders,
-    }),
-  ),
-);
-const OrderManagement = lazy(
-  () =>
-    import('@/modules/orderAndPurchase/pages/OrderAndPurchase/OrderManagement/OrderManagement'),
-);
-const PurchaseManagement = lazy(
-  () =>
-    import('@/modules/orderAndPurchase/pages/OrderAndPurchase/PurchaseManagement/PurchaseManagement'),
-);
+const Orders = lazy(loadOrdersRoute);
+const OrderManagement = lazy(loadOrderManagementRoute);
+const PurchaseManagement = lazy(loadPurchaseManagementRoute);
 
 const { ORDERS, ORDERS_CREATE, ORDERS_UPDATE, ORDERS_CONVERT } =
   ROUTES_NAME.ORDER_TERM;

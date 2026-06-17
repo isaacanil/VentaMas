@@ -1,6 +1,4 @@
-import ExcelJS from 'exceljs';
 import { Spin, Empty, message } from 'antd';
-import { saveAs } from 'file-saver';
 import { AnimatePresence } from 'framer-motion';
 import { useMemo, useReducer } from 'react';
 import { useSelector } from 'react-redux';
@@ -10,9 +8,10 @@ import {
   useEnrichedBackOrders,
   updateBackOrder,
 } from '@/firebase/warehouse/backOrderService';
-import InventoryMenu from '@/modules/inventory/pages/Inventory/components/Warehouse/components/DetailView/InventoryMenu';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { InventoryMenu } from '@/modules/inventory/public';
+import { MenuApp } from '@/modules/navigation/public';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
+import { saveXlsxFile } from '@/utils/export/xlsx';
 import type { UserIdentity } from '@/types/users';
 
 import FulfillModal from './components/FulfillModal';
@@ -153,6 +152,9 @@ const BackOrders = () => {
   }, [backorders, searchText, dateRange, statusFilter]);
 
   const handleExport = async () => {
+    const { default: ExcelJS } = (await import('exceljs')) as unknown as {
+      default: typeof import('exceljs');
+    };
     const wb = new ExcelJS.Workbook();
     const ws = wb.addWorksheet('Backorders');
 
@@ -211,12 +213,10 @@ const BackOrders = () => {
 
     const buf = await wb.xlsx.writeBuffer();
     const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
-    saveAs(
-      new Blob([buf], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      }),
-      `backorders_${stamp}.xlsx`,
-    );
+    saveXlsxFile({
+      content: buf,
+      fileName: `backorders_${stamp}.xlsx`,
+    });
   };
 
   const groupedBackorders = useMemo(() => {

@@ -1,12 +1,9 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 import { printPdfBase64 } from '@/utils/printPdf';
 import {
   isInvoiceTemplateV2Beta,
   isInvoiceTemplateV4PdfMake,
 } from '@/utils/invoice/template';
-// import { generateInvoiceLetterPdf, generateInvoiceLetterPdfNoLogo } from "@/pdf/invoices/templates/template2-pdf-lib/InvoiceLetterPdf";
 
 type BusinessData = Record<string, unknown>;
 type QuotationData = Record<string, unknown>;
@@ -18,6 +15,15 @@ type InvoicePdfModule = {
     data: QuotationData,
   ) => Promise<string>;
 };
+type QuotationPdfPayload = {
+  businessId: string;
+  business: BusinessData;
+  data: QuotationData;
+};
+
+const createQuotationPdf = createFirebaseCallable<QuotationPdfPayload, string>(
+  'quotationPdf',
+);
 
 export function sanitizeNumbers<T>(obj: T): T {
   return JSON.parse(
@@ -57,13 +63,26 @@ function collectNonFiniteNumberPaths(
 }
 
 export async function downloadQuotationPdf(
+  businessId: string | null | undefined,
   business: BusinessData,
   data: QuotationData,
   onDialogClose?: DialogCloseHandler,
 ): Promise<void> {
   try {
-    const invalidBusinessPaths = collectNonFiniteNumberPaths(business, 'business');
-    const invalidQuotationPaths = collectNonFiniteNumberPaths(data, 'quotation');
+    const resolvedBusinessId =
+      typeof businessId === 'string' ? businessId.trim() : '';
+    if (!resolvedBusinessId) {
+      throw new Error('No se pudo identificar el negocio de la cotización.');
+    }
+
+    const invalidBusinessPaths = collectNonFiniteNumberPaths(
+      business,
+      'business',
+    );
+    const invalidQuotationPaths = collectNonFiniteNumberPaths(
+      data,
+      'quotation',
+    );
     const invalidPaths = [...invalidBusinessPaths, ...invalidQuotationPaths];
 
     if (invalidPaths.length > 0) {
@@ -77,15 +96,15 @@ export async function downloadQuotationPdf(
       });
     }
 
-    const fn = httpsCallable<
-      { business: BusinessData; data: QuotationData },
-      string
-    >(functions, 'quotationPdf');
-    const payload = sanitizeNumbers({ business, data });
+    const payload = sanitizeNumbers({
+      businessId: resolvedBusinessId,
+      business,
+      data,
+    });
     console.info('[QuotationDebug][PDF] Calling quotationPdf', {
       quotationId: data?.id ?? null,
     });
-    const { data: base64 } = await fn(payload);
+    const base64 = await createQuotationPdf(payload);
     console.info('[QuotationDebug][PDF] quotationPdf success', {
       quotationId: data?.id ?? null,
       hasBase64: typeof base64 === 'string' && base64.length > 0,
@@ -136,16 +155,10 @@ export async function downloadInvoicePdf({
     const templateModule: InvoicePdfModule = isInvoiceTemplateV4PdfMake(
       invoiceType,
     )
-      ? await import(
-          '../../pdf/invoicesAndQuotation/invoices/templates/template2-v4/InvoiceLetterPdf'
-        )
+      ? await import('../../pdf/invoicesAndQuotation/invoices/templates/template2-v4/InvoiceLetterPdf')
       : isInvoiceTemplateV2Beta(invoiceType)
-        ? await import(
-            '../../pdf/invoicesAndQuotation/invoices/templates/template2-v2/InvoiceLetterPdf'
-          )
-        : await import(
-            '../../pdf/invoicesAndQuotation/invoices/templates/template2/InvoiceLetterPdf'
-          );
+        ? await import('../../pdf/invoicesAndQuotation/invoices/templates/template2-v2/InvoiceLetterPdf')
+        : await import('../../pdf/invoicesAndQuotation/invoices/templates/template2/InvoiceLetterPdf');
     const { generateInvoiceLetterPdf } = templateModule;
     const base64 = await generateInvoiceLetterPdf(business, data);
 

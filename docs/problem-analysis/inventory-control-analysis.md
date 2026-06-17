@@ -1,6 +1,6 @@
 # Análisis del Módulo de Control de Inventario
 
-**Ruta Analizada:** `src/views/pages/InventoryControl/**`
+**Ruta Analizada:** `src/modules/inventory/pages/InventoryControl/**`
 **Fecha:** 29 de Diciembre de 2025
 
 Este documento detalla los hallazgos tras revisar el código fuente del módulo de Control de Inventario. Se han categorizado los puntos en problemas de rendimiento, anti-patrones y mejores prácticas ausentes.
@@ -35,7 +35,7 @@ Este documento detalla los hallazgos tras revisar el código fuente del módulo 
 
 ### 🟡 Cálculos Pesados en el Render (Cliente)
 
-- **Ubicación:** `utils/buildInventoryGroups.js` invocado en `InventoryControl.jsx`.
+- **Ubicación:** `utils/buildInventoryGroups.ts` invocado en `InventoryControl.tsx`.
 - **El Problema:** La agrupación y filtrado de todos los stocks se realiza en el cliente en cada render o cambio de búsqueda.
 - **Impacto:** "Jank" (interfaz trabada) al escribir en el buscador si el inventario supera unos pocos miles de ítems.
 
@@ -50,7 +50,7 @@ Este documento detalla los hallazgos tras revisar el código fuente del módulo 
 
 ### ❌ Lógica de Negocio Compleja en JSX
 
-- **Ubicación:** `components/GroupedLotsModal.jsx`.
+- **Ubicación:** `components/GroupedLotsModal.tsx`.
 - **El Problema:** Cálculos complejos de variables (`aggregatedTopCount`, `real`, `diff`, `isMarkedForRemoval`) mezclados directamente dentro del retorno del componente (render).
 - **Riesgo:** Dificulta la legibilidad, el mantenimiento y hace imposible el testeo unitario de esa lógica.
 
@@ -79,6 +79,6 @@ Este documento detalla los hallazgos tras revisar el código fuente del módulo 
 ## Plan de Acción Sugerido
 
 1.  **Prioridad 1 (Performance/Seguridad):** Refactorizar `useInventoryCounts.js` para usar `batch.commit()` en lugar de escrituras secuenciales.
-2.  **Prioridad 2 (Limpieza):** Mover `migrateInventoryCounts.js` fuera de `src/views`.
+2.  **Prioridad 2 (Limpieza):** Mantener scripts de migración fuera del bundle cliente y dentro de herramientas/administración.
 3.  **Prioridad 3 (UX/Performance):** Optimizar la resolución de nombres de ubicaciones (evitar N+1 reads).
 4.  **Prioridad 4 (Arquitectura):** Planear la paginación para `productsStock` para soportar inventarios grandes.

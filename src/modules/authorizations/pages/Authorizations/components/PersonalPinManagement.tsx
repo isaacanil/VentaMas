@@ -12,9 +12,9 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
-import { useAuthorizationModules } from '@/hooks/useAuthorizationModules';
-import { GeneratePinModal } from '@/modules/settings/pages/setting/subPage/AuthorizationConfig/components/GeneratePinModal';
-import { PinDetailsModal } from '@/modules/settings/pages/setting/subPage/AuthorizationConfig/components/PinDetailsModal';
+import { useAuthorizationModules } from '@/modules/authorizations/hooks/useAuthorizationModules';
+import { GeneratePinModal } from '@/modules/authorizations/components/pinManagement/GeneratePinModal';
+import { PinDetailsModal } from '@/modules/authorizations/components/pinManagement/PinDetailsModal';
 import type { UserIdentity } from '@/types/users';
 import { hasAuthorizationPinSelfGenerateAccess } from '@/utils/access/authorizationAccess';
 

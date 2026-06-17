@@ -23,7 +23,7 @@ Detectar productos con existencia baja o crítica y notificar por correo electr�
 - (A) Evento inmediato (onWrite / trigger) – pendiente o en otra parte del código.
 - (B) Resumen diario ("digest") – implementado en `stockAlertsDailyDigest` (programado vía Cloud Scheduler / functions v2 `onSchedule`).
 
-Este documento se centra en el digest diario (archivo: `functions/src/modules/Inventory/functions/stockAlertsDailyDigest.js`).
+Este documento se centra en el digest diario (archivo: `functions/src/app/modules/Inventory/functions/stockAlertsDailyDigest.js`).
 
 ---
 
@@ -36,6 +36,7 @@ Este documento se centra en el digest diario (archivo: `functions/src/modules/In
 | Subdocumento `businesses/{businessId}/settings/billing` | Almacena configuración de alertas (activación, emails, thresholds).     |
 | Subcolección `businesses/{businessId}/productsStock`    | Inventario (campos claves: `quantity`, `status`, `productName`).        |
 | `mailer.js`                                             | Abstracción para envío de correo vía nodemailer y parámetros/secretos.  |
+| `emailContent.util.js`                                  | Sanea headers y contenido HTML usado por los correos del digest.         |
 | Parámetros / Secrets (`secrets.js`)                     | Fuentes de configuración para runtime (defineString / defineSecret).    |
 
 ---
@@ -50,7 +51,7 @@ Este documento se centra en el digest diario (archivo: `functions/src/modules/In
    - Determina umbrales: `stockLowThreshold` y `stockCriticalThreshold` (defaults 20 y 10 si faltan).
    - Consulta productos con `quantity <= low` y `status == 'active' OR status == null` (dos queries fusionadas; fallback a una sola query si falla por índices).
    - Clasifica productos en CRÍTICOS (<= critical) y BAJOS (> critical y <= low).
-   - Si hay al menos uno, construye HTML + texto y envía correo (o lo simula si `STOCK_ALERT_DRY_RUN=true`).
+   - Si hay al menos uno, sanea headers/contenido HTML, construye HTML + texto y envía correo (o lo simula si `STOCK_ALERT_DRY_RUN=true`).
 4. Registra métricas (contadores de skips, negocios procesados, etc.) y logs detallados si `debug` o `verbose`.
 
 ---
@@ -281,9 +282,10 @@ Los logs finales incluyen un resumen (`summary`) con métricas de saltos.
 
 ### 18. Referencias de Código
 
-- `functions/src/modules/Inventory/functions/stockAlertsDailyDigest.js`
-- `functions/src/core/config/mailer.js`
-- `functions/src/core/config/secrets.js` (para parámetros y defineSecret)
+- `functions/src/app/modules/Inventory/functions/stockAlertsDailyDigest.js`
+- `functions/src/app/core/config/mailer.js`
+- `functions/src/app/core/config/secrets.js` (para parámetros y defineSecret)
+- `functions/src/app/core/utils/emailContent.util.js` (saneo de headers y HTML)
 
 ---
 

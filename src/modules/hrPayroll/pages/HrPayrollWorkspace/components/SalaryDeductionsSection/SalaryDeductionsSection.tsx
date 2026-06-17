@@ -1,10 +1,11 @@
 import { VmNumberField } from '@/components/heroui';
 import type { HrSalaryDeductionLine } from '@/types/hrPayroll';
+import { formatLocaleCurrency } from '@/utils/format/currency';
 import {
   getSalaryDeductionRate,
   SALARY_DEDUCTION_PRESETS,
   upsertSalaryDeductionRate,
-} from '@/utils/hrPayroll/salaryDeductions';
+} from '@/domain/hrPayroll/salaryDeductions';
 
 import {
   Field,
@@ -23,11 +24,9 @@ interface SalaryDeductionsSectionProps {
 
 const formatEstimatedAmount = (baseSalaryAmount: number, rate: number) => {
   const amount = (Math.max(0, baseSalaryAmount) * Math.max(0, rate)) / 100;
-  return new Intl.NumberFormat('es-DO', {
-    style: 'currency',
-    currency: 'DOP',
+  return formatLocaleCurrency(Number.isFinite(amount) ? amount : 0, 'DOP', {
     maximumFractionDigits: 2,
-  }).format(Number.isFinite(amount) ? amount : 0);
+  });
 };
 
 export function SalaryDeductionsSection({

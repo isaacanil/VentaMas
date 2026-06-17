@@ -240,4 +240,242 @@ describe('electronicTaxReceiptOutbox.service', () => {
       tx.update.mock.calls[0][1]['snapshot.electronicTaxReceipt'].lastError,
     ).toBeNull();
   });
+
+  it('refreshes an E34 credit note document status from GISYS', async () => {
+    const creditNoteDoc = {
+      status: 'electronic_pending',
+      ncf: 'E340000000001',
+      electronicTaxReceipt: {
+        status: 'issued',
+        mode: 'required',
+        documentType: 'E34',
+        requestHash: 'request-hash',
+        submissionId: 'sub-34',
+        eNcf: 'E340000000001',
+      },
+    };
+    const creditNoteRef = {
+      path: 'businesses/business-1/creditNotes/credit-note-1',
+      get: vi.fn(async () => ({
+        exists: true,
+        data: () => creditNoteDoc,
+      })),
+    };
+    const businessRef = {
+      get: vi.fn(async () => ({
+        exists: true,
+        data: () => ({}),
+      })),
+    };
+    const tx = {
+      get: vi.fn(async () => ({
+        data: () => creditNoteDoc,
+      })),
+      set: vi.fn(),
+      update: vi.fn(),
+    };
+
+    db.doc.mockImplementation((path) => {
+      if (path === 'businesses/business-1/creditNotes/credit-note-1') {
+        return creditNoteRef;
+      }
+      if (path === 'businesses/business-1') {
+        return businessRef;
+      }
+      throw new Error(`Unexpected doc path: ${path}`);
+    });
+    db.runTransaction.mockImplementation(async (callback) => callback(tx));
+    refreshGisysFactDocumentStatus.mockResolvedValue({
+      eNcf: 'E340000000001',
+      dgiiValidationStatus: 'accepted',
+      dgiiStatus: 'accepted',
+    });
+
+    const result = await refreshElectronicTaxReceiptStatus({
+      businessId: 'business-1',
+      creditNoteId: 'credit-note-1',
+      documentKind: 'creditNote',
+    });
+
+    expect(result.documentKind).toBe('creditNote');
+    expect(result.creditNoteId).toBe('credit-note-1');
+    expect(tx.update).toHaveBeenCalledWith(
+      creditNoteRef,
+      expect.objectContaining({
+        ncf: 'E340000000001',
+        eNcf: 'E340000000001',
+        status: 'issued',
+        fiscalMode: 'electronic_ecf',
+        documentFormat: 'electronic',
+      }),
+    );
+    expect(tx.update.mock.calls[0][1].electronicTaxReceipt.status).toBe(
+      'accepted',
+    );
+  });
+
+  it('refreshes an E33 debit note document status from GISYS', async () => {
+    const debitNoteDoc = {
+      status: 'electronic_pending',
+      ncf: 'E330000000001',
+      electronicTaxReceipt: {
+        status: 'issued',
+        mode: 'required',
+        documentType: 'E33',
+        requestHash: 'request-hash',
+        submissionId: 'sub-33',
+        eNcf: 'E330000000001',
+      },
+    };
+    const debitNoteRef = {
+      path: 'businesses/business-1/debitNotes/debit-note-1',
+      get: vi.fn(async () => ({
+        exists: true,
+        data: () => debitNoteDoc,
+      })),
+    };
+    const businessRef = {
+      get: vi.fn(async () => ({
+        exists: true,
+        data: () => ({}),
+      })),
+    };
+    const tx = {
+      get: vi.fn(async () => ({
+        data: () => debitNoteDoc,
+      })),
+      set: vi.fn(),
+      update: vi.fn(),
+    };
+
+    db.doc.mockImplementation((path) => {
+      if (path === 'businesses/business-1/debitNotes/debit-note-1') {
+        return debitNoteRef;
+      }
+      if (path === 'businesses/business-1') {
+        return businessRef;
+      }
+      throw new Error(`Unexpected doc path: ${path}`);
+    });
+    db.runTransaction.mockImplementation(async (callback) => callback(tx));
+    refreshGisysFactDocumentStatus.mockResolvedValue({
+      eNcf: 'E330000000001',
+      requestStatus: 'accepted',
+      dgiiValidationStatus: 'accepted',
+      dgiiStatus: 'accepted',
+      dgiiMessage: 'Documento firmado localmente y encolado para envio DGII.',
+    });
+
+    const result = await refreshElectronicTaxReceiptStatus({
+      businessId: 'business-1',
+      debitNoteId: 'debit-note-1',
+      documentKind: 'debitNote',
+    });
+
+    expect(result.documentKind).toBe('debitNote');
+    expect(result.debitNoteId).toBe('debit-note-1');
+    expect(tx.update).toHaveBeenCalledWith(
+      debitNoteRef,
+      expect.objectContaining({
+        ncf: 'E330000000001',
+        eNcf: 'E330000000001',
+        status: 'issued',
+        fiscalMode: 'electronic_ecf',
+        documentFormat: 'electronic',
+      }),
+    );
+    expect(tx.update.mock.calls[0][1].electronicTaxReceipt.status).toBe(
+      'accepted',
+    );
+    expect(tx.update.mock.calls[0][1].electronicTaxReceipt).toEqual(
+      expect.objectContaining({
+        dgiiCode: '01',
+        dgiiMessage: 'Aceptado',
+        lastError: null,
+      }),
+    );
+  });
+
+  it('persists DGII rejection diagnostics for E33 debit notes', async () => {
+    const debitNoteDoc = {
+      status: 'issued',
+      ncf: 'E330000000001',
+      electronicTaxReceipt: {
+        status: 'issued',
+        mode: 'required',
+        documentType: 'E33',
+        requestHash: 'request-hash',
+        submissionId: 'sub-33-rejected',
+        eNcf: 'E330000000001',
+      },
+    };
+    const debitNoteRef = {
+      path: 'businesses/business-1/debitNotes/debit-note-rejected',
+      get: vi.fn(async () => ({
+        exists: true,
+        data: () => debitNoteDoc,
+      })),
+    };
+    const businessRef = {
+      get: vi.fn(async () => ({
+        exists: true,
+        data: () => ({}),
+      })),
+    };
+    const tx = {
+      get: vi.fn(async () => ({
+        data: () => debitNoteDoc,
+      })),
+      set: vi.fn(),
+      update: vi.fn(),
+    };
+
+    db.doc.mockImplementation((path) => {
+      if (path === 'businesses/business-1/debitNotes/debit-note-rejected') {
+        return debitNoteRef;
+      }
+      if (path === 'businesses/business-1') {
+        return businessRef;
+      }
+      throw new Error(`Unexpected doc path: ${path}`);
+    });
+    db.runTransaction.mockImplementation(async (callback) => callback(tx));
+    refreshGisysFactDocumentStatus.mockResolvedValue({
+      eNcf: 'E330000000001',
+      requestStatus: 'rejected',
+      dgiiStatus: 'rejected',
+      code: '02',
+      messages: [
+        {
+          code: '145',
+          message: 'Fecha de vencimiento de secuencia inválida.',
+        },
+      ],
+      requiresDataCorrection: true,
+    });
+
+    await refreshElectronicTaxReceiptStatus({
+      businessId: 'business-1',
+      debitNoteId: 'debit-note-rejected',
+      documentKind: 'debitNote',
+    });
+
+    const update = tx.update.mock.calls[0][1];
+    expect(update.status).toBe('electronic_failed');
+    expect(update.electronicTaxReceipt).toEqual(
+      expect.objectContaining({
+        status: 'rejected',
+        dgiiCode: '02',
+        dgiiMessage: 'Fecha de vencimiento de secuencia inválida.',
+        dgiiMessages: [
+          {
+            code: '145',
+            message: 'Fecha de vencimiento de secuencia inválida.',
+          },
+        ],
+        lastError: 'Fecha de vencimiento de secuencia inválida.',
+        requiresDataCorrection: true,
+      }),
+    );
+  });
 });

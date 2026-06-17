@@ -29,12 +29,6 @@ const DEV_VIEW_TERM = {
   CREATE_BUSINESS: '/business/create',
   BUSINESSES: '/dev/businesses',
   SUBSCRIPTION_MAINTENANCE: '/dev/tools/subscription-maintenance',
-  SUBSCRIPTION_MAINTENANCE_OVERVIEW:
-    '/dev/tools/subscription-maintenance/resumen',
-  SUBSCRIPTION_MAINTENANCE_SANDBOX:
-    '/dev/tools/subscription-maintenance/simulaciones',
-  SUBSCRIPTION_MAINTENANCE_TOOLS:
-    '/dev/tools/subscription-maintenance/herramientas',
   SUBSCRIPTION_MAINTENANCE_PLANS: '/dev/tools/subscription-maintenance/planes',
   ALL_USERS: '/all-users',
   PRUEBA: '/prueba',
@@ -98,7 +92,6 @@ const ROW_BASE_PATH = `${SHELVE_BASE_PATH}/row/:rowId`;
 const SEGMENT_BASE_PATH = `${ROW_BASE_PATH}/segment/:segmentId`;
 
 const INVENTORY_TERM = {
-  CREATE_PRODUCT: `${INVENTORY_BASE_PATH}/create-product`,
   PRODUCT: `${INVENTORY_BASE_PATH}/product/:productId`,
   INVENTORY_ITEMS: '/inventory/items',
   INVENTORY_SUMMARY: '/inventory/summary',
@@ -135,9 +128,6 @@ const SETTING_TERM = {
   USERS_ACTIVITY_DETAIL: 'activity/:userId',
   CREATE_USER: 'create-user/',
   UPDATE_USER: 'update-user/:id',
-  APP_INFO: '/app-info',
-  BUSINESS_INFO: '/business-info',
-  TAX_RECEIPT: '/tax-receipt',
   AUTHORIZATION_CONFIG: '/authorization-config',
   GENERAL_CONFIG_BILLING: '/settings/billing',
   GENERAL_CONFIG_MODULES: '/settings/modules',
@@ -226,6 +216,10 @@ const CREDIT_NOTE_TERM = {
   CREDIT_NOTE_LIST: '/credit-note',
 } as const;
 
+const DEBIT_NOTE_TERM = {
+  DEBIT_NOTE_LIST: '/debit-note',
+} as const;
+
 const AUTHORIZATIONS_TERM = {
   AUTHORIZATIONS_LIST: '/authorizations',
   AUTHORIZATION_CONFIG: '/settings/authorization-config',
@@ -233,10 +227,7 @@ const AUTHORIZATIONS_TERM = {
 
 const INSURANCE_TERM = {
   INSURANCE_CONFIG: '/insurance/config',
-  INSURANCE_LIST: '/insurance/list',
   INSURANCE_CREATE: '/insurance/create',
-  INSURANCE_EDIT: '/insurance/edit/:id',
-  INSURANCE_DETAILS: '/insurance/details/:id',
 } as const;
 
 export const ROUTES_PATH = {
@@ -259,6 +250,7 @@ export const ROUTES_PATH = {
   DEV_VIEW_TERM,
   CHANGELOG_TERM,
   CREDIT_NOTE_TERM,
+  DEBIT_NOTE_TERM,
   AUTHORIZATIONS_TERM,
   INSURANCE_TERM,
   LAB_TERM,

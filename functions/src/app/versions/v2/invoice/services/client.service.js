@@ -5,10 +5,10 @@ import {
   extractNormalizedClient,
 } from '../../../../modules/client/utils/clientNormalizer.js';
 
-export async function upsertClientTx(tx, { businessId, client }) {
+export async function upsertClientTx(tx, { businessId, client, clientSnap }) {
   if (!client || !client.id) return null;
   const ref = db.doc(`businesses/${businessId}/clients/${client.id}`);
-  const snap = await tx.get(ref);
+  const snap = clientSnap ?? (await tx.get(ref));
   const exists = snap.exists;
   const snapshotData = exists ? snap.data() || {} : {};
   const existingClient = exists ? extractNormalizedClient(snapshotData) : {};

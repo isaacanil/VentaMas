@@ -13,24 +13,37 @@ import {
   type FirestoreError,
   type Unsubscribe,
 } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../features/auth/userSlice';
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { db, functions } from '@/firebase/firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 import type { Warehouse } from '@/models/Warehouse/Warehouse';
 import type { InventoryUser } from '@/utils/inventory/types';
 
 type WarehouseRecord = Partial<Warehouse> & Record<string, unknown>;
 type WarehouseListener = (data: WarehouseRecord[]) => void;
 type WarehouseDocListener = (data: WarehouseRecord | null) => void;
+type CreateWarehousePayload = {
+  businessId: string;
+  warehouse: WarehouseRecord;
+  sessionToken?: string;
+};
+type CreateWarehouseResult = {
+  ok: boolean;
+  warehouse?: WarehouseRecord;
+};
 
 const defaultWarehouseInFlight = new Map<
   string,
   Promise<WarehouseRecord | null>
 >();
+const createWarehouseCallable = createFirebaseCallable<
+  CreateWarehousePayload,
+  CreateWarehouseResult
+>('createWarehouse');
 
 // Crear un nuevo almacén
 export const createWarehouse = async (
@@ -42,24 +55,13 @@ export const createWarehouse = async (
       throw new Error('No se pudo identificar el negocio actual.');
     }
     const { sessionToken } = getStoredSession();
-    const createWarehouseCallable = httpsCallable<
-      {
-        businessId: string;
-        warehouse: WarehouseRecord;
-        sessionToken?: string;
-      },
-      {
-        ok: boolean;
-        warehouse?: WarehouseRecord;
-      }
-    >(functions, 'createWarehouse');
 
-    const response = await createWarehouseCallable({
+    const result = await createWarehouseCallable({
       businessId: user.businessID,
       warehouse: warehouseData,
       ...(sessionToken ? { sessionToken } : {}),
     });
-    return response.data?.warehouse ?? warehouseData;
+    return result.warehouse ?? warehouseData;
   } catch (error) {
     console.error('Error al crear el almacén:', error);
     throw error;

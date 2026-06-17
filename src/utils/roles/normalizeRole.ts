@@ -1,4 +1,5 @@
 import type { UserRoleLike } from '@/types/users';
+import { toCleanString } from '@/utils/text';
 
 const ROLE_ALIASES: Record<string, UserRoleLike> = {
   specialcashier1: 'cashier',
@@ -11,12 +12,6 @@ const ROLE_ALIASES: Record<string, UserRoleLike> = {
   contable: 'accountant',
   contralor: 'controller',
   auditor: 'auditor',
-};
-
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
 };
 
 export const ROLE_LABELS: Record<string, string> = {

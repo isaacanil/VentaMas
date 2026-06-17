@@ -8,9 +8,8 @@ export type HeaderMapping<Lang extends string = string> = Record<
   Record<HeaderLabel, MappedFieldPath>
 >;
 
-export type HeaderAliases<Lang extends string = string> = Record<
-  Lang,
-  Record<string, string>
+export type HeaderAliases<Lang extends string = string> = Partial<
+  Record<Lang, Record<string, string>>
 >;
 
 export type ExcelPrimitive =
@@ -69,8 +68,8 @@ export type TransformConfig = TransformConfigItem[];
 export interface MapDataParams<Lang extends string = string> {
   data: RawData;
   headerMapping: HeaderMapping<Lang>;
+  headerAliases?: HeaderAliases<Lang>;
   language?: Lang;
-  transformConfig?: TransformConfig;
 }
 
 export interface ProcessMappedDataParams {

@@ -5,7 +5,10 @@ import styled from 'styled-components';
 
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import { SelectSettingCart } from '@/features/cart/cartSlice';
-import { PRODUCT_BRAND_DEFAULT } from '@/features/updateProduct/updateProductSlice';
+import {
+  PRODUCT_BRAND_DEFAULT,
+  convertTimeToSpanish,
+} from '@/domain/products/productDefaults';
 import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
 import { resolveInvoiceAmount } from '@/utils/invoice/amount';
 import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity';
@@ -24,7 +27,6 @@ import {
   getProductIndividualDiscount,
   getProductsIndividualDiscounts,
 } from '@/utils/pricing';
-import { convertTimeToSpanish } from '@/components/modals/ProductForm/components/sections/warranty.helpers';
 import type {
   InvoiceBusinessInfo,
   InvoiceClient,

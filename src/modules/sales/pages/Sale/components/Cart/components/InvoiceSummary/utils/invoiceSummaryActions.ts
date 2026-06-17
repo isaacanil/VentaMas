@@ -1,6 +1,6 @@
 import { Modal, message, notification } from 'antd';
 
-import { fbAddPreOrder } from '@/firebase/invoices/fbAddPreocer';
+import { fbAddPreOrder } from '@/firebase/invoices/fbAddPreorder';
 import { fbUpdatePreOrder } from '@/firebase/invoices/fbUpdatePreorder';
 import { downloadQuotationPdf } from '@/firebase/quotation/downloadQuotationPDF';
 import { addQuotation } from '@/firebase/quotation/quotationService';
@@ -115,7 +115,7 @@ export const downloadQuotationAction = async ({
         : 0,
       total:
         typeof cartData?.totalPurchase === 'object'
-          ? (cartData.totalPurchase as any)?.value ?? null
+          ? ((cartData.totalPurchase as any)?.value ?? null)
           : null,
     });
 
@@ -125,7 +125,7 @@ export const downloadQuotationAction = async ({
       quotationNumber: (data as any)?.numberID ?? null,
     });
 
-    await downloadQuotationPdf(business, data, () =>
+    await downloadQuotationPdf(user.businessID, business, data, () =>
       showCleanQuotationModal(dispatch),
     );
     console.info('[QuotationDebug][UI] downloadQuotationPdf completed', {
@@ -173,7 +173,10 @@ const persistPreorder = async (
     validationMessage,
   }: {
     errorMessage: string;
-    persist: (user: Authorizer | null, payload: InvoiceData) => Promise<InvoiceData>;
+    persist: (
+      user: Authorizer | null,
+      payload: InvoiceData,
+    ) => Promise<InvoiceData>;
     successDescription?: string;
     successMessage: string;
     validationMessage: string;
@@ -205,7 +208,10 @@ const persistPreorder = async (
       }) || cartData;
     const savedPreorder = await persist(user, preorderPayload as InvoiceData);
 
-    handleCancelShipping({ dispatch: dispatch as any, closeInvoicePanel: false });
+    handleCancelShipping({
+      dispatch: dispatch as any,
+      closeInvoicePanel: false,
+    });
     closePreorderConfirmation();
     activateSaleMode();
 
@@ -233,7 +239,8 @@ const persistPreorder = async (
 export const savePreorderAction = async (args: PersistPreorderArgs) => {
   await persistPreorder(args, {
     errorMessage: 'No se pudo guardar la preorden',
-    persist: async (user, payload) => (await fbAddPreOrder(user, payload)) as InvoiceData,
+    persist: async (user, payload) =>
+      (await fbAddPreOrder(user, payload)) as InvoiceData,
     successMessage: 'Preorden guardada con éxito',
     validationMessage: 'No se puede completar la preorden',
   });

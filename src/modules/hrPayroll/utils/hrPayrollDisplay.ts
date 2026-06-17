@@ -10,6 +10,7 @@ import type {
   HrPaymentMethod,
   HrPayrollRunStatus,
 } from '@/types/hrPayroll';
+import { formatLocaleCurrency } from '@/utils/format/currency';
 
 export const HR_EMPLOYEE_STATUS_LABELS: Record<HrEmployeeStatus, string> = {
   active: 'Activo',
@@ -212,8 +213,6 @@ export const formatHrDate = (value: unknown): string => {
 };
 
 export const formatHrMoney = (amount: number, currency = 'DOP'): string =>
-  new Intl.NumberFormat('es-DO', {
-    style: 'currency',
-    currency,
+  formatLocaleCurrency(Number.isFinite(amount) ? amount : 0, currency, {
     maximumFractionDigits: 2,
-  }).format(Number.isFinite(amount) ? amount : 0);
+  });

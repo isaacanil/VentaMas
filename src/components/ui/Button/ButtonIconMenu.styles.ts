@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react';
 
-import { Button } from '@heroui/react';
 import styled, { css } from 'styled-components';
+
+import { VmButton } from '@/components/heroui';
 
 type IndicatorProps = {
   $indicator?: boolean;
@@ -12,7 +13,7 @@ export const INDICATOR_BADGE_STYLE: CSSProperties = {
   right: 2,
 };
 
-export const Container = styled(Button)<IndicatorProps>`
+export const Container = styled(VmButton)<IndicatorProps>`
   display: grid;
   place-items: center center;
   justify-content: center;

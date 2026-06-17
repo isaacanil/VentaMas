@@ -233,10 +233,6 @@ export const useInsuranceBeneficiaries = (
     InsuranceBeneficiaryData[]
   >([]);
 
-  if (!user && beneficiaries.length > 0) {
-    setBeneficiaries([]);
-  }
-
   useEffect(() => {
     if (!user) {
       return undefined;
@@ -256,5 +252,5 @@ export const useInsuranceBeneficiaries = (
     };
   }, [user, clientId]);
 
-  return beneficiaries;
+  return user ? beneficiaries : [];
 };

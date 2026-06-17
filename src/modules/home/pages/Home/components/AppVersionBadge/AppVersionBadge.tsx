@@ -2,35 +2,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
+import { formatAppVersionBadgeLabel } from '@/firebase/app/appVersionDates';
 import { fbGetAppVersion } from '@/firebase/app/fbGetAppVersion';
 import type { AppVersionDoc } from '@/firebase/app/fbGetAppVersion';
-import type { Timestamp } from 'firebase/firestore';
 
 import type { JSX } from 'react';
-
-function timestampToVersion(timestamp?: Timestamp | null): string {
-  if (!timestamp || typeof timestamp.seconds !== 'number') return '';
-  const date = new Date(timestamp.seconds * 1000);
-  const day = `0${date.getDate()}`.slice(-2);
-  const monthNames = [
-    'Enero',
-    'Febrero',
-    'Marzo',
-    'Abril',
-    'Mayo',
-    'Junio',
-    'Julio',
-    'Agosto',
-    'Septiembre',
-    'Octubre',
-    'Noviembre',
-    'Diciembre',
-  ];
-  const month = monthNames[date.getMonth()];
-  const year = date.getFullYear();
-
-  return `Versión ${day} de ${month} ${year}`;
-}
 
 interface AppVersionBadgeProps {
   showLabel?: boolean;
@@ -81,7 +57,7 @@ export const AppVersionBadge = ({
     void navigate('/changelogs/list');
   };
 
-  const versionLabel = timestampToVersion(state.appVersion?.version);
+  const versionLabel = formatAppVersionBadgeLabel(state.appVersion?.version);
   const displayLabel = state.isLoading
     ? 'Cargando versión…'
     : versionLabel || 'Versión no disponible';

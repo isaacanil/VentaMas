@@ -40,8 +40,8 @@ Implementar el flujo para "Al finalizar (pago total)" donde la preventa decide e
 
 ## Archivos clave
 
-- `src/modules/sales/pages/PreorderSale/components/PreSaleTable/tableCells.tsx`
+- `src/modules/sales/pages/PreorderSale/components/PreSaleTable/tableCells/TableCells.tsx`
 - `src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/ReceivableManagementPanel/ReceivableManagementPanel.tsx`
-- `src/firebase/proccessAccountsReceivablePayments/arPaymentUtils.ts`
+- `src/firebase/processAccountsReceivablePayments/arPaymentUtils.ts`
 - `src/utils/accountsReceivable/types.ts`
 - `src/firebase/accountsReceivable/fbGetAccountReceivableByInvoiceOnce.ts`

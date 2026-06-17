@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { addItem, deleteItem } from '@/features/category/categorySlicer';
+import { addItem, deleteItem } from '@/features/category/categorySlice';
 import type { CategoryRecord } from '@/firebase/categories/types';
-import getIconFromText from '@/utils/text/getIconFromText';
+
+import getIconFromText from './getIconFromText';
 
 import type { ReactNode, RefObject } from 'react';
 

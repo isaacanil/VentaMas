@@ -3,14 +3,14 @@ import { Suspense, memo, useMemo } from 'react';
 import styled from 'styled-components';
 
 import { lazyWithRetry } from '@/utils/lazyWithRetry';
+import { loadSaleReportTableComponent } from '@/modules/invoice/public';
 import type { CashCountInvoice } from '@/utils/cashCount/types';
 import type { InvoiceData } from '@/types/invoice';
 
 import { ExportInvoice } from './components/Header/ExportInvoice';
 
 const SaleReportTable = lazyWithRetry(
-  () =>
-    import('@/modules/invoice/pages/InvoicesPage/SaleReportTable/SaleReportTable'),
+  loadSaleReportTableComponent,
   'SaleReportTable',
 );
 

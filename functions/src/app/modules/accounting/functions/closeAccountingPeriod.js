@@ -6,7 +6,7 @@ import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.
 import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 import {
   getPilotAccountingSettingsForBusiness,
   isAccountingRolloutEnabledForBusiness,
@@ -68,6 +68,74 @@ const mapSnapshotDocs = (snapshot) =>
       }))
     : [];
 
+const toMillis = (value) => {
+  if (value == null) return null;
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (typeof value === 'string') {
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+  if (typeof value?.toMillis === 'function') {
+    const parsed = value.toMillis();
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  if (typeof value?.toDate === 'function') {
+    const dateValue = value.toDate();
+    return dateValue instanceof Date ? dateValue.getTime() : null;
+  }
+  const record = asRecord(value);
+  const seconds =
+    typeof record.seconds === 'number'
+      ? record.seconds
+      : typeof record._seconds === 'number'
+        ? record._seconds
+        : null;
+  const nanoseconds =
+    typeof record.nanoseconds === 'number'
+      ? record.nanoseconds
+      : typeof record._nanoseconds === 'number'
+        ? record._nanoseconds
+        : 0;
+  if (seconds == null) return null;
+  return seconds * 1000 + Math.floor(nanoseconds / 1e6);
+};
+
+const resolveEventEffectiveMillis = (event) =>
+  toMillis(
+    event.occurredAt ?? event.entryDate ?? event.recordedAt ?? event.createdAt,
+  );
+
+const isEventEffectiveDateInRange = ({ end, event, start }) => {
+  const effectiveMillis = resolveEventEffectiveMillis(event);
+  if (effectiveMillis == null) {
+    return true;
+  }
+
+  return effectiveMillis >= start.getTime() && effectiveMillis < end.getTime();
+};
+
+const loadAccountingEventsInRange = async ({ businessId, end, start }) => {
+  const snapshots = await Promise.all(
+    ['occurredAt', 'entryDate', 'recordedAt', 'createdAt'].map((fieldName) =>
+      db
+        .collection(`businesses/${businessId}/accountingEvents`)
+        .where(fieldName, '>=', start)
+        .where(fieldName, '<', end)
+        .get(),
+    ),
+  );
+  const eventsById = new Map();
+  snapshots.flatMap(mapSnapshotDocs).forEach((event) => {
+    if (!eventsById.has(event.id)) {
+      eventsById.set(event.id, event);
+    }
+  });
+
+  return Array.from(eventsById.values()).filter((event) =>
+    isEventEffectiveDateInRange({ end, event, start }),
+  );
+};
+
 const resolveEventProjectionStatus = (event) => {
   const projection = asRecord(event.projection);
   return (
@@ -87,14 +155,18 @@ const resolveEventJournalEntryId = (event) => {
   );
 };
 
-const isEventProjectionResolved = (event) => {
+const isEventProjectionResolved = (event, journalEntryIds = null) => {
   const projectionStatus = resolveEventProjectionStatus(event);
   if (!NON_BLOCKING_PROJECTION_STATUSES.has(projectionStatus)) {
     return false;
   }
 
   if (projectionStatus === 'projected') {
-    return Boolean(resolveEventJournalEntryId(event));
+    const journalEntryId = resolveEventJournalEntryId(event);
+    return Boolean(
+      journalEntryId &&
+        (!journalEntryIds || journalEntryIds.has(journalEntryId)),
+    );
   }
 
   return true;
@@ -105,12 +177,38 @@ const isDeadLetterForVoidedEvent = (deadLetter) =>
     toCleanString(asRecord(deadLetter.metadata).eventStatus),
   );
 
-const loadProjectionDeadLetters = async ({ businessId }) => {
+const isDeadLetterInClosureScope = ({ deadLetter, periodKey, year }) => {
+  const deadLetterPeriodKey =
+    toCleanString(deadLetter.periodKey) ??
+    toCleanString(asRecord(deadLetter.metadata).periodKey);
+  if (!deadLetterPeriodKey) {
+    return true;
+  }
+
+  if (periodKey) {
+    return deadLetterPeriodKey === periodKey;
+  }
+
+  if (year) {
+    return (
+      deadLetterPeriodKey >= `${year}-01` &&
+      deadLetterPeriodKey <= `${year}-12`
+    );
+  }
+
+  return true;
+};
+
+const loadProjectionDeadLetters = async ({ businessId, periodKey, year }) => {
   const deadLettersSnap = await db
     .collection(`businesses/${businessId}/accountingEventProjectionDeadLetters`)
     .get();
   return mapSnapshotDocs(deadLettersSnap).filter((deadLetter) => {
     if (isDeadLetterForVoidedEvent(deadLetter)) {
+      return false;
+    }
+
+    if (!isDeadLetterInClosureScope({ deadLetter, periodKey, year })) {
       return false;
     }
 
@@ -122,26 +220,25 @@ const loadProjectionDeadLetters = async ({ businessId }) => {
 
 const loadPeriodClosureBlockers = async ({ businessId, periodKey }) => {
   const { end, start } = parsePeriodRange(periodKey);
-  const [eventsSnap, journalEntriesSnap, deadLetters] = await Promise.all([
-    db
-      .collection(`businesses/${businessId}/accountingEvents`)
-      .where('occurredAt', '>=', start)
-      .where('occurredAt', '<', end)
-      .get(),
+  const [events, journalEntriesSnap, deadLetters] = await Promise.all([
+    loadAccountingEventsInRange({ businessId, end, start }),
     db
       .collection(`businesses/${businessId}/journalEntries`)
       .where('periodKey', '==', periodKey)
       .get(),
-    loadProjectionDeadLetters({ businessId }),
+    loadProjectionDeadLetters({ businessId, periodKey }),
   ]);
 
-  const accountingEvents = mapSnapshotDocs(eventsSnap).filter(
+  const accountingEvents = events.filter(
     (event) =>
       !VOIDED_ACCOUNTING_EVENT_STATUSES.has(toCleanString(event.status)),
   );
   const journalEntries = mapSnapshotDocs(journalEntriesSnap);
+  const journalEntryIds = new Set(
+    journalEntries.map((entry) => toCleanString(entry.id)).filter(Boolean),
+  );
   const unresolvedEvents = accountingEvents.filter(
-    (event) => !isEventProjectionResolved(event),
+    (event) => !isEventProjectionResolved(event, journalEntryIds),
   );
   const unbalancedEntries = journalEntries.filter(
     (entry) => !isJournalEntryBalanced(entry),
@@ -158,27 +255,26 @@ const loadPeriodClosureBlockers = async ({ businessId, periodKey }) => {
 
 const loadFiscalYearClosureBlockers = async ({ businessId, year }) => {
   const { end, start } = parseFiscalYearRange(year);
-  const [eventsSnap, journalEntriesSnap, deadLetters] = await Promise.all([
-    db
-      .collection(`businesses/${businessId}/accountingEvents`)
-      .where('occurredAt', '>=', start)
-      .where('occurredAt', '<', end)
-      .get(),
+  const [events, journalEntriesSnap, deadLetters] = await Promise.all([
+    loadAccountingEventsInRange({ businessId, end, start }),
     db
       .collection(`businesses/${businessId}/journalEntries`)
       .where('periodKey', '>=', `${year}-01`)
       .where('periodKey', '<=', `${year}-12`)
       .get(),
-    loadProjectionDeadLetters({ businessId }),
+    loadProjectionDeadLetters({ businessId, year }),
   ]);
 
-  const accountingEvents = mapSnapshotDocs(eventsSnap).filter(
+  const accountingEvents = events.filter(
     (event) =>
       !VOIDED_ACCOUNTING_EVENT_STATUSES.has(toCleanString(event.status)),
   );
   const journalEntries = mapSnapshotDocs(journalEntriesSnap);
+  const journalEntryIds = new Set(
+    journalEntries.map((entry) => toCleanString(entry.id)).filter(Boolean),
+  );
   const unresolvedEvents = accountingEvents.filter(
-    (event) => !isEventProjectionResolved(event),
+    (event) => !isEventProjectionResolved(event, journalEntryIds),
   );
   const unbalancedEntries = journalEntries.filter(
     (entry) => !isJournalEntryBalanced(entry),

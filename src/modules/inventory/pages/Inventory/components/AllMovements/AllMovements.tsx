@@ -5,16 +5,21 @@ import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { useListenAllMovementsByDateRange } from '@/firebase/warehouse/productMovementService';
-import { MovementReason } from '@/models/Warehouse/Movement';
 import { getDateRange } from '@/utils/date/getDateRange';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
 import {
   AdvancedTable,
   type AdvancedTableProps,
 } from '@/components/ui/AdvancedTable/AdvancedTable';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import MovementsFilterBar from './MovementsFilterBar';
 import type { InventoryUser, TimestampLike } from '@/utils/inventory/types';
+import {
+  formatInventoryMovementReason,
+  getInventoryMovementLocationDisplay,
+  getMovementReasonBadgeStyles,
+  type MovementReasonType,
+} from '../shared/movementDisplay';
 
 // Reuse styles from MovementsTable for consistent look
 
@@ -108,115 +113,15 @@ const DirectionLabel = styled.span<{ isEntry: boolean }>`
   opacity: 0.9;
 `;
 
-const ReasonBadge = styled.span<{ reasonType?: MovementReason | string }>`
+const ReasonBadge = styled.span<{ reasonType?: MovementReasonType }>`
   padding: 4px 12px;
   border-radius: 6px;
   font-size: 0.85em;
   font-weight: 500;
   white-space: nowrap;
-  ${({ reasonType }: { reasonType?: MovementReason | string }) => {
-    switch (reasonType) {
-      case MovementReason.Purchase:
-        return `background: rgba(25, 118, 210, 0.1); color: #1976D2; border: 1px solid rgba(25, 118, 210, 0.2);`;
-      case MovementReason.Sale:
-        return `background: rgba(76, 175, 80, 0.1); color: #388E3C; border: 1px solid rgba(76, 175, 80, 0.2);`;
-      case MovementReason.Adjustment:
-        return `background: rgba(255, 152, 0, 0.1); color: #F57C00; border: 1px solid rgba(255, 152, 0, 0.2);`;
-      case MovementReason.Return:
-        return `background: rgba(156, 39, 176, 0.1); color: #7B1FA2; border: 1px solid rgba(156, 39, 176, 0.2);`;
-      case MovementReason.InitialStock:
-        return `background: rgba(0, 150, 136, 0.1); color: #00796B; border: 1px solid rgba(0, 150, 136, 0.2);`;
-      case MovementReason.Transfer:
-        return `background: rgba(121, 134, 203, 0.1); color: #5C6BC0; border: 1px solid rgba(121, 134, 203, 0.2);`;
-      case MovementReason.Damaged:
-        return `background: rgba(244, 67, 54, 0.1); color: #D32F2F; border: 1px solid rgba(244, 67, 54, 0.2);`;
-      case MovementReason.Expired:
-        return `background: rgba(121, 85, 72, 0.1); color: #5D4037; border: 1px solid rgba(121, 85, 72, 0.2);`;
-      case MovementReason.Lost:
-        return `background: rgba(96, 125, 139, 0.1); color: #455A64; border: 1px solid rgba(96, 125, 139, 0.2);`;
-      default:
-        return `background: rgba(158, 158, 158, 0.1); color: #757575; border: 1px solid rgba(158, 158, 158, 0.2);`;
-    }
-  }}
+  ${({ reasonType }: { reasonType?: MovementReasonType }) =>
+    getMovementReasonBadgeStyles(reasonType)}
 `;
-
-const formatMovementReason = (reason?: string | null) => {
-  const map: Record<string, string> = {
-    purchase: 'Compra',
-    sale: 'Venta',
-    adjustment: 'Ajuste',
-    return: 'Devolución',
-    initial_stock: 'Stock Inicial',
-    transfer: 'Transferencia',
-    damaged: 'Dañado',
-    expired: 'Expirado',
-    lost: 'Perdido',
-    other: 'Otro',
-  };
-  if (!reason) return 'Desconocido';
-  return map[reason] || 'Desconocido';
-};
-
-const generateRoute = (isEntry: boolean, movement: Movement): string | null => {
-  const loc = isEntry ? movement.sourceLocation : movement.destinationLocation;
-  if (!loc) return null;
-  const segments = loc.split('/');
-  let route = '/inventory/warehouses/warehouse';
-  if (segments[0]) route += `/${segments[0]}`;
-  if (segments[1]) route += `/shelf/${segments[1]}`;
-  if (segments[2]) route += `/row/${segments[2]}`;
-  if (segments[3]) route += `/segment/${segments[3]}`;
-  return route;
-};
-
-const getLocationDisplay = (movement: Movement): string => {
-  const specialCases = ['damaged', 'expired', 'lost', 'other'];
-  const reason = String(movement.movementReason || '');
-  if (specialCases.includes(reason)) return 'Baja de Inventario';
-  if (reason === 'adjustment') {
-    const internalLocationName = [
-      movement.sourceLocation === 'adjustment'
-        ? null
-        : movement.sourceLocationName,
-      movement.destinationLocation === 'adjustment'
-        ? null
-        : movement.destinationLocationName,
-    ].find((n) => n && !/Ubicación no encontrada|N\/A|Error/i.test(n));
-    return internalLocationName || 'Ajuste de Inventario';
-  }
-  const isEntry = movement.movementType === 'in';
-  const locationName = isEntry
-    ? movement.sourceLocationName
-    : movement.destinationLocationName;
-  const location = isEntry
-    ? movement.sourceLocation
-    : movement.destinationLocation;
-  if (
-    !location ||
-    !locationName ||
-    /Ubicación no encontrada|N\/A|Error/i.test(locationName)
-  ) {
-    switch (reason) {
-      case 'purchase':
-        return 'Proveedor Externo';
-      case 'sale':
-        return 'Cliente';
-      case 'return':
-        return movement.movementType === 'in'
-          ? 'Devolución Cliente'
-          : 'Devolución Proveedor';
-      case 'initial_stock':
-        return 'Inventario Inicial';
-      case 'adjustment':
-        return 'Ajuste de Inventario';
-      default:
-        return movement.movementType === 'in'
-          ? 'Origen Externo'
-          : 'Destino Externo';
-    }
-  }
-  return locationName || 'Ubicación no encontrada';
-};
 
 const MovementTypeBadge = styled.span<{ isEntry: boolean }>`
   padding: 6px 12px;
@@ -242,6 +147,22 @@ const toDate = (value?: TimestampLike): Date | null => {
     return new Date(value.seconds * 1000);
   }
   return null;
+};
+
+const generateRoute = (isEntry: boolean, movement: Movement): string | null => {
+  const location = isEntry
+    ? movement.sourceLocation
+    : movement.destinationLocation;
+  if (!location) return null;
+
+  const segments = String(location).split('/');
+  let route = '/inventory/warehouses/warehouse';
+  if (segments[0]) route += `/${segments[0]}`;
+  if (segments[1]) route += `/shelf/${segments[1]}`;
+  if (segments[2]) route += `/row/${segments[2]}`;
+  if (segments[3]) route += `/segment/${segments[3]}`;
+
+  return route;
 };
 
 const AllMovements = () => {
@@ -321,7 +242,7 @@ const AllMovements = () => {
           if (!movement) return null;
           const isEntry = movement.movementType === 'in';
           const route = generateRoute(isEntry, movement);
-          const locationDisplay = getLocationDisplay(movement);
+          const locationDisplay = getInventoryMovementLocationDisplay(movement);
           const isExternal = !route;
           return (
             <LocationCell
@@ -348,8 +269,8 @@ const AllMovements = () => {
         accessor: 'movementReason',
         minWidth: '140px',
         cell: ({ value }: { value: unknown }) => (
-          <ReasonBadge reasonType={value as MovementReason | string}>
-            {formatMovementReason(String(value))}
+          <ReasonBadge reasonType={value as MovementReasonType}>
+            {formatInventoryMovementReason(String(value))}
           </ReasonBadge>
         ),
       },
@@ -374,7 +295,6 @@ const AllMovements = () => {
           loading={loading}
           dates={dates}
           setDates={setDates}
-          defaultDate={getDateRange('thisWeek')}
           type={typeFilter}
           onTypeChange={setTypeFilter}
         />

@@ -5,30 +5,12 @@ import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.
 import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 import { toCleanString } from '../../../versions/v2/billing/utils/billingCommon.util.js';
+import { resolveCashCountEmployeeId } from '../utils/cashCountCallable.util.js';
 
 const MANAGER_ROLES = new Set(['owner', 'admin', 'manager', 'dev']);
-
-const resolveEmployeeId = (employee) => {
-  if (!employee) return null;
-  if (typeof employee === 'string') {
-    const parts = employee.split('/');
-    return parts[parts.length - 1] || null;
-  }
-  if (Array.isArray(employee?._path?.segments)) {
-    return employee._path.segments.slice(-1)[0] || null;
-  }
-  if (Array.isArray(employee?._key?.path?.segments)) {
-    return employee._key.path.segments.slice(-1)[0] || null;
-  }
-  return (
-    toCleanString(employee.id) ||
-    toCleanString(employee.uid) ||
-    toCleanString(employee.userId) ||
-    null
-  );
-};
+const MUTABLE_CASH_COUNT_STATES = new Set(['open', 'closing']);
 
 export const changeCashCountState = onCall(async (request) => {
   const authUid = await resolveCallableAuthUid(request);
@@ -50,19 +32,28 @@ export const changeCashCountState = onCall(async (request) => {
     );
   }
 
+  if (!MUTABLE_CASH_COUNT_STATES.has(nextState)) {
+    throw new HttpsError(
+      'failed-precondition',
+      'El cierre de caja debe completarse con closeCashCount',
+    );
+  }
+
   const membership = await assertUserAccess({
     authUid,
     businessId,
     allowedRoles: MEMBERSHIP_ROLE_GROUPS.INVOICE_OPERATOR,
   });
 
-  const cashCountRef = db.doc(`businesses/${businessId}/cashCounts/${cashCountId}`);
+  const cashCountRef = db.doc(
+    `businesses/${businessId}/cashCounts/${cashCountId}`,
+  );
   const cashCountSnap = await cashCountRef.get();
   if (!cashCountSnap.exists) {
     throw new HttpsError('not-found', 'Cuadre de caja no encontrado');
   }
 
-  const openingEmployeeId = resolveEmployeeId(
+  const openingEmployeeId = resolveCashCountEmployeeId(
     cashCountSnap.get('cashCount.opening.employee'),
   );
   const actorRole = toCleanString(membership?.role)?.toLowerCase() || '';

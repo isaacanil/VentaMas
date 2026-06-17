@@ -182,20 +182,24 @@ export const fbListenSaleUnits = (
 };
 
 // Hook para escuchar cambios en las unidades de venta en tiempo real
-export const useListenSaleUnits = (productId: string | null | undefined) => {
-  const [data, setData] = useState<SaleUnitRecord[]>([]);
-  const user = useSelector(selectUser) as UserWithBusiness | null | undefined;
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<unknown | null>(null);
+type SaleUnitsSnapshotState = {
+  scopeKey: string | null;
+  data: SaleUnitRecord[];
+  error: unknown | null;
+};
 
-  if ((!user || !productId) && (loading || error)) {
-    if (loading) setLoading(false);
-    if (!error)
-      setError('Parámetros insuficientes para escuchar las unidades de venta.');
-  }
+export const useListenSaleUnits = (productId: string | null | undefined) => {
+  const [snapshotState, setSnapshotState] = useState<SaleUnitsSnapshotState>({
+    scopeKey: null,
+    data: [],
+    error: null,
+  });
+  const user = useSelector(selectUser) as UserWithBusiness | null | undefined;
+  const businessID = user?.businessID ?? null;
+  const scopeKey = businessID && productId ? `${businessID}:${productId}` : null;
 
   useEffect(() => {
-    if (!user || !productId) {
+    if (!businessID || !productId || !scopeKey) {
       return undefined;
     }
 
@@ -203,7 +207,7 @@ export const useListenSaleUnits = (productId: string | null | undefined) => {
     const saleUnitsRef = collection(
       db,
       'businesses',
-      user.businessID,
+      businessID,
       'products',
       productId,
       'saleUnits',
@@ -215,18 +219,33 @@ export const useListenSaleUnits = (productId: string | null | undefined) => {
           id: doc.id,
           ...doc.data(),
         }));
-        setData(saleUnitsData);
-        setLoading(false);
+        setSnapshotState({
+          scopeKey,
+          data: saleUnitsData,
+          error: null,
+        });
       },
       (err: FirestoreError) => {
         console.error('Error escuchando las unidades de venta: ', err);
-        setError(err);
-        setLoading(false);
+        setSnapshotState({
+          scopeKey,
+          data: [],
+          error: err,
+        });
       },
     );
 
     return () => unsubscribe();
-  }, [user, productId]);
+  }, [businessID, productId, scopeKey]);
+
+  const isCurrentSnapshot = snapshotState.scopeKey === scopeKey;
+  const data = scopeKey && isCurrentSnapshot ? snapshotState.data : [];
+  const loading = Boolean(scopeKey) && !isCurrentSnapshot;
+  const error = !scopeKey
+    ? 'Parámetros insuficientes para escuchar las unidades de venta.'
+    : isCurrentSnapshot
+      ? snapshotState.error
+      : null;
 
   return { data, loading, error };
 };

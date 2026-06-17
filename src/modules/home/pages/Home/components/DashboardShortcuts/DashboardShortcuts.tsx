@@ -9,8 +9,11 @@ import {
   useMenuCardData,
 } from '@/modules/home/pages/Home/CardData';
 import { FeatureCardList } from '@/modules/home/pages/Home/components/FeatureCardList/FeatureCardList';
+import {
+  CATEGORY_ORDER,
+  normalizeFeatureCardData,
+} from '@/modules/home/utils/homeShortcutUtils';
 
-import type { FeatureCardData } from '@/modules/home/pages/Home/components/FeatureCardList/FeatureCard';
 import type { JSX } from 'react';
 
 interface DashboardShortcutsProps {
@@ -19,39 +22,12 @@ interface DashboardShortcutsProps {
 
 const SHORTCUT_WIDE_CATEGORIES = ['Contabilidad'];
 
-const SHORTCUT_CATEGORY_ORDER: Record<string, number> = {
-  Ventas: 10,
-  Inventario: 20,
-  Contabilidad: 30,
-  'Compras y gastos': 40,
-  'RRHH y nomina': 50,
-  Contactos: 60,
-  Tesorería: 70,
-  Administración: 80,
-};
-
-const isFeatureCardData = (card: unknown): card is FeatureCardData => {
-  if (!card || typeof card !== 'object') return false;
-  const candidate = card as Partial<FeatureCardData>;
-  return (
-    typeof candidate.title === 'string' &&
-    typeof candidate.category === 'string'
-  );
-};
-
-const normalizeCardData = (data: unknown): FeatureCardData[] => {
-  if (!Array.isArray(data)) {
-    return [];
-  }
-  return data.filter(isFeatureCardData);
-};
-
 export const DashboardShortcuts = ({
   includeDeveloperFeatures = false,
 }: DashboardShortcutsProps): JSX.Element => {
   const user = useSelector(selectUser);
-  const cardData = normalizeCardData(useMenuCardData(user));
-  const developer = normalizeCardData(useDeveloperFeaturesData());
+  const cardData = normalizeFeatureCardData(useMenuCardData(user));
+  const developer = normalizeFeatureCardData(useDeveloperFeaturesData());
   const { abilities, loading } = useUserAccess();
   const canShowDeveloperTools =
     includeDeveloperFeatures && abilities?.can('developerAccess', 'all');
@@ -61,7 +37,7 @@ export const DashboardShortcuts = ({
       title={canShowDeveloperTools ? undefined : 'Atajos'}
       cardData={cardData}
       loading={loading}
-      categoryOrder={SHORTCUT_CATEGORY_ORDER}
+      categoryOrder={CATEGORY_ORDER}
       wideCategoryNames={SHORTCUT_WIDE_CATEGORIES}
       showContainer={!canShowDeveloperTools}
     />
@@ -95,11 +71,7 @@ export const DashboardShortcuts = ({
     );
   }
 
-  return (
-    <ShortcutsSection>
-      {shortcutList}
-    </ShortcutsSection>
-  );
+  return <ShortcutsSection>{shortcutList}</ShortcutsSection>;
 };
 const ShortcutsSection = styled.div`
   display: grid;

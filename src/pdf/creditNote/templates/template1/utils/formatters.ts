@@ -4,7 +4,7 @@ import {
   getTotalPrice,
   getTax,
   getProductIndividualDiscount as getAppProductIndividualDiscount,
-} from '@/utils/pricing.js';
+} from '@/utils/pricing';
 import { toMillis } from '@/utils/date/toMillis';
 import {
   resolveInvoiceProductQuantity,

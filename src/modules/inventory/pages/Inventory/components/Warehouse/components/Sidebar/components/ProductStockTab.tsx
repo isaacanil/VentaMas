@@ -5,11 +5,8 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import Tree from '@/modules/inventory/components/tree/Tree';
-import type {
-  TreeConfig,
-  TreeNodeData,
-} from '@/modules/inventory/components/tree/Tree';
+import Tree from '../../tree/Tree';
+import type { TreeConfig, TreeNodeData } from '../../tree/Tree';
 
 const TabContent = styled.div`
   display: flex;

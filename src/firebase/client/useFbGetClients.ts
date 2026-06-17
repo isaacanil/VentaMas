@@ -20,67 +20,93 @@ type ClientListItem = {
   isDeleted: boolean;
   client: NormalizedClient;
 } & Record<string, unknown>;
+type ClientsSnapshotState = {
+  scopeKey: string | null;
+  clients: ClientListItem[];
+};
 
-export const useFbGetClients = ({ includeDeleted = false } = {}) => {
-  const [clients, setClients] = useState<ClientListItem[]>([]);
-  const [loading, setLoading] = useState(true);
+interface UseFbGetClientsOptions {
+  enabled?: boolean;
+  includeDeleted?: boolean;
+  preserveCurrentOnError?: boolean;
+}
+
+const buildClientList = (
+  docs: Array<{ id: string; data: () => unknown }>,
+  includeDeleted: boolean,
+): ClientListItem[] =>
+  docs.reduce<ClientListItem[]>((acc, docSnap) => {
+    const data = (docSnap.data() || {}) as ClientDocumentData;
+    const isDeleted = Boolean(data.isDeleted);
+    if (!includeDeleted && isDeleted) return acc;
+
+    const client = extractNormalizedClient(data);
+    const extras: Record<string, unknown> = {};
+
+    for (const [key, value] of Object.entries(data)) {
+      if (key === 'client') continue;
+      if (!CLIENT_ROOT_FIELDS.has(key)) {
+        extras[key] = value;
+      }
+    }
+
+    acc.push({
+      id: docSnap.id,
+      isDeleted,
+      ...extras,
+      client,
+    });
+    return acc;
+  }, []);
+
+export const useFbGetClients = ({
+  enabled = true,
+  includeDeleted = false,
+  preserveCurrentOnError = false,
+}: UseFbGetClientsOptions = {}) => {
+  const [snapshotState, setSnapshotState] = useState<ClientsSnapshotState>({
+    scopeKey: null,
+    clients: [],
+  });
   const user = useSelector(selectUser) as UserWithBusiness | null;
-  if ((!user || !user.businessID) && loading) {
-    setLoading(false);
-  }
+  const businessID = user?.businessID ?? null;
+  const scopeKey = enabled && businessID
+    ? `${businessID}:${includeDeleted ? 'all' : 'active'}`
+    : null;
 
   useEffect(() => {
-    if (!user || !user.businessID) {
+    if (!enabled || !businessID || !scopeKey) {
       return undefined;
     }
 
-    const { businessID } = user;
     const clientRef = collection(db, 'businesses', businessID, 'clients');
     const q = query(clientRef, orderBy('client.name', 'asc'));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       if (snapshot.empty) {
-        setClients([]);
-        setLoading(false);
+        setSnapshotState({ scopeKey, clients: [] });
         return;
       }
-      const clientArray = snapshot.docs.reduce<ClientListItem[]>(
-        (acc, docSnap) => {
-          const data = (docSnap.data() || {}) as ClientDocumentData;
-          const isDeleted = Boolean(data.isDeleted);
-          if (!includeDeleted && isDeleted) return acc;
-
-          const client = extractNormalizedClient(data);
-          const extras: Record<string, unknown> = {};
-
-          for (const [key, value] of Object.entries(data)) {
-            if (key === 'client') continue;
-            if (!CLIENT_ROOT_FIELDS.has(key)) {
-              extras[key] = value;
-            }
-          }
-
-          const item: ClientListItem = {
-            id: docSnap.id,
-            isDeleted,
-            ...extras,
-            client,
-          };
-
-          acc.push(item);
-          return acc;
-        },
-        [],
+      const clientArray = buildClientList(snapshot.docs, includeDeleted);
+      setSnapshotState({ scopeKey, clients: clientArray });
+    },
+    (error) => {
+      console.error('Error fetching clients:', error);
+      setSnapshotState((prev) =>
+        preserveCurrentOnError && prev.scopeKey === scopeKey
+          ? prev
+          : { scopeKey, clients: [] },
       );
-
-      setClients(clientArray);
-      setLoading(false);
     });
 
     return () => {
       unsubscribe();
     };
-  }, [user, includeDeleted]);
+  }, [businessID, enabled, includeDeleted, preserveCurrentOnError, scopeKey]);
+
+  const isCurrentSnapshot = snapshotState.scopeKey === scopeKey;
+  const clients = scopeKey && isCurrentSnapshot ? snapshotState.clients : [];
+  const loading = Boolean(scopeKey) && !isCurrentSnapshot;
 
   return { clients, loading };
 };

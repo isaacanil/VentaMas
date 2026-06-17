@@ -5,8 +5,8 @@ import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
-import { useAuthorizationModules } from '@/hooks/useAuthorizationModules';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { useAuthorizationModules } from '@/modules/authorizations/hooks/useAuthorizationModules';
+import { MenuApp } from '@/modules/navigation/public';
 import type { UserIdentity } from '@/types/users';
 import {
   hasAuthorizationApproveAccess,

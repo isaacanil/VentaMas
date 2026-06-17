@@ -1,11 +1,10 @@
 import { PlusOutlined } from '@/constants/icons/antd';
-import { Label, ListBox, ListBoxItem } from '@heroui/react';
 import { Button } from 'antd';
 import type { Key } from 'react';
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
-import { VmSelect } from '@/components/heroui';
+import { VmLabel, VmListBox, VmSelect } from '@/components/heroui';
 import { TableTaxReceipt } from '@/modules/settings/pages/setting/subPage/TaxReceipts/components/TableTaxReceipt/TableTaxReceipt';
 import type { TaxReceiptDocument } from '@/types/taxReceipt';
 
@@ -73,17 +72,17 @@ export const ReceiptTableSection = ({
                 <VmSelect.Indicator />
               </VmSelect.Trigger>
               <VmSelect.Popover>
-                <ListBox
+                <VmListBox
                   aria-label="Estado de series"
                   items={VIEW_FILTER_OPTIONS}
                 >
                   {(option) => (
-                    <ListBoxItem id={option.value} textValue={option.label}>
+                    <VmListBox.Item id={option.value} textValue={option.label}>
                       {option.label}
-                      <ListBoxItem.Indicator />
-                    </ListBoxItem>
+                      <VmListBox.ItemIndicator />
+                    </VmListBox.Item>
                   )}
-                </ListBox>
+                </VmListBox>
               </VmSelect.Popover>
             </VmSelect>
           </FilterControl>
@@ -142,7 +141,7 @@ const FilterControl = styled.div`
   }
 `;
 
-const HiddenLabel = styled(Label)`
+const HiddenLabel = styled(VmLabel)`
   position: absolute;
   width: 1px;
   height: 1px;

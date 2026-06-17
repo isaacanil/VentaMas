@@ -1,96 +1,26 @@
-import {
-  parsePhoneNumberFromString,
-  isValidPhoneNumber as isValidNumber,
-  getCountryCallingCode,
-} from 'libphonenumber-js/min';
 import type { CountryCode } from 'libphonenumber-js';
+import {
+  formatPhoneForInternationalDisplay,
+  isPhoneInputValid,
+  unformatPhoneForStorage,
+} from '@/shared/phone/phoneNumber';
 
 export * from './formatPrice';
-
-const normalizeCountryCode = (
-  value: CountryCode | string | null | undefined,
-): CountryCode => {
-  const fallback = 'DO' as CountryCode;
-  if (!value) return fallback;
-  const normalized = String(value).trim().toUpperCase();
-  return (normalized.length === 2 ? normalized : fallback) as CountryCode;
-};
 
 export const formatPhoneNumber = (
   value: string,
   countryCode: CountryCode | string = 'DO',
-): string => {
-  if (!value) return '';
-
-  try {
-    // Si no empieza con +, agregar el codigo del pais
-    const resolvedCountry = normalizeCountryCode(countryCode);
-    let phoneValue = value;
-    if (!value.startsWith('+')) {
-      const countryCallingCode = getCountryCallingCode(resolvedCountry);
-      phoneValue = value.startsWith(countryCallingCode)
-        ? `+${value}`
-        : `+${countryCallingCode}${value.replace(/^0+/, '')}`;
-    }
-
-    const phoneNumber = parsePhoneNumberFromString(
-      phoneValue,
-      resolvedCountry,
-    );
-    if (!phoneNumber) return value;
-
-    return phoneNumber.formatInternational();
-  } catch (error) {
-    console.warn('Error formatting phone number:', error);
-    return value;
-  }
-};
+): string => formatPhoneForInternationalDisplay(value, countryCode);
 
 export const unformatPhoneNumber = (
   formattedValue: string,
   countryCode: CountryCode | string = 'DO',
-): string => {
-  if (!formattedValue) return '';
-
-  try {
-    const resolvedCountry = normalizeCountryCode(countryCode);
-    const phoneNumber = parsePhoneNumberFromString(
-      formattedValue,
-      resolvedCountry,
-    );
-    if (phoneNumber) {
-      // Retornar el numero en formato E.164 (con codigo de pais)
-      return phoneNumber.number;
-    }
-    // Si no se puede parsear, eliminar todo excepto digitos y +
-    return formattedValue.replace(/[^\d+]/g, '');
-  } catch (error) {
-    console.warn('Error unformatting phone number:', error);
-    return formattedValue.replace(/[^\d+]/g, '');
-  }
-};
+): string => unformatPhoneForStorage(formattedValue, countryCode);
 
 export const isValidPhoneNumber = (
   phoneNumber: string,
   countryCode: CountryCode | string = 'DO',
-): boolean => {
-  if (!phoneNumber) return false;
-
-  try {
-    // Asegurarse de que el numero tenga el formato correcto para la Validacion
-    const resolvedCountry = normalizeCountryCode(countryCode);
-    let numberToValidate = phoneNumber;
-    if (!phoneNumber.startsWith('+')) {
-      const countryCallingCode = getCountryCallingCode(resolvedCountry);
-      numberToValidate = `+${countryCallingCode}${phoneNumber.replace(/^0+/, '')}`;
-    }
-
-    return isValidNumber(numberToValidate, resolvedCountry);
-  } catch (error) {
-    console.warn('Error validating phone number:', error);
-    return false;
-  }
-};
+): boolean => isPhoneInputValid(phoneNumber, countryCode);
 
 // Re-export de la función simple de formateo de telefono (sin libphonenumber-js)
 export { formatPhoneNumber as formatPhoneNumberSimple } from './formatPhoneNumber';

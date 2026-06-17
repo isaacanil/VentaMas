@@ -6,7 +6,7 @@ import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.
 import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 import { reserveNcf } from '../../../versions/v2/invoice/services/ncf.service.js';
 import { writeFiscalSequenceAudit } from '../services/fiscalSequenceAudit.service.js';
 import { resolveBusinessFiscalRollout } from '../utils/fiscalRollout.util.js';

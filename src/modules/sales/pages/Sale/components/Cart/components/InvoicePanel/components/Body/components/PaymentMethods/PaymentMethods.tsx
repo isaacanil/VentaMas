@@ -7,10 +7,10 @@ import {
   Tooltip,
   message,
   notification,
+  type GetRef,
 } from 'antd';
 import { BankOutlined } from '@ant-design/icons';
 import React, { useEffect, useMemo, useRef } from 'react';
-import type { InputNumberRef } from '@rc-component/input-number';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -19,9 +19,9 @@ import { selectBusinessData } from '@/features/auth/businessSlice';
 import { selectUser } from '@/features/auth/userSlice';
 import { useAccountingRolloutEnabled } from '@/hooks/useAccountingRolloutEnabled';
 import { useAccountingBankingSettings } from '@/hooks/useAccountingBankPaymentPolicy';
+import { useActiveBankAccountsState } from '@/modules/accounting/public';
 import { normalizeSupportedDocumentCurrency } from '@/utils/accounting/currencies';
 import { getPriceSymbolByCurrency } from '@/utils/format';
-import { useActiveBankAccountsState } from '@/modules/expenses/pages/Expenses/ExpensesForm/hooks/useActiveBankAccounts';
 import {
   resolveConfiguredBankAccountId,
   resolveEffectiveBankAccountId,
@@ -34,9 +34,14 @@ import {
   clearCxcAutoRemovalNotification,
   applyPricingPreset,
 } from '@/features/cart/cartSlice';
+import {
+  resolvePaymentMethodBootstrapUpdate,
+  resolvePaymentMethodStatusValue,
+} from '@/utils/payments/paymentMethodBootstrap';
 import type { SupportedDocumentCurrency } from '@/types/products';
 
 type PaymentMethodKey = 'cash' | 'card' | 'transfer' | 'creditNote' | string;
+type InputNumberRef = GetRef<typeof InputNumber>;
 
 type PaymentMethodItem = {
   method: PaymentMethodKey;
@@ -142,7 +147,11 @@ export const PaymentMethods = () => {
           paymentMethodRequiresBankAccount(method.method) &&
           !configuredBankAccountByMethod.get(method.method),
       ),
-    [configuredBankAccountByMethod, isBankAccountsModuleEnabled, paymentMethods],
+    [
+      configuredBankAccountByMethod,
+      isBankAccountsModuleEnabled,
+      paymentMethods,
+    ],
   );
   const getConfiguredBankAccountLabel = (bankAccountId: string | null) =>
     bankAccountId != null
@@ -196,15 +205,14 @@ export const PaymentMethods = () => {
   // Auto-selección inicial al añadir a cuentas por cobrar (Esto está bien mantenerlo)
   useEffect(() => {
     if (cartData?.isAddedToReceivables) {
-      const anyEnabled = paymentMethods.some((m) => m.status);
-      if (!anyEnabled) {
-        const defaultMethod =
-          paymentMethods.find((m) => m.method === 'cash') || paymentMethods[0];
-        if (defaultMethod) {
-          dispatch(
-            setPaymentMethod({ ...defaultMethod, status: true, value: 0 }),
-          );
-        }
+      const bootstrapMethod = resolvePaymentMethodBootstrapUpdate({
+        isAddedToReceivables: true,
+        paymentMethods,
+        purchaseTotal: 0,
+      });
+
+      if (bootstrapMethod) {
+        dispatch(setPaymentMethod(bootstrapMethod));
       }
     }
   }, [cartData?.isAddedToReceivables, paymentMethods, dispatch]);
@@ -261,26 +269,12 @@ export const PaymentMethods = () => {
       }
     }
 
-    let newValue = method.value ?? 0;
-
-    // CÁLCULO DE RESTANTE:
-    // Al activar (status=true), calculamos cuánto falta y lo ponemos en este método.
-    if (status) {
-      const currentTotal = paymentMethods.reduce((total, m) => {
-        // Sumamos los OTROS métodos activos
-        if (m.status && m.method !== method.method) {
-          return total + (Number(m.value) || 0);
-        }
-        return total;
-      }, 0);
-
-      const remaining = totalPurchase - currentTotal;
-      // Si el usuario activa el check, le ponemos lo que falta. Si sobra, 0.
-      newValue = remaining > 0 ? remaining : 0;
-    } else {
-      // Si desactiva, reseteamos a 0
-      newValue = 0;
-    }
+    const newValue = resolvePaymentMethodStatusValue({
+      method,
+      paymentMethods,
+      status,
+      totalPurchase,
+    });
 
     const isAddedToReceivables = cartData?.isAddedToReceivables;
     if (!status && isAddedToReceivables) {
@@ -546,7 +540,6 @@ const LabelCell = styled.div`
 `;
 const SwitchCell = styled.div`
   display: flex;
-
 `;
 const InputWrapper = styled.div`
   min-width: 0;

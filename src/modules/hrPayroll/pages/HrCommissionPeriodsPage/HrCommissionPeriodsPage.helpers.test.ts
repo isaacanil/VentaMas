@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatHrPeriodDate } from '@/modules/hrPayroll/utils/hrPayrollDisplay';
+import {
+  formatHrMoney,
+  formatHrPeriodDate,
+} from '@/modules/hrPayroll/utils/hrPayrollDisplay';
 import type { HrCommissionPeriodRecord } from '@/types/hrPayroll';
 
 import {
@@ -114,5 +117,10 @@ describe('HrCommissionPeriodsPage.helpers', () => {
         'start',
       ),
     ).toContain('1 jun 2026');
+  });
+
+  it('formats HR money without changing invalid amount fallback', () => {
+    expect(formatHrMoney(1234.5, 'DOP')).toBe('RD$1,234.50');
+    expect(formatHrMoney(Number.NaN, 'USD')).toBe('US$0.00');
   });
 });

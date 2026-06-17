@@ -23,7 +23,6 @@ import {
   selectStockAlertLevel,
   selectStockRequirement,
   selectStockLocations,
-  resetInventoryDerivedFilters,
   setItemType,
   setStockAvailability,
   setStockAlertLevel,
@@ -33,17 +32,18 @@ import {
 } from '@/features/filterProduct/filterProductsSlice';
 import { getWarehousesStockAggregates } from '@/firebase/warehouse/productStockService';
 import { useListenWarehouses } from '@/firebase/warehouse/warehouseService';
-import { LabelWithStatus } from '@/modules/inventory/pages/Inventario/pages/ItemsManager/components/InventoryFilterAndSort/components/Body/components/SortPanel/SortPanel';
 import {
   opcionesItemType,
   opcionesInventariable,
   opcionesItbis,
 } from '@/modules/inventory/pages/Inventario/pages/ItemsManager/components/InventoryFilterAndSort/InventoryFilterAndSortMetadata';
 
+import { LabelWithStatus } from '../shared/LabelWithStatus';
 import {
   InventoryLocationSelector,
   type InventoryLocationOption,
 } from './InventoryLocationSelector';
+import { normalizeFilterArrayForSortedComparison } from '../../../../utils/filterValues';
 
 type WarehouseSummary = {
   totalLots?: number;
@@ -91,9 +91,6 @@ const warehouseSummaryReducer = (
   }
 };
 
-const normalizeArray = (value: unknown = []) =>
-  Array.isArray(value) ? [...value].sort() : [];
-
 const isDefaultFilterValue = (
   field: keyof typeof DEFAULT_FILTERS,
   current: unknown,
@@ -105,8 +102,8 @@ const isDefaultFilterValue = (
     return defaultValue === null || defaultValue === undefined;
   }
   if (Array.isArray(defaultValue)) {
-    const defaultArr = normalizeArray(defaultValue);
-    const currentArr = normalizeArray(current);
+    const defaultArr = normalizeFilterArrayForSortedComparison(defaultValue);
+    const currentArr = normalizeFilterArrayForSortedComparison(current);
     if (defaultArr.length !== currentArr.length) return false;
     return defaultArr.every((item, index) => item === currentArr[index]);
   }
@@ -358,25 +355,6 @@ export const FilterPanel = ({
       },
     ];
   }, [inventoryStatusValue]);
-
-  useEffect(() => {
-    if (showInventoryFilters) return;
-    const hasInventoryOverrides =
-      stockAvailability !== 'todos' ||
-      stockAlertLevel !== 'todos' ||
-      stockRequirement !== 'todos' ||
-      Boolean(stockLocations?.length);
-    if (!hasInventoryOverrides) return;
-    dispatch(resetInventoryDerivedFilters({ context: contextKey }));
-  }, [
-    showInventoryFilters,
-    stockAvailability,
-    stockAlertLevel,
-    stockRequirement,
-    stockLocations?.length,
-    dispatch,
-    contextKey,
-  ]);
 
   const modificationStatus = useMemo(
     () => ({

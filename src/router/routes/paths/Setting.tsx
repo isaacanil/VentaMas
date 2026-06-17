@@ -1,8 +1,34 @@
-import BusinessFeatureRouteGate from '@/components/availability/BusinessFeatureRouteGate';
+import BusinessFeatureRouteGate from '@/router/guards/availability/BusinessFeatureRouteGate';
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
 import { Navigate } from 'react-router-dom';
 
-import FrontendFeatureRouteGate from '@/components/availability/FrontendFeatureRouteGate';
+import FrontendFeatureRouteGate from '@/router/guards/availability/FrontendFeatureRouteGate';
+import { loadSwitchBusinessRoute } from '@/modules/dev/public';
+import {
+  loadAccountingConfigRoute,
+  loadAccountSubscriptionBillingRoute,
+  loadAccountSubscriptionLayoutRoute,
+  loadAccountSubscriptionOverviewRoute,
+  loadAccountSubscriptionPaymentMethodRoute,
+  loadAccountSubscriptionPlansRoute,
+  loadAccountSubscriptionSettingsRoute,
+  loadAccountSubscriptionSuccessRoute,
+  loadAppInfoRoute,
+  loadAuthorizationFlowConfigRoute,
+  loadBillingConfigRoute,
+  loadBusinessCreateRoute,
+  loadBusinessEditRoute,
+  loadGeneralConfigRoute,
+  loadInventoryConfigRoute,
+  loadModulesConfigRoute,
+  loadSubscriptionConfigRoute,
+  loadTaxReceiptSettingRoute,
+  loadUserActivityRoute,
+  loadUsersAdminRoute,
+  loadUsersLandingRedirectRoute,
+  loadUsersListRoute,
+  loadUserSessionLogsRoute,
+} from '@/modules/settings/public';
 import { getRelativePath } from '@/router/routes/getConfigRoute';
 import {
   accountSubscriptionRedirectRoutes,
@@ -12,101 +38,32 @@ import ROUTES_NAME from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/types/routeTypes';
 import type { JSX } from 'react';
 
-const AuthorizationFlowConfig = lazy(
-  () =>
-    import('@/modules/settings/components/GeneralConfig/configs/AuthorizationFlowConfig'),
-);
-const BillingConfig = lazy(
-  () =>
-    import('@/modules/settings/components/GeneralConfig/configs/BillingConfig'),
-);
-const ModulesConfig = lazy(
-  () =>
-    import('@/modules/settings/components/GeneralConfig/configs/ModulesConfig/ModulesConfig'),
-);
-const AccountingConfig = lazy(
-  () =>
-    import('@/modules/settings/components/GeneralConfig/configs/AccountingConfig/AccountingConfig'),
-);
-const SubscriptionConfig = lazy(
-  () =>
-    import('@/modules/settings/components/GeneralConfig/configs/SubscriptionConfig'),
-);
-const SubscriptionPlansPage = lazy(
-  () => import('@/modules/settings/pages/subscription/SubscriptionPlansPage'),
-);
-const SubscriptionLayout = lazy(
-  () => import('@/modules/settings/pages/subscription/SubscriptionLayout'),
-);
-const SubscriptionBillingPage = lazy(
-  () => import('@/modules/settings/pages/subscription/SubscriptionBillingPage'),
-);
+const AuthorizationFlowConfig = lazy(loadAuthorizationFlowConfigRoute);
+const BillingConfig = lazy(loadBillingConfigRoute);
+const ModulesConfig = lazy(loadModulesConfigRoute);
+const AccountingConfig = lazy(loadAccountingConfigRoute);
+const SubscriptionConfig = lazy(loadSubscriptionConfigRoute);
+const SubscriptionPlansPage = lazy(loadAccountSubscriptionPlansRoute);
+const SubscriptionLayout = lazy(loadAccountSubscriptionLayoutRoute);
+const SubscriptionBillingPage = lazy(loadAccountSubscriptionBillingRoute);
 const SubscriptionPaymentMethodPage = lazy(
-  () =>
-    import('@/modules/settings/pages/subscription/SubscriptionPaymentMethodPage'),
+  loadAccountSubscriptionPaymentMethodRoute,
 );
-const SubscriptionOverviewPage = lazy(
-  () =>
-    import('@/modules/settings/pages/subscription/SubscriptionOverviewPage'),
-);
-const SubscriptionSettingsPage = lazy(
-  () =>
-    import('@/modules/settings/pages/subscription/SubscriptionSettingsPage'),
-);
-const SubscriptionSuccessPage = lazy(
-  () => import('@/modules/settings/pages/subscription/SubscriptionSuccessPage'),
-);
-const InventoryConfig = lazy(
-  () =>
-    import('@/modules/settings/components/GeneralConfig/configs/InventoryConfig'),
-);
-const GeneralConfig = lazy(
-  () => import('@/modules/settings/components/GeneralConfig/GeneralConfig'),
-);
-const SwitchBusiness = lazy(
-  () => import('@/modules/dev/pages/dev/SwitchBusiness'),
-);
-const AppInfo = lazy(
-  () => import('@/modules/settings/pages/setting/subPage/AppInfo/AppInfo'),
-);
-const BusinessCreatePage = lazy(
-  () =>
-    import('@/modules/settings/pages/setting/subPage/BusinessEditor/BusinessCreatePage'),
-);
-const BusinessEditPage = lazy(
-  () =>
-    import('@/modules/settings/pages/setting/subPage/BusinessEditor/BusinessEditPage'),
-);
-const TaxReceiptSetting = lazy(() =>
-  import('@/modules/settings/pages/setting/subPage/TaxReceipts/TaxReceIptSetting').then(
-    (module) => ({ default: module.TaxReceiptSetting }),
-  ),
-);
-const UserList = lazy(() =>
-  import('@/modules/settings/pages/setting/subPage/Users/components/UsersList/UserList').then(
-    (module) => ({ default: module.UserList }),
-  ),
-);
-const UserActivity = lazy(() =>
-  import('@/modules/settings/pages/setting/subPage/Users/UserActivity').then(
-    (module) => ({ default: module.UserActivity }),
-  ),
-);
-const UserAdmin = lazy(() =>
-  import('@/modules/settings/pages/setting/subPage/Users/UserAdmin').then(
-    (module) => ({ default: module.UserAdmin }),
-  ),
-);
-const UsersLandingRedirect = lazy(() =>
-  import('@/modules/settings/pages/setting/subPage/Users/UserAdmin').then(
-    (module) => ({ default: module.UsersLandingRedirect }),
-  ),
-);
-const UserSessionLogs = lazy(() =>
-  import('@/modules/settings/pages/setting/subPage/Users/UserSessionLogs').then(
-    (module) => ({ default: module.UserSessionLogs }),
-  ),
-);
+const SubscriptionOverviewPage = lazy(loadAccountSubscriptionOverviewRoute);
+const SubscriptionSettingsPage = lazy(loadAccountSubscriptionSettingsRoute);
+const SubscriptionSuccessPage = lazy(loadAccountSubscriptionSuccessRoute);
+const InventoryConfig = lazy(loadInventoryConfigRoute);
+const GeneralConfig = lazy(loadGeneralConfigRoute);
+const SwitchBusiness = lazy(loadSwitchBusinessRoute);
+const AppInfo = lazy(loadAppInfoRoute);
+const BusinessCreatePage = lazy(loadBusinessCreateRoute);
+const BusinessEditPage = lazy(loadBusinessEditRoute);
+const TaxReceiptSetting = lazy(loadTaxReceiptSettingRoute);
+const UserList = lazy(loadUsersListRoute);
+const UserActivity = lazy(loadUserActivityRoute);
+const UserAdmin = lazy(loadUsersAdminRoute);
+const UsersLandingRedirect = lazy(loadUsersLandingRedirectRoute);
+const UserSessionLogs = lazy(loadUserSessionLogsRoute);
 
 const {
   USERS,

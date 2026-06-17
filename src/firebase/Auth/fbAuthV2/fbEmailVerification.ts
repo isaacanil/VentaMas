@@ -1,7 +1,5 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 type SendVerificationRequest = {
   userId: string;
@@ -28,15 +26,15 @@ type VerifyCodeResponse = {
   message?: string;
 };
 
-const sendEmailVerificationCallable = httpsCallable<
+const sendEmailVerificationCallable = createFirebaseCallable<
   SendVerificationRequest,
   SendVerificationResponse
->(functions, 'clientSendEmailVerification');
+>('clientSendEmailVerification');
 
-const verifyEmailCodeCallable = httpsCallable<
+const verifyEmailCodeCallable = createFirebaseCallable<
   VerifyCodeRequest,
   VerifyCodeResponse
->(functions, 'clientVerifyEmailCode');
+>('clientVerifyEmailCode');
 
 /**
  * Envía un código de verificación al email proporcionado para un usuario.
@@ -56,12 +54,11 @@ export const fbSendEmailVerification = async (
   }
 
   try {
-    const response = await sendEmailVerificationCallable({
+    return await sendEmailVerificationCallable({
       userId,
       email: normalizedEmail,
       sessionToken,
     });
-    return response?.data;
   } catch (error) {
     const message =
       error instanceof Error
@@ -84,12 +81,11 @@ export const fbVerifyEmailCode = async (
   }
 
   try {
-    const response = await verifyEmailCodeCallable({
+    return await verifyEmailCodeCallable({
       userId,
       code: code.trim(),
       sessionToken,
     });
-    return response?.data;
   } catch (error) {
     const message =
       error instanceof Error

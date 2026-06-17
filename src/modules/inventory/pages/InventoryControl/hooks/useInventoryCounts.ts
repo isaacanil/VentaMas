@@ -9,7 +9,8 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 
 import { sum, findChildByKey } from '../utils/inventoryHelpers';
-import { CLEAR_SENTINEL } from '@/utils/inventory/constants';
+import { db as defaultDb } from '@/firebase/firebaseconfig';
+import { CLEAR_SENTINEL } from '@/modules/inventory/utils/constants';
 
 import type {
   CountsMap,
@@ -79,7 +80,7 @@ interface UseInventoryCountsResult {
 }
 
 export function useInventoryCounts({
-  db,
+  db = defaultDb,
   user,
   sessionId,
 }: UseInventoryCountsParams): UseInventoryCountsResult {

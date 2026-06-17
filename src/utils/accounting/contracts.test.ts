@@ -4,6 +4,7 @@ import {
   buildAccountingManualRatesByCurrency,
   getAccountingRateValue,
   normalizeAccountingCurrencyRateConfig,
+  normalizeAccountingManualRatesByCurrency,
   normalizeAccountingRateType,
   resolveAccountingRateTypeForOperation,
 } from '@/utils/accounting/contracts';
@@ -45,6 +46,53 @@ describe('accounting contracts', () => {
       USD: {
         buyRate: 59,
         sellRate: 60,
+      },
+    });
+  });
+
+  it('normaliza tasas manuales nested por moneda con aliases legacy', () => {
+    expect(
+      normalizeAccountingManualRatesByCurrency(
+        {
+          DOP: {
+            purchase: 1,
+            sale: 1,
+          },
+          USD: {
+            purchase: '58.5',
+            sale: '59.25',
+          },
+        },
+        'DOP',
+        ['DOP', 'USD', 'EUR'],
+      ),
+    ).toEqual({
+      USD: {
+        buyRate: 58.5,
+        sellRate: 59.25,
+      },
+      EUR: {
+        buyRate: null,
+        sellRate: null,
+      },
+    });
+  });
+
+  it('preserva fallback legacy foreignCurrency con aliases purchase/sale', () => {
+    expect(
+      normalizeAccountingManualRatesByCurrency(
+        {
+          foreignCurrency: 'USD',
+          purchase: '58.5',
+          sale: '59.25',
+        },
+        'DOP',
+        ['DOP', 'USD'],
+      ),
+    ).toEqual({
+      USD: {
+        buyRate: 58.5,
+        sellRate: 59.25,
       },
     });
   });

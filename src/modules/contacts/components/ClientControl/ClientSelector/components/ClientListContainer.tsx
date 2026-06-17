@@ -3,8 +3,8 @@ import { forwardRef, memo, type ComponentPropsWithoutRef } from 'react';
 import { Virtuoso } from 'react-virtuoso';
 import styled from 'styled-components';
 
-import { Client } from '@/components/ui/client/Client';
-import { clientHeaderStyles } from '@/components/ui/client/Client.styles';
+import { clientHeaderStyles } from './ClientList.styles';
+import { ClientListItem } from './ClientListItem/ClientListItem';
 
 type ClientData = {
   id?: string;
@@ -168,7 +168,7 @@ const ClientListContainerComponent = ({
                 id: String(listItem.client.id ?? listItem.id ?? ''),
               };
               return (
-                <Client
+                <ClientListItem
                   client={resolvedClient}
                   selectedClient={resolvedSelectedClient}
                   updateClientMode={openUpdateClientModal}

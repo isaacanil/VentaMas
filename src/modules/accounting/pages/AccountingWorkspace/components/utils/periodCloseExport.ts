@@ -2,7 +2,8 @@ import {
   addReportHeader,
   applyProfessionalStyling,
   formatCurrencyColumns,
-} from '@/hooks/exportToExcel/exportConfig';
+} from '@/utils/export/excel/exportConfig';
+import { saveXlsxFile } from '@/utils/export/xlsx';
 
 import type { AccountingPeriodClosure } from '../../utils/accountingWorkspace';
 
@@ -27,22 +28,6 @@ type PeriodClosureExportRow = {
   Usuario: string;
   CerradoEl: string;
   Nota: string;
-};
-
-const downloadWorkbook = async (
-  workbook: { xlsx: { writeBuffer: () => Promise<ArrayBuffer> } },
-  fileName: string,
-) => {
-  const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], {
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = fileName;
-  anchor.click();
-  setTimeout(() => URL.revokeObjectURL(url), 100);
 };
 
 const toDate = (value: unknown): Date | null => {
@@ -146,5 +131,9 @@ export const exportPeriodCloseWorkbook = async ({
     [],
   );
 
-  await downloadWorkbook(workbook, buildPeriodCloseExportFileName());
+  const buffer = await workbook.xlsx.writeBuffer();
+  saveXlsxFile({
+    content: buffer,
+    fileName: buildPeriodCloseExportFileName(),
+  });
 };

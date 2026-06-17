@@ -25,7 +25,7 @@ vi.mock('react-redux', () => ({
     }),
 }));
 
-vi.mock('@/Context/AbilityContext/context', () => ({
+vi.mock('@/context/AbilityContext/context', () => ({
   AbilityContext: {},
 }));
 

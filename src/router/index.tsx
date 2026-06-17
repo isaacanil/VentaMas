@@ -1,7 +1,7 @@
 import { createBrowserRouter } from 'react-router';
 import type { RouteObject } from 'react-router';
 
-import { RouteErrorFallback } from '@/components/ui/ErrorComponent/RouteErrorFallback';
+import { RouteErrorFallback } from './components/RouteErrorFallback/RouteErrorFallback';
 import { protectedRouteLoader } from '@/router/routes/loaders/accessLoaders';
 
 import DashboardLayout from '@/layouts/DashboardLayout';

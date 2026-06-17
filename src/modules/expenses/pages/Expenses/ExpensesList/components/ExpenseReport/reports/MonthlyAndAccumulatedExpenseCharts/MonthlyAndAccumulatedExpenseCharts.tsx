@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import type { ChartOptions } from 'chart.js';
 import styled from 'styled-components';
 
-import Typography from '@/components/ui/Typografy/Typografy';
+import Typography from '@/components/ui/Typography/Typography';
 import type { ExpenseDoc } from '@/utils/expenses/types';
 
 import { options } from './chartOptions';

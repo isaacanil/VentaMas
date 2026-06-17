@@ -1,7 +1,5 @@
-import { httpsCallable } from 'firebase/functions';
-
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 import type { AccountsPayablePayment, PaymentState } from '@/types/payments';
 import type { UserIdentity } from '@/types/users';
 
@@ -32,6 +30,18 @@ export interface VoidAccountsPayablePaymentResult {
   payment?: AccountsPayablePayment | null;
 }
 
+type VoidAccountsPayablePaymentPayload = {
+  businessId: string;
+  paymentId: string;
+  reason?: string | null;
+  sessionToken?: string;
+};
+
+const voidSupplierPaymentCallable = createFirebaseCallable<
+  VoidAccountsPayablePaymentPayload,
+  VoidAccountsPayablePaymentResult
+>('voidSupplierPayment');
+
 export const fbVoidAccountsPayablePayment = async (
   user: UserIdentity | null | undefined,
   input: VoidAccountsPayablePaymentInput,
@@ -52,26 +62,16 @@ export const fbVoidAccountsPayablePayment = async (
   }
 
   const { sessionToken } = getStoredSession();
-  const callable = httpsCallable<
-    {
-      businessId: string;
-      paymentId: string;
-      reason?: string | null;
-      sessionToken?: string;
-    },
-    VoidAccountsPayablePaymentResult
-  >(functions, 'voidSupplierPayment');
-
-  const response = await callable({
+  const result = await voidSupplierPaymentCallable({
     businessId,
     paymentId,
     reason: input.reason ?? null,
     ...(sessionToken ? { sessionToken } : {}),
   });
 
-  if (!response.data?.ok) {
+  if (!result?.ok) {
     throw new Error('No se pudo anular el pago al proveedor.');
   }
 
-  return response.data;
+  return result;
 };

@@ -5,7 +5,7 @@ import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.
 import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 
 const CHART_ACCOUNT_TYPES = new Set([
   'asset',
@@ -39,6 +39,7 @@ const ACCOUNTING_EVENT_MODULES = new Map([
   ['accounts_receivable.payment.voided', 'accounts_receivable'],
   ['customer_credit_note.issued', 'accounts_receivable'],
   ['customer_credit_note.applied', 'accounts_receivable'],
+  ['customer_debit_note.issued', 'accounts_receivable'],
   ['purchase.committed', 'purchases'],
   ['accounts_payable.payment.recorded', 'accounts_payable'],
   ['accounts_payable.payment.voided', 'accounts_payable'],

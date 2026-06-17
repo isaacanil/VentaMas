@@ -10,17 +10,15 @@ import {
   assertBusinessCreationLimit,
   provisionBusinessCoreInTransaction,
   runBusinessPostProvisioning,
-} from '../../../../modules/business/functions/createBusiness.js';
+} from '../../../../modules/business/services/businessProvisioning.service.js';
+import { resolveCallableAuthUid } from '../../../../core/utils/callableSessionAuth.util.js';
 import {
   assertActiveMembershipForBusiness,
   getDistinctActiveBusinesses,
   normalizeMembershipEntries,
   toCleanString,
 } from '../utils/membershipContext.util.js';
-import {
-  resolveUserIdFromSessionToken,
-  toMillis,
-} from '../utils/sessionAuth.util.js';
+import { toMillis } from '../utils/sessionAuth.util.js';
 import { upsertAccessControlEntry } from '../utils/membershipMirror.util.js';
 import {
   assertBusinessAllowsMemberRead,
@@ -424,17 +422,8 @@ const getActiveDevSimulationState = async ({
   };
 };
 
-const resolveUserIdFromSession = async (request) => {
-  return resolveUserIdFromSessionToken({
-    sessionToken: toCleanString(request?.data?.sessionToken),
-    normalizeUserId: toCleanString,
-    createAuthError: (message) => new HttpsError('unauthenticated', message),
-  });
-};
-
 const resolveAuthUserId = async (request) => {
-  const fromSession = await resolveUserIdFromSession(request);
-  return fromSession || request?.auth?.uid || null;
+  return toCleanString(await resolveCallableAuthUid(request));
 };
 
 export const clientCreateBusinessForCurrentAccount = onCall(async (request) => {
@@ -456,6 +445,7 @@ export const clientCreateBusinessForCurrentAccount = onCall(async (request) => {
   }
 
   const userData = userSnap.data() || {};
+  assertUserAccountActive(userData);
   const entries = normalizeMembershipEntries(userData, {
     includeBusinessName: true,
   });
@@ -497,6 +487,7 @@ export const clientCreateBusinessForCurrentAccount = onCall(async (request) => {
     }
 
     const freshUserData = freshUserSnap.data() || {};
+    assertUserAccountActive(freshUserData);
     const isPlatformDevActor = hasDevPrivileges(freshUserData);
     const freshEntries = normalizeMembershipEntries(freshUserData, {
       includeBusinessName: true,

@@ -3,17 +3,12 @@ import type {
   JournalEntryLine,
   JournalEntryStatus,
 } from '@/types/accounting';
+import { toCleanString } from '@/utils/text';
 
 const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
-
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
 
 const toFiniteNumber = (value: unknown): number => {
   const parsed = Number(value);

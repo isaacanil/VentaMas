@@ -11,9 +11,8 @@ import {
   type BankPaymentPolicy,
 } from '@/utils/payments/bankPaymentPolicy';
 import {
-  buildAccountingManualRatesByCurrency,
   getAccountingRateValue,
-  normalizeAccountingCurrencyRateConfig,
+  normalizeAccountingManualRatesByCurrency,
   normalizeAccountingRateType,
   resolveAccountingRateTypeForOperation,
 } from '@/utils/accounting/contracts';
@@ -24,6 +23,7 @@ import {
   normalizeSupportedDocumentCurrency,
   type SupportedDocumentCurrency,
 } from '@/utils/accounting/currencies';
+import { toCleanString } from '@/utils/text';
 
 const ACCOUNTING_PILOT_BUSINESS_IDS = new Set(['X63aIFwHzk3r0gmT8w6P']);
 const ACCOUNTING_SETTINGS_CACHE_MS = 30_000;
@@ -65,12 +65,6 @@ const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
-
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
 
 const toUpperCleanString = (value: unknown): string | null => {
   const normalized = toCleanString(value);
@@ -309,17 +303,6 @@ const normalizeDocumentCurrencies = (
   );
 };
 
-const buildManualRatesByCurrency = (
-  functionalCurrency: SupportedDocumentCurrency,
-  documentCurrencies: SupportedDocumentCurrency[],
-  currentRates: AccountingManualRatesByCurrency = {},
-): AccountingManualRatesByCurrency =>
-  buildAccountingManualRatesByCurrency(
-    functionalCurrency,
-    documentCurrencies,
-    currentRates,
-  );
-
 const buildCurrentExchangeRateIdsByCurrency = (
   functionalCurrency: SupportedDocumentCurrency,
   documentCurrencies: SupportedDocumentCurrency[],
@@ -331,82 +314,6 @@ const buildCurrentExchangeRateIdsByCurrency = (
       accumulator[currency] = toCleanString(currentRateIds[currency]) ?? null;
       return accumulator;
     }, {});
-
-const normalizeLegacyManualRates = (
-  value: unknown,
-  functionalCurrency: SupportedDocumentCurrency,
-): AccountingManualRatesByCurrency => {
-  const record = asRecord(value);
-  const legacyUsdRate = safeNumber(record.USD);
-  const normalizedForeignCurrency = normalizeSupportedCurrency(
-    record.foreignCurrency,
-    DEFAULT_FUNCTIONAL_CURRENCY,
-  );
-  const foreignCurrency =
-    normalizedForeignCurrency === functionalCurrency
-      ? null
-      : normalizedForeignCurrency;
-
-  if (!foreignCurrency) {
-    return {};
-  }
-
-  return {
-    [foreignCurrency]: {
-      buyRate:
-        safeNumber(
-          record.buyRate ??
-            record.purchase ??
-            record.purchaseRate ??
-            record.buy,
-        ) ?? legacyUsdRate,
-      sellRate:
-        safeNumber(
-          record.sellRate ?? record.sale ?? record.saleRate ?? record.sell,
-        ) ?? legacyUsdRate,
-    },
-  };
-};
-
-const normalizeManualRatesByCurrency = (
-  value: unknown,
-  functionalCurrency: SupportedDocumentCurrency,
-  documentCurrencies: SupportedDocumentCurrency[],
-): AccountingManualRatesByCurrency => {
-  const record = asRecord(value);
-  const nestedRates = Object.entries(
-    record,
-  ).reduce<AccountingManualRatesByCurrency>(
-    (accumulator, [currencyKey, nestedValue]) => {
-      if (
-        !(ACCOUNTING_CURRENCY_CODES as readonly string[]).includes(currencyKey)
-      ) {
-        return accumulator;
-      }
-
-      const normalizedCurrency = currencyKey as SupportedDocumentCurrency;
-      if (normalizedCurrency === functionalCurrency) {
-        return accumulator;
-      }
-
-      accumulator[normalizedCurrency] =
-        normalizeAccountingCurrencyRateConfig(nestedValue);
-      return accumulator;
-    },
-    {},
-  );
-
-  const sourceRates =
-    Object.keys(nestedRates).length > 0
-      ? nestedRates
-      : normalizeLegacyManualRates(value, functionalCurrency);
-
-  return buildManualRatesByCurrency(
-    functionalCurrency,
-    documentCurrencies,
-    sourceRates,
-  );
-};
 
 const normalizeCurrentExchangeRateIdsByCurrency = (
   value: unknown,
@@ -461,7 +368,7 @@ const normalizeAccountingSettings = (
     rolloutEnabled: isAccountingRolloutExplicitlyEnabled(record),
     functionalCurrency,
     documentCurrencies,
-    manualRatesByCurrency: normalizeManualRatesByCurrency(
+    manualRatesByCurrency: normalizeAccountingManualRatesByCurrency(
       record.manualRatesByCurrency ?? record.manualRates,
       functionalCurrency,
       documentCurrencies,

@@ -1,13 +1,13 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 
-import { db } from '../../../../core/config/firebase.js';
 import { getLedgerInsights } from '../services/ncfLedger.service.js';
 import { sanitizePrefix } from '../utils/ncfLedger.util.js';
 
+import { resolveRequiredCallableActorUid } from './invoiceCallableAuth.util.js';
 import {
-  evaluateLedgerAccess,
-  resolveUserBusinessId,
-} from './ncfLedgerAccess.util.js';
+  assertUserAccess,
+  MEMBERSHIP_ROLE_GROUPS,
+} from '../../auth/services/userAccess.service.js';
 
 const sanitizeNumber = (value, fallback = 0) => {
   const numeric = Number(value);
@@ -15,7 +15,8 @@ const sanitizeNumber = (value, fallback = 0) => {
   return numeric;
 };
 
-export const getNcfLedgerInsights = onCall(async ({ data }, context) => {
+export const getNcfLedgerInsights = onCall(async (request) => {
+  const data = request?.data || {};
   const businessId =
     data?.businessId ||
     data?.business?.id ||
@@ -26,7 +27,7 @@ export const getNcfLedgerInsights = onCall(async ({ data }, context) => {
 
   const prefix =
     typeof data?.prefix === 'string' ? sanitizePrefix(data.prefix) : null;
-  const userId = data?.userId || data?.user?.uid || context.auth?.uid || null;
+  const userId = await resolveRequiredCallableActorUid(request);
   const normalizedDigits =
     typeof data?.normalizedDigits === 'string'
       ? data.normalizedDigits.trim()
@@ -38,10 +39,6 @@ export const getNcfLedgerInsights = onCall(async ({ data }, context) => {
 
   if (!prefix) {
     throw new HttpsError('invalid-argument', 'prefix es requerido');
-  }
-
-  if (!userId) {
-    throw new HttpsError('invalid-argument', 'userId es requerido');
   }
 
   const sequenceNumber = sanitizeNumber(
@@ -61,18 +58,11 @@ export const getNcfLedgerInsights = onCall(async ({ data }, context) => {
     normalizedDigits?.length ?? 0,
   );
 
-  const userSnap = await db.doc(`users/${userId}`).get();
-  const { hasGlobalAccess } = evaluateLedgerAccess(userSnap, {
-    errorMessage: 'No tienes permisos para consultar el ledger de NCF.',
+  await assertUserAccess({
+    authUid: userId,
+    businessId,
+    allowedRoles: MEMBERSHIP_ROLE_GROUPS.AUDIT,
   });
-
-  const userBusinessId = resolveUserBusinessId(userSnap);
-  if (!hasGlobalAccess && userBusinessId && userBusinessId !== businessId) {
-    throw new HttpsError(
-      'permission-denied',
-      'Usuario no pertenece a este negocio',
-    );
-  }
 
   const insights = await getLedgerInsights({
     businessId,

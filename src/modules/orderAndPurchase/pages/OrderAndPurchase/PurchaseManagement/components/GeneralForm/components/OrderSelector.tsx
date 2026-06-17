@@ -1,11 +1,12 @@
 import { LoadingOutlined, PlusOutlined, CloseOutlined } from '@/constants/icons/antd';
 import { Form, Input, Drawer, message, Empty } from 'antd';
 import type { InputRef } from 'antd';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { getOrderData } from '@/features/purchase/addPurchaseSlice';
+import { useAutoFocusOnOpen } from '@/hooks/useAutoFocusOnOpen';
 import { formatDate } from '@/utils/date/dateUtils';
 import { formatPrice } from '@/utils/format';
 import { calculateOrderTotals } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/OrderManagement/utils/orderCalculationsUtil';
@@ -176,15 +177,7 @@ const OrderSelector = ({
     return order.total ?? 0;
   };
 
-  useEffect(() => {
-    if (visible && searchInputRef.current) {
-      const focusTimer = window.setTimeout(() => {
-        searchInputRef.current?.focus?.();
-      }, 100);
-      return () => window.clearTimeout(focusTimer);
-    }
-    return undefined;
-  }, [visible]);
+  useAutoFocusOnOpen({ open: visible, ref: searchInputRef });
 
   const filteredOrders = search
     ? orders.filter((order) => {

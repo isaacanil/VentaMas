@@ -23,7 +23,7 @@ import {
 import {
   resolveElectronicTaxReceiptSnapshot,
   resolveFiscalDocumentNumber,
-} from '@/utils/invoice/electronicTaxReceipt';
+} from '@/modules/invoice/utils/electronicTaxReceipt';
 
 const DIRECT_EDIT_LIMIT_MS = 48 * 60 * 60 * 1000;
 const LOCKED_INVOICE_STATUSES = new Set([

@@ -6,8 +6,8 @@ import {
   type Range,
   type SequenceConflictResult,
   type Warning,
+  formatLedgerEntryNcf,
   isSequenceConflictResult,
-  normalizeDigits,
 } from './ncfUtils';
 
 const { Text } = Typography;
@@ -73,51 +73,10 @@ export const confirmSequenceWarnings = async (
   };
 
   const sequenceLength = resolveSequenceLength();
-
-  const buildFromDigits = (rawDigits: string | number | null | undefined) => {
-    if (rawDigits === undefined || rawDigits === null) return null;
-    const digits = normalizeDigits(String(rawDigits));
-    if (!digits) return null;
-    const length =
-      Number.isFinite(sequenceLength) && sequenceLength > 0
-        ? sequenceLength
-        : digits.length;
-    const padded = length > 0 ? digits.padStart(length, '0') : digits;
-    return prefixCandidate ? `${prefixCandidate}${padded}` : padded;
-  };
-
-  const extractDigitsFromItem = (item: LedgerEntry | null | undefined) => {
-    if (!item) return null;
-    if (
-      typeof item.normalizedDigits === 'string' &&
-      item.normalizedDigits.length > 0
-    ) {
-      return item.normalizedDigits;
-    }
-    if (Number.isFinite(item.number)) {
-      return Number(item.number).toString();
-    }
-    if (typeof item.ncf === 'string') {
-      const trimmed = item.ncf.trim();
-      if (prefixCandidate && trimmed.startsWith(prefixCandidate)) {
-        return trimmed.slice(prefixCandidate.length);
-      }
-      const prefixIndex = prefixCandidate
-        ? trimmed.toUpperCase().indexOf(prefixCandidate.toUpperCase())
-        : -1;
-      if (prefixCandidate && prefixIndex >= 0) {
-        return trimmed.slice(prefixIndex + prefixCandidate.length);
-      }
-      return trimmed.replace(/[^0-9]/g, '');
-    }
-    return null;
-  };
+  const formatOptions = { prefix: prefixCandidate, sequenceLength };
 
   const formatItemNcf = (item: LedgerEntry | null | undefined): string => {
-    const digits = extractDigitsFromItem(item);
-    const formatted = buildFromDigits(digits);
-    if (formatted) return formatted;
-    return item?.ncf || '';
+    return formatLedgerEntryNcf(item, formatOptions);
   };
 
   const formatRangeLabel = (

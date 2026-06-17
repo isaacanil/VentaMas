@@ -3,8 +3,8 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { Grid } from '@/components/ui/Grid/Grid';
-import { CustomProduct } from '@/components/ui/Product/CustomProduct';
-import { Product } from '@/components/ui/Product/Product/Product';
+import { CustomProduct } from '../ProductControl/components/ProductCard/CustomProduct';
+import { Product } from '../ProductControl/components/ProductCard/Product/Product';
 import type { ProductRecord } from '@/types/products';
 
 type ProductWrapper = {

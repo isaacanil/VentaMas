@@ -4,7 +4,7 @@ import {
   resolveGisysFactConfig,
 } from '../config/gisysFact.config.js';
 
-const VALID_MODES = new Set(['shadow', 'pilot', 'required']);
+export const VALID_MODES = new Set(['shadow', 'pilot', 'required']);
 
 export const toCleanString = (value) => {
   if (typeof value !== 'string') return null;
@@ -14,12 +14,12 @@ export const toCleanString = (value) => {
 
 export const toBoolean = (value) => value === true;
 
-const normalizeMode = (value, fallback = 'pilot') => {
+export const normalizeMode = (value, fallback = 'pilot') => {
   const normalized = toCleanString(value)?.toLowerCase();
   return VALID_MODES.has(normalized) ? normalized : fallback;
 };
 
-const normalizeTimeoutMs = (value) => {
+export const normalizeTimeoutMs = (value) => {
   const numeric = Number(value);
   return Number.isFinite(numeric) && numeric >= 5000 && numeric <= 120000
     ? Math.round(numeric)

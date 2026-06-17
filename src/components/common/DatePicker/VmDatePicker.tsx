@@ -1,6 +1,7 @@
-import { Button, Popover } from '@heroui/react';
 import React, { useMemo, useRef } from 'react';
 import styled from 'styled-components';
+
+import { VmButton, VmPopover } from '@/components/heroui';
 
 import { CalendarSection } from './components/CalendarSection';
 import { HeroUIDatePickerInput } from './components/HeroUIDatePickerInput';
@@ -176,13 +177,13 @@ export const VmDatePicker = ({
 
       {allowClear ? (
         <ActionsSection>
-          <Button
+          <VmButton
             fullWidth
             variant="tertiary"
             onPress={() => handleClear(null, finalPresets)}
           >
             Limpiar
-          </Button>
+          </VmButton>
         </ActionsSection>
       ) : null}
     </DatePickerContent>
@@ -214,13 +215,13 @@ export const VmDatePicker = ({
           {mobileContent}
           <ActionsSection $isMobile={isMobile}>
             {allowClear ? (
-              <Button
+              <VmButton
                 fullWidth
                 variant="tertiary"
                 onPress={() => handleClear(null, finalPresets)}
               >
                 Limpiar
-              </Button>
+              </VmButton>
             ) : null}
           </ActionsSection>
         </MobileModal>
@@ -230,8 +231,8 @@ export const VmDatePicker = ({
 
   return (
     <Container ref={containerRef} className={className} style={style}>
-      <Popover isOpen={open} onOpenChange={(v) => !disabled && setOpen(v)}>
-        <Popover.Trigger>
+      <VmPopover isOpen={open} onOpenChange={(v) => !disabled && setOpen(v)}>
+        <VmPopover.Trigger>
           <HeroUIDatePickerInput
             value={inputValue}
             placeholder={placeholder}
@@ -243,11 +244,11 @@ export const VmDatePicker = ({
             onClick={undefined}
             {...props}
           />
-        </Popover.Trigger>
-        <Popover.Content placement="bottom start" className="overflow-hidden">
+        </VmPopover.Trigger>
+        <VmPopover.Content placement="bottom start" className="overflow-hidden">
           {desktopContent}
-        </Popover.Content>
-      </Popover>
+        </VmPopover.Content>
+      </VmPopover>
     </Container>
   );
 };

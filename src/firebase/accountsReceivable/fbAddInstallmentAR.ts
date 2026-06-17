@@ -1,6 +1,6 @@
 import { Timestamp, collection, doc, writeBatch } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseconfig';
-import { generateInstallments } from '@/utils/accountsReceivable/generateInstallments';
+import { generateInstallments } from '@/domain/accountsReceivable/generateInstallments';
 import { toMillis } from '@/utils/date/toMillis';
 import type { UserIdentity } from '@/types/users';
 import type {

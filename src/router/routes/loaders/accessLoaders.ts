@@ -4,18 +4,16 @@ import { store } from '@/app/store';
 import { addUserData, selectAuthReady, selectUser } from '@/features/auth/userSlice';
 import {
   buildAccessControlFromBusinesses,
-  normalizeAvailableBusinesses,
   resolveAutoSelectedBusiness,
   resolveBusinessPreferenceId,
   resolveCurrentActiveBusinessId,
   resolveCurrentActiveRole,
-  setStoredActiveBusinessId,
-} from '@/modules/auth/utils/businessContext';
-import {
   hasBusinessManagerQuery,
+  normalizeAvailableBusinesses,
+  resolveDefaultHomeRoute,
+  setStoredActiveBusinessId,
   withBusinessManagerQuery,
-} from '@/modules/auth/utils/businessManagerRoute';
-import { resolveDefaultHomeRoute } from '@/modules/auth/utils/defaultHomeRoute';
+} from '@/modules/auth/public';
 import { getRouteMeta } from '@/router/routes/routeVisibility';
 import ROUTES_NAME from '@/router/routes/routesName';
 import { hasDeveloperAccess } from '@/utils/access/developerAccess';

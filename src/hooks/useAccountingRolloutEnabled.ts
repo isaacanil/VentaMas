@@ -1,84 +1,45 @@
-import { doc, onSnapshot } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
-
-import { db } from '@/firebase/firebaseconfig';
 import { isAccountingRolloutEnabledForBusiness } from '@/utils/accounting/monetary';
 
-interface RolloutSnapshotState {
-  businessId: string;
-  enabled: boolean;
-}
+import {
+  toCleanBusinessId,
+  useAccountingSettingsSnapshot,
+  type AccountingSettingsSnapshotState,
+} from './useAccountingSettingsSnapshot';
 
 export interface RolloutAvailabilityState {
   enabled: boolean;
   resolved: boolean;
 }
 
-const toCleanBusinessId = (
+export const resolveAccountingRolloutAvailability = (
   businessId: string | null | undefined,
-): string | null => {
-  if (typeof businessId !== 'string') return null;
-  const trimmed = businessId.trim();
-  return trimmed.length ? trimmed : null;
-};
-
-export const useAccountingRolloutAvailability = (
-  businessId: string | null | undefined,
-  isEnabled = true,
+  settingsSnapshot: AccountingSettingsSnapshotState,
 ): RolloutAvailabilityState => {
   const normalizedBusinessId = toCleanBusinessId(businessId);
   const fallbackEnabled = isAccountingRolloutEnabledForBusiness(
     normalizedBusinessId,
   );
-  const [snapshotState, setSnapshotState] = useState<RolloutSnapshotState | null>(
-    null,
-  );
 
-  useEffect(() => {
-    if (!isEnabled || !normalizedBusinessId) {
-      return undefined;
-    }
-
-    const settingsRef = doc(
-      db,
-      'businesses',
-      normalizedBusinessId,
-      'settings',
-      'accounting',
-    );
-
-    const unsubscribe = onSnapshot(
-      settingsRef,
-      (snapshot) => {
-        setSnapshotState({
-          businessId: normalizedBusinessId,
-          enabled: isAccountingRolloutEnabledForBusiness(
-            normalizedBusinessId,
-            snapshot.exists() ? snapshot.data() : null,
-          ),
-        });
-      },
-      () => {
-        setSnapshotState({
-          businessId: normalizedBusinessId,
-          enabled: fallbackEnabled,
-        });
-      },
-    );
-
-    return unsubscribe;
-  }, [fallbackEnabled, isEnabled, normalizedBusinessId]);
-
-  if (!isEnabled || !normalizedBusinessId) {
+  if (!normalizedBusinessId || settingsSnapshot.status === 'disabled') {
     return {
       enabled: false,
       resolved: true,
     };
   }
 
-  if (snapshotState?.businessId === normalizedBusinessId) {
+  if (settingsSnapshot.status === 'ready') {
     return {
-      enabled: snapshotState.enabled,
+      enabled: isAccountingRolloutEnabledForBusiness(
+        normalizedBusinessId,
+        settingsSnapshot.data,
+      ),
+      resolved: true,
+    };
+  }
+
+  if (settingsSnapshot.status === 'error') {
+    return {
+      enabled: fallbackEnabled,
       resolved: true,
     };
   }
@@ -87,6 +48,29 @@ export const useAccountingRolloutAvailability = (
     enabled: fallbackEnabled,
     resolved: fallbackEnabled,
   };
+};
+
+export const useAccountingRolloutAvailability = (
+  businessId: string | null | undefined,
+  isEnabled = true,
+): RolloutAvailabilityState => {
+  const normalizedBusinessId = toCleanBusinessId(businessId);
+  const settingsSnapshot = useAccountingSettingsSnapshot(
+    normalizedBusinessId,
+    isEnabled,
+  );
+
+  if (!isEnabled || !normalizedBusinessId) {
+    return {
+      enabled: false,
+      resolved: true,
+    };
+  }
+
+  return resolveAccountingRolloutAvailability(
+    normalizedBusinessId,
+    settingsSnapshot,
+  );
 };
 
 export const useAccountingRolloutEnabled = (

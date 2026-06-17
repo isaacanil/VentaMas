@@ -53,14 +53,14 @@ Accion tomada:
 - [src/utils/accounting/lineMonetary.test.ts](c:\Dev\VentaMas\src\utils\accounting\lineMonetary.test.ts)
 - [src/utils/accountsReceivable/creditLimit.test.ts](c:\Dev\VentaMas\src\utils\accountsReceivable\creditLimit.test.ts)
 - [src/utils/pricing.test.ts](c:\Dev\VentaMas\src\utils\pricing.test.ts)
-- [src/utils/inventory/productStockSelection.test.ts](c:\Dev\VentaMas\src\utils\inventory\productStockSelection.test.ts)
+- [src/modules/sales/pages/Sale/utils/productStockSelection.test.ts](c:\Dev\VentaMas\src\modules\sales\pages\Sale\utils\productStockSelection.test.ts)
 - [src/router/routes/routeVisibility.test.ts](c:\Dev\VentaMas\src\router\routes\routeVisibility.test.ts)
 - [src/utils/firestore/commitChunkedBatch.test.ts](c:\Dev\VentaMas\src\utils\firestore\commitChunkedBatch.test.ts)
 - [src/services/functionsApiClient.test.ts](c:\Dev\VentaMas\src\services\functionsApiClient.test.ts)
 - [src/hooks/accountsReceivable/useCreditLimitRealtime.test.ts](c:\Dev\VentaMas\src\hooks\accountsReceivable\useCreditLimitRealtime.test.ts)
 - ampliacion de [src/modules/settings/pages/subscription/subscription.utils.test.ts](c:\Dev\VentaMas\src\modules\settings\pages\subscription\subscription.utils.test.ts)
 - ampliacion de [src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/utils/validateInvoiceSubmissionGuards.test.ts](c:\Dev\VentaMas\src\modules\sales\pages\Sale\components\Cart\components\InvoicePanel\utils\validateInvoiceSubmissionGuards.test.ts)
-- ampliacion de [src/utils/accountsReceivable/generateInstallments.test.ts](c:\Dev\VentaMas\src\utils\accountsReceivable\generateInstallments.test.ts)
+- ampliacion de [src/domain/accountsReceivable/generateInstallments.test.ts](c:\Dev\VentaMas\src\domain\accountsReceivable\generateInstallments.test.ts)
 
 ### Tests Nuevos Functions
 

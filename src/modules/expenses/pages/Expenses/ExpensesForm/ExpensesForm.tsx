@@ -6,10 +6,10 @@ import styled from 'styled-components';
 
 import DatePicker from '@/components/DatePicker';
 import { icons } from '@/constants/icons/icons';
-import { useCategoryState } from '@/Context/CategoryContext/useCategoryState';
+import { useCategoryState } from '@/context/CategoryContext/useCategoryState';
 import { useFbGetExpensesCategories } from '@/firebase/expenses/categories/fbGetExpensesCategories';
 import { toMillis } from '@/utils/date/toMillis';
-import { EXPENSE_PAYMENT_METHODS } from '@/utils/expenses/constants';
+import { EXPENSE_PAYMENT_METHODS } from '@/modules/expenses/utils/constants';
 import {
   resolveExpenseFiscalTotals,
   toExpenseFiscalNumber,

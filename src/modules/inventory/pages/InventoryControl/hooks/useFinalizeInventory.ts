@@ -1,6 +1,7 @@
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useState } from 'react';
 
+import { db as defaultDb } from '@/firebase/firebaseconfig';
 import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 import type {
@@ -50,7 +51,7 @@ const finalizeInventorySessionCallable = createFirebaseCallable<
  * No muestra modales ni mensajes; solo realiza la operación y expone el estado.
  */
 export function useFinalizeInventory({
-  db,
+  db = defaultDb,
   user,
   sessionId,
   navigate,

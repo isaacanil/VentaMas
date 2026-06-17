@@ -73,6 +73,17 @@ type FiscalReceiptsState = {
   analysis: FiscalReceiptsAnalysis;
 };
 
+type FiscalNotificationCandidate = {
+  receipt: FiscalReceiptStatus;
+  key: string;
+  repeatWindowMs: number;
+  suppressRepeatedNotifications: boolean;
+};
+
+type DismissedFiscalNotification = {
+  receipt: FiscalReceiptStatus;
+};
+
 /**
  * Hook personalizado para manejar las alertas de comprobantes fiscales
  * @returns {Object} Estado y funciones para manejar alertas de comprobantes
@@ -82,7 +93,8 @@ export const useFiscalReceiptsAlerts = () => {
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
   const user = useSelector(selectUser) as UserIdentity | null;
   const businessId = user?.businessID ?? null;
-  const [shouldShowNotification, setShouldShowNotification] = useState(false);
+  const [dismissedNotification, setDismissedNotification] =
+    useState<DismissedFiscalNotification | null>(null);
   const [alertConfig, setAlertConfig] = useState<FiscalAlertsConfig | null>(
     null,
   );
@@ -245,50 +257,71 @@ export const useFiscalReceiptsAlerts = () => {
     };
   }, [taxReceipt, taxReceiptEnabled, alertConfig, loadingConfig]);
 
-  // Efecto para manejar notificaciones automáticas
+  const notificationCandidate = useMemo<FiscalNotificationCandidate | null>(
+    () => {
+      if (!alertConfig?.channels.popupOnCritical || !fiscalData.hasIssues) {
+        return null;
+      }
+
+      const mostCritical = fiscalData.analysis.summary.mostCritical;
+
+      if (!mostCritical || mostCritical.alertLevel !== 'critical') {
+        return null;
+      }
+
+      const notificationKey = [
+        mostCritical.id ?? `${mostCritical.name}-${mostCritical.series}`,
+        mostCritical.alertLevel,
+        mostCritical.primaryAlertReason ?? 'quantity',
+        mostCritical.remainingNumbers,
+        mostCritical.daysUntilExpiration ?? 'na',
+      ].join('|');
+
+      const repeatWindowMs =
+        Math.max(alertConfig.execution.checkFrequencyMinutes, 5) * 60 * 1000;
+
+      return {
+        receipt: mostCritical,
+        key: notificationKey,
+        repeatWindowMs,
+        suppressRepeatedNotifications:
+          alertConfig.execution.suppressRepeatedNotifications,
+      };
+    },
+    [alertConfig, fiscalData.analysis.summary.mostCritical, fiscalData.hasIssues],
+  );
+
+  const shouldShowNotification = useMemo(() => {
+    if (!notificationCandidate) {
+      return false;
+    }
+
+    if (lastNotificationKeyRef.current !== notificationCandidate.key) {
+      return true;
+    }
+
+    if (dismissedNotification?.receipt === notificationCandidate.receipt) {
+      return false;
+    }
+
+    if (!notificationCandidate.suppressRepeatedNotifications) {
+      return true;
+    }
+
+    return (
+      Date.now() - lastNotificationAtRef.current >=
+      notificationCandidate.repeatWindowMs
+    );
+  }, [dismissedNotification, notificationCandidate]);
+
   useEffect(() => {
-    if (!alertConfig?.channels.popupOnCritical) {
-      setShouldShowNotification(false);
+    if (notificationCandidate) {
       return;
     }
 
-    if (!fiscalData.hasIssues) {
-      lastNotificationKeyRef.current = null;
-      setShouldShowNotification(false);
-      return;
-    }
-
-    const mostCritical = fiscalData.analysis.summary.mostCritical;
-
-    if (!mostCritical || mostCritical.alertLevel !== 'critical') {
-      return;
-    }
-
-    const now = Date.now();
-    const notificationKey = [
-      mostCritical.id ?? `${mostCritical.name}-${mostCritical.series}`,
-      mostCritical.alertLevel,
-      mostCritical.primaryAlertReason ?? 'quantity',
-      mostCritical.remainingNumbers,
-      mostCritical.daysUntilExpiration ?? 'na',
-    ].join('|');
-
-    const repeatWindowMs =
-      Math.max(alertConfig.execution.checkFrequencyMinutes, 5) * 60 * 1000;
-    const shouldSuppressDuplicate =
-      alertConfig.execution.suppressRepeatedNotifications &&
-      lastNotificationKeyRef.current === notificationKey;
-    const insideRepeatWindow =
-      now - lastNotificationAtRef.current < repeatWindowMs;
-
-    if (shouldSuppressDuplicate && insideRepeatWindow) {
-      return;
-    }
-
-    lastNotificationKeyRef.current = notificationKey;
-    lastNotificationAtRef.current = now;
-    setShouldShowNotification(true);
-  }, [alertConfig, fiscalData.analysis.summary.mostCritical, fiscalData.hasIssues]);
+    lastNotificationKeyRef.current = null;
+    lastNotificationAtRef.current = 0;
+  }, [notificationCandidate]);
 
   // Efecto para actualizar la última verificación usando ref
   useEffect(() => {
@@ -299,7 +332,13 @@ export const useFiscalReceiptsAlerts = () => {
 
   // Funciones auxiliares
   const dismissNotification = () => {
-    setShouldShowNotification(false);
+    if (!notificationCandidate) {
+      return;
+    }
+
+    lastNotificationKeyRef.current = notificationCandidate.key;
+    lastNotificationAtRef.current = Date.now();
+    setDismissedNotification({ receipt: notificationCandidate.receipt });
   };
 
   const getReceiptsByAlertLevel = (level: FiscalAlertLevel) => {

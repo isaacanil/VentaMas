@@ -4,9 +4,9 @@
 // de productos en estado de stock BAJO o CRÍTICO para cada negocio que:
 //   - Tiene billing.stockAlertsEnabled = true
 //   - Tiene billing.stockAlertEmail configurado
-// Umbrales tomados de billing (mismos que trigger onWrite).
+// Umbrales tomados de billing.
 // Modo envío: reutiliza nodemailer (sendMail) o la extensión Trigger Email
-// según STOCK_ALERT_USE_EXTENSION (misma lógica que stockAlertsOnWrite).
+// según STOCK_ALERT_USE_EXTENSION.
 // Se limita a un máximo de N negocios por ejecución (paginable) para evitar
 // sobrecarga si la base crece: configurable con DIGEST_BUSINESS_LIMIT.
 // =============================================================
@@ -25,6 +25,10 @@ import {
   DIGEST_BUSINESS_LIMIT as PARAM_DIGEST_BUSINESS_LIMIT,
   DIGEST_BUSINESS_ORDER_FIELD as PARAM_DIGEST_BUSINESS_ORDER_FIELD,
 } from '../../../core/config/secrets.js';
+import {
+  escapeHtml,
+  sanitizeMailHeader,
+} from '../../../core/utils/emailContent.util.js';
 
 let dependenciesPromise = null;
 
@@ -67,19 +71,6 @@ function val(paramDef, envName, def) {
   const env = process.env[envName];
   if (env !== undefined && env !== null && String(env).length) return env;
   return def;
-}
-
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function sanitizeMailHeader(value) {
-  return String(value ?? '').replace(/[\r\n]+/g, ' ').trim();
 }
 
 function renderStockAlertRow(row) {

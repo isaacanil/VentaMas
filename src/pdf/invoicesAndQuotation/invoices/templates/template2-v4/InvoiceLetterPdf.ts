@@ -1,18 +1,18 @@
-import { getPdfMake } from '@/utils/pdf/pdfMakeLoader.js';
+import { getPdfMake } from '@/utils/pdf/pdfMakeLoader';
 
-import { buildContent } from '../template2/builders/content.js';
-import { buildHeader } from '../template2/builders/header.js';
+import { buildContent } from '../template2/builders/content';
+import { buildHeader } from '../template2/builders/header';
 import {
   calcFooterHeight,
   calcHeaderHeight,
-} from '../template2/utils/documentHeightCalculator.js';
+} from '../template2/utils/documentHeightCalculator';
 import {
   getDiscount,
   getProductsIndividualDiscounts,
   hasIndividualDiscounts,
   money,
   resolvePdfCurrency,
-} from '../template2/utils/formatters.js';
+} from '../template2/utils/formatters';
 
 import type {
   PdfContent,

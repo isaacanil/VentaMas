@@ -22,8 +22,8 @@ import {
   HR_PAYMENT_METHOD_LABELS as PAYMENT_METHOD_LABELS,
 } from '@/modules/hrPayroll/utils/hrPayrollDisplay';
 import type { HrEmployeeRecord } from '@/types/hrPayroll';
-import { formatHrDepositAccount } from '@/utils/hrPayroll/depositAccounts';
-import { summarizeSalaryDeductions } from '@/utils/hrPayroll/salaryDeductions';
+import { formatHrDepositAccount } from '@/domain/hrPayroll/depositAccounts';
+import { summarizeSalaryDeductions } from '@/domain/hrPayroll/salaryDeductions';
 
 interface EmployeeColumnsOptions {
   usersById: Map<string, string>;

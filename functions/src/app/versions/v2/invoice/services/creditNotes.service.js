@@ -28,6 +28,16 @@ export async function consumeCreditNotesTx(
         `La nota de crédito ${cnData?.ncf || cnData?.number || note.id} está anulada y no puede aplicarse`,
       );
     }
+    if (!['issued', 'applied'].includes(status)) {
+      throw new Error(
+        `La nota de crédito ${cnData?.ncf || cnData?.number || note.id} no está emitida y no puede aplicarse`,
+      );
+    }
+    if (!cnData?.ncf && !cnData?.eNcf) {
+      throw new Error(
+        `La nota de crédito ${cnData?.number || note.id} no tiene NCF/e-NCF emitido`,
+      );
+    }
     const currentAvailable = Number(
       cnData?.availableAmount ?? cnData?.totalAmount ?? 0,
     );

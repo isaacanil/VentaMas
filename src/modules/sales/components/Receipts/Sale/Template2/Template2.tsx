@@ -5,7 +5,7 @@ import { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
 
-import type { ColumnsType } from 'antd/es/table';
+import type { TableColumnsType as ColumnsType } from 'antd';
 
 interface ReceiptLineItem {
   key: string;

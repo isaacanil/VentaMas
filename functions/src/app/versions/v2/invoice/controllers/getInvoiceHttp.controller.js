@@ -10,7 +10,8 @@ import {
   MEMBERSHIP_ROLE_GROUPS,
 } from '../services/repairTasks.service.js';
 import { assertBusinessSubscriptionAccess } from '../../billing/utils/subscriptionAccess.util.js';
-import { applyHttpCors } from '../../http/httpCors.util.js';
+import { handleHttpCorsPreflightAndMethod } from '../../http/httpCors.util.js';
+import { mapHttpsErrorToHttpStatus } from '../../http/httpError.util.js';
 
 const normalizeDocRefPath = (value) => {
   if (!value) return null;
@@ -71,26 +72,6 @@ const normalizeCashCountCandidate = (candidate) => {
 
 const MAX_CASH_COUNT_SCAN = 50;
 
-const mapHttpsErrorToStatus = (code) => {
-  switch (code) {
-  case 'permission-denied':
-    return 403;
-  case 'unauthenticated':
-    return 401;
-  case 'not-found':
-    return 404;
-  case 'failed-precondition':
-    return 412;
-  case 'resource-exhausted':
-    return 429;
-  case 'already-exists':
-    return 409;
-  case 'invalid-argument':
-  default:
-    return 400;
-  }
-};
-
 const mapCashCountDoc = (docSnap) => {
   const data = docSnap.data() || {};
   const cc = data.cashCount || {};
@@ -106,17 +87,14 @@ const mapCashCountDoc = (docSnap) => {
 };
 
 export const getInvoiceV2Http = https.onRequest(async (req, res) => {
-  const corsAllowed = applyHttpCors(req, res, {
+  const httpGuardHandled = handleHttpCorsPreflightAndMethod(req, res, {
+    allowedMethod: 'GET',
     methods: 'GET, OPTIONS',
     headers: 'Content-Type, Authorization, X-Session-Token',
   });
-  if (req.method === 'OPTIONS') {
-    if (!corsAllowed) return res.status(403).send('');
-    return res.status(204).send('');
+  if (httpGuardHandled) {
+    return;
   }
-  if (!corsAllowed) return res.status(403).json({ error: 'Origin not allowed' });
-  if (req.method !== 'GET')
-    return res.status(405).json({ error: 'Method Not Allowed' });
 
   let businessId = null;
   let invoiceId = null;
@@ -328,7 +306,7 @@ export const getInvoiceV2Http = https.onRequest(async (req, res) => {
     });
   } catch (err) {
     if (err instanceof https.HttpsError) {
-      return res.status(mapHttpsErrorToStatus(err.code)).json({
+      return res.status(mapHttpsErrorToHttpStatus(err.code)).json({
         error: err.message,
         code: err.code,
       });

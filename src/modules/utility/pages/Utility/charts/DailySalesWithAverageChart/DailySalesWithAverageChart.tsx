@@ -10,7 +10,7 @@ import {
   getInvoiceTimestamp,
   getInvoiceTotalValue,
 } from '../utils/invoiceUtils';
-import Typography from '@/components/ui/Typografy/Typografy';
+import Typography from '@/components/ui/Typography/Typography';
 
 interface DailySalesWithAverageChartProps {
   invoices: UtilityInvoiceEntry[];

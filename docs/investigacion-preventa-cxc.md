@@ -17,14 +17,14 @@ Entender cómo funciona hoy CxC en facturas y qué falta para integrar preventas
 
 ### Flujo de preventa
 
-- Guardar preventa (preorden): `src/firebase/invoices/fbAddPreocer.ts`
+- Guardar preventa (preorden): `src/firebase/invoices/fbAddPreorder.ts`
   - Guarda en `businesses/{id}/invoices/{preorderId}` con:
     - `type: 'preorder'`, `status: 'pending'`
     - `preorderDetails.isOrWasPreorder = true`
     - `preorderDetails.paymentStatus = 'unpaid'` (no se actualiza en ningún otro lugar)
 - Actualizar preventa: `src/firebase/invoices/fbUpdatePreorder.ts`
 - “Completar preventa” en `/preorders` **solo carga la preventa en el carrito y abre el panel de pago**:
-  - `src/modules/sales/pages/PreorderSale/components/PreSaleTable/tableCells.tsx`
+  - `src/modules/sales/pages/PreorderSale/components/PreSaleTable/tableCells/TableCells.tsx`
 - El panel de pago que convierte a factura es el mismo de ventas:
   - `src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/InvoicePanel.tsx`
 
@@ -44,10 +44,10 @@ Entender cómo funciona hoy CxC en facturas y qué falta para integrar preventas
 
 - El backend V2 crea CxC **solo cuando se genera factura** (no en preventa).
 - Orquestación:
-  - `functions/src/versions/v2/invoice/services/orchestrator.service.js`
+  - `functions/src/app/versions/v2/invoice/services/orchestrator.service.js`
   - Si `cart.isAddedToReceivables === true`, crea tarea `setupAR`.
 - Worker:
-  - `functions/src/versions/v2/invoice/triggers/outbox.worker.js`
+  - `functions/src/app/versions/v2/invoice/triggers/outbox.worker.js`
   - `setupAR` crea la cuenta por cobrar y sus cuotas.
 
 ## Diferencias entre Preventa y Factura
@@ -75,16 +75,16 @@ Propuesta de implementación:
   - `src/modules/settings/components/GeneralConfig/configs/components/BillingModeConfig.tsx`
   - `src/firebase/billing/useInitializeBillingSettings.tsx`
 - Preventas:
-  - `src/firebase/invoices/fbAddPreocer.ts`
+  - `src/firebase/invoices/fbAddPreorder.ts`
   - `src/firebase/invoices/fbUpdatePreorder.ts`
-  - `src/modules/sales/pages/PreorderSale/components/PreSaleTable/tableCells.tsx`
+  - `src/modules/sales/pages/PreorderSale/components/PreSaleTable/tableCells/TableCells.tsx`
 - Panel de pago / CxC:
   - `src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/InvoicePanel.tsx`
   - `src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/components/Body/Body.tsx`
   - `src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/AccountsReceivableManager/AccountsReceivableManager.tsx`
 - Backend V2:
-  - `functions/src/versions/v2/invoice/services/orchestrator.service.js`
-  - `functions/src/versions/v2/invoice/triggers/outbox.worker.js`
+  - `functions/src/app/versions/v2/invoice/services/orchestrator.service.js`
+  - `functions/src/app/versions/v2/invoice/triggers/outbox.worker.js`
 
 ## Pendientes para el siguiente paso
 

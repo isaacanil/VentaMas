@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useSelector } from 'react-redux';
 import styled, { keyframes } from 'styled-components';
 
@@ -5,9 +6,16 @@ import {
   selectLoaderMessage,
   selectLoaderShow,
 } from '@/features/loader/loaderSlice';
-import type { LoaderProps } from '@/types/ui';
 
 type LoaderTheme = 'dark' | 'light';
+
+interface LoaderProps {
+  useRedux?: boolean;
+  show?: boolean;
+  message?: ReactNode;
+  theme?: string;
+}
+
 const Loader = ({
   useRedux = true,
   show: propsShow,

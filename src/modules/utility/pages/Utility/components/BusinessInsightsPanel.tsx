@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import { designSystemV2 } from '@/theme/designSystemV2';
 import { buildBusinessInsights } from '@/modules/utility/pages/Utility/utils/buildBusinessInsights';
 import { getVariantStyles } from '@/modules/utility/pages/Utility/utils/insightVariants';
-import { SimpleTypography } from '@/components/ui/Typografy/SimpleTypography';
+import { SimpleTypography } from '@/components/ui/Typography/SimpleTypography';
 import type {
   UtilityCurrencyFormatter,
   UtilityDailyMetric,

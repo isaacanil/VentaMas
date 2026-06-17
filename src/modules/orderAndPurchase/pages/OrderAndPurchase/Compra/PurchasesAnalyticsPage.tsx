@@ -2,10 +2,10 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { PageLayout, PageShell } from '@/components/layout/PageShell';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 
-import { FilterBar } from './components/FilterBar/FilterBar';
+import { FilterBar } from '../shared/components/TransactionFilterBar/FilterBar';
 import { PurchasesAnalyticsPanel } from './components/PurchasesReport/components/PurchasesAnalyticsPanel/PurchasesAnalyticsPanel';
 import { usePurchasesViewState } from './hooks/usePurchasesViewState';
 

@@ -113,7 +113,8 @@ describe('syncPurchaseSupplierCreditNote', () => {
               functionalTotals: { total: 6000 },
             },
             completedAt: '2026-04-10T12:00:00.000Z',
-            updatedBy: 'user-1',
+            createdBy: 'client-created-user',
+            updatedBy: 'client-updated-user',
           }),
         },
       },
@@ -131,6 +132,12 @@ describe('syncPurchaseSupplierCreditNote', () => {
         appliedAmount: 0,
         remainingAmount: 30,
         status: 'open',
+        createdBy: 'system:purchase-supplier-credit-note-sync',
+        updatedBy: 'system:purchase-supplier-credit-note-sync',
+        metadata: expect.objectContaining({
+          sourcePurchaseCreatedBy: 'client-created-user',
+          sourcePurchaseUpdatedBy: 'client-updated-user',
+        }),
       }),
       { merge: true },
     );
@@ -147,6 +154,11 @@ describe('syncPurchaseSupplierCreditNote', () => {
         monetary: {
           amount: 30,
           functionalAmount: 1800,
+        },
+        createdBy: 'system:purchase-supplier-credit-note-sync',
+        metadata: {
+          sourcePurchaseCreatedBy: 'client-created-user',
+          sourcePurchaseUpdatedBy: 'client-updated-user',
         },
         payload: expect.objectContaining({
           supplierCreditNoteId: 'purchase_overpaid_purchase-1',

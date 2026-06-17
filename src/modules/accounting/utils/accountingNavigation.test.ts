@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildAccountingEntryRoute,
-  findAccountingLedgerRecord,
   getAccountingEntryLocatorFromSearch,
   resolveAccountingEntryTarget,
 } from './accountingNavigation';
+import { findAccountingLedgerRecord } from './accountingLedgerRecord';
 
-import type { AccountingLedgerRecord } from '@/modules/accounting/pages/AccountingWorkspace/utils/accountingWorkspace';
+import type { AccountingLedgerRecord } from './accountingLedgerRecord';
 
 const createRecord = (
   overrides: Partial<AccountingLedgerRecord> = {},
@@ -125,6 +125,48 @@ describe('accountingNavigation', () => {
         journalEntryId: 'entry-1',
       }),
     ).toBe(record);
+  });
+
+  it('finds records by projected or metadata journal entry id when entry is not hydrated', () => {
+    const baseEvent = createRecord().event!;
+    const projectedRecord = createRecord({
+      id: 'record-projected',
+      journalEntry: null,
+      event: {
+        ...baseEvent,
+        id: 'event-projected',
+        projection: {
+          ...baseEvent.projection!,
+          journalEntryId: 'entry-projected',
+        },
+      },
+    });
+    const metadataRecord = createRecord({
+      id: 'record-metadata',
+      journalEntry: null,
+      event: {
+        ...baseEvent,
+        id: 'event-metadata',
+        projection: {
+          ...baseEvent.projection!,
+          journalEntryId: null,
+        },
+        metadata: {
+          journalEntryId: 'entry-metadata',
+        },
+      },
+    });
+
+    expect(
+      findAccountingLedgerRecord([projectedRecord, metadataRecord], {
+        journalEntryId: 'entry-projected',
+      }),
+    ).toBe(projectedRecord);
+    expect(
+      findAccountingLedgerRecord([projectedRecord, metadataRecord], {
+        journalEntryId: 'entry-metadata',
+      }),
+    ).toBe(metadataRecord);
   });
 
   it('finds a record by source document and event type', () => {

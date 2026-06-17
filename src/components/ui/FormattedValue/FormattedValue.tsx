@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 import styled from 'styled-components';
-import type { FormattedValueProps } from '@/types/ui';
 import { formatNumber, formatPrice } from '@/utils/format';
+import type { FormattedValueProps } from './types';
 
 const formatDateValue = (value: number | string | null | undefined): string => {
   const timestamp = value ?? DateTime.now().toMillis();

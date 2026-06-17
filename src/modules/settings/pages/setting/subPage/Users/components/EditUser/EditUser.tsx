@@ -14,13 +14,13 @@ import { fbUpdateUser } from '@/firebase/Auth/fbAuthV2/fbUpdateUser';
 import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import DynamicPermissionsManager from '@/modules/settings/pages/setting/subPage/Users/components/DynamicPermissionsManager/DynamicPermissionsManager';
 import { Button, ButtonGroup } from '@/components/ui/Button/Button';
-import ElemLabel from '@/components/ui/ElemLabel/ElemLabel';
-import { ErrorComponent } from '@/components/ui/ErrorComponent/ErrorComponent';
 import { InputV4 } from '@/components/ui/Inputs/GeneralInput/InputV4';
 import { Select } from '@/components/ui/Select/Select';
 import type { UserRoleLike } from '@/types/users';
 
 import { ChangePassword } from './ChangePassword/ChangePassword';
+import ElemLabel from './components/ElemLabel';
+import { ErrorComponent } from './components/ErrorComponent';
 
 const formIcon = icons.forms;
 

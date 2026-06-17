@@ -3,78 +3,30 @@ import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import { db, Timestamp } from '../../../core/config/firebase.js';
 import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.util.js';
 import {
-  MEMBERSHIP_ROLE_GROUPS,
-  assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
-import { assertBusinessSubscriptionAccess } from '../../../versions/v2/billing/utils/subscriptionAccess.util.js';
-import { toCleanString } from '../../../versions/v2/billing/utils/billingCommon.util.js';
+  asRecord,
+  toCleanString,
+  toFiniteNumber,
+} from '../../../versions/v2/billing/utils/billingCommon.util.js';
+import {
+  isMovementPosted,
+  resolveMovementSignedAmount,
+} from '../utils/cashMovementReconciliation.util.js';
+import { assertTreasuryCashReconciliationWriteAccess } from '../utils/treasuryAccess.util.js';
+import {
+  sanitizeForResponse,
+  timestampFromMillis,
+  toMillis,
+} from '../utils/treasuryTimestamp.util.js';
 
 import { buildTreasuryIdempotencyRequestHash } from './treasuryIdempotency.shared.js';
 
-const asRecord = (value) =>
-  value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-
-const safeNumber = (value) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-};
-
-const roundToTwoDecimals = (value) => Math.round(safeNumber(value) * 100) / 100;
+const roundToTwoDecimals = (value) =>
+  Math.round(toFiniteNumber(value) * 100) / 100;
 
 const parseMoneyAmount = (value) => {
   if (value == null || value === '') return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? roundToTwoDecimals(parsed) : null;
-};
-
-const toMillis = (value) => {
-  if (value == null) return null;
-  if (typeof value === 'number') {
-    return Number.isFinite(value) ? value : null;
-  }
-  if (typeof value?.toMillis === 'function') {
-    const parsed = value.toMillis();
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  const parsed = Date.parse(String(value));
-  return Number.isNaN(parsed) ? null : parsed;
-};
-
-const timestampFromMillis = (value) => {
-  if (typeof Timestamp.fromMillis === 'function') {
-    return Timestamp.fromMillis(value);
-  }
-  return new Timestamp(value);
-};
-
-const sanitizeForResponse = (value) => {
-  if (value instanceof Timestamp) {
-    return value.toMillis();
-  }
-  if (Array.isArray(value)) {
-    return value.map((item) => sanitizeForResponse(item));
-  }
-  if (!value || typeof value !== 'object') {
-    return value;
-  }
-
-  const next = {};
-  Object.entries(value).forEach(([key, nestedValue]) => {
-    if (nestedValue === undefined) return;
-    next[key] = sanitizeForResponse(nestedValue);
-  });
-  return next;
-};
-
-const resolveMovementSignedAmount = (movementRecord) => {
-  const amount = roundToTwoDecimals(movementRecord.amount);
-  if (amount <= 0) return 0;
-  return movementRecord.direction === 'out' ? -amount : amount;
-};
-
-const isMovementPosted = (movementRecord) => {
-  const normalizedStatus = toCleanString(movementRecord.status)?.toLowerCase();
-  return normalizedStatus !== 'void' && normalizedStatus !== 'draft';
 };
 
 const classifyMovementsForReconciliation = ({
@@ -203,15 +155,9 @@ const assertBankReconciliationPayload = ({
 };
 
 const assertBankReconciliationAccess = async ({ authUid, businessId }) => {
-    await assertUserAccess({
-      authUid,
-      businessId,
-      allowedRoles: MEMBERSHIP_ROLE_GROUPS.TREASURY_OPERATOR,
-    });
-  await assertBusinessSubscriptionAccess({
+  await assertTreasuryCashReconciliationWriteAccess({
+    authUid,
     businessId,
-    action: 'write',
-    requiredModule: 'cashReconciliation',
   });
 };
 

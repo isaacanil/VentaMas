@@ -8,7 +8,7 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import type { TableColumnsType as ColumnsType } from 'antd';
 import React from 'react';
 
 import type { AuditRow, DomainAuditResult } from '../types';

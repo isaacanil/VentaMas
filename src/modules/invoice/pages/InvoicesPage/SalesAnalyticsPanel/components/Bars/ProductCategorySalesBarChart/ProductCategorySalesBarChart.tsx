@@ -1,44 +1,18 @@
 import React, { useMemo } from 'react';
 import { LazyBar } from '@/components/charts/LazyCharts';
+import { createCurrencyBarChartOptions } from '@/components/charts/currencyBarChartOptions';
+import { createSingleDatasetBarData } from '@/components/charts/barChartData';
 import styled from 'styled-components';
 import type { SalesRecord } from '../../../utils';
 import { toNumber } from '../../../utils';
 
-import { formatPrice } from '@/utils/format';
-import Typography from '@/components/ui/Typografy/Typografy';
+import Typography from '@/components/ui/Typography/Typography';
 
-const options = {
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    y: {
-      beginAtZero: true,
-      title: {
-        display: true,
-        text: 'Ventas ($) ',
-      },
-    },
-    x: {
-      title: {
-        display: true,
-        text: 'Categoría de Producto',
-      },
-    },
-  },
-  plugins: {
-    tooltip: {
-      callbacks: {
-        label: function (context) {
-          let label = context.dataset.label || '';
-          if (label) {
-            label += ' ' + formatPrice(context.parsed.y);
-          }
-          return label;
-        },
-      },
-    },
-  },
-};
+const options = createCurrencyBarChartOptions({
+  yAxisTitle: 'Ventas ($) ',
+  xAxisTitle: 'Categoría de Producto',
+  tooltipSeparator: ' ',
+});
 
 const accumulateCategorySalesData = (sales: SalesRecord[]) => {
   return sales.reduce<Record<string, number>>((acc, sale) => {
@@ -89,18 +63,13 @@ export const ProductCategorySalesBarChart = ({
     const labels = Object.keys(salesByCategory);
     const dataTotals = labels.map((label) => salesByCategory[label]);
 
-    return {
+    return createSingleDatasetBarData({
       labels,
-      datasets: [
-        {
-          label: 'Ventas ',
-          data: dataTotals,
-          backgroundColor: 'rgba(54, 162, 235, 0.2)',
-          borderColor: 'rgba(54, 162, 235, 1)',
-          borderWidth: 1,
-        },
-      ],
-    };
+      values: dataTotals,
+      datasetLabel: 'Ventas ',
+      backgroundColor: 'rgba(54, 162, 235, 0.2)',
+      borderColor: 'rgba(54, 162, 235, 1)',
+    });
   }, [salesByCategory]);
 
   if (!normalizedSales.length) {

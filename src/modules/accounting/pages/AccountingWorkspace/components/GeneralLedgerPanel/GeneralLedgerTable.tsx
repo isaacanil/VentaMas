@@ -1,6 +1,7 @@
 import { Empty } from 'antd';
-import { Button } from '@heroui/react';
 import styled from 'styled-components';
+
+import { VmButton } from '@/components/heroui';
 
 import {
   formatAccountingDate,
@@ -36,9 +37,9 @@ export const GeneralLedgerTable = ({
       <PanelCardTitle>
         Movimientos <PanelCardMeta>{entries.length} registros</PanelCardMeta>
       </PanelCardTitle>
-      <Button size="sm" variant="tertiary">
+      <VmButton size="sm" variant="tertiary">
         Ordenar
-      </Button>
+      </VmButton>
     </PanelCardHeader>
 
     <TableShell>

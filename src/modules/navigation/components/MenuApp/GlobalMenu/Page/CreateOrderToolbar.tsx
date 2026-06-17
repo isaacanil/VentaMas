@@ -1,9 +1,8 @@
-import React from 'react';
 import { useMatch } from 'react-router-dom';
 import styled from 'styled-components';
 
 import routesName from '@/router/routes/routesName';
-import { AddProductButton } from '@/components/ui/Button/AddProductButton';
+import { AddProductButton } from '@/modules/products/public';
 import { ButtonGroup } from '@/components/ui/Button/Button';
 import type { ToolbarComponentProps } from '@/modules/navigation/components/MenuApp/GlobalMenu/types';
 

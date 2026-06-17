@@ -20,15 +20,21 @@ import {
   selectProductStockSimple,
   closeProductStockSimple,
 } from '@/features/productStock/productStockSimpleSlice';
-import { useListenProductsStock } from '@/hooks/useProductStock';
-import { useLocationNames } from '@/hooks/useLocationNames';
+import { useListenProductsStock } from '@/modules/inventory/hooks/useProductStock';
+import { useLocationNames } from '@/modules/inventory/hooks/useLocationNames';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
-import { toExpirationTimestamp } from '@/utils/inventory/dates';
+import { formatCount } from '@/utils/formatCounts';
+import { toExpirationTimestamp } from '@/modules/inventory/utils/dates';
+import {
+  formatBatchLabel,
+  formatInventoryQuantity,
+} from '@/modules/inventory/utils/format';
 import { normalizeLocationId } from '@/utils/inventory/locations';
 import type { ProductBatchInfo } from '@/types/products';
-import type { ProductStockRecord } from '@/utils/inventory/types';
-
-const numberFormatter = new Intl.NumberFormat('es-DO');
+import type {
+  InventoryStockItem,
+  ProductStockRecord,
+} from '@/utils/inventory/types';
 
 const StyledWrapper = styled.div`
   .batch-select-button {
@@ -243,14 +249,15 @@ type ProductRecord = {
   restrictSaleWithoutStock?: boolean;
 } & Record<string, unknown>;
 
-type ProductStockItem = ProductStockRecord;
+type ProductStockItem = ProductStockRecord | InventoryStockItem;
 
 export function ProductBatchModal() {
   const dispatch = useDispatch();
   const { notification, modal } = App.useApp();
-  const { isOpen, productId, product } = useSelector(
-    selectProductStockSimple,
-  ) as ReturnType<typeof selectProductStockSimple>;
+  const { isOpen, productId, product, initialStocks, initialStocksProductId } =
+    useSelector(selectProductStockSimple) as ReturnType<
+      typeof selectProductStockSimple
+    >;
   const [rawSelectedBatch, setRawSelectedBatch] = useState<string | null>(null);
   const [searchText, setSearchText] = useState('');
 
@@ -264,10 +271,23 @@ export function ProductBatchModal() {
     ? salesLocations
     : inventoryLocations;
 
-  // Obtener datos de productStock en tiempo real
-  const { data: productStocks, loading } = useListenProductsStock(
-    productId || null,
+  const initialProductStocks = useMemo<ProductStockItem[]>(
+    () =>
+      initialStocksProductId === productId && Array.isArray(initialStocks)
+        ? initialStocks
+        : [],
+    [initialStocks, initialStocksProductId, productId],
   );
+  const hasInitialProductStocks = initialProductStocks.length > 0;
+
+  const { data: liveProductStocks, loading } = useListenProductsStock(
+    productId || null,
+    { enabled: isOpen && !hasInitialProductStocks },
+  );
+  const productStocks = hasInitialProductStocks
+    ? initialProductStocks
+    : liveProductStocks;
+  const isLoadingProductStocks = loading && !hasInitialProductStocks;
   const { locationNames, fetchLocationName } = useLocationNames();
   const typedProduct = product as ProductRecord | null;
   const isStrictProduct = Boolean(typedProduct?.restrictSaleWithoutStock);
@@ -394,8 +414,8 @@ export function ProductBatchModal() {
   }, [rawSelectedBatch, sanitizedProductStocks]);
 
   const formatLocation = (locationId: string) => {
-    if (!locationId) return '';
-    return locationNames[locationId] || 'Cargando...';
+    if (!locationId) return 'Ubicación no disponible';
+    return locationNames[locationId] || locationId;
   };
 
   const commitSelection = (stockOrId: ProductStockItem | string) => {
@@ -419,10 +439,11 @@ export function ProductBatchModal() {
       quantity: Number.isFinite(numericQuantity) ? numericQuantity : null,
       expirationDate: toExpirationTimestamp(chosenStock.expirationDate),
       locationId,
-      locationName: locationId ? formatLocation(locationId) : null,
+      locationName: locationId ? (locationNames[locationId] ?? null) : null,
     };
     const cartLineId =
-      typeof typedProduct?.cid === 'string' && typedProduct.cid.trim().length > 0
+      typeof typedProduct?.cid === 'string' &&
+      typedProduct.cid.trim().length > 0
         ? typedProduct.cid
         : null;
     const selectedBatchId =
@@ -541,24 +562,24 @@ export function ProductBatchModal() {
           </Checkbox>
         </div>
 
-        {!loading && filteredBySearch.length > 0 && (
+        {!isLoadingProductStocks && filteredBySearch.length > 0 && (
           <StatsBar>
             <StatLabel>
               Ubicaciones:
               <StatValue>
-                {numberFormatter.format(inventorySummary.totalLocations)}
+                {formatCount(inventorySummary.totalLocations)}
               </StatValue>
             </StatLabel>
             <StatLabel>
               Unidades:
               <StatValue>
-                {numberFormatter.format(inventorySummary.totalQuantity)}
+                {formatInventoryQuantity(inventorySummary.totalQuantity)}
               </StatValue>
             </StatLabel>
           </StatsBar>
         )}
 
-        {loading ? (
+        {isLoadingProductStocks ? (
           <div style={{ textAlign: 'center', padding: '20px' }}>
             <Spin />
           </div>
@@ -694,6 +715,10 @@ function renderBatchCard({
   const numericQuantity = Number(stock.quantity) || 0;
   const isDisabled = isStrictProduct && numericQuantity <= 0;
   const stockId = stock.id != null ? String(stock.id) : undefined;
+  const batchLabel = formatBatchLabel(stock.batchNumberId, {
+    prefix: 'Lote #',
+    noBatchLabel: 'Lote #N/A',
+  });
 
   return (
     <BatchCard
@@ -705,7 +730,7 @@ function renderBatchCard({
     >
       <div className="card-header">
         <div className="batch-number">
-          Lote #{stock.batchNumberId ?? 'N/A'}
+          {batchLabel}
           <CheckCircleOutlined className="check-icon" />
         </div>
         <div className="header-meta">
@@ -716,7 +741,7 @@ function renderBatchCard({
             {formattedExpiration || 'N/A'}
           </span>
           <div className="quantity-chip">
-            {numberFormatter.format(numericQuantity)} uds
+            {formatInventoryQuantity(numericQuantity)} uds
           </div>
         </div>
       </div>

@@ -9,20 +9,22 @@ import {
   canonicalizeInvoice,
 } from '../services/ncfLedger.service.js';
 
+import { normalizePrefixes } from './ncfLedgerAccess.util.js';
+import { resolveRequiredCallableActorUid } from './invoiceCallableAuth.util.js';
 import {
-  evaluateLedgerAccess,
-  normalizePrefixes,
-  resolveUserBusinessId,
-} from './ncfLedgerAccess.util.js';
+  assertUserAccess,
+  MEMBERSHIP_ROLE_GROUPS,
+} from '../../auth/services/userAccess.service.js';
 
 const DEFAULT_PAGE_SIZE = 250;
 const MAX_PAGE_SIZE = 1000;
 const MIN_PAGE_SIZE = 25;
 
-export const rebuildNcfLedger = onCall(async ({ data }, context) => {
+export const rebuildNcfLedger = onCall(async (request) => {
+  const data = request?.data || {};
+  const rawRequest = request?.rawRequest;
   const traceId =
-    context.rawRequest?.headers?.['x-cloud-trace-context']?.split('/')?.[0] ??
-    null;
+    rawRequest?.headers?.['x-cloud-trace-context']?.split('/')?.[0] ?? null;
 
   const businessId =
     data?.businessId ||
@@ -31,27 +33,16 @@ export const rebuildNcfLedger = onCall(async ({ data }, context) => {
     data?.user?.businessID ||
     data?.user?.businessId ||
     null;
-  const userId = data?.userId || data?.user?.uid || context.auth?.uid || null;
+  const userId = await resolveRequiredCallableActorUid(request);
 
   if (!businessId) {
     throw new HttpsError('invalid-argument', 'businessId es requerido');
   }
-  if (!userId) {
-    throw new HttpsError('invalid-argument', 'userId es requerido');
-  }
-
-  const userSnap = await db.doc(`users/${userId}`).get();
-  const { hasGlobalAccess } = evaluateLedgerAccess(userSnap, {
-    errorMessage: 'No tienes permisos para reconstruir el ledger de NCF.',
+  await assertUserAccess({
+    authUid: userId,
+    businessId,
+    allowedRoles: MEMBERSHIP_ROLE_GROUPS.FINANCE_CONFIG,
   });
-  const userBusinessId = resolveUserBusinessId(userSnap);
-
-  if (!hasGlobalAccess && userBusinessId && userBusinessId !== businessId) {
-    throw new HttpsError(
-      'permission-denied',
-      'Usuario no pertenece a este negocio',
-    );
-  }
 
   const truncate = data?.truncate === true;
   const dryRun = data?.dryRun === true;

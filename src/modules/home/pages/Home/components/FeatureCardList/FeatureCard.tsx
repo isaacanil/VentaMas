@@ -3,18 +3,9 @@ import { Link } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 
 import { toggleDeveloperModal } from '@/features/modals/modalSlice';
+import type { FeatureCardData } from '@/modules/home/types/featureCard';
 
 import type { JSX, MouseEvent, ReactNode } from 'react';
-
-export interface FeatureCardData {
-  id?: number | string;
-  title: string;
-  icon: ReactNode;
-  route?: string;
-  action?: string;
-  category: string;
-  [key: string]: unknown;
-}
 
 interface FeatureCardProps {
   card: FeatureCardData;

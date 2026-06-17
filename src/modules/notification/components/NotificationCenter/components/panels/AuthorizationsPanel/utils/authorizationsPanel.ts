@@ -1,3 +1,5 @@
+import { toMillis } from '@/utils/date/toMillis';
+
 export interface AuthorizationRequest {
   id: string;
   key?: string;
@@ -37,21 +39,12 @@ export const resolveRequestModule = (
   );
 };
 
-const toMillis = (value: any) => {
+export const getAuthorizationTimestampMillis = (value: any) => {
   if (!value) return 0;
   if (typeof value === 'number') {
     return value > 1e12 ? value : value * 1000;
   }
-  if (typeof value.toMillis === 'function') {
-    return value.toMillis();
-  }
-  if (value instanceof Date) {
-    return value.getTime();
-  }
-  if (typeof value === 'object' && typeof value.seconds === 'number') {
-    return value.seconds * 1000;
-  }
-  return 0;
+  return toMillis(value) ?? 0;
 };
 
 export const sortAuthorizations = (items: AuthorizationRequest[]) =>
@@ -59,7 +52,7 @@ export const sortAuthorizations = (items: AuthorizationRequest[]) =>
     if (a.status === 'pending' && b.status !== 'pending') return -1;
     if (a.status !== 'pending' && b.status === 'pending') return 1;
 
-    const dateA = toMillis(a.createdAt);
-    const dateB = toMillis(b.createdAt);
+    const dateA = getAuthorizationTimestampMillis(a.createdAt);
+    const dateB = getAuthorizationTimestampMillis(b.createdAt);
     return dateB - dateA;
   });

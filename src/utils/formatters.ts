@@ -1,39 +1,38 @@
 import { formatPrice } from './format/formatPrice';
+import { formatLocaleCurrency } from './format/currency';
+import {
+  createCountFormatter,
+  toFiniteDisplayNumber,
+} from './formatCounts';
 import { formatDate } from './formatDate';
 
 export { formatDate, formatPrice };
 
-const toFiniteNumber = (value: unknown, fallback = 0): number => {
-  const numeric = Number(value);
-  return Number.isFinite(numeric) ? numeric : fallback;
-};
-
 export const formatMoney = (amount: unknown): string => {
-  return new Intl.NumberFormat('es-DO', {
-    style: 'currency',
-    currency: 'DOP',
+  return formatLocaleCurrency(toFiniteDisplayNumber(amount), 'DOP', {
     minimumFractionDigits: 2,
-  }).format(toFiniteNumber(amount));
+    maximumFractionDigits: 2,
+  });
 };
 
 export const formatNumber = (value: unknown, decimals = 2): string => {
-  return new Intl.NumberFormat('es-DO', {
+  return createCountFormatter({
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
-  }).format(toFiniteNumber(value));
+  }).format(toFiniteDisplayNumber(value));
 };
 
 export const formatPercentage = (value: unknown): string => {
-  return new Intl.NumberFormat('es-DO', {
+  return createCountFormatter({
     style: 'percent',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(toFiniteNumber(value) / 100);
+  }).format(toFiniteDisplayNumber(value) / 100);
 };
 
 export const formatQuantity = (quantity: unknown, decimals = 2): string => {
-  return new Intl.NumberFormat('es-DO', {
+  return createCountFormatter({
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
-  }).format(toFiniteNumber(quantity));
+  }).format(toFiniteDisplayNumber(quantity));
 };

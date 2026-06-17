@@ -1,9 +1,9 @@
 import { Skeleton, message } from 'antd';
-import { Button } from '@heroui/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
+import { VmButton } from '@/components/heroui';
 import { FileExcelOutlined, PlusOutlined } from '@/constants/icons/antd';
 import ROUTES_NAME from '@/router/routes/routesName';
 
@@ -288,7 +288,7 @@ export const JournalBookPanel = ({
         </HeaderCopy>
 
         <HeaderActions>
-          <Button
+          <VmButton
             variant="secondary"
             isPending={exporting}
             onPress={() => {
@@ -297,11 +297,11 @@ export const JournalBookPanel = ({
           >
             <FileExcelOutlined />
             Exportar
-          </Button>
-          <Button variant="secondary" onPress={handleImport}>
+          </VmButton>
+          <VmButton variant="secondary" onPress={handleImport}>
             Importar
-          </Button>
-          <Button
+          </VmButton>
+          <VmButton
             variant="primary"
             aria-label="Nuevo asiento"
             onPress={() => {
@@ -310,7 +310,7 @@ export const JournalBookPanel = ({
           >
             <PlusOutlined />
             Nuevo Asiento
-          </Button>
+          </VmButton>
         </HeaderActions>
       </HeaderBar>
 

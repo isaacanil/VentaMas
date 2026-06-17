@@ -15,7 +15,7 @@ import {
 } from '@/features/insurance/insuranceAccountsReceivableSlice';
 import { normalizeSupportedDocumentCurrency } from '@/utils/accounting/currencies';
 import { calculateAmountPerInstallment } from '@/utils/accountsReceivable/accountsReceivable';
-import { getMaxInstallments } from '@/utils/accountsReceivable/getMaxInstallments';
+import { getMaxInstallments } from '@/domain/accountsReceivable/getMaxInstallments';
 import { toMillis } from '@/utils/date/dateUtils';
 import { formatPriceByCurrency } from '@/utils/format';
 import { setNumPrecision } from '@/utils/pricing';

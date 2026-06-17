@@ -1,7 +1,5 @@
-import { httpsCallable } from 'firebase/functions';
-
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 export interface ReplayAccountingEventProjectionInput {
   businessId: string;
@@ -18,18 +16,23 @@ export interface ReplayAccountingEventProjectionResult {
   status: string;
 }
 
+type ReplayAccountingEventProjectionRequest =
+  ReplayAccountingEventProjectionInput & {
+    sessionToken?: string;
+  };
+
+const replayAccountingEventProjectionCallable = createFirebaseCallable<
+  ReplayAccountingEventProjectionRequest,
+  ReplayAccountingEventProjectionResult
+>('replayAccountingEventProjection');
+
 export const fbReplayAccountingEventProjection = async (
   input: ReplayAccountingEventProjectionInput,
 ): Promise<ReplayAccountingEventProjectionResult> => {
   const { sessionToken } = getStoredSession();
-  const callable = httpsCallable<
-    ReplayAccountingEventProjectionInput & { sessionToken?: string },
-    ReplayAccountingEventProjectionResult
-  >(functions, 'replayAccountingEventProjection');
 
-  const response = await callable({
+  return replayAccountingEventProjectionCallable({
     ...input,
     ...(sessionToken ? { sessionToken } : {}),
   });
-  return response.data;
 };

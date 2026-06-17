@@ -1,1 +1,0 @@
-export { AuthorizationStatusBadge } from './AuthorizationStatusBadge';

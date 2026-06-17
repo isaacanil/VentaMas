@@ -4,11 +4,10 @@ import { nanoid } from 'nanoid';
 import { db, Timestamp } from '../../../core/config/firebase.js';
 import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.util.js';
 import {
-  MEMBERSHIP_ROLE_GROUPS,
-  assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
-import { assertBusinessSubscriptionAccess } from '../../../versions/v2/billing/utils/subscriptionAccess.util.js';
-import { toCleanString } from '../../../versions/v2/billing/utils/billingCommon.util.js';
+  asRecord,
+  toCleanString,
+  toFiniteNumber,
+} from '../../../versions/v2/billing/utils/billingCommon.util.js';
 import {
   getPilotAccountingSettingsForBusiness,
   isAccountingRolloutEnabledForBusiness,
@@ -16,71 +15,25 @@ import {
 import { buildAccountingEvent } from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
 import { assertAccountingPeriodOpenInTransaction } from '../../../versions/v2/accounting/utils/periodClosure.util.js';
 import { buildInternalTransferCashMovements } from '../../../versions/v2/accounting/utils/cashMovement.util.js';
+import {
+  isMovementPosted,
+  resolveMovementSignedAmount,
+} from '../utils/cashMovementReconciliation.util.js';
+import { assertTreasuryCashReconciliationWriteAccess } from '../utils/treasuryAccess.util.js';
+import {
+  sanitizeForResponse,
+  timestampFromMillis,
+  toMillis,
+} from '../utils/treasuryTimestamp.util.js';
 import { buildTreasuryIdempotencyRequestHash } from './treasuryIdempotency.shared.js';
 
-const asRecord = (value) =>
-  value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-
-const safeNumber = (value) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-};
-
-const roundToTwoDecimals = (value) => Math.round(safeNumber(value) * 100) / 100;
-
-const toMillis = (value) => {
-  if (value == null) return null;
-  if (typeof value === 'number') {
-    return Number.isFinite(value) ? value : null;
-  }
-  if (typeof value?.toMillis === 'function') {
-    const parsed = value.toMillis();
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  const parsed = Date.parse(String(value));
-  return Number.isNaN(parsed) ? null : parsed;
-};
-
-const timestampFromMillis = (value) => {
-  if (typeof Timestamp.fromMillis === 'function') {
-    return Timestamp.fromMillis(value);
-  }
-  return new Timestamp(value);
-};
-
-const resolveMovementSignedAmount = (movementRecord) => {
-  const amount = roundToTwoDecimals(movementRecord.amount);
-  return movementRecord.direction === 'out' ? -amount : amount;
-};
-
-const isMovementPosted = (movementRecord) => {
-  const normalizedStatus = toCleanString(movementRecord?.status)?.toLowerCase();
-  return normalizedStatus !== 'void' && normalizedStatus !== 'draft';
-};
+const roundToTwoDecimals = (value) =>
+  Math.round(toFiniteNumber(value) * 100) / 100;
 
 const resolveLedgerAccountId = (ledger) =>
   ledger?.type === 'cash'
     ? toCleanString(ledger.cashAccountId ?? ledger.cashCountId)
     : toCleanString(ledger?.bankAccountId);
-
-const sanitizeForResponse = (value) => {
-  if (value instanceof Timestamp) {
-    return value.toMillis();
-  }
-  if (Array.isArray(value)) {
-    return value.map((item) => sanitizeForResponse(item));
-  }
-  if (!value || typeof value !== 'object') {
-    return value;
-  }
-
-  const next = {};
-  Object.entries(value).forEach(([key, nestedValue]) => {
-    if (nestedValue === undefined) return;
-    next[key] = sanitizeForResponse(nestedValue);
-  });
-  return next;
-};
 
 const buildLedgerBalanceQuery = ({ businessId, ledger }) => {
   const cashMovementsCollection = db.collection(
@@ -125,7 +78,9 @@ const calculateLedgerBalanceThroughDate = async ({
           return sum;
         }
 
-        return sum + resolveMovementSignedAmount(movementRecord);
+        return sum + resolveMovementSignedAmount(movementRecord, {
+          allowNonPositiveAmount: true,
+        });
       }, 0),
   );
 };
@@ -248,15 +203,9 @@ export const createInternalTransfer = onCall(async (request) => {
     );
   }
 
-  await assertUserAccess({
+  await assertTreasuryCashReconciliationWriteAccess({
     authUid,
     businessId,
-    allowedRoles: MEMBERSHIP_ROLE_GROUPS.TREASURY_OPERATOR,
-  });
-  await assertBusinessSubscriptionAccess({
-    businessId,
-    action: 'write',
-    requiredModule: 'cashReconciliation',
   });
   const accountingSettings =
     await getPilotAccountingSettingsForBusiness(businessId);
@@ -397,7 +346,7 @@ export const createInternalTransfer = onCall(async (request) => {
     const sourceCurrentBalance = await calculateLedgerBalanceThroughDate({
       businessId,
       ledger: fromLedger,
-      openingBalance: safeNumber(fromLedgerSnap.get('openingBalance')),
+      openingBalance: toFiniteNumber(fromLedgerSnap.get('openingBalance')),
       occurredAtMillis: resolvedOccurredAtMillis,
       transaction,
     });

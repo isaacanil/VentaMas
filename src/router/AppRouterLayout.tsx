@@ -6,11 +6,13 @@ import styled, { keyframes } from 'styled-components';
 
 import { ViewportContainer } from '@/components/layout/ViewportContainer/ViewportContainer';
 import { selectAuthReady, selectUser } from '@/features/auth/userSlice';
-import { useAutomaticLogin } from '@/firebase/Auth/fbAuthV2/fbSignIn/checkSession';
-import { resolveDefaultHomeRoute } from '@/modules/auth/utils/defaultHomeRoute';
-import SEO from '@/Seo/Seo';
-import { SessionManager } from '@/components/ui/SessionManager';
-import { SessionExpiredAlertDialog } from '@/firebase/Auth/fbAuthV2/fbSignIn/components/SessionExpiredAlertDialog';
+import {
+  resolveDefaultHomeRoute,
+  SessionExpiredAlertDialog,
+  useAutomaticLogin,
+} from '@/modules/auth/public';
+import SEO from '@/seo/Seo';
+import { SessionManager } from '@/router/components/SessionManager';
 
 // Tipo básico para User (ajustar según la estructura real)
 export interface User {
@@ -24,13 +26,14 @@ export type UserState = User | null | false;
 
 const GlobalListeners = lazy(() => import('@/router/GlobalListeners'));
 const ModalManager = lazy(() =>
-  import('@/components/modals/ModalManager').then((module) => ({
+  import('@/router/components/ModalManager').then((module) => ({
     default: module.ModalManager,
   })),
 );
-const NotificationCenter = lazy(
-  () =>
-    import('@/modules/notification/components/NotificationCenter/NotificationCenter'),
+const NotificationCenter = lazy(() =>
+  import('@/modules/notification/public').then((module) => ({
+    default: module.NotificationCenter,
+  })),
 );
 
 const RoutePendingBar = styled.div`

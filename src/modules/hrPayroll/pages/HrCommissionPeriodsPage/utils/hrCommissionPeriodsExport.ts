@@ -1,4 +1,3 @@
-import { saveAs } from 'file-saver';
 import type { Worksheet } from 'exceljs';
 import type { UserOptions } from 'jspdf-autotable';
 
@@ -7,7 +6,7 @@ import {
   applyProfessionalStyling,
   formatCurrencyColumns,
   formatNumberColumns,
-} from '@/hooks/exportToExcel/exportConfig';
+} from '@/utils/export/excel/exportConfig';
 import {
   formatHrDate,
   formatHrPeriodDate,
@@ -23,7 +22,9 @@ import type {
   HrEmployeePaymentStatus,
   HrPayrollEmployeeLineRecord,
 } from '@/types/hrPayroll';
-import { formatHrDepositAccount } from '@/utils/hrPayroll/depositAccounts';
+import { saveXlsxFile } from '@/utils/export/xlsx';
+import { formatHrDepositAccount } from '@/domain/hrPayroll/depositAccounts';
+import { normalizeText } from '@/utils/text';
 
 type HrCommissionPeriodExportRow = {
   AjusteRetroactivo: number;
@@ -142,9 +143,6 @@ export type HrCommissionPeriodEmployeePdfGroup = {
   Pendiente: string;
   rows: HrCommissionPeriodDetailPdfRow[];
 };
-
-const XLSX_MIME_TYPE =
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
 const PAYMENT_STATUS_LABELS: Record<HrEmployeePaymentStatus, string> = {
   confirmed: 'Confirmado',
@@ -407,10 +405,7 @@ const buildLineFormula = (line: HrPayrollEmployeeLineRecord): string => {
 };
 
 const sanitizeFileNamePart = (value: string): string => {
-  const cleanValue = value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
+  const cleanValue = normalizeText(value)
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_+|_+$/g, '');
   return cleanValue || 'corte';
@@ -984,10 +979,10 @@ export const exportHrCommissionPeriodsWorkbook = async ({
   });
 
   const buffer = await workbook.xlsx.writeBuffer();
-  saveAs(
-    new Blob([buffer], { type: XLSX_MIME_TYPE }),
-    buildHrCommissionPeriodsFileName(selectedPeriod),
-  );
+  saveXlsxFile({
+    content: buffer,
+    fileName: buildHrCommissionPeriodsFileName(selectedPeriod),
+  });
 };
 
 export const exportHrCommissionLineSupportWorkbook = async ({
@@ -1055,10 +1050,13 @@ export const exportHrCommissionLineSupportWorkbook = async ({
   });
 
   const buffer = await workbook.xlsx.writeBuffer();
-  saveAs(
-    new Blob([buffer], { type: XLSX_MIME_TYPE }),
-    buildHrCommissionLineSupportFileName({ employeeLine, selectedPeriod }),
-  );
+  saveXlsxFile({
+    content: buffer,
+    fileName: buildHrCommissionLineSupportFileName({
+      employeeLine,
+      selectedPeriod,
+    }),
+  });
 };
 
 const exportHrCommissionPeriodGeneralPdf = async ({

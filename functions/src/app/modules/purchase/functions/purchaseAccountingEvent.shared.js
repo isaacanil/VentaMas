@@ -5,6 +5,9 @@ import {
   resolveAccountingPaymentChannel,
 } from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
 import {
+  resolveAccountingTimestamp as resolveTimestamp,
+} from '../../../versions/v2/accounting/utils/accountingTimestamp.util.js';
+import {
   asRecord,
   resolvePurchaseDocumentTotal,
   resolvePurchaseSupplierId,
@@ -16,6 +19,10 @@ import {
   resolvePurchaseDocumentNature,
   resolvePurchaseSettlementTiming,
 } from './vendorBill.shared.js';
+import {
+  buildPurchaseSourceAuditMetadata,
+  PURCHASE_ACCOUNTING_EVENT_SYNC_ACTOR,
+} from './purchaseDerivedAudit.shared.js';
 
 const COMMITTED_WORKFLOW_STATUSES = new Set(['completed']);
 const COMMITTED_LEGACY_STATUSES = new Set(['completed', 'delivered', 'posted']);
@@ -30,56 +37,6 @@ const resolveCommittedPurchaseState = (purchaseRecord) => {
 
   const legacyStatus = toCleanString(purchaseRecord.status)?.toLowerCase();
   return legacyStatus ? COMMITTED_LEGACY_STATUSES.has(legacyStatus) : false;
-};
-
-const resolveTimestamp = (...values) => {
-  for (const value of values) {
-    if (!value) continue;
-    if (value instanceof Timestamp) {
-      return value;
-    }
-    if (typeof value?.toMillis === 'function') {
-      return Timestamp.fromMillis(value.toMillis());
-    }
-    if (typeof value?.toDate === 'function') {
-      const dateValue = value.toDate();
-      if (dateValue instanceof Date) {
-        return Timestamp.fromMillis(dateValue.getTime());
-      }
-    }
-    if (value instanceof Date) {
-      return Timestamp.fromMillis(value.getTime());
-    }
-    if (typeof value === 'number' && Number.isFinite(value)) {
-      return Timestamp.fromMillis(value);
-    }
-    if (typeof value === 'string') {
-      const parsed = Date.parse(value);
-      if (!Number.isNaN(parsed)) {
-        return Timestamp.fromMillis(parsed);
-      }
-    }
-    if (typeof value === 'object') {
-      const record = asRecord(value);
-      const seconds =
-        typeof record.seconds === 'number'
-          ? record.seconds
-          : typeof record._seconds === 'number'
-            ? record._seconds
-            : null;
-      const nanoseconds =
-        typeof record.nanoseconds === 'number'
-          ? record.nanoseconds
-          : typeof record._nanoseconds === 'number'
-            ? record._nanoseconds
-            : 0;
-      if (seconds != null) {
-        return new Timestamp(seconds, nanoseconds);
-      }
-    }
-  }
-
-  return Timestamp.now();
 };
 
 const resolveCurrencyCode = (value) =>
@@ -374,9 +331,7 @@ export const buildPurchaseCommittedAccountingEvent = ({
     occurredAt,
     recordedAt,
     createdAt: recordedAt,
-    createdBy:
-      toCleanString(nextPurchase.updatedBy) ??
-      toCleanString(nextPurchase.createdBy) ??
-      null,
+    createdBy: PURCHASE_ACCOUNTING_EVENT_SYNC_ACTOR,
+    metadata: buildPurchaseSourceAuditMetadata(nextPurchase),
   });
 };

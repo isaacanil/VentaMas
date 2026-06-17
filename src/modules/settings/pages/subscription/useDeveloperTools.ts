@@ -416,9 +416,10 @@ export const useDeveloperTools = (
         message: 'No se pudieron aplicar los cambios',
         description: error instanceof Error ? error.message : 'Error inesperado.',
       });
+    } finally {
+      setDevBusy(false);
+      setBusyAction(null);
     }
-    setDevBusy(false);
-    setBusyAction(null);
   }, [
     buildPlanEditorPayload,
     editorNoticeWindowDays,

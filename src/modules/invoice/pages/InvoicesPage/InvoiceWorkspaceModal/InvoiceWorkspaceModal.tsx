@@ -18,7 +18,7 @@ import { downloadInvoicePdf } from '@/firebase/quotation/downloadQuotationPDF';
 import { ElectronicTaxReceiptInfoCard } from '@/modules/invoice/components/InvoiceDetailCards/ElectronicTaxReceiptInfoCard';
 import { Invoice } from '@/modules/invoice/components/Invoice/components/Invoice/Invoice';
 import { useAccountingRolloutEnabled } from '@/hooks/useAccountingRolloutEnabled';
-import { useOpenAccountingEntry } from '@/modules/accounting/hooks/useOpenAccountingEntry';
+import { useOpenAccountingEntry } from '@/modules/accounting/public';
 import type { InvoiceData } from '@/types/invoice';
 import type { UserIdentity } from '@/types/users';
 import { getInvoicePaymentInfo } from '@/utils/invoice';
@@ -35,7 +35,7 @@ import { syncInvoicePaymentsFromAR } from '@/firebase/invoices/syncInvoicePaymen
 import {
   DGII_608_REASON_OPTIONS,
   getDgii608ReasonOption,
-} from '@/utils/fiscal/dgii608ReasonCatalog';
+} from '@/domain/fiscal/dgii608ReasonCatalog';
 import { formatWorkspaceAmount } from './utils/invoiceWorkspaceFormat';
 import { InvoiceWorkspaceSelect } from './components/InvoiceWorkspaceSelect';
 import { VmTextArea } from '@/components/heroui';

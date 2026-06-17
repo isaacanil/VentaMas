@@ -1,7 +1,5 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 type SignUpInput = {
   name: string;
@@ -22,10 +20,10 @@ type SignUpResponse = {
   [key: string]: unknown;
 };
 
-const clientSignUpCallable = httpsCallable<SignUpRequest, SignUpResponse>(
-  functions,
-  'clientSignUp',
-);
+const clientSignUpCallable = createFirebaseCallable<
+  SignUpRequest,
+  SignUpResponse
+>('clientSignUp');
 
 const validateUserInput = ({
   name,
@@ -57,8 +55,7 @@ export const fbSignUp = async (
   }
 
   try {
-    const response = await clientSignUpCallable({ userData, sessionToken });
-    return response?.data;
+    return await clientSignUpCallable({ userData, sessionToken });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Error creando usuario';

@@ -11,10 +11,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { openDeleteModal } from '@/features/productStock/deleteProductStockSlice';
-import { useListenProductsStock } from '@/hooks/useProductStock';
-import { useLocationNames } from '@/hooks/useLocationNames';
+import { useListenProductsStock } from '@/modules/inventory/hooks/useProductStock';
+import { useLocationNames } from '@/modules/inventory/hooks/useLocationNames';
+import { useStockAlertThresholds } from '@/modules/inventory/hooks/useStockAlertThresholds';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import useStockAlertThresholds from '@/hooks/useStockAlertThresholds';
 
 import BatchGroup from './components/BatchGroup';
 import ProductStockTable from './components/ProductStockTable';
@@ -25,6 +25,7 @@ import type {
   ProductStockItem,
   StockStatus,
 } from './types';
+import { formatStockQuantity } from './utils/stockDisplay';
 
 const Container = styled.div`
   display: grid;
@@ -366,11 +367,11 @@ function ProductStockOverview() {
         <ThresholdLegend>
           <LegendItem>
             <LegendDot $color="#dc2626" />
-            Stock crítico ≤ {criticalThreshold.toLocaleString()} uds
+            Stock crítico ≤ {formatStockQuantity(criticalThreshold)} uds
           </LegendItem>
           <LegendItem>
             <LegendDot $color="#ea580c" />
-            Stock bajo ≤ {lowThreshold.toLocaleString()} uds
+            Stock bajo ≤ {formatStockQuantity(lowThreshold)} uds
           </LegendItem>
         </ThresholdLegend>
         {filteredStock.length === 0 ? (

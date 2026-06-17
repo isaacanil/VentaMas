@@ -1,7 +1,4 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { functions } from '@/firebase/firebaseconfig';
+import { createElectronicTaxReceiptCallable } from './callElectronicTaxReceipt';
 
 export type ElectronicTaxReceiptMode = 'shadow' | 'pilot' | 'required';
 export type ElectronicTaxReceiptConfigScope =
@@ -26,19 +23,13 @@ export interface UpdateElectronicTaxReceiptConfigResult {
   providerConfig: Record<string, unknown>;
 }
 
-export const fbUpdateElectronicTaxReceiptConfig = async (
-  input: UpdateElectronicTaxReceiptConfigInput,
-): Promise<UpdateElectronicTaxReceiptConfigResult> => {
-  const { sessionToken } = getStoredSession();
-  const callable = httpsCallable<
-    UpdateElectronicTaxReceiptConfigInput & { sessionToken?: string },
+const updateElectronicTaxReceiptConfigCallable =
+  createElectronicTaxReceiptCallable<
+    UpdateElectronicTaxReceiptConfigInput,
     UpdateElectronicTaxReceiptConfigResult
-  >(functions, 'updateElectronicTaxReceiptConfig');
+  >('updateElectronicTaxReceiptConfig');
 
-  const response = await callable({
-    ...input,
-    ...(sessionToken ? { sessionToken } : {}),
-  });
-
-  return response.data;
-};
+export const fbUpdateElectronicTaxReceiptConfig = (
+  input: UpdateElectronicTaxReceiptConfigInput,
+): Promise<UpdateElectronicTaxReceiptConfigResult> =>
+  updateElectronicTaxReceiptConfigCallable(input);

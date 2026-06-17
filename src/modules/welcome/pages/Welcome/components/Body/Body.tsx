@@ -13,7 +13,7 @@ import { welcomeData } from '../../welcomeData';
 // Lazy loading de componentes pesados
 const ImageGallery = lazyWithRetry(
   () =>
-    import('@/modules/welcome/components/ImageGallery/ImageGallery').then(
+    import('@/modules/welcome/pages/Welcome/components/ImageGallery/ImageGallery').then(
       (module) => ({
         default: module.ImageGallery,
       }),

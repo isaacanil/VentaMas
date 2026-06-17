@@ -3,14 +3,9 @@ import { useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { setARDetailsModal } from '@/features/accountsReceivable/accountsReceivableSlice';
+import { toCleanString } from '@/utils/text';
 
 import { buildAccountReceivableListUrl } from '../utils/accountReceivableNavigation';
-
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
 
 export const useOpenAccountReceivableSummary = () => {
   const dispatch = useDispatch();

@@ -100,7 +100,7 @@ BLOQUEADA:
 Estado:
 
 - `PurchaseWorkflowStatus` vive en `src/utils/purchase/types.ts`.
-- `VendorBillStatus` vive en `src/utils/vendorBills/types.ts`.
+- `VendorBillStatus` vive en `src/domain/accountsPayable/vendorBills/types.ts`.
 - Backend CxP replica flujo en `vendorBill.shared.js`.
 
 Riesgo:
@@ -232,15 +232,15 @@ Si falla por deuda no relacionada, registrar error exacto y separar de regresion
 - `src/utils/payments/methods.ts`
 - `src/utils/payments/methods.test.ts`
 - `src/utils/payments/bankPaymentPolicy.ts`
-- `src/hooks/cashCount/usePaymentsForCashCount.ts`
-- `src/hooks/cashCount/usePaymentsForCashCount.test.ts`
-- `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData.tsx`
-- `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData.test.ts`
+- `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/hooks/usePaymentsForCashCount.ts`
+- `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/hooks/usePaymentsForCashCount.test.ts`
+- `src/domain/cashCount/cashCountMetaData.ts`
+- `src/domain/cashCount/cashCountMetaData.test.ts`
 - `src/modules/orderAndPurchase/pages/OrderAndPurchase/Compra/components/PurchasesTable/utils/supplierPaymentMethods.ts`
 
 ### Verificacion ejecutada
 
-- `npx vitest run src\utils\payments\bankPaymentPolicy.test.ts src\utils\payments\methods.test.ts src\utils\payments\contracts.test.ts src\hooks\cashCount\usePaymentsForCashCount.test.ts src\modules\cashReconciliation\pages\CashReconciliation\page\CashRegisterClosure\components\Body\RightSide\CashCountMetaData.test.ts --pool forks`: PASS, 5 files, 35 tests.
+- `npx vitest run src\utils\payments\bankPaymentPolicy.test.ts src\utils\payments\methods.test.ts src\utils\payments\contracts.test.ts src\hooks\cashCount\usePaymentsForCashCount.test.ts src\domain\cashCount\cashCountMetaData.test.ts --pool forks`: PASS, 5 files, 35 tests.
 - `npm run test:run`: PASS, 96 files, 357 tests.
 - `npm run test:run:functions`: PASS, 62 files, 230 tests.
 - `npm run build`: PASS. Vite mantiene warning de chunks > 1600 kB.

@@ -1,14 +1,13 @@
+import { getErrorMessage as getSharedErrorMessage } from '@/utils/errors';
+
 export const toRecord = (value: unknown): Record<string, unknown> => {
   return value && typeof value === 'object'
     ? (value as Record<string, unknown>)
     : {};
 };
 
-export const getErrorMessage = (error: unknown): string => {
-  if (error instanceof Error) return error.message;
-  if (typeof error === 'string') return error;
-  return 'Ocurrio un error inesperado.';
-};
+export const getErrorMessage = (error: unknown): string =>
+  getSharedErrorMessage(error, 'Ocurrio un error inesperado.');
 
 export const resolveBusinessName = (docId: string, value: unknown): string => {
   const data = toRecord(value);

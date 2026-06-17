@@ -72,34 +72,35 @@ Se ha implementado un sistema completo de autorizaciones en el Centro de Notific
 
 ### Nuevos Archivos
 
-1. **`AuthorizationsPanel.jsx`**
+1. **`AuthorizationsPanel.tsx`**
 
    ```
-   src/views/templates/NotificationCenter/components/panels/AuthorizationsPanel/
-   ├── AuthorizationsPanel.jsx
-   └── index.js
+   src/modules/notification/components/NotificationCenter/components/panels/AuthorizationsPanel/
+   ├── AuthorizationsPanel.tsx
+   ├── hooks/usePendingAuthorizations.ts
+   └── components/AuthorizationsPanelContent.tsx
    ```
 
-2. **`ModulesNavigator.jsx`**
+2. **`ModulesNavigator.tsx`**
    ```
-   src/views/templates/NotificationCenter/components/ModulesNavigator.jsx
+   src/modules/notification/components/NotificationCenter/components/ModulesNavigator.tsx
    ```
 
 ### Archivos Modificados
 
-1. **`invoiceEditAuthorizations.js`**
+1. **`src/firebase/authorizations/invoiceEditAuthorizations.ts`**
    - Agregada función `listenToAuthorizationsByStatus()` para listeners en tiempo real
    - Importado `onSnapshot` de Firestore
 
-2. **`NotificationCenter.jsx`**
+2. **`src/modules/notification/components/NotificationCenter/NotificationCenter.tsx`**
    - Integrado `ModulesNavigator` en lugar de `NotificationPanels`
    - Mantiene la estructura y animaciones existentes
 
-3. **`panels/NotificationPanels.jsx`**
-   - Agregado import de `AuthorizationsPanel`
-   - Panel colocado como primero en la lista
+3. **`src/modules/notification/components/NotificationCenter/components/panels/AuthorizationsPanel/AuthorizationsPanel.tsx`**
+   - Panel dedicado para solicitudes de autorización
+   - Usa `usePendingAuthorizations` para escuchar cambios en tiempo real
 
-4. **`RequestInvoiceEditAuthorization.jsx`**
+4. **`src/modules/invoice/pages/InvoicesPage/components/RequestInvoiceEditAuthorization/RequestInvoiceEditAuthorization.tsx`**
    - Simplificado para cajeros (removido campo de nota)
    - Cierre automático después de 5 segundos
    - Textos más concisos y directos

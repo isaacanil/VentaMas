@@ -5,7 +5,7 @@ import {
   formatLocaleMonthYear,
 } from '@/utils/date/dateUtils';
 import { toMillis } from '@/utils/date/toMillis';
-import { calculateReplenishmentTotals } from '@/utils/order/totals';
+import { calculateReplenishmentTotals } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/utils/replenishmentTotals';
 import type { Purchase, PurchaseReplenishment } from '@/utils/purchase/types';
 
 type BreakdownSeed = {

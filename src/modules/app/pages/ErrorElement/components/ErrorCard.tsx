@@ -1,6 +1,7 @@
-import { Card } from '@heroui/react';
 import React from 'react';
 import styled from 'styled-components';
+
+import { VmCard } from '@/components/heroui';
 
 interface ErrorCardProps {
   children: React.ReactNode;
@@ -9,12 +10,12 @@ interface ErrorCardProps {
 export const ErrorCard = ({ children }: ErrorCardProps) => {
   return (
     <StyledCard variant="transparent">
-      <Card.Content>{children}</Card.Content>
+      <VmCard.Content>{children}</VmCard.Content>
     </StyledCard>
   );
 };
 
-const StyledCard = styled(Card)`
+const StyledCard = styled(VmCard)`
   width: 100%;
   max-width: 560px;
   border: 0;

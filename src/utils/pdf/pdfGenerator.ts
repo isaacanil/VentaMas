@@ -4,7 +4,7 @@ import type {
   InvoicePaymentMethod,
 } from '@/types/invoice';
 import type { UserOptions } from 'jspdf-autotable';
-import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity.js';
+import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity';
 import { toMillis } from '@/utils/date/dateUtils';
 
 // Función de formateo de precios (ajústala según necesites)

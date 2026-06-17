@@ -8,10 +8,10 @@ import {
 } from 'react';
 import styled from 'styled-components';
 
-import { Row } from '@/components/ui/AdvancedTable/AdvancedTable';
-import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/AdvancedTable';
 import { CellRenderer } from '@/components/ui/AdvancedTable/components/CellRenderer/CellRenderer';
-import { CenteredText } from '@/components/ui/CentredText';
+import { Row } from '@/components/ui/AdvancedTable/components/Table/TableRow.styles';
+import { CenteredText } from '@/components/ui/CenteredText';
+import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/types/AdvancedTableTypes';
 import type { TableRow } from '@/components/ui/AdvancedTable/types/ColumnTypes';
 
 const Body = styled.div<{ $loading?: boolean }>`

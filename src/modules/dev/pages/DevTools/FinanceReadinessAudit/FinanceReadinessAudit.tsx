@@ -15,7 +15,7 @@ import {
   Typography,
   message,
 } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import type { TableColumnsType as ColumnsType } from 'antd';
 import React, { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -31,7 +31,7 @@ import {
   type FinanceReadinessModule,
   type FinanceReadinessStatus,
 } from '@/firebase/accounting/fbAnalyzeFinanceReadiness';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 
 const { Text, Title } = Typography;

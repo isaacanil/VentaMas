@@ -1,4 +1,8 @@
-import type { FeatureCardData } from '@/modules/home/pages/Home/components/FeatureCardList/FeatureCard';
+import {
+  isRoutableFeatureCardData,
+  normalizeSearch,
+} from '@/modules/home/utils/homeShortcutUtils';
+import { buildSearchIndex } from '@/utils/searchText';
 
 import type { LauncherShortcut } from './types';
 
@@ -12,30 +16,6 @@ export const DEFAULT_PINNED_TITLES = [
 
 export const MAX_PINNED_SHORTCUTS = 6;
 
-export const CATEGORY_ORDER: Record<string, number> = {
-  Ventas: 10,
-  Inventario: 20,
-  Contabilidad: 30,
-  'Compras y gastos': 40,
-  'RRHH y nomina': 50,
-  Contactos: 60,
-  Tesorería: 70,
-  Administración: 80,
-};
-
-export const normalizeSearch = (value: string): string =>
-  value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
-
-const normalizeSearchFragment = (value: string): string =>
-  value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
-
 export interface SearchMatchRange {
   end: number;
   start: number;
@@ -48,41 +28,23 @@ export const findSearchMatchRange = (
   const normalizedQuery = normalizeSearch(query);
   if (!normalizedQuery) return null;
 
-  let normalizedValue = '';
-  const startMap: number[] = [];
-  const endMap: number[] = [];
-  let originalIndex = 0;
-
-  for (const char of value) {
-    const normalizedChar = normalizeSearchFragment(char);
-    for (let index = 0; index < normalizedChar.length; index += 1) {
-      startMap.push(originalIndex);
-      endMap.push(originalIndex + char.length);
-    }
-    normalizedValue += normalizedChar;
-    originalIndex += char.length;
-  }
+  const { normalized: normalizedValue, ranges } = buildSearchIndex(value);
 
   const normalizedStart = normalizedValue.indexOf(normalizedQuery);
   if (normalizedStart === -1) return null;
 
   const normalizedEnd = normalizedStart + normalizedQuery.length - 1;
+  const start = ranges[normalizedStart]?.start;
+  const end = ranges[normalizedEnd]?.end;
+
+  if (typeof start !== 'number' || typeof end !== 'number') {
+    return null;
+  }
 
   return {
-    end: endMap[normalizedEnd],
-    start: startMap[normalizedStart],
+    end,
+    start,
   };
-};
-
-export const isRoutableFeature = (card: unknown): card is FeatureCardData => {
-  if (!card || typeof card !== 'object') return false;
-  const candidate = card as Partial<FeatureCardData>;
-  return (
-    typeof candidate.title === 'string' &&
-    typeof candidate.category === 'string' &&
-    typeof candidate.route === 'string' &&
-    candidate.route.trim().length > 0
-  );
 };
 
 export const toShortcutKey = (
@@ -92,11 +54,11 @@ export const toShortcutKey = (
 export const normalizeShortcuts = (cards: unknown): LauncherShortcut[] => {
   if (!Array.isArray(cards)) return [];
 
-  return cards.filter(isRoutableFeature).map((card) => {
+  return cards.filter(isRoutableFeatureCardData).map((card) => {
     const shortcut = {
       category: card.category,
       icon: card.icon,
-      route: card.route ?? '',
+      route: card.route,
       title: card.title,
     };
 
@@ -104,18 +66,6 @@ export const normalizeShortcuts = (cards: unknown): LauncherShortcut[] => {
       ...shortcut,
       key: toShortcutKey(shortcut),
     };
-  });
-};
-
-export const uniqueShortcutsByRoute = (
-  shortcuts: LauncherShortcut[],
-): LauncherShortcut[] => {
-  const seenRoutes = new Set<string>();
-
-  return shortcuts.filter((shortcut) => {
-    if (seenRoutes.has(shortcut.route)) return false;
-    seenRoutes.add(shortcut.route);
-    return true;
   });
 };
 

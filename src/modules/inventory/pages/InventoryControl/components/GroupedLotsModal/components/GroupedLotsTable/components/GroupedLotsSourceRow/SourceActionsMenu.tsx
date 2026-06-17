@@ -1,7 +1,7 @@
 import { Button, Dropdown } from 'antd';
 import React from 'react';
 
-import { CLEAR_SENTINEL } from '@/utils/inventory/constants';
+import { CLEAR_SENTINEL } from '@/modules/inventory/utils/constants';
 import {
   formatInputDate,
   getEffectiveCount,

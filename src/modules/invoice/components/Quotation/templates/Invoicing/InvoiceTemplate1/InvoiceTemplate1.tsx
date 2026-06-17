@@ -4,15 +4,15 @@ import styled from 'styled-components';
 
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import type { InvoiceBusinessInfo } from '@/types/invoice';
-import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity.js';
+import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity';
 import type { QuotationTemplateProps } from '@/modules/invoice/components/Quotation/types';
 
 import { Header } from './components/Header/Header';
 import { PaymentArea } from './components/PaymentArea';
 import { ProductList } from './components/ProductList';
 import { Row } from './components/Table/Row';
-import { ThankYouMessage } from './components/ThankYouMessage';
-import { WarrantySignature } from './components/WarrantySignature';
+import { ThankYouMessage } from '@/components/common/ThankYouMessage/ThankYouMessage';
+import { WarrantySignature } from '@/components/common/WarrantySignature';
 import { Container, HiddenPrintWrapper } from './Style';
 
 export const InvoiceTemplate1 = React.forwardRef<

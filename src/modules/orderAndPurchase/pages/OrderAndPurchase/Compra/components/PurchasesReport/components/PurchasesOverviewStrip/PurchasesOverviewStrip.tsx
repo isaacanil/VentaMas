@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 
+import { formatCount } from '@/utils/formatCounts';
 import { formatPrice } from '@/utils/format';
 
 type MetricItem = {
@@ -48,12 +49,12 @@ export const PurchasesOverviewStrip = ({
     },
     {
       label: 'Compras',
-      value: new Intl.NumberFormat('es-DO').format(purchases),
+      value: formatCount(purchases),
       detail: 'Cantidad de documentos',
     },
     {
       label: 'Suplidores',
-      value: new Intl.NumberFormat('es-DO').format(providers),
+      value: formatCount(providers),
       detail: 'Suplidores unicos en el corte',
     },
   ];

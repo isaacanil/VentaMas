@@ -1,4 +1,4 @@
-import { money, getProductIndividualDiscount } from '../utils/formatters.js';
+import { money, getProductIndividualDiscount } from '../utils/formatters';
 
 import type { PdfContent, PdfTableBody, PdfTableRow } from '@/pdf/types';
 import type { QuotationData } from '@/pdf/invoicesAndQuotation/types';

@@ -7,12 +7,17 @@ import styled from 'styled-components';
 import { selectUser } from '@/features/auth/userSlice';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
 import { useListenMovementsByLocation } from '@/firebase/warehouse/productMovementService';
-import { MovementReason } from '@/models/Warehouse/Movement';
 import ROUTES_NAME from '@/router/routes/routesName';
 import {
   AdvancedTable,
   type AdvancedTableColumn,
 } from '@/components/ui/AdvancedTable/AdvancedTable';
+import {
+  formatInventoryMovementReason,
+  getInventoryMovementLocationDisplay,
+  getMovementReasonBadgeStyles,
+  type MovementReasonType,
+} from '../../../../shared/movementDisplay';
 
 const StyledCard = styled.div`
   margin-top: 16px;
@@ -106,8 +111,6 @@ const MovementTypeBadge = styled.span<{ $isEntry: boolean }>`
   }
 `;
 
-type MovementReasonType = MovementReason | string | null | undefined;
-
 const ReasonBadge = styled.span<{ $reasonType: MovementReasonType }>`
   padding: 4px 12px;
   border-radius: 6px;
@@ -115,70 +118,8 @@ const ReasonBadge = styled.span<{ $reasonType: MovementReasonType }>`
   font-weight: 500;
   white-space: nowrap;
 
-  ${({ $reasonType }: { $reasonType: MovementReasonType }) => {
-    switch ($reasonType) {
-      case MovementReason.Purchase:
-        return `
-          background: rgba(25, 118, 210, 0.1);
-          color: #1976D2;
-          border: 1px solid rgba(25, 118, 210, 0.2);
-        `;
-      case MovementReason.Sale:
-        return `
-          background: rgba(76, 175, 80, 0.1);
-          color: #388E3C;
-          border: 1px solid rgba(76, 175, 80, 0.2);
-        `;
-      case 'adjustment':
-        return `
-          background: rgba(255, 152, 0, 0.1);
-          color: #F57C00;
-          border: 1px solid rgba(255, 152, 0, 0.2);
-        `;
-      case 'return':
-        return `
-          background: rgba(156, 39, 176, 0.1);
-          color: #7B1FA2;
-          border: 1px solid rgba(156, 39, 176, 0.2);
-        `;
-      case 'initial_stock':
-        return `
-          background: rgba(0, 150, 136, 0.1);
-          color: #00796B;
-          border: 1px solid rgba(0, 150, 136, 0.2);
-        `;
-      case 'transfer':
-        return `
-          background: rgba(121, 134, 203, 0.1);
-          color: #5C6BC0;
-          border: 1px solid rgba(121, 134, 203, 0.2);
-        `;
-      case 'damaged':
-        return `
-          background: rgba(244, 67, 54, 0.1);
-          color: #D32F2F;
-          border: 1px solid rgba(244, 67, 54, 0.2);
-        `;
-      case 'expired':
-        return `
-          background: rgba(121, 85, 72, 0.1);
-          color: #5D4037;
-          border: 1px solid rgba(121, 85, 72, 0.2);
-        `;
-      case 'lost':
-        return `
-          background: rgba(96, 125, 139, 0.1);
-          color: #455A64;
-          border: 1px solid rgba(96, 125, 139, 0.2);
-        `;
-      default:
-        return `
-          background: rgba(158, 158, 158, 0.1);
-          color: #757575;
-          border: 1px solid rgba(158, 158, 158, 0.2);
-        `;
-    }
-  }}
+  ${({ $reasonType }: { $reasonType: MovementReasonType }) =>
+    getMovementReasonBadgeStyles($reasonType)}
 `;
 
 type MovementRecord = ReturnType<
@@ -194,109 +135,27 @@ type MovementRow = MovementRecord & {
   quantity: number;
 };
 
-const getExternalLocationText = (movement: MovementRecord) => {
-  const specialCases = ['damaged', 'expired', 'lost', 'other'];
-  if (specialCases.includes(String(movement.movementReason ?? ''))) {
-    return 'Baja de Inventario';
-  }
-
-  switch (movement.movementReason) {
-    case 'purchase':
-      return 'Proveedor Externo';
-    case 'sale':
-      return 'Cliente';
-    case 'return':
-      return movement.movementType === 'in'
-        ? 'Devolución Cliente'
-        : 'Devolución Proveedor';
-    case 'initial_stock':
-      return 'Inventario Inicial';
-    case 'adjustment':
-      return 'Ajuste de Inventario';
-    default:
-      return movement.movementType === 'in'
-        ? 'Origen Externo'
-        : 'Destino Externo';
-  }
+type MovementsTableProps = {
+  location?: string | null;
 };
 
-const getLocationDisplay = (movement: MovementRecord) => {
-  const specialCases = ['damaged', 'expired', 'lost', 'other'];
-  if (specialCases.includes(String(movement.movementReason ?? ''))) {
-    return 'Baja de Inventario';
-  }
-
-  if (movement.movementReason === 'adjustment') {
-    const internalLocationName = [
-      movement.sourceLocation === 'adjustment'
-        ? null
-        : movement.sourceLocationName,
-      movement.destinationLocation === 'adjustment'
-        ? null
-        : movement.destinationLocationName,
-    ].find((name) => name && !/Ubicación no encontrada|N\/A|Error/i.test(name));
-    if (internalLocationName) return internalLocationName;
-    return 'Ajuste de Inventario';
-  }
-
-  const isEntry = movement.movementType === 'in';
-  const locationName = isEntry
-    ? movement.sourceLocationName
-    : movement.destinationLocationName;
+const generateRoute = (
+  isEntry: boolean,
+  movement: MovementRecord,
+): string | null => {
   const location = isEntry
     ? movement.sourceLocation
     : movement.destinationLocation;
+  if (!location) return null;
 
-  if (
-    !location ||
-    !locationName ||
-    /Ubicación no encontrada|N\/A|Error/i.test(String(locationName))
-  ) {
-    return getExternalLocationText(movement);
-  }
-  return locationName;
-};
-
-const formatMovementReason = (reason: string | null | undefined) => {
-  const reasonMap: Record<string, string> = {
-    purchase: 'Compra',
-    sale: 'Venta',
-    adjustment: 'Ajuste',
-    return: 'Devolución',
-    initial_stock: 'Stock Inicial',
-    transfer: 'Transferencia',
-    damaged: 'Dañado',
-    expired: 'Expirado',
-    lost: 'Perdido',
-    other: 'Otro',
-  };
-  return reason ? reasonMap[reason] || 'Desconocido' : 'Desconocido';
-};
-
-const generateRoute = (isEntry: boolean, movement: MovementRecord) => {
-  const loc = isEntry ? movement.sourceLocation : movement.destinationLocation;
-  if (!loc) return null;
-  const segments = String(loc).split('/');
+  const segments = String(location).split('/');
   let route = '/inventory/warehouses/warehouse';
-
-  if (segments[0]) {
-    route += `/${segments[0]}`;
-  }
-  if (segments[1]) {
-    route += `/shelf/${segments[1]}`;
-  }
-  if (segments[2]) {
-    route += `/row/${segments[2]}`;
-  }
-  if (segments[3]) {
-    route += `/segment/${segments[3]}`;
-  }
+  if (segments[0]) route += `/${segments[0]}`;
+  if (segments[1]) route += `/shelf/${segments[1]}`;
+  if (segments[2]) route += `/row/${segments[2]}`;
+  if (segments[3]) route += `/segment/${segments[3]}`;
 
   return route;
-};
-
-type MovementsTableProps = {
-  location?: string | null;
 };
 
 export const MovementsTable = ({ location }: MovementsTableProps) => {
@@ -383,7 +242,7 @@ export const MovementsTable = ({ location }: MovementsTableProps) => {
           const movement = value as MovementRecord;
           const isEntry = movement.movementType === 'in';
           const route = generateRoute(isEntry, movement);
-          const locationDisplay = getLocationDisplay(movement);
+          const locationDisplay = getInventoryMovementLocationDisplay(movement);
           const isExternal = !route;
 
           return (
@@ -412,7 +271,7 @@ export const MovementsTable = ({ location }: MovementsTableProps) => {
         minWidth: '150px',
         cell: ({ value }: { value: unknown }) => (
           <ReasonBadge $reasonType={value as MovementReasonType}>
-            {formatMovementReason(value as string | undefined)}
+            {formatInventoryMovementReason(value as string | undefined)}
           </ReasonBadge>
         ),
       },

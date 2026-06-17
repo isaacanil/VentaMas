@@ -2,22 +2,25 @@ import { DateTime } from 'luxon';
 import { useSelector } from 'react-redux';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDialog } from '@/Context/Dialog/useDialog';
+import { useDialog } from '@/context/Dialog/useDialog';
 import { selectUser } from '@/features/auth/userSlice';
 import { fbCancelPurchase } from '@/firebase/purchase/fbCancelPurchase';
 import { useAccountingRolloutEnabled } from '@/hooks/useAccountingRolloutEnabled';
-import { useOpenAccountingEntry } from '@/modules/accounting/hooks/useOpenAccountingEntry';
+import { useOpenAccountingEntry } from '@/modules/accounting/public';
 import { replacePathParams } from '@/router/routes/replacePathParams';
 import { ROUTES } from '@/router/routes/routesName';
 import { resolvePurchaseDisplayNextPaymentAt } from '@/utils/purchase/financials';
 import { toMillis } from '@/utils/date/toMillis';
+import { normalizeTransactionMillis } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/utils/transactionDates';
 import type { UserIdentity } from '@/types/users';
 import type { Purchase } from '@/utils/purchase/types';
 import { calculateTotalNewStockFromReplenishments } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/Order/components/OrderListTable/orderTableUtils';
 import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
+import {
+  RegisterSupplierPaymentModal,
+  SupplierPaymentHistoryModal,
+} from '../../../../../components/supplierPayments';
 import { columns } from './tableConfig';
-import { RegisterSupplierPaymentModal } from './RegisterSupplierPaymentModal';
-import { SupplierPaymentHistoryModal } from './components/SupplierPaymentHistoryModal';
 
 interface PurchaseTableProps {
   purchases?: Purchase[];
@@ -25,17 +28,6 @@ interface PurchaseTableProps {
   tableName?: string;
   enablePayablesActions?: boolean;
 }
-
-const MIN_VALID_TRANSACTION_MILLIS = 946684800000; // 2000-01-01T00:00:00.000Z
-
-const normalizeTransactionMillis = (value: unknown): number | null => {
-  const rawMillis = toMillis(value as any);
-  if (typeof rawMillis !== 'number' || !Number.isFinite(rawMillis)) {
-    return null;
-  }
-  const normalized = rawMillis < 100_000_000_000 ? rawMillis * 1000 : rawMillis;
-  return normalized >= MIN_VALID_TRANSACTION_MILLIS ? normalized : null;
-};
 
 const formatDateGroup = (createdAt?: Purchase['createdAt']) => {
   const millis = toMillis(createdAt);
@@ -110,7 +102,6 @@ export function PurchaseTable({
     note: purchase?.note,
     deliveryAt: normalizeTransactionMillis(purchase?.deliveryAt),
     status: purchase?.status,
-    fileList: purchase?.attachmentUrls || [],
     items: calculateTotalNewStockFromReplenishments(purchase?.replenishments),
     paymentAt: normalizeTransactionMillis(purchase?.paymentAt),
     nextPaymentAt: normalizeTransactionMillis(

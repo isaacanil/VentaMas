@@ -1,8 +1,8 @@
 import { CloseOutlined } from '@ant-design/icons';
-import { ListBox } from '@heroui/react';
 import React, { useMemo } from 'react';
 
 import { isPresetActive } from '@/components/common/DatePicker/utils/dateUtils';
+import { VmListBox } from '@/components/heroui';
 import {
   DropdownGroup,
   DropdownItem,
@@ -117,7 +117,7 @@ export const PresetsSection = ({
   if (normalizedLayout === 'sidebar') {
     return (
       <SidebarListBoxScope>
-        <ListBox
+        <VmListBox
           aria-label="Rangos de fecha"
           selectionMode="none"
           items={sidebarPresetItems}
@@ -131,29 +131,29 @@ export const PresetsSection = ({
           {(item) => {
             if (item.kind === 'header') {
               return (
-                <ListBox.Item
+                <VmListBox.Item
                   id={item.id}
                   textValue={item.label}
                   isDisabled
                   className="vm-date-picker-presets-header-item"
                 >
                   <SidebarGroupTitle>{item.label}</SidebarGroupTitle>
-                </ListBox.Item>
+                </VmListBox.Item>
               );
             }
 
             return (
-              <ListBox.Item
+              <VmListBox.Item
                 id={item.id}
                 textValue={item.label}
                 data-active={item.isActive ? 'true' : undefined}
                 className="vm-date-picker-presets-item"
               >
                 <SidebarPresetLabel>{item.label}</SidebarPresetLabel>
-              </ListBox.Item>
+              </VmListBox.Item>
             );
           }}
-        </ListBox>
+        </VmListBox>
       </SidebarListBoxScope>
     );
   }

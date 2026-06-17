@@ -8,10 +8,10 @@ import {
   getProductsTotalPrice,
   getTotalItems,
 } from '@/utils/pricing';
-import { PreorderModal } from '@/components/modals/PreorderModal/PreorderModal';
 import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
 import type { InvoiceData } from '@/types/invoice';
 
+import { PreorderModal } from '../PreorderModal/PreorderModal';
 import { tableConfig } from './tableConfig';
 import type { PreorderFirestoreDoc, PreorderRow } from '../../types';
 

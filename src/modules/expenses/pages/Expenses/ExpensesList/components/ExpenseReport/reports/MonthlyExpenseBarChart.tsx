@@ -13,7 +13,7 @@ import styled from 'styled-components';
 
 import { toMillis } from '@/utils/date/toMillis';
 import type { TimestampLike } from '@/utils/date/types';
-import Typography from '@/components/ui/Typografy/Typografy';
+import Typography from '@/components/ui/Typography/Typography';
 import type { Expense, ExpenseDoc } from '@/utils/expenses/types';
 
 const Container = styled.div`

@@ -210,6 +210,36 @@ const persistContextDefaults = (context: FilterContext) => {
   });
 };
 
+const resetInventoryDerivedFilterValues = (contextState: FilterState) => {
+  contextState.stockAvailability = DEFAULT_FILTERS.stockAvailability;
+  contextState.stockAlertLevel = DEFAULT_FILTERS.stockAlertLevel;
+  contextState.stockRequirement = DEFAULT_FILTERS.stockRequirement;
+  contextState.stockLocations = [...DEFAULT_FILTERS.stockLocations];
+};
+
+const persistInventoryDerivedFilterValues = (context: FilterContext) => {
+  persistContextField(
+    context,
+    'stockAvailability',
+    DEFAULT_FILTERS.stockAvailability,
+  );
+  persistContextField(
+    context,
+    'stockAlertLevel',
+    DEFAULT_FILTERS.stockAlertLevel,
+  );
+  persistContextField(
+    context,
+    'stockRequirement',
+    DEFAULT_FILTERS.stockRequirement,
+  );
+  persistContextField(
+    context,
+    'stockLocations',
+    DEFAULT_FILTERS.stockLocations,
+  );
+};
+
 const extractPayload = <T,>(
   payload: FilterPayload<T>,
 ): { context: FilterContext; value: T } => {
@@ -342,6 +372,10 @@ export const filterProductsSlice = createSlice({
       const contextState = ensureContextState(state, context);
       contextState.inventariable = value;
       persistContextField(context, 'inventariable', value);
+      if (value === 'no') {
+        resetInventoryDerivedFilterValues(contextState);
+        persistInventoryDerivedFilterValues(context);
+      }
       markContextDirty(state, context);
     },
     setItemType: (
@@ -453,30 +487,8 @@ export const filterProductsSlice = createSlice({
           : undefined;
       const resolvedContext = context ?? DEFAULT_FILTER_CONTEXT;
       const contextState = ensureContextState(state, resolvedContext);
-      contextState.stockAvailability = DEFAULT_FILTERS.stockAvailability;
-      contextState.stockAlertLevel = DEFAULT_FILTERS.stockAlertLevel;
-      contextState.stockRequirement = DEFAULT_FILTERS.stockRequirement;
-      contextState.stockLocations = [...DEFAULT_FILTERS.stockLocations];
-      persistContextField(
-        resolvedContext,
-        'stockAvailability',
-        contextState.stockAvailability,
-      );
-      persistContextField(
-        resolvedContext,
-        'stockAlertLevel',
-        contextState.stockAlertLevel,
-      );
-      persistContextField(
-        resolvedContext,
-        'stockRequirement',
-        contextState.stockRequirement,
-      );
-      persistContextField(
-        resolvedContext,
-        'stockLocations',
-        contextState.stockLocations,
-      );
+      resetInventoryDerivedFilterValues(contextState);
+      persistInventoryDerivedFilterValues(resolvedContext);
       markContextDirty(state, resolvedContext);
     },
     resetFilters: (

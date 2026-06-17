@@ -1,8 +1,14 @@
-import { buildLocationPath } from '@/utils/inventory/locations';
+import {
+  buildLocationPath,
+  resolveInventoryLocationPath,
+} from '@/utils/inventory/locations';
 import type {
   AggregatedProductStock,
   ProductStockRecord,
 } from '@/utils/inventory/types';
+import { resolveProductDisplayName } from '@/domain/products/display';
+import { parseBooleanValue } from '@/domain/products/normalization';
+import { isProductInventoryTrackingEnabled } from '@/domain/products/productInventoryLogic';
 
 export function normalizeToDate(value: unknown): Date | null {
   if (!value) return null;
@@ -37,14 +43,12 @@ export function resolveProductId(stock: ProductStockRecord): string | null {
 export function resolveStockLocationPath(stock: ProductStockRecord): string | null {
   const raw = (stock as { location?: unknown }).location;
   if (typeof raw === 'string') {
-    const s = raw.trim();
-    return s.length > 0 ? s : null;
+    return resolveInventoryLocationPath(raw) || null;
   }
   if (raw && typeof raw === 'object') {
     const path = (raw as { path?: unknown }).path;
     if (typeof path === 'string') {
-      const s = path.trim();
-      return s.length > 0 ? s : null;
+      return resolveInventoryLocationPath({ path }) || null;
     }
   }
   return null;
@@ -89,12 +93,14 @@ export function aggregateActiveProductStocksByProduct(
       if (!productId) return acc;
 
       if (!acc[productId]) {
-        const productName =
-          (stock as { productName?: unknown }).productName ?? 'Producto sin nombre';
+        const productName = resolveProductDisplayName(
+          { productName: (stock as { productName?: unknown }).productName },
+          'Producto sin nombre',
+        );
         acc[productId] = {
           id: productId,
-          name: String(productName || 'Producto sin nombre'),
-          productName: String(productName || 'Producto sin nombre'),
+          name: productName,
+          productName,
           totalStock: 0,
           locations: [],
           batches: new Set(),
@@ -151,25 +157,7 @@ export function aggregateActiveProductStocksByProduct(
 }
 
 export function isTrackInventoryEnabled(rawTrack: unknown): boolean {
-  if (rawTrack === false || rawTrack === 0 || rawTrack === 'false') return false;
-  if (rawTrack === true || rawTrack === 1) return true;
-  if (typeof rawTrack === 'string') {
-    const normalized = rawTrack.trim();
-    return (
-      normalized === 'true' ||
-      normalized === 'True' ||
-      normalized === 'TRUE' ||
-      normalized === 'si' ||
-      normalized === 'Si' ||
-      normalized === 'SI' ||
-      // Accept both correct accent and common mojibake/replacement forms.
-      normalized === 's\u00ed' ||
-      normalized === 'S\u00ed' ||
-      normalized === 's\uFFFD' ||
-      normalized === 'S\uFFFD'
-    );
-  }
-  return false;
+  return parseBooleanValue(rawTrack) === true;
 }
 
 type ProductDocLike = {
@@ -182,7 +170,7 @@ export function extractInventoriedProductIds(products: ProductDocLike[]): Set<st
   const ids = new Set<string>();
   for (const p of products) {
     if (!p || p.isDeleted === true) continue;
-    if (isTrackInventoryEnabled(p.trackInventory)) ids.add(p.id);
+    if (isProductInventoryTrackingEnabled(p)) ids.add(p.id);
   }
   return ids;
 }

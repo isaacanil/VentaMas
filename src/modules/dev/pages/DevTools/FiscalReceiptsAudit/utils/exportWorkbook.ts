@@ -1,5 +1,6 @@
-import { saveAs } from 'file-saver';
 import { DateTime } from 'luxon';
+
+import { saveXlsxFile } from '@/utils/export/xlsx';
 
 import { canonicalizeNcf, looseCanonicalizeNcf } from './ncfUtils';
 
@@ -490,10 +491,8 @@ export const exportBusinessWorkbook = async (
 
   const buffer = await wb.xlsx.writeBuffer();
   const fileName = `${sanitizeFileName(result.businessName)}_${DateTime.local().toFormat('yyyyMMdd-HHmm')}.xlsx`;
-  saveAs(
-    new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    }),
+  saveXlsxFile({
+    content: buffer,
     fileName,
-  );
+  });
 };

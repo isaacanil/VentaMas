@@ -8,9 +8,18 @@ import {
 import {
   assertUserAccess,
   MEMBERSHIP_ROLE_GROUPS,
-} from '../../invoice/services/repairTasks.service.js';
+} from '../../auth/services/userAccess.service.js';
 import { assertBusinessSubscriptionAccess } from '../../billing/utils/subscriptionAccess.util.js';
-import { applyHttpCors } from '../../http/httpCors.util.js';
+import { handleHttpCorsPreflightAndMethod } from '../../http/httpCors.util.js';
+import {
+  ACCOUNTS_RECEIVABLE_AUDIT_HTTPS_ERROR_HTTP_STATUS,
+  mapHttpsErrorToHttpStatus,
+} from '../../http/httpError.util.js';
+import {
+  expectsAccountsReceivable,
+  getReceivableMetadata,
+  hasAccountsReceivable,
+} from '../utils/receivableInvoiceState.util.js';
 
 const DEFAULT_DAYS = 30;
 const MAX_DAYS = 120;
@@ -18,29 +27,6 @@ const DEFAULT_SAMPLE_LIMIT = 20;
 const MAX_SAMPLE_LIMIT = 50;
 const SCAN_MULTIPLIER = 4;
 const EPSILON = 0.05;
-
-const mapHttpsErrorToHttpStatus = (code) => {
-  switch (code) {
-  case 'permission-denied':
-    return 403;
-  case 'unauthenticated':
-    return 401;
-  case 'not-found':
-    return 404;
-  case 'failed-precondition':
-    return 412;
-  case 'already-exists':
-  case 'invalid-argument':
-  case 'aborted':
-    return 400;
-  case 'resource-exhausted':
-    return 429;
-  case 'deadline-exceeded':
-    return 504;
-  default:
-    return 400;
-  }
-};
 
 const clampNumber = (value, min, max, fallback) => {
   const numeric = Number(value);
@@ -77,51 +63,6 @@ const unwrapInvoiceDoc = (invoice) => {
     invoice.data && typeof invoice.data === 'object' ? invoice.data : invoice;
   return candidate || {};
 };
-
-const getReceivableMetadata = (invoice) => {
-  const payload = unwrapInvoiceDoc(invoice);
-  const snapshot = payload?.snapshot || {};
-  const cart = snapshot?.cart || payload?.cart || {};
-  const candidates = [
-    snapshot?.accountsReceivable,
-    cart?.accountsReceivable,
-    payload?.accountsReceivable,
-    payload?.snapshot?.accountsReceivable,
-  ].filter(Boolean);
-
-  let totalInstallments = 0;
-  candidates.forEach((candidate) => {
-    const count = Number(candidate?.totalInstallments);
-    if (Number.isFinite(count) && count > totalInstallments) {
-      totalInstallments = count;
-    }
-  });
-
-  const isAdded =
-    Boolean(cart?.isAddedToReceivables) ||
-    Boolean(snapshot?.isAddedToReceivables) ||
-    Boolean(payload?.isAddedToReceivables) ||
-    candidates.some((candidate) => Boolean(candidate?.isAddedToReceivables));
-
-  return {
-    isAdded,
-    totalInstallments,
-  };
-};
-
-const expectsAccountsReceivable = (invoice) => {
-  const meta = getReceivableMetadata(invoice);
-  return Boolean(meta.isAdded && meta.totalInstallments > 0);
-};
-
-async function hasAccountsReceivable({ businessId, invoiceId }) {
-  const snap = await db
-    .collection(`businesses/${businessId}/accountsReceivable`)
-    .where('invoiceId', '==', invoiceId)
-    .limit(1)
-    .get();
-  return !snap.empty;
-}
 
 async function getSetupARTaskMetadata({ businessId, invoiceId }) {
   const outboxPathCandidates = [
@@ -632,17 +573,12 @@ async function collectInvoicesWithAnomalies({
 }
 
 export const auditAccountsReceivableHttp = https.onRequest(async (req, res) => {
-  const corsAllowed = applyHttpCors(req, res, {
+  const httpGuardHandled = handleHttpCorsPreflightAndMethod(req, res, {
+    allowedMethod: 'POST',
     methods: 'POST, OPTIONS',
     headers: 'Content-Type, Authorization, X-Session-Token',
   });
-  if (req.method === 'OPTIONS') {
-    if (!corsAllowed) return res.status(403).send('');
-    return res.status(204).send('');
-  }
-  if (!corsAllowed) return res.status(403).json({ error: 'Origin not allowed' });
-  if (req.method !== 'POST')
-    return res.status(405).json({ error: 'Method Not Allowed' });
+  if (httpGuardHandled) return;
 
   try {
     let authContext;
@@ -754,7 +690,10 @@ export const auditAccountsReceivableHttp = https.onRequest(async (req, res) => {
     return res.status(200).json(payload);
   } catch (error) {
     if (error instanceof https.HttpsError) {
-      const status = mapHttpsErrorToHttpStatus(error.code);
+      const status = mapHttpsErrorToHttpStatus(
+        error.code,
+        ACCOUNTS_RECEIVABLE_AUDIT_HTTPS_ERROR_HTTP_STATUS,
+      );
       return res.status(status).json({
         error: error.message,
         code: error.code,

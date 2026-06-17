@@ -1,4 +1,7 @@
-import { onDocumentCreated } from 'firebase-functions/v2/firestore';
+import {
+  onDocumentCreated,
+  onDocumentWritten,
+} from 'firebase-functions/v2/firestore';
 
 import { db, Timestamp } from '../../../core/config/firebase.js';
 import {
@@ -6,6 +9,9 @@ import {
   isAccountingRolloutEnabledForBusiness,
 } from '../../../versions/v2/accounting/utils/accountingRollout.util.js';
 import { buildAccountingEvent } from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
+import {
+  resolveAccountingTimestamp as resolveTimestamp,
+} from '../../../versions/v2/accounting/utils/accountingTimestamp.util.js';
 
 const REGION = 'us-central1';
 const MEMORY = '256MiB';
@@ -32,56 +38,6 @@ const safeNumber = (value) => {
 
 const roundToTwoDecimals = (value) =>
   Math.round((safeNumber(value) ?? 0) * 100) / 100;
-
-const resolveTimestamp = (...values) => {
-  for (const value of values) {
-    if (!value) continue;
-    if (value instanceof Timestamp) {
-      return value;
-    }
-    if (typeof value?.toMillis === 'function') {
-      return Timestamp.fromMillis(value.toMillis());
-    }
-    if (typeof value?.toDate === 'function') {
-      const dateValue = value.toDate();
-      if (dateValue instanceof Date) {
-        return Timestamp.fromMillis(dateValue.getTime());
-      }
-    }
-    if (value instanceof Date) {
-      return Timestamp.fromMillis(value.getTime());
-    }
-    if (typeof value === 'number' && Number.isFinite(value)) {
-      return Timestamp.fromMillis(value);
-    }
-    if (typeof value === 'string') {
-      const parsed = Date.parse(value);
-      if (!Number.isNaN(parsed)) {
-        return Timestamp.fromMillis(parsed);
-      }
-    }
-    if (typeof value === 'object') {
-      const record = asRecord(value);
-      const seconds =
-        typeof record.seconds === 'number'
-          ? record.seconds
-          : typeof record._seconds === 'number'
-            ? record._seconds
-            : null;
-      const nanoseconds =
-        typeof record.nanoseconds === 'number'
-          ? record.nanoseconds
-          : typeof record._nanoseconds === 'number'
-            ? record._nanoseconds
-            : 0;
-      if (seconds != null) {
-        return new Timestamp(seconds, nanoseconds);
-      }
-    }
-  }
-
-  return Timestamp.now();
-};
 
 const resolveCurrencyCode = (value) =>
   toCleanString(asRecord(value).code ?? value)?.toUpperCase() || null;
@@ -198,6 +154,9 @@ export const buildCustomerCreditNoteIssuedAccountingEvent = ({
 }) => {
   const record = asRecord(creditNoteRecord);
   const status = toCleanString(record.status)?.toLowerCase() ?? null;
+  if (status && status !== 'issued') {
+    return null;
+  }
   if (status && VOID_CREDIT_NOTE_STATUSES.has(status)) {
     return null;
   }
@@ -291,7 +250,7 @@ export const buildCustomerCreditNoteAppliedAccountingEvent = ({
   });
 };
 
-export const syncCustomerCreditNoteIssuedAccountingEvent = onDocumentCreated(
+export const syncCustomerCreditNoteIssuedAccountingEvent = onDocumentWritten(
   {
     document: 'businesses/{businessId}/creditNotes/{creditNoteId}',
     region: REGION,
@@ -300,6 +259,14 @@ export const syncCustomerCreditNoteIssuedAccountingEvent = onDocumentCreated(
   },
   async (event) => {
     const { businessId, creditNoteId } = event.params;
+    const beforeData = asRecord(event.data?.before?.data?.());
+    const afterData = asRecord(event.data?.after?.data?.() ?? event.data?.data?.());
+    const beforeStatus = toCleanString(beforeData.status)?.toLowerCase() ?? null;
+    const afterStatus = toCleanString(afterData.status)?.toLowerCase() ?? null;
+    if (afterStatus !== 'issued' || beforeStatus === 'issued') {
+      return null;
+    }
+
     if (!(await isAccountingEnabled(businessId))) {
       return null;
     }
@@ -307,7 +274,7 @@ export const syncCustomerCreditNoteIssuedAccountingEvent = onDocumentCreated(
     const accountingEvent = buildCustomerCreditNoteIssuedAccountingEvent({
       businessId,
       creditNoteId,
-      creditNoteRecord: event.data?.data(),
+      creditNoteRecord: afterData,
     });
     if (!accountingEvent) {
       return null;

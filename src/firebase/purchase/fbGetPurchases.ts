@@ -6,19 +6,8 @@ import type {
   Unsubscribe,
 } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseconfig';
-import { createReference, getDocFromRef } from '@/utils/referenceUtils';
+import { getProviderPayloadById } from '@/firebase/provider/providerLookup';
 import { enrichPurchaseWorkflow } from '@/utils/purchase/workflow';
-
-export const convertFirestoreTimestamps = (
-  dates: Record<string, unknown>,
-  fields: string[],
-) => {
-  const typedDates = dates as Record<string, { seconds?: number }>;
-  fields.forEach((field) => {
-    const timestamp = typedDates[field]?.seconds;
-    if (typeof timestamp === 'number') dates[field] = timestamp * 1000;
-  });
-};
 
 export interface PurchaseFilters {
   status?: string;
@@ -55,25 +44,13 @@ export const subscribeToPurchase = (
   return onSnapshot(q, callback);
 };
 
-export const getProvider = async (
-  businessID: string,
-  providerId?: string,
-): Promise<Record<string, unknown>> => {
-  if (!providerId) return {};
-  const providerRef = createReference(
-    ['businesses', businessID, 'providers'],
-    providerId,
-  );
-  const providerDoc = (await getDocFromRef(providerRef)) as {
-    provider?: Record<string, unknown>;
-  } | null;
-  return providerDoc?.provider || {};
-};
-
 export const processPurchase = async (
   data: Record<string, unknown>,
   businessID: string,
 ) => {
-  const provider = await getProvider(businessID, data?.provider as string);
+  const provider = await getProviderPayloadById(
+    businessID,
+    data?.provider as string,
+  );
   return enrichPurchaseWorkflow({ ...data, provider });
 };

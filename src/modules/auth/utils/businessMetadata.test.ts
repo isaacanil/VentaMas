@@ -55,4 +55,18 @@ describe('businessMetadata', () => {
       subscriptionPlanId: null,
     });
   });
+
+  it('ignores array nodes when resolving nested metadata', () => {
+    expect(
+      resolveBusinessMetadataFromSnapshot({
+        business: [],
+        subscription: [],
+      }),
+    ).toEqual({
+      name: null,
+      ownerUid: null,
+      subscriptionStatus: null,
+      subscriptionPlanId: null,
+    });
+  });
 });

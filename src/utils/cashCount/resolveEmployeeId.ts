@@ -1,8 +1,4 @@
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
-};
+import { toCleanString } from '@/utils/text';
 
 const fromPathLike = (value: unknown): string | null => {
   const path = toCleanString(value);

@@ -4,6 +4,7 @@ import { Input } from 'antd';
 import { useRef, useState } from 'react';
 import styled from 'styled-components';
 
+import { isProductExplicitlyInventoryTracked } from '@/domain/products/productInventoryLogic';
 import { useGetProducts } from '@/firebase/products/fbGetProducts';
 import { filterData } from '@/hooks/search/useSearch';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
@@ -40,7 +41,7 @@ export const ProductFilter = ({
 
   const { products = [] } = useGetProducts() as any;
   const productsTrackInventoryFilter =
-    (products as any[]).filter((product) => product.trackInventory === true) ||
+    (products as any[]).filter(isProductExplicitlyInventoryTracked) ||
     [];
 
   const productsFiltered =

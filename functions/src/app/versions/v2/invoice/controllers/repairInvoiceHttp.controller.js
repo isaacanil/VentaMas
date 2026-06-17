@@ -12,20 +12,17 @@ import {
 } from '../services/repairTasks.service.js';
 import { db } from '../../../../core/config/firebase.js';
 import { assertBusinessSubscriptionAccess } from '../../billing/utils/subscriptionAccess.util.js';
-import { applyHttpCors } from '../../http/httpCors.util.js';
+import { handleHttpCorsPreflightAndMethod } from '../../http/httpCors.util.js';
+import { mapHttpsErrorToHttpStatus } from '../../http/httpError.util.js';
 
 export const repairInvoiceV2Http = https.onRequest(async (req, res) => {
-  const corsAllowed = applyHttpCors(req, res, {
+  const httpGuardHandled = handleHttpCorsPreflightAndMethod(req, res, {
+    allowedMethod: 'POST',
     methods: 'POST, OPTIONS',
     headers: 'Content-Type, Authorization, X-Session-Token, Idempotency-Key',
   });
-  if (req.method === 'OPTIONS') {
-    if (!corsAllowed) return res.status(403).send('');
-    return res.status(204).send('');
-  }
-  if (!corsAllowed) return res.status(403).json({ error: 'Origin not allowed' });
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+  if (httpGuardHandled) {
+    return;
   }
 
   try {
@@ -95,29 +92,9 @@ export const repairInvoiceV2Http = https.onRequest(async (req, res) => {
     });
     if (err instanceof https.HttpsError) {
       return res
-        .status(mapHttpsErrorToStatus(err.code))
+        .status(mapHttpsErrorToHttpStatus(err.code))
         .json({ error: err.message, code: err.code });
     }
     return res.status(500).json({ error: 'Error al reprogramar tareas' });
   }
 });
-
-function mapHttpsErrorToStatus(code) {
-  switch (code) {
-  case 'permission-denied':
-    return 403;
-  case 'unauthenticated':
-    return 401;
-  case 'not-found':
-    return 404;
-  case 'failed-precondition':
-    return 412;
-  case 'resource-exhausted':
-    return 429;
-  case 'already-exists':
-    return 409;
-  case 'invalid-argument':
-  default:
-    return 400;
-  }
-}

@@ -24,7 +24,7 @@ import type {
   HrPaymentMethod,
   HrPayrollEmployeeLineRecord,
 } from '@/types/hrPayroll';
-import { formatHrDepositAccount } from '@/utils/hrPayroll/depositAccounts';
+import { formatHrDepositAccount } from '@/domain/hrPayroll/depositAccounts';
 
 import {
   PAYMENT_METHOD_OPTIONS,

@@ -1,18 +1,18 @@
 import { faMapMarkerAlt, faPhone } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AnimatePresence, LazyMotion, domAnimation, m } from 'framer-motion';
-import { InputGroup } from '@heroui/react';
 import { useRef, useState, type ReactNode } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { VmButton } from '@/components/heroui';
+import { VmButton, VmInputGroup } from '@/components/heroui';
 import { setAccountPayment } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
 import { selectUser } from '@/features/auth/userSlice';
 import { selectClient } from '@/features/clientCart/clientCartSlice';
 import { useClientPendingBalance } from '@/firebase/accountsReceivable/useClientPendingBalance';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
-import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
+import { useInsuranceEnabled } from '@/modules/insurance/public';
+import { formatDominicanPhoneForLegacyDisplay } from '@/shared/phone/phoneNumber';
 import { formatPrice } from '@/utils/format';
 import type { UserIdentity } from '@/types/users';
 
@@ -36,16 +36,7 @@ const formatPhoneDisplayValue = (value: unknown): string => {
   const displayValue = toDisplayValue(value);
   if (displayValue === EMPTY_VALUE) return displayValue;
 
-  const digits = displayValue.replace(/\D/g, '');
-  if (digits.length === 10) {
-    return `+1 (${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-  }
-
-  if (digits.length === 11 && digits.startsWith('1')) {
-    return `+1 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
-  }
-
-  return displayValue;
+  return formatDominicanPhoneForLegacyDisplay(displayValue);
 };
 
 export const ClientDetails = () => {
@@ -139,7 +130,7 @@ export const ClientDetails = () => {
               <FieldLabel>Bal general</FieldLabel>
               <FieldValue>{formatPrice(pendingBalanceValue)}</FieldValue>
             </BalanceContent>
-            <InputGroup.Suffix>
+            <VmInputGroup.Suffix>
               <BalancePayButton
                 size="sm"
                 variant="primary"
@@ -148,7 +139,7 @@ export const ClientDetails = () => {
               >
                 Pagar
               </BalancePayButton>
-            </InputGroup.Suffix>
+            </VmInputGroup.Suffix>
           </BalanceInputGroup>
         </SummaryRow>
         {!insuranceEnabled ? phoneAndAddressDetails : null}
@@ -237,7 +228,7 @@ const ClientId = styled.div`
   white-space: nowrap;
 `;
 
-const BalanceInputGroup = styled(InputGroup)`
+const BalanceInputGroup = styled(VmInputGroup)`
   --client-balance-radius: var(--radius, var(--ds-radius-xl));
 
   width: 100%;

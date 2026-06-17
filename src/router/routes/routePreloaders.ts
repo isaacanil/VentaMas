@@ -1,3 +1,102 @@
+import {
+  loadAccountReceivableAuditRoute,
+  loadAccountReceivableListRoute,
+} from '@/modules/accountsReceivable/public';
+import { loadAccountsPayableListRoute } from '@/modules/accountsPayable/public';
+import { loadAccountingWorkspaceRoute } from '@/modules/accounting/public';
+import { loadAuthorizationsManagerRoute } from '@/modules/authorizations/public';
+import { loadClaimBusinessRoute, loadLoginRoute } from '@/modules/auth/public';
+import { loadCashReconciliationListRoute } from '@/modules/cashReconciliation/public';
+import { loadCheckoutRedirectRoute } from '@/modules/checkout/public';
+import {
+  loadClientAdminRoute,
+  loadProviderAdminRoute,
+} from '@/modules/contacts/public';
+import {
+  loadAllUsersControlRoute,
+  loadAppConfigRoute,
+  loadBusinessControlRoute,
+  loadChangelogCreateRoute,
+  loadChangelogListRoute,
+  loadChangelogManageRoute,
+  loadLoginImageConfigRoute,
+} from '@/modules/controlPanel/public';
+import {
+  loadAccountingPilotAuditRoute,
+  loadAiBusinessSeedingRoute,
+  loadBSeriesInvoicesRoute,
+  loadCashCountAuditRoute,
+  loadCustomHeroUiPlaygroundRoute,
+  loadElectronicTaxReceiptProviderConfigRoute,
+  loadErrorReportsRoute,
+  loadErrorScreenPreviewRoute,
+  loadFinanceReadinessAuditRoute,
+  loadFiscalReceiptsAuditRoute,
+  loadHeroUiPlaygroundRoute,
+  loadInventoryMigrationToolRoute,
+  loadInvoiceV2RecoveryRoute,
+  loadProductFormV2TestBenchRoute,
+  loadProductPriceAuditRoute,
+  loadProductStudioRoute,
+  loadSwitchBusinessRoute,
+  loadSyncDiagnosticsRoute,
+  loadTestPlaygroundRoute,
+} from '@/modules/dev/public';
+import {
+  loadCreditNoteListRoute,
+  loadDebitNoteListRoute,
+  loadInvoicesPageRoute,
+  loadReceivablePaymentReceiptRoute,
+  loadSalesAnalyticsPageRoute,
+  loadServiceCommissionsReportRoute,
+} from '@/modules/invoice/public';
+import { loadDeveloperHubRoute, loadHomeRoute } from '@/modules/home/public';
+import {
+  loadInventoryItemsRoute,
+  loadInventoryMovementsRoute,
+  loadInventorySessionsListRoute,
+  loadInventorySummaryRoute,
+  loadWarehouseRoute,
+} from '@/modules/inventory/public';
+import {
+  loadHrCommissionPeriodsRoute,
+  loadHrCommissionsRoute,
+  loadHrPayrollWorkspaceRoute,
+} from '@/modules/hrPayroll/public';
+import {
+  loadInsuranceConfigRoute,
+  loadInsuranceCreateRoute,
+} from '@/modules/insurance/public';
+import {
+  loadBackOrdersRoute,
+  loadOrdersRoute,
+  loadPurchasesRoute,
+} from '@/modules/orderAndPurchase/public';
+import { loadPreorderSaleRoute, loadSalesRoute } from '@/modules/sales/public';
+import {
+  loadExpensesCreateRoute,
+  loadExpensesListRoute,
+} from '@/modules/expenses/public';
+import {
+  loadAccountingConfigRoute,
+  loadAccountSubscriptionBillingRoute,
+  loadAccountSubscriptionLayoutRoute,
+  loadAccountSubscriptionOverviewRoute,
+  loadAccountSubscriptionPaymentMethodRoute,
+  loadAccountSubscriptionPlansRoute,
+  loadAccountSubscriptionSettingsRoute,
+  loadAccountSubscriptionSuccessRoute,
+  loadDeveloperSubscriptionMaintenancePlansRoute,
+  loadDeveloperSubscriptionMaintenanceRoute,
+  loadGeneralConfigRoute,
+  loadUsersAdminRoute,
+  loadUsersListRoute,
+  loadUserSessionLogsRoute,
+} from '@/modules/settings/public';
+import { loadTreasuryBankAccountsRoute } from '@/modules/treasury/public';
+import { loadUtilityReportRoute } from '@/modules/utility/public';
+import { loadWelcomeRoute, loadWelcomeV2Route } from '@/modules/welcome/public';
+
 import ROUTES_NAME from './routesName';
 
 type RoutePreloader = () => Promise<unknown>;
@@ -15,6 +114,7 @@ const {
   TREASURY_TERM,
   ACCOUNT_RECEIVABLE,
   CREDIT_NOTE_TERM,
+  DEBIT_NOTE_TERM,
   AUTHORIZATIONS_TERM,
   INSURANCE_TERM,
   UTILITY_TERM,
@@ -24,6 +124,7 @@ const {
   ACCOUNTING_TERM,
   HR_PAYROLL_TERM,
   LAB_TERM,
+  ACCOUNT_PAYABLE,
 } = ROUTES_NAME;
 
 const {
@@ -38,13 +139,14 @@ const {
   ACCOUNT_SUBSCRIPTION_PAYMENT_METHODS,
   ACCOUNT_SUBSCRIPTION_SETTINGS,
   ACCOUNT_SUBSCRIPTION_BLOCKED,
+  GENERAL_CONFIG_EXCHANGE_RATES,
+  GENERAL_CONFIG_ACCOUNTING_CHART_OF_ACCOUNTS,
+  GENERAL_CONFIG_ACCOUNTING_POSTING_PROFILES,
 } = SETTING_TERM;
 
 const {
+  ACCOUNTING_PILOT_AUDIT,
   SUBSCRIPTION_MAINTENANCE,
-  SUBSCRIPTION_MAINTENANCE_OVERVIEW,
-  SUBSCRIPTION_MAINTENANCE_SANDBOX,
-  SUBSCRIPTION_MAINTENANCE_TOOLS,
   SUBSCRIPTION_MAINTENANCE_PLANS,
 } = DEV_VIEW_TERM;
 
@@ -59,218 +161,151 @@ const {
   ACCOUNTING_PERIOD_CLOSE,
 } = ACCOUNTING_TERM;
 
-const preloadAccountingWorkspace = () =>
-  import('@/modules/accounting/pages/AccountingWorkspace/AccountingWorkspace');
+const preloadAccountingSettingsWorkspace = async () => {
+  await Promise.all([loadGeneralConfigRoute(), loadAccountingConfigRoute()]);
+};
 
-const preloadHrPayrollWorkspace = () =>
-  import('@/modules/hrPayroll/pages/HrPayrollWorkspace/HrPayrollWorkspace');
-const preloadHrCommissionsPage = () =>
-  import('@/modules/hrPayroll/pages/HrCommissionsPage/HrCommissionsPage');
-const preloadHrCommissionPeriodsPage = () =>
-  import('@/modules/hrPayroll/pages/HrCommissionPeriodsPage/HrCommissionPeriodsPage');
+const preloadAccountSubscriptionWithLayout =
+  (loadPageRoute: RoutePreloader) => async () => {
+    await Promise.all([loadAccountSubscriptionLayoutRoute(), loadPageRoute()]);
+  };
 
 export const routePreloaders: Record<string, RoutePreloader> = {
-  [BASIC_TERM.HOME]: () => import('@/modules/home/pages/Home/Home'),
-  [BASIC_TERM.DEVELOPER_HUB]: () =>
-    import('@/modules/home/pages/DeveloperHub/DeveloperHub'),
-  [AUTH_TERM.LOGIN]: () => import('@/modules/auth/pages/Login/Login'),
-  [AUTH_TERM.CLAIM_BUSINESS]: () =>
-    import('@/modules/auth/pages/ClaimBusinessPage/ClaimBusinessPage'),
+  [BASIC_TERM.HOME]: loadHomeRoute,
+  [BASIC_TERM.DEVELOPER_HUB]: loadDeveloperHubRoute,
+  [BASIC_TERM.WELCOME]: loadWelcomeRoute,
+  [BASIC_TERM.WELCOME_V2]: loadWelcomeV2Route,
+  [BASIC_TERM.CHECKOUT_PROXY]: loadCheckoutRedirectRoute,
+  [AUTH_TERM.LOGIN]: loadLoginRoute,
+  [AUTH_TERM.CLAIM_BUSINESS]: loadClaimBusinessRoute,
 
-  [SALES_TERM.SALES]: () => import('@/modules/sales/pages/Sale/Sale'),
-  [SALES_TERM.BILLS]: () =>
-    import('@/modules/invoice/pages/InvoicesPage/InvoicesPage'),
-  [SALES_TERM.BILLS_ANALYTICS]: () =>
-    import('@/modules/invoice/pages/InvoicesPage/SalesAnalyticsPage'),
-  [SALES_TERM.SERVICE_COMMISSIONS]: () =>
-    import('@/modules/invoice/pages/ServiceCommissionsReport/ServiceCommissionsReport'),
-  [SALES_TERM.PREORDERS]: () =>
-    import('@/modules/sales/pages/PreorderSale/PreorderSale'),
+  [SALES_TERM.SALES]: loadSalesRoute,
+  [SALES_TERM.BILLS]: loadInvoicesPageRoute,
+  [SALES_TERM.BILLS_ANALYTICS]: loadSalesAnalyticsPageRoute,
+  [SALES_TERM.SERVICE_COMMISSIONS]: loadServiceCommissionsReportRoute,
+  [SALES_TERM.PREORDERS]: loadPreorderSaleRoute,
 
-  [PURCHASE_TERM.PURCHASES]: () =>
-    import('@/modules/orderAndPurchase/pages/OrderAndPurchase/Compra/Purchases'),
-  [ORDER_TERM.ORDERS]: () =>
-    import('@/modules/orderAndPurchase/pages/OrderAndPurchase/Order/Orders'),
-  [PURCHASE_TERM.BACKORDERS]: () =>
-    import('@/modules/orderAndPurchase/pages/OrderAndPurchase/BackOrders/BackOrders'),
+  [PURCHASE_TERM.PURCHASES]: loadPurchasesRoute,
+  [ORDER_TERM.ORDERS]: loadOrdersRoute,
+  [PURCHASE_TERM.BACKORDERS]: loadBackOrdersRoute,
 
-  [EXPENSES_TERM.EXPENSES_LIST]: () =>
-    import('@/modules/expenses/pages/Expenses/ExpensesList/ExpensesList'),
-  [EXPENSES_TERM.EXPENSES_CREATE]: () =>
-    import('@/modules/expenses/pages/Expenses/ExpensesForm/ExpensesForm'),
+  [EXPENSES_TERM.EXPENSES_LIST]: loadExpensesListRoute,
+  [EXPENSES_TERM.EXPENSES_CREATE]: loadExpensesCreateRoute,
 
-  [CASH_RECONCILIATION_TERM.CASH_RECONCILIATION_LIST]: () =>
-    import('@/modules/cashReconciliation/pages/CashReconciliation/CashReconciliation'),
-  [TREASURY_TERM.TREASURY_BANK_ACCOUNTS]: () =>
-    import('@/modules/treasury/pages/TreasuryBankAccountsPage'),
+  [CASH_RECONCILIATION_TERM.CASH_RECONCILIATION_LIST]:
+    loadCashReconciliationListRoute,
+  [TREASURY_TERM.TREASURY_BANK_ACCOUNTS]: loadTreasuryBankAccountsRoute,
+  [TREASURY_TERM.TREASURY_ACCOUNT_DETAIL]: loadTreasuryBankAccountsRoute,
 
-  [ACCOUNTING]: preloadAccountingWorkspace,
-  [ACCOUNTING_JOURNAL_BOOK]: preloadAccountingWorkspace,
-  [ACCOUNTING_GENERAL_LEDGER]: preloadAccountingWorkspace,
-  [ACCOUNTING_MANUAL_ENTRIES]: preloadAccountingWorkspace,
-  [ACCOUNTING_REPORTS]: preloadAccountingWorkspace,
-  [ACCOUNTING_FISCAL_COMPLIANCE]: preloadAccountingWorkspace,
-  [ACCOUNTING_MONITOR]: preloadAccountingWorkspace,
-  [ACCOUNTING_PERIOD_CLOSE]: preloadAccountingWorkspace,
-  [HR_PAYROLL_TERM.HR_PAYROLL]: preloadHrPayrollWorkspace,
-  [HR_PAYROLL_TERM.HR_EMPLOYEES]: preloadHrPayrollWorkspace,
-  [HR_PAYROLL_TERM.HR_COMMISSIONS]: preloadHrCommissionsPage,
-  [HR_PAYROLL_TERM.HR_COMMISSION_PERIODS]: preloadHrCommissionPeriodsPage,
-  [HR_PAYROLL_TERM.HR_COMMISSION_PERIOD_DETAIL]: preloadHrCommissionPeriodsPage,
+  [ACCOUNT_PAYABLE.ACCOUNT_PAYABLE_LIST]: loadAccountsPayableListRoute,
 
-  [INVENTORY_TERM.INVENTORY_ITEMS]: () =>
-    import('@/modules/inventory/pages/Inventario/pages/ItemsManager/Inventario'),
-  [INVENTORY_TERM.INVENTORY_CONTROL]: () =>
-    import('@/modules/inventory/pages/InventorySessionsList/InventorySessionsList'),
-  [INVENTORY_TERM.INVENTORY_SUMMARY]: () =>
-    import('@/modules/inventory/pages/InventorySummary/InventorySummary'),
-  [INVENTORY_TERM.WAREHOUSES]: () =>
-    import('@/modules/inventory/pages/Inventory/components/Warehouse/Warehouse'),
-  [INVENTORY_TERM.INVENTORY_MOVEMENTS]: () =>
-    import('@/modules/inventory/pages/Inventory/components/AllMovements/AllMovements'),
-  [INVENTORY_TERM.PRODUCT_STUDIO]: () =>
-    import('@/modules/dev/pages/DevTools/ProductStudio/ProductStudio'),
+  [ACCOUNTING]: loadAccountingWorkspaceRoute,
+  [ACCOUNTING_JOURNAL_BOOK]: loadAccountingWorkspaceRoute,
+  [ACCOUNTING_GENERAL_LEDGER]: loadAccountingWorkspaceRoute,
+  [ACCOUNTING_MANUAL_ENTRIES]: loadAccountingWorkspaceRoute,
+  [ACCOUNTING_REPORTS]: loadAccountingWorkspaceRoute,
+  [ACCOUNTING_FISCAL_COMPLIANCE]: loadAccountingWorkspaceRoute,
+  [ACCOUNTING_MONITOR]: loadAccountingWorkspaceRoute,
+  [ACCOUNTING_PERIOD_CLOSE]: loadAccountingWorkspaceRoute,
+  [HR_PAYROLL_TERM.HR_PAYROLL]: loadHrPayrollWorkspaceRoute,
+  [HR_PAYROLL_TERM.HR_EMPLOYEES]: loadHrPayrollWorkspaceRoute,
+  [HR_PAYROLL_TERM.HR_COMMISSIONS]: loadHrCommissionsRoute,
+  [HR_PAYROLL_TERM.HR_COMMISSION_PERIODS]: loadHrCommissionPeriodsRoute,
+  [HR_PAYROLL_TERM.HR_COMMISSION_PERIOD_DETAIL]: loadHrCommissionPeriodsRoute,
 
-  [CONTACT_TERM.CLIENTS]: () =>
-    import('@/modules/contacts/pages/Contact/Client/ClientAdmin'),
-  [CONTACT_TERM.SUPPLIERS]: () =>
-    import('@/modules/contacts/pages/Contact/Provider/ProviderAdmin'),
+  [INVENTORY_TERM.INVENTORY_ITEMS]: loadInventoryItemsRoute,
+  [INVENTORY_TERM.INVENTORY_CONTROL]: loadInventorySessionsListRoute,
+  [INVENTORY_TERM.INVENTORY_SUMMARY]: loadInventorySummaryRoute,
+  [INVENTORY_TERM.WAREHOUSES]: loadWarehouseRoute,
+  [INVENTORY_TERM.INVENTORY_MOVEMENTS]: loadInventoryMovementsRoute,
+  [INVENTORY_TERM.PRODUCT_STUDIO]: loadProductStudioRoute,
 
-  [INSURANCE_TERM.INSURANCE_CONFIG]: () =>
-    import('@/modules/insurance/pages/Insurance/InsuranceConfig/InsuraceConfig'),
+  [CONTACT_TERM.CLIENTS]: loadClientAdminRoute,
+  [CONTACT_TERM.SUPPLIERS]: loadProviderAdminRoute,
 
-  [ACCOUNT_RECEIVABLE.ACCOUNT_RECEIVABLE_LIST]: () =>
-    import('@/modules/accountsReceivable/pages/AccountReceivable/pages/AccountReceivableList/AccountReceivableList'),
-  [ACCOUNT_RECEIVABLE.ACCOUNT_RECEIVABLE_AUDIT]: () =>
-    import('@/modules/accountsReceivable/pages/AccountReceivable/pages/AccountReceivableAudit/AccountReceivableAudit'),
-  [ACCOUNT_RECEIVABLE.RECEIVABLE_PAYMENT_RECEIPTS]: () =>
-    import('@/modules/invoice/pages/InvoicesPage/ReceivablePaymentReceipt'),
+  [INSURANCE_TERM.INSURANCE_CONFIG]: loadInsuranceConfigRoute,
+  [INSURANCE_TERM.INSURANCE_CREATE]: loadInsuranceCreateRoute,
 
-  [CREDIT_NOTE_TERM.CREDIT_NOTE_LIST]: () =>
-    import('@/modules/invoice/pages/CreditNote/CreditNoteList/CreditNoteList'),
+  [ACCOUNT_RECEIVABLE.ACCOUNT_RECEIVABLE_LIST]: loadAccountReceivableListRoute,
+  [ACCOUNT_RECEIVABLE.ACCOUNT_RECEIVABLE_AUDIT]:
+    loadAccountReceivableAuditRoute,
+  [ACCOUNT_RECEIVABLE.RECEIVABLE_PAYMENT_RECEIPTS]:
+    loadReceivablePaymentReceiptRoute,
 
-  [AUTHORIZATIONS_TERM.AUTHORIZATIONS_LIST]: () =>
-    import('@/modules/authorizations/pages/Authorizations/AuthorizationsManager'),
+  [CREDIT_NOTE_TERM.CREDIT_NOTE_LIST]: loadCreditNoteListRoute,
+  [DEBIT_NOTE_TERM.DEBIT_NOTE_LIST]: loadDebitNoteListRoute,
 
-  [SETTING_TERM.SETTING]: () =>
-    import('@/modules/settings/components/GeneralConfig/GeneralConfig'),
-  [ACCOUNT_SUBSCRIPTION]: async () => {
-    await Promise.all([
-      import('@/modules/settings/pages/subscription/SubscriptionLayout'),
-      import('@/modules/settings/pages/subscription/SubscriptionOverviewPage'),
-    ]);
-  },
-  [ACCOUNT_SUBSCRIPTION_MANAGE]: async () => {
-    await Promise.all([
-      import('@/modules/settings/pages/subscription/SubscriptionLayout'),
-      import('@/modules/settings/pages/subscription/SubscriptionOverviewPage'),
-    ]);
-  },
-  [ACCOUNT_SUBSCRIPTION_SUCCESS]: () =>
-    import('@/modules/settings/pages/subscription/SubscriptionSuccessPage'),
-  [ACCOUNT_SUBSCRIPTION_PLANS]: async () => {
-    await Promise.all([
-      import('@/modules/settings/pages/subscription/SubscriptionLayout'),
-      import('@/modules/settings/pages/subscription/SubscriptionPlansPage'),
-    ]);
-  },
-  [ACCOUNT_SUBSCRIPTION_BILLING]: async () => {
-    await Promise.all([
-      import('@/modules/settings/pages/subscription/SubscriptionLayout'),
-      import('@/modules/settings/pages/subscription/SubscriptionBillingPage'),
-    ]);
-  },
-  [ACCOUNT_SUBSCRIPTION_PAYMENT_METHODS]: async () => {
-    await Promise.all([
-      import('@/modules/settings/pages/subscription/SubscriptionLayout'),
-      import('@/modules/settings/pages/subscription/SubscriptionPaymentMethodPage'),
-    ]);
-  },
-  [ACCOUNT_SUBSCRIPTION_SETTINGS]: async () => {
-    await Promise.all([
-      import('@/modules/settings/pages/subscription/SubscriptionLayout'),
-      import('@/modules/settings/pages/subscription/SubscriptionSettingsPage'),
-    ]);
-  },
-  [ACCOUNT_SUBSCRIPTION_BLOCKED]: async () => {
-    await Promise.all([
-      import('@/modules/settings/pages/subscription/SubscriptionLayout'),
-      import('@/modules/settings/pages/subscription/SubscriptionOverviewPage'),
-    ]);
-  },
+  [AUTHORIZATIONS_TERM.AUTHORIZATIONS_LIST]: loadAuthorizationsManagerRoute,
+
+  [SETTING_TERM.SETTING]: loadGeneralConfigRoute,
+  [GENERAL_CONFIG_ACCOUNTING_CHART_OF_ACCOUNTS]:
+    preloadAccountingSettingsWorkspace,
+  [GENERAL_CONFIG_ACCOUNTING_POSTING_PROFILES]:
+    preloadAccountingSettingsWorkspace,
+  [GENERAL_CONFIG_EXCHANGE_RATES]: preloadAccountingSettingsWorkspace,
+  [ACCOUNT_SUBSCRIPTION]: preloadAccountSubscriptionWithLayout(
+    loadAccountSubscriptionOverviewRoute,
+  ),
+  [ACCOUNT_SUBSCRIPTION_MANAGE]: preloadAccountSubscriptionWithLayout(
+    loadAccountSubscriptionOverviewRoute,
+  ),
+  [ACCOUNT_SUBSCRIPTION_SUCCESS]: loadAccountSubscriptionSuccessRoute,
+  [ACCOUNT_SUBSCRIPTION_PLANS]: preloadAccountSubscriptionWithLayout(
+    loadAccountSubscriptionPlansRoute,
+  ),
+  [ACCOUNT_SUBSCRIPTION_BILLING]: preloadAccountSubscriptionWithLayout(
+    loadAccountSubscriptionBillingRoute,
+  ),
+  [ACCOUNT_SUBSCRIPTION_PAYMENT_METHODS]: preloadAccountSubscriptionWithLayout(
+    loadAccountSubscriptionPaymentMethodRoute,
+  ),
+  [ACCOUNT_SUBSCRIPTION_SETTINGS]: preloadAccountSubscriptionWithLayout(
+    loadAccountSubscriptionSettingsRoute,
+  ),
+  [ACCOUNT_SUBSCRIPTION_BLOCKED]: preloadAccountSubscriptionWithLayout(
+    loadAccountSubscriptionOverviewRoute,
+  ),
   [`${USERS}/${USERS_LIST}`]: async () => {
-    await Promise.all([
-      import('@/modules/settings/pages/setting/subPage/Users/UserAdmin'),
-      import('@/modules/settings/pages/setting/subPage/Users/components/UsersList/UserList'),
-    ]);
+    await Promise.all([loadUsersAdminRoute(), loadUsersListRoute()]);
   },
   [`${USERS}/${USERS_SESSION_LOGS}`]: async () => {
-    await Promise.all([
-      import('@/modules/settings/pages/setting/subPage/Users/UserAdmin'),
-      import('@/modules/settings/pages/setting/subPage/Users/UserSessionLogs'),
-    ]);
+    await Promise.all([loadUsersAdminRoute(), loadUserSessionLogsRoute()]);
   },
 
-  [UTILITY_TERM.UTILITY_REPORT]: () =>
-    import('@/modules/utility/pages/Utility/Utility'),
+  [UTILITY_TERM.UTILITY_REPORT]: loadUtilityReportRoute,
 
-  [CHANGELOG_TERM.CHANGELOG_LIST]: () =>
-    import('@/modules/controlPanel/ChangeLogControl/ChangelogList/ChangelogList'),
+  [CHANGELOG_TERM.CHANGELOG_LIST]: loadChangelogListRoute,
 
-  [DEV_VIEW_TERM.SWITCH_BUSINESS]: () =>
-    import('@/modules/dev/pages/dev/SwitchBusiness'),
-  [DEV_VIEW_TERM.BUSINESSES]: () =>
-    import('@/modules/controlPanel/CreateBusinessControl/BusinessControl'),
-  [DEV_VIEW_TERM.ALL_USERS]: () =>
-    import('@/modules/controlPanel/AllUsersControl/AllUsersControl'),
-  [DEV_VIEW_TERM.CHANGELOG_MANAGE]: () =>
-    import('@/modules/controlPanel/ChangeLogControl/ChangelogManage/ChangelogManage'),
-  [DEV_VIEW_TERM.CHANGELOG_CREATE]: () =>
-    import('@/modules/controlPanel/ChangeLogControl/ChangeLogCreate/ChangeLogCreate'),
-  [DEV_VIEW_TERM.APP_CONFIG.ROOT]: () =>
-    import('@/modules/controlPanel/AppConfig/AppConfig'),
-  [DEV_VIEW_TERM.FISCAL_RECEIPTS_AUDIT]: () =>
-    import('@/modules/dev/pages/DevTools/FiscalReceiptsAudit/FiscalReceiptsAudit'),
-  [DEV_VIEW_TERM.ELECTRONIC_TAX_RECEIPT_PROVIDER]: () =>
-    import('@/modules/dev/pages/DevTools/ElectronicTaxReceiptProvider/ElectronicTaxReceiptProviderConfigPage'),
-  [DEV_VIEW_TERM.INVOICE_V2_RECOVERY]: () =>
-    import('@/modules/dev/pages/DevTools/InvoiceV2Recovery/InvoiceV2Recovery'),
-  [DEV_VIEW_TERM.B_SERIES_INVOICES]: () =>
-    import('@/modules/dev/pages/DevTools/BSeriesInvoices/BSeriesInvoices'),
-  [DEV_VIEW_TERM.PRUEBA]: () =>
-    import('@/modules/dev/pages/DevTools/TestPlayground'),
-  [DEV_VIEW_TERM.ERROR_SCREEN_PREVIEW]: () =>
-    import('@/modules/dev/pages/DevTools/ErrorScreenPreview/ErrorScreenPreview'),
-  [DEV_VIEW_TERM.ERROR_REPORTS]: () =>
-    import('@/modules/dev/pages/DevTools/ErrorReports/ErrorReports'),
-  [LAB_TERM.HEROUI]: () =>
-    import('@/modules/dev/pages/DevTools/HeroUiPlayground/HeroUiPlayground'),
-  [LAB_TERM.HEROUI_CUSTOM]: () =>
-    import('@/modules/dev/pages/DevTools/CustomHeroUiPlayground/CustomHeroUiPlayground'),
-  [SUBSCRIPTION_MAINTENANCE]: () =>
-    import('@/modules/settings/pages/subscription/DeveloperSubscriptionMaintenancePage'),
-  [SUBSCRIPTION_MAINTENANCE_OVERVIEW]: async () => {
-    await Promise.all([
-      import('@/modules/settings/pages/subscription/DeveloperSubscriptionMaintenancePage'),
-      import('@/modules/settings/pages/subscription/DeveloperSubscriptionMaintenanceOverviewPage'),
-    ]);
-  },
-  [SUBSCRIPTION_MAINTENANCE_SANDBOX]: async () => {
-    await Promise.all([
-      import('@/modules/settings/pages/subscription/DeveloperSubscriptionMaintenancePage'),
-      import('@/modules/settings/pages/subscription/DeveloperSubscriptionMaintenanceSandboxPage'),
-    ]);
-  },
-  [SUBSCRIPTION_MAINTENANCE_TOOLS]: async () => {
-    await Promise.all([
-      import('@/modules/settings/pages/subscription/DeveloperSubscriptionMaintenancePage'),
-      import('@/modules/settings/pages/subscription/DeveloperSubscriptionMaintenanceToolsPage'),
-    ]);
-  },
+  [DEV_VIEW_TERM.SWITCH_BUSINESS]: loadSwitchBusinessRoute,
+  [DEV_VIEW_TERM.BUSINESSES]: loadBusinessControlRoute,
+  [DEV_VIEW_TERM.ALL_USERS]: loadAllUsersControlRoute,
+  [DEV_VIEW_TERM.CHANGELOG_MANAGE]: loadChangelogManageRoute,
+  [DEV_VIEW_TERM.CHANGELOG_CREATE]: loadChangelogCreateRoute,
+  [DEV_VIEW_TERM.APP_CONFIG.ROOT]: loadAppConfigRoute,
+  [DEV_VIEW_TERM.APP_CONFIG.LOGIN_IMAGE]: loadLoginImageConfigRoute,
+  [DEV_VIEW_TERM.FISCAL_RECEIPTS_AUDIT]: loadFiscalReceiptsAuditRoute,
+  [DEV_VIEW_TERM.ELECTRONIC_TAX_RECEIPT_PROVIDER]:
+    loadElectronicTaxReceiptProviderConfigRoute,
+  [DEV_VIEW_TERM.INVOICE_V2_RECOVERY]: loadInvoiceV2RecoveryRoute,
+  [DEV_VIEW_TERM.B_SERIES_INVOICES]: loadBSeriesInvoicesRoute,
+  [DEV_VIEW_TERM.PRICE_LIST_AUDIT]: loadProductPriceAuditRoute,
+  [DEV_VIEW_TERM.CASH_COUNT_AUDIT]: loadCashCountAuditRoute,
+  [DEV_VIEW_TERM.INVENTORY_MIGRATION]: loadInventoryMigrationToolRoute,
+  [DEV_VIEW_TERM.SYNC_DIAGNOSTICS]: loadSyncDiagnosticsRoute,
+  [DEV_VIEW_TERM.AI_BUSINESS_SEEDING]: loadAiBusinessSeedingRoute,
+  [DEV_VIEW_TERM.PRODUCT_FORM_V2_TEST]: loadProductFormV2TestBenchRoute,
+  [ACCOUNTING_PILOT_AUDIT]: loadAccountingPilotAuditRoute,
+  [DEV_VIEW_TERM.FINANCE_READINESS_AUDIT]: loadFinanceReadinessAuditRoute,
+  [DEV_VIEW_TERM.PRUEBA]: loadTestPlaygroundRoute,
+  [DEV_VIEW_TERM.ERROR_SCREEN_PREVIEW]: loadErrorScreenPreviewRoute,
+  [DEV_VIEW_TERM.ERROR_REPORTS]: loadErrorReportsRoute,
+  [LAB_TERM.HEROUI]: loadHeroUiPlaygroundRoute,
+  [LAB_TERM.HEROUI_CUSTOM]: loadCustomHeroUiPlaygroundRoute,
+  [SUBSCRIPTION_MAINTENANCE]: loadDeveloperSubscriptionMaintenanceRoute,
   [SUBSCRIPTION_MAINTENANCE_PLANS]: async () => {
     await Promise.all([
-      import('@/modules/settings/pages/subscription/DeveloperSubscriptionMaintenancePage'),
-      import('@/modules/settings/pages/subscription/DeveloperSubscriptionMaintenancePlansPage'),
+      loadDeveloperSubscriptionMaintenanceRoute(),
+      loadDeveloperSubscriptionMaintenancePlansRoute(),
     ]);
   },
 };

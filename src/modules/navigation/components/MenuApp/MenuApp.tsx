@@ -1,4 +1,3 @@
-import { InputGroup } from '@heroui/react';
 import {
   useEffect,
   useState,
@@ -18,7 +17,7 @@ import {
   type DashboardMenuConfig,
 } from '@/layouts/dashboardMenuContext';
 
-import { SearchPanel } from '@/components/common/SearchPanel/SearchPanel';
+import { VmInputGroup } from '@/components/heroui';
 import { icons } from '@/constants/icons/icons';
 import {
   toggleMenu,
@@ -28,9 +27,10 @@ import {
 import { useClickOutSide } from '@/hooks/useClickOutSide';
 import { ButtonIconMenu } from '@/components/ui/Button/ButtonIconMenu';
 import { GoBackButton } from '@/components/ui/Button/GoBackButton';
-import { OpenMenuButton } from '@/components/ui/Button/OpenMenuButton';
 
 import { NotificationButton } from './components/NotificationButton/NotificationButton';
+import { OpenMenuButton } from './components/OpenMenuButton/OpenMenuButton';
+import { SearchPanel } from './components/SearchPanel';
 import { SideBar } from './components/SideBar';
 import { GlobalMenu } from './GlobalMenu/GlobalMenu';
 import type { ToolbarComponentProps } from './GlobalMenu/types';
@@ -52,6 +52,11 @@ interface MenuAppProps {
 
 export type MenuAppUIProps = Omit<MenuAppProps, 'forceRender'>;
 const EMPTY_TOOLBAR_PROPS: Omit<ToolbarComponentProps, 'side'> = {};
+
+type SearchInputDraft = {
+  sourceValue: string;
+  value: string;
+};
 /**
  * @param {Object} props
  * @param {any} [props.data]
@@ -160,16 +165,17 @@ export const MenuAppUI = ({
   const isOpenMenu = useSelector(selectMenuOpenStatus);
   const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(false);
   const normalizedSearchData = typeof searchData === 'string' ? searchData : '';
-  const [desktopSearchValue, setDesktopSearchValue] =
-    useState(normalizedSearchData);
-  const [prevNormalizedSearchData, setPrevNormalizedSearchData] =
-    useState(normalizedSearchData);
+  const [desktopSearchDraft, setDesktopSearchDraft] =
+    useState<SearchInputDraft>({
+      sourceValue: normalizedSearchData,
+      value: normalizedSearchData,
+    });
   const searchCommitTimerRef = useRef<number | null>(null);
 
-  if (prevNormalizedSearchData !== normalizedSearchData) {
-    setPrevNormalizedSearchData(normalizedSearchData);
-    setDesktopSearchValue(normalizedSearchData);
-  }
+  const desktopSearchValue =
+    desktopSearchDraft.sourceValue === normalizedSearchData
+      ? desktopSearchDraft.value
+      : normalizedSearchData;
 
   const handledMenu = useCallback(() => {
     dispatch(toggleMenu());
@@ -209,10 +215,13 @@ export const MenuAppUI = ({
   const handleDesktopSearchChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value;
-      setDesktopSearchValue(value);
+      setDesktopSearchDraft({
+        sourceValue: normalizedSearchData,
+        value,
+      });
       scheduleSearchCommit(value);
     },
-    [scheduleSearchCommit],
+    [normalizedSearchData, scheduleSearchCommit],
   );
 
   const flushSearchCommit = useCallback(() => {
@@ -276,10 +285,10 @@ export const MenuAppUI = ({
           {setSearchData && (
             <SearchInputWrapper data-role="search-wrapper">
               <SearchInputGroup fullWidth>
-                <InputGroup.Prefix>
+                <VmInputGroup.Prefix>
                   {icons.operationModes.search}
-                </InputGroup.Prefix>
-                <InputGroup.Input
+                </VmInputGroup.Prefix>
+                <VmInputGroup.Input
                   type="search"
                   placeholder={`Buscar ${displayName || sectionName || ''}...`}
                   value={desktopSearchValue}
@@ -292,19 +301,22 @@ export const MenuAppUI = ({
                   }}
                 />
                 {desktopSearchValue && (
-                  <InputGroup.Suffix className="search-input-actions">
+                  <VmInputGroup.Suffix className="search-input-actions">
                     <ClearSearchButton
                       aria-label="Limpiar búsqueda"
                       onClick={() => {
                         clearSearchCommitTimer();
-                        setDesktopSearchValue('');
+                        setDesktopSearchDraft({
+                          sourceValue: normalizedSearchData,
+                          value: '',
+                        });
                         commitSearchValue('');
                       }}
                       type="button"
                     >
                       ×
                     </ClearSearchButton>
-                  </InputGroup.Suffix>
+                  </VmInputGroup.Suffix>
                 )}
               </SearchInputGroup>
             </SearchInputWrapper>
@@ -469,7 +481,7 @@ const SearchInputWrapper = styled.div`
   }
 `;
 
-const SearchInputGroup = styled(InputGroup)`
+const SearchInputGroup = styled(VmInputGroup)`
   width: 100%;
   min-width: 0;
   height: 32px;

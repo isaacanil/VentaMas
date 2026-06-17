@@ -2,28 +2,13 @@ import {
   addReportHeader,
   applyProfessionalStyling,
   formatCurrencyColumns,
-} from '@/hooks/exportToExcel/exportConfig';
+} from '@/utils/export/excel/exportConfig';
+import { saveXlsxFile } from '@/utils/export/xlsx';
 
 import {
   formatAccountingPeriod,
   type GeneralLedgerSnapshot,
 } from '../../utils/accountingWorkspace';
-
-const downloadWorkbook = async (
-  workbook: { xlsx: { writeBuffer: () => Promise<ArrayBuffer> } },
-  fileName: string,
-) => {
-  const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], {
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = fileName;
-  anchor.click();
-  setTimeout(() => URL.revokeObjectURL(url), 100);
-};
 
 const formatDate = (date: Date | null): string => {
   if (!date) return '';
@@ -94,5 +79,9 @@ export const exportGeneralLedgerWorkbook = async ({
   );
 
   const fileName = `libro_mayor_${accountCode.replace(/[^a-zA-Z0-9]/g, '_')}_${periodKey ?? 'todos'}.xlsx`;
-  await downloadWorkbook(workbook, fileName);
+  const buffer = await workbook.xlsx.writeBuffer();
+  saveXlsxFile({
+    content: buffer,
+    fileName,
+  });
 };

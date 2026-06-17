@@ -21,7 +21,7 @@ El design system vivo esta en codigo:
 - `src/design-system/registry/components.ts`: componentes permitidos para planes/generacion.
 - `src/design-system/recipes/screen-recipes.ts`: recetas de pantallas.
 - `src/design-system/context/context-pack.ts`: paquete de contexto para agentes.
-- `src/ant/AntConfigProvider.tsx`: integracion global de Ant.
+- `src/design-system/adapters/ant/AntConfigProvider.tsx`: integracion global de Ant.
 
 `DESIGN.md` resume como usar esas fuentes. Si hay conflicto, manda el codigo del design system.
 

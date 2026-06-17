@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { InvoiceClient } from '@/types/invoice';
 
 import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
-import { InfoCard } from '@/components/ui/InfoCard/InfoCard';
+import { InfoCard } from './InfoCard';
 
 type ClientInfoCardProps = {
   client?: InvoiceClient | null;

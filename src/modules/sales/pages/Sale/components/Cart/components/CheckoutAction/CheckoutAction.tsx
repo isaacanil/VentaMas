@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import { SelectCartData } from '@/features/cart/cartSlice';
 import { normalizeSupportedDocumentCurrency } from '@/utils/accounting/currencies';
 import { formatPriceByCurrency } from '@/utils/format';
-import { Receipt } from '@/modules/checkout/pages/checkout/Receipt';
+import { Receipt } from '@/modules/checkout/public';
 import { ButtonGroup } from '@/components/ui/Button/Button';
 import type { SupportedDocumentCurrency } from '@/types/products';
 

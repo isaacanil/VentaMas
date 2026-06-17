@@ -115,7 +115,7 @@ Tu tarea es convertir un texto no estructurado con información de un negocio y 
 
 ### 4.1 Nueva Ruta (UI)
 
-Crear una pantalla oculta o para desarrolladores, ej: `/dev/ai-seeding`.
+Crear una pantalla oculta o para desarrolladores, ej: `/dev/tools/ai-business-seeding`.
 
 **Componentes:**
 
@@ -133,16 +133,16 @@ _Nota: Si no se quiere exponer la API Key en el frontend, esto debería pasar po
 
 ### 4.3 Lógica de Guardado
 
-1.  Llamar `createBusiness(businessData)` (de `src/firebase/businessInfo/fbAddBusinessInfo.js`).
+1.  Llamar `createBusiness(businessData)` (de `src/firebase/businessInfo/fbAddBusinessInfo.ts`).
 2.  Obtener el `businessId` retornado.
 3.  Iterar sobre el array de `users`.
 4.  Para cada usuario:
     - Inyectar el `businessId`.
-    - Llamar `fbSignUp(userPayload)` (de `src/firebase/Auth/fbAuthV2/fbSignUp.js`).
+    - Llamar `fbSignUp(userPayload)` (de `src/firebase/Auth/fbAuthV2/fbSignUp.ts`).
 
 ## 5. Tareas (ToDo)
 
-1. [ ] Crear vista `/dev/ai-seeding`.
+1. [ ] Crear vista `/dev/tools/ai-business-seeding`.
 2. [ ] Implementar servicio para llamar a Gemini (client-side o server-side).
 3. [ ] Implementar lógica de parseo y validación del JSON.
 4. [ ] Implementar orquestador de creación (Business -> Users).

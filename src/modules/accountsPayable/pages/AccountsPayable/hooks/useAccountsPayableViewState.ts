@@ -1,15 +1,15 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import { useFbGetProviders } from '@/firebase/provider/useFbGetProvider';
-import { useListenVendorBills } from '@/hooks/useVendorBills';
+import { useListenVendorBills } from '@/modules/accountsPayable/hooks/useVendorBills';
 import useFilter from '@/hooks/search/useSearch';
-import { isOpenVendorBill } from '@/utils/vendorBills/fromPurchase';
-import type { VendorBill } from '@/utils/vendorBills/types';
+import { isOpenVendorBill } from '@/domain/accountsPayable/vendorBills/fromPurchase';
+import type { VendorBill } from '@/domain/accountsPayable/vendorBills/types';
 import type {
   DataConfigMap,
   FilterOption,
   FilterState,
-} from '@/modules/orderAndPurchase/pages/OrderAndPurchase/Compra/components/FilterBar/types';
+} from '@/modules/orderAndPurchase/public';
 
 import {
   buildAccountsPayableRow,

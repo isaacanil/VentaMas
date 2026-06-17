@@ -1,4 +1,3 @@
-// client/backfillUserNumbers.js
 import {
   doc,
   getDoc,
@@ -190,7 +189,7 @@ export async function backfillUserNumbers(
 }
 
 // Ejemplo de uso:
-// import { backfillUserNumbers } from './client/backfillUserNumbers';
+// import { backfillUserNumbers } from '@/firebase/Auth/fbBackfillUserNumbers';
 // backfillUserNumbers('miBusinessID')
 //   .then(res => console.log('Backfill completado:', res))
 //   .catch(err => console.error('Error en backfill:', err));

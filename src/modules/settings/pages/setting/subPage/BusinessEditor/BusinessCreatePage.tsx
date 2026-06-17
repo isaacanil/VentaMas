@@ -3,24 +3,24 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import type { UploadChangeParam, UploadFile } from 'antd/es/upload/interface';
+import type { UploadFile } from 'antd';
+import type { UploadChangeParam } from 'antd/es/upload/interface';
 
 import { addUserData, selectUser } from '@/features/auth/userSlice';
-import { setStoredActiveBusinessId } from '@/modules/auth/utils/businessContext';
+import { setStoredActiveBusinessId } from '@/modules/auth/public';
+import { getBusinessCountryFormOptions } from '@/shared/location/businessLocations';
 import { hasDeveloperAccess } from '@/utils/access/developerAccess';
 import ROUTES_PATH from '@/router/routes/routesName';
 import { PageLayout } from '@/components/layout/PageShell';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 import {
   FormActionsBar,
 } from './components/BusinessProfileSections';
 import {
   BusinessProfileForm,
-  type BusinessCountryOption,
   type BusinessProfileFormValues,
 } from './components/BusinessProfileForm';
-import { countries } from './countries.json';
 import { beforeUpload } from './utils/imageUpload';
 import { submitBusinessCreation } from './utils/businessCreateSubmission';
 import { normalizeFormValues } from './utils/formValues';
@@ -37,7 +37,7 @@ const BusinessCreatePage = () => {
   const previewUrlRef = useRef<string | null>(null);
 
   const { HOME } = ROUTES_PATH.BASIC_TERM;
-  const countryOptions = countries as BusinessCountryOption[];
+  const countryOptions = getBusinessCountryFormOptions();
   const isDeveloperUser = hasDeveloperAccess(user);
 
   const releasePreviewUrl = useCallback(() => {

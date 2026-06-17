@@ -1,10 +1,11 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 
-import { ensureDefaultWarehouse } from '../../../versions/v1/modules/warehouse/services/warehouse.service.js';
+import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.util.js';
+import { ensureDefaultWarehouse } from '../../warehouse/services/defaultWarehouse.service.js';
 import {
   assertUserAccess,
   MEMBERSHIP_ROLE_GROUPS,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 import { assertBusinessSubscriptionAccess } from '../../../versions/v2/billing/utils/subscriptionAccess.util.js';
 
 const toBusinessId = (value) =>
@@ -12,7 +13,7 @@ const toBusinessId = (value) =>
 
 export const ensureDefaultWarehouseForBusiness = onCall(async (req) => {
   const businessID = toBusinessId(req.data?.businessID || req.data?.businessId);
-  const uid = req.auth?.uid || null;
+  const uid = await resolveCallableAuthUid(req);
 
   if (!uid) {
     throw new HttpsError('unauthenticated', 'Usuario no autenticado');

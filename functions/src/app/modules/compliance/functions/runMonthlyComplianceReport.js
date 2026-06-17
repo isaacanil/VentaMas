@@ -6,7 +6,7 @@ import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.
 import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 import { resolveBusinessFiscalRollout } from '../../taxReceipt/utils/fiscalRollout.util.js';
 import { getMonthlyCompliancePreviewBuilder } from '../services/monthlyCompliancePreviewRegistry.service.js';
 import { createTaxReportRun } from '../services/taxReportRun.service.js';

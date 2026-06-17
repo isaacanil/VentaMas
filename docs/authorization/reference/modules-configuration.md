@@ -25,7 +25,7 @@ Cuando módulos están desactivados, se muestran alertas informativas:
 
 El sistema de descuentos en el carrito también depende del módulo de facturación:
 
-**`src/views/pages/Sale/components/Cart/components/InvoiceSummary/InvoiceSummary.jsx`**
+**`src/modules/sales/pages/Sale/components/Cart/components/InvoiceSummary/InvoiceSummary.tsx`**
 
 - Usa `useAuthorizationModules()` para verificar si requiere PIN
 - Solo cajeros necesitan PIN cuando el módulo de facturación está activo
@@ -152,19 +152,19 @@ businesses/{businessId}/settings/billing {
 
 ### Hooks y utilidades
 
-- `src/hooks/useAuthorizationModules.js`
+- `src/modules/authorizations/hooks/useAuthorizationModules.ts`
   - `isModuleEnabled(module)`
   - `shouldUsePinForModule(module)`
   - `hasActiveModules()`
   - Helpers específicos: `isInvoicesModuleEnabled`, `isCashRegisterModuleEnabled`
-- `src/firebase/billing/useInitializeBillingSettings.jsx`: inicializa `enabledAuthorizationModules`.
-- `src/features/cart/default/default.js`: agrega los flags al estado inicial del carrito.
+- `src/firebase/billing/useInitializeBillingSettings.tsx`: inicializa `enabledAuthorizationModules`.
+- `src/features/cart/default/default.ts`: agrega los flags al estado inicial del carrito.
 
 ### Componentes clave
 
-- `AuthorizationFlowSettingsSection.jsx`: UI de ajustes, validación de “al menos un módulo”.
-- `CashRegisterOpening/CashRegisterClosure`: usan el hook para decidir si abrir `PinAuthorizationModal` o `PeerReviewAuthorization`.
-- `Authorizations/AuthorizationsManager.jsx` y `PersonalPinManagement.jsx`: muestran/se ocultan tabs y botones según módulos activos.
+- `AuthorizationFlowSettingsSection.tsx`: UI de ajustes, validación de “al menos un módulo”.
+- `CashRegisterOpening.tsx` / `CashRegisterClosure.tsx`: usan el hook para decidir si abrir `PinAuthorizationModal` o `PeerReviewAuthorization`.
+- `AuthorizationsManager.tsx` y `PersonalPinManagement.tsx`: muestran/se ocultan tabs y botones según módulos activos.
 
 ### Uso recomendado
 
@@ -179,9 +179,9 @@ businesses/{businessId}/settings/billing {
 
 ## Recursos relacionados
 
-- `src/views/component/GeneralConfig/configs/components/AuthorizationFlowSettingsSection.jsx`
-- `src/hooks/useAuthorizationModules.js`
-- `src/views/pages/CashReconciliation/page/CashRegisterOpening/CashRegisterOpening.jsx`
-- `src/views/pages/CashReconciliation/page/CashRegisterClosure/CashRegisterClosure.jsx`
-- `src/views/pages/Authorizations/AuthorizationsManager.jsx`
-- `src/views/pages/Authorizations/components/PersonalPinManagement.jsx`
+- `src/modules/settings/components/GeneralConfig/configs/components/AuthorizationFlowSettingsSection.tsx`
+- `src/modules/authorizations/hooks/useAuthorizationModules.ts`
+- `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterOpening/CashRegisterOpening.tsx`
+- `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/CashRegisterClosure.tsx`
+- `src/modules/authorizations/pages/Authorizations/AuthorizationsManager.tsx`
+- `src/modules/authorizations/pages/Authorizations/components/PersonalPinManagement.tsx`

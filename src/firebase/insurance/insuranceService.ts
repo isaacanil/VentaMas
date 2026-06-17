@@ -159,25 +159,26 @@ export function listenInsuranceConfig(
   }
 }
 
+type InsuranceConfigSnapshotState = {
+  businessID: string | null;
+  data: InsuranceConfigData[];
+  error: unknown;
+};
+
 export const useListenInsuranceConfig = () => {
-  const [data, setData] = useState<InsuranceConfigData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<unknown>(null);
-  const user = useSelector(selectUser) as unknown as UserWithBusinessAndUid | null;
-
-  const [prevBusinessID, setPrevBusinessID] = useState(user?.businessID);
-
-  if (user?.businessID !== prevBusinessID) {
-    setPrevBusinessID(user?.businessID);
-    setLoading(true);
-  }
-
-  if (!user?.businessID && loading) {
-    setLoading(false);
-  }
+  const [snapshotState, setSnapshotState] =
+    useState<InsuranceConfigSnapshotState>({
+      businessID: null,
+      data: [],
+      error: null,
+    });
+  const user = useSelector(selectUser) as unknown as
+    | UserWithBusinessAndUid
+    | null;
+  const businessID = user?.businessID ?? null;
 
   useEffect(() => {
-    if (!user?.businessID) {
+    if (!user || !businessID) {
       return undefined;
     }
 
@@ -185,12 +186,18 @@ export const useListenInsuranceConfig = () => {
     const unsubscribe = listenInsuranceConfig(
       safeUser,
       (data) => {
-        setData(data);
-        setLoading(false);
+        setSnapshotState({
+          businessID,
+          data,
+          error: null,
+        });
       },
       (error) => {
-        setError(error);
-        setLoading(false);
+        setSnapshotState({
+          businessID,
+          data: [],
+          error,
+        });
       },
     );
 
@@ -199,7 +206,12 @@ export const useListenInsuranceConfig = () => {
         unsubscribe();
       }
     };
-  }, [user]);
+  }, [businessID, user]);
+
+  const isCurrentSnapshot = snapshotState.businessID === businessID;
+  const data = businessID && isCurrentSnapshot ? snapshotState.data : [];
+  const loading = Boolean(businessID) && !isCurrentSnapshot;
+  const error = isCurrentSnapshot ? snapshotState.error : null;
 
   return { data, loading, error };
 };

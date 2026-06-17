@@ -3,66 +3,17 @@ import {
   buildPaymentState,
 } from '../../../versions/v2/accounting/utils/paymentState.util.js';
 import { applyReceivableMonetarySettlement } from './receivableMonetary.util.js';
-
-const THRESHOLD = 0.01;
-
-const asRecord = (value) =>
-  value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-
-const safeNumber = (value) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-};
-
-const roundToTwoDecimals = (value) => Math.round(safeNumber(value) * 100) / 100;
-
-const resolveAccountTotal = (account) => {
-  const accountRecord = asRecord(account);
-  const paymentState = asRecord(accountRecord.paymentState);
-  return roundToTwoDecimals(
-    paymentState.total ??
-      accountRecord.totalReceivable ??
-      accountRecord.totalAmount ??
-      accountRecord.amount,
-  );
-};
-
-const resolveAccountBalance = (account) => {
-  const accountRecord = asRecord(account);
-  const paymentState = asRecord(accountRecord.paymentState);
-  return roundToTwoDecimals(
-    paymentState.balance ?? accountRecord.arBalance ?? resolveAccountTotal(accountRecord),
-  );
-};
-
-const resolveInstallmentBalance = (installment) => {
-  const installmentRecord = asRecord(installment);
-  return roundToTwoDecimals(
-    installmentRecord.installmentBalance ??
-      installmentRecord.balance ??
-      installmentRecord.installmentAmount ??
-      installmentRecord.amount,
-  );
-};
-
-const countRemainingInstallments = (installments) =>
-  (Array.isArray(installments) ? installments : []).filter(
-    (installment) => resolveInstallmentBalance(installment) > THRESHOLD,
-  ).length;
-
-const resolveNextPaymentAt = (installments) => {
-  const activeInstallments = (Array.isArray(installments) ? installments : [])
-    .filter((installment) => resolveInstallmentBalance(installment) > THRESHOLD)
-    .sort((left, right) => {
-      const leftValue = safeNumber(left?.installmentDate?.toMillis?.() ?? left?.installmentDate);
-      const rightValue = safeNumber(
-        right?.installmentDate?.toMillis?.() ?? right?.installmentDate,
-      );
-      return leftValue - rightValue;
-    });
-
-  return activeInstallments[0]?.installmentDate ?? null;
-};
+import {
+  RECEIVABLE_PAYMENT_THRESHOLD as THRESHOLD,
+  asReceivableRecord as asRecord,
+  countRemainingReceivableInstallments as countRemainingInstallments,
+  resolveNextReceivablePaymentAt as resolveNextPaymentAt,
+  resolveReceivableAccountBalance as resolveAccountBalance,
+  resolveReceivableAccountTotal as resolveAccountTotal,
+  resolveReceivableInstallmentBalance as resolveInstallmentBalance,
+  roundReceivableAmount as roundToTwoDecimals,
+  safeReceivableNumber as safeNumber,
+} from './receivablePaymentMath.util.js';
 
 export const buildAccountsReceivablePaymentState = ({
   account,

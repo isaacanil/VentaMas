@@ -1,7 +1,7 @@
 import { faTruck, faMoneyBill } from '@fortawesome/free-solid-svg-icons';
 
 import { transactionConditions } from '@/constants/orderAndPurchaseState';
-import type { FilterConfigState } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/Compra/components/FilterBar/types';
+import type { FilterConfigState } from '@/modules/orderAndPurchase/public';
 
 const createAccountsPayableFilterConfig = (): FilterConfigState => ({
   filters: [

@@ -11,7 +11,7 @@ import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
-import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/AdvancedTable';
+import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/types/AdvancedTableTypes';
 import type { TableRow } from '@/components/ui/AdvancedTable/types/ColumnTypes';
 
 const { TabPane } = Tabs;

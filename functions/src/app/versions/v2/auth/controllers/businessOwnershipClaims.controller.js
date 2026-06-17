@@ -3,6 +3,7 @@ import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import { nanoid } from 'nanoid';
 
 import { db, FieldValue, Timestamp } from '../../../../core/config/firebase.js';
+import { resolveCallableAuthUid } from '../../../../core/utils/callableSessionAuth.util.js';
 import {
   normalizeRole,
   ROLE,
@@ -18,13 +19,8 @@ import {
   assertMembershipWritePolicy,
   resolveMembershipWritePolicy,
 } from '../utils/membershipWritePolicy.util.js';
-import {
-  resolveUserIdFromSessionToken,
-  toMillis,
-} from '../utils/sessionAuth.util.js';
-import {
-  upsertAccessControlEntry,
-} from '../utils/membershipMirror.util.js';
+import { toMillis } from '../utils/sessionAuth.util.js';
+import { upsertAccessControlEntry } from '../utils/membershipMirror.util.js';
 import { LIMIT_OPERATION_KEYS } from '../../billing/config/limitOperations.config.js';
 import { incrementBusinessUsageMetric } from '../../billing/services/usage.service.js';
 import { assertBusinessSubscriptionAccess } from '../../billing/utils/subscriptionAccess.util.js';
@@ -66,22 +62,31 @@ const resolveGlobalRole = (userData) => {
 };
 
 const isMembershipActive = (membershipData) => {
-  const status = normalizeStatus(membershipData?.status, membershipData?.active);
+  const status = normalizeStatus(
+    membershipData?.status,
+    membershipData?.active,
+  );
   return !INACTIVE_MEMBERSHIP_STATUSES.has(status);
 };
 
 const hasLegacyOwners = (businessData) => {
   const root = asRecord(businessData);
   const nestedBusiness = asRecord(root.business);
-  const ownerUid = toCleanString(root.ownerUid) || toCleanString(nestedBusiness.ownerUid);
+  const ownerUid =
+    toCleanString(root.ownerUid) || toCleanString(nestedBusiness.ownerUid);
   if (ownerUid) return true;
 
   const rootOwners = Array.isArray(root.owners) ? root.owners : [];
   const nestedOwners = Array.isArray(nestedBusiness.owners)
     ? nestedBusiness.owners
     : [];
-  return new Set([...rootOwners, ...nestedOwners].map((uid) => toCleanString(uid)).filter(Boolean))
-    .size > 0;
+  return (
+    new Set(
+      [...rootOwners, ...nestedOwners]
+        .map((uid) => toCleanString(uid))
+        .filter(Boolean),
+    ).size > 0
+  );
 };
 
 const hasActiveCanonicalOwner = (membersSnapshot) => {
@@ -89,20 +94,6 @@ const hasActiveCanonicalOwner = (membersSnapshot) => {
     const memberData = memberDoc.data() || {};
     return isMembershipActive(memberData);
   });
-};
-
-const resolveUserIdFromSession = async (request) => {
-  return resolveUserIdFromSessionToken({
-    sessionToken: toCleanString(request?.data?.sessionToken),
-    normalizeUserId: toCleanString,
-    createAuthError: (message) =>
-      new HttpsError('unauthenticated', message),
-  });
-};
-
-const resolveAuthUserId = async (request) => {
-  const fromSession = await resolveUserIdFromSession(request);
-  return fromSession || request?.auth?.uid || null;
 };
 
 const resolveExpiresAt = (rawHours) => {
@@ -205,7 +196,7 @@ export const createBusinessOwnershipClaimToken = onCall(async (request) => {
     throw new HttpsError('invalid-argument', 'businessId es requerido');
   }
 
-  const actorUserId = await resolveAuthUserId(request);
+  const actorUserId = toCleanString(await resolveCallableAuthUid(request));
   if (!actorUserId) {
     throw new HttpsError('unauthenticated', 'Usuario no autenticado');
   }
@@ -279,7 +270,7 @@ export const redeemBusinessOwnershipClaimToken = onCall(async (request) => {
     throw new HttpsError('invalid-argument', 'token es requerido');
   }
 
-  const actorUserId = await resolveAuthUserId(request);
+  const actorUserId = toCleanString(await resolveCallableAuthUid(request));
   if (!actorUserId) {
     throw new HttpsError('unauthenticated', 'Usuario no autenticado');
   }
@@ -320,8 +311,8 @@ export const redeemBusinessOwnershipClaimToken = onCall(async (request) => {
     ]);
     const actorMemberships = actorUserSnap.exists
       ? normalizeMembershipEntries(actorUserSnap.data() || {}, {
-        includeBusinessName: true,
-      })
+          includeBusinessName: true,
+        })
       : [];
     const alreadyTrackedMember =
       actorMemberSnap.exists ||
@@ -421,7 +412,9 @@ export const redeemBusinessOwnershipClaimToken = onCall(async (request) => {
       activeOnly: true,
     });
     const membershipRole = membership?.role || '';
-    const actorMemberRef = db.doc(`businesses/${businessId}/members/${actorUserId}`);
+    const actorMemberRef = db.doc(
+      `businesses/${businessId}/members/${actorUserId}`,
+    );
     const actorMemberSnap = await tx.get(actorMemberRef);
 
     const canRedeemByCanonicalMembership =
@@ -448,12 +441,11 @@ export const redeemBusinessOwnershipClaimToken = onCall(async (request) => {
     }
 
     const businessNode = asRecord(businessData.business);
-    const businessName = toCleanString(businessData.name) ||
+    const businessName =
+      toCleanString(businessData.name) ||
       toCleanString(businessNode.name) ||
       null;
-    const shouldCountUser =
-      !actorMemberSnap.exists &&
-      !membership;
+    const shouldCountUser = !actorMemberSnap.exists && !membership;
 
     if (writePolicy.writeCanonical) {
       tx.set(
@@ -480,7 +472,9 @@ export const redeemBusinessOwnershipClaimToken = onCall(async (request) => {
     });
 
     const existingBusinessId =
-      toCleanString(userData.businessID) || toCleanString(userData.businessId) || null;
+      toCleanString(userData.businessID) ||
+      toCleanString(userData.businessId) ||
+      null;
 
     const userUpdatePayload = {
       accessControl: mergedEntries,
@@ -493,7 +487,10 @@ export const redeemBusinessOwnershipClaimToken = onCall(async (request) => {
     const shouldPromoteRole =
       !existingBusinessId || existingBusinessId === businessId;
     if (shouldPromoteRole) {
-      Object.assign(userUpdatePayload, (isPlatformDevActor ? {} : { activeRole: ROLE.ADMIN }));
+      Object.assign(
+        userUpdatePayload,
+        isPlatformDevActor ? {} : { activeRole: ROLE.ADMIN },
+      );
     }
 
     tx.set(userRef, userUpdatePayload, { merge: true });

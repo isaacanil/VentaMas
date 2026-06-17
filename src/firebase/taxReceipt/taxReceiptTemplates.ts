@@ -64,6 +64,22 @@ export const countryComprobantes: Record<string, TaxReceiptCountryTemplates> = {
         description: 'Factura para entidades gubernamentales',
       },
       {
+        name: 'NOTAS DE DÉBITO',
+        type: 'B',
+        serie: '03',
+        documentFormat: 'traditional',
+        fiscalSeries: '03',
+        fiscalType: 'B03',
+        authorityStatus: 'not_applicable',
+        trackId: null,
+        sequence: 0,
+        sequenceLength: 8,
+        increase: 1,
+        quantity: 1000,
+        description:
+          'Nota de débito para recuperar costos, intereses, fletes u otros cargos posteriores.',
+      },
+      {
         name: 'NOTAS DE CRÉDITO',
         type: 'B',
         serie: '04',

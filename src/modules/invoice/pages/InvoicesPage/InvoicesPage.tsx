@@ -2,12 +2,13 @@ import { useMemo, useState, Suspense } from 'react';
 
 import useViewportWidth from '@/hooks/windows/useViewportWidth';
 import { lazyWithRetry } from '@/utils/lazyWithRetry';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import { PageLayout } from '@/components/layout/PageShell';
 
 import { FilterBar } from './components/FilterBar/FilterBar';
 import { sortInvoices, useInvoiceSorting } from './components/FilterBar/hooks';
 import { useInvoicesFilters } from './hooks/useInvoicesFilters';
+import { usePendingElectronicTaxReceiptAutoRefresh } from './hooks/usePendingElectronicTaxReceiptAutoRefresh';
 import { SaleRecordList } from './SaleRecordList/RecordList';
 
 const SaleReportTable = lazyWithRetry(
@@ -25,6 +26,11 @@ export const InvoicesPage = () => {
     setBaseFilters,
   } = useInvoicesFilters();
   const [searchTerm, setSearchTerm] = useState('');
+
+  usePendingElectronicTaxReceiptAutoRefresh({
+    enabled: !loading,
+    invoices,
+  });
 
   const { sortCriteria, sortDirection, handleSortChange, toggleSortDirection } =
     useInvoiceSorting();

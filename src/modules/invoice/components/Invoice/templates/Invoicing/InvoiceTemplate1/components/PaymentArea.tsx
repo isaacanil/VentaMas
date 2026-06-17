@@ -1,10 +1,10 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { selectInsuranceEnabled } from '@/features/cart/cartSlice';
-import { usePendingBalance } from '@/firebase/accountsReceivable/fbGetPendingBalance';
+import { useGetPendingBalance } from '@/firebase/accountsReceivable/fbGetPendingBalance';
 import { formatInvoicePrice } from '@/utils/invoice/documentCurrency';
 import {
   getInvoiceGeneralDiscount,
@@ -45,7 +45,6 @@ interface PaymentAreaRow {
 }
 
 export const PaymentArea = ({ data }: PaymentAreaProps) => {
-  const [pendingBalance, setPendingBalance] = useState(0);
   const user = useSelector(selectUser) as UserIdentity | null;
   const insuranceEnabled = useSelector(selectInsuranceEnabled);
   const businessID = user?.businessID;
@@ -62,11 +61,12 @@ export const PaymentArea = ({ data }: PaymentAreaProps) => {
   const totalInsuranceValue = totals.totalInsurance;
   const changeValue = totals.change;
 
-  usePendingBalance(
-    businessID ? String(businessID) : undefined,
-    clientId ? String(clientId) : undefined,
-    setPendingBalance,
-  );
+  const pendingBalance = useGetPendingBalance({
+    dependencies: [
+      businessID ? String(businessID) : undefined,
+      clientId ? String(clientId) : undefined,
+    ],
+  });
 
   const paymentLabel = {
     cash: 'Efectivo',

@@ -271,14 +271,16 @@ export const buildDgii607Draft = ({
   record,
   firestoreDoc,
   isCredit = false,
+  isDebit = false,
   originalNcf = null,
 }) => {
+  const isAdjustment = isCredit || isDebit;
   const identificationNumber = normalizeIdentificationNumber(
     record?.counterparty?.identification?.number,
   );
   const identificationType = resolveIdentType(identificationNumber);
   const ncf = resolveRecordNcf(record);
-  const modifiedNcf = isCredit ? (toCleanString(originalNcf) ?? '') : '';
+  const modifiedNcf = isAdjustment ? (toCleanString(originalNcf) ?? '') : '';
   const issuedAt = record?.issuedAt ?? record?.createdAt ?? '';
   const retentionDate = record?.retentionDate ?? '';
   const total = Number(record?.totals?.total) || 0;
@@ -290,6 +292,8 @@ export const buildDgii607Draft = ({
 
   return {
     isCredit,
+    isDebit,
+    isAdjustment,
     total,
     fields: {
       identificationNumber,
@@ -435,12 +439,12 @@ export const validateDgii607Draft = (draft) => {
     );
   }
 
-  if (draft?.isCredit && !modifiedNcf) {
+  if (draft?.isAdjustment && !modifiedNcf) {
     appendIssue(
       issues,
       'modifiedNcf',
       'missing-modified-ncf',
-      'Las notas de credito requieren el NCF modificado.',
+      'Las notas de credito/debito requieren el NCF modificado.',
     );
   } else if (modifiedNcf && !isValidDgiiNcf(modifiedNcf)) {
     appendIssue(

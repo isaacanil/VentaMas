@@ -1,6 +1,12 @@
 # STATE Fiscal Compliance
 
-## Estado actual
+> Nota 2026-06-15: este archivo queda como bitácora histórica/local. Algunas
+> afirmaciones de "pendiente" sobre DGII_606, DGII_608 y la UI pueden estar
+> desalineadas con el árbol actual; no usar este documento por sí solo para
+> reabrir tareas sin verificar los servicios, rutas, hooks y pruebas actuales.
+> Esta nota no afirma estado funcional completo.
+
+## Estado histórico del corte original
 
 - Documento guía: `plans/architecture/2026-03-03-contabilidad-design/2026-04-14-diseno-modulo-fiscal-compliance-extensible.md`
 - Etapa actual: `Etapa 3. Arranque seguro de 606/607/608`
@@ -117,7 +123,7 @@
 
 ## Bitácora 2026-04-14 13:47 - UI fiscal settings
 
-- Se ajustó la pantalla [`C:\Dev\VentaMas\src\modules\settings\pages\setting\subPage\TaxReceipts\TaxReceIptSetting.tsx`](C:\Dev\VentaMas\src\modules\settings\pages\setting\subPage\TaxReceipts\TaxReceIptSetting.tsx) para que la sección visible deje de hablar de autorizaciones genéricas y pase a `Alertas y secuencias DGII`.
+- Se ajustó la pantalla [`C:\Dev\VentaMas\src\modules\settings\pages\setting\subPage\TaxReceipts\TaxReceiptSetting.tsx`](C:\Dev\VentaMas\src\modules\settings\pages\setting\subPage\TaxReceipts\TaxReceiptSetting.tsx) para que la sección visible deje de hablar de autorizaciones genéricas y pase a `Alertas y secuencias DGII`.
 - `Configuración de Alertas de Comprobantes` dejó de abrir en drawer y ahora abre en modal centrado desde [`C:\Dev\VentaMas\src\modules\settings\pages\setting\subPage\TaxReceipts\components\FiscalReceiptsAlertWidget\FiscalReceiptsAlertWidget.tsx`](C:\Dev\VentaMas\src\modules\settings\pages\setting\subPage\TaxReceipts\components\FiscalReceiptsAlertWidget\FiscalReceiptsAlertWidget.tsx).
 - El flujo de autorizaciones se reescribió visualmente como registro de secuencia/rango DGII:
   - CTA principal: `Registrar secuencia DGII`
@@ -125,7 +131,7 @@
   - labels/formulario orientados a rango autorizado, no a autorización genérica
   - selector y ficha del comprobante ahora hablan de `serie`, `código DGII`, `inicio del rango` y `cantidad autorizada`
 - Archivos modificados en esta tanda:
-  - `src/modules/settings/pages/setting/subPage/TaxReceipts/TaxReceIptSetting.tsx`
+  - `src/modules/settings/pages/setting/subPage/TaxReceipts/TaxReceiptSetting.tsx`
   - `src/modules/settings/pages/setting/subPage/TaxReceipts/components/FiscalReceiptsAlertWidget/FiscalReceiptsAlertWidget.tsx`
   - `src/modules/settings/pages/setting/subPage/TaxReceipts/components/FiscalReceiptsAlertSettings/FiscalReceiptsAlertSettings.tsx`
   - `src/modules/settings/pages/setting/subPage/TaxReceipts/components/TaxReceiptAuthorizationModal/TaxReceiptAuthorizationModal.tsx`

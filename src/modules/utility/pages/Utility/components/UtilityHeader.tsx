@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { DatePicker } from '@/components/common/DatePicker/DatePicker';
 import { designSystemV2 } from '@/theme/designSystemV2';
 import { getDateRange } from '@/utils/date/getDateRange';
-import { SimpleTypography } from '@/components/ui/Typografy/SimpleTypography';
+import { SimpleTypography } from '@/components/ui/Typography/SimpleTypography';
 import type {
   UtilityDateRange,
   UtilityPresetKey,

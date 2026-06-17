@@ -1,5 +1,5 @@
 import { Modal, Table, Checkbox, InputNumber, Alert, message } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import type { TableColumnsType as ColumnsType } from 'antd';
 import { DateTime } from 'luxon';
 import { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
@@ -187,7 +187,7 @@ const BackOrdersModal = ({
           orderId: record.orderId || record.purchaseId,
         }));
       setLocalSelectedBackOrders(availableBackOrders);
-      // Auto-ajustar cantidadd mínima cuando se seleccionan todos
+      // Auto-ajustar cantidad mínima cuando se seleccionan todos
       const totalQuantity = availableBackOrders.reduce(
         (sum, bo) => sum + bo.quantity,
         0,
@@ -288,7 +288,7 @@ const BackOrdersModal = ({
       purchaseQuantity < totalBackordersQuantity
     ) {
       message.error(
-        'La cantidadd a comprar debe ser mayor o igual a la cantidadd total de backorders seleccionados',
+        'La cantidad a comprar debe ser mayor o igual a la cantidad total de backorders seleccionados',
       );
       return;
     }
@@ -342,7 +342,7 @@ const BackOrdersModal = ({
           purchaseQuantity < totalBackordersQuantity && (
             <Alert
               type="warning"
-              message="La cantidadd a comprar debe ser mayor o igual a la cantidadd total de backorders seleccionados"
+              message="La cantidad a comprar debe ser mayor o igual a la cantidad total de backorders seleccionados"
               style={{ marginBottom: 16 }}
             />
           )}

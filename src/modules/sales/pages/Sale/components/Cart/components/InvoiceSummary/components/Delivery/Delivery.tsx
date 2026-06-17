@@ -1,6 +1,5 @@
-import { Checkbox, InputNumber } from 'antd';
-import type { CheckboxChangeEvent } from 'antd/es/checkbox';
-import type { InputNumberRef } from '@rc-component/input-number';
+import { Checkbox, InputNumber, type GetRef } from 'antd';
+import type { CheckboxChangeEvent } from 'antd';
 import React, { useRef } from 'react';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -27,6 +26,7 @@ type ClientInfo = {
 type DeliveryProps = {
   inputWidth?: string;
 };
+type InputNumberRef = GetRef<typeof InputNumber>;
 
 export const Delivery = ({ inputWidth = '170px' }: DeliveryProps) => {
   const dispatch = useDispatch();

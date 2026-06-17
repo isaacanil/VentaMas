@@ -19,7 +19,7 @@ import { openExpenseFormModal } from '@/features/expense/expenseUISlice';
 import { toggleImageViewer } from '@/features/imageViewer/imageViewerSlice';
 import { fbDeleteExpense } from '@/firebase/expenses/Items/fbDeleteExpense';
 import { useFbGetExpenses } from '@/firebase/expenses/Items/useFbGetExpenses';
-import { convertMillisToDate } from '@/hooks/useFormatTime';
+import { convertMillisToDate } from '@/utils/date/formatTime';
 import type { UserIdentity } from '@/types/users';
 import { formatPrice } from '@/utils/format';
 import {
@@ -37,9 +37,9 @@ import { truncateString } from '@/utils/text/truncateString';
 import { ExpenseChart } from '@/modules/expenses/pages/Expenses/ExpensesList/components/ExpenseReport/ExpenseReport';
 import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
 import { Button } from '@/components/ui/Button/Button';
-import { EditDelBtns } from '@/components/ui/Button/EditDelBtns/EditDelBtns';
 
 import { FilterExpenses } from '../FilterBar/FilterExpenses';
+import { EditDelBtns } from './components/EditDelBtns/EditDelBtns';
 
 const FIREBASE_INDEX_LINK_REGEX =
   /(https:\/\/console\.firebase\.google\.com\/[^\s"'`]+)/i;
@@ -384,7 +384,6 @@ export const ExpensesTable = ({ searchTerm = '' }: { searchTerm?: string }) => {
         loading={loading}
         elementName={'Gasto'}
         groupBy={'dateGroup'}
-        defaultDate={'today'}
         datesKeyConfig="dateGroup"
       />
       <ExpenseChart />

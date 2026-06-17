@@ -20,7 +20,13 @@ import {
 } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
-import type { UploadProps } from 'antd/es/upload/interface';
+import type { FormInstance } from 'antd';
+import type { UploadProps } from 'antd';
+import {
+  getBusinessSubdivisionLabel,
+  getBusinessSubdivisionOptions,
+  isBusinessSubdivisionValueSupported,
+} from '@/shared/location/businessLocations';
 
 const { Option } = Select;
 const { Title, Paragraph } = Typography;
@@ -140,6 +146,7 @@ interface CountryOption {
 
 interface LocationSectionProps {
   countries?: CountryOption[];
+  form: FormInstance;
 }
 
 const EMPTY_COUNTRY_OPTIONS: CountryOption[] = [];
@@ -420,55 +427,93 @@ export const ContactChannelsSection = () => (
 
 export const LocationSection = ({
   countries = EMPTY_COUNTRY_OPTIONS,
-}: LocationSectionProps) => (
-  <FormSection>
-    <SectionHeader>
-      <IconBubble>
-        <HomeOutlined />
-      </IconBubble>
-      <SectionHeaderContent>
-        <SectionTitleRow>
-          <SectionTitle>Ubicación</SectionTitle>
-          <Tooltip title="Dirección fiscal y de correspondencia para reportes y documentos.">
-            <InfoIcon />
-          </Tooltip>
-        </SectionTitleRow>
-      </SectionHeaderContent>
-    </SectionHeader>
-    <ConfigCard>
-      <CardBody>
-        <FormGrid $columns="repeat(auto-fit, minmax(240px, 1fr))">
-          <Form.Item name="country" label="País">
-            <Select placeholder="Selecciona un país">
-              {countries.map((country) => (
-                <Option key={country.id} value={country.id}>
-                  {country.name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
+  form,
+}: LocationSectionProps) => {
+  const selectedCountry = Form.useWatch('country', form) as string | undefined;
+  const subdivisionLabel = getBusinessSubdivisionLabel(selectedCountry);
+  const subdivisionOptions = getBusinessSubdivisionOptions(selectedCountry);
 
-          <Form.Item name="province" label="Provincia/Estado">
-            <Input placeholder="Provincia o Estado" />
-          </Form.Item>
-        </FormGrid>
+  return (
+    <FormSection>
+      <SectionHeader>
+        <IconBubble>
+          <HomeOutlined />
+        </IconBubble>
+        <SectionHeaderContent>
+          <SectionTitleRow>
+            <SectionTitle>Ubicación</SectionTitle>
+            <Tooltip title="Dirección fiscal y de correspondencia para reportes y documentos.">
+              <InfoIcon />
+            </Tooltip>
+          </SectionTitleRow>
+        </SectionHeaderContent>
+      </SectionHeader>
+      <ConfigCard>
+        <CardBody>
+          <FormGrid $columns="repeat(auto-fit, minmax(240px, 1fr))">
+            <Form.Item
+              name="country"
+              label="País"
+              rules={[
+                { required: true, message: 'Selecciona el país del negocio' },
+              ]}
+            >
+              <Select
+                placeholder="Selecciona un país"
+                onChange={() => form.setFieldsValue({ province: '' })}
+              >
+                {countries.map((country) => (
+                  <Option key={country.id} value={country.id}>
+                    {country.name}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
 
-        <Form.Item
-          name="address"
-          label="Dirección"
-          rules={[
-            { required: true, message: 'Por favor, ingresa la dirección' },
-          ]}
-        >
-          <Input.TextArea
-            placeholder="Calle 123, Colonia, Ciudad, Estado"
-            autoSize={{ minRows: 3, maxRows: 6 }}
-          />
-        </Form.Item>
-      </CardBody>
-    </ConfigCard>
-  </FormSection>
-);
+            <Form.Item
+              name="province"
+              label={subdivisionLabel}
+              rules={[
+                {
+                  validator: (_, value) =>
+                    isBusinessSubdivisionValueSupported(
+                      selectedCountry,
+                      value,
+                    )
+                      ? Promise.resolve()
+                      : Promise.reject(
+                          new Error(
+                            `Selecciona un ${subdivisionLabel.toLowerCase()} válido.`,
+                          ),
+                        ),
+                },
+              ]}
+            >
+              <Select
+                allowClear
+                placeholder={`Selecciona ${subdivisionLabel.toLowerCase()}`}
+                options={subdivisionOptions}
+              />
+            </Form.Item>
+          </FormGrid>
+
+          <Form.Item
+            name="address"
+            label="Dirección"
+            rules={[
+              { required: true, message: 'Por favor, ingresa la dirección' },
+            ]}
+          >
+            <Input.TextArea
+              placeholder="Calle 123, sector o ciudad"
+              autoSize={{ minRows: 3, maxRows: 6 }}
+            />
+          </Form.Item>
+        </CardBody>
+      </ConfigCard>
+    </FormSection>
+  );
+};
 
 export const FormActionsBar = ({ children }: FormActionsBarProps) => (
   <FormActions>

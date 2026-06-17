@@ -7,6 +7,8 @@ import type {
 } from '@/types/commissions';
 import type { UserIdentity } from '@/types/users';
 import { cleanCommissionString } from '@/utils/commissions/serviceCommissions';
+import { toMillis as toSharedMillis } from '@/utils/date/toMillis';
+import type { TimestampLike } from '@/utils/date/types';
 import { formatPriceByCurrency } from '@/utils/format';
 
 export type CollaboratorOption = {
@@ -16,29 +18,25 @@ export type CollaboratorOption = {
 
 export const cleanString = cleanCommissionString;
 
-const toMillis = (value: unknown): number | null => {
+const toReportMillis = (value: unknown): number | null => {
   if (!value) return null;
-  if (value instanceof Date) return value.getTime();
   if (typeof value === 'number') return value;
   if (typeof value === 'string') {
     const parsed = Date.parse(value);
     return Number.isNaN(parsed) ? null : parsed;
   }
-  if (typeof value === 'object') {
-    const record = value as {
-      seconds?: number;
-      toDate?: () => Date;
-      toMillis?: () => number;
-    };
-    if (typeof record.toMillis === 'function') return record.toMillis();
-    if (typeof record.toDate === 'function') return record.toDate().getTime();
-    if (typeof record.seconds === 'number') return record.seconds * 1000;
-  }
-  return null;
+
+  if (typeof value !== 'object') return null;
+
+  const record = value as { toMillis?: () => number };
+  if (typeof record.toMillis === 'function') return record.toMillis();
+
+  const millis = toSharedMillis(value as TimestampLike);
+  return typeof millis === 'number' ? millis : null;
 };
 
 export const formatReportDate = (value: unknown): string => {
-  const millis = toMillis(value);
+  const millis = toReportMillis(value);
   return millis ? dayjs(millis).format('DD/MM/YYYY') : 'N/A';
 };
 

@@ -3,7 +3,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectBusinessData } from '@/features/auth/businessSlice';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 import { BulkRecoveryTab } from './components/BulkRecoveryTab';
 import { IndividualRecoveryTab } from './components/IndividualRecoveryTab';

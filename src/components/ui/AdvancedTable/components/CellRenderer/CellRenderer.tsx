@@ -5,11 +5,12 @@ import { DateTime } from 'luxon';
 import { formatPrice } from '@/utils/format';
 import { toMillis } from '@/utils/date/dateUtils';
 import { Badge } from '@/components/common/Badge/Badge';
-import { BadgeDate } from '@/components/common/Badge/BadgeDate';
-import { EnhancedDateDisplay } from '@/components/common/Badge/BadgeDateStatus';
-import { NoteButton } from '@/components/common/NoteViewButton/NoteViewButton';
-import { ShowFiles } from '@/components/common/ShowFileButton/ShowFileButton';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+
+import { BadgeDate } from './components/BadgeDate/BadgeDate';
+import { EnhancedDateDisplay } from './components/BadgeDate/BadgeDateStatus';
+import { NoteButton } from './components/NoteViewButton/NoteViewButton';
+import { ShowFiles } from './components/ShowFileButton/ShowFileButton';
 
 import type { CellType } from '@/components/ui/AdvancedTable/types/ColumnTypes';
 import type { TimestampLike } from '@/utils/date/types';

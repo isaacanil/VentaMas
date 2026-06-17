@@ -2,30 +2,19 @@ import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import { nanoid } from 'nanoid';
 
 import { db, FieldValue } from '../../../core/config/firebase.js';
-import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.util.js';
 import {
   getNextIDTransactional,
 } from '../../../core/utils/getNextID.js';
 import {
   getDefaultWarehouse,
-} from '../../../versions/v1/modules/warehouse/services/warehouse.service.js';
-import {
-  MEMBERSHIP_ROLE_GROUPS,
-  assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../warehouse/services/defaultWarehouse.service.js';
 import { LIMIT_OPERATION_KEYS } from '../../../versions/v2/billing/config/limitOperations.config.js';
 import { incrementBusinessUsageMetric } from '../../../versions/v2/billing/services/usage.service.js';
-import { assertBusinessSubscriptionAccess } from '../../../versions/v2/billing/utils/subscriptionAccess.util.js';
+import { prepareLimitedCreateOperation } from '../../../versions/v2/billing/utils/limitedCreateOperation.util.js';
 
 const sanitizeNumber = (value, fallback = 0) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
-};
-
-const toCleanString = (value) => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
 };
 
 const asRecord = (value) =>
@@ -53,37 +42,17 @@ const buildCreateProductPayload = (rawProduct, businessId) => {
 };
 
 export const createProduct = onCall(async (request) => {
-  const authUid = await resolveCallableAuthUid(request);
-  if (!authUid) {
-    throw new HttpsError('unauthenticated', 'Usuario no autenticado');
-  }
-
-  const payload = asRecord(request?.data);
-  const productInput = asRecord(payload.product);
-  const businessId =
-    toCleanString(payload.businessId) ||
-    toCleanString(payload.businessID) ||
-    toCleanString(productInput.businessID) ||
-    null;
-
-  if (!businessId) {
-    throw new HttpsError('invalid-argument', 'businessId es requerido');
-  }
-
-  if (!Object.keys(productInput).length) {
-    throw new HttpsError('invalid-argument', 'product es requerido');
-  }
-
-  await assertUserAccess({
+  const {
     authUid,
     businessId,
-    allowedRoles: MEMBERSHIP_ROLE_GROUPS.INVOICE_OPERATOR,
-  });
-
-  await assertBusinessSubscriptionAccess({
-    businessId,
-    action: 'write',
+    input: productInput,
+    metricKey,
+    incrementBy,
+  } = await prepareLimitedCreateOperation({
+    request,
+    inputKey: 'product',
     operation: LIMIT_OPERATION_KEYS.PRODUCT_CREATE,
+    inputBusinessIdKeys: ['businessID'],
   });
 
   const user = { uid: authUid, businessID: businessId };
@@ -164,8 +133,8 @@ export const createProduct = onCall(async (request) => {
 
     await incrementBusinessUsageMetric({
       businessId,
-      metricKey: 'productsTotal',
-      incrementBy: 1,
+      metricKey,
+      incrementBy,
       tx: transaction,
     });
   });

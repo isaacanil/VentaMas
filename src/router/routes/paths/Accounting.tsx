@@ -1,15 +1,13 @@
-import BusinessFeatureRouteGate from '@/components/availability/BusinessFeatureRouteGate';
+import BusinessFeatureRouteGate from '@/router/guards/availability/BusinessFeatureRouteGate';
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
 import { Navigate } from 'react-router-dom';
 
+import { loadAccountingWorkspaceRoute } from '@/modules/accounting/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/types/routeTypes';
 import type { JSX } from 'react';
 
-const AccountingWorkspace = lazy(
-  () =>
-    import('@/modules/accounting/pages/AccountingWorkspace/AccountingWorkspace'),
-);
+const AccountingWorkspace = lazy(loadAccountingWorkspaceRoute);
 
 const {
   ACCOUNTING,

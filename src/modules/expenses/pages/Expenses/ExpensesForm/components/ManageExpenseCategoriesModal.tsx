@@ -14,7 +14,7 @@ import { useMemo, useReducer } from 'react';
 import { useSelector } from 'react-redux';
 
 import { icons } from '@/constants/icons/icons';
-import { useCategoryState } from '@/Context/CategoryContext/useCategoryState';
+import { useCategoryState } from '@/context/CategoryContext/useCategoryState';
 import { selectUser } from '@/features/auth/userSlice';
 import { fbDeleteExpenseCategory } from '@/firebase/expenses/categories/fbDeleteExpenseCategory';
 import { useFbGetExpensesCategories } from '@/firebase/expenses/categories/fbGetExpensesCategories';

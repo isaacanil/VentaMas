@@ -11,7 +11,7 @@ import { openProductStock } from '@/features/productStock/productStockSlice';
 import {
   deleteProductStock,
 } from '@/firebase/warehouse/productStockService';
-import { useListenProductsStockByLocation } from '@/hooks/useProductStock';
+import { useListenProductsStockByLocation } from '@/modules/inventory/hooks/useProductStock';
 
 import SectionContainer from './SectionContainer';
 import type {

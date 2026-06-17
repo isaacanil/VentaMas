@@ -7,6 +7,7 @@ import {
 } from 'firebase/firestore';
 import { useEffect, useRef } from 'react';
 
+import { db as defaultDb } from '@/firebase/firebaseconfig';
 import type { InventoryUser } from '@/utils/inventory/types';
 import type { Firestore } from 'firebase/firestore';
 
@@ -26,7 +27,7 @@ interface UseInventoryPresenceParams {
 }
 
 export function useInventoryPresence({
-  db,
+  db = defaultDb,
   user,
   sessionId,
   currentUserResolvedName,

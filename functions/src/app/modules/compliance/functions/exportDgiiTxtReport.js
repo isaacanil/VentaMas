@@ -6,7 +6,7 @@ import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.
 import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 import { resolveBusinessFiscalRollout } from '../../taxReceipt/utils/fiscalRollout.util.js';
 import {
   assertValidDgii606Header,
@@ -16,7 +16,7 @@ import {
 } from '../services/dgii606TxtExport.service.js';
 import {
   resolveMonthlyPeriodRange,
-} from '../services/dgii607MonthlyReport.service.js';
+} from '../services/dgiiMonthlyReportShared.util.js';
 import {
   assertValidDgii607Header,
   buildDgii607TxtContent,
@@ -369,6 +369,14 @@ export const exportDgiiTxtReport = onCall(
         })),
         ...toSourceRecordArray(sourceRecords.creditNotes).map((snapshotRow) => ({
           isCredit: true,
+          isDebit: false,
+          record: buildDgii607RecordFromSnapshot(snapshotRow),
+          sortKey: snapshotRow?.issuedAt ?? '',
+          originalNcf: snapshotRow?.invoiceNcf ?? '',
+        })),
+        ...toSourceRecordArray(sourceRecords.debitNotes).map((snapshotRow) => ({
+          isCredit: false,
+          isDebit: true,
           record: buildDgii607RecordFromSnapshot(snapshotRow),
           sortKey: snapshotRow?.issuedAt ?? '',
           originalNcf: snapshotRow?.invoiceNcf ?? '',
@@ -376,6 +384,7 @@ export const exportDgiiTxtReport = onCall(
         ...toSourceRecordArray(sourceRecords.thirdPartyWithholdings).map(
           (snapshotRow) => ({
             isCredit: false,
+            isDebit: false,
             record: buildDgii607RecordFromSnapshot(snapshotRow),
             sortKey: snapshotRow?.retentionDate ?? snapshotRow?.issuedAt ?? '',
             originalNcf: null,
@@ -384,18 +393,19 @@ export const exportDgiiTxtReport = onCall(
       ];
       const rowEntries = sourceRowEntries
         .filter(
-          ({ record, isCredit }) =>
-            !shouldExcludeDgii607TxtRecord({ record, isCredit }),
+          ({ record, isCredit, isDebit }) =>
+            !shouldExcludeDgii607TxtRecord({ record, isCredit, isDebit }),
         )
         .sort((a, b) => a.sortKey.localeCompare(b.sortKey));
 
       let rows;
       try {
-        rows = rowEntries.map(({ record, isCredit, originalNcf }) =>
+        rows = rowEntries.map(({ record, isCredit, isDebit, originalNcf }) =>
           buildDgii607TxtRow({
             record,
             firestoreDoc: record,
             isCredit,
+            isDebit,
             originalNcf,
           }),
         );
@@ -438,6 +448,7 @@ export const exportDgiiTxtReport = onCall(
         source: 'taxReportRun.sourceSnapshot',
         invoicesLoaded: toSourceRecordArray(sourceRecords.invoices).length,
         creditNotesLoaded: toSourceRecordArray(sourceRecords.creditNotes).length,
+        debitNotesLoaded: toSourceRecordArray(sourceRecords.debitNotes).length,
         thirdPartyWithholdingsLoaded: toSourceRecordArray(
           sourceRecords.thirdPartyWithholdings,
         ).length,
@@ -450,6 +461,7 @@ export const exportDgiiTxtReport = onCall(
     const orderedRecords = [
       ...toSourceRecordArray(sourceRecords.invoices),
       ...toSourceRecordArray(sourceRecords.creditNotes),
+      ...toSourceRecordArray(sourceRecords.debitNotes),
     ]
       .map((record) => buildDgii608RecordFromSnapshot(record))
       .sort((a, b) =>
@@ -494,6 +506,7 @@ export const exportDgiiTxtReport = onCall(
       source: 'taxReportRun.sourceSnapshot',
       invoicesLoaded: toSourceRecordArray(sourceRecords.invoices).length,
       creditNotesLoaded: toSourceRecordArray(sourceRecords.creditNotes).length,
+      debitNotesLoaded: toSourceRecordArray(sourceRecords.debitNotes).length,
       rowCount: rows.length,
     });
 

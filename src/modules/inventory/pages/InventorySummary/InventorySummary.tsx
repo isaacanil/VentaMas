@@ -1,7 +1,7 @@
 import { Button, Input, Select } from 'antd';
 import { Fragment } from 'react';
 
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 import { SummaryKpis } from './components/SummaryKpis';
 import { SummaryTables } from './components/SummaryTables';

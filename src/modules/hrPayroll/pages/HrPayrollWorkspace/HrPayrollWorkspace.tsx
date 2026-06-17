@@ -6,7 +6,7 @@ import { PlusOutlined } from '@/constants/icons/antd';
 import {
   saveHrEmployee,
   useHrEmployees,
-} from '@/firebase/hrPayroll/useHrEmployees';
+} from '@/modules/hrPayroll/repositories/useHrEmployees';
 import { useServiceProductOptions } from '@/firebase/products/useServiceProductOptions';
 import { useBusinessUsers } from '@/firebase/users/useBusinessUsers';
 import { selectUser } from '@/features/auth/userSlice';
@@ -23,7 +23,7 @@ import {
   HrTitle as Title,
   HrTitleBlock as TitleBlock,
 } from '@/modules/hrPayroll/components/HrPayrollPagePrimitives';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import type { HrEmployeeRecord } from '@/types/hrPayroll';
 import { buildEmployeeColumns } from './HrPayrollWorkspace.columns';
 import {

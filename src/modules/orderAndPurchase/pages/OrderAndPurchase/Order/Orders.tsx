@@ -2,17 +2,17 @@ import { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { useFbGetProviders } from '@/firebase/provider/useFbGetProvider';
 import useFilter from '@/hooks/search/useSearch';
-import { useListenOrders } from '@/hooks/useOrders';
-import type { Order } from '@/utils/order/types';
-import { FilterBar } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/Compra/components/FilterBar/FilterBar';
+import { useListenOrders } from '@/modules/orderAndPurchase/hooks/useOrders';
+import type { Order } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/orderTypes';
+import { FilterBar } from '../shared/components/TransactionFilterBar/FilterBar';
 import type {
   DataConfigMap,
   FilterOption,
   FilterState,
-} from '@/modules/orderAndPurchase/pages/OrderAndPurchase/Compra/components/FilterBar/types';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+} from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/filterBarTypes';
+import { MenuApp } from '@/modules/navigation/public';
 import { OrdersTable } from './components/OrderListTable/OrdersTable';
-import createFilterConfig from './config/filterConfig';
+import { createTransactionFilterConfig } from '../shared/createTransactionFilterConfig';
 
 interface ProviderRecord {
   provider?: {
@@ -24,7 +24,7 @@ interface ProviderRecord {
 export const Orders = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterState, setFilterState] = useState<FilterState>(() => {
-    const config = createFilterConfig();
+    const config = createTransactionFilterConfig();
     return {
       filters: config.defaultValues,
       isAscending: config.defaultSort?.isAscending ?? true,
@@ -51,7 +51,7 @@ export const Orders = () => {
     [providers],
   );
 
-  const filterConfig = useMemo(() => createFilterConfig(), []);
+  const filterConfig = useMemo(() => createTransactionFilterConfig(), []);
 
   const handleFilterChange = useCallback((newFilterState: FilterState) => {
     setFilterState(newFilterState);

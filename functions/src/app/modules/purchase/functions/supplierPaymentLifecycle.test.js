@@ -125,7 +125,7 @@ vi.mock('../../../core/utils/callableSessionAuth.util.js', () => ({
   resolveCallableAuthUid: (...args) => resolveCallableAuthUidMock(...args),
 }));
 
-vi.mock('../../../versions/v2/invoice/services/repairTasks.service.js', () => ({
+vi.mock('../../../versions/v2/auth/services/userAccess.service.js', () => ({
   MEMBERSHIP_ROLE_GROUPS: {
     AUDIT: ['audit'],
     INVOICE_OPERATOR: ['invoice-operator'],
@@ -152,6 +152,7 @@ vi.mock('nanoid', () => ({
 }));
 
 import { addSupplierPayment } from './addSupplierPayment.js';
+import { sanitizeForResponse } from './payablePayments.shared.js';
 import { voidSupplierPayment } from './voidSupplierPayment.js';
 
 describe('supplier payment lifecycle', () => {
@@ -220,6 +221,32 @@ describe('supplier payment lifecycle', () => {
         set: transactionSetMock,
       }),
     );
+  });
+
+  it('serializes supplier payment timestamp-like response fields through the shared serializer', () => {
+    const invalidTimestampLike = {
+      id: 'invalid-timestamp',
+      toMillis: () => Number.NaN,
+    };
+
+    const result = sanitizeForResponse({
+      occurredAt: {
+        seconds: 1776080400,
+        nanoseconds: 456000000,
+      },
+      legacyCreatedAt: {
+        _seconds: 1776080401,
+        _nanoseconds: 123456789,
+      },
+      invalidTimestampLike,
+    });
+
+    expect(result).toEqual({
+      occurredAt: 1776080400456,
+      legacyCreatedAt: 1776080401123,
+      invalidTimestampLike,
+    });
+    expect(result.invalidTimestampLike).toBe(invalidTimestampLike);
   });
 
   it('registers a supplier payment against the canonical vendor bill', async () => {
@@ -299,6 +326,104 @@ describe('supplier payment lifecycle', () => {
     );
   });
 
+  it('records supplier credit note applications without creating a separate posting event', async () => {
+    const applicationId =
+      'supplier_credit_note_application__payment-fixed-id__scn-1';
+    transactionSnapshots.set('businesses/business-1/purchases/purchase-1', {
+      providerId: 'supplier-1',
+      workflowStatus: 'completed',
+      completedAt: '2026-04-10T12:00:00.000Z',
+      totalAmount: 100,
+      paymentState: {
+        total: 100,
+        paid: 0,
+        balance: 100,
+        paymentCount: 0,
+      },
+      paymentTerms: {},
+    });
+    transactionSnapshots.set(
+      'businesses/business-1/supplierCreditNotes/scn-1',
+      {
+        supplierId: 'supplier-1',
+        totalAmount: 50,
+        appliedAmount: 0,
+        remainingAmount: 50,
+        status: 'open',
+      },
+    );
+    transactionSnapshots.set(
+      'businesses/business-1/accountsPayablePaymentIdempotency/idem-1',
+      null,
+    );
+    transactionSnapshots.set(
+      'businesses/business-1/accountingPeriodClosures/2026-04',
+      null,
+    );
+
+    const result = await addSupplierPayment({
+      data: {
+        businessId: 'business-1',
+        purchaseId: 'purchase-1',
+        idempotencyKey: 'idem-1',
+        occurredAt: '2026-04-12T12:00:00.000Z',
+        nextPaymentAt: '2026-04-20T12:00:00.000Z',
+        paymentMethods: [
+          {
+            method: 'supplierCreditNote',
+            amount: 40,
+            supplierCreditNoteId: 'scn-1',
+          },
+        ],
+      },
+    });
+
+    expect(result.appliedCreditNotes).toEqual([
+      {
+        id: 'scn-1',
+        applicationId,
+        appliedAmount: 40,
+        remainingAmount: 10,
+      },
+    ]);
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: `businesses/business-1/supplierCreditNoteApplications/${applicationId}`,
+      }),
+      expect.objectContaining({
+        id: applicationId,
+        supplierCreditNoteId: 'scn-1',
+        paymentId: 'payment-fixed-id',
+        purchaseId: 'purchase-1',
+        vendorBillId: 'purchase:purchase-1',
+        supplierId: 'supplier-1',
+        status: 'applied',
+        amount: 40,
+        previousRemainingAmount: 50,
+        nextRemainingAmount: 10,
+        sourceType: 'accountsPayablePayment',
+      }),
+      { merge: true },
+    );
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/accountsPayablePayments/payment-fixed-id',
+      }),
+      expect.objectContaining({
+        metadata: expect.objectContaining({
+          appliedCreditNotes: [
+            {
+              id: 'scn-1',
+              applicationId,
+              appliedAmount: 40,
+              remainingAmount: 10,
+            },
+          ],
+        }),
+      }),
+    );
+  });
+
   it('voids a posted supplier payment and recalculates the vendor bill balance', async () => {
     transactionSnapshots.set(
       'businesses/business-1/accountsPayablePayments/payment-1',
@@ -371,6 +496,113 @@ describe('supplier payment lifecycle', () => {
           paid: 0,
           balance: 100,
         },
+      }),
+      { merge: true },
+    );
+  });
+
+  it('voids supplier credit note applications and restores the operational trace', async () => {
+    const applicationId =
+      'supplier_credit_note_application__payment-1__scn-1';
+    transactionSnapshots.set(
+      'businesses/business-1/accountsPayablePayments/payment-1',
+      {
+        id: 'payment-1',
+        purchaseId: 'purchase-1',
+        vendorBillId: 'purchase:purchase-1',
+        supplierId: 'supplier-1',
+        status: 'posted',
+        occurredAt: '2026-04-12T12:00:00.000Z',
+        paymentMethods: [
+          {
+            method: 'supplierCreditNote',
+            amount: 40,
+            value: 40,
+            status: true,
+            supplierCreditNoteId: 'scn-1',
+          },
+        ],
+        metadata: {
+          appliedCreditNotes: [
+            {
+              id: 'scn-1',
+              applicationId,
+              appliedAmount: 40,
+              remainingAmount: 10,
+            },
+          ],
+        },
+      },
+    );
+    transactionSnapshots.set('businesses/business-1/purchases/purchase-1', {
+      providerId: 'supplier-1',
+      workflowStatus: 'completed',
+      completedAt: '2026-04-10T12:00:00.000Z',
+      totalAmount: 100,
+      paymentState: {
+        total: 100,
+        paid: 40,
+        balance: 60,
+        paymentCount: 1,
+      },
+      paymentTerms: {},
+    });
+    transactionSnapshots.set(
+      'businesses/business-1/supplierCreditNotes/scn-1',
+      {
+        supplierId: 'supplier-1',
+        totalAmount: 50,
+        appliedAmount: 40,
+        remainingAmount: 10,
+        status: 'open',
+      },
+    );
+    transactionSnapshots.set('query:purchase-1', []);
+    transactionSnapshots.set(
+      'businesses/business-1/accountingPeriodClosures/2026-04',
+      null,
+    );
+
+    const result = await voidSupplierPayment({
+      data: {
+        businessId: 'business-1',
+        paymentId: 'payment-1',
+        reason: 'Pago duplicado',
+      },
+    });
+
+    expect(result.restoredCreditNotes).toEqual([
+      {
+        id: 'scn-1',
+        applicationId,
+        restoredAmount: 40,
+        remainingAmount: 50,
+      },
+    ]);
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: `businesses/business-1/supplierCreditNoteApplications/${applicationId}`,
+      }),
+      expect.objectContaining({
+        id: applicationId,
+        supplierCreditNoteId: 'scn-1',
+        paymentId: 'payment-1',
+        status: 'voided',
+        restoredAmount: 40,
+        previousRemainingAmount: 10,
+        nextRemainingAmount: 50,
+        voidReason: 'Pago duplicado',
+      }),
+      { merge: true },
+    );
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/supplierCreditNotes/scn-1',
+      }),
+      expect.objectContaining({
+        appliedAmount: 0,
+        remainingAmount: 50,
+        status: 'open',
       }),
       { merge: true },
     );

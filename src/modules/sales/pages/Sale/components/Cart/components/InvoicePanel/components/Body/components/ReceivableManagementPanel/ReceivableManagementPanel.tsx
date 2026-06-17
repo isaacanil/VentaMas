@@ -23,11 +23,9 @@ import {
   useGetPendingBalance,
 } from '@/firebase/accountsReceivable/fbGetPendingBalance';
 import { calculateAmountPerInstallment } from '@/utils/accountsReceivable/accountsReceivable';
-import { getMaxInstallments } from '@/utils/accountsReceivable/getMaxInstallments';
+import { getMaxInstallments } from '@/domain/accountsReceivable/getMaxInstallments';
 import { toMillis } from '@/utils/date/dateUtils';
 import { calculateInvoiceChange } from '@/utils/invoice';
-import { setNumPrecision } from '@/utils/pricing';
-import { flowTrace } from '@/utils/flowTrace';
 import PaymentDatesOverview from '../PaymentDatesOverview/PaymentDatesOverview';
 
 import usePaymentDates from './usePaymentDates';
@@ -44,7 +42,6 @@ const toDateTime = (millis: number | null | undefined) => {
 type AccountsReceivableState = {
   paymentFrequency?: string;
   totalInstallments: number;
-  installmentAmount: number;
   currentBalance: number;
   paymentDate: number | null;
   comments?: string;
@@ -115,7 +112,6 @@ export const ReceivableManagementPanel = ({
   const {
     paymentFrequency = 'monthly',
     totalInstallments = 1,
-    installmentAmount,
     currentBalance,
     paymentDate,
     comments,
@@ -154,8 +150,6 @@ export const ReceivableManagementPanel = ({
       totalInstallments || 1,
     );
   }, [change, totalInstallments]);
-
-  const derivedTotalReceivable = useMemo(() => getPositive(change), [change]);
 
   const updatePaymentDateInStore = useCallback(
     (value: number | null) => dispatch(setAR({ paymentDate: value })),
@@ -222,6 +216,7 @@ export const ReceivableManagementPanel = ({
     userModifiedDate ? paymentDate : baseCalculationDate,
     includeStartDate,
   );
+  const effectivePaymentDate = paymentDate ?? nextPaymentDate;
 
   // Redundant hook removed, using only useGetPendingBalance for better performance
   useGetPendingBalance({
@@ -230,60 +225,15 @@ export const ReceivableManagementPanel = ({
     onBalanceChange: setCurrentBalance as any,
   });
 
-  // Sync calculations to Redux and trace
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const shouldUpdateAmount =
-      Math.abs(installmentAmount - derivedInstallmentAmount) > 0.01;
-
-    if (shouldUpdateAmount) {
-      dispatch(
-        setAR({
-          installmentAmount: getPositive(
-            setNumPrecision(derivedInstallmentAmount),
-          ),
-          totalReceivable: derivedTotalReceivable,
-        }),
-      );
-
-      void flowTrace('AR_CALCULATE_INSTALLMENT', {
-        change,
-        totalInstallments,
-        installmentAmount: derivedInstallmentAmount,
-        totalReceivable: derivedTotalReceivable,
-      });
-    }
-  }, [
-    isOpen,
-    derivedInstallmentAmount,
-    derivedTotalReceivable,
-    installmentAmount,
-    dispatch,
-    change,
-    totalInstallments,
-  ]);
-
-  // Automatic payment date selection
-  useEffect(() => {
-    if (isOpen && !userModifiedDate && !paymentDate && nextPaymentDate) {
-      updatePaymentDateInStore(nextPaymentDate);
-    }
-  }, [
-    isOpen,
-    nextPaymentDate,
-    paymentDate,
-    userModifiedDate,
-    updatePaymentDateInStore,
-  ]);
-
   // Sync Form with Redux State
   useEffect(() => {
     if (isOpen && form) {
       form.setFieldsValue({
         paymentFrequency,
         totalInstallments,
-        paymentDate: paymentDate ? (toDateTime(paymentDate) as any) : null,
+        paymentDate: effectivePaymentDate
+          ? (toDateTime(effectivePaymentDate) as any)
+          : null,
         comments: comments || '',
       });
     }
@@ -292,7 +242,7 @@ export const ReceivableManagementPanel = ({
     form,
     paymentFrequency,
     totalInstallments,
-    paymentDate,
+    effectivePaymentDate,
     comments,
   ]);
 

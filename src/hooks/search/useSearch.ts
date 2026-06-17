@@ -1,14 +1,17 @@
 import { useMemo } from 'react';
 
+import {
+  normalizeSearchText,
+  normalizeTrimmedSearchText,
+} from '@/utils/searchText';
+
 const MAX_DEPTH = 3;
 
-const removeAccents = (str: string) =>
-  str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-
 const createSearchPredicate = (normalizedTerm: string) => {
-  const searchInString = (str: string) => str.includes(normalizedTerm);
+  const searchInString = (value: string) =>
+    normalizeSearchText(value).includes(normalizedTerm);
   const searchInNumber = (number: number) =>
-    number.toString().includes(normalizedTerm);
+    normalizeSearchText(number).includes(normalizedTerm);
 
   const searchInArray = (array: unknown[], depth: number) => {
     if (depth > MAX_DEPTH) return false;
@@ -30,7 +33,7 @@ const createSearchPredicate = (normalizedTerm: string) => {
     if (item == null) return false;
 
     const searchByType: Record<string, () => boolean> = {
-      string: () => searchInString(removeAccents(String(item).toLowerCase())),
+      string: () => searchInString(String(item)),
       number: () => searchInNumber(item as number),
       object: () => {
         if (depthLevel > MAX_DEPTH) return false;
@@ -38,9 +41,7 @@ const createSearchPredicate = (normalizedTerm: string) => {
           return searchInArray(item, depthLevel);
         }
         if (item instanceof Date) {
-          return searchInString(
-            removeAccents(item.toISOString().toLowerCase()),
-          );
+          return searchInString(item.toISOString());
         }
         return searchInObject(item as Record<string, unknown>, depthLevel);
       },
@@ -85,10 +86,9 @@ export const filterData = <T>(
 ) => {
   if (!validateFilterDataParams(array, searchTerm)) return array;
 
-  const trimmedTerm = searchTerm?.trim() ?? '';
-  if (!trimmedTerm) return array;
+  const normalizedTerm = normalizeTrimmedSearchText(searchTerm);
+  if (!normalizedTerm) return array;
 
-  const normalizedTerm = removeAccents(trimmedTerm.toLowerCase());
   const searchPredicate = createSearchPredicate(normalizedTerm);
 
   try {
@@ -103,11 +103,10 @@ const useFilter = <T>(data: T[] = [], searchTerm = ''): T[] => {
   // Ensure data and searchTerm have default values
 
   return useMemo(() => {
-    const trimmedTerm = searchTerm.trim();
     if (!validateFilterDataParams(data, searchTerm)) return data;
-    if (!trimmedTerm) return data;
+    const normalizedTerm = normalizeTrimmedSearchText(searchTerm);
+    if (!normalizedTerm) return data;
 
-    const normalizedTerm = removeAccents(trimmedTerm.toLowerCase());
     try {
       const searchPredicate = createSearchPredicate(normalizedTerm);
       return data.filter(searchPredicate);

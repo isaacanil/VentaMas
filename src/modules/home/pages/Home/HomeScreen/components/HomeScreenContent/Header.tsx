@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 import * as firebaseConfig from '@/firebase/firebaseconfig';
-import { getSalesForCurrentDay } from '@/utils/sales';
+import { getSalesForCurrentDay } from './utils/sales';
 
 import type { Dispatch, SetStateAction } from 'react';
 
@@ -45,7 +45,6 @@ export const Header = () => {
       {' salesforCurrent==>' + salesForCurrentDay}
       {'griw ==> ' + growthPercentage}
       {JSON.stringify(bills)}
-      {/* <CardWithPercent title={} icon={} number={getDailySales().dailySalesTotal}/> */}
     </Container>
   );
 };

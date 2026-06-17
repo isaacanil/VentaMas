@@ -234,6 +234,9 @@ describe('orchestrator.service', () => {
               id: 'p1',
               name: 'Producto A',
               amountToBuy: 1,
+              trackInventory: false,
+              productStockId: 'stock-1',
+              batchId: 'batch-1',
               comment: 'observacion',
             },
           ],
@@ -296,6 +299,27 @@ describe('orchestrator.service', () => {
         status: 'pending',
       }),
     );
+
+    const inventoryTaskWrite = tx.set.mock.calls.find(
+      ([ref]) =>
+        ref.path ===
+        'businesses/business-1/invoicesV2/cart-1/outbox/task-inventory',
+    );
+    expect(inventoryTaskWrite?.[1]).toMatchObject({
+      type: 'updateInventory',
+      payload: {
+        businessId: 'business-1',
+        userId: 'user-1',
+        products: [
+          expect.objectContaining({
+            id: 'p1',
+            trackInventory: true,
+            productStockId: 'stock-1',
+            batchId: 'batch-1',
+          }),
+        ],
+      },
+    });
   });
 
   it('rejects enabled NCF requests when the type is missing', async () => {

@@ -168,6 +168,17 @@ interface UseIndividualInvoiceRecoveryProps {
   initialInvoiceId?: string | null;
 }
 
+const buildInitialActiveQuery = ({
+  initialBusinessId,
+  initialInvoiceId,
+}: UseIndividualInvoiceRecoveryProps): InvoiceQueryForm | null => {
+  const invoiceId = initialInvoiceId?.trim();
+  if (!invoiceId) return null;
+
+  const businessId = initialBusinessId?.trim();
+  return businessId ? { businessId, invoiceId } : { invoiceId };
+};
+
 export const useIndividualInvoiceRecovery = ({
   initialBusinessId,
   initialInvoiceId,
@@ -180,7 +191,9 @@ export const useIndividualInvoiceRecovery = ({
   const [loading, setLoading] = useState(false);
   const [repairing, setRepairing] = useState(false);
   const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
-  const [activeQuery, setActiveQuery] = useState<InvoiceQueryForm | null>(null);
+  const [activeQuery, setActiveQuery] = useState<InvoiceQueryForm | null>(() =>
+    buildInitialActiveQuery({ initialBusinessId, initialInvoiceId }),
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedTasks, setSelectedTasks] = useState<string[]>(DEFAULT_TASKS);
   const [reason, setReason] = useState('');
@@ -224,13 +237,8 @@ export const useIndividualInvoiceRecovery = ({
   useEffect(() => {
     if (initialInvoiceId) {
       form.setFieldsValue({ invoiceId: initialInvoiceId });
-      setActiveQuery((prev) => ({
-        ...prev,
-        invoiceId: initialInvoiceId,
-        businessId: prev?.businessId || initialBusinessId || null,
-      }));
     }
-  }, [form, initialInvoiceId, initialBusinessId]);
+  }, [form, initialInvoiceId]);
 
   useEffect(() => {
     let isMounted = true;
@@ -271,10 +279,6 @@ export const useIndividualInvoiceRecovery = ({
       if (!watchedBusinessId) {
         if (initialInvoiceId) {
           form.setFieldsValue({ invoiceId: initialInvoiceId });
-          setActiveQuery((prev) => ({
-            ...prev,
-            invoiceId: initialInvoiceId,
-          }));
         } else {
           form.setFieldsValue({ invoiceId: undefined });
         }

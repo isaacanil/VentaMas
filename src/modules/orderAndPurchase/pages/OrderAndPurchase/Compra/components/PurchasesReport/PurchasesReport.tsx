@@ -7,7 +7,7 @@ import {
   togglePurchaseChartModal,
 } from '@/features/purchase/purchaseUISlice';
 import type { Purchase } from '@/utils/purchase/types';
-import Typography from '@/components/ui/Typografy/Typografy';
+import Typography from '@/components/ui/Typography/Typography';
 import { PurchasesAnalyticsPanel } from './components/PurchasesAnalyticsPanel/PurchasesAnalyticsPanel';
 
 const variantsBackdrop = {

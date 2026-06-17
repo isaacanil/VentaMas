@@ -1,72 +1,17 @@
 import { buildAccountsReceivablePaymentState } from './receivablePaymentPlan.util.js';
+import {
+  RECEIVABLE_PAYMENT_THRESHOLD as THRESHOLD,
+  asReceivableRecord as asRecord,
+  countRemainingReceivableInstallments as countRemainingInstallments,
+  resolveNextReceivablePaymentAt as resolveNextPaymentAt,
+  resolveReceivableAccountBalance as resolveAccountBalance,
+  resolveReceivableAccountTotal as resolveAccountTotal,
+  resolveReceivableInstallmentAmount as resolveInstallmentAmount,
+  resolveReceivableInstallmentBalance as resolveInstallmentBalance,
+  roundReceivableAmount as roundToTwoDecimals,
+  safeReceivableNumber as safeNumber,
+} from './receivablePaymentMath.util.js';
 import { reverseReceivableMonetarySettlement } from './receivableMonetary.util.js';
-
-const THRESHOLD = 0.01;
-
-const asRecord = (value) =>
-  value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-
-const safeNumber = (value) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-};
-
-const roundToTwoDecimals = (value) => Math.round(safeNumber(value) * 100) / 100;
-
-const resolveAccountTotal = (account) => {
-  const record = asRecord(account);
-  const paymentState = asRecord(record.paymentState);
-  return roundToTwoDecimals(
-    paymentState.total ??
-      record.totalReceivable ??
-      record.totalAmount ??
-      record.amount,
-  );
-};
-
-const resolveAccountBalance = (account) => {
-  const record = asRecord(account);
-  const paymentState = asRecord(record.paymentState);
-  return roundToTwoDecimals(
-    paymentState.balance ?? record.arBalance ?? resolveAccountTotal(record),
-  );
-};
-
-const resolveInstallmentAmount = (installment) => {
-  const record = asRecord(installment);
-  return roundToTwoDecimals(
-    record.installmentAmount ?? record.amount ?? record.installmentBalance,
-  );
-};
-
-const resolveInstallmentBalance = (installment) => {
-  const record = asRecord(installment);
-  return roundToTwoDecimals(
-    record.installmentBalance ??
-      record.balance ??
-      record.installmentAmount ??
-      record.amount,
-  );
-};
-
-const countRemainingInstallments = (installments) =>
-  (Array.isArray(installments) ? installments : []).filter(
-    (installment) => resolveInstallmentBalance(installment) > THRESHOLD,
-  ).length;
-
-const resolveNextPaymentAt = (installments) => {
-  const activeInstallments = (Array.isArray(installments) ? installments : [])
-    .filter((installment) => resolveInstallmentBalance(installment) > THRESHOLD)
-    .sort((left, right) => {
-      const leftValue = safeNumber(left?.installmentDate?.toMillis?.() ?? left?.installmentDate);
-      const rightValue = safeNumber(
-        right?.installmentDate?.toMillis?.() ?? right?.installmentDate,
-      );
-      return leftValue - rightValue;
-    });
-
-  return activeInstallments[0]?.installmentDate ?? null;
-};
 
 const resolveInstallmentStatus = ({ installmentBalance, installmentAmount }) => {
   if (installmentBalance <= THRESHOLD) {

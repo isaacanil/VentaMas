@@ -12,14 +12,14 @@ import styled from 'styled-components';
 import { selectIsRow } from '@/features/setting/settingSlice';
 import useScroll from '@/hooks/useScroll';
 import ROUTES_NAME from '@/router/routes/routesName';
-import { Carrusel } from '@/modules/products/components/Carrusel/Carrusel';
+import { Carrusel } from '@/modules/products/public';
 import { CategoriesGrouped } from '@/modules/sales/pages/Sale/components/CategoriesProductsGrouped/CategoriesGrouped';
 import { ShoppingItemsCounter } from '@/modules/sales/pages/Sale/components/ShoppingItemsCounter/ShoppingItemsCounter';
-import { CenteredText } from '@/components/ui/CentredText';
+import { CenteredText } from '@/components/ui/CenteredText';
 import { Grid } from '@/components/ui/Grid/Grid';
 import Loader from '@/components/ui/loader/Loader';
-import { CustomProduct } from '@/components/ui/Product/CustomProduct';
-import { Product } from '@/components/ui/Product/Product/Product';
+import { CustomProduct } from './components/ProductCard/CustomProduct';
+import { Product } from './components/ProductCard/Product/Product';
 import type { ProductRecord } from '@/types/products';
 
 type ProductWrapper = {

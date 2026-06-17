@@ -13,8 +13,10 @@ import {
   faWallet,
 } from '@fortawesome/free-solid-svg-icons';
 
-import type { MenuItem } from '@/components/ui/Nav/types';
 import ROUTES_NAME from '@/router/routes/routesName';
+import { normalizeSearchText } from '@/utils/searchText';
+
+import type { MenuItem } from '../components/GeneralConfigNav/types';
 
 export const TAB_ROUTES = {
   modules: ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_MODULES,
@@ -471,13 +473,6 @@ const GENERAL_CONFIG_SEARCH_INDEX: GeneralConfigSearchEntry[] = [
   },
 ];
 
-const normalizeText = (value = '') =>
-  value
-    .toString()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
-
 export const buildGeneralConfigSearchRecords = (
   menuItems: MenuItem[],
 ): GeneralConfigSearchRecord[] => {
@@ -488,10 +483,10 @@ export const buildGeneralConfigSearchRecords = (
 
   return entries.map((entry) => {
     const tokens = [
-      normalizeText(entry.label),
-      normalizeText(entry.description),
-      normalizeText(entry.category),
-      ...(entry.extraTokens || []).map(normalizeText),
+      normalizeSearchText(entry.label),
+      normalizeSearchText(entry.description),
+      normalizeSearchText(entry.category),
+      ...(entry.extraTokens || []).map(normalizeSearchText),
     ].filter(Boolean);
 
     return {

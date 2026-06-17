@@ -1,27 +1,19 @@
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
 
+import {
+  loadAccountReceivableAuditRoute,
+  loadAccountReceivableInfoRoute,
+  loadAccountReceivableListRoute,
+} from '@/modules/accountsReceivable/public';
+import { loadReceivablePaymentReceiptRoute } from '@/modules/invoice/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 
 import type { AppRoute } from '@/router/types/routeTypes';
 
-const AccountReceivableAudit = lazy(
-  () =>
-    import('@/modules/accountsReceivable/pages/AccountReceivable/pages/AccountReceivableAudit/AccountReceivableAudit'),
-);
-const AccountReceivableInfo = lazy(
-  () =>
-    import('@/modules/accountsReceivable/pages/AccountReceivable/pages/AccountReceivableInfo/AccountReceivableInfo'),
-);
-const AccountReceivableList = lazy(() =>
-  import('@/modules/accountsReceivable/pages/AccountReceivable/pages/AccountReceivableList/AccountReceivableList').then(
-    (module) => ({ default: module.AccountReceivableList }),
-  ),
-);
-const ReceivablePaymentReceipt = lazy(() =>
-  import('@/modules/invoice/pages/InvoicesPage/ReceivablePaymentReceipt').then(
-    (module) => ({ default: module.ReceivablePaymentReceipt }),
-  ),
-);
+const AccountReceivableAudit = lazy(loadAccountReceivableAuditRoute);
+const AccountReceivableInfo = lazy(loadAccountReceivableInfoRoute);
+const AccountReceivableList = lazy(loadAccountReceivableListRoute);
+const ReceivablePaymentReceipt = lazy(loadReceivablePaymentReceiptRoute);
 
 const {
   ACCOUNT_RECEIVABLE_LIST,

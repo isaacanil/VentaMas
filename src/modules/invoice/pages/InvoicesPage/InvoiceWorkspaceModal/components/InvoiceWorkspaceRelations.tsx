@@ -1,6 +1,5 @@
 import { DollarOutlined, ProfileOutlined } from '@/constants/icons/antd';
 import { notification } from 'antd';
-import { collection, getDocs, query, where } from 'firebase/firestore';
 import { DateTime } from 'luxon';
 import { useEffect, useMemo, useReducer } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -9,18 +8,18 @@ import styled from 'styled-components';
 import { VmButton, VmCard, VmChip } from '@/components/heroui';
 import { setAccountPayment } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
 import { selectUser } from '@/features/auth/userSlice';
+import {
+  fetchAccountReceivablePaymentsByArIds,
+  type AccountReceivablePaymentRecord,
+} from '@/firebase/accountsReceivable/accountReceivablePayments.repository';
 import { useFbGetAccountReceivableByInvoice } from '@/firebase/accountsReceivable/useFbGetAccountReceivableByInvoice';
 import { useFbGetCreditNotesByInvoice } from '@/firebase/creditNotes/useFbGetCreditNotesByInvoice';
-import { db } from '@/firebase/firebaseconfig';
-import { useFbGetCreditNoteApplicationsByInvoice } from '@/hooks/creditNote/useFbGetCreditNoteApplicationsByInvoice';
+import { useFbGetCreditNoteApplicationsByInvoice } from '@/modules/invoice/hooks/creditNote/useFbGetCreditNoteApplicationsByInvoice';
 import { useAccountingRolloutEnabled } from '@/hooks/useAccountingRolloutEnabled';
-import { useOpenAccountingEntry } from '@/modules/accounting/hooks/useOpenAccountingEntry';
+import { useOpenAccountingEntry } from '@/modules/accounting/public';
 import type { InvoiceData, InvoicePaymentMethod } from '@/types/invoice';
 import type { UserIdentity } from '@/types/users';
-import type {
-  AccountsReceivableDoc,
-  AccountsReceivablePayment,
-} from '@/utils/accountsReceivable/types';
+import type { AccountsReceivableDoc } from '@/utils/accountsReceivable/types';
 import { toMillis } from '@/utils/date/toMillis';
 import type { TimestampLike } from '@/utils/date/types';
 import { formatWorkspaceAmount } from '../utils/invoiceWorkspaceFormat';
@@ -105,11 +104,11 @@ const getPaidInstallmentsCount = (ar: AccountsReceivableDoc) =>
 const getReceivableBalance = (ar: AccountsReceivableDoc) =>
   Number(ar.arBalance ?? ar.currentBalance ?? 0) || 0;
 
-const resolvePaymentAmount = (payment: AccountsReceivablePayment) =>
+const resolvePaymentAmount = (payment: AccountReceivablePaymentRecord) =>
   Number(payment.totalPaid ?? payment.totalAmount ?? payment.amount ?? 0) || 0;
 
 const resolvePaymentMethods = (
-  payment: AccountsReceivablePayment,
+  payment: AccountReceivablePaymentRecord,
 ): InvoicePaymentMethod[] => {
   const methods = payment.paymentMethods ?? payment.paymentMethod ?? [];
   return Array.isArray(methods) ? (methods as InvoicePaymentMethod[]) : [];
@@ -196,33 +195,19 @@ export const InvoiceWorkspaceRelations = ({
       dispatchReceivablePayments({ type: 'start' });
 
       try {
-        const paymentsRef = collection(
-          db,
-          'businesses',
+        const paymentDocs = await fetchAccountReceivablePaymentsByArIds({
           businessId,
-          'accountsReceivablePayments',
-        );
-        const rows: ReceivablePaymentRow[] = [];
+          arIds,
+        });
+        const rows: ReceivablePaymentRow[] = paymentDocs.map((payment) => ({
+          id: payment.id,
+          arId: typeof payment.arId === 'string' ? payment.arId : '',
+          amount: resolvePaymentAmount(payment),
+          comments: String(payment.comments ?? ''),
+          dateMs: toMillis(payment.date ?? payment.createdAt) ?? 0,
+          methods: resolvePaymentMethods(payment),
+        }));
 
-        await Promise.all(
-          arIds.map(async (arId) => {
-            const paymentsQuery = query(paymentsRef, where('arId', '==', arId));
-            const snap = await getDocs(paymentsQuery);
-            snap.forEach((docSnap) => {
-              const data = docSnap.data() as AccountsReceivablePayment;
-              rows.push({
-                id: docSnap.id,
-                arId,
-                amount: resolvePaymentAmount(data),
-                comments: String(data.comments ?? ''),
-                dateMs: toMillis(data.date ?? data.createdAt) ?? 0,
-                methods: resolvePaymentMethods(data),
-              });
-            });
-          }),
-        );
-
-        rows.sort((a, b) => b.dateMs - a.dateMs);
         if (active) {
           dispatchReceivablePayments({ type: 'success', payload: rows });
         }

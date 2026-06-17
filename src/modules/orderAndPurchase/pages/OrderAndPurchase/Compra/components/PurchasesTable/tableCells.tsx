@@ -17,7 +17,6 @@ import { useCallback, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import { ActionIcon } from '@/components/common/ActionIcon';
 import { openFileCenter } from '@/features/files/fileSlice';
 import { setNote } from '@/features/noteModal/noteModalSlice';
 import { replacePathParams } from '@/router/routes/replacePathParams';
@@ -29,10 +28,11 @@ import {
   canEditPurchase,
   resolvePurchaseWorkflowStatus,
 } from '@/utils/purchase/workflow';
-import TextCell from '@/components/ui/AdvancedTable/components/Cells/Text/TextCell';
+import { TextCell } from '@/components/ui/AdvancedTable/components/Cells';
 import { Badge } from '@/components/common/Badge/Badge';
 import { formatPrice } from '@/utils/format/formatPrice';
 
+import { ActionIcon } from '../../../shared/components/ActionIcon/ActionIcon';
 import {
   ActionsCellWrapper,
   PaymentDateCellWrapper,

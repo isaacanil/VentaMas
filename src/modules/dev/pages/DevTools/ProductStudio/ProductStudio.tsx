@@ -1,5 +1,5 @@
-import ImageManager from '@/components/modals/ProductForm/ImageManager/ImageManager';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
+import { ProductEditorImageManager } from '@/modules/products/public';
 
 import { ActionBar } from './components/ActionBar';
 import { ProductForm } from './components/form/ProductForm';
@@ -107,7 +107,7 @@ export default function ProductStudio() {
                 )}
               </StudioGrid>
 
-              <ImageManager
+              <ProductEditorImageManager
                 open={imageDrawerVisible}
                 onCancel={handleCloseImageManager}
               />

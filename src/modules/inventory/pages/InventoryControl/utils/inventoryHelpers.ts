@@ -1,7 +1,10 @@
 // Helper utilities extracted from InventoryControl.tsx for reuse and to reduce file size
 // Pure / side-effect free helpers.
 
-import { normalizeLocationKey } from '@/utils/inventory/locations';
+import {
+  resolveInventoryItemLocationPath,
+  resolveInventoryLocationPath,
+} from '@/utils/inventory/locations';
 
 import type {
   InventoryChild,
@@ -20,77 +23,13 @@ export function sum(arr: (number | null | undefined)[]) {
 export function getLocationKey(
   location: LocationRefLike | string | null | undefined,
 ) {
-  if (!location) return '';
-  if (typeof location === 'string') return normalizeLocationKey(location);
-  if (typeof location !== 'object') return '';
-  if (typeof location.path === 'string')
-    return normalizeLocationKey(location.path);
-  if (Array.isArray(location.pathSegments)) {
-    return normalizeLocationKey(
-      location.pathSegments.filter(Boolean).join('/'),
-    );
-  }
-  const {
-    warehouse,
-    warehouseId,
-    shelf,
-    shelfId,
-    row,
-    rowId,
-    rowShelf,
-    rowShelfId,
-    segment,
-    segmentId,
-  } = location || {};
-  const pickId = (value: unknown) => {
-    if (!value) return '';
-    if (typeof value === 'string' || typeof value === 'number')
-      return String(value);
-    if (typeof value === 'object' && value && 'id' in value) {
-      const candidate = (value as { id?: string | number }).id;
-      if (typeof candidate === 'string' || typeof candidate === 'number') {
-        return String(candidate);
-      }
-    }
-    return '';
-  };
-  const w = pickId(warehouse || warehouseId);
-  const s = pickId(shelf || shelfId);
-  const r = pickId(row || rowId || rowShelf || rowShelfId);
-  const seg = pickId(segment || segmentId);
-  return normalizeLocationKey([w, s, r, seg].filter(Boolean).join('/'));
+  return resolveInventoryLocationPath(location, { normalize: true });
 }
 
 export function getItemLocationKey(
   item: Partial<InventoryStockItem> | null | undefined,
 ) {
-  if (!item) return '';
-  // 1. Object
-  if (typeof item.location === 'object' && item.location) {
-    const key = getLocationKey(item.location);
-    if (key) return key;
-  }
-  // 2. String Path
-  if (typeof item.location === 'string' && item.location.includes('/')) {
-    return normalizeLocationKey(item.location);
-  }
-  // 3. Flat Fields (Deep)
-  if (item.shelfId || item.rowId || item.rowShelfId || item.segmentId) {
-    const { warehouseId, shelfId, rowId, rowShelfId, segmentId } = item;
-    let w = warehouseId;
-    if (!w && typeof item.location === 'string') w = item.location;
-    return normalizeLocationKey(
-      [w, shelfId, rowId || rowShelfId, segmentId].filter(Boolean).join('/'),
-    );
-  }
-  // 4. Simple String
-  if (typeof item.location === 'string' && item.location) {
-    return normalizeLocationKey(item.location);
-  }
-  // 5. Warehouse ID
-  if (item.warehouseId) return normalizeLocationKey(item.warehouseId);
-
-  return '';
+  return resolveInventoryItemLocationPath(item, { normalize: true });
 }
 
 export function buildLocations(

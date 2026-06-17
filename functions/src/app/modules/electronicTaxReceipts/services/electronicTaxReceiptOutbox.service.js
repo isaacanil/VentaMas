@@ -53,6 +53,106 @@ const normalizeCode = (value) => {
   return normalized.length ? normalized : null;
 };
 
+const pickCleanString = (...values) => {
+  for (const value of values) {
+    const normalized = normalizeCode(value);
+    if (normalized) return normalized;
+  }
+  return null;
+};
+
+const normalizeDgiiMessageEntry = (entry) => {
+  if (typeof entry === 'string') {
+    const message = toCleanString(entry);
+    return message ? { code: null, message } : null;
+  }
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
+
+  const code = pickCleanString(
+    entry.code,
+    entry.errorCode,
+    entry.statusCode,
+    entry.codigo,
+    entry.Codigo,
+  );
+  const message = pickCleanString(
+    entry.message,
+    entry.errorMessage,
+    entry.description,
+    entry.detail,
+    entry.detalle,
+    entry.Mensaje,
+  );
+  if (!code && !message) return null;
+  return { code, message };
+};
+
+const normalizeDgiiMessages = (response) => {
+  const candidates = [
+    response?.dgiiMessages,
+    response?.messages,
+    response?.diagnostics,
+    response?.validationErrors,
+    response?.errors,
+    resolveNested(response, 'dgiiResponse', 'dgiiMessages'),
+    resolveNested(response, 'dgiiResponse', 'messages'),
+    resolveNested(response, 'dgiiResponse', 'errors'),
+  ];
+  const normalized = candidates
+    .flatMap((candidate) => (Array.isArray(candidate) ? candidate : []))
+    .map(normalizeDgiiMessageEntry)
+    .filter(Boolean);
+
+  return normalized.length ? normalized : null;
+};
+
+const isDiagnosticResponse = (response, dgiiMessages) => {
+  if (dgiiMessages?.length) return true;
+  if (
+    pickCleanString(
+      response?.dgiiCode,
+      response?.dgiiStatusCode,
+      response?.errorCode,
+      resolveNested(response, 'dgiiResponse', 'dgiiCode'),
+      resolveNested(response, 'dgiiResponse', 'code'),
+    )
+  ) {
+    return true;
+  }
+
+  const statuses = [
+    response?.dgiiValidationStatus,
+    response?.dgiiStatus,
+    response?.requestStatus,
+    response?.status,
+  ].map(normalizeStatus);
+  return statuses.some((status) =>
+    ['rejected', 'error', 'failed', 'local_failed'].includes(status),
+  );
+};
+
+const isAcceptedResponse = (response) => {
+  const statuses = [
+    response?.dgiiValidationStatus,
+    response?.dgiiStatus,
+    response?.requestStatus,
+    response?.status,
+  ].map(normalizeStatus);
+  return statuses.some((status) =>
+    ['accepted', 'accepted_conditional'].includes(status),
+  );
+};
+
+const pickAcceptedMessage = (...values) => {
+  for (const value of values) {
+    const normalized = pickCleanString(value);
+    if (normalized && normalized.toLowerCase().includes('acept')) {
+      return normalized;
+    }
+  }
+  return 'Aceptado';
+};
+
 const resolveRfceLifecycleStatus = (response) => {
   const rfceStatus = normalizeStatus(response?.rfceStatus);
   const rfceSubmissionStatus = normalizeStatus(response?.rfceSubmissionStatus);
@@ -158,14 +258,44 @@ export const buildGisysFactIdempotencyKey = ({
   return `ventamas:${businessId}:${invoiceId}:ecf:${normalizedDocumentType}:v1`;
 };
 
-const buildElectronicSnapshot = ({
+export const buildElectronicSnapshot = ({
   status,
   mode,
   documentType,
   requestHash,
   response,
   error,
-}) => ({
+}) => {
+  const dgiiMessages = normalizeDgiiMessages(response);
+  const diagnosticResponse = isDiagnosticResponse(response, dgiiMessages);
+  const acceptedResponse = isAcceptedResponse(response);
+  const dgiiCode = pickCleanString(
+    response?.dgiiCode,
+    response?.dgiiStatusCode,
+    response?.code,
+    response?.errorCode,
+    resolveNested(response, 'dgiiResponse', 'dgiiCode'),
+    resolveNested(response, 'dgiiResponse', 'code'),
+    dgiiMessages?.[0]?.code,
+  ) || (acceptedResponse ? '01' : null);
+  const dgiiMessage = acceptedResponse
+    ? pickAcceptedMessage(
+        response?.dgiiMessage,
+        response?.message,
+        resolveNested(response, 'dgiiResponse', 'dgiiMessage'),
+        resolveNested(response, 'dgiiResponse', 'message'),
+        dgiiMessages?.[0]?.message,
+      )
+    : pickCleanString(
+        response?.dgiiMessage,
+        resolveNested(response, 'dgiiResponse', 'dgiiMessage'),
+        resolveNested(response, 'dgiiResponse', 'message'),
+        dgiiMessages?.[0]?.message,
+        diagnosticResponse ? response?.message : null,
+        diagnosticResponse ? response?.errorMessage : null,
+      );
+
+  return {
   provider: 'gisys_fact',
   mode,
   status,
@@ -180,12 +310,10 @@ const buildElectronicSnapshot = ({
   dgiiValidationStatus: response?.dgiiValidationStatus || null,
   dgiiStatus: response?.dgiiStatus || null,
   dgiiEnvironment: response?.dgiiEnvironment || null,
-  dgiiCode: response?.dgiiCode || response?.dgiiStatusCode || null,
+  dgiiCode,
   dgiiStatusCode: response?.dgiiStatusCode || null,
-  dgiiMessage: response?.dgiiMessage || null,
-  dgiiMessages: Array.isArray(response?.dgiiMessages)
-    ? response.dgiiMessages
-    : null,
+  dgiiMessage,
+  dgiiMessages,
   dgiiSeverity: response?.dgiiSeverity || null,
   dgiiCategory: response?.dgiiCategory || null,
   resolutionAction: response?.resolutionAction || null,
@@ -237,11 +365,84 @@ const buildElectronicSnapshot = ({
     : response?.lastError ||
       response?.rfceLastErrorMessage ||
       response?.rfceError ||
-      response?.dgiiMessage ||
+      (diagnosticResponse ? dgiiMessage : null) ||
       null,
   lastSyncAt: FieldValue.serverTimestamp(),
   updatedAt: FieldValue.serverTimestamp(),
-});
+  };
+};
+
+export const issueElectronicTaxReceiptForDocument = async ({
+  businessId,
+  documentId,
+  document,
+  taskPayload,
+  business: providedBusiness,
+}) => {
+  const business =
+    providedBusiness ||
+    (await db.doc(`businesses/${businessId}`).get()).data() ||
+    {};
+  const platformConfig = await getGisysFactPlatformConfig();
+  const rawProviderConfig = resolveGisysFactConfig(business, platformConfig);
+  const providerConfig = resolveEffectiveProviderConfig({
+    providerConfig: rawProviderConfig,
+    taskPayload: taskPayload || {},
+  });
+  const configIssues = getGisysFactConfigIssues(providerConfig, {
+    requireTransport: providerConfig.mode !== 'shadow',
+  });
+  if (configIssues.length > 0) {
+    throw new Error(`gisys_config_invalid(${configIssues.join(',')})`);
+  }
+
+  const {
+    payload: issuePayload,
+    documentType,
+    requestHash,
+  } = buildGisysIssuePayload({
+    businessId,
+    invoiceId: documentId,
+    invoice: document,
+    taskPayload: taskPayload || {},
+    providerConfig,
+    business,
+  });
+
+  const mode = providerConfig.mode;
+  if (mode === 'shadow') {
+    const electronicSnapshot = buildElectronicSnapshot({
+      status: 'shadow_ready',
+      mode,
+      documentType,
+      requestHash,
+    });
+    return { status: 'shadow_ready', documentType, requestHash, electronicSnapshot };
+  }
+
+  const response = await issueGisysFactDocument({
+    config: providerConfig,
+    payload: issuePayload,
+    idempotencyKey: buildGisysFactIdempotencyKey({
+      businessId,
+      invoiceId: documentId,
+      documentType,
+    }),
+  });
+  const status = resolveElectronicTaxReceiptLifecycleStatus({
+    currentStatus: null,
+    response,
+  });
+  const electronicSnapshot = buildElectronicSnapshot({
+    status,
+    mode,
+    documentType,
+    requestHash,
+    response,
+  });
+
+  return { status, documentType, requestHash, response, electronicSnapshot };
+};
 
 const mergeGisysResponses = (baseResponse, nextResponse) => ({
   ...baseResponse,
@@ -536,22 +737,90 @@ export const processElectronicTaxReceiptOutboxTask = async ({
   }
 };
 
+const resolveAdjustmentDocumentStatus = ({ electronicSnapshot, currentStatus }) => {
+  const lifecycleStatus = normalizeStatus(electronicSnapshot?.status);
+  if (
+    lifecycleStatus === 'accepted' ||
+    lifecycleStatus === 'accepted_conditional' ||
+    lifecycleStatus === 'shadow_ready'
+  ) {
+    return 'issued';
+  }
+  if (
+    lifecycleStatus === 'rejected' ||
+    lifecycleStatus === 'error' ||
+    lifecycleStatus === 'failed' ||
+    lifecycleStatus === 'local_failed'
+  ) {
+    return 'electronic_failed';
+  }
+
+  const normalizedCurrentStatus = normalizeStatus(currentStatus);
+  return normalizedCurrentStatus === 'issued' ? 'issued' : 'electronic_pending';
+};
+
 export const refreshElectronicTaxReceiptStatus = async ({
   businessId,
   invoiceId,
+  creditNoteId,
+  debitNoteId,
+  documentId,
+  documentKind,
   refreshRemote = true,
 }) => {
-  const invoiceRef = db.doc(`businesses/${businessId}/invoicesV2/${invoiceId}`);
-  const invoiceSnap = await invoiceRef.get();
-  if (!invoiceSnap.exists) {
-    throw new Error('Invoice document not found');
+  const requestedDocumentKind = normalizeStatus(documentKind);
+  const normalizedCreditNoteId =
+    toCleanString(creditNoteId) ||
+    (requestedDocumentKind === 'credit_note' ||
+    requestedDocumentKind === 'creditnote' ||
+    requestedDocumentKind === 'credit-note'
+      ? toCleanString(documentId)
+      : null);
+  const normalizedDebitNoteId =
+    toCleanString(debitNoteId) ||
+    (requestedDocumentKind === 'debit_note' ||
+    requestedDocumentKind === 'debitnote' ||
+    requestedDocumentKind === 'debit-note'
+      ? toCleanString(documentId)
+      : null);
+  const normalizedInvoiceId =
+    toCleanString(invoiceId) ||
+    (!normalizedCreditNoteId && !normalizedDebitNoteId
+      ? toCleanString(documentId)
+      : null);
+
+  const isCreditNoteRefresh = Boolean(normalizedCreditNoteId);
+  const isDebitNoteRefresh = Boolean(normalizedDebitNoteId);
+  const isAdjustmentNoteRefresh = isCreditNoteRefresh || isDebitNoteRefresh;
+  const targetId =
+    normalizedCreditNoteId || normalizedDebitNoteId || normalizedInvoiceId;
+  if (!targetId) {
+    throw new Error('Electronic tax receipt document id not found');
+  }
+
+  const documentRef = isCreditNoteRefresh
+    ? db.doc(`businesses/${businessId}/creditNotes/${targetId}`)
+    : isDebitNoteRefresh
+      ? db.doc(`businesses/${businessId}/debitNotes/${targetId}`)
+    : db.doc(`businesses/${businessId}/invoicesV2/${targetId}`);
+  const documentSnap = await documentRef.get();
+  if (!documentSnap.exists) {
+    throw new Error(
+      isCreditNoteRefresh
+        ? 'Credit note document not found'
+        : isDebitNoteRefresh
+          ? 'Debit note document not found'
+        : 'Invoice document not found',
+    );
   }
 
   const businessRef = db.doc(`businesses/${businessId}`);
   const businessSnap = await businessRef.get();
   const business = businessSnap.exists ? businessSnap.data() || {} : {};
-  const invoice = invoiceSnap.data() || {};
-  const currentSnapshot = invoice?.snapshot?.electronicTaxReceipt || {};
+  const document = documentSnap.data() || {};
+  const currentSnapshot = isAdjustmentNoteRefresh
+    ? document?.electronicTaxReceipt || {}
+    : document?.snapshot?.electronicTaxReceipt || {};
   const submissionId = toCleanString(currentSnapshot.submissionId);
   if (!submissionId) {
     throw new Error('Electronic tax receipt submissionId not found');
@@ -611,11 +880,36 @@ export const refreshElectronicTaxReceiptStatus = async ({
   });
 
   await db.runTransaction(async (tx) => {
-    const currentInvoice = (await tx.get(invoiceRef)).data() || invoice;
+    const currentDocument = (await tx.get(documentRef)).data() || document;
+    if (isAdjustmentNoteRefresh) {
+      const eNcf =
+        electronicSnapshot.eNcf ||
+        currentDocument?.eNcf ||
+        currentDocument?.ncf ||
+        null;
+      tx.update(documentRef, {
+        electronicTaxReceipt: electronicSnapshot,
+        ncf: eNcf,
+        eNcf,
+        status: resolveAdjustmentDocumentStatus({
+          electronicSnapshot,
+          currentStatus: currentDocument?.status,
+        }),
+        fiscalMode: 'electronic_ecf',
+        documentFormat: 'electronic',
+        statusTimeline: FieldValue.arrayUnion({
+          status: `electronic_tax_receipt_${electronicSnapshot.status}`,
+          at: Timestamp.now(),
+        }),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+      return;
+    }
+
     const eNcf =
-      electronicSnapshot.eNcf || currentInvoice?.snapshot?.ncf?.code || null;
+      electronicSnapshot.eNcf || currentDocument?.snapshot?.ncf?.code || null;
     const ncfSnapshot = {
-      ...currentInvoice?.snapshot?.ncf,
+      ...currentDocument?.snapshot?.ncf,
       code: eNcf,
       status: eNcf ? 'issued' : electronicSnapshot.status,
       documentFormat: 'electronic',
@@ -624,7 +918,7 @@ export const refreshElectronicTaxReceiptStatus = async ({
       documentType: electronicSnapshot.documentType,
     };
 
-    tx.update(invoiceRef, {
+    tx.update(documentRef, {
       'snapshot.electronicTaxReceipt': electronicSnapshot,
       'snapshot.ncf': ncfSnapshot,
       'snapshot.fiscalMode': 'electronic_ecf',
@@ -652,7 +946,7 @@ export const refreshElectronicTaxReceiptStatus = async ({
       canonicalUpdate.data.eNcf = eNcf;
     }
     tx.set(
-      db.doc(`businesses/${businessId}/invoices/${invoiceId}`),
+      db.doc(`businesses/${businessId}/invoices/${targetId}`),
       canonicalUpdate,
       { merge: true },
     );
@@ -661,7 +955,15 @@ export const refreshElectronicTaxReceiptStatus = async ({
   return {
     ok: true,
     businessId,
-    invoiceId,
+    invoiceId: normalizedInvoiceId || null,
+    creditNoteId: normalizedCreditNoteId || null,
+    debitNoteId: normalizedDebitNoteId || null,
+    documentId: targetId,
+    documentKind: isCreditNoteRefresh
+      ? 'creditNote'
+      : isDebitNoteRefresh
+        ? 'debitNote'
+        : 'invoice',
     submissionId,
     electronicTaxReceipt: electronicSnapshot,
   };

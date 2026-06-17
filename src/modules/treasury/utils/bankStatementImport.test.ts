@@ -27,6 +27,45 @@ describe('parseBankStatementImport', () => {
     ]);
   });
 
+  it('matches compact CSV header aliases with spaces and punctuation', () => {
+    const result = parseBankStatementImport({
+      fileName: 'statement.csv',
+      text: `Transaction Date,Details,Transaction-ID,Amount
+2026-04-18,ATM Withdrawal,TX-1,-50.25`,
+    });
+
+    expect(result.issues).toEqual([]);
+    expect(result.rows[0]).toMatchObject({
+      amount: 50.25,
+      description: 'ATM Withdrawal',
+      direction: 'out',
+      reference: 'TX-1',
+    });
+  });
+
+  it('parses localized statement amounts with mixed separators and parentheses', () => {
+    const result = parseBankStatementImport({
+      fileName: 'estado.csv',
+      text: `Fecha,Descripcion,Referencia,Monto
+18/04/2026,Deposito Cliente,REF-3,"1.234,56"
+18/04/2026,Comision Banco,REF-4,"(1,234.56)"`,
+    });
+
+    expect(result.issues).toEqual([]);
+    expect(result.rows).toEqual([
+      expect.objectContaining({
+        amount: 1234.56,
+        direction: 'in',
+        reference: 'REF-3',
+      }),
+      expect.objectContaining({
+        amount: 1234.56,
+        direction: 'out',
+        reference: 'REF-4',
+      }),
+    ]);
+  });
+
   it('parses OFX transaction rows', () => {
     const result = parseBankStatementImport({
       fileName: 'estado.ofx',

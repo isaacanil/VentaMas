@@ -1,5 +1,7 @@
 import type { BankStatementLine, LiquidityLedgerEntry } from '@/types/accounting';
 import { suggestBankStatementLineMatch } from '@/modules/treasury/utils/bankStatementMatching';
+import { normalizeCompactHeaderKey } from '@/utils/import/normalizeHeaderKey';
+import { parseLocalizedNumber } from '@/utils/import/parseLocalizedNumber';
 
 export interface ParsedBankStatementImportRow {
   amount: number;
@@ -27,13 +29,6 @@ export interface ParsedBankStatementImportResult {
   rows: ParsedBankStatementImportRow[];
 }
 
-const normalizeHeader = (value: string) =>
-  value
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '');
-
 const cleanText = (value: unknown) => {
   const normalized = String(value ?? '').trim();
   return normalized.length ? normalized : null;
@@ -42,28 +37,8 @@ const cleanText = (value: unknown) => {
 const roundToTwoDecimals = (value: number) => Math.round(value * 100) / 100;
 
 const parseAmount = (value: unknown) => {
-  const normalized = String(value ?? '')
-    .trim()
-    .replace(/\s/g, '')
-    .replace(/\((.*)\)/, '-$1');
-
-  if (!normalized) return null;
-
-  const commaCount = (normalized.match(/,/g) ?? []).length;
-  const dotCount = (normalized.match(/\./g) ?? []).length;
-
-  let candidate = normalized;
-  if (commaCount > 0 && dotCount > 0) {
-    candidate =
-      normalized.lastIndexOf(',') > normalized.lastIndexOf('.')
-        ? normalized.replace(/\./g, '').replace(',', '.')
-        : normalized.replace(/,/g, '');
-  } else if (commaCount > 0 && dotCount === 0) {
-    candidate = normalized.replace(',', '.');
-  }
-
-  const parsed = Number(candidate);
-  return Number.isFinite(parsed) ? roundToTwoDecimals(parsed) : null;
+  const parsed = parseLocalizedNumber(value);
+  return parsed === null ? null : roundToTwoDecimals(parsed);
 };
 
 const parseDate = (value: unknown) => {
@@ -148,7 +123,7 @@ const resolveCsvField = (
   aliases: string[],
 ) => {
   const normalizedEntries = Object.entries(record).map(([key, value]) => [
-    normalizeHeader(key),
+    normalizeCompactHeaderKey(key),
     value,
   ]);
 

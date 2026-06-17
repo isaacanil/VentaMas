@@ -9,9 +9,9 @@ import { useFiscalReceiptsAlerts } from '@/hooks/useFiscalReceiptsAlerts';
 import {
   useInventoryProductIds,
   useListenAllActiveProductsStock,
-} from '@/hooks/useProductStock';
-import { useStockAlertThresholds } from '@/hooks/useStockAlertThresholds';
-import { useListenVendorBills } from '@/hooks/useVendorBills';
+  useStockAlertThresholds,
+} from '@/modules/inventory/public';
+import { useListenVendorBills } from '@/modules/accountsPayable/public';
 import { getDateRange } from '@/utils/date/getDateRange';
 import type { UserIdentity } from '@/types/users';
 

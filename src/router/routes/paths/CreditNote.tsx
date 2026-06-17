@@ -1,16 +1,11 @@
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
 
+import { loadCreditNoteListRoute } from '@/modules/invoice/public';
 import { ROUTE_STATUS } from '@/router/routes/routeMeta';
 import ROUTES_NAME from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/types/routeTypes';
 
-const CreditNoteList = lazy(() =>
-  import('@/modules/invoice/pages/CreditNote/CreditNoteList/CreditNoteList').then(
-    (module) => ({
-      default: module.CreditNoteList,
-    }),
-  ),
-);
+const CreditNoteList = lazy(loadCreditNoteListRoute);
 
 const { CREDIT_NOTE_LIST } = ROUTES_NAME.CREDIT_NOTE_TERM;
 

@@ -1,4 +1,4 @@
-import { ErrorElement } from '@/modules/app/pages/ErrorElement/ErrorElement';
+import { ErrorElement } from '@/modules/app/public';
 
 const SAMPLE_ERROR_STACK = [
   'Error: Vista de prueba del ErrorElement',

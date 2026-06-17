@@ -1,8 +1,15 @@
-import { Button, Chip, ListBox, Modal, Select, Tooltip } from '@heroui/react';
 import { useState, type JSX } from 'react';
 import styled from 'styled-components';
 
-import { ClaimOwnershipModal } from '@/modules/auth/components/ClaimOwnershipModal';
+import {
+  VmButton,
+  VmChip,
+  VmListBox,
+  VmModal,
+  VmSelect,
+  VmTooltip,
+} from '@/components/heroui';
+import { ClaimOwnershipModal } from '@/modules/auth/public';
 import {
   useBusinessWorkspaceModalController,
   type InviteFeedback,
@@ -53,18 +60,18 @@ export const BusinessWorkspaceModal = ({
 
   return (
     <>
-      <Modal.Backdrop
+      <VmModal.Backdrop
         isOpen={isOpen}
         onOpenChange={(open) => !open && onClose()}
         className="z-[400]"
       >
-        <Modal.Container placement="top" className="max-w-[820px] mt-2.5">
-          <Modal.Dialog>
-            <Modal.Header>
-              <Modal.Heading>Administrar negocios</Modal.Heading>
-              <Modal.CloseTrigger />
-            </Modal.Header>
-            <Modal.Body>
+        <VmModal.Container placement="top" className="max-w-[820px] mt-2.5">
+          <VmModal.Dialog>
+            <VmModal.Header>
+              <VmModal.Heading>Administrar negocios</VmModal.Heading>
+              <VmModal.CloseTrigger />
+            </VmModal.Header>
+            <VmModal.Body>
               <Body>
                 {ownershipIssueCount > 0 ? (
                   <OwnershipIssue>
@@ -76,13 +83,13 @@ export const BusinessWorkspaceModal = ({
                         Este negocio todavia no tiene owner registrado.
                       </OwnershipIssueDescription>
                     </OwnershipIssueText>
-                    <Button
+                    <VmButton
                       variant="primary"
                       size="sm"
                       onPress={handleClaimOwnershipOpen}
                     >
                       Reclamar
-                    </Button>
+                    </VmButton>
                   </OwnershipIssue>
                 ) : null}
 
@@ -97,7 +104,7 @@ export const BusinessWorkspaceModal = ({
                 canAccessBusinessCreation ? (
                   <Toolbar>
                     {hasBusinesses ? (
-                      <Select
+                      <VmSelect
                         selectedKey={businessFilter}
                         onSelectionChange={(key) =>
                           setBusinessFilter(key as typeof businessFilter)
@@ -105,56 +112,56 @@ export const BusinessWorkspaceModal = ({
                         aria-label="Filtro de negocios"
                         className="w-44"
                       >
-                        <Select.Trigger>
-                          <Select.Value />
-                          <Select.Indicator />
-                        </Select.Trigger>
-                        <Select.Popover>
-                          <ListBox>
-                            <ListBox.Item id="active" textValue="Activos">
+                        <VmSelect.Trigger>
+                          <VmSelect.Value />
+                          <VmSelect.Indicator />
+                        </VmSelect.Trigger>
+                        <VmSelect.Popover>
+                          <VmListBox>
+                            <VmListBox.Item id="active" textValue="Activos">
                               Activos ({activeBusinessesCount})
-                            </ListBox.Item>
-                            <ListBox.Item id="inactive" textValue="No activos">
+                            </VmListBox.Item>
+                            <VmListBox.Item id="inactive" textValue="No activos">
                               No activos ({inactiveBusinessesCount})
-                            </ListBox.Item>
-                          </ListBox>
-                        </Select.Popover>
-                      </Select>
+                            </VmListBox.Item>
+                          </VmListBox>
+                        </VmSelect.Popover>
+                      </VmSelect>
                     ) : (
                       <ToolbarSpacer aria-hidden="true" />
                     )}
 
                     <ToolbarActions>
                       {SHOW_JOIN_BY_CODE ? (
-                        <Button
+                        <VmButton
                           variant="secondary"
                           size="sm"
                           onPress={() => setInviteModalOpen(true)}
                         >
                           Unirme con código
-                        </Button>
+                        </VmButton>
                       ) : null}
 
                       {canAccessBusinessCreation ? (
-                        <Tooltip>
-                          <Tooltip.Trigger>
+                        <VmTooltip>
+                          <VmTooltip.Trigger>
                             <span className="inline-flex">
-                              <Button
+                              <VmButton
                                 variant="primary"
                                 size="sm"
                                 onPress={handleCreateBusiness}
                                 isDisabled={!canCreateBusiness}
                               >
                                 + Crear negocio
-                              </Button>
+                              </VmButton>
                             </span>
-                          </Tooltip.Trigger>
+                          </VmTooltip.Trigger>
                           {createBusinessTooltip ? (
-                            <Tooltip.Content>
+                            <VmTooltip.Content>
                               {createBusinessTooltip}
-                            </Tooltip.Content>
+                            </VmTooltip.Content>
                           ) : null}
-                        </Tooltip>
+                        </VmTooltip>
                       ) : null}
                     </ToolbarActions>
                   </Toolbar>
@@ -208,9 +215,9 @@ export const BusinessWorkspaceModal = ({
                               ) : null}
                             </BusinessTitle>
                             {!business.isActive ? (
-                              <Chip size="sm" variant="soft">
-                                <Chip.Label>No activo</Chip.Label>
-                              </Chip>
+                              <VmChip size="sm" variant="soft">
+                                <VmChip.Label>No activo</VmChip.Label>
+                              </VmChip>
                             ) : null}
                           </CardHeader>
                           <MetaRow>
@@ -223,24 +230,24 @@ export const BusinessWorkspaceModal = ({
                   </BusinessGrid>
                 )}
               </Body>
-            </Modal.Body>
-          </Modal.Dialog>
-        </Modal.Container>
-      </Modal.Backdrop>
+            </VmModal.Body>
+          </VmModal.Dialog>
+        </VmModal.Container>
+      </VmModal.Backdrop>
 
       {SHOW_JOIN_BY_CODE ? (
-        <Modal.Backdrop
+        <VmModal.Backdrop
           isOpen={inviteModalOpen}
           onOpenChange={(open) => !open && setInviteModalOpen(false)}
           className="z-[500]"
         >
-          <Modal.Container>
-            <Modal.Dialog>
-              <Modal.Header>
-                <Modal.Heading>Unirme con código</Modal.Heading>
-                <Modal.CloseTrigger />
-              </Modal.Header>
-              <Modal.Body>
+          <VmModal.Container>
+            <VmModal.Dialog>
+              <VmModal.Header>
+                <VmModal.Heading>Unirme con código</VmModal.Heading>
+                <VmModal.CloseTrigger />
+              </VmModal.Header>
+              <VmModal.Body>
                 <JoinByCodeModalForm onSubmit={handleRedeemInvite}>
                   <JoinByCodeRow>
                     <JoinByCodeInput
@@ -252,13 +259,13 @@ export const BusinessWorkspaceModal = ({
                       autoComplete="off"
                       maxLength={40}
                     />
-                    <Button
+                    <VmButton
                       variant="primary"
                       type="submit"
                       isDisabled={redeemingInvite || !inviteCode.trim()}
                     >
                       {redeemingInvite ? 'Validando...' : 'Ingresar'}
-                    </Button>
+                    </VmButton>
                   </JoinByCodeRow>
                   {inviteFeedback ? (
                     <JoinByCodeFeedback $type={inviteFeedback.type}>
@@ -266,10 +273,10 @@ export const BusinessWorkspaceModal = ({
                     </JoinByCodeFeedback>
                   ) : null}
                 </JoinByCodeModalForm>
-              </Modal.Body>
-            </Modal.Dialog>
-          </Modal.Container>
-        </Modal.Backdrop>
+              </VmModal.Body>
+            </VmModal.Dialog>
+          </VmModal.Container>
+        </VmModal.Backdrop>
       ) : null}
       {claimOwnershipOpen ? (
         <ClaimOwnershipModal

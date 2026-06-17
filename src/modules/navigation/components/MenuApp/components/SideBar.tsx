@@ -28,11 +28,11 @@ import {
 } from '@/modules/navigation/components/MenuApp/utils/menuSearch';
 import { UserSection } from '@/modules/navigation/components/MenuApp/UserSection';
 import { ButtonIconMenu } from '@/components/ui/Button/ButtonIconMenu';
-import { OpenMenuButton } from '@/components/ui/Button/OpenMenuButton';
-import { WebName } from '@/components/ui/WebName/WebName';
 
 import { MenuLink } from './MenuLink';
+import { OpenMenuButton } from './OpenMenuButton/OpenMenuButton';
 import { SidebarSearch } from './SidebarSearch/SidebarSearch';
+import { WebName } from './WebName/WebName';
 
 const SIDEBAR_VARIANTS = {
   open: {
@@ -84,6 +84,8 @@ type BusinessData = {
   name?: string | null;
 } & Record<string, unknown>;
 
+type MenuPreloader = () => void | Promise<unknown>;
+
 interface SideBarProps {
   isOpen: boolean;
   handleOpenMenu: () => void;
@@ -103,6 +105,16 @@ const getSearchContextTitle = (item: MenuSearchItem) => {
   return typeof contextTitle === 'string' && contextTitle.trim()
     ? contextTitle
     : null;
+};
+
+const ignorePreloadError = () => undefined;
+
+const runMenuPreload = (preload: MenuPreloader) => {
+  try {
+    void Promise.resolve(preload()).catch(ignorePreloadError);
+  } catch {
+    ignorePreloadError();
+  }
 };
 
 const useMenuFiltering = () => {
@@ -238,7 +250,7 @@ export const SideBar = ({ isOpen, handleOpenMenu }: SideBarProps) => {
       import.meta.env.VITE_ENABLE_DEV_ROUTE_PREFETCH === 'true';
     if (!shouldPrefetchInDev || didPrefetchRoutesRef.current) return;
 
-    const preloaders: Array<() => void | Promise<unknown>> = [];
+    const preloaders: MenuPreloader[] = [];
     const seenRoutes = new Set();
 
     const collectPreloaders = (items: MenuItem[] = []) => {
@@ -269,11 +281,7 @@ export const SideBar = ({ isOpen, handleOpenMenu }: SideBarProps) => {
     const runPreloads = () => {
       preloaders.forEach((preload, index) => {
         setTimeout(() => {
-          try {
-            preload();
-          } catch {
-            // Silenciamos errores de precarga en dev.
-          }
+          runMenuPreload(preload);
         }, index * 60);
       });
     };

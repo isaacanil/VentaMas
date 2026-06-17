@@ -38,7 +38,11 @@ export {
   resolveIdentType,
 };
 
-export const shouldExcludeDgii607TxtRecord = ({ record, isCredit = false }) => {
+export const shouldExcludeDgii607TxtRecord = ({
+  record,
+  isCredit = false,
+  isDebit = false,
+}) => {
   if (isExcludedStatus(record?.status)) {
     return true;
   }
@@ -48,7 +52,7 @@ export const shouldExcludeDgii607TxtRecord = ({ record, isCredit = false }) => {
     return true;
   }
 
-  if (isCredit) {
+  if (isCredit || isDebit) {
     return false;
   }
 
@@ -64,12 +68,14 @@ export const buildDgii607TxtRow = ({
   record,
   firestoreDoc,
   isCredit = false,
+  isDebit = false,
   originalNcf = null,
 }) => {
   const draft = buildDgii607Draft({
     record,
     firestoreDoc,
     isCredit,
+    isDebit,
     originalNcf,
   });
 

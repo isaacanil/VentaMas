@@ -1,4 +1,3 @@
-import { Button, Chip, SearchField } from '@heroui/react';
 import {
   faEllipsisVertical,
   faMagnifyingGlass,
@@ -6,7 +5,13 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { VmCard, VmDropdown } from '@/components/heroui';
+import {
+  VmButton,
+  VmCard,
+  VmChip,
+  VmDropdown,
+  VmSearchField,
+} from '@/components/heroui';
 
 import {
   findSearchMatchRange,
@@ -79,7 +84,7 @@ export const ModuleShortcutGrid = ({
     ) : null}
 
     {showSearchField ? (
-      <SearchField
+      <VmSearchField
         aria-label={`Buscar módulo de ${controller.activeTabDefinition?.label ?? 'usuario'}`}
         className="w-full"
         onChange={controller.setSearchValue}
@@ -87,18 +92,18 @@ export const ModuleShortcutGrid = ({
         value={controller.searchValue}
         variant="secondary"
       >
-        <SearchField.Group>
+        <VmSearchField.Group>
           <FontAwesomeIcon
             className="mx-2 text-sm text-neutral-400"
             icon={faMagnifyingGlass}
           />
-          <SearchField.Input
+          <VmSearchField.Input
             autoComplete="off"
             placeholder="Buscar módulo o acción"
           />
-          <SearchField.ClearButton />
-        </SearchField.Group>
-      </SearchField>
+          <VmSearchField.ClearButton />
+        </VmSearchField.Group>
+      </VmSearchField>
     ) : null}
 
     <section
@@ -141,9 +146,9 @@ export const ModuleShortcutGrid = ({
                   <h3 className="text-sm font-semibold text-blue-700">
                     {category}
                   </h3>
-                  <Chip size="sm" variant="soft">
-                    <Chip.Label>{group.length}</Chip.Label>
-                  </Chip>
+                  <VmChip size="sm" variant="soft">
+                    <VmChip.Label>{group.length}</VmChip.Label>
+                  </VmChip>
                 </div>
                 <div
                   className={[
@@ -233,7 +238,7 @@ export const ModuleLauncherTile = ({
       </button>
       {canPin ? (
         <VmDropdown>
-          <Button
+          <VmButton
             aria-label={`Opciones de ${shortcut.title}`}
             className={[
               'size-8 min-w-8 rounded-lg',
@@ -244,7 +249,7 @@ export const ModuleLauncherTile = ({
             variant="ghost"
           >
             <FontAwesomeIcon icon={faEllipsisVertical} />
-          </Button>
+          </VmButton>
           <VmDropdown.Popover
             className="z-[320] min-w-44"
             placement="bottom end"

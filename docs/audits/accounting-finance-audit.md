@@ -28,7 +28,7 @@ Conclusion: arquitectura apunta bien, pero no hay cierre end-to-end total. Estad
 - `src/router/routes/routesName.ts`
 - `src/router/routes/routes.tsx`
 - `src/router/routes/paths/Accounting.tsx`
-- `src/router/routes/paths/CashReconciliztion.tsx`
+- `src/router/routes/paths/CashReconciliation.tsx`
 - `src/router/routes/paths/Sales.tsx`
 - `src/router/routes/paths/Treasury.tsx`
 - `src/router/routes/paths/Setting.tsx`
@@ -45,10 +45,10 @@ Conclusion: arquitectura apunta bien, pero no hay cierre end-to-end total. Estad
 - `src/modules/cashReconciliation`
 - `src/modules/expenses`
 - `src/modules/orderAndPurchase`
-- `src/components/modals/CreditNoteModal`
+- `src/modules/invoice/pages/CreditNote/components/CreditNoteModal`
 - `src/firebase/creditNotes`
-- `src/firebase/proccessAccountsReceivablePayments`
-- `src/hooks/cashCount`
+- `src/firebase/processAccountsReceivablePayments`
+- `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/hooks`
 - `src/types/accounting.ts`
 - `src/types/payments.ts`
 - `src/utils/accounting`
@@ -176,7 +176,7 @@ Rutas:
 
 Gate esperado:
 
-- `BusinessFeatureRouteGate feature="treasury"` en `src/router/routes/paths/CashReconciliztion.tsx`.
+- `BusinessFeatureRouteGate feature="treasury"` en `src/router/routes/paths/CashReconciliation.tsx`.
 
 Riesgo de ruta:
 
@@ -410,7 +410,7 @@ Riesgo:
 
 Ruta operacional:
 
-- `fbProccessClientPaymentAR.ts` llama callable `processAccountsReceivablePayment`.
+- `fbProcessClientPaymentAR.ts` llama callable `processAccountsReceivablePayment`.
 - Backend crea `accountsReceivablePayments`, recibo, actualiza AR/facturas/cliente.
 - Si hay pagos multi-moneda, crea `accountsReceivableFxSettlements`.
 
@@ -426,7 +426,7 @@ Contabilidad:
 
 Riesgos:
 
-- `fbProccessClientPaymentAR.ts` consume notas de credito despues del callable desde frontend, en `catch` solo loguea. Si el consumo falla, el pago puede quedar procesado sin aplicacion de nota completa.
+- `fbProcessClientPaymentAR.ts` consume notas de credito despues del callable desde frontend, en `catch` solo loguea. Si el consumo falla, el pago puede quedar procesado sin aplicacion de nota completa.
 - FX settlement se guarda como documento, pero no genera `fx_settlement.recorded`.
 
 ### 5.4 Anulacion de cobro CxC
@@ -732,7 +732,7 @@ Correccion esperada:
 Evidencia:
 
 - `src/router/routes/paths/Sales.tsx`
-- `src/router/routes/paths/CashReconciliztion.tsx`
+- `src/router/routes/paths/CashReconciliation.tsx`
 - `src/router/routes/routes.tsx`
 
 Impacto:
@@ -763,8 +763,8 @@ Correccion esperada:
 
 Evidencia:
 
-- `src/hooks/cashCount/usePaymentsForCashCount.ts`
-- `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData.tsx`
+- `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/hooks/usePaymentsForCashCount.ts`
+- `src/domain/cashCount/cashCountMetaData.ts`
 - `functions/src/app/versions/v2/cashCount/controllers/runCashCountAudit.controller.js`
 
 Impacto:
@@ -779,7 +779,7 @@ Correccion esperada:
 
 Evidencia:
 
-- `src/firebase/proccessAccountsReceivablePayments/fbProccessClientPaymentAR.ts`
+- `src/firebase/processAccountsReceivablePayments/fbProcessClientPaymentAR.ts`
 
 Impacto:
 
@@ -793,8 +793,8 @@ Correccion esperada:
 
 Evidencia:
 
-- `src/utils/vendorBills/fromPurchase.ts`
-- `src/firebase/vendorBills/fbUpsertVendorBill.ts`
+- `src/domain/accountsPayable/vendorBills/fromPurchase.ts`
+- `src/firebase/purchase/syncVendorBillFromPurchase.ts`
 - `functions/src/app/modules/purchase/functions/syncVendorBillFromPurchase.js`
 
 Impacto:

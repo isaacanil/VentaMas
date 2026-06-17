@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useReducer, useRef } from 'react';
 
+import { downloadCsvFile } from '@/utils/export/csv';
+
 import {
   BodyCell,
   Description,
@@ -198,14 +200,10 @@ export default function BusinessMissingCreatedAt() {
 
   const exportCsv = () => {
     if (missing.length === 0) return;
-    const csv = buildMissingBusinessesCsv(missing);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = createMissingBusinessesCsvFilename();
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadCsvFile({
+      csv: buildMissingBusinessesCsv(missing),
+      fileName: createMissingBusinessesCsvFilename(),
+    });
   };
 
   const pctMissing = useMemo(() => {

@@ -42,7 +42,7 @@ Decision segura:
 Evidencia:
 
 - `src/router/routes/paths/Sales.tsx` registraba `/cash-reconciliation` sin `BusinessFeatureRouteGate`.
-- `src/router/routes/paths/CashReconciliztion.tsx` registraba la misma ruta con `BusinessFeatureRouteGate feature="treasury"`.
+- `src/router/routes/paths/CashReconciliation.tsx` registraba la misma ruta con `BusinessFeatureRouteGate feature="treasury"`.
 - `src/router/routes/routes.tsx` agregaba `sales` antes que `cashReconciliation`.
 
 Decision segura:
@@ -54,8 +54,8 @@ Decision segura:
 Evidencia:
 
 - `functions/src/app/versions/v2/accounting/utils/cashMovement.util.js` crea `sourceType = receivable_payment_void` con `direction = out`.
-- `src/hooks/cashCount/usePaymentsForCashCount.ts` filtraba solo `receivable_payment`.
-- `src/modules/cashReconciliation/.../CashCountMetaData.tsx` sumaba solo `receivable_payment` de entrada.
+- `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/hooks/usePaymentsForCashCount.ts` filtraba solo `receivable_payment`.
+- `src/domain/cashCount/cashCountMetaData.ts` sumaba solo `receivable_payment` de entrada.
 - `functions/src/app/versions/v2/cashCount/controllers/runCashCountAudit.controller.js` sumaba solo `receivable_payment` de entrada.
 
 Decision segura:
@@ -90,12 +90,12 @@ Tests:
 Archivo: `src/router/routes/paths/Sales.tsx`
 
 - Se elimino la ruta duplicada `/cash-reconciliation` desde ventas.
-- Queda activa solo la ruta de `src/router/routes/paths/CashReconciliztion.tsx`, que aplica `BusinessFeatureRouteGate feature="treasury"`.
+- Queda activa solo la ruta de `src/router/routes/paths/CashReconciliation.tsx`, que aplica `BusinessFeatureRouteGate feature="treasury"`.
 
 Verificacion:
 
 - `git grep -n "CASH_RECONCILIATION_LIST|CashReconciliation" -- src\router\routes\paths`
-- Resultado: `/cash-reconciliation` queda solo en `CashReconciliztion.tsx`.
+- Resultado: `/cash-reconciliation` queda solo en `CashReconciliation.tsx`.
 
 ### Tipo canonico de source types de cash movements
 
@@ -109,8 +109,9 @@ Archivo: `src/types/payments.ts`
 
 Archivos:
 
-- `src/hooks/cashCount/usePaymentsForCashCount.ts`
-- `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData.tsx`
+- `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/hooks/usePaymentsForCashCount.ts`
+- `src/domain/cashCount/cashCountMetaData.ts`
+- `src/domain/cashCount/cashCountMetaData.test.ts`
 - `functions/src/app/versions/v2/cashCount/controllers/runCashCountAudit.controller.js`
 
 Cambio:
@@ -121,8 +122,8 @@ Cambio:
 
 Tests:
 
-- `src/hooks/cashCount/usePaymentsForCashCount.test.ts`
-- `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData.test.ts`
+- `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/hooks/usePaymentsForCashCount.test.ts`
+- `src/domain/cashCount/cashCountMetaData.test.ts`
 
 ## Validaciones
 
@@ -131,7 +132,7 @@ Tests:
 Comando:
 
 ```powershell
-npm run test:run -- src/utils/accounting/postingProfiles.test.ts src/hooks/cashCount/usePaymentsForCashCount.test.ts src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData.test.ts
+npm run test:run -- src/utils/accounting/postingProfiles.test.ts src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/hooks/usePaymentsForCashCount.test.ts src/domain/cashCount/cashCountMetaData.test.ts
 ```
 
 Resultado:
@@ -177,7 +178,7 @@ Comando:
 ```powershell
 $output = npm run typecheck 2>&1
 $exitCode = $LASTEXITCODE
-$pattern = 'src/utils/accounting/postingProfiles|src/hooks/cashCount/usePaymentsForCashCount|CashCountMetaData|src/types/payments|src/router/routes/paths/Sales|functions/src/app/versions/v2/cashCount|projectAccountingEventToJournalEntry'
+$pattern = 'src/utils/accounting/postingProfiles|src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/hooks/usePaymentsForCashCount|CashCountMetaData|src/types/payments|src/router/routes/paths/Sales|functions/src/app/versions/v2/cashCount|projectAccountingEventToJournalEntry'
 "exit=$exitCode"
 $matches = $output | Select-String -Pattern $pattern
 if ($matches) { $matches } else { 'no touched-file typecheck errors in filtered output' }
@@ -200,7 +201,7 @@ Resultado:
 
 - Falla global por deuda TypeScript no acotada a este cambio.
 - Primeros errores observados:
-  - `src/components/availability/FrontendFeatureRouteGate.tsx`: feature faltante `invoiceTemplateV2Beta`.
+  - `src/router/guards/availability/FrontendFeatureRouteGate.tsx`: feature faltante `invoiceTemplateV2Beta`.
   - Exportaciones faltantes de `@ant-design/icons`.
   - Errores TS amplios en ventas, settings, firebase y rutas.
 - Se corrigio el unico error tocado detectado en `src/utils/accounting/postingProfiles.ts`.

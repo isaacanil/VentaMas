@@ -1,7 +1,5 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 type SwitchUserRoleRequest = {
   targetRole: string;
@@ -15,10 +13,10 @@ type SwitchUserRoleResponse = {
   message?: string;
 };
 
-const clientSwitchUserRoleCallable = httpsCallable<
+const clientSwitchUserRoleCallable = createFirebaseCallable<
   SwitchUserRoleRequest,
   SwitchUserRoleResponse
->(functions, 'clientSwitchUserRole');
+>('clientSwitchUserRole');
 
 export const fbSwitchUserRole = async (targetRole: string): Promise<void> => {
   const { sessionToken } = getStoredSession();

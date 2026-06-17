@@ -8,7 +8,7 @@ import {
 } from './accountsPayableDashboard';
 
 import type { Purchase } from '@/utils/purchase/types';
-import type { VendorBill } from '@/utils/vendorBills/types';
+import type { VendorBill } from '@/domain/accountsPayable/vendorBills/types';
 
 const buildVendorBill = ({
   purchase,

@@ -12,7 +12,7 @@ import { ReloadOutlined } from '@/constants/icons/antd';
 import {
   recalculateHrCommissionEntries,
   useHrCommissionEntries,
-} from '@/firebase/hrPayroll/useHrCommissionEntries';
+} from '@/modules/hrPayroll/repositories/useHrCommissionEntries';
 import { selectUser } from '@/features/auth/userSlice';
 import {
   HrDescription as Description,
@@ -32,7 +32,7 @@ import {
   formatHrMoney as formatMoney,
   HR_COMMISSION_ENTRY_STATUS_LABELS as STATUS_LABELS,
 } from '@/modules/hrPayroll/utils/hrPayrollDisplay';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import type {
   HrCommissionEntryRecord,
   HrCommissionEntryStatus,

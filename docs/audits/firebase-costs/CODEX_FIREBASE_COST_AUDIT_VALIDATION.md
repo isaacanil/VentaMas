@@ -136,7 +136,7 @@ Evidencia exacta:
 - `src/firebase/products/fbGetProducts.ts:647` devuelve `unsubscribe`.
 - Montajes detectados:
   - `src/modules/sales/pages/Sale/Sale.tsx:235`.
-  - `src/components/modals/InvoiceForm/components/Products/Products.tsx:157`.
+  - `src/modules/invoice/pages/InvoicesPage/components/InvoiceForm/components/Products/Products.tsx:157`.
   - `src/modules/invoice/pages/InvoicesPage/InvoiceWorkspaceModal/components/InvoiceWorkspaceProducts.tsx:89`.
   - `src/modules/orderAndPurchase/pages/OrderAndPurchase/shared/ProductModal.tsx:249`.
   - `src/modules/inventory/pages/InventorySummary/hooks/useInventorySummaryData.ts:79`.
@@ -215,16 +215,16 @@ Tests/validaciones necesarias:
 
 ### 2.3 `useGetProductsWithBatch`
 
-Hallazgo original: `P0/P1 - src/hooks/products/useGetProductsWithBatch.ts:37`.
+Hallazgo original: `P0/P1 - src/modules/inventory/pages/Inventory/components/Warehouse/forms/ProductStockForm/hooks/useGetProductsWithBatch.ts:37`.
 
 Estado: **confirmado, alcance mas acotado**.
 
 Evidencia exacta:
 
-- `src/hooks/products/useGetProductsWithBatch.ts:37` crea `query(productsRef)` sin constraints.
-- `src/hooks/products/useGetProductsWithBatch.ts:40` abre `onSnapshot`.
-- `src/hooks/products/useGetProductsWithBatch.ts:43` mapea todos los docs.
-- `src/hooks/products/useGetProductsWithBatch.ts:84` limpia con `unsubscribe?.()`.
+- `src/modules/inventory/pages/Inventory/components/Warehouse/forms/ProductStockForm/hooks/useGetProductsWithBatch.ts:37` crea `query(productsRef)` sin constraints.
+- `src/modules/inventory/pages/Inventory/components/Warehouse/forms/ProductStockForm/hooks/useGetProductsWithBatch.ts:40` abre `onSnapshot`.
+- `src/modules/inventory/pages/Inventory/components/Warehouse/forms/ProductStockForm/hooks/useGetProductsWithBatch.ts:43` mapea todos los docs.
+- `src/modules/inventory/pages/Inventory/components/Warehouse/forms/ProductStockForm/hooks/useGetProductsWithBatch.ts:84` limpia con `unsubscribe?.()`.
 - Montaje detectado:
   - `src/modules/inventory/pages/Inventory/components/Warehouse/forms/ProductStockForm/ProductStockForm.tsx:113`.
 
@@ -949,4 +949,3 @@ Limitaciones:
 - No se midieron reads/writes reales.
 - No se verifico con datasets grandes.
 - Las prioridades P0/P1 asumen que las pantallas se usan con frecuencia normal.
-

@@ -1,6 +1,10 @@
 import { DateTime } from 'luxon';
 import { useCallback, useMemo, useState } from 'react';
 
+import {
+  NO_BATCH_LABEL,
+  formatBatchLabel,
+} from '@/modules/inventory/utils/format';
 import type {
   DraftBatchOption,
   FilterDraft,
@@ -81,7 +85,9 @@ export const useInventoryFilters = ({
       .map((option) => ({
         ...option,
         displayLabel:
-          option.label === 'Sin lote' ? 'Sin lote' : `# ${option.label}`,
+          option.label === NO_BATCH_LABEL
+            ? NO_BATCH_LABEL
+            : formatBatchLabel(option.label, { prefix: '# ' }),
         expirationText: option.expirationDateMillis
           ? `Vence ${DateTime.fromMillis(option.expirationDateMillis).toFormat(
               'dd/MM/yyyy',

@@ -1,5 +1,4 @@
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
 import {
   deleteObject,
   getDownloadURL,
@@ -7,8 +6,9 @@ import {
   ref,
   uploadBytes,
 } from 'firebase/storage';
-import { db, functions } from '@/firebase/firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 import type { InvoiceSignatureAssets } from '@/types/invoice';
 import type { UserIdentity } from '@/types/users';
 
@@ -16,6 +16,27 @@ import type { BusinessInfoData } from './fbGetBusinessInfo';
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value);
+
+type CreateBusinessPayload = {
+  business: BusinessInfoData;
+  sessionToken?: string;
+};
+
+type CreateBusinessResponse = {
+  id?: string;
+  businessId?: string;
+  ok?: boolean;
+  role?: string;
+  hasMultipleBusinesses?: boolean;
+  onboardingSubscriptionStatus?: string | null;
+  subscriptionStatus?: string | null;
+  subscriptionPlanId?: string | null;
+};
+
+const clientCreateBusinessForCurrentAccountCallable = createFirebaseCallable<
+  CreateBusinessPayload,
+  CreateBusinessResponse
+>('clientCreateBusinessForCurrentAccount');
 
 export const normalizeBusinessInfoForUpdate = (
   businessInfo: BusinessInfoData,
@@ -54,36 +75,11 @@ export const createBusiness = async (
   subscriptionPlanId?: string | null;
 }> => {
   try {
-    const callable = httpsCallable<
-      { business: BusinessInfoData; sessionToken?: string },
-      {
-        id?: string;
-        businessId?: string;
-        ok?: boolean;
-        role?: string;
-        hasMultipleBusinesses?: boolean;
-        onboardingSubscriptionStatus?: string | null;
-        subscriptionStatus?: string | null;
-        subscriptionPlanId?: string | null;
-      }
-    >(functions, 'clientCreateBusinessForCurrentAccount');
     const { sessionToken } = getStoredSession();
-    const response = await callable({
+    const data = await clientCreateBusinessForCurrentAccountCallable({
       business: businessData,
       ...(sessionToken ? { sessionToken } : {}),
     });
-    const data = response?.data as
-      | {
-          id?: string;
-          businessId?: string;
-          ok?: boolean;
-          role?: string;
-          hasMultipleBusinesses?: boolean;
-          onboardingSubscriptionStatus?: string | null;
-          subscriptionStatus?: string | null;
-          subscriptionPlanId?: string | null;
-        }
-      | undefined;
     const createdId = data?.businessId || data?.id;
     if (!createdId) {
       throw new Error('Respuesta invalida al crear el negocio.');

@@ -1,6 +1,7 @@
-import { Popover } from '@heroui/react';
 import React, { useRef } from 'react';
 import styled from 'styled-components';
+
+import { VmPopover } from '@/components/heroui';
 
 import { CalendarSection } from './components/CalendarSection';
 import { DatePickerInput } from './components/DatePickerInput';
@@ -18,7 +19,7 @@ const Container = styled.div`
   width: 100%;
 `;
 
-const VmPopoverContent = styled(Popover.Content)`
+const VmPopoverContent = styled(VmPopover.Content)`
   border: 1px solid var(--ds-color-border-default);
   border-radius: 8px;
   background: var(--ds-color-bg-surface, #fff);
@@ -285,11 +286,11 @@ export const DatePicker = ({
 
   return (
     <Container ref={containerRef} className={className} style={style}>
-      <Popover.Root
+      <VmPopover.Root
         isOpen={open}
         onOpenChange={(v) => !disabled && setOpen(v)}
       >
-        <Popover.Trigger>
+        <VmPopover.Trigger>
           <DatePickerInput
             value={inputValue}
             placeholder={placeholder}
@@ -304,11 +305,11 @@ export const DatePicker = ({
             onClick={undefined}
             {...props}
           />
-        </Popover.Trigger>
+        </VmPopover.Trigger>
         <VmPopoverContent placement="bottom start">
           {desktopContent}
         </VmPopoverContent>
-      </Popover.Root>
+      </VmPopover.Root>
     </Container>
   );
 };

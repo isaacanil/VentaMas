@@ -1,7 +1,3 @@
-import { doc, onSnapshot } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
-
-import { db } from '@/firebase/firebaseconfig';
 import { isAccountingRolloutEnabledForBusiness } from '@/utils/accounting/monetary';
 import {
   defaultBankPaymentPolicy,
@@ -9,15 +5,15 @@ import {
   type BankPaymentPolicy,
 } from '@/utils/payments/bankPaymentPolicy';
 
-interface AccountingBankingSettingsSnapshot {
+import {
+  toCleanBusinessId,
+  useAccountingSettingsSnapshot,
+} from './useAccountingSettingsSnapshot';
+
+export interface AccountingBankingSettingsSnapshot {
   rolloutEnabled: boolean;
   bankAccountsEnabled: boolean;
   bankPaymentPolicy: BankPaymentPolicy;
-}
-
-interface AccountingBankingSettingsSnapshotState
-  extends AccountingBankingSettingsSnapshot {
-  businessId: string;
 }
 
 const defaultAccountingBankingSettings =
@@ -29,60 +25,39 @@ const defaultAccountingBankingSettings =
     bankPaymentPolicy: defaultBankPaymentPolicy(),
   });
 
+export const resolveAccountingBankingSettings = (
+  businessId: string | null | undefined,
+  settings: Record<string, unknown> | null,
+): AccountingBankingSettingsSnapshot => ({
+  rolloutEnabled: isAccountingRolloutEnabledForBusiness(businessId, settings),
+  bankAccountsEnabled: settings?.bankAccountsEnabled !== false,
+  bankPaymentPolicy: normalizeBankPaymentPolicy(settings?.bankPaymentPolicy),
+});
+
 export const useAccountingBankingSettings = (
   businessId: string | null | undefined,
   isEnabled: boolean,
 ): AccountingBankingSettingsSnapshot => {
-  const [snapshotSettings, setSnapshotSettings] =
-    useState<AccountingBankingSettingsSnapshotState | null>(null);
-  const fallbackSettings = defaultAccountingBankingSettings(businessId);
+  const normalizedBusinessId = toCleanBusinessId(businessId);
+  const fallbackSettings =
+    defaultAccountingBankingSettings(normalizedBusinessId);
+  const settingsSnapshot = useAccountingSettingsSnapshot(
+    normalizedBusinessId,
+    isEnabled,
+  );
 
-  useEffect(() => {
-    if (!isEnabled || !businessId) {
-      return undefined;
-    }
-
-    const settingsRef = doc(
-      db,
-      'businesses',
-      businessId,
-      'settings',
-      'accounting',
-    );
-
-    const unsubscribe = onSnapshot(
-      settingsRef,
-      (snapshot) => {
-        setSnapshotSettings({
-          businessId,
-          rolloutEnabled: isAccountingRolloutEnabledForBusiness(
-            businessId,
-            snapshot.data(),
-          ),
-          bankAccountsEnabled: snapshot.data()?.bankAccountsEnabled !== false,
-          bankPaymentPolicy: normalizeBankPaymentPolicy(
-            snapshot.data()?.bankPaymentPolicy,
-          ),
-        });
-      },
-      () => {
-        setSnapshotSettings({
-          businessId,
-          ...defaultAccountingBankingSettings(businessId),
-        });
-      },
-    );
-
-    return unsubscribe;
-  }, [businessId, isEnabled]);
-
-  if (!isEnabled || !businessId) {
+  if (!isEnabled || !normalizedBusinessId) {
     return fallbackSettings;
   }
 
-  return snapshotSettings?.businessId === businessId
-    ? snapshotSettings
-    : fallbackSettings;
+  if (settingsSnapshot.status !== 'ready') {
+    return fallbackSettings;
+  }
+
+  return resolveAccountingBankingSettings(
+    normalizedBusinessId,
+    settingsSnapshot.data,
+  );
 };
 
 export const useAccountingBankPaymentPolicy = (

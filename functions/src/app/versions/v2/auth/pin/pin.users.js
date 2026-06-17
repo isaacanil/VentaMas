@@ -5,6 +5,7 @@ import {
   normalizeRole,
   ROLE,
 } from '../../../../core/constants/roles.constants.js';
+import { resolveCallableAuthUid } from '../../../../core/utils/callableSessionAuth.util.js';
 
 import {
   extractUserData,
@@ -36,6 +37,31 @@ const toUnique = (values) => {
 
 const isDeveloperRole = (role) => normalizeRole(role || '') === ROLE.DEV;
 
+const resolvePayloadActorIds = (req) => {
+  const data = req?.data || {};
+  const actorPayloads = [data.actor, data.currentUser, data.user].filter(
+    (value) => value && typeof value === 'object',
+  );
+
+  return toUnique([
+    ...actorPayloads.flatMap((payload) => [payload.uid, payload.id]),
+    data.actorUid,
+    data.uid,
+  ]);
+};
+
+const assertPayloadActorMatchesAuth = ({ req, actorUid }) => {
+  const payloadActorIds = resolvePayloadActorIds(req);
+  const spoofedActorId = payloadActorIds.find((value) => value !== actorUid);
+
+  if (spoofedActorId) {
+    throw new HttpsError(
+      'permission-denied',
+      'No puedes suplantar otro usuario en esta operación.',
+    );
+  }
+};
+
 const resolveExpectedBusinessId = ({ req, actorPayload, actorUser }) => {
   const data = req?.data || {};
   return (
@@ -54,7 +80,9 @@ const loadCanonicalMembership = async (businessId, uid) => {
   const cleanedUid = toCleanString(uid);
   if (!cleanedBusinessId || !cleanedUid) return null;
 
-  const membershipRef = db.doc(`businesses/${cleanedBusinessId}/members/${cleanedUid}`);
+  const membershipRef = db.doc(
+    `businesses/${cleanedBusinessId}/members/${cleanedUid}`,
+  );
   const membershipSnap = await membershipRef.get();
   if (!membershipSnap.exists) return null;
 
@@ -88,13 +116,18 @@ const resolveActorBusinessContext = async ({
     ...memberships.map((entry) => entry.businessId),
   ]);
 
-  const globalRole = normalizeRole(actorData.activeRole || actorData.role || '');
+  const globalRole = normalizeRole(
+    actorData.activeRole || actorData.role || '',
+  );
   const isGlobalDev = isDeveloperRole(globalRole);
 
   let selected = null;
 
   for (const businessId of candidateBusinessIds) {
-    const canonicalMembership = await loadCanonicalMembership(businessId, actorUid);
+    const canonicalMembership = await loadCanonicalMembership(
+      businessId,
+      actorUid,
+    );
     const fallbackMembership = findActiveMembershipForBusiness(
       memberships,
       businessId,
@@ -118,7 +151,11 @@ const resolveActorBusinessContext = async ({
       break;
     }
 
-    if (fallbackMembership && expectedBusinessId && businessId === expectedBusinessId) {
+    if (
+      fallbackMembership &&
+      expectedBusinessId &&
+      businessId === expectedBusinessId
+    ) {
       selected = {
         businessId,
         role: normalizeRole(fallbackMembership.role || ROLE.CASHIER),
@@ -160,26 +197,7 @@ export const resolveActorContext = async (req) => {
   const actorPayload =
     req.data?.actor || req.data?.currentUser || req.data?.user || null;
 
-  const candidateIds = [
-    req.auth?.uid,
-    actorPayload?.uid,
-    actorPayload?.id,
-    req.data?.actorUid,
-    req.data?.uid,
-  ].filter((value) => typeof value === 'string' && value.trim().length > 0);
-
-  // Try every possible actor id until we find a matching users/{id} doc.
-  const uniqueCandidateIds = [];
-  const seen = new Set();
-  for (const value of candidateIds) {
-    const trimmed = value.trim();
-    if (!seen.has(trimmed)) {
-      uniqueCandidateIds.push(trimmed);
-      seen.add(trimmed);
-    }
-  }
-
-  let actorUid = uniqueCandidateIds[0] || null;
+  const actorUid = toCleanString(await resolveCallableAuthUid(req)) || null;
 
   if (!actorUid) {
     throw new HttpsError(
@@ -188,27 +206,14 @@ export const resolveActorContext = async (req) => {
     );
   }
 
-  let actorSnap = null;
-  for (const candidateId of uniqueCandidateIds) {
-    const snap = await loadUserDoc(candidateId);
-    if (snap) {
-      actorUid = candidateId;
-      actorSnap = snap;
-      break;
-    }
-  }
+  assertPayloadActorMatchesAuth({ req, actorUid });
 
+  const actorSnap = await loadUserDoc(actorUid);
   if (!actorSnap) {
     console.error('[resolveActorContext] User not found', {
       actorUid,
-      candidates: uniqueCandidateIds,
     });
-    throw new HttpsError(
-      'permission-denied',
-      'No se encontro tu usuario (IDs probados: ' +
-        uniqueCandidateIds.join(', ') +
-        ').',
-    );
+    throw new HttpsError('permission-denied', 'No se encontro tu usuario.');
   }
 
   const { user: actorUser } = extractUserData(actorSnap) || {};
@@ -358,5 +363,3 @@ export const ensureBusinessMatch = async ({
 
   return actorBusiness;
 };
-
-

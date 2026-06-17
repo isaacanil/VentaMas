@@ -11,7 +11,7 @@ import { Button, Popconfirm, Tooltip } from 'antd';
 import { type KeyboardEventHandler } from 'react';
 import styled from 'styled-components';
 
-import { AuthorizationStatusBadge } from './AuthorizationStatusBadge';
+import { AuthorizationStatusBadge } from './AuthorizationStatusBadge/AuthorizationStatusBadge';
 
 import type {
   AuthorizationRequest,

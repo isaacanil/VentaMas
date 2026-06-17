@@ -1,5 +1,4 @@
-import { Button, ButtonGroup, Drawer, Dropdown, Modal } from '@heroui/react';
-import { Spin, Switch } from 'antd';
+import { Switch } from 'antd';
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useSelector, useDispatch } from 'react-redux';
@@ -7,10 +6,17 @@ import {
   SelectSettingCart,
   togglePrintInvoice,
 } from '@/features/cart/cartSlice';
-import { Invoice } from '@/modules/invoice/components/Invoice/components/Invoice/Invoice';
+import { Invoice, TaxReceiptDepletedModal } from '@/modules/invoice/public';
+import {
+  VmButton,
+  VmButtonGroup,
+  VmDrawer,
+  VmDropdown,
+  VmModal,
+} from '@/components/heroui';
 
 import { Body } from './components/Body/Body';
-import { TaxReceiptDepletedModal } from './components/TaxReceiptDepletedModal/TaxReceiptDepletedModal';
+import { InvoiceProgress } from './components/Progress/InvoiceProgress';
 import { useInvoicePanelController } from './hooks/useInvoicePanelController';
 import useViewportWidth from '@/hooks/windows/useViewportWidth';
 import {
@@ -59,7 +65,11 @@ export const InvoicePanel = () => {
     (isChangeNegative && !isAddedToReceivables);
   const isSecondaryActionDisabled = loading.status || submitted;
   const isMobilePanel = viewportWidth <= 768;
+  const isPanelBusy = loading.status;
   const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen && isPanelBusy) {
+      return;
+    }
     if (!isOpen) {
       handleInvoicePanel();
     }
@@ -71,54 +81,56 @@ export const InvoicePanel = () => {
         data={invoice}
         template={invoiceType || undefined}
       />
-      <Spin spinning={loading.status}>
-        <ScrollableBody>
+      {isPanelBusy ? (
+        <InvoiceProgress visible={isPanelBusy} message={loading.message} />
+      ) : (
+        <ScrollableBody aria-busy={isPanelBusy}>
           <Body
             form={form}
             businessId={resolvedBusinessId}
             onMonetaryContextChange={handleMonetaryContextChange}
           />
         </ScrollableBody>
-      </Spin>
+      )}
     </>
   );
   const panelFooter = (
     <>
-      <Button
+      <VmButton
         variant="outline"
         isDisabled={isSecondaryActionDisabled}
         onPress={handleInvoicePanel}
       >
         Atrás
-      </Button>
-      <ButtonGroup>
-        <Button
+      </VmButton>
+      <VmButtonGroup>
+        <VmButton
           variant="primary"
           isPending={loading.status}
           isDisabled={isSubmittingDisabled}
           onPress={() => void handleSubmit()}
         >
           Facturar
-        </Button>
-        <Dropdown>
-          <Button
+        </VmButton>
+        <VmDropdown>
+          <VmButton
             variant="primary"
             isIconOnly
             aria-label="Más opciones"
             isDisabled={isSecondaryActionDisabled}
           >
-            <ButtonGroup.Separator />
+            <VmButtonGroup.Separator />
             <FontAwesomeIcon icon={faChevronDown} />
-          </Button>
-          <Dropdown.Popover placement="top end">
-            <Dropdown.Menu
+          </VmButton>
+          <VmDropdown.Popover placement="top end">
+            <VmDropdown.Menu
               onAction={(key) => {
                 if (key === 'cancel-sale') {
                   showCancelSaleConfirm();
                 }
               }}
             >
-              <Dropdown.Item
+              <VmDropdown.Item
                 key="print-invoice"
                 id="print-invoice"
                 textValue="Imprimir Factura"
@@ -131,8 +143,8 @@ export const InvoicePanel = () => {
                   />
                   <span>Imprimir Factura</span>
                 </PrintToggleItem>
-              </Dropdown.Item>
-              <Dropdown.Item
+              </VmDropdown.Item>
+              <VmDropdown.Item
                 key="cancel-sale"
                 id="cancel-sale"
                 textValue="Cancelar venta"
@@ -140,11 +152,11 @@ export const InvoicePanel = () => {
                 isDisabled={isSecondaryActionDisabled}
               >
                 Cancelar venta
-              </Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown.Popover>
-        </Dropdown>
-      </ButtonGroup>
+              </VmDropdown.Item>
+            </VmDropdown.Menu>
+          </VmDropdown.Popover>
+        </VmDropdown>
+      </VmButtonGroup>
     </>
   );
   const taxReceiptDialog = (
@@ -162,43 +174,51 @@ export const InvoicePanel = () => {
   return (
     <>
       {isMobilePanel ? (
-        <Drawer>
-          <Drawer.Backdrop
+        <VmDrawer.Primitive>
+          <VmDrawer.Backdrop
             isOpen={invoicePanel}
             onOpenChange={handleOpenChange}
           >
-            <Drawer.Content placement="bottom">
+            <VmDrawer.Content placement="bottom">
               <InvoicePanelDrawerDialog>
-                <Drawer.Handle />
-                <Drawer.CloseTrigger />
-                <Drawer.Header>
-                  <Drawer.Heading>Pago de Factura</Drawer.Heading>
-                </Drawer.Header>
-                <InvoicePanelDrawerBody>{panelBody}</InvoicePanelDrawerBody>
-                <InvoicePanelDrawerFooter>
-                  {panelFooter}
-                </InvoicePanelDrawerFooter>
+                <VmDrawer.Handle />
+                {!isPanelBusy && <VmDrawer.CloseTrigger />}
+                <VmDrawer.Header>
+                  <VmDrawer.Heading>Pago de Factura</VmDrawer.Heading>
+                </VmDrawer.Header>
+                <InvoicePanelDrawerBody $isBusy={isPanelBusy}>
+                  {panelBody}
+                </InvoicePanelDrawerBody>
+                {!isPanelBusy && (
+                  <InvoicePanelDrawerFooter>
+                    {panelFooter}
+                  </InvoicePanelDrawerFooter>
+                )}
                 {taxReceiptDialog}
               </InvoicePanelDrawerDialog>
-            </Drawer.Content>
-          </Drawer.Backdrop>
-        </Drawer>
+            </VmDrawer.Content>
+          </VmDrawer.Backdrop>
+        </VmDrawer.Primitive>
       ) : (
-        <Modal>
-          <Modal.Backdrop isOpen={invoicePanel} onOpenChange={handleOpenChange}>
+        <VmModal.Primitive>
+          <VmModal.Backdrop isOpen={invoicePanel} onOpenChange={handleOpenChange}>
             <InvoicePanelModalContainer placement="center" scroll="inside">
               <InvoicePanelDialog>
-                <Modal.CloseTrigger />
-                <Modal.Header>
-                  <Modal.Heading>Pago de Factura</Modal.Heading>
-                </Modal.Header>
-                <InvoicePanelBody>{panelBody}</InvoicePanelBody>
-                <InvoicePanelFooter>{panelFooter}</InvoicePanelFooter>
+                {!isPanelBusy && <VmModal.CloseTrigger />}
+                <VmModal.Header>
+                  <VmModal.Heading>Pago de Factura</VmModal.Heading>
+                </VmModal.Header>
+                <InvoicePanelBody $isBusy={isPanelBusy}>
+                  {panelBody}
+                </InvoicePanelBody>
+                {!isPanelBusy && (
+                  <InvoicePanelFooter>{panelFooter}</InvoicePanelFooter>
+                )}
                 {taxReceiptDialog}
               </InvoicePanelDialog>
             </InvoicePanelModalContainer>
-          </Modal.Backdrop>
-        </Modal>
+          </VmModal.Backdrop>
+        </VmModal.Primitive>
       )}
     </>
   );

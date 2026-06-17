@@ -6,10 +6,13 @@ import { formatPrice } from '@/utils/formatters';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
 
 import type {
+  TableColumnsType as ColumnsType,
+  TablePaginationConfig,
+} from 'antd';
+import type {
   ReceivableAuditInvoice,
   ReceivablesLookup,
 } from '@/utils/accountsReceivable/types';
-import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 
 interface InvoiceTableProps {
   invoices: ReceivableAuditInvoice[];

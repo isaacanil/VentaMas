@@ -1,8 +1,8 @@
 import { Table, Checkbox, Typography, Empty } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
-import type { ColumnsType } from 'antd/es/table';
-import type { CheckboxChangeEvent } from 'antd/es/checkbox';
+import type { TableColumnsType as ColumnsType } from 'antd';
+import type { CheckboxChangeEvent } from 'antd';
 
 import { toMillis } from '@/utils/date/toMillis';
 import type { ProcessedAccountRow } from '../../../types';

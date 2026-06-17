@@ -19,10 +19,13 @@ import {
 const ACCOUNTING_EVENT_TYPE_LABELS = {
   'invoice.committed': 'Factura confirmada',
   'invoice.voided': 'Factura anulada',
+  'inventory.cogs.recorded': 'Costo de venta registrado',
+  'inventory.cogs.voided': 'Costo de venta anulado',
   'accounts_receivable.payment.recorded': 'Cobro registrado',
   'accounts_receivable.payment.voided': 'Cobro anulado',
   'customer_credit_note.issued': 'Nota de crédito de cliente emitida',
   'customer_credit_note.applied': 'Nota de crédito de cliente aplicada',
+  'customer_debit_note.issued': 'Nota de débito de cliente emitida',
   'purchase.committed': 'Compra confirmada',
   'accounts_payable.payment.recorded': 'Pago a suplidor registrado',
   'accounts_payable.payment.voided': 'Pago a suplidor anulado',
@@ -57,10 +60,13 @@ const ACCOUNTING_MODULE_LABELS = {
 const ACCOUNTING_EVENT_MODULES = {
   'invoice.committed': 'sales',
   'invoice.voided': 'sales',
+  'inventory.cogs.recorded': 'sales',
+  'inventory.cogs.voided': 'sales',
   'accounts_receivable.payment.recorded': 'accounts_receivable',
   'accounts_receivable.payment.voided': 'accounts_receivable',
   'customer_credit_note.issued': 'accounts_receivable',
   'customer_credit_note.applied': 'accounts_receivable',
+  'customer_debit_note.issued': 'accounts_receivable',
   'purchase.committed': 'purchases',
   'accounts_payable.payment.recorded': 'accounts_payable',
   'accounts_payable.payment.voided': 'accounts_payable',
@@ -120,6 +126,19 @@ const resolvePreferredAccountingDocumentReference = ({
       return (
         toCleanString(snapshot.receiptNumber) ||
         toCleanString(snapshot.reference) ||
+        null
+      );
+    case 'customer_credit_note.issued':
+    case 'customer_credit_note.applied':
+      return (
+        toCleanString(snapshot.creditNoteNcf) ||
+        toCleanString(snapshot.creditNoteNumber) ||
+        null
+      );
+    case 'customer_debit_note.issued':
+      return (
+        toCleanString(snapshot.debitNoteNcf) ||
+        toCleanString(snapshot.debitNoteNumber) ||
         null
       );
     case 'purchase.committed':

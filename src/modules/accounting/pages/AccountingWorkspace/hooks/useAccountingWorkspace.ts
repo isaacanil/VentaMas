@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { message } from 'antd';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { useSelector } from 'react-redux';
@@ -9,10 +9,12 @@ import { fbCreateManualJournalEntry } from '@/firebase/accounting/fbCreateManual
 import { fbReplayAccountingEventProjection } from '@/firebase/accounting/fbReplayAccountingEventProjection';
 import { fbReverseJournalEntry } from '@/firebase/accounting/fbReverseJournalEntry';
 import { db } from '@/firebase/firebaseconfig';
-import { useAccountingConfig } from '@/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useAccountingConfig';
-import { useAccountingPostingProfiles } from '@/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useAccountingPostingProfiles';
-import { useChartOfAccounts } from '@/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useChartOfAccounts';
-import { useCashAccounts } from '@/modules/treasury/hooks/useCashAccounts';
+import {
+  useAccountingConfig,
+  useAccountingPostingProfiles,
+  useCashAccounts,
+  useChartOfAccounts,
+} from '@/modules/accounting/public';
 import type { AccountingEvent, JournalEntry } from '@/types/accounting';
 import { normalizeAccountingEventRecord } from '@/utils/accounting/accountingEvents';
 import { resolveUserDisplayNamesBatch } from '@/utils/users/resolveUserDisplayNamesBatch';
@@ -123,40 +125,102 @@ export const useAccountingWorkspace = ({
     enabled: includeAccountingSetup && config.generalAccountingEnabled,
     userId,
   });
-  const [accountingEvents, setAccountingEvents] = useState<AccountingEvent[]>(
-    [],
-  );
-  const [projectionDeadLetters, setProjectionDeadLetters] = useState<
+  const eventsQueryKey =
+    includeLedgerRecords && businessId && config.generalAccountingEnabled
+      ? `accountingEvents:${businessId}`
+      : null;
+  const deadLettersQueryKey =
+    includeLedgerRecords && businessId && config.generalAccountingEnabled
+      ? `accountingEventProjectionDeadLetters:${businessId}`
+      : null;
+  const journalQueryKey =
+    includeLedgerRecords && businessId && config.generalAccountingEnabled
+      ? `journalEntries:${businessId}`
+      : null;
+  const periodQueryKey =
+    businessId && config.generalAccountingEnabled
+      ? `accountingPeriodClosures:${businessId}`
+      : null;
+  const [accountingEventRecords, setAccountingEvents] = useState<
+    AccountingEvent[]
+  >([]);
+  const [projectionDeadLetterRecords, setProjectionDeadLetters] = useState<
     AccountingProjectionDeadLetter[]
   >([]);
-  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
-  const [periodClosures, setPeriodClosures] = useState<
+  const [journalEntryRecords, setJournalEntries] = useState<JournalEntry[]>(
+    [],
+  );
+  const [periodClosureRecords, setPeriodClosures] = useState<
     AccountingPeriodClosure[]
   >([]);
-  const [eventsLoading, setEventsLoading] = useState(true);
-  const [deadLettersLoading, setDeadLettersLoading] = useState(true);
-  const [journalLoading, setJournalLoading] = useState(true);
-  const [periodLoading, setPeriodLoading] = useState(true);
+  const [eventsSnapshotKey, setEventsSnapshotKey] = useState<string | null>(
+    null,
+  );
+  const [deadLettersSnapshotKey, setDeadLettersSnapshotKey] = useState<
+    string | null
+  >(null);
+  const [journalSnapshotKey, setJournalSnapshotKey] = useState<string | null>(
+    null,
+  );
+  const [periodSnapshotKey, setPeriodSnapshotKey] = useState<string | null>(
+    null,
+  );
   const [userNamesById, setUserNamesById] = useState<Record<string, string>>(
     {},
   );
+  const userNamesByIdRef = useRef<Record<string, string>>({});
   const [savingManualEntry, setSavingManualEntry] = useState(false);
   const [closingPeriod, setClosingPeriod] = useState(false);
   const [reversingEntryId, setReversingEntryId] = useState<string | null>(null);
   const [replayingEventId, setReplayingEventId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (
-      !includeLedgerRecords ||
-      !businessId ||
-      !config.generalAccountingEnabled
-    ) {
-      setAccountingEvents([]);
-      setEventsLoading(false);
-      return;
-    }
+  const accountingEvents = useMemo(
+    () =>
+      eventsQueryKey && eventsSnapshotKey === eventsQueryKey
+        ? accountingEventRecords
+        : [],
+    [accountingEventRecords, eventsQueryKey, eventsSnapshotKey],
+  );
+  const projectionDeadLetters = useMemo(
+    () =>
+      deadLettersQueryKey && deadLettersSnapshotKey === deadLettersQueryKey
+        ? projectionDeadLetterRecords
+        : [],
+    [
+      deadLettersQueryKey,
+      deadLettersSnapshotKey,
+      projectionDeadLetterRecords,
+    ],
+  );
+  const journalEntries = useMemo(
+    () =>
+      journalQueryKey && journalSnapshotKey === journalQueryKey
+        ? journalEntryRecords
+        : [],
+    [journalEntryRecords, journalQueryKey, journalSnapshotKey],
+  );
+  const periodClosures = useMemo(
+    () =>
+      periodQueryKey && periodSnapshotKey === periodQueryKey
+        ? periodClosureRecords
+        : [],
+    [periodClosureRecords, periodQueryKey, periodSnapshotKey],
+  );
+  const eventsLoading = Boolean(
+    eventsQueryKey && eventsSnapshotKey !== eventsQueryKey,
+  );
+  const deadLettersLoading = Boolean(
+    deadLettersQueryKey && deadLettersSnapshotKey !== deadLettersQueryKey,
+  );
+  const journalLoading = Boolean(
+    journalQueryKey && journalSnapshotKey !== journalQueryKey,
+  );
+  const periodLoading = Boolean(
+    periodQueryKey && periodSnapshotKey !== periodQueryKey,
+  );
 
-    setEventsLoading(true);
+  useEffect(() => {
+    if (!eventsQueryKey || !businessId) return undefined;
 
     const eventsRef = collection(
       db,
@@ -176,30 +240,20 @@ export const useAccountingWorkspace = ({
             ),
           ),
         );
-        setEventsLoading(false);
+        setEventsSnapshotKey(eventsQueryKey);
       },
       (cause) => {
         console.error('Error cargando accountingEvents:', cause);
         setAccountingEvents([]);
-        setEventsLoading(false);
+        setEventsSnapshotKey(eventsQueryKey);
       },
     );
 
     return () => unsubscribe();
-  }, [businessId, config.generalAccountingEnabled, includeLedgerRecords]);
+  }, [businessId, eventsQueryKey]);
 
   useEffect(() => {
-    if (
-      !includeLedgerRecords ||
-      !businessId ||
-      !config.generalAccountingEnabled
-    ) {
-      setProjectionDeadLetters([]);
-      setDeadLettersLoading(false);
-      return;
-    }
-
-    setDeadLettersLoading(true);
+    if (!deadLettersQueryKey || !businessId) return undefined;
 
     const deadLettersRef = collection(
       db,
@@ -219,7 +273,7 @@ export const useAccountingWorkspace = ({
             ),
           ),
         );
-        setDeadLettersLoading(false);
+        setDeadLettersSnapshotKey(deadLettersQueryKey);
       },
       (cause) => {
         console.error(
@@ -227,25 +281,15 @@ export const useAccountingWorkspace = ({
           cause,
         );
         setProjectionDeadLetters([]);
-        setDeadLettersLoading(false);
+        setDeadLettersSnapshotKey(deadLettersQueryKey);
       },
     );
 
     return () => unsubscribe();
-  }, [businessId, config.generalAccountingEnabled, includeLedgerRecords]);
+  }, [businessId, deadLettersQueryKey]);
 
   useEffect(() => {
-    if (
-      !includeLedgerRecords ||
-      !businessId ||
-      !config.generalAccountingEnabled
-    ) {
-      setJournalEntries([]);
-      setJournalLoading(false);
-      return;
-    }
-
-    setJournalLoading(true);
+    if (!journalQueryKey || !businessId) return undefined;
 
     const journalRef = collection(
       db,
@@ -265,26 +309,20 @@ export const useAccountingWorkspace = ({
             ),
           ),
         );
-        setJournalLoading(false);
+        setJournalSnapshotKey(journalQueryKey);
       },
       (cause) => {
         console.error('Error cargando journalEntries:', cause);
         setJournalEntries([]);
-        setJournalLoading(false);
+        setJournalSnapshotKey(journalQueryKey);
       },
     );
 
     return () => unsubscribe();
-  }, [businessId, config.generalAccountingEnabled, includeLedgerRecords]);
+  }, [businessId, journalQueryKey]);
 
   useEffect(() => {
-    if (!businessId || !config.generalAccountingEnabled) {
-      setPeriodClosures([]);
-      setPeriodLoading(false);
-      return;
-    }
-
-    setPeriodLoading(true);
+    if (!periodQueryKey || !businessId) return undefined;
 
     const periodsRef = collection(
       db,
@@ -300,17 +338,17 @@ export const useAccountingWorkspace = ({
             normalizePeriodClosure(docSnapshot.id, docSnapshot.data()),
           ),
         );
-        setPeriodLoading(false);
+        setPeriodSnapshotKey(periodQueryKey);
       },
       (cause) => {
         console.error('Error cargando accountingPeriodClosures:', cause);
         setPeriodClosures([]);
-        setPeriodLoading(false);
+        setPeriodSnapshotKey(periodQueryKey);
       },
     );
 
     return () => unsubscribe();
-  }, [businessId, config.generalAccountingEnabled]);
+  }, [businessId, periodQueryKey]);
 
   useEffect(() => {
     if (
@@ -318,10 +356,7 @@ export const useAccountingWorkspace = ({
       !businessId ||
       !config.generalAccountingEnabled
     ) {
-      setUserNamesById((currentValue) =>
-        Object.keys(currentValue).length > 0 ? {} : currentValue,
-      );
-      return;
+      return undefined;
     }
 
     const candidateIds = Array.from(
@@ -342,13 +377,17 @@ export const useAccountingWorkspace = ({
 
     let cancelled = false;
 
-    void resolveUserDisplayNamesBatch(db, candidateIds, userNamesById)
+    void resolveUserDisplayNamesBatch(db, candidateIds, userNamesByIdRef.current)
       .then((loaded) => {
         if (cancelled || !Object.keys(loaded).length) return;
-        setUserNamesById((currentValue) => ({
-          ...currentValue,
-          ...loaded,
-        }));
+        setUserNamesById((currentValue) => {
+          const nextValue = {
+            ...currentValue,
+            ...loaded,
+          };
+          userNamesByIdRef.current = nextValue;
+          return nextValue;
+        });
       })
       .catch((cause) => {
         console.error(
@@ -366,7 +405,6 @@ export const useAccountingWorkspace = ({
     config.generalAccountingEnabled,
     includeLedgerRecords,
     journalEntries,
-    userNamesById,
   ]);
 
   const ledgerRecords = useMemo(

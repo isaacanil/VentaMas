@@ -8,7 +8,7 @@
     "src/utils/pricing.ts",
     "src/utils/invoice.ts",
     "src/utils/formatters.ts",
-    "src/utils/sales.ts",
+    "src/modules/home/pages/Home/HomeScreen/components/HomeScreenContent/utils/sales.ts",
     "src/utils/inventory/expiration.ts"
   ]
 }

@@ -1,9 +1,9 @@
 import { Form } from 'antd';
 import styled from 'styled-components';
 
-import Loader from '@/components/common/Loader/Loader';
-import PurchaseCompletionSummary from '@/components/Purchase/PurchaseCompletionSummary';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import PurchaseCompletionSummary from '@/modules/orderAndPurchase/components/PurchaseCompletionSummary/PurchaseCompletionSummary';
+import ManagementLoader from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/components/ManagementLoader/ManagementLoader';
+import { MenuApp } from '@/modules/navigation/public';
 
 import { PageShell } from '@/components/layout/PageShell';
 import { PurchaseManagementActions } from './components/PurchaseManagementActions';
@@ -60,7 +60,7 @@ const PurchaseManagement = () => {
     <>
       <MenuApp showBackButton={false} sectionName={sectionName} />
       <Container>
-        <Loader loading={purchaseLoading} minHeight="200px">
+        <ManagementLoader loading={purchaseLoading} minHeight="200px">
           <Body>
             <Form layout="vertical">
               {isReceiptMode ? (
@@ -79,7 +79,7 @@ const PurchaseManagement = () => {
               )}
             </Form>
           </Body>
-        </Loader>
+        </ManagementLoader>
 
         <PurchaseManagementActions
           onCancel={handleCancel}

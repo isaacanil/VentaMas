@@ -3,17 +3,16 @@ import {
   flip,
   offset as floatingOffset,
   shift,
+  size,
   useFloating,
 } from '@floating-ui/react';
 import { Button, Input, Typography } from 'antd';
 import {
   CommentOutlined,
-  DownOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import styled from 'styled-components';
 
 import {
   addInvoiceComment,
@@ -21,6 +20,20 @@ import {
   SelectInvoiceComment,
 } from '@/features/cart/cartSlice';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
+
+import {
+  CharCount,
+  Chevron,
+  Container,
+  FloatingPanel,
+  PanelActions,
+  PanelBody,
+  SummaryButton,
+  SummaryContent,
+  SummaryFooter,
+  SummaryHeading,
+  SummaryMeta,
+} from './InvoiceComment.styles';
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -36,7 +49,18 @@ export const InvoiceComment = () => {
   const { refs, floatingStyles } = useFloating({
     placement: 'bottom-start',
     whileElementsMounted: autoUpdate,
-    middleware: [floatingOffset(10), flip({ padding: 8 }), shift({ padding: 8 })],
+    middleware: [
+      floatingOffset(10),
+      flip({ padding: 8 }),
+      shift({ padding: 8 }),
+      size({
+        apply({ rects, elements }) {
+          Object.assign(elements.floating.style, {
+            width: `${rects.reference.width}px`,
+          });
+        },
+      }),
+    ],
   });
 
   const setReference = useCallback(
@@ -47,11 +71,6 @@ export const InvoiceComment = () => {
     (node: HTMLElement | null) => refs.setFloating(node),
     [refs],
   );
-
-  const referenceWidth =
-    refs.reference.current instanceof HTMLElement
-      ? refs.reference.current.getBoundingClientRect().width
-      : null;
 
   useClickOutSide(containerRef, isOpen, () => setIsOpen(false));
 
@@ -120,10 +139,7 @@ export const InvoiceComment = () => {
       {isOpen && (
         <FloatingPanel
           ref={setFloating}
-          style={{
-            ...floatingStyles,
-            width: referenceWidth ?? undefined,
-          }}
+          style={floatingStyles}
         >
           <PanelBody>
             <TextArea
@@ -155,95 +171,3 @@ export const InvoiceComment = () => {
     </Container>
   );
 };
-
-const Container = styled.div`
-  width: 100%;
-`;
-
-const SummaryButton = styled.button`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #d9d9d9;
-  border-radius: 10px;
-  background: #fafafa;
-  text-align: left;
-  cursor: pointer;
-  transition:
-    border-color 0.16s ease,
-    background-color 0.16s ease;
-
-  &:hover {
-    border-color: #bfbfbf;
-  }
-`;
-
-const SummaryContent = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-`;
-
-const SummaryHeading = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const SummaryMeta = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const SummaryFooter = styled.div`
-  width: 100%;
-`;
-
-const Chevron = styled(DownOutlined)<{ $expanded: boolean }>`
-  color: rgba(0, 0, 0, 0.45);
-  transition: transform 0.16s ease;
-  transform: rotate(${({ $expanded }) => ($expanded ? '180deg' : '0deg')});
-`;
-
-const FloatingPanel = styled.div`
-  display: flex;
-  flex-direction: column;
-  border: 1px solid #f0f0f0;
-  border-radius: 10px;
-  background: #ffffff;
-  box-shadow: 0 10px 30px rgb(0 0 0 / 12%);
-  overflow: hidden;
-  z-index: 1200;
-`;
-
-const PanelBody = styled.div`
-  position: relative;
-  padding: 12px 12px 20px;
-
-  .ant-input {
-    font-size: 13px;
-  }
-`;
-
-const CharCount = styled.span`
-  position: absolute;
-  right: 16px;
-  bottom: 6px;
-  font-size: 11px;
-  color: rgba(0, 0, 0, 0.35);
-`;
-
-const PanelActions = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 8px 12px;
-  border-top: 1px solid #f5f5f5;
-  background: #fafafa;
-`;

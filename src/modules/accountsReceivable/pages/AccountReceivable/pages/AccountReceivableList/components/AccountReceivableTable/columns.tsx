@@ -1,4 +1,5 @@
-import { getTimeElapsed } from '@/hooks/useFormatTime';
+import { getTimeElapsed } from '@/utils/date/formatTime';
+import { toMillis } from '@/utils/date/toMillis';
 import { formatPrice } from '@/utils/format';
 
 import AccountActionsCell from './AccountActionsCell';
@@ -13,22 +14,6 @@ import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/Advanced
 
 type AccountReceivableRowRecord = AccountReceivableRow &
   Record<string, unknown>;
-
-const toMillis = (value?: TimestampLike): number | null => {
-  if (!value) return null;
-  if (value instanceof Date) return value.getTime();
-  if (typeof value === 'number') return value;
-  if (typeof value === 'string') {
-    const asNum = Number(value);
-    return Number.isNaN(asNum) ? new Date(value).getTime() : asNum;
-  }
-  if (typeof value === 'object') {
-    if (typeof value.toMillis === 'function') return value.toMillis();
-    if (typeof value.toDate === 'function') return value.toDate().getTime();
-    if (typeof value.seconds === 'number') return value.seconds * 1000;
-  }
-  return null;
-};
 
 export const getColumns = (
   isPharmacy: boolean,
@@ -74,7 +59,7 @@ export const getColumns = (
       sortable: true,
       align: 'left',
       cell: ({ value }) => {
-        const time = toMillis(value as TimestampLike | undefined);
+        const time = toMillis(value as TimestampLike | undefined) ?? null;
         return time ? getTimeElapsed(time, 0) : 'N/A';
       },
       maxWidth: '1fr',

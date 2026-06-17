@@ -5,13 +5,13 @@ import {
   CloseOutlined,
 } from '@/constants/icons/antd';
 import { Form, Input, Button, Drawer, Tooltip, Dropdown } from 'antd';
-import type { MenuProps } from 'antd';
-import type { InputRef } from 'antd/es/input';
+import type { InputRef, MenuProps } from 'antd';
 import { DateTime } from 'luxon';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import styled from 'styled-components';
 
+import { useAutoFocusOnOpen } from '@/hooks/useAutoFocusOnOpen';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
 import { normalizeText } from '@/utils/text';
 
@@ -213,13 +213,7 @@ const DependentSelector = ({
   const [search, setSearch] = useState('');
   const searchInputRef = useRef<InputRef | null>(null);
 
-  useEffect(() => {
-    if (!visible) return undefined;
-    const focusTimer = window.setTimeout(() => {
-      searchInputRef.current?.focus();
-    }, 100);
-    return () => window.clearTimeout(focusTimer);
-  }, [visible]);
+  useAutoFocusOnOpen({ open: visible, ref: searchInputRef });
 
   const filteredDependents = search
     ? dependents.filter((dependent) =>

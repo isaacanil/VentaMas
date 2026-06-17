@@ -9,7 +9,9 @@ export type CreditNoteStatus =
   | 'issued'
   | 'applied'
   | 'fully_used'
-  | 'cancelled';
+  | 'cancelled'
+  | 'electronic_pending'
+  | 'electronic_failed';
 
 export interface CreditNoteActor {
   uid?: string;
@@ -21,6 +23,7 @@ export interface CreditNoteRecord extends Record<string, unknown> {
   numberID?: string | number;
   number?: string;
   ncf?: string;
+  eNcf?: string;
   status?: CreditNoteStatus | string;
   createdAt?: TimestampLike;
   updatedAt?: TimestampLike;
@@ -33,6 +36,12 @@ export interface CreditNoteRecord extends Record<string, unknown> {
   invoiceId?: string;
   invoiceNcf?: string;
   invoiceNumber?: string | number;
+  invoiceDate?: TimestampLike;
+  invoiceTotalAmount?: number;
+  modificationCode?: string;
+  electronicTaxReceipt?: InvoiceData['electronicTaxReceipt'];
+  fiscalMode?: string;
+  documentFormat?: string;
 }
 
 export interface CreditNoteApplicationRecord extends Record<string, unknown> {

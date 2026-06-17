@@ -13,7 +13,7 @@ import { openInvoiceWorkspaceModal } from '@/features/invoice/invoiceWorkspaceMo
 import useViewportWidth from '@/hooks/windows/useViewportWidth';
 import { isInvoicePaidInFull } from '@/utils/invoice';
 import { prepareInvoiceForEdit } from '@/utils/invoice';
-import { Receipt } from '@/modules/checkout/pages/checkout/Receipt';
+import { Receipt } from '@/modules/checkout/public';
 import useInvoiceEditAuthorization from '@/modules/invoice/pages/InvoicesPage/hooks/useInvoiceEditAuthorization';
 import { Button } from '@/components/ui/Button/Button';
 

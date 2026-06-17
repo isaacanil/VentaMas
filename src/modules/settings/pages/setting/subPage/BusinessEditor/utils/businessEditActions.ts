@@ -2,6 +2,10 @@ import {
   fbUpdateBusinessInfo,
   fbUpdateBusinessLogo,
 } from '@/firebase/businessInfo/fbAddBusinessInfo';
+import {
+  normalizeBusinessCountryCode,
+  normalizeBusinessSubdivisionForStorage,
+} from '@/shared/location/businessLocations';
 
 import type { BusinessProfileFormValues } from '../components/BusinessProfileForm';
 
@@ -55,6 +59,11 @@ export const submitBusinessUpdate = async ({
   user: unknown;
   values: BusinessProfileFormValues;
 }): Promise<BusinessUpdateResult> => {
+  const country = normalizeBusinessCountryCode(values.country);
+  const province = normalizeBusinessSubdivisionForStorage(
+    country,
+    values.province,
+  );
   const invoiceData = {
     ...business?.invoice,
     invoiceMessage: business?.invoice?.invoiceMessage || '',
@@ -66,8 +75,8 @@ export const submitBusinessUpdate = async ({
     ...values,
     logoUrl: imageUrl || '',
     logo: values.logo || '',
-    country: values.country || '',
-    province: values.province || '',
+    country,
+    province,
     tel: values.tel || '',
     email: values.email || '',
     rnc: values.rnc || '',

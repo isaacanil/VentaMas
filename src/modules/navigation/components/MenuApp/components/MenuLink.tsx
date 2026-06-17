@@ -6,6 +6,10 @@ import styled, { css } from 'styled-components';
 
 import { toggleDeveloperModal } from '@/features/modals/modalSlice';
 import type { MenuItem } from '@/types/menu';
+import {
+  buildSearchIndex,
+  normalizeTrimmedSearchText,
+} from '@/utils/searchText';
 
 import { SubMenu } from './SubMenu/SubMenu';
 
@@ -17,6 +21,18 @@ interface MenuLinkProps {
   searchQuery?: string;
   submenuPortalElement?: HTMLElement | null;
 }
+
+const ignorePreloadError = () => undefined;
+
+const preloadMenuItem = (item: MenuItem) => {
+  if (typeof item?.preload !== 'function') return;
+
+  try {
+    void Promise.resolve(item.preload()).catch(ignorePreloadError);
+  } catch {
+    ignorePreloadError();
+  }
+};
 
 export const MenuLink = ({
   item,
@@ -92,9 +108,7 @@ export const MenuLink = ({
   };
 
   const handlePrefetch = () => {
-    if (typeof item?.preload === 'function') {
-      item.preload();
-    }
+    preloadMenuItem(item);
   };
 
   const isSubmenuItem = Boolean(item?.submenu);
@@ -152,32 +166,12 @@ export const MenuLink = ({
   );
 };
 
-const normalizeTitleSearchValue = (value: string) =>
-  value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
-
 const getSearchMatchRanges = (title: string, searchQuery: string) => {
-  const normalizedQuery = normalizeTitleSearchValue(searchQuery).trim();
+  const normalizedQuery = normalizeTrimmedSearchText(searchQuery);
   if (!title || !normalizedQuery) return [];
 
-  const normalizedToOriginal: Array<{ end: number; start: number }> = [];
-  let normalizedTitle = '';
-  let originalOffset = 0;
-
-  Array.from(title).forEach((character) => {
-    const start = originalOffset;
-    const end = start + character.length;
-    const normalizedCharacter = normalizeTitleSearchValue(character);
-
-    Array.from(normalizedCharacter).forEach(() => {
-      normalizedToOriginal.push({ start, end });
-    });
-
-    normalizedTitle += normalizedCharacter;
-    originalOffset = end;
-  });
+  const { normalized: normalizedTitle, ranges: normalizedToOriginal } =
+    buildSearchIndex(title);
 
   const ranges: Array<{ end: number; start: number }> = [];
   let searchFrom = 0;

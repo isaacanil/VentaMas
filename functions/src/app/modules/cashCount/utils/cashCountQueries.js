@@ -7,7 +7,7 @@ function buildOpenCashCountQuery(user) {
   const employeeRef = db.collection('users').doc(user.uid);
   return db
     .collection(`businesses/${user.businessID}/cashCounts`)
-    .where('cashCount.state', 'in', ['open', 'closing'])
+    .where('cashCount.state', '==', 'open')
     .where('cashCount.opening.employee', '==', employeeRef)
     .limit(1);
 }

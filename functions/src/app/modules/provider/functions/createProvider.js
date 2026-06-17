@@ -3,20 +3,10 @@ import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import { nanoid } from 'nanoid';
 
 import { db, FieldValue } from '../../../core/config/firebase.js';
-import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.util.js';
-import {
-  MEMBERSHIP_ROLE_GROUPS,
-  assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
 import { LIMIT_OPERATION_KEYS } from '../../../versions/v2/billing/config/limitOperations.config.js';
 import { incrementBusinessUsageMetric } from '../../../versions/v2/billing/services/usage.service.js';
-import {
-  assertBusinessSubscriptionAccess,
-} from '../../../versions/v2/billing/utils/subscriptionAccess.util.js';
+import { prepareLimitedCreateOperation } from '../../../versions/v2/billing/utils/limitedCreateOperation.util.js';
 import { toCleanString } from '../../../versions/v2/billing/utils/billingCommon.util.js';
-
-const asRecord = (value) =>
-  value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 
 const readString = (value) => {
   const normalized = toCleanString(value);
@@ -67,34 +57,14 @@ const hasDuplicateProvider = async ({
 
 export const createProvider = onCall(async (request) => {
   try {
-    const authUid = await resolveCallableAuthUid(request);
-    if (!authUid) {
-      throw new HttpsError('unauthenticated', 'Usuario no autenticado');
-    }
-
-    const payload = asRecord(request?.data);
-    const providerInput = asRecord(payload.provider);
-    const businessId =
-      toCleanString(payload.businessId) ||
-      toCleanString(payload.businessID) ||
-      null;
-
-    if (!businessId) {
-      throw new HttpsError('invalid-argument', 'businessId es requerido');
-    }
-    if (!Object.keys(providerInput).length) {
-      throw new HttpsError('invalid-argument', 'provider es requerido');
-    }
-
-    await assertUserAccess({
-      authUid,
+    const {
       businessId,
-      allowedRoles: MEMBERSHIP_ROLE_GROUPS.INVOICE_OPERATOR,
-    });
-
-    await assertBusinessSubscriptionAccess({
-      businessId,
-      action: 'write',
+      input: providerInput,
+      metricKey,
+      incrementBy,
+    } = await prepareLimitedCreateOperation({
+      request,
+      inputKey: 'provider',
       operation: LIMIT_OPERATION_KEYS.SUPPLIER_CREATE,
     });
 
@@ -127,8 +97,8 @@ export const createProvider = onCall(async (request) => {
 
       await incrementBusinessUsageMetric({
         businessId,
-        metricKey: 'suppliersTotal',
-        incrementBy: 1,
+        metricKey,
+        incrementBy,
         tx: transaction,
       });
     });

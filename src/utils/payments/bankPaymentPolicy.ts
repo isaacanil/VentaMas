@@ -1,5 +1,6 @@
 import type { PaymentMethodCode } from '@/types/payments';
 import { BANK_PAYMENT_METHOD_CODES } from '@/utils/payments/contracts';
+import { toCleanString } from '@/utils/text';
 
 export const BANK_PAYMENT_MODULE_KEYS = [
   'sales',
@@ -69,12 +70,6 @@ const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
-
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
 
 export const isBankPaymentMethodCode = (
   value: unknown,

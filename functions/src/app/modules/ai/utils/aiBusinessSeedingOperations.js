@@ -1,12 +1,13 @@
+import {
+  readAiBusinessSeedingString as readString,
+} from './aiBusinessSeedingText.util.js';
+
 export const AI_BUSINESS_SEEDING_OPERATIONS = {
   ANALYZE: 'analyze',
   DIAGNOSTICS: 'diagnostics',
   EXECUTE: 'execute',
   STATUS: 'status',
 };
-
-const readString = (value) =>
-  typeof value === 'string' && value.trim() ? value.trim() : '';
 
 export const readAiBusinessSeedingOperation = (payload = {}) => {
   const operation =

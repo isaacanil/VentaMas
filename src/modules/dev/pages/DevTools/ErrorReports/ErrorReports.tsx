@@ -1,6 +1,12 @@
 import { useMemo, useState } from 'react';
 
-import { Alert, Button, Card, Chip, Table } from '@heroui/react';
+import {
+  VmAlert as Alert,
+  VmButton as Button,
+  VmCard as Card,
+  VmChip as Chip,
+  VmTable as Table,
+} from '@/components/heroui';
 import styled from 'styled-components';
 
 import { useErrorReports } from './useErrorReports';

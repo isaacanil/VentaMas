@@ -45,6 +45,11 @@ type InvoiceDoc = {
   data: InvoiceData;
 };
 
+type FilteredInvoicesSnapshotState = {
+  queryKey: string | null;
+  invoices: InvoiceDoc[];
+};
+
 const applyClientSideFilters = (
   invoices: InvoiceDoc[],
   filters: InvoiceFilters,
@@ -95,27 +100,44 @@ const applyClientSideFilters = (
 
 export const useFbGetInvoicesWithFilters = (filters: InvoiceFilters = {}) => {
   const user = useSelector(selectUser) as UserIdentity | null;
-  const [invoices, setInvoices] = useState<InvoiceDoc[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [snapshotState, setSnapshotState] =
+    useState<FilteredInvoicesSnapshotState>({
+      queryKey: null,
+      invoices: [],
+    });
 
-  if (!user?.businessID) {
-    if (invoices.length > 0) setInvoices([]);
-    if (loading) setLoading(false);
-  }
-
-  const queryKey = useMemo(
-    () => `${user?.businessID}-${JSON.stringify(filters)}`,
-    [filters, user?.businessID],
+  const businessID = user?.businessID ?? null;
+  const uid = user?.uid ?? null;
+  const role = user?.role ?? null;
+  const activeFilters = useMemo<InvoiceFilters>(
+    () => ({
+      startDate: filters.startDate,
+      endDate: filters.endDate,
+      clientId: filters.clientId,
+      paymentMethod: filters.paymentMethod,
+      paymentStatus: filters.paymentStatus,
+      minAmount: filters.minAmount,
+      maxAmount: filters.maxAmount,
+      receivablesOnly: filters.receivablesOnly,
+    }),
+    [
+      filters.startDate,
+      filters.endDate,
+      filters.clientId,
+      filters.paymentMethod,
+      filters.paymentStatus,
+      filters.minAmount,
+      filters.maxAmount,
+      filters.receivablesOnly,
+    ],
   );
-  const [prevQueryKey, setPrevQueryKey] = useState(queryKey);
-
-  if (queryKey !== prevQueryKey) {
-    setPrevQueryKey(queryKey);
-    setLoading(true);
-  }
+  const queryKey = useMemo(
+    () => (businessID ? `${businessID}-${JSON.stringify(activeFilters)}` : null),
+    [activeFilters, businessID],
+  );
 
   useEffect(() => {
-    if (!user?.businessID) {
+    if (!user || !businessID || !queryKey) {
       return undefined;
     }
 
@@ -124,8 +146,12 @@ export const useFbGetInvoicesWithFilters = (filters: InvoiceFilters = {}) => {
         validateUser(user);
         const { businessID, uid, role } = user;
 
-        const start = filters.startDate ? new Date(filters.startDate) : null;
-        const end = filters.endDate ? new Date(filters.endDate) : null;
+        const start = activeFilters.startDate
+          ? new Date(activeFilters.startDate)
+          : null;
+        const end = activeFilters.endDate
+          ? new Date(activeFilters.endDate)
+          : null;
         const restrictionStartDate = new Date('2024-01-21T14:41:00');
 
         const invoicesRef = collection(
@@ -164,9 +190,9 @@ export const useFbGetInvoicesWithFilters = (filters: InvoiceFilters = {}) => {
           );
         }
 
-        if (filters.clientId) {
+        if (activeFilters.clientId) {
           queryConstraints.push(
-            where('data.client.id', '==', filters.clientId),
+            where('data.client.id', '==', activeFilters.clientId),
           );
         }
 
@@ -184,8 +210,7 @@ export const useFbGetInvoicesWithFilters = (filters: InvoiceFilters = {}) => {
           q,
           (snapshot) => {
             if (snapshot.empty) {
-              setInvoices([]);
-              setLoading(false);
+              setSnapshotState({ queryKey, invoices: [] });
               return;
             }
 
@@ -196,21 +221,20 @@ export const useFbGetInvoicesWithFilters = (filters: InvoiceFilters = {}) => {
               )
               .map((item) => item as InvoiceDoc);
 
-            data = applyClientSideFilters(data, filters);
+            data = applyClientSideFilters(data, activeFilters);
 
-            setInvoices(data);
-            setLoading(false);
+            setSnapshotState({ queryKey, invoices: data });
           },
           (error) => {
             console.error('Error fetching invoices with filters:', error);
-            setLoading(false);
+            setSnapshotState({ queryKey, invoices: [] });
           },
         );
 
         return unsubscribe;
       } catch (error) {
         console.error('Error setting up invoices listener:', error);
-        setLoading(false);
+        setSnapshotState({ queryKey, invoices: [] });
         return undefined;
       }
     };
@@ -220,20 +244,17 @@ export const useFbGetInvoicesWithFilters = (filters: InvoiceFilters = {}) => {
       if (unsubscribe) unsubscribe();
     };
   }, [
-    user?.businessID,
-    filters.startDate,
-    filters.endDate,
-    filters.clientId,
-    filters.paymentMethod,
-    filters.paymentStatus,
-    filters.minAmount,
-    filters.maxAmount,
-    filters.receivablesOnly,
-    user?.uid,
-    user?.role,
-    filters,
+    businessID,
+    activeFilters,
+    queryKey,
+    uid,
+    role,
     user,
   ]);
+
+  const isCurrentSnapshot = snapshotState.queryKey === queryKey;
+  const invoices = queryKey && isCurrentSnapshot ? snapshotState.invoices : [];
+  const loading = Boolean(queryKey) && !isCurrentSnapshot;
 
   return { invoices, loading };
 };

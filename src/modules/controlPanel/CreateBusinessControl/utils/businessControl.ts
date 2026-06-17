@@ -8,6 +8,10 @@ import type {
   UnknownRecord,
 } from '../types';
 import { resolveBusinessFiscalRollout } from '@/utils/fiscal/fiscalRollout';
+import {
+  normalizedIncludes,
+  normalizeTrimmedSearchText,
+} from '@/utils/searchText';
 
 export const EMPTY_BUSINESSES: BusinessDoc[] = [];
 
@@ -260,21 +264,18 @@ export const filterBusinesses = (
   searchTerm: string,
   filters: BusinessFilters,
 ) => {
-  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const normalizedSearch = normalizeTrimmedSearchText(searchTerm);
 
   return items.filter((item) => {
     const business = item.business;
     const searchMatches =
       !normalizedSearch ||
-      business.id.toLowerCase().includes(normalizedSearch) ||
-      (business.name &&
-        business.name.toLowerCase().includes(normalizedSearch)) ||
-      (business.address &&
-        business.address.toLowerCase().includes(normalizedSearch)) ||
-      (business.tel && business.tel.toLowerCase().includes(normalizedSearch)) ||
-      (business.email &&
-        business.email.toLowerCase().includes(normalizedSearch)) ||
-      (business.rnc && business.rnc.toLowerCase().includes(normalizedSearch));
+      normalizedIncludes(business.id, normalizedSearch) ||
+      normalizedIncludes(business.name, normalizedSearch) ||
+      normalizedIncludes(business.address, normalizedSearch) ||
+      normalizedIncludes(business.tel, normalizedSearch) ||
+      normalizedIncludes(business.email, normalizedSearch) ||
+      normalizedIncludes(business.rnc, normalizedSearch);
     const provinceMatches =
       !filters.province || business.province === filters.province;
     const countryMatches =

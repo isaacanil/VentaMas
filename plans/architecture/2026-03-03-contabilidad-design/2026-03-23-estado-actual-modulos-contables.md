@@ -349,7 +349,7 @@ Seguros ya está integrado al flujo comercial y de cobro, pero necesita saneamie
 
 Evidencia:
 
-- `src/modules/insurance/pages/Insurance/InsuranceConfig/InsuraceConfig.tsx`
+- `src/modules/insurance/pages/Insurance/InsuranceConfig/InsuranceConfig.tsx`
 - `src/modules/insurance/pages/Insurance/InsuranceConfigForm/InsuranceConfigForm.tsx`
 - `src/modules/sales/pages/Sale/components/Cart/components/InsuranceAuthFields/InsuranceAuthFields.tsx`
 - `functions/src/app/modules/accountReceivable/services/insuranceAuth.js`

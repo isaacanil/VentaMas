@@ -6,12 +6,11 @@ import type {
   HrCommissionCutRuleFrequency,
   HrCommissionPeriodRecord,
 } from '@/types/hrPayroll';
+import { getErrorMessage as getSharedErrorMessage } from '@/utils/errors';
+import { normalizeText } from '@/utils/text';
 
-export const getErrorMessage = (error: unknown): string => {
-  if (error instanceof Error) return error.message;
-  if (typeof error === 'string') return error;
-  return 'No se pudo completar la operación.';
-};
+export const getErrorMessage = (error: unknown): string =>
+  getSharedErrorMessage(error, 'No se pudo completar la operación.');
 
 const getFrequencyLabel = (value: unknown): string | null => {
   const frequency = cleanString(value);
@@ -35,14 +34,8 @@ export const formatCutRuleMeta = ({
   if (!cleanLabel) return frequencyLabel ?? 'Sin regla activa';
   if (!frequencyLabel) return cleanLabel;
 
-  const normalizedLabel = cleanLabel
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
-  const normalizedFrequency = frequencyLabel
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
+  const normalizedLabel = normalizeText(cleanLabel);
+  const normalizedFrequency = normalizeText(frequencyLabel);
 
   return normalizedLabel.includes(normalizedFrequency)
     ? cleanLabel

@@ -14,7 +14,7 @@ Enfoque: equilibrio real de NoSQL en Firestore, evitando simulacion accidental d
 - `functions/src/index.js`
 - `src/firebase/businessInfo/fbGetBusinessInfo.ts`
 - `src/firebase/users/fbGetUsers.ts`
-- `src/firebase/warehouse/warehouseNestedServise.ts`
+- `src/firebase/warehouse/warehouseNestedService.ts`
 - `src/firebase/taxReceipt/fbGetAndUpdateTaxReceipt.ts`
 - `src/firebase/accountsReceivable/fbUpdateCreditLimit.ts`
 - `src/firebase/accountsReceivable/fbGetCreditLimit.ts`
@@ -81,7 +81,7 @@ Hay varios puntos donde la app compensa el modelo como si Firestore fuera SQL:
 - `src/firebase/users/fbGetUsers.ts` escucha `members` y luego abre queries chunked a `users` por `documentId() in`.
 - `src/firebase/accountsReceivable/dueDatesReceivable.repository.ts` reconstruye AR, clientes e invoices por lotes para armar una vista.
 - `src/services/invoice/invoice.service.ts` hace polling de `invoicesV2` y luego vuelve a leer `invoices`.
-- `src/firebase/warehouse/warehouseNestedServise.ts` arma la jerarquia con listeners por warehouse, shelf, row y stock.
+- `src/firebase/warehouse/warehouseNestedService.ts` arma la jerarquia con listeners por warehouse, shelf, row y stock.
 
 Eso no significa que falte normalizacion. Significa que faltan read models o documentos de pantalla mejor pensados.
 
@@ -235,7 +235,7 @@ Juicio:
 
 ### Prioridad media
 1. `firestore.indexes.json` no muestra gobierno real del patron de queries.
-2. `warehouseNestedServise.ts` hace fan-out de listeners costoso.
+2. `warehouseNestedService.ts` hace fan-out de listeners costoso.
 3. `fbGetCreditLimit` mezcla listener realtime con API tipo Promise.
 4. `cashCount.sales[]` sigue creciendo en un documento caliente.
 

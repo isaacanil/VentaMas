@@ -13,13 +13,13 @@ import styled from 'styled-components';
 import {
   useInventoryProductIds,
   useListenAllActiveProductsStock,
-} from '@/hooks/useProductStock';
+} from '@/modules/inventory/hooks/useProductStock';
 import { replacePathParams } from '@/router/routes/replacePathParams';
 import ROUTES_PATH from '@/router/routes/routesName';
-import Tree from '@/modules/inventory/components/tree/Tree';
-import type { TreeConfig as BaseTreeConfig } from '@/modules/inventory/components/tree/Tree';
 
 import { PRODUCT_STOCK_FILTER_OPTIONS as BASE_PRODUCT_STOCK_FILTER_OPTIONS } from './constants';
+import Tree from '../tree/Tree';
+import type { TreeConfig as BaseTreeConfig } from '../tree/Tree';
 
 type ProductStockRecord = ReturnType<
   typeof useListenAllActiveProductsStock

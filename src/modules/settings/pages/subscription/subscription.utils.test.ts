@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   ACTIVE_SUBSCRIPTION_PROVIDER_ID,
+  formatMoney,
   isSameOriginCheckoutProxyUrl,
   normalizePaymentStatus,
   normalizeNoticeWindowDays,
@@ -104,6 +105,11 @@ describe('isSameOriginCheckoutProxyUrl', () => {
 });
 
 describe('subscription helpers', () => {
+  it('formats DOP money through the shared formatter', () => {
+    expect(formatMoney(null)).toBe('No definido');
+    expect(formatMoney(1500)).toBe('RD$1,500');
+  });
+
   it('converts Firestore-like timestamps and ISO strings to milliseconds', () => {
     expect(toMillis({ seconds: 1_735_689_600 })).toBe(1_735_689_600_000);
     expect(toMillis('2026-03-17T00:00:00.000Z')).toBe(1_773_705_600_000);

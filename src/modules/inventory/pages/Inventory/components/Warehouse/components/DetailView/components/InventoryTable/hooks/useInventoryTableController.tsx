@@ -10,9 +10,9 @@ import { useCallback, useMemo, useReducer } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import { selectUser } from '@/features/auth/userSlice.js';
+import { selectUser } from '@/features/auth/userSlice';
 import { openDeleteModal } from '@/features/productStock/deleteProductStockSlice';
-import { reconcileBatchStatus } from '@/firebase/functions/inventory/reconcileBatchStatus.js';
+import { reconcileBatchStatus } from '@/firebase/functions/inventory/reconcileBatchStatus';
 import { getBatchById } from '@/firebase/warehouse/batchService';
 
 import { useInventoryFilters } from './useInventoryFilters';
@@ -29,8 +29,8 @@ import type {
   SortMenuItems,
 } from '../types';
 import type { InventoryUser } from '@/utils/inventory/types';
-import type { BatchData } from '@/modules/inventory/pages/Inventory/components/Warehouse/components/DetailView/components/BatchViewModal';
-import type { MovementProduct } from '@/modules/inventory/pages/Inventory/components/Warehouse/components/DetailView/components/ProductMovementModal';
+import type { BatchData } from '../components/modals/BatchViewModal';
+import type { MovementProduct } from '../components/modals/ProductMovementModal';
 import { MenuItemContent } from '../styles';
 
 interface ReconcileBatchStatusResult {

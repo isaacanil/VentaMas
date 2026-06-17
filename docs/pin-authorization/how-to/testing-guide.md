@@ -373,7 +373,7 @@ Checklist de pruebas manuales para validar generación de PINs, autorización en
 **Pasos (en consola del navegador):**
 
 ```javascript
-import { fbGetPinAuthLogs } from '../firebase/authorization/pinAuth';
+import { fbGetPinAuthLogs } from '@/firebase/authorization/pinAuth';
 
 // En componente con acceso a user
 const logs = await fbGetPinAuthLogs(user, { limit: 20 });
@@ -476,8 +476,7 @@ console.table(logs);
 
 ```jsx
 // TestPinIntegration.jsx
-import { useAuthorizationPin } from '../hooks/useAuthorizationPin';
-import { PinAuthorizationModal } from '../views/component/modals/PinAuthorizationModal/PinAuthorizationModal';
+import { PinAuthorizationModal, useAuthorizationPin } from '@/modules/authorizations/public';
 import { Button } from 'antd';
 
 export const TestPinIntegration = () => {
@@ -605,4 +604,5 @@ El sistema está listo para producción cuando todos los items del checklist est
 
 - `docs/pin-authorization/how-to/integration.md`
 - `docs/pin-authorization/reference/summary.md`
-- `src/views/pages/setting/subPage/AuthorizationConfig/*`
+- `src/modules/settings/pages/setting/subPage/AuthorizationConfig/*`
+- `src/modules/authorizations/components/pinManagement/*`

@@ -4,8 +4,6 @@ import type { Segment } from '@/models/Warehouse/Segment';
 import type { Shelf } from '@/models/Warehouse/Shelf';
 import type { Warehouse } from '@/models/Warehouse/Warehouse';
 
-import type { ClearSentinel } from './constants';
-
 export type TimestampLikeObject = {
   toDate?: () => Date;
   toMillis?: () => number;
@@ -27,6 +25,7 @@ export type InventoryStatus = 'open' | 'processing' | 'closed' | string;
 export type InventoryRowType = 'noexp' | 'batch';
 export type StockFilter = 'all' | 'with' | 'without';
 export type SortDir = 'asc' | 'desc';
+export type ClearSentinel = '__REMOVE__';
 export type ExpirationEditValue = string | null | undefined | ClearSentinel;
 
 export type WarehouseStructureType =

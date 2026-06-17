@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
-import { toMillis } from '@/utils/inventory/dates';
+import { toMillis } from '@/modules/inventory/utils/dates';
+import { formatBatchLabel } from '@/modules/inventory/utils/format';
 import {
   NO_BATCH_VALUE,
   getProductFilterKey,
@@ -34,7 +35,7 @@ export const useProductFilterOptions = (
       }
 
       const batchKey = stock.batchNumberId || NO_BATCH_VALUE;
-      const batchLabel = stock.batchNumberId || 'Sin lote';
+      const batchLabel = formatBatchLabel(stock.batchNumberId);
       const expirationDateMillis = toMillis(stock.expirationDate ?? null);
 
       if (!batchesByProduct.has(productKey)) {

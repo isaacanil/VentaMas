@@ -10,8 +10,8 @@ import type {
 } from '@/types/invoice';
 
 import Content from './components/Content';
-import Footer from './components/Footer';
-import Header from './components/Header';
+import Footer from '../shared/ClassicFooter';
+import Header from '../shared/ClassicHeader';
 
 const Container = styled.div`
   position: relative;

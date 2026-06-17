@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 
 import { setPaymentMethod } from '@/features/cart/cartSlice';
 import type { CartData, PaymentMethod } from '@/features/cart/types';
+import { resolvePaymentMethodBootstrapUpdate } from '@/utils/payments/paymentMethodBootstrap';
 
 interface UseInvoicePanelPaymentBootstrapArgs {
   cart: CartData;
@@ -29,43 +30,20 @@ export const useInvoicePanelPaymentBootstrap = ({
     if (didInitPaymentMethodsRef.current) return;
     didInitPaymentMethodsRef.current = true;
 
-    const anyEnabled = paymentMethods.some((method) => method.status);
-    const purchaseTotal = cart?.totalPurchase?.value || 0;
+    const bootstrapMethod = resolvePaymentMethodBootstrapUpdate({
+      isAddedToReceivables,
+      paymentMethods,
+      purchaseTotal: cart?.totalPurchase?.value || 0,
+    });
 
-    if (!anyEnabled) {
-      const defaultMethod =
-        paymentMethods.find((method) => method.method === 'cash') ||
-        paymentMethods[0];
-
-      if (defaultMethod) {
-        dispatch(
-          setPaymentMethod({
-            ...defaultMethod,
-            status: true,
-            value: isAddedToReceivables ? 0 : purchaseTotal,
-          }),
-        );
-      }
-      return;
+    if (bootstrapMethod) {
+      dispatch(setPaymentMethod(bootstrapMethod));
     }
-
-    const totalPaymentValue = paymentMethods.reduce(
-      (sum, method) =>
-        method.status ? sum + (Number(method.value) || 0) : sum,
-      0,
-    );
-
-    if (!isAddedToReceivables && totalPaymentValue === 0 && purchaseTotal > 0) {
-      const cashMethod = paymentMethods.find((method) => method.method === 'cash');
-      if (cashMethod) {
-        dispatch(
-          setPaymentMethod({
-            ...cashMethod,
-            status: true,
-            value: purchaseTotal,
-          }),
-        );
-      }
-    }
-  }, [cart?.totalPurchase?.value, dispatch, invoicePanel, isAddedToReceivables, paymentMethods]);
+  }, [
+    cart?.totalPurchase?.value,
+    dispatch,
+    invoicePanel,
+    isAddedToReceivables,
+    paymentMethods,
+  ]);
 };

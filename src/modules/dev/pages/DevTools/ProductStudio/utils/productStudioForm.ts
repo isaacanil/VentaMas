@@ -1,12 +1,18 @@
 import {
   normalizeProductBrandName,
   resolveBrandSelection,
-} from '@/components/modals/ProductForm/utils/brandSelection';
+  type ProductBrandOptionSource,
+} from '@/domain/products/brandSelection';
 import {
   buildNormalizedProductSnapshot,
   normalizeItemType,
   normalizeTrackInventoryValue,
-} from '@/utils/products/normalization';
+} from '@/domain/products/normalization';
+import {
+  normalizeProductPricingTax,
+  toProductPricingNumber,
+  type ProductPricingFormValues,
+} from '@/domain/products/pricingForm';
 import type {
   PricingTax,
   ProductPricing,
@@ -15,17 +21,12 @@ import type {
   ProductWeightDetail,
 } from '@/types/products';
 import type { UserWithBusiness } from '@/types/users';
-import type {
-  PricingValues,
-  ProductFormValues,
-} from '@/modules/dev/pages/DevTools/ProductStudio/components/form/ProductForm';
+import type { ProductFormValues } from '@/modules/dev/pages/DevTools/ProductStudio/components/form/ProductForm';
 
 type ProductPatch = Partial<ProductRecord> & Record<string, unknown>;
 import type { ProductSnapshot } from '@/modules/dev/pages/DevTools/ProductStudio/hooks/useProductPreviewMetrics';
 
 type FormErrorField = { name?: (string | number)[]; errors?: string[] };
-
-type BrandOptionSource = { id?: string | null; name?: string | null };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
@@ -50,29 +51,13 @@ export const isFormValidationError = (
   return Array.isArray(errorFields);
 };
 
-const toNumberValue = (value: unknown): number => {
-  if (typeof value === 'number') return value;
-  if (typeof value === 'string') {
-    const parsed = parseFloat(value);
-    return Number.isNaN(parsed) ? 0 : parsed;
-  }
-  return 0;
-};
-
 export const normalizeTaxValue = (
   tax: PricingTax | null | undefined,
-): number => {
-  if (tax == null) return 0;
-  if (typeof tax === 'object') {
-    const nested = (tax as { tax?: unknown }).tax;
-    return toNumberValue(nested);
-  }
-  return toNumberValue(tax);
-};
+): number => normalizeProductPricingTax(tax);
 
 export const normalizePricingForForm = (
   pricing: ProductPricing | undefined,
-): PricingValues | undefined => {
+): ProductPricingFormValues | undefined => {
   if (!pricing) return undefined;
   const { avgPrice, tax, ...rest } = pricing;
   return {
@@ -86,7 +71,7 @@ const hasNumericValue = (value: unknown): boolean =>
   value !== undefined && value !== null && value !== '';
 
 export const normalizePricingForUpdate = (
-  pricing: PricingValues,
+  pricing: ProductPricingFormValues,
 ): ProductPricing => {
   const {
     midPrice,
@@ -102,13 +87,13 @@ export const normalizePricingForUpdate = (
 
   result.tax = normalizeTaxValue(tax);
 
-  if (hasNumericValue(midPrice)) result.avgPrice = toNumberValue(midPrice);
-  if (hasNumericValue(cost)) result.cost = toNumberValue(cost);
-  if (hasNumericValue(listPrice)) result.listPrice = toNumberValue(listPrice);
-  if (hasNumericValue(minPrice)) result.minPrice = toNumberValue(minPrice);
-  if (hasNumericValue(cardPrice)) result.cardPrice = toNumberValue(cardPrice);
+  if (hasNumericValue(midPrice)) result.avgPrice = toProductPricingNumber(midPrice);
+  if (hasNumericValue(cost)) result.cost = toProductPricingNumber(cost);
+  if (hasNumericValue(listPrice)) result.listPrice = toProductPricingNumber(listPrice);
+  if (hasNumericValue(minPrice)) result.minPrice = toProductPricingNumber(minPrice);
+  if (hasNumericValue(cardPrice)) result.cardPrice = toProductPricingNumber(cardPrice);
   if (hasNumericValue(offerPrice)) {
-    result.offerPrice = toNumberValue(offerPrice);
+    result.offerPrice = toProductPricingNumber(offerPrice);
   }
 
   return result;
@@ -160,7 +145,7 @@ export const getChangedProductPatch = ({
   key: keyof ProductFormValues;
   value: unknown;
   product: ProductRecord | null | undefined;
-  productBrands?: BrandOptionSource[];
+  productBrands?: ProductBrandOptionSource[];
 }): ProductPatch | null => {
   if (key === 'weightDetail') {
     return {
@@ -203,7 +188,16 @@ export const getChangedProductPatch = ({
   }
 
   if (key === 'brandId') {
-    return resolveBrandSelection({ value, product, productBrands });
+    const resolvedBrand = resolveBrandSelection({
+      value,
+      product,
+      productBrands,
+    });
+
+    return {
+      brandId: resolvedBrand.brandId,
+      brand: resolvedBrand.brand,
+    };
   }
 
   return { [key]: value } as ProductPatch;

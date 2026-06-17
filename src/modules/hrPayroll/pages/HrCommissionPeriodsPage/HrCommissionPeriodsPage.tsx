@@ -25,7 +25,7 @@ import {
   useHrEmployeePayments,
   useHrCommissionPeriods,
   useHrPayrollEmployeeLines,
-} from '@/firebase/hrPayroll/useHrCommissionPeriods';
+} from '@/modules/hrPayroll/repositories/useHrCommissionPeriods';
 import { selectUser } from '@/features/auth/userSlice';
 import {
   HrDescription as Description,
@@ -48,7 +48,7 @@ import {
   formatHrMoney as formatMoney,
   HR_COMMISSION_PERIOD_STATUS_LABELS as STATUS_LABELS,
 } from '@/modules/hrPayroll/utils/hrPayrollDisplay';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 import type {
   HrCommissionCutRuleInput,

@@ -11,19 +11,14 @@ Todos los scripts deben ejecutarse con Node.js desde la raíz del proyecto o des
 - **`lint.js`** - App de consola para ejecutar modos de lint (`path`, `typed`, `functions`, `styles`, `all`) sin recordar comandos.
   - Recomendado usar vía npm: `npm run lint`
 
-- **`analyze-lint-by-file.js`** - Genera estadísticas de errores de linting por archivo.
-- **`analyze-file-sizes.js`** - Analiza el tamaño de los archivos para encontrar posibles problemas de bundle.
-- **`audit-report.js`** - Genera reportes de auditoría de código.
-
 ### Mantenimiento de Código
 
-- **`find-unused-exports.js`** - Detecta y reporta exportaciones (exports) que no se están utilizando.
-- **`validate-imports.js`** - Verifica la integridad de las importaciones.
 - **`fix-broken-imports.js`** - Script automático para corregir imports rotos.
-- **`audit-imports.js`** - Auditoría profunda de dependencias entre módulos.
-- **`scan-encoding.js`** / **`scan-encoding-issues.js`** - Detecta problemas de codificación de caracteres.
+- **`audit-imports.js`** - Analiza un log de TypeScript (`tsc_audit.txt` por defecto) y resume errores `TS2305` de exports faltantes y `TS2339` de propiedades inexistentes. No valida límites entre módulos; ese guard vive en `src/modules/moduleBoundaries.test.ts`.
+- **`component-audit.mjs`** - Detecta duplicados exactos y probables en componentes de `src/`.
+- **`scan-encoding.js`** - Detecta problemas de codificación de caracteres.
 - **`scan-utf8-bom.js`** - Identifica archivos con BOM que pueden causar problemas en el parser.
-- **`scan-suppressions.js`** - Escanea comentarios tipo `@ts-ignore` o `eslint-disable`.
+- **`check.js`** - Ejecuta chequeos locales agregados definidos para el proyecto.
 
 ### Utilidades de Git y Flujo de Trabajo
 
@@ -55,14 +50,29 @@ Todos los scripts deben ejecutarse con Node.js desde la raíz del proyecto o des
     npm run project -- sync business:prod-to-staging -- --dry-run
     ```
 
-- **`deploy.js`** - App de consola para despliegues (`prod`, `staging`, `beta`, `vercel`) con menú interactivo y control de build.
-  - Recomendado usar vía npm: `npm run deploy`
+- **`deploy.js`** - App de consola para despliegues (`prod`, `staging`, `prod:functions`, `staging:functions`, `beta`, `vercel`) con menú interactivo y control de build.
+  - Recomendado usar vía npm:
+    ```powershell
+    npm run deploy
+    npm run deploy -- staging
+    npm run deploy -- staging:functions nombreDeFuncion
+    npm run deploy -- staging:functions nombreDeFuncion --dry-run
+    ```
+  - Usa los aliases de `.firebaserc`, ejecuta el build del target cuando aplica
+    y bloquea despliegues masivos de Cloud Functions en staging o produccion
+    salvo guard explícito.
 
 - **`sync-to-alt-main.js`** - Sincroniza la rama actual con el remoto `alt`.
 
 ### Configuración
 
-- **`configure-firebase-cors.js`** - Configuración de CORS para buckets de Google Cloud Storage.
+- **`configure-firebase-cors.js`** - Configuración de CORS para buckets de Google Cloud Storage. La configuración vive dentro del script y no depende de un archivo externo.
+  - Ejemplo:
+    ```powershell
+    $env:GOOGLE_APPLICATION_CREDENTIALS = 'C:\ruta\service-account.json'
+    node .\tools\configure-firebase-cors.js
+    Remove-Item Env:\GOOGLE_APPLICATION_CREDENTIALS
+    ```
 - **`check-env.js`** - Valida la existencia y contenido del archivo `.env`.
 
 ### Seeds parciales Firebase
@@ -120,17 +130,19 @@ Todos los scripts deben ejecutarse con Node.js desde la raíz del proyecto o des
 
 Para ejecutar cualquiera de estos scripts:
 
-```bash
-node tools/<script_name>.js
+```powershell
+node .\tools\<script_name>.js
 ```
 
 Ejemplos:
 
-```bash
-node tools/find-unused-exports.js
-node tools/group-lint-errors.js
-node tools/lint.js
-node tools/lint.js path src/router/routes/loaders/accessLoaders.ts
+```powershell
+node .\tools\component-audit.mjs --outDir=.\tmp\component-audit
+npm run typecheck:app *> .\tsc_audit.txt
+node .\tools\audit-imports.js
+node .\tools\audit-imports.js --help
+node .\tools\lint.js
+node .\tools\lint.js path src\router\routes\loaders\accessLoaders.ts
 npm run lint
 npm run lint -- --help
 npm run deploy

@@ -87,7 +87,7 @@ end
 - **Archivo:** `src/router/routes/paths/Auth.tsx`
   - **Funciones:** `Routes` - _Define ruta `/login` como pública._
   - **Endpoints:** `N/A` - _UI._
-- **Archivo:** `src/components/ui/SessionManager.tsx`
+- **Archivo:** `src/router/components/SessionManager.tsx`
   - **Funciones:** `SessionManager` - _Loader visual durante chequeo de sesión._
   - **Endpoints:** `N/A` - _UI._
 - **Archivo:** `src/features/auth/userSlice.ts`
@@ -145,26 +145,16 @@ end
 - **Archivo:** `src/hooks/useAuthorizationPin.ts`
   - **Funciones:** `useAuthorizationPin` - _Hook para abrir/cerrar modal PIN._
   - **Endpoints:** `N/A` - _UI._
-- **Archivo:** `src/components/modals/PinAuthorizationModal/PinAuthorizationModal.tsx`
+- **Archivo:** `src/modules/authorizations/components/PinAuthorizationModal/PinAuthorizationModal.tsx`
   - **Funciones:** `PinAuthorizationModal` - _Valida PIN (6 dígitos) o password fallback._
   - **Endpoints:**
     - `[POST] /validateModulePin`
     - `[POST] /clientValidateUser`
-- **Archivo:** `src/components/modals/PeerReviewAuthorization/PeerReviewAuthorization.tsx`
+- **Archivo:** `src/modules/cashReconciliation/pages/CashReconciliation/resource/PeerReviewAuthorization/PeerReviewAuthorization.tsx`
   - **Funciones:** `PeerReviewAuthorization` - _Validación de credenciales para acciones sensibles._
   - **Endpoints:** `[POST] /clientValidateUser`
-- **Archivo:** `src/firebase/Auth/fbLogin.ts`
-  - **Funciones:** `fbLogin` - _Login legacy via Firebase Auth email/password._
-  - **Endpoints:** `N/A` - _SDK Firebase Auth._
-- **Archivo:** `src/firebase/Auth/fbSignInWithUsernameAndPassword.ts`
-  - **Funciones:** `authenticateUser` - _Login legacy leyendo credenciales desde Firestore._
-  - **Endpoints:** `N/A` - _Lectura Firestore + Firebase Auth._
-- **Archivo:** `src/firebase/Auth/fbSignUpWithUsernameAndPassoword/functions/registerUser.ts`
-  - **Funciones:** `registerUser` - _Crea usuario Firebase Auth, guarda token en localStorage y restaura sesión._
-  - **Endpoints:** `N/A` - _SDK Firebase Auth._
-- **Archivo:** `src/firebase/Auth/fbSignUpWithUsernameAndPassoword/fbSignUpWithUsernameAndPassword.ts`
-  - **Funciones:** `fbSignUpUserAccount` - _Wrapper del registro legacy._
-  - **Endpoints:** `N/A` - _SDK Firebase Auth._
+- **Nota legacy frontend:** no se detectan wrappers activos por nombre `fbLogin`, `authenticateUser`, `registerUser` o `fbSignUpUserAccount` en el árbol actual. El flujo de login/registro activo confirmado está en `src/firebase/Auth/fbAuthV2/fbSignIn/fbSignIn.ts` y `src/firebase/Auth/fbAuthV2/fbSignUp.ts`.
+  - **Endpoints:** `[CALLABLE] clientLogin`, `[CALLABLE] clientSignUp`.
 
 - **Archivo:** `functions/src/index.js`
   - **Funciones:** `clientLogin`, `clientSignUp`, `clientLogout`, `authLogin`, `authLogout`, `generateModulePins`, etc. - _Exports de Cloud Functions._
@@ -216,21 +206,8 @@ end
 - **Archivo:** `functions/src/app/versions/v2/auth/pin/pin.audit.js`
   - **Funciones:** `logPinAction` - _Auditoría en `businesses/{businessID}/pinAuthLogs`._
   - **Endpoints:** `N/A` - _Servicio interno._
-- **Archivo:** `functions/src/app/versions/v1/modules/auth/handle/handleLogin.js`
-  - **Funciones:** `authLogin`, `authCheck`, `authLogout`, `expireSessions` - _Auth legacy con Firebase Auth custom tokens y job de expiración._
-  - **Endpoints:**
-    - `[POST] /authLogin` - _Recibe `{ username, password }`, devuelve `{ token, userId }`._
-    - `[POST] /authCheck` - _Recibe `{ username, password }`, devuelve `{ valid }`._
-    - `[POST] /authLogout` - _Revoca refresh tokens de Firebase Auth._
-    - `[SCHEDULE] expireSessions` - _Desactiva usuarios expirados cada 60 min._
-- **Archivo:** `functions/src/app/versions/v1/modules/auth/utils/hash.util.js`
-  - **Funciones:** `verifyAndUpgrade` - _Compatibilidad bcrypt → argon2id._
-  - **Endpoints:** `N/A` - _Servicio interno._
-- **Archivo:** `functions/src/app/versions/v1/modules/auth/utils/user.util.js`
-  - **Funciones:** `createFailedLoginFields`, `isAccountLocked`, `createLoginResponse` - _Lockout + respuestas estándar._
-  - **Endpoints:** `N/A` - _Servicio interno._
-- **Archivo:** `functions/src/app/versions/v1/modules/auth/utils/auth.util.js`
-  - **Funciones:** `hashPassword`, `validatePermissions`, `prepareUserCreationData` - _Creación/actualización de usuarios._
+- **Nota legacy backend:** no se detecta un módulo v1 de auth en el árbol actual. El backend activo confirmado de auth vive en `functions/src/app/versions/v2/auth/controllers/clientAuth.controller.js`, `functions/src/app/versions/v2/auth/utils/sessionAuth.util.js` y `functions/src/app/versions/v2/auth/pin/*`.
+  - **Funciones:** `clientLogin`, `clientSignUp`, `clientLogout`, `generateModulePins`, `validateModulePin`, etc.
   - **Endpoints:** `N/A` - _Servicio interno._
 - **Archivo:** `functions/src/app/versions/v2/invoice/controllers/getInvoiceHttp.controller.js`
   - **Funciones:** `getInvoiceV2Http` - _Endpoint HTTP protegido por `resolveHttpAuthUser`._

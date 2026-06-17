@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 
-import { Nav } from '@/components/ui/Nav/Nav';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 
+import { GeneralConfigNav } from './components/GeneralConfigNav/GeneralConfigNav';
 import {
   GeneralConfigSearch,
   GeneralConfigSearchTrigger,
@@ -74,7 +74,7 @@ export default function GeneralConfig() {
         onClose={() => setSearchOpen(false)}
         dependencyKey={currentPath}
       />
-      <Nav
+      <GeneralConfigNav
         menuItems={menuItems}
         activeTab={activeTab}
         activeItemKey={activeItemKey}
@@ -83,7 +83,7 @@ export default function GeneralConfig() {
         sidebarHeader={sidebarSearch}
       >
         <Outlet />
-      </Nav>
+      </GeneralConfigNav>
     </>
   );
 }

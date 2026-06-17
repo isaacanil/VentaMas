@@ -1,14 +1,28 @@
 import type { FormInstance } from 'antd';
 import { DateTime } from 'luxon';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { toMillis } from '@/utils/date/dateUtils';
 import type { AccountsReceivableDoc } from '@/utils/accountsReceivable/types';
+import type { TimestampLike } from '@/utils/date/types';
 
-const toDateTime = (value: unknown) => {
+const toDateTime = (value: TimestampLike) => {
   const millis = toMillis(value);
   return millis ? DateTime.fromMillis(millis) : null;
 };
+
+const buildInvoicePanelDefaultValues = () => ({
+  frequency: 'monthly',
+  totalInstallments: 1,
+  paymentDate: DateTime.now(),
+});
+
+const buildAccountsReceivableFormValues = (
+  accountsReceivable: AccountsReceivableDoc | Record<string, unknown>,
+) => ({
+  ...accountsReceivable,
+  paymentDate: toDateTime(accountsReceivable?.paymentDate as TimestampLike),
+});
 
 interface UseInvoicePanelFormSyncArgs {
   accountsReceivable: AccountsReceivableDoc | Record<string, unknown>;
@@ -23,21 +37,32 @@ export const useInvoicePanelFormSync = ({
   invoicePanel,
   onPanelClosed,
 }: UseInvoicePanelFormSyncArgs) => {
+  const wasInvoicePanelOpenRef = useRef(false);
+  const shouldApplyOpenDefaultsRef = useRef(false);
+
   useEffect(() => {
-    if (!invoicePanel) {
-      onPanelClosed();
+    const wasInvoicePanelOpen = wasInvoicePanelOpenRef.current;
+    wasInvoicePanelOpenRef.current = invoicePanel;
+
+    if (!wasInvoicePanelOpen && invoicePanel) {
+      shouldApplyOpenDefaultsRef.current = true;
       return;
     }
 
-    form.setFieldsValue({
-      frequency: 'monthly',
-      totalInstallments: 1,
-      paymentDate: DateTime.now(),
-    });
+    if (wasInvoicePanelOpen && !invoicePanel) {
+      onPanelClosed();
+    }
+  }, [invoicePanel, onPanelClosed]);
+
+  useEffect(() => {
+    if (!invoicePanel) return;
+
+    const shouldApplyOpenDefaults = shouldApplyOpenDefaultsRef.current;
+    shouldApplyOpenDefaultsRef.current = false;
 
     form.setFieldsValue({
-      ...accountsReceivable,
-      paymentDate: toDateTime(accountsReceivable?.paymentDate),
+      ...(shouldApplyOpenDefaults ? buildInvoicePanelDefaultValues() : {}),
+      ...buildAccountsReceivableFormValues(accountsReceivable),
     });
-  }, [accountsReceivable, form, invoicePanel, onPanelClosed]);
+  }, [accountsReceivable, form, invoicePanel]);
 };

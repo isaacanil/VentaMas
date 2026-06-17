@@ -27,7 +27,7 @@ Referencias:
 
 - `src/modules/orderAndPurchase/pages/OrderAndPurchase/PurchaseManagement/hooks/usePurchaseManagementController.ts`
 - `src/modules/orderAndPurchase/pages/OrderAndPurchase/PurchaseManagement/components/GeneralForm/components/OrderSelector.tsx`
-- `src/firebase/order/fbGetPedingOrder.ts`
+- `src/firebase/order/useFbGetOrders.tsx`
 
 Ademas, el tipado actual muestra que `Order` hereda de `Purchase`, lo cual es una señal de mezcla excesiva de dominio:
 
@@ -40,7 +40,7 @@ Y el codigo hoy convive con dos shapes de pedido:
 
 Referencias:
 
-- `src/firebase/order/fbGetPedingOrder.ts`
+- `src/firebase/order/useFbGetOrders.tsx`
 - `src/firebase/order/fbGetOrders.ts`
 - `src/firebase/order/fbAddOrder.ts`
 - `src/firebase/order/fbDeleteOrder.ts`

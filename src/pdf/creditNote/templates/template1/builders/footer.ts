@@ -3,10 +3,10 @@ import {
   getProductsIndividualDiscounts,
   hasIndividualDiscounts,
   getProductTax,
-} from '../utils/formatters.js';
+} from '../utils/formatters';
 
 import type { PdfContent, PdfHeaderFooter, PdfTableBody } from '@/pdf/types';
-import type { CreditNoteBusinessInfo, CreditNoteData } from '../../../types.js';
+import type { CreditNoteBusinessInfo, CreditNoteData } from '../../../types';
 
 /* ───── bloque firma + etiqueta opcional ───── */
 function signatureBlock(label?: string, extraLine?: string): PdfContent {

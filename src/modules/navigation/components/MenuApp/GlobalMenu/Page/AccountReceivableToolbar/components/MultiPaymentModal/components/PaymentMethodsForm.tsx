@@ -1,7 +1,6 @@
-import { Form, Input, InputNumber, Checkbox, Typography } from 'antd';
+import { Form, Input, InputNumber, Checkbox, Typography, type GetRef } from 'antd';
 import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import type { InputNumberRef } from '@rc-component/input-number';
 
 import type {
   PaymentMethod,
@@ -10,6 +9,7 @@ import type {
 } from '../../../types';
 
 const { Title } = Typography;
+type InputNumberRef = GetRef<typeof InputNumber>;
 
 /**
  * Componente para el formulario de métodos de pago

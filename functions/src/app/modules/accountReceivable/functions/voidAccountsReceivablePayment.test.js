@@ -127,7 +127,7 @@ vi.mock('../../../core/utils/callableSessionAuth.util.js', () => ({
   resolveCallableAuthUid: (...args) => resolveCallableAuthUidMock(...args),
 }));
 
-vi.mock('../../../versions/v2/invoice/services/repairTasks.service.js', () => ({
+vi.mock('../../../versions/v2/auth/services/userAccess.service.js', () => ({
   MEMBERSHIP_ROLE_GROUPS: {
     AUDIT: ['audit'],
   },
@@ -166,6 +166,7 @@ vi.mock('../utils/receivablePaymentVoid.util.js', () => ({
 }));
 
 import { voidAccountsReceivablePayment } from './voidAccountsReceivablePayment.js';
+import { Timestamp } from '../../../core/config/firebase.js';
 import * as accountingEventUtil from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
 import * as cashMovementUtil from '../../../versions/v2/accounting/utils/cashMovement.util.js';
 import * as receivablePaymentVoidUtil from '../utils/receivablePaymentVoid.util.js';
@@ -394,6 +395,76 @@ describe('voidAccountsReceivablePayment accounting period validation', () => {
         'El cobro tiene movimientos de caja/banco conciliados. Debe revertirse mediante un flujo de conciliación/refund controlado.',
     });
 
+    expect(transactionSetMock).not.toHaveBeenCalled();
+  });
+
+  it('keeps void response serialization compatible for already voided payments', async () => {
+    const createdAt = new Timestamp(Date.parse('2026-04-10T12:00:00.000Z'));
+    const voidedAt = new Timestamp(Date.parse('2026-04-11T12:00:00.000Z'));
+    const paymentRecord = {
+      id: 'payment-1',
+      status: 'void',
+      paymentMethods: [],
+      totalApplied: 125,
+      createdAt,
+      voidedAt,
+      omitted: undefined,
+      metadata: {
+        restoredAccounts: [
+          {
+            arId: 'ar-1',
+            restoredAt: voidedAt,
+            omitted: undefined,
+          },
+        ],
+      },
+    };
+
+    documentSnapshots.set(
+      'businesses/business-1/accountsReceivablePayments/payment-1',
+      paymentRecord,
+    );
+    transactionSnapshots.set(
+      'businesses/business-1/accountsReceivablePayments/payment-1',
+      paymentRecord,
+    );
+    transactionSnapshots.set('cashMovements:payment-1', []);
+
+    const result = await voidAccountsReceivablePayment({
+      data: {
+        businessId: 'business-1',
+        paymentId: 'payment-1',
+        reason: 'Ya anulado',
+      },
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      alreadyVoided: true,
+      paymentId: 'payment-1',
+      restoredAccounts: [
+        {
+          arId: 'ar-1',
+          restoredAt: Date.parse('2026-04-11T12:00:00.000Z'),
+        },
+      ],
+      payment: {
+        id: 'payment-1',
+        status: 'void',
+        paymentMethods: [],
+        totalApplied: 125,
+        createdAt: Date.parse('2026-04-10T12:00:00.000Z'),
+        voidedAt: Date.parse('2026-04-11T12:00:00.000Z'),
+        metadata: {
+          restoredAccounts: [
+            {
+              arId: 'ar-1',
+              restoredAt: Date.parse('2026-04-11T12:00:00.000Z'),
+            },
+          ],
+        },
+      },
+    });
     expect(transactionSetMock).not.toHaveBeenCalled();
   });
 

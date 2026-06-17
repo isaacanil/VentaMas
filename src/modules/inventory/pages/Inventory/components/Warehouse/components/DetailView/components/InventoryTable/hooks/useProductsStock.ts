@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { useListenProductsStockByLocation } from '@/hooks/useProductStock';
+import { useListenProductsStockByLocation } from '@/modules/inventory/hooks/useProductStock';
 
 import type {
   InventoryTableProps,

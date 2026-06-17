@@ -6,9 +6,9 @@ import {
   resolveInvoiceDisplayedUnitPrice,
 } from '@/utils/accounting/lineMonetary';
 
-import { PRODUCT_BRAND_DEFAULT } from '@/features/updateProduct/updateProductSlice';
+import { PRODUCT_BRAND_DEFAULT } from '@/domain/products/productDefaults';
 import { formatInvoicePrice } from '@/utils/invoice/documentCurrency';
-import type { ColumnsType } from 'antd/es/table';
+import type { TableColumnsType as ColumnsType } from 'antd';
 import type {
   InvoiceCreditNote,
   InvoiceData,

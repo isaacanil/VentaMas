@@ -2,7 +2,7 @@ import {
   money,
   getProductIndividualDiscount,
   resolvePdfCurrency,
-} from '../utils/formatters.js';
+} from '../utils/formatters';
 
 import type { PdfContent, PdfTableBody, PdfTableRow } from '@/pdf/types';
 import type {

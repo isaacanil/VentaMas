@@ -1,9 +1,9 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
-import { usePendingBalance } from '@/firebase/accountsReceivable/fbGetPendingBalance';
+import { useGetPendingBalance } from '@/firebase/accountsReceivable/fbGetPendingBalance';
 import { formatPrice } from '@/utils/format';
 import {
   getProductsPrice,
@@ -16,7 +16,7 @@ import {
   Paragraph,
   Spacing,
   Subtitle,
-} from '@/modules/checkout/pages/checkout/Style';
+} from '@/modules/checkout/pages/checkout/CheckoutReceipt.styles';
 import type { InvoiceData, InvoicePaymentMethod } from '@/types/invoice';
 import type { UserIdentity } from '@/types/users';
 
@@ -41,10 +41,9 @@ type PaymentAreaProps = {
 };
 
 export const PaymentArea = ({ data }: PaymentAreaProps) => {
-  const [pendingBalance, setPendingBalance] = useState(0);
   const user = useSelector(selectUser) as UserIdentity | null;
   const businessID = user?.businessID ?? null;
-  const clientId = data?.client?.id ?? null;
+  const clientId = data?.client?.id ? String(data.client.id) : null;
 
   const products = Array.isArray(data?.products) ? data?.products : [];
   const subtotal =
@@ -55,7 +54,9 @@ export const PaymentArea = ({ data }: PaymentAreaProps) => {
   );
   const formatNumber = (num?: number | string | null) => formatPrice(num, '');
 
-  usePendingBalance(businessID, clientId as any, setPendingBalance as any);
+  const pendingBalance = useGetPendingBalance({
+    dependencies: [businessID, clientId],
+  });
 
   const paymentLabel: Record<string, string> = {
     cash: 'Efectivo',

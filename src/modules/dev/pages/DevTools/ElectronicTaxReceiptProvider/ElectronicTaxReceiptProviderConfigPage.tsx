@@ -8,7 +8,7 @@ import {
   type ValidateElectronicTaxReceiptPlatformConfigResult,
 } from '@/firebase/electronicTaxReceipts/fbValidateElectronicTaxReceiptPlatformConfig';
 import { fbUpdateElectronicTaxReceiptPlatformConfig } from '@/firebase/electronicTaxReceipts/fbUpdateElectronicTaxReceiptPlatformConfig';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 
 import { RuntimeConnectionCard } from './components/RuntimeConnectionCard';

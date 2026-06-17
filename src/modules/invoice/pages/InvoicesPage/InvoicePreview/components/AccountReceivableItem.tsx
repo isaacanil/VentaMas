@@ -9,6 +9,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { useFbGetAccountReceivablePayments } from '@/firebase/accountsReceivable/useFbGetAccountReceivablePayments';
+import { Payment } from '@/modules/contacts/public';
 import { formatInvoicePrice } from '@/utils/invoice/documentCurrency';
 type ReceivablePaymentMethod = {
   status?: boolean;
@@ -32,8 +33,6 @@ type AccountReceivableItemProps = {
   client?: InvoiceClient | null;
   invoiceData?: InvoiceData | null;
 };
-
-import { Payment } from '@/modules/contacts/pages/Contact/Client/components/ClientForm/components/ClientFinancialInfo/AccountCard/components/Payment';
 
 const toDateTime = (value: TimestampLike) => {
   if (!value) return null;

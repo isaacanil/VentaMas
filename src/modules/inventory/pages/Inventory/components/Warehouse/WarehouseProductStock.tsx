@@ -3,9 +3,9 @@ import { useCallback, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { ResizableSidebar } from '@/components/layout/ResizebleSidebar/ResizebleSidebar';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
+import { ResizableSidebar } from './components/ResizableSidebar/ResizableSidebar';
 import InventoryMenu from './components/DetailView/InventoryMenu';
 import {
   PRODUCT_STOCK_FILTER_OPTIONS,

@@ -9,11 +9,22 @@ interface ProductStockSimpleState {
   productStockSelected: string;
   product: ProductRecord | null;
   selectedProductStock: InventoryStockItem | null;
+  initialStocks: InventoryStockItem[];
+  initialStocksProductId: string;
 }
 
 interface ProductStockSimpleRootState {
   productStockSimple: ProductStockSimpleState;
 }
+
+type OpenProductStockSimplePayload =
+  | ProductRecord
+  | {
+      product?: ProductRecord | null;
+      initialStocks?: InventoryStockItem[] | null;
+    }
+  | null
+  | undefined;
 
 const initialState: ProductStockSimpleState = {
   isOpen: false,
@@ -21,7 +32,16 @@ const initialState: ProductStockSimpleState = {
   productStockSelected: '',
   product: null,
   selectedProductStock: null,
+  initialStocks: [],
+  initialStocksProductId: '',
 };
+
+const isPayloadWithInitialStocks = (
+  payload: OpenProductStockSimplePayload,
+): payload is {
+  product?: ProductRecord | null;
+  initialStocks?: InventoryStockItem[] | null;
+} => Boolean(payload && typeof payload === 'object' && 'product' in payload);
 
 const productStockSimpleSlice = createSlice({
   name: 'productStockSimple',
@@ -29,27 +49,43 @@ const productStockSimpleSlice = createSlice({
   reducers: {
     openProductStockSimple: (
       state: ProductStockSimpleState,
-      action: PayloadAction<ProductRecord | null | undefined>,
+      action: PayloadAction<OpenProductStockSimplePayload>,
     ) => {
+      const payload = action.payload;
+      const productPayload = isPayloadWithInitialStocks(payload)
+        ? payload.product
+        : payload;
+      const initialStocks = isPayloadWithInitialStocks(payload)
+        ? payload.initialStocks
+        : null;
+
       state.isOpen = true;
-      if (action.payload) {
-        state.productId = action.payload.id ?? '';
-        state.product = action.payload;
+      if (productPayload) {
+        state.productId = productPayload.id ?? '';
+        state.product = productPayload;
       } else {
         state.productId = initialState.productId;
         state.product = initialState.product;
       }
+      state.initialStocks = Array.isArray(initialStocks) ? initialStocks : [];
+      state.initialStocksProductId = state.initialStocks.length
+        ? state.productId
+        : initialState.initialStocksProductId;
     },
     closeProductStockSimple: (state: ProductStockSimpleState) => {
       state.isOpen = false;
       state.productId = initialState.productId;
       state.product = initialState.product;
+      state.initialStocks = initialState.initialStocks;
+      state.initialStocksProductId = initialState.initialStocksProductId;
     },
     updateProductId: (
       state: ProductStockSimpleState,
       action: PayloadAction<string>,
     ) => {
       state.productId = action.payload;
+      state.initialStocks = initialState.initialStocks;
+      state.initialStocksProductId = initialState.initialStocksProductId;
     },
     setSelectedProductStock: (
       state: ProductStockSimpleState,

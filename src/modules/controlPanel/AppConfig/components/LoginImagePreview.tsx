@@ -1,7 +1,7 @@
 import { DeleteOutlined } from '@/constants/icons/antd';
 import { Empty, Image, Spin } from 'antd';
 
-import { DeleteBtn, ImageContainer, Section } from '../LoginImageConfig.styles';
+import { DeleteBtn, ImageContainer, Section } from './LoginImagePreview.styles';
 
 type LoginImagePreviewProps = {
   currentImage: string | null;

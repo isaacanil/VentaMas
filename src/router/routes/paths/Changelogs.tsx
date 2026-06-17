@@ -1,18 +1,14 @@
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
 
+import {
+  loadChangelogListRoute,
+  loadChangelogManageRoute,
+} from '@/modules/controlPanel/public';
 import RoutesName from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/types/routeTypes';
 
-const ChangelogList = lazy(() =>
-  import('@/modules/controlPanel/ChangeLogControl/ChangelogList/ChangelogList').then(
-    (module) => ({ default: module.ChangelogList }),
-  ),
-);
-const ChangelogManage = lazy(() =>
-  import('@/modules/controlPanel/ChangeLogControl/ChangelogManage/ChangelogManage').then(
-    (module) => ({ default: module.ChangelogManage }),
-  ),
-);
+const ChangelogList = lazy(loadChangelogListRoute);
+const ChangelogManage = lazy(loadChangelogManageRoute);
 
 const { CHANGELOG_LIST, CHANGELOG_MANAGE } = RoutesName.CHANGELOG_TERM;
 

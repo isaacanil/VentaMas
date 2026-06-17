@@ -18,8 +18,8 @@ import {
   resolveLegacyPurchaseStatus,
   resolvePurchaseWorkflowStatus,
 } from '@/utils/purchase/workflow';
-import { syncVendorBillFromPurchase } from '@/firebase/vendorBills/fbUpsertVendorBill';
 import { syncPurchaseAttachments } from './attachmentService';
+import { syncVendorBillFromPurchase } from './syncVendorBillFromPurchase';
 
 interface UpdatePurchaseParams {
   user: UserIdentity;

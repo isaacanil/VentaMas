@@ -1,4 +1,9 @@
 import { stableHash } from '../../../versions/v2/invoice/utils/hash.util.js';
+import {
+  DOMINICAN_MUNICIPALITY_CODE_SET,
+  DOMINICAN_PROVINCE_CODES,
+  DOMINICAN_PROVINCE_CODE_SET,
+} from '../utils/dominicanLocationCodes.util.js';
 import { resolveGisysDocumentType } from '../utils/gisysDocumentType.util.js';
 
 const DEFAULT_CURRENCY = 'DOP';
@@ -33,46 +38,23 @@ const ITEM_KIND = Object.freeze({
   GOOD: '1',
   SERVICE: '2',
 });
-const DOMINICAN_PROVINCE_CODES = new Map(
-  [
-    ['Distrito Nacional', '010000'],
-    ['Azua', '020000'],
-    ['Bahoruco', '030000'],
-    ['Baoruco', '030000'],
-    ['Barahona', '040000'],
-    ['Dajabon', '050000'],
-    ['Duarte', '060000'],
-    ['Elias Pina', '070000'],
-    ['El Seibo', '080000'],
-    ['Espaillat', '090000'],
-    ['Independencia', '100000'],
-    ['La Altagracia', '110000'],
-    ['La Romana', '120000'],
-    ['La Vega', '130000'],
-    ['Maria Trinidad Sanchez', '140000'],
-    ['Monte Cristi', '150000'],
-    ['Pedernales', '160000'],
-    ['Peravia', '170000'],
-    ['Puerto Plata', '180000'],
-    ['Hermanas Mirabal', '190000'],
-    ['Samana', '200000'],
-    ['San Cristobal', '210000'],
-    ['San Juan', '220000'],
-    ['San Pedro de Macoris', '230000'],
-    ['Sanchez Ramirez', '240000'],
-    ['Santiago', '250000'],
-    ['Santiago Rodriguez', '260000'],
-    ['Valverde', '270000'],
-    ['Monsenor Nouel', '280000'],
-    ['Monte Plata', '290000'],
-    ['Hato Mayor', '300000'],
-    ['San Jose de Ocoa', '310000'],
-    ['Santo Domingo', '320000'],
-  ].map(([province, code]) => [province.toUpperCase(), code]),
-);
-
+const TAXED_AMOUNT_INDICATOR_DOCUMENT_TYPES = new Set([
+  'E31',
+  'E33',
+  'E34',
+  'E41',
+  'E45',
+]);
+const REFERENCE_REQUIRED_DOCUMENT_TYPES = new Set(['E33', 'E34']);
+const CREDIT_NOTE_INDICATOR = Object.freeze({
+  WITHIN_30_DAYS: '0',
+  OVER_30_DAYS: '1',
+});
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+
+const hasEntries = (value) => Object.keys(value || {}).length > 0;
 
 const toCleanString = (value) => {
   if (typeof value !== 'string') return null;
@@ -297,13 +279,16 @@ const resolveEffectiveTaxRate = (billingIndicator, taxRate) => {
 const normalizeLocationCode = (...values) => {
   const raw = pickString(...values);
   if (!raw) return null;
-  return PROVINCE_MUNICIPALITY_CODE_PATTERN.test(raw) ? raw : null;
+  if (!PROVINCE_MUNICIPALITY_CODE_PATTERN.test(raw)) return null;
+  return DOMINICAN_MUNICIPALITY_CODE_SET.has(raw) ? raw : null;
 };
 
 const normalizeProvinceCode = (...values) => {
   const raw = pickString(...values);
   if (!raw) return null;
-  if (PROVINCE_MUNICIPALITY_CODE_PATTERN.test(raw)) return raw;
+  if (PROVINCE_MUNICIPALITY_CODE_PATTERN.test(raw)) {
+    return DOMINICAN_PROVINCE_CODE_SET.has(raw) ? raw : null;
+  }
   const normalizedKey = toAsciiUpperKey(raw).replace(/^PROVINCIA\s+/, '');
   return DOMINICAN_PROVINCE_CODES.get(normalizedKey) || null;
 };
@@ -617,6 +602,7 @@ const buildPayments = (cart, grandTotal) => {
 
 const buildBuyer = ({ client, documentType }) => {
   const buyer = asRecord(client);
+  const identification = asRecord(buyer.identification);
   const name =
     pickString(
       buyer.name,
@@ -634,7 +620,14 @@ const buildBuyer = ({ client, documentType }) => {
       buyer.identification,
       buyer.identificationNumber,
       buyer.documentNumber,
+      buyer.personalID,
+      buyer.personalId,
+      buyer.taxId,
       buyer.cedula,
+      identification.rnc,
+      identification.rncCedula,
+      identification.number,
+      identification.value,
     ),
     foreignId: pickString(buyer.foreignId),
     name,
@@ -648,26 +641,265 @@ const buildBuyer = ({ client, documentType }) => {
   });
 };
 
-const buildIssuer = ({ business }) => {
-  const businessNode = asRecord(business?.business);
-  const source = Object.keys(businessNode).length
-    ? businessNode
-    : asRecord(business);
-  const phone = normalizePhone(source.phone, source.tel);
+const resolveFiscalNode = (business) => {
+  const root = asRecord(business);
+  const businessNode = asRecord(root.business);
+  const features = asRecord(root.features);
+  const businessFeatures = asRecord(businessNode.features);
 
-  return pruneUndefined({
-    legalName: pickString(source.legalName, source.name, source.businessName),
+  for (const value of [
+    features.fiscal,
+    root.fiscal,
+    businessFeatures.fiscal,
+    businessNode.fiscal,
+  ]) {
+    const record = asRecord(value);
+    if (hasEntries(record)) return record;
+  }
+
+  return {};
+};
+
+const pickRecord = (...values) => {
+  for (const value of values) {
+    const record = asRecord(value);
+    if (hasEntries(record)) return record;
+  }
+  return {};
+};
+
+const resolveIssuerProfile = ({ business, providerConfig }) => {
+  const root = asRecord(business);
+  const businessNode = asRecord(root.business);
+  const fiscalNode = resolveFiscalNode(root);
+  const providerNode = pickRecord(
+    fiscalNode.gisysFact,
+    fiscalNode.gisys,
+    fiscalNode.gisysapi,
+    fiscalNode.electronicProvider,
+  );
+
+  return pickRecord(
+    providerConfig?.issuer,
+    providerConfig?.issuerProfile,
+    providerConfig?.issuerDefaults,
+    providerNode.issuer,
+    providerNode.issuerProfile,
+    providerNode.issuerDefaults,
+    fiscalNode.issuer,
+    fiscalNode.issuerProfile,
+    root.electronicTaxReceiptIssuer,
+    root.fiscalIssuer,
+    root.issuerProfile,
+    businessNode.electronicTaxReceiptIssuer,
+    businessNode.fiscalIssuer,
+    businessNode.issuerProfile,
+  );
+};
+
+const buildIssuer = ({ business, providerConfig }) => {
+  const root = asRecord(business);
+  const businessNode = asRecord(root.business);
+  const source = resolveIssuerProfile({ business: root, providerConfig });
+  const phone = normalizePhone(source.phone, source.tel);
+  const issuer = pruneUndefined({
+    // Do not fall back to the UI business name: GISYS owns taxpayer legal data.
+    legalName: pickString(
+      source.legalName,
+      source.fiscalLegalName,
+      source.razonSocial,
+      source.razonSocialEmisor,
+      root.legalName,
+      businessNode.legalName,
+      root.fiscalLegalName,
+      businessNode.fiscalLegalName,
+      root.razonSocial,
+      businessNode.razonSocial,
+    ),
     commercialName: pickString(
       source.commercialName,
       source.tradeName,
-      source.name,
+      source.nombreComercial,
+      root.commercialName,
+      businessNode.commercialName,
+      root.tradeName,
+      businessNode.tradeName,
+      root.nombreComercial,
+      businessNode.nombreComercial,
     ),
-    address: pickString(source.address, source.direccion),
+    address: pickString(
+      source.address,
+      source.direccion,
+      source.direccionEmisor,
+    ),
     municipality: normalizeLocationCode(source.municipality, source.municipio),
     province: normalizeProvinceCode(source.province, source.provincia),
     phones: phone ? [phone] : undefined,
     email: pickString(source.email),
     economicActivity: pickString(source.economicActivity),
+  });
+
+  return hasEntries(issuer) ? issuer : undefined;
+};
+
+const resolveTaxedAmountIndicator = ({
+  documentType,
+  taskPayload,
+  ncf,
+  cart,
+  totals,
+}) => {
+  const explicitValue = pickString(
+    taskPayload?.taxedAmountIndicator,
+    taskPayload?.indicadorMontoGravado,
+    ncf?.taxedAmountIndicator,
+    ncf?.indicadorMontoGravado,
+    cart?.taxedAmountIndicator,
+    cart?.indicadorMontoGravado,
+  );
+  if (explicitValue) return explicitValue;
+
+  if (!TAXED_AMOUNT_INDICATOR_DOCUMENT_TYPES.has(documentType)) {
+    return undefined;
+  }
+
+  return (totals.taxableAmountTotal || 0) > 0 ? '0' : undefined;
+};
+
+const resolveCreditNoteIndicator = ({
+  documentType,
+  taskPayload,
+  ncf,
+  cart,
+  reference,
+  issuedAt,
+}) => {
+  if (documentType !== 'E34') return undefined;
+  const explicitIndicator = normalizeCreditNoteIndicator(
+    taskPayload?.creditNoteIndicator,
+    taskPayload?.indicadorNotaCredito,
+    ncf?.creditNoteIndicator,
+    ncf?.indicadorNotaCredito,
+    cart?.creditNoteIndicator,
+    cart?.indicadorNotaCredito,
+  );
+  if (explicitIndicator) return explicitIndicator;
+
+  return resolveCreditNoteIndicatorFromReference({ reference, issuedAt });
+};
+
+const normalizeCreditNoteIndicator = (...values) => {
+  const raw = pickString(...values);
+  return raw === CREDIT_NOTE_INDICATOR.WITHIN_30_DAYS ||
+    raw === CREDIT_NOTE_INDICATOR.OVER_30_DAYS
+    ? raw
+    : null;
+};
+
+const startOfUtcCalendarDay = (isoDate) => {
+  if (!isoDate) return null;
+  const date = new Date(isoDate);
+  const millis = Date.UTC(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate(),
+  );
+  return Number.isFinite(millis) ? millis : null;
+};
+
+const resolveCreditNoteIndicatorFromReference = ({ reference, issuedAt }) => {
+  const modifiedDocumentDate = normalizeDate(reference?.modifiedDocumentDate);
+  const issueDate = normalizeDate(issuedAt) || new Date().toISOString();
+  const modifiedDay = startOfUtcCalendarDay(modifiedDocumentDate);
+  const issueDay = startOfUtcCalendarDay(issueDate);
+  if (modifiedDay == null || issueDay == null) {
+    return CREDIT_NOTE_INDICATOR.WITHIN_30_DAYS;
+  }
+
+  const elapsedCalendarDays = Math.floor((issueDay - modifiedDay) / MS_PER_DAY);
+  return elapsedCalendarDays > 30
+    ? CREDIT_NOTE_INDICATOR.OVER_30_DAYS
+    : CREDIT_NOTE_INDICATOR.WITHIN_30_DAYS;
+};
+
+const resolveReferenceDate = (...values) => {
+  for (const value of values) {
+    const normalized = normalizeDate(value);
+    if (normalized) return normalized;
+  }
+  return null;
+};
+
+const buildReference = ({ documentType, taskPayload, ncf, cart, invoice }) => {
+  if (!REFERENCE_REQUIRED_DOCUMENT_TYPES.has(documentType)) return undefined;
+
+  const reference = pickRecord(
+    taskPayload?.reference,
+    taskPayload?.informacionReferencia,
+    ncf?.reference,
+    ncf?.informacionReferencia,
+    cart?.reference,
+    cart?.informacionReferencia,
+    invoice?.snapshot?.reference,
+    invoice?.snapshot?.fiscalReference,
+  );
+  const modifiedENcf = pickString(
+    reference.modifiedENcf,
+    reference.modifiedENCF,
+    reference.modifiedNcf,
+    reference.ncfModificado,
+    reference.NCFModificado,
+    taskPayload?.modifiedENcf,
+    taskPayload?.modifiedNcf,
+    taskPayload?.ncfModificado,
+    ncf?.modifiedENcf,
+    cart?.modifiedENcf,
+  );
+  const modifiedDocumentDate = resolveReferenceDate(
+    reference.modifiedDocumentDate,
+    reference.modifiedDocumentIssuedAt,
+    reference.fechaNcfModificado,
+    reference.FechaNCFModificado,
+    taskPayload?.modifiedDocumentDate,
+    taskPayload?.modifiedDocumentIssuedAt,
+    taskPayload?.fechaNcfModificado,
+    ncf?.modifiedDocumentDate,
+    cart?.modifiedDocumentDate,
+  );
+  const modificationCode = pickString(
+    reference.modificationCode,
+    reference.codigoModificacion,
+    reference.CodigoModificacion,
+    taskPayload?.modificationCode,
+    taskPayload?.codigoModificacion,
+    ncf?.modificationCode,
+    cart?.modificationCode,
+  );
+
+  if (!modifiedENcf || !modifiedDocumentDate || !modificationCode) {
+    throw new Error('gisys_payload_requires_reference_for_adjustment');
+  }
+
+  return pruneUndefined({
+    modifiedENcf,
+    modifiedDocumentDate,
+    modificationCode,
+    modifiedRnc: pickString(
+      reference.modifiedRnc,
+      reference.rncOtroContribuyente,
+      reference.RNCOtroContribuyente,
+      taskPayload?.modifiedRnc,
+      taskPayload?.rncOtroContribuyente,
+    ),
+    reason: pickString(
+      reference.reason,
+      reference.razonModificacion,
+      reference.RazonModificacion,
+      taskPayload?.reason,
+      taskPayload?.razonModificacion,
+      taskPayload?.invoiceComment,
+      invoice?.snapshot?.invoiceComment,
+    ),
   });
 };
 
@@ -683,7 +915,12 @@ export const buildGisysIssuePayload = ({
   const ncf = asRecord(invoice?.snapshot?.ncf);
   const ncfType =
     taskPayload?.ncfType || ncf.type || taskPayload?.taxReceiptName;
-  const documentType = resolveGisysDocumentType({ ncfType, ncf, cart });
+  const documentType = resolveGisysDocumentType({
+    documentType: taskPayload?.documentType,
+    ncfType,
+    ncf,
+    cart,
+  });
   if (!documentType) {
     throw new Error(
       `gisys_document_type_unresolved(ncfType=${ncfType || 'empty'})`,
@@ -706,6 +943,13 @@ export const buildGisysIssuePayload = ({
     businessId,
     invoiceId,
   });
+  const reference = buildReference({
+    documentType,
+    taskPayload,
+    ncf,
+    cart,
+    invoice,
+  });
 
   return {
     payload: pruneUndefined({
@@ -718,15 +962,30 @@ export const buildGisysIssuePayload = ({
       incomeType: taskPayload?.incomeType || '01',
       paymentType: taskPayload?.paymentType,
       paymentDueDate: normalizeDate(taskPayload?.dueDate)?.slice(0, 10),
-      issuer: buildIssuer({ business }),
+      creditNoteIndicator: resolveCreditNoteIndicator({
+        documentType,
+        taskPayload,
+        ncf,
+        cart,
+        reference,
+        issuedAt,
+      }),
+      taxedAmountIndicator: resolveTaxedAmountIndicator({
+        documentType,
+        taskPayload,
+        ncf,
+        cart,
+        totals,
+      }),
+      issuer: buildIssuer({ business, providerConfig }),
       buyer: buildBuyer({ client, documentType }),
       payments: buildPayments(cart, totals.grandTotal),
       items,
       totals,
+      reference,
       meta: {
         source: 'issue_api',
         sourceTraceId: `${businessId}:${invoiceId}`,
-        requestedENcf: ncf.code || null,
         posId: pickString(cart?.cashCountId),
         notes: taskPayload?.invoiceComment || invoice?.snapshot?.invoiceComment,
       },

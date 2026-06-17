@@ -12,7 +12,7 @@ import { useFbGetClients } from '@/firebase/client/useFbGetClients';
 import type { DiscountType, InvoiceClient, InvoiceData } from '@/types/invoice';
 import type { UserIdentity } from '@/types/users';
 import { getInvoicePaymentInfo } from '@/utils/invoice';
-import { resolveElectronicTaxReceiptSnapshot } from '@/utils/invoice/electronicTaxReceipt';
+import { resolveElectronicTaxReceiptSnapshot } from '@/modules/invoice/utils/electronicTaxReceipt';
 import { useInvoiceWorkspaceDraftEditor } from '../hooks/useInvoiceWorkspaceDraftEditor';
 import {
   formatWorkspaceAmount,

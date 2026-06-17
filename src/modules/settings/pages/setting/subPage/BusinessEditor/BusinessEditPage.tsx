@@ -1,10 +1,12 @@
 import { Form, message } from 'antd';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import type { UploadChangeParam, UploadFile } from 'antd/es/upload/interface';
+import type { UploadFile } from 'antd';
+import type { UploadChangeParam } from 'antd/es/upload/interface';
 
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import { selectUser } from '@/features/auth/userSlice';
+import { getBusinessCountryFormOptions } from '@/shared/location/businessLocations';
 import { isEqual } from '@/utils/lodash-minimal';
 
 import {
@@ -17,7 +19,6 @@ import {
   BusinessProfileForm,
   type BusinessProfileFormValues,
 } from './components/BusinessProfileForm';
-import { countries } from './countries.json';
 import useUnsavedChangesPrompt from './hooks/useUnsavedChangesPrompt';
 import {
   submitBusinessUpdate,
@@ -178,7 +179,7 @@ const BusinessEditPage = () => {
       <PageContainer>
         <BusinessProfileForm
           beforeUpload={beforeUpload}
-          countries={countries || []}
+          countries={getBusinessCountryFormOptions()}
           form={form}
           imageUrl={imageUrl}
           onLogoChange={handleChange}

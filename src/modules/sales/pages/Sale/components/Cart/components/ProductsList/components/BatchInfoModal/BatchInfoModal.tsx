@@ -2,7 +2,7 @@ import { Alert, Modal } from 'antd';
 import { useEffect } from 'react';
 import styled from 'styled-components';
 
-import { useLocationNames } from '@/hooks/useLocationNames';
+import { useLocationNames } from '@/modules/inventory/public';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
 import type { Product as CartProduct } from '@/features/cart/types';
 

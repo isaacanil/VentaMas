@@ -4,7 +4,7 @@ import {
   getPersistedCount,
   normalizeExpirationValue,
 } from '../../inventoryTableUtils';
-import { CLEAR_SENTINEL } from '@/utils/inventory/constants';
+import { CLEAR_SENTINEL } from '@/modules/inventory/utils/constants';
 
 import type {
   BaselineSnapshot,

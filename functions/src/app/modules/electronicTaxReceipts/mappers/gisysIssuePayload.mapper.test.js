@@ -67,9 +67,12 @@ describe('gisysIssuePayload.mapper', () => {
     const input = buildBaseInput('AELtPPOmRP5-wRKTGP7Jd');
     input.business = {
       name: 'VentaMas Test',
-      province: 'prueba',
-      municipality: 'municipio inventado',
-      phone: '12345678901234567890',
+      fiscalIssuer: {
+        legalName: 'VentaMas Fiscal Test',
+        province: 'prueba',
+        municipality: 'municipio inventado',
+        phone: '12345678901234567890',
+      },
     };
     input.invoice.snapshot.client = {
       name: 'Cliente Prueba',
@@ -92,9 +95,12 @@ describe('gisysIssuePayload.mapper', () => {
     const input = buildBaseInput('invoice-valid-contact');
     input.business = {
       name: 'VentaMas Test',
-      province: 'Santo Domingo',
-      municipality: '320100',
-      phone: '(809) 555-1234',
+      fiscalIssuer: {
+        legalName: 'VentaMas Fiscal Test',
+        province: 'Santo Domingo',
+        municipality: '320100',
+        phone: '(809) 555-1234',
+      },
     };
     input.invoice.snapshot.client = {
       name: 'Cliente Prueba',
@@ -113,6 +119,264 @@ describe('gisysIssuePayload.mapper', () => {
     expect(payload.buyer.phone).toBe('829-555-6677');
   });
 
+  it('omits unknown numeric DGII location codes before GISYS validation', () => {
+    const input = buildBaseInput('invoice-unknown-location-codes');
+    input.business = {
+      name: 'VentaMas Test',
+      fiscalIssuer: {
+        legalName: 'VentaMas Fiscal Test',
+        province: '990000',
+        municipality: '320999',
+      },
+    };
+    input.invoice.snapshot.client = {
+      name: 'Cliente Prueba',
+      province: '999999',
+      municipality: '010999',
+    };
+
+    const payload = buildGisysIssuePayload(input).payload;
+
+    expect(payload.issuer.province).toBeUndefined();
+    expect(payload.issuer.municipality).toBeUndefined();
+    expect(payload.buyer.province).toBeUndefined();
+    expect(payload.buyer.municipality).toBeUndefined();
+  });
+
+  it('does not emit buyer country fields for E31 credit fiscal documents', () => {
+    const input = buildBaseInput('invoice-e31-country-not-applicable');
+    input.invoice.snapshot.ncf = {
+      type: 'CREDITO FISCAL',
+      documentType: 'E31',
+      code: null,
+    };
+    input.invoice.snapshot.client = {
+      name: 'GI SYS SRL',
+      personalID: '132619201',
+      country: 'DO',
+      pais: 'Republica Dominicana',
+    };
+    input.taskPayload = {
+      ncfType: 'CREDITO FISCAL',
+    };
+
+    const { documentType, payload } = buildGisysIssuePayload(input);
+
+    expect(documentType).toBe('E31');
+    expect(payload.buyer).not.toHaveProperty('country');
+    expect(payload.buyer).not.toHaveProperty('pais');
+  });
+
+  it('maps POS personalID clients to buyer.rncCedula for E31 documents', () => {
+    const input = buildBaseInput('invoice-e31-personal-id-client');
+    input.invoice.snapshot.ncf = {
+      type: 'CREDITO FISCAL',
+      documentType: 'E31',
+      code: null,
+    };
+    input.invoice.snapshot.client = {
+      id: 'bjGp6Z19',
+      name: 'GI SYS SRL',
+      personalID: '132619201',
+    };
+    input.taskPayload = {
+      ncfType: 'CREDITO FISCAL',
+      client: {
+        id: 'bjGp6Z19',
+        name: 'GI SYS SRL',
+        personalID: '132619201',
+      },
+    };
+
+    const { documentType, payload } = buildGisysIssuePayload(input);
+
+    expect(documentType).toBe('E31');
+    expect(payload.buyer).toMatchObject({
+      internalCode: 'bjGp6Z19',
+      name: 'GI SYS SRL',
+      rncCedula: '132619201',
+    });
+  });
+
+  it('sends the net taxed amount indicator for taxable E31 documents', () => {
+    const input = buildBaseInput('invoice-e31-taxed-amount-indicator');
+    input.invoice.snapshot.ncf = {
+      type: 'CREDITO FISCAL',
+      documentType: 'E31',
+      code: null,
+    };
+    input.invoice.snapshot.client = {
+      name: 'GI SYS SRL',
+      personalID: '132619201',
+    };
+    input.taskPayload = {
+      ncfType: 'CREDITO FISCAL',
+    };
+
+    const { documentType, payload } = buildGisysIssuePayload(input);
+
+    expect(documentType).toBe('E31');
+    expect(payload.taxedAmountIndicator).toBe('0');
+  });
+
+  it('sends DGII reference data for E34 credit notes', () => {
+    const input = buildBaseInput('credit-note-e34-reference');
+    input.invoice.snapshot.cart.date = '2026-06-16T18:45:00.000Z';
+    input.invoice.snapshot.ncf = {
+      type: 'NOTAS DE CRÉDITO',
+      documentType: 'E34',
+      code: null,
+    };
+    input.invoice.snapshot.client = {
+      name: 'GI SYS SRL',
+      personalID: '132619201',
+    };
+    input.taskPayload = {
+      documentType: 'E34',
+      ncfType: 'NOTAS DE CRÉDITO',
+      reference: {
+        modifiedENcf: 'E310000000007',
+        modifiedDocumentDate: '2026-06-16T18:40:42.000Z',
+        modificationCode: '3',
+        reason: 'Devolucion parcial',
+      },
+    };
+
+    const { documentType, payload } = buildGisysIssuePayload(input);
+
+    expect(documentType).toBe('E34');
+    expect(payload.reference).toEqual({
+      modifiedENcf: 'E310000000007',
+      modifiedDocumentDate: '2026-06-16T18:40:42.000Z',
+      modificationCode: '3',
+      reason: 'Devolucion parcial',
+    });
+    expect(payload.taxedAmountIndicator).toBe('0');
+    expect(payload.creditNoteIndicator).toBe('0');
+  });
+
+  it('sets E34 credit note indicator to 1 when the affected e-CF is older than 30 calendar days', () => {
+    const input = buildBaseInput('credit-note-e34-over-30-days');
+    input.invoice.snapshot.cart.date = '2026-06-16T12:00:00.000Z';
+    input.invoice.snapshot.ncf = {
+      type: 'NOTAS DE CRÉDITO',
+      documentType: 'E34',
+      code: null,
+    };
+    input.invoice.snapshot.client = {
+      name: 'GI SYS SRL',
+      personalID: '132619201',
+    };
+    input.taskPayload = {
+      documentType: 'E34',
+      ncfType: 'NOTAS DE CRÉDITO',
+      reference: {
+        modifiedENcf: 'E310000000007',
+        modifiedDocumentDate: '2026-05-16T12:00:00.000Z',
+        modificationCode: '3',
+        reason: 'Devolucion parcial',
+      },
+    };
+
+    const { payload } = buildGisysIssuePayload(input);
+
+    expect(payload.creditNoteIndicator).toBe('1');
+  });
+
+  it('keeps E34 credit note indicator at 0 through the first 30 calendar days', () => {
+    const input = buildBaseInput('credit-note-e34-within-30-days');
+    input.invoice.snapshot.cart.date = '2026-06-16T12:00:00.000Z';
+    input.invoice.snapshot.ncf = {
+      type: 'NOTAS DE CRÉDITO',
+      documentType: 'E34',
+      code: null,
+    };
+    input.invoice.snapshot.client = {
+      name: 'GI SYS SRL',
+      personalID: '132619201',
+    };
+    input.taskPayload = {
+      documentType: 'E34',
+      ncfType: 'NOTAS DE CRÉDITO',
+      reference: {
+        modifiedENcf: 'E310000000007',
+        modifiedDocumentDate: '2026-05-17T12:00:00.000Z',
+        modificationCode: '3',
+        reason: 'Devolucion parcial',
+      },
+    };
+
+    const { payload } = buildGisysIssuePayload(input);
+
+    expect(payload.creditNoteIndicator).toBe('0');
+  });
+
+  it('uses an explicit valid E34 credit note indicator when provided', () => {
+    const input = buildBaseInput('credit-note-e34-explicit-indicator');
+    input.invoice.snapshot.cart.date = '2026-06-16T12:00:00.000Z';
+    input.invoice.snapshot.ncf = {
+      type: 'NOTAS DE CRÉDITO',
+      documentType: 'E34',
+      code: null,
+    };
+    input.invoice.snapshot.client = {
+      name: 'GI SYS SRL',
+      personalID: '132619201',
+    };
+    input.taskPayload = {
+      documentType: 'E34',
+      ncfType: 'NOTAS DE CRÉDITO',
+      creditNoteIndicator: '0',
+      reference: {
+        modifiedENcf: 'E310000000007',
+        modifiedDocumentDate: '2026-05-16T12:00:00.000Z',
+        modificationCode: '3',
+        reason: 'Devolucion parcial',
+      },
+    };
+
+    const { payload } = buildGisysIssuePayload(input);
+
+    expect(payload.creditNoteIndicator).toBe('0');
+  });
+
+  it('does not send requestedENcf to the GISYS issue_api contract', () => {
+    const input = buildBaseInput('invoice-issue-api-no-requested-encf');
+    input.invoice.snapshot.ncf = {
+      type: 'CREDITO FISCAL',
+      documentType: 'E31',
+      code: 'E310000000001',
+    };
+    input.taskPayload = {
+      ncfType: 'CREDITO FISCAL',
+    };
+
+    const { payload } = buildGisysIssuePayload(input);
+
+    expect(payload.meta).toMatchObject({
+      source: 'issue_api',
+      sourceTraceId: 'business-1:invoice-issue-api-no-requested-encf',
+    });
+    expect(payload.meta).not.toHaveProperty('requestedENcf');
+  });
+
+  it('fails E33 and E34 payloads when reference data is missing', () => {
+    const input = buildBaseInput('debit-note-e33-missing-reference');
+    input.invoice.snapshot.ncf = {
+      type: 'NOTAS DE DÉBITO',
+      documentType: 'E33',
+      code: null,
+    };
+    input.taskPayload = {
+      documentType: 'E33',
+      ncfType: 'NOTAS DE DÉBITO',
+    };
+
+    expect(() => buildGisysIssuePayload(input)).toThrow(
+      'gisys_payload_requires_reference_for_adjustment',
+    );
+  });
+
   it('accepts province aliases that are stored as user-facing text', () => {
     const input = buildBaseInput('invoice-province-alias');
     input.invoice.snapshot.client = {
@@ -129,12 +393,59 @@ describe('gisysIssuePayload.mapper', () => {
     const input = buildBaseInput('invoice-multiple-phone-values');
     input.business = {
       name: 'VentaMas Test',
-      phone: '8496503586 / 8094333332',
+      fiscalIssuer: {
+        legalName: 'VentaMas Fiscal Test',
+        phone: '8496503586 / 8094333332',
+      },
     };
 
     const payload = buildGisysIssuePayload(input).payload;
 
     expect(payload.issuer.phones).toEqual(['849-650-3586']);
+  });
+
+  it('does not override GISYS taxpayer issuer profile with display business fields', () => {
+    const input = buildBaseInput('invoice-display-business-fields');
+    input.business = {
+      business: {
+        name: 'Negocio de Distribución Prueba',
+        address: 'H esquina 6, residencial marisol, villa marina',
+        province: 'San Cristobal',
+        tel: '8494073538 - 8093455678',
+      },
+    };
+
+    const payload = buildGisysIssuePayload(input).payload;
+
+    expect(payload.issuer).toBeUndefined();
+  });
+
+  it('sends explicit fiscal issuer profile fields when configured', () => {
+    const input = buildBaseInput('invoice-explicit-fiscal-issuer');
+    input.business = {
+      business: {
+        name: 'Negocio de Distribución Prueba',
+        fiscalIssuer: {
+          legalName: 'VENTAMAX FISCAL SRL',
+          commercialName: 'VentaMax',
+          address: 'Av. Fiscal 123',
+          province: 'Santo Domingo',
+          municipality: '320100',
+          phone: '(809) 555-1234',
+        },
+      },
+    };
+
+    const payload = buildGisysIssuePayload(input).payload;
+
+    expect(payload.issuer).toMatchObject({
+      legalName: 'VENTAMAX FISCAL SRL',
+      commercialName: 'VentaMax',
+      address: 'Av. Fiscal 123',
+      province: '320000',
+      municipality: '320100',
+      phones: ['809-555-1234'],
+    });
   });
 
   it('maps the product tax rate to the DGII billing indicator', () => {

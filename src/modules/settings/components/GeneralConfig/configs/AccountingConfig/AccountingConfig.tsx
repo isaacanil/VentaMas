@@ -4,11 +4,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
+import {
+  useAccountingConfig,
+  useAccountingPostingProfiles,
+  useChartOfAccounts,
+} from '@/modules/accounting/public';
 import { AccountingSettingsForm } from './components/AccountingSettingsForm';
 import { useAccountingAuditTrail } from './hooks/useAccountingAuditTrail';
-import { useAccountingConfig } from './hooks/useAccountingConfig';
-import { useAccountingPostingProfiles } from './hooks/useAccountingPostingProfiles';
-import { useChartOfAccounts } from './hooks/useChartOfAccounts';
 import {
   DEFAULT_ACCOUNTING_PANEL_KEY,
   getAccountingPanelItem,

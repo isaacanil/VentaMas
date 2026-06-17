@@ -107,6 +107,7 @@ const VmModalRoot = ({
 
 export const VmModal = Object.assign(VmModalRoot, {
   Root: VmModalRoot,
+  Primitive: HeroModal,
   Trigger: HeroModal.Trigger,
   Backdrop: HeroModal.Backdrop,
   Container: HeroModal.Container,

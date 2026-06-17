@@ -15,8 +15,8 @@ import type {
   UserProfile,
   UserRoleLike,
 } from '../types';
-import { toMillis } from '../utils/userList';
-import { UserListActionMenu } from './UserListActionMenu';
+import { getPresenceLabel, toMillis } from '../utils/userList';
+import { ActionMenu } from './ActionMenu';
 
 interface RoleBadgeProps {
   $primaryColor: string;
@@ -272,16 +272,7 @@ export const createUserListColumns = ({
           lastUpdated: null,
         };
         const isOnline = presenceValue?.state === 'online';
-        const lastUpdated = presenceValue?.lastUpdated;
-        let label = isOnline ? 'En linea' : 'Sin datos';
-        if (!isOnline && lastUpdated) {
-          const date = DateTime.fromMillis(lastUpdated);
-          const diffHours = DateTime.now().diff(date, 'hours').hours;
-          label =
-            diffHours < 24
-              ? date.toRelative({ style: 'short' }) || 'Reciente'
-              : date.toFormat('dd/LL/yyyy');
-        }
+        const label = getPresenceLabel(presenceValue);
 
         return (
           <PresenceBadge
@@ -305,7 +296,7 @@ export const createUserListColumns = ({
       minWidth: '50px',
       fixed: 'right',
       cell: ({ value }: { value: unknown }) => (
-        <UserListActionMenu
+        <ActionMenu
           user={value as UserProfile | undefined}
           onEdit={onEdit}
           onChangePassword={onChangePassword}

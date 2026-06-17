@@ -7,7 +7,7 @@ import {
   ActivityRow,
   ActivityTime,
   ActivityTitle,
-} from './SubscriptionOverviewCard.styles';
+} from './ActivityItem.styles';
 
 interface ActivityItemProps {
   icon: ReactNode;

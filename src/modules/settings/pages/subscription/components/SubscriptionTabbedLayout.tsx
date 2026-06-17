@@ -12,7 +12,7 @@ import {
   Wrapper,
 } from './SubscriptionTabbedLayout.styles';
 
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 export interface SubscriptionTabbedLayoutItem {
   path: string;

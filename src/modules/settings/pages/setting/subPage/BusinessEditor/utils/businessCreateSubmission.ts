@@ -2,6 +2,10 @@ import {
   createBusiness,
   fbUploadBusinessLogoByBusinessId,
 } from '@/firebase/businessInfo/fbAddBusinessInfo';
+import {
+  normalizeBusinessCountryCode,
+  normalizeBusinessSubdivisionForStorage,
+} from '@/shared/location/businessLocations';
 
 import type { BusinessProfileFormValues } from '../components/BusinessProfileForm';
 
@@ -29,11 +33,16 @@ export const submitBusinessCreation = async ({
   logoFile: File | null;
   values: BusinessProfileFormValues;
 }): Promise<BusinessCreationResult> => {
+  const country = normalizeBusinessCountryCode(values.country);
+  const province = normalizeBusinessSubdivisionForStorage(
+    country,
+    values.province,
+  );
   const businessData = {
     name: values.name || '',
     logoUrl: '',
-    country: values.country || '',
-    province: values.province || '',
+    country,
+    province,
     tel: values.tel || '',
     email: values.email || '',
     rnc: values.rnc || '',

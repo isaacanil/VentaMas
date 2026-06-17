@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import { Transition } from '@/components/ui/Transition';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 import { SettingCategorySection } from './components/SettingCategorySection/SettingCategorySection';
 import { SettingSearch } from './components/SettingSearch/SettingSearch';

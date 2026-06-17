@@ -65,7 +65,7 @@ vi.mock('@/components/ui/Button/ButtonIconMenu', () => ({
   ),
 }));
 
-vi.mock('@/components/ui/Button/OpenMenuButton', () => ({
+vi.mock('./OpenMenuButton/OpenMenuButton', () => ({
   OpenMenuButton: ({ onClick }: { onClick?: () => void }) => (
     <button onClick={onClick} type="button">
       toggle menu
@@ -73,7 +73,7 @@ vi.mock('@/components/ui/Button/OpenMenuButton', () => ({
   ),
 }));
 
-vi.mock('@/components/ui/WebName/WebName', () => ({
+vi.mock('./WebName/WebName', () => ({
   WebName: () => <div>VENTAMAX</div>,
 }));
 

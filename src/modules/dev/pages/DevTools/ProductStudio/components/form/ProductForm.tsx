@@ -7,13 +7,14 @@ import { IdentitySection } from '@/modules/dev/pages/DevTools/ProductStudio/comp
 import { InventorySection } from '@/modules/dev/pages/DevTools/ProductStudio/components/sections/InventorySection';
 import { PricingSection } from '@/modules/dev/pages/DevTools/ProductStudio/components/sections/PricingSection';
 import { WarrantySection } from '@/modules/dev/pages/DevTools/ProductStudio/components/sections/WarrantySection';
+import type { BrandOption } from '@/domain/products/brandSelection';
 import type { CategoryDocument } from '@/firebase/categories/types';
 import type {
   ActiveIngredient,
-  PricingTax,
   ProductRecord,
 } from '@/types/products';
 import type { SectionId } from '@/modules/dev/pages/DevTools/ProductStudio/utils/sections';
+import type { ProductPricingFormValues } from '@/domain/products/pricingForm';
 
 const FormWrapper = styled.div`
   width: 100%;
@@ -27,20 +28,7 @@ interface BrandMeta {
   helper: string;
 }
 
-interface BrandOption {
-  value: string;
-  label: string;
-}
-
-export type PricingValues = {
-  cost?: number | string | null;
-  tax?: PricingTax;
-  listPrice?: number | string | null;
-  midPrice?: number | string | null;
-  minPrice?: number | string | null;
-  cardPrice?: number | string | null;
-  offerPrice?: number | string | null;
-};
+export type PricingValues = ProductPricingFormValues;
 
 export type ProductFormValues = Omit<ProductRecord, 'pricing'> & {
   pricing?: PricingValues;

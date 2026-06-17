@@ -6,10 +6,11 @@ import {
   unlockTaxReceiptType,
 } from '@/features/taxReceipt/taxReceiptSlice';
 import { openProductStockSimple } from '@/features/productStock/productStockSimpleSlice';
-import { getCashCountStrategy } from '@/notification/cashCountNotification/cashCountNotificacion';
+import { getCashCountStrategy } from '@/features/UserNotification/cashCountNotification';
 import logInvoiceAuthorizations from '@/services/invoice/logInvoiceAuthorizations';
 import type {
   InvoiceAttemptResult,
+  InvoiceProgressStage,
   InvoiceProcessParams,
   InvoiceServiceError,
 } from '@/services/invoice/types';
@@ -19,13 +20,19 @@ import type { TaxReceiptItem } from '@/types/taxReceipt';
 import type { UserIdentity } from '@/types/users';
 import type { AccountsReceivableDoc } from '@/utils/accountsReceivable/types';
 import { resolveBusinessFiscalRollout } from '@/utils/fiscal/fiscalRollout';
-import { measure } from '@/utils/perf/measure';
+import { getTaxReceiptAvailability } from '@/utils/taxReceipt';
 
 import type { DocumentCurrencyContext } from '../components/Body/components/DocumentCurrencySelector';
 import { calculateDueDate } from './calculateDueDate';
 import { getInvoiceErrorNotification } from './getInvoiceErrorNotification';
-import { getTaxReceiptAvailability } from './getTaxReceiptAvailability';
+import {
+  buildInvoiceSubmitTraceContext,
+  measureInvoiceSubmitPhase,
+  traceInvoiceProcessPhase,
+  traceInvoiceSubmitPhase,
+} from './invoiceSubmitTrace';
 import { isTaxReceiptDepletedError } from './isTaxReceiptDepletedError';
+import { resolveInvoiceAccountsReceivable } from './resolveInvoiceAccountsReceivable';
 import {
   validateInvoiceSubmissionGuards,
   type InvoiceSubmissionGuardsResult,
@@ -41,6 +48,13 @@ type BusinessLike = {
 type LoadingState = {
   status: boolean;
   message: string;
+};
+
+const INVOICE_PROGRESS_MESSAGES: Record<InvoiceProgressStage, string> = {
+  'validating-sale': 'Validando venta',
+  'registering-sale': 'Registrando venta',
+  'confirming-invoice': 'Confirmando factura',
+  'preparing-receipt': 'Preparando comprobante/impresión',
 };
 
 type InvoiceSubmissionGuardFailure = Extract<
@@ -242,11 +256,35 @@ export const submitInvoicePanel = async ({
   taxReceiptEnabled,
   user,
 }: SubmitInvoicePanelArgs) => {
+  const setProgress = (stage: InvoiceProgressStage) => {
+    setLoading({ status: true, message: INVOICE_PROGRESS_MESSAGES[stage] });
+  };
+  const clearProgress = () => {
+    setLoading({ status: false, message: '' });
+  };
+  let traceContext: ReturnType<typeof buildInvoiceSubmitTraceContext> | null =
+    null;
+
   try {
+    setProgress('validating-sale');
+
     const effectiveTaxReceiptEnabled = taxReceiptEnabled;
     const electronicTaxReceiptModelEnabled =
       resolveBusinessFiscalRollout(business).electronicModelEnabled;
     const selectedNcfType = typeof ncfType === 'string' ? ncfType.trim() : '';
+    traceContext = buildInvoiceSubmitTraceContext({
+      cart,
+      client,
+      electronicTaxReceiptModelEnabled,
+      isTestMode,
+      monetaryContext,
+      serviceCommissions,
+      shouldPrintInvoice,
+      taxReceiptEnabled: effectiveTaxReceiptEnabled,
+    });
+
+    traceInvoiceSubmitPhase('inicio', 'started', traceContext);
+    traceInvoiceSubmitPhase('validaciones previas', 'started', traceContext);
 
     if (effectiveTaxReceiptEnabled) {
       if (!selectedNcfType) {
@@ -257,6 +295,10 @@ export const submitInvoicePanel = async ({
           duration: 6,
         });
         dispatch(unlockTaxReceiptType());
+        clearProgress();
+        traceInvoiceSubmitPhase('validaciones previas', 'blocked', traceContext, {
+          reason: 'missing-tax-receipt-type',
+        });
         return;
       }
 
@@ -274,6 +316,10 @@ export const submitInvoicePanel = async ({
           duration: 6,
         });
         dispatch(unlockTaxReceiptType());
+        clearProgress();
+        traceInvoiceSubmitPhase('validaciones previas', 'blocked', traceContext, {
+          reason: 'missing-fiscal-client',
+        });
         return;
       }
 
@@ -285,6 +331,10 @@ export const submitInvoicePanel = async ({
         if (depleted) {
           setTaxReceiptModalOpen(true);
           dispatch(unlockTaxReceiptType());
+          clearProgress();
+          traceInvoiceSubmitPhase('validaciones previas', 'blocked', traceContext, {
+            reason: 'tax-receipt-depleted',
+          });
           return;
         }
       }
@@ -301,6 +351,10 @@ export const submitInvoicePanel = async ({
         duration: 6,
       });
       dispatch(unlockTaxReceiptType());
+      clearProgress();
+      traceInvoiceSubmitPhase('validaciones previas', 'blocked', traceContext, {
+        reason: 'document-currency-blocked',
+      });
       return;
     }
 
@@ -312,6 +366,10 @@ export const submitInvoicePanel = async ({
 
     if (isInvoiceSubmissionGuardFailure(guardResult)) {
       dispatch(unlockTaxReceiptType());
+      clearProgress();
+      traceInvoiceSubmitPhase('validaciones previas', 'blocked', traceContext, {
+        reason: guardResult.code,
+      });
 
       if (guardResult.code === 'cash-count') {
         getCashCountStrategy(
@@ -329,12 +387,15 @@ export const submitInvoicePanel = async ({
         duration: 6,
       });
       if (guardResult.code === 'physical-selection') {
-        dispatch(openProductStockSimple(guardResult.product));
+        dispatch(
+          openProductStockSimple({
+            product: guardResult.product,
+            initialStocks: guardResult.availableStocks,
+          }),
+        );
       }
       return;
     }
-
-    setLoading({ status: true, message: '' });
 
     if (cart?.isAddedToReceivables) {
       await form.validateFields();
@@ -343,6 +404,9 @@ export const submitInvoicePanel = async ({
     const dueDate = calculateDueDate(duePeriod, hasDueDate);
     const businessId = resolvedBusinessId;
     if (!businessId) {
+      traceInvoiceSubmitPhase('validaciones previas', 'failed', traceContext, {
+        reason: 'missing-business-id',
+      });
       throw new Error(
         'No se encontró el negocio asociado para procesar la factura.',
       );
@@ -353,36 +417,40 @@ export const submitInvoicePanel = async ({
       ? { ...cart, ...monetaryContext }
       : cart;
 
-    console.info('[InvoicePanel] processInvoice -> started', {
-      cartId: cart?.id ?? cart?.cartId ?? cart?.cartIdRef ?? null,
-      businessId,
-      userId: user?.uid ?? null,
-      testMode: Boolean(isTestMode),
-      taxReceiptEnabled: effectiveTaxReceiptEnabled,
-      electronicTaxReceiptModelEnabled,
-      idempotencyKey,
-      invoice: cart,
+    traceInvoiceSubmitPhase('validaciones previas', 'completed', traceContext, {
+      businessResolved: true,
+      hasDueDate: Boolean(dueDate),
+      taxReceiptSelected: Boolean(selectedNcfType),
     });
 
-    const invoiceResult = (await measure('processInvoice', () =>
-      runInvoice({
-        cart: effectiveCart,
-        user,
-        client,
-        accountsReceivable,
-        taxReceiptEnabled: effectiveTaxReceiptEnabled,
-        ncfType: effectiveTaxReceiptEnabled ? selectedNcfType : null,
-        dueDate,
-        insuranceEnabled,
-        insuranceAR: toInvoiceRecord(insuranceAR),
-        insuranceAuth,
-        invoiceComment,
-        isTestMode,
-        businessId,
-        business,
-        idempotencyKey,
-      }),
-    )) as InvoiceAttemptResult;
+    const effectiveAccountsReceivable = cart?.isAddedToReceivables
+      ? resolveInvoiceAccountsReceivable({
+          accountsReceivable,
+          cart,
+        })
+      : accountsReceivable;
+
+    setProgress('registering-sale');
+
+    const invoiceResult = (await runInvoice({
+      cart: effectiveCart,
+      user,
+      client,
+      accountsReceivable: effectiveAccountsReceivable,
+      taxReceiptEnabled: effectiveTaxReceiptEnabled,
+      ncfType: effectiveTaxReceiptEnabled ? selectedNcfType : null,
+      dueDate,
+      insuranceEnabled,
+      insuranceAR: toInvoiceRecord(insuranceAR),
+      insuranceAuth,
+      invoiceComment,
+      isTestMode,
+      businessId,
+      business,
+      idempotencyKey,
+      onProgress: setProgress,
+      onPhaseTrace: (trace) => traceInvoiceProcessPhase(trace, traceContext),
+    })) as InvoiceAttemptResult;
     const createdInvoice = (invoiceResult?.invoice ??
       null) as InvoiceData | null;
     if (!createdInvoice) {
@@ -390,6 +458,31 @@ export const submitInvoicePanel = async ({
         'No se pudo recuperar la factura generada desde el backend.',
       );
     }
+
+    const invoiceStatus = invoiceResult?.status ?? null;
+    const invoiceReused = Boolean(invoiceResult?.reused);
+
+    if (invoiceStatus === 'pending') {
+      setInvoice(null);
+      notification.info({
+        message: 'Factura pendiente de confirmación',
+        description:
+          'La venta fue recibida, pero todavía no hay factura confirmada. Mantuvimos el carrito abierto para evitar perder la venta.',
+        duration: 8,
+      });
+      clearProgress();
+      setSubmitted(false);
+      dispatch(unlockTaxReceiptType());
+      traceInvoiceSubmitPhase('impresion', 'skipped', traceContext, {
+        reason: 'invoice-pending',
+      });
+      traceInvoiceSubmitPhase('cleanup', 'deferred', traceContext, {
+        reason: 'invoice-pending',
+      });
+      return;
+    }
+
+    setProgress('preparing-receipt');
 
     if (invoiceResult?.status !== 'test-preview') {
       await logInvoiceAuthorizations({
@@ -399,9 +492,6 @@ export const submitInvoicePanel = async ({
         cart,
       });
     }
-
-    const invoiceStatus = invoiceResult?.status ?? null;
-    const invoiceReused = Boolean(invoiceResult?.reused);
 
     if (invoiceReused) {
       notification.info({
@@ -435,23 +525,28 @@ export const submitInvoicePanel = async ({
       });
     }
 
-    console.info('[InvoicePanel] processInvoice -> completed', {
-      invoiceId: createdInvoice?.id ?? invoiceResult?.invoiceId ?? null,
-      status: invoiceResult?.status ?? null,
-      reused: Boolean(invoiceResult?.reused),
-      invoice: createdInvoice,
-    });
-
     if (shouldPrintInvoice) {
       setInvoice(createdInvoice);
-      await measure('handleInvoicePrinting', () =>
+      await measureInvoiceSubmitPhase('impresion', traceContext, () =>
         handleInvoicePrinting(createdInvoice),
+        {
+          invoiceStatus,
+          reused: invoiceReused,
+        },
       );
+      traceInvoiceSubmitPhase('cleanup', 'deferred', traceContext, {
+        reason: 'after-print-callback',
+      });
       return;
     }
 
-    setInvoice(null);
-    handleAfterPrint();
+    traceInvoiceSubmitPhase('impresion', 'skipped', traceContext, {
+      reason: 'print-disabled',
+    });
+    await measureInvoiceSubmitPhase('cleanup', traceContext, () => {
+      setInvoice(null);
+      handleAfterPrint();
+    });
   } catch (error) {
     const typedError = error as InvoiceServiceError;
     const taxReceiptDepleted = isTaxReceiptDepletedError(typedError);
@@ -465,27 +560,47 @@ export const submitInvoicePanel = async ({
       });
     }
 
-    setLoading({ status: false, message: '' });
+    if (traceContext) {
+      traceInvoiceSubmitPhase('cleanup', 'started', traceContext, {
+        reason: 'error',
+      });
+    }
+
+    clearProgress();
     setSubmitted(false);
+
+    if (traceContext) {
+      traceInvoiceSubmitPhase('cleanup', 'completed', traceContext, {
+        reason: 'error',
+        taxReceiptDepleted,
+      });
+    }
+
+    const failedTask =
+      typedError?.failedTask && typeof typedError.failedTask === 'object'
+        ? (typedError.failedTask as Record<string, unknown>)
+        : null;
+    const invoiceIdFromError =
+      typedError?.invoiceId ??
+      (typedError?.invoice &&
+      typeof typedError.invoice === 'object' &&
+      'id' in typedError.invoice
+        ? (typedError.invoice as { id?: string }).id
+        : null);
 
     console.error(
       '[InvoicePanel] processInvoice -> failed',
       {
-        message: typedError?.message,
-        code: typedError?.code,
-        invoiceId:
-          typedError?.invoiceId ??
-          (typedError?.invoice &&
-          typeof typedError.invoice === 'object' &&
-          'id' in typedError.invoice
-            ? (typedError.invoice as { id?: string }).id
-            : null),
-        idempotencyKey: typedError?.idempotencyKey ?? null,
+        code: typedError?.code ?? null,
+        errorName: typedError?.name ?? null,
+        failedTaskType:
+          typeof failedTask?.type === 'string' ? failedTask.type : null,
+        hasIdempotencyKey: Boolean(typedError?.idempotencyKey),
+        hasInvoiceId: Boolean(invoiceIdFromError),
+        hasInvoiceMeta: Boolean(typedError?.invoiceMeta),
         reused: typedError?.reused ?? null,
-        failedTask: typedError?.failedTask ?? null,
-        invoiceMeta: typedError?.invoiceMeta ?? null,
+        taxReceiptDepleted,
       },
-      typedError,
     );
 
     dispatch(unlockTaxReceiptType());

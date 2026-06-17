@@ -2,8 +2,10 @@ import styled from 'styled-components';
 
 import type { FC } from 'react';
 
-import { BarCode } from '@/components/modals/ProductForm/components/sections/BarCode';
-import { QRCode } from '@/components/modals/ProductForm/components/sections/QRCode';
+import {
+  ProductEditorBarcode,
+  ProductQRCode,
+} from '@/modules/products/public';
 import {
   SectionCard,
   SectionDescription,
@@ -50,8 +52,8 @@ export const CodesSection: FC<CodesSectionProps> = ({ domId, product }) => (
       </SectionDescription>
     </SectionHeader>
     <CodesColumns>
-      <QRCode product={product ?? EMPTY_PRODUCT} />
-      <BarCode product={product ?? EMPTY_PRODUCT} />
+      <ProductQRCode product={product ?? EMPTY_PRODUCT} />
+      <ProductEditorBarcode product={product ?? EMPTY_PRODUCT} />
     </CodesColumns>
     <CodesSpacer />
   </CodesCard>

@@ -1,4 +1,3 @@
-import { ListBox } from '@heroui/react';
 import styled from 'styled-components';
 
 import { PageShell } from '@/components/layout/PageShell';
@@ -9,6 +8,7 @@ import {
   VmDateField,
   VmDateRangePicker,
   VmLabel,
+  VmListBox,
   VmSelect,
   VmTable,
 } from '@/components/heroui';
@@ -120,7 +120,7 @@ export const CollaboratorSelect = styled(VmSelect)`
   width: 100%;
 `;
 
-export const CollaboratorListBox = styled(ListBox)`
+export const CollaboratorListBox = styled(VmListBox)`
   min-width: 260px;
 `;
 

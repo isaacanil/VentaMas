@@ -1,9 +1,6 @@
+import { normalizeTrimmedSearchText } from '@/utils/searchText';
+
 const MAX_DEPTH = 3;
-
-const removeAccents = (value: string) =>
-  value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-
-const normalizeText = (value: string) => removeAccents(value.trim().toLowerCase());
 
 const appendSearchTokens = (
   value: unknown,
@@ -14,7 +11,7 @@ const appendSearchTokens = (
   if (value == null || depth > MAX_DEPTH) return;
 
   if (typeof value === 'string') {
-    const normalized = normalizeText(value);
+    const normalized = normalizeTrimmedSearchText(value);
     if (normalized) {
       tokens.push(normalized);
     }
@@ -31,7 +28,7 @@ const appendSearchTokens = (
   }
 
   if (value instanceof Date) {
-    tokens.push(normalizeText(value.toISOString()));
+    tokens.push(normalizeTrimmedSearchText(value.toISOString()));
     return;
   }
 
@@ -58,4 +55,4 @@ export const buildProductSearchIndex = (value: unknown): string => {
 };
 
 export const normalizeProductSearchTerm = (value: string): string =>
-  normalizeText(value);
+  normalizeTrimmedSearchText(value);

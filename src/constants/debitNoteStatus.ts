@@ -1,0 +1,29 @@
+export const DEBIT_NOTE_STATUS = {
+  ISSUED: 'issued',
+  PAID: 'paid',
+  PARTIALLY_PAID: 'partially_paid',
+  CANCELLED: 'cancelled',
+  VOIDED: 'voided',
+  ELECTRONIC_PENDING: 'electronic_pending',
+  ELECTRONIC_FAILED: 'electronic_failed',
+} as const;
+
+export const DEBIT_NOTE_STATUS_LABEL = {
+  [DEBIT_NOTE_STATUS.ISSUED]: 'Emitida',
+  [DEBIT_NOTE_STATUS.PAID]: 'Pagada',
+  [DEBIT_NOTE_STATUS.PARTIALLY_PAID]: 'Pago Parcial',
+  [DEBIT_NOTE_STATUS.CANCELLED]: 'Anulada',
+  [DEBIT_NOTE_STATUS.VOIDED]: 'Revertida',
+  [DEBIT_NOTE_STATUS.ELECTRONIC_PENDING]: 'Pendiente e-CF',
+  [DEBIT_NOTE_STATUS.ELECTRONIC_FAILED]: 'e-CF Fallido',
+};
+
+export const DEBIT_NOTE_STATUS_COLOR = {
+  [DEBIT_NOTE_STATUS.ISSUED]: 'blue',
+  [DEBIT_NOTE_STATUS.PAID]: 'green',
+  [DEBIT_NOTE_STATUS.PARTIALLY_PAID]: 'gold',
+  [DEBIT_NOTE_STATUS.CANCELLED]: 'red',
+  [DEBIT_NOTE_STATUS.VOIDED]: 'default',
+  [DEBIT_NOTE_STATUS.ELECTRONIC_PENDING]: 'gold',
+  [DEBIT_NOTE_STATUS.ELECTRONIC_FAILED]: 'red',
+};

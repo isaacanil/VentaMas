@@ -12,6 +12,13 @@ import type { TaxReceiptDocument } from '@/types/taxReceipt';
 import { serializeFirestoreDocuments } from '@/utils/serialization/serializeFirestoreData';
 import { buildTaxReceiptDocument } from '@/utils/taxReceipt';
 
+type TaxReceiptSnapshotState = {
+  businessID: string | null;
+  taxReceipt: TaxReceiptDocument[];
+};
+
+const EMPTY_TAX_RECEIPTS: TaxReceiptDocument[] = [];
+
 // NOTE: This function uses React hooks; keep the `use*` prefix so tools like
 // React Compiler and hook linting can reliably treat it as a hook.
 export const useFbGetTaxReceipt = () => {
@@ -19,22 +26,11 @@ export const useFbGetTaxReceipt = () => {
   const dispatch = useDispatch();
   const currentNcfType = useSelector(selectNcfType);
 
-  const [taxReceipt, setTaxReceipt] = useState<TaxReceiptDocument[]>([]);
-  const [isLoading, setLoading] = useState(true);
-
-  const businessID = user?.businessID;
-  const [prevBusinessID, setPrevBusinessID] = useState(businessID);
-
-  // PATRÓN RECOMENDADO REACT: Ajustar estado durante render al cambiar businessID
-  if (businessID !== prevBusinessID) {
-    setPrevBusinessID(businessID);
-    setTaxReceipt([]);
-    if (businessID) {
-      setLoading(true);
-    } else {
-      setLoading(false);
-    }
-  }
+  const businessID = user?.businessID ?? null;
+  const [snapshotState, setSnapshotState] = useState<TaxReceiptSnapshotState>({
+    businessID: null,
+    taxReceipt: [],
+  });
 
   useEffect(() => {
     if (!businessID) {
@@ -57,20 +53,31 @@ export const useFbGetTaxReceipt = () => {
         const serializedTaxReceipts = serializeFirestoreDocuments(
           taxReceiptsArray as any,
         ) as unknown as TaxReceiptDocument[];
-        setTaxReceipt(
-          serializedTaxReceipts.map((item) => buildTaxReceiptDocument(item.data)),
-        );
-        setLoading(false);
+        setSnapshotState({
+          businessID,
+          taxReceipt: serializedTaxReceipts.map((item) =>
+            buildTaxReceiptDocument(item.data),
+          ),
+        });
       },
       (error) => {
         console.error('Error fetching tax receipts: ', error);
-        setLoading(false);
-        setTaxReceipt([]);
+        setSnapshotState({
+          businessID,
+          taxReceipt: [],
+        });
       },
     );
 
     return () => unsubscribe();
   }, [businessID]);
+
+  const isCurrentSnapshot = snapshotState.businessID === businessID;
+  const taxReceipt =
+    businessID && isCurrentSnapshot
+      ? snapshotState.taxReceipt
+      : EMPTY_TAX_RECEIPTS;
+  const isLoading = Boolean(businessID) && !isCurrentSnapshot;
 
   useEffect(() => {
     if (!taxReceipt?.length) return;

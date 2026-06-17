@@ -2,6 +2,7 @@ import { URL } from 'node:url';
 import crypto from 'node:crypto';
 
 import { toCleanString } from '../utils/billingCommon.util.js';
+import { appendQueryParams } from '../utils/queryParams.util.js';
 
 const DEFAULT_CHECKOUT_BASE_URL = 'https://ventamax.web.app/checkout';
 const DEFAULT_PORTAL_BASE_URL = 'https://ventamax.web.app/portal';
@@ -36,15 +37,6 @@ const resolveCheckoutBaseUrl = (returnUrl) => {
   } catch {
     return DEFAULT_CHECKOUT_BASE_URL;
   }
-};
-
-const appendQueryParams = (baseUrl, params) => {
-  const url = new URL(baseUrl);
-  Object.entries(params || {}).forEach(([key, value]) => {
-    if (value == null) return;
-    url.searchParams.set(key, String(value));
-  });
-  return url.toString();
 };
 
 const appendCheckoutResultToReturnUrl = (baseReturnUrl, result) =>

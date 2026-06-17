@@ -8,14 +8,16 @@ import { Button, Table, Typography, Card, Statistic } from 'antd';
 import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
-import type { ColumnsType } from 'antd/es/table';
+import type { TableColumnsType as ColumnsType } from 'antd';
 
 import { selectUser } from '@/features/auth/userSlice';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import {
+  GeneratePinModal,
+  PinDetailsModal,
+} from '@/modules/authorizations/public';
+import { MenuApp } from '@/modules/navigation/public';
 import { hasAuthorizationPinUsersManageAccess } from '@/utils/access/authorizationAccess';
 
-import { GeneratePinModal } from './components/GeneratePinModal';
-import { PinDetailsModal } from './components/PinDetailsModal';
 import { useAuthorizationPinManager } from './hooks/useAuthorizationPinManager';
 import type { PinUserRecord } from './types';
 import {

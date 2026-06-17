@@ -92,7 +92,7 @@ Alcance: `src/`, `functions/`, `firestore.rules`, `firestore.indexes.json`, `fir
 ### Listeners realtime
 - `[Confirmado]` `subscribeToBusinessInfo` escucha el root del negocio y luego mergea formas incompatibles. Evidencia: `src/firebase/businessInfo/fbGetBusinessInfo.ts:95-113`.
 - `[Confirmado]` `fbGetUsers` abre un listener a `members` y luego varios listeners chunked a `users`. El costo escala con cantidad de miembros. Evidencia: `src/firebase/users/fbGetUsers.ts:224-291`.
-- `[Confirmado]` `warehouseNestedServise.ts` hace fan-out listeners por warehouse, shelf, row y stock por ubicacion. Evidencia: `src/firebase/warehouse/warehouseNestedServise.ts:76-307`.
+- `[Confirmado]` `warehouseNestedService.ts` hace fan-out listeners por warehouse, shelf, row y stock por ubicacion. Evidencia: `src/firebase/warehouse/warehouseNestedService.ts:76-307`.
 - `[Confirmado]` `fbGetCreditLimit` envuelve `onSnapshot` dentro de una `Promise` y descarta correctamente el ciclo de vida de la suscripcion. Evidencia: `src/firebase/accountsReceivable/fbGetCreditLimit.ts:14-44`.
 
 ### Transacciones, batch writes y BulkWriter
@@ -106,7 +106,7 @@ Alcance: `src/`, `functions/`, `firestore.rules`, `firestore.indexes.json`, `fir
 - `[Alta][Confirmado]` `ncfLedger.entries/{entryId}.invoices[]` crece por cada colision/duplicado y se reescribe como array. Evidencia: `functions/src/app/versions/v2/invoice/services/ncfLedger.service.js:129-169`.
 - `[Alta][Confirmado]` Hay crons que escanean todos los negocios y/o todas las cuentas de billing. Esto no escala linealmente con clientes ni con historico. Evidencia: `functions/src/app/versions/v2/inventory/syncProductsStockCron.js:564-620`, `functions/src/app/versions/v2/accountsReceivable/reconcilePendingBalanceCron.js:143-155`, `functions/src/app/scheduled/expireAuthorizationRequests.ts:58-79`, `functions/src/app/versions/v2/billing/billingMaintenanceCron.js:48-153`.
 - `[Media][Confirmado]` Los contadores por negocio (`counters/{name}`) concentran escrituras secuenciales para `lastInvoiceId`, `lastCashCountId`, `batches`, etc. Son documentos calientes por negocio. Evidencia: `functions/src/app/core/utils/getNextID.js:21-21`, `functions/src/app/modules/cashCount/functions/openCashCount.js:112-117`, `src/firebase/invoices/fbAddInvoice.ts:26-33`.
-- `[Media][Confirmado]` El frontend hace fan-out listeners por jerarquia de ubicaciones e IDs chunked. A mayor negocio, mayor costo de sockets, listeners y merges cliente. Evidencia: `src/firebase/users/fbGetUsers.ts:262-290`, `src/firebase/warehouse/warehouseNestedServise.ts:105-307`.
+- `[Media][Confirmado]` El frontend hace fan-out listeners por jerarquia de ubicaciones e IDs chunked. A mayor negocio, mayor costo de sockets, listeners y merges cliente. Evidencia: `src/firebase/users/fbGetUsers.ts:262-290`, `src/firebase/warehouse/warehouseNestedService.ts:105-307`.
 - `[Media][Confirmado]` `syncProductsStockCron` y otros jobs de reparacion existen porque el estado operativo ya no es confiable por si mismo. Eso introduce costo y latencia de convergencia. Evidencia: `functions/src/app/versions/v2/inventory/syncProductsStockCron.js:29-47`, `functions/src/app/versions/v2/inventory/syncProductsStockCron.js:285-345`.
 
 ## Riesgos de consistencia
@@ -122,7 +122,7 @@ Alcance: `src/`, `functions/`, `firestore.rules`, `firestore.indexes.json`, `fir
 ## Riesgos de costo
 - `[Alta][Confirmado]` `waitForInvoiceResult` hace polling de `invoicesV2` y, en estados listos, vuelve a leer `invoices`. Eso multiplica lecturas por factura confirmada. Evidencia: `src/services/invoice/invoice.service.ts:431-530`.
 - `[Alta][Confirmado]` `fbGetUsers` combina listener general a `members` con listeners chunked a `users`. Cada cambio de membresia puede reconstruir todo el set. Evidencia: `src/firebase/users/fbGetUsers.ts:224-291`.
-- `[Alta][Confirmado]` `warehouseNestedServise.ts` abre listeners por cada nodo de ubicacion y por stock relacionado. En negocios grandes es una fabrica de lecturas vivas. Evidencia: `src/firebase/warehouse/warehouseNestedServise.ts:76-307`.
+- `[Alta][Confirmado]` `warehouseNestedService.ts` abre listeners por cada nodo de ubicacion y por stock relacionado. En negocios grandes es una fabrica de lecturas vivas. Evidencia: `src/firebase/warehouse/warehouseNestedService.ts:76-307`.
 - `[Media][Confirmado]` Los procesos de reconciliacion escanean colecciones completas de `productsStock`, `products`, `clients`, `businesses` y `billingAccounts`. Evidencia: `functions/src/app/versions/v2/inventory/syncProductsStockCron.js:39-47`, `functions/src/app/versions/v2/inventory/syncProductsStockCron.js:164-167`, `functions/src/app/versions/v2/accountsReceivable/reconcilePendingBalanceCron.js:21-33`, `functions/src/app/versions/v2/billing/services/planCatalog.service.js:670-755`.
 - `[Media][Confirmado]` Presence mirror escribe en Firestore desde RTDB. Aunque evita heartbeats triviales, sigue siendo costo operativo de un espejo adicional. Evidencia: `functions/src/app/versions/v2/auth/triggers/presenceSync.js:20-39`, `functions/src/app/versions/v2/auth/triggers/presenceSync.js:41-131`.
 

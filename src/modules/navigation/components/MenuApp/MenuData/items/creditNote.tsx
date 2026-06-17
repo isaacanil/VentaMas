@@ -3,12 +3,19 @@ import { icons } from '@/constants/icons/icons';
 import ROUTES_NAME from '@/router/routes/routesName';
 
 const { CREDIT_NOTE_LIST } = ROUTES_NAME.CREDIT_NOTE_TERM;
+const { DEBIT_NOTE_LIST } = ROUTES_NAME.DEBIT_NOTE_TERM;
 
 const creditNote: MenuItem[] = [
   {
     title: 'Notas de Crédito',
     icon: icons.finances.fileInvoiceDollar,
     route: CREDIT_NOTE_LIST,
+    group: 'financialManagement',
+  },
+  {
+    title: 'Notas de Débito',
+    icon: icons.finances.fileInvoiceDollar,
+    route: DEBIT_NOTE_LIST,
     group: 'financialManagement',
   },
 ];

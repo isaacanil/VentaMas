@@ -12,7 +12,7 @@ import {
   TooltipRows,
   TooltipRowValue,
   TooltipSectionTitle,
-} from './DeveloperSubscriptionPlanCard.styles';
+} from './DeveloperSubscriptionPlanCardTooltip.styles';
 import {
   formatLimitValue,
   PREVIEW_LIMIT_KEYS,

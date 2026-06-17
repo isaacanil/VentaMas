@@ -28,7 +28,7 @@ import {
   selectTaxReceiptType,
   unlockTaxReceiptType,
 } from '@/features/taxReceipt/taxReceiptSlice';
-import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
+import { useInsuranceEnabled } from '@/modules/insurance/public';
 import useViewportWidth from '@/hooks/windows/useViewportWidth';
 import useInvoice from '@/services/invoice/useInvoice';
 import type { InvoiceData } from '@/types/invoice';
@@ -120,6 +120,7 @@ const resolveReceiptName = (
 
 const EMPTY_PAYMENT_METHODS: PaymentMethod[] = [];
 const EMPTY_CART_PRODUCTS: Array<{ comment?: string; name?: string }> = [];
+const PRINT_COMPLETION_FALLBACK_MS = 2_500;
 
 export const useInvoicePanelController = () => {
   const dispatch = useDispatch();
@@ -139,6 +140,8 @@ export const useInvoicePanelController = () => {
   const { processInvoice: runInvoice } = useInvoice();
   const viewport = useViewportWidth();
   const componentToPrintRef = useRef<HTMLDivElement | null>(null);
+  const completionHandledRef = useRef(false);
+  const printCompletionFallbackRef = useRef<number | null>(null);
 
   const monetaryContextRef = useRef<DocumentCurrencyContext | null>(null);
 
@@ -227,7 +230,22 @@ export const useInvoicePanelController = () => {
     (cart?.cartIdRef && `cart:${cart.cartIdRef}`) ||
     fallbackIdempotencyKey;
 
-  const handleAfterPrint = () => {
+  const clearPrintCompletionFallback = useCallback(() => {
+    if (printCompletionFallbackRef.current === null) return;
+    window.clearTimeout(printCompletionFallbackRef.current);
+    printCompletionFallbackRef.current = null;
+  }, []);
+
+  const resetCompletionState = useCallback(() => {
+    completionHandledRef.current = false;
+    clearPrintCompletionFallback();
+  }, [clearPrintCompletionFallback]);
+
+  const handleAfterPrint = useCallback(() => {
+    if (completionHandledRef.current) return;
+    completionHandledRef.current = true;
+    clearPrintCompletionFallback();
+
     dispatchUi({ type: 'setInvoice', payload: null });
     handleCancelShipping({ dispatch, viewport, clearTaxReceipt: true });
 
@@ -252,7 +270,15 @@ export const useInvoicePanelController = () => {
     });
     dispatchUi({ type: 'setSubmitted', payload: true });
     dispatch(unlockTaxReceiptType());
-  };
+  }, [clearPrintCompletionFallback, dispatch, taxReceiptOptions, viewport]);
+
+  const schedulePrintCompletionFallback = useCallback(() => {
+    clearPrintCompletionFallback();
+    printCompletionFallbackRef.current = window.setTimeout(() => {
+      printCompletionFallbackRef.current = null;
+      handleAfterPrint();
+    }, PRINT_COMPLETION_FALLBACK_MS);
+  }, [clearPrintCompletionFallback, handleAfterPrint]);
 
   const handlePrint = useReactToPrint({
     contentRef: componentToPrintRef,
@@ -300,14 +326,30 @@ export const useInvoicePanelController = () => {
 
     if (hasProducts || hasId) {
       const timeout = setTimeout(() => {
-        handlePrint();
+        try {
+          handlePrint();
+          schedulePrintCompletionFallback();
+        } catch (error) {
+          console.warn('[InvoicePanel] print dispatch failed', error);
+          handleAfterPrint();
+        }
         dispatchUi({ type: 'setPendingPrint', payload: false });
       }, 80);
       return () => clearTimeout(timeout);
     }
 
     return undefined;
-  }, [invoice, pendingPrint, handlePrint]);
+  }, [
+    invoice,
+    pendingPrint,
+    handlePrint,
+    handleAfterPrint,
+    schedulePrintCompletionFallback,
+  ]);
+
+  useEffect(() => () => clearPrintCompletionFallback(), [
+    clearPrintCompletionFallback,
+  ]);
 
   const showCancelSaleConfirm = () => {
     AntdModal.confirm({
@@ -338,6 +380,7 @@ export const useInvoicePanelController = () => {
     });
 
   const handleSubmit = async () => {
+    resetCompletionState();
     await submitInvoicePanel({
       accountsReceivable,
       business,
@@ -372,10 +415,11 @@ export const useInvoicePanelController = () => {
   };
 
   const handleInvoicePanelClosed = useCallback(() => {
+    resetCompletionState();
     dispatchUi({ type: 'resetPanelUiState' });
     monetaryContextRef.current = null;
     setFallbackIdempotencyKey();
-  }, [setFallbackIdempotencyKey]);
+  }, [resetCompletionState, setFallbackIdempotencyKey]);
 
   useInvoicePanelFormSync({
     accountsReceivable,

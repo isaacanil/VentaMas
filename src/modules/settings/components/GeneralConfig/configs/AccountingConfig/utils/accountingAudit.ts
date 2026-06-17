@@ -4,7 +4,7 @@ import type {
   ChartOfAccount,
 } from '@/types/accounting';
 import { toMillis } from '@/utils/firebase/toTimestamp';
-import type { AccountingSettingsHistoryEntry } from './accountingConfig';
+import type { AccountingSettingsHistoryEntry } from '@/modules/accounting/public';
 
 export type AccountingAuditScope =
   | 'settings'

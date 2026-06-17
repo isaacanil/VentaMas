@@ -2,15 +2,15 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { useFbGetProviders } from '@/firebase/provider/useFbGetProvider';
 import useFilter from '@/hooks/search/useSearch';
-import { useListenPurchases } from '@/hooks/usePurchases';
+import { useListenPurchases } from '@/modules/orderAndPurchase/hooks/usePurchases';
 import type { Purchase } from '@/utils/purchase/types';
 
 import type {
   DataConfigMap,
   FilterOption,
   FilterState,
-} from '../components/FilterBar/types';
-import createFilterConfig from '../config/filterConfig';
+} from '../../shared/filterBarTypes';
+import { createTransactionFilterConfig } from '../../shared/createTransactionFilterConfig';
 
 interface ProviderRecord {
   provider?: {
@@ -22,7 +22,7 @@ interface ProviderRecord {
 export const usePurchasesViewState = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterState, setFilterState] = useState<FilterState>(() => {
-    const config = createFilterConfig();
+    const config = createTransactionFilterConfig();
     return {
       filters: config.defaultValues,
       isAscending: config.defaultSort?.isAscending ?? true,
@@ -49,7 +49,7 @@ export const usePurchasesViewState = () => {
     [providers],
   );
 
-  const filterConfig = useMemo(() => createFilterConfig(), []);
+  const filterConfig = useMemo(() => createTransactionFilterConfig(), []);
 
   const handleFilterChange = useCallback((newFilterState: FilterState) => {
     setFilterState(newFilterState);

@@ -1,6 +1,6 @@
 import { PlusOutlined } from '@/constants/icons/antd';
 import { Tree, Button, Tooltip } from 'antd';
-import type { DataNode } from 'antd/es/tree';
+import type { TreeDataNode as DataNode } from 'antd';
 import { AnimatePresence } from 'framer-motion';
 import { useState, useMemo, useCallback, memo } from 'react';
 import { useDispatch } from 'react-redux';
@@ -8,7 +8,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { openWarehouseForm } from '@/features/warehouse/warehouseModalSlice';
-import { useTransformedWarehouseData } from '@/firebase/warehouse/warehouseNestedServise';
+import { useTransformedWarehouseData } from '@/firebase/warehouse/warehouseNestedService';
 import RowForm from '@/modules/inventory/pages/Inventory/components/Warehouse/forms/RowShelfForm/RowShelfForm';
 import SegmentForm from '@/modules/inventory/pages/Inventory/components/Warehouse/forms/SegmentForm/SegmentForm';
 import { ShelfForm } from '@/modules/inventory/pages/Inventory/components/Warehouse/forms/ShelfForm/ShelfForm';

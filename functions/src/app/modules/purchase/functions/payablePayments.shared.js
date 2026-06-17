@@ -1,9 +1,9 @@
-import { createHash } from 'node:crypto';
-
 import {
   applyOverduePaymentState,
   buildPaymentState,
 } from '../../../versions/v2/accounting/utils/paymentState.util.js';
+export { buildIdempotencyRequestHash } from '../../../core/utils/idempotencyRequestHash.util.js';
+export { sanitizeForResponse } from '../../../core/utils/responseSerialization.util.js';
 
 export const THRESHOLD = 0.01;
 
@@ -46,16 +46,6 @@ export const safeNumber = (value) => {
 export const roundToTwoDecimals = (value) =>
   Math.round((safeNumber(value) || 0) * 100) / 100;
 
-const isTimestampLike = (value) => {
-  if (!value || typeof value !== 'object') return false;
-  if (typeof value.toMillis === 'function') return true;
-  const record = asRecord(value);
-  return (
-    typeof record.seconds === 'number' ||
-    typeof record._seconds === 'number'
-  );
-};
-
 export const toMillis = (value) => {
   if (value == null) return null;
   if (typeof value === 'number') {
@@ -89,43 +79,6 @@ export const toMillis = (value) => {
   if (seconds == null) return null;
   return seconds * 1000 + Math.floor(nanoseconds / 1e6);
 };
-
-export const sanitizeForResponse = (value) => {
-  if (isTimestampLike(value)) {
-    const millis = toMillis(value);
-    return millis ?? value;
-  }
-  if (Array.isArray(value)) {
-    return value.map((item) => sanitizeForResponse(item));
-  }
-  if (!value || typeof value !== 'object') {
-    return value;
-  }
-
-  const next = {};
-  Object.entries(value).forEach(([key, nestedValue]) => {
-    if (nestedValue === undefined) return;
-    next[key] = sanitizeForResponse(nestedValue);
-  });
-  return next;
-};
-
-const stableSerialize = (value) => {
-  if (value == null || typeof value !== 'object') {
-    return JSON.stringify(value);
-  }
-  if (Array.isArray(value)) {
-    return `[${value.map((item) => stableSerialize(item)).join(',')}]`;
-  }
-  const record = asRecord(value);
-  return `{${Object.keys(record)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${stableSerialize(record[key])}`)
-    .join(',')}}`;
-};
-
-export const buildIdempotencyRequestHash = (value) =>
-  createHash('sha256').update(stableSerialize(value)).digest('hex');
 
 export const normalizeSupplierPaymentMethodCode = (value) => {
   if (typeof value !== 'string') return null;
@@ -179,6 +132,11 @@ export const resolvePurchaseDocumentTotal = (purchaseRecord) => {
     totalFromPaymentState ?? totalFromMonetary ?? totalFallback ?? 0,
   );
 };
+
+export const buildSupplierCreditNoteApplicationId = ({
+  creditNoteId,
+  paymentId,
+}) => `supplier_credit_note_application__${paymentId}__${creditNoteId}`;
 
 export const normalizePaymentMethodsForAggregation = (paymentRecord) => {
   const paymentMethods = Array.isArray(paymentRecord.paymentMethods)

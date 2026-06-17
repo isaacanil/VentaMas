@@ -56,38 +56,6 @@ export function fbGetPendingBalance(
   }
 }
 
-function usePendingBalance(
-  businessID: string | null | undefined,
-  clientId: string | null | undefined,
-  onBalanceChange: BalanceCallback | null = null,
-) {
-  const [pendingBalance, setPendingBalance] = useState(0);
-
-  const handleBalanceChange = useCallback(
-    (balance: number) => {
-      setPendingBalance(balance);
-      onBalanceChange?.(balance);
-    },
-    [onBalanceChange],
-  );
-
-  useEffect(() => {
-    if (!businessID || !clientId) {
-      onBalanceChange?.(0);
-      return undefined;
-    }
-
-    const unsubscribe = fbGetPendingBalance(
-      businessID,
-      clientId,
-      handleBalanceChange,
-    );
-    return () => unsubscribe();
-  }, [businessID, clientId, handleBalanceChange, onBalanceChange]);
-
-  return businessID && clientId ? pendingBalance : 0;
-}
-
 export function useGetPendingBalance({
   dependencies = [null, null],
   enabled = true,
@@ -124,5 +92,3 @@ export function useGetPendingBalance({
 
   return isActive ? pendingBalance : 0;
 }
-
-export { usePendingBalance };

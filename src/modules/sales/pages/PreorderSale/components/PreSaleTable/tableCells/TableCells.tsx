@@ -10,8 +10,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { icons } from '@/constants/icons/icons';
-import { ConfirmModal } from '@/components/modals/ConfirmModal/ConfirmModal';
-import PreorderModal from '@/components/modals/PreorderModal/PreorderModal';
 import { selectAR } from '@/features/accountsReceivable/accountsReceivableSlice';
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import { selectUser } from '@/features/auth/userSlice';
@@ -24,17 +22,18 @@ import {
   selectTaxReceiptEnabled,
 } from '@/features/taxReceipt/taxReceiptSlice';
 import { fbCancelPreorder } from '@/firebase/invoices/fbCancelPreorder';
-import { Invoice } from '@/modules/invoice/components/Invoice/components/Invoice/Invoice';
+import { Invoice, TaxReceiptDepletedModal } from '@/modules/invoice/public';
 import { MiniClientSelector } from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/MarkAsReceivableButton/components/ARValidateMessage/components/MiniClientSelector/MiniClientSelector';
 import { ReceivableManagementPanel } from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/ReceivableManagementPanel/ReceivableManagementPanel';
-import { TaxReceiptDepletedModal } from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/components/TaxReceiptDepletedModal/TaxReceiptDepletedModal';
 import type { InvoiceBusinessInfo } from '@/types/invoice';
 import type { TaxReceiptItem } from '@/types/taxReceipt';
 import type { UserIdentity } from '@/types/users';
 import { resolveBusinessFiscalRollout } from '@/utils/fiscal/fiscalRollout';
 import { calculateInvoiceChange } from '@/utils/invoice';
 
+import PreorderModal from '../../PreorderModal/PreorderModal';
 import { ActionButtons } from './components/ActionButtons';
+import { ConfirmModal } from './components/ConfirmModal';
 import { ReceivableDecisionModal } from './components/ReceivableDecisionModal';
 import { usePreorderCartActions } from './hooks/usePreorderCartActions';
 import { usePreorderPrint } from './hooks/usePreorderPrint';
@@ -274,7 +273,6 @@ export const PreorderActionsCell = ({
           confirmText="Cancelar Preorden"
           cancelText="Volver"
           danger
-          data={data?.preorderDetails?.numberID}
         />
       ) : null}
 

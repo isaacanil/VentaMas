@@ -1,8 +1,7 @@
-import { ListBox } from '@heroui/react';
 import type { Key } from 'react';
 import styled from 'styled-components';
 
-import { VmLabel, VmSelect } from '@/components/heroui';
+import { VmLabel, VmListBox, VmSelect } from '@/components/heroui';
 
 export interface InvoiceWorkspaceSelectOption {
   label: string;
@@ -61,18 +60,18 @@ export const InvoiceWorkspaceSelect = ({
         <VmSelect.Indicator />
       </VmSelect.Trigger>
       <VmSelect.Popover>
-        <ListBox aria-label={ariaLabel}>
+        <VmListBox aria-label={ariaLabel}>
           {options.map((option) => (
-            <ListBox.Item
+            <VmListBox.Item
               key={optionValueToKey(option.value)}
               id={optionValueToKey(option.value)}
               textValue={option.label}
             >
               {option.label}
-              <ListBox.ItemIndicator />
-            </ListBox.Item>
+              <VmListBox.ItemIndicator />
+            </VmListBox.Item>
           ))}
-        </ListBox>
+        </VmListBox>
       </VmSelect.Popover>
     </SelectRoot>
   );

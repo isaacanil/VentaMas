@@ -1,10 +1,5 @@
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  Button,
-  ListBox,
-  Table,
-} from '@heroui/react';
 import { parseDate } from '@internationalized/date';
 import { message } from 'antd';
 import type { Key } from 'react';
@@ -18,12 +13,15 @@ import {
 } from '@/constants/icons/antd';
 import {
   VmAlert,
+  VmButton,
   VmCard,
   VmDateField,
   VmInput,
+  VmListBox,
   VmNumberField,
   VmSelect,
   VmSurface,
+  VmTable,
 } from '@/components/heroui';
 import type { ChartOfAccount } from '@/types/accounting';
 
@@ -251,18 +249,18 @@ export const ManualEntriesPanel = ({
           <HeaderMeta>Borrador · sin contabilizar</HeaderMeta>
         </HeaderCopy>
         <HeaderActions>
-          <Button variant="tertiary" onPress={resetDraft}>
+          <VmButton variant="tertiary" onPress={resetDraft}>
             Descartar
-          </Button>
-          <Button
+          </VmButton>
+          <VmButton
             variant="secondary"
             onPress={() =>
               void message.info('Borrador local aun no disponible.')
             }
           >
             Guardar borrador
-          </Button>
-          <Button
+          </VmButton>
+          <VmButton
             variant="primary"
             isPending={saving}
             isDisabled={!canSave}
@@ -270,7 +268,7 @@ export const ManualEntriesPanel = ({
           >
             <SaveOutlined />
             Contabilizar asiento
-          </Button>
+          </VmButton>
         </HeaderActions>
       </HeaderBar>
 
@@ -290,7 +288,7 @@ export const ManualEntriesPanel = ({
               <SectionTitle>
                 Asiento <span>{validLinesCount} lineas</span>
               </SectionTitle>
-              <Button variant="tertiary">Desde plantilla</Button>
+              <VmButton variant="tertiary">Desde plantilla</VmButton>
             </CardHeader>
 
             <FormGrid>
@@ -336,18 +334,18 @@ export const ManualEntriesPanel = ({
                     <VmSelect.Indicator />
                   </VmSelect.Trigger>
                   <VmSelect.Popover>
-                    <ListBox>
+                    <VmListBox>
                       {ENTRY_TYPE_OPTIONS.map((option) => (
-                        <ListBox.Item
+                        <VmListBox.Item
                           key={option.value}
                           id={option.value}
                           textValue={option.label}
                         >
                           {option.label}
-                          <ListBox.ItemIndicator />
-                        </ListBox.Item>
+                          <VmListBox.ItemIndicator />
+                        </VmListBox.Item>
                       ))}
-                    </ListBox>
+                    </VmListBox>
                   </VmSelect.Popover>
                 </VmSelect>
               </Field>
@@ -367,23 +365,23 @@ export const ManualEntriesPanel = ({
 
             <LinesShell>
               <LinesTable>
-                <Table.ScrollContainer>
+                <VmTable.ScrollContainer>
                   <ManualLinesContent aria-label="Lineas del asiento manual">
                     <ManualLinesHeader>
-                      <Table.Column isRowHeader>#</Table.Column>
-                      <Table.Column>Cuenta</Table.Column>
-                      <Table.Column>Descripcion</Table.Column>
-                      <Table.Column>Debito</Table.Column>
-                      <Table.Column>Credito</Table.Column>
-                      <Table.Column aria-label="Acciones" />
+                      <VmTable.Column isRowHeader>#</VmTable.Column>
+                      <VmTable.Column>Cuenta</VmTable.Column>
+                      <VmTable.Column>Descripcion</VmTable.Column>
+                      <VmTable.Column>Debito</VmTable.Column>
+                      <VmTable.Column>Credito</VmTable.Column>
+                      <VmTable.Column aria-label="Acciones" />
                     </ManualLinesHeader>
-                    <Table.Body>
+                    <VmTable.Body>
                       {lines.map((line, index) => {
                         const isLastLine = index === lines.length - 1;
                         return (
-                          <Table.Row key={line.id} id={line.id}>
-                            <Table.Cell>{index + 1}</Table.Cell>
-                            <Table.Cell>
+                          <VmTable.Row key={line.id} id={line.id}>
+                            <VmTable.Cell>{index + 1}</VmTable.Cell>
+                            <VmTable.Cell>
                               <VmSelect
                                 fullWidth
                                 aria-label={`Cuenta linea ${index + 1}`}
@@ -398,22 +396,22 @@ export const ManualEntriesPanel = ({
                                   <VmSelect.Indicator />
                                 </VmSelect.Trigger>
                                 <VmSelect.Popover>
-                                  <ListBox>
+                                  <VmListBox>
                                     {accountOptions.map((account) => (
-                                      <ListBox.Item
+                                      <VmListBox.Item
                                         key={account.id}
                                         id={account.id}
                                         textValue={account.label}
                                       >
                                         {account.label}
-                                        <ListBox.ItemIndicator />
-                                      </ListBox.Item>
+                                        <VmListBox.ItemIndicator />
+                                      </VmListBox.Item>
                                     ))}
-                                  </ListBox>
+                                  </VmListBox>
                                 </VmSelect.Popover>
                               </VmSelect>
-                            </Table.Cell>
-                            <Table.Cell>
+                            </VmTable.Cell>
+                            <VmTable.Cell>
                               <VmInput
                                 fullWidth
                                 aria-label={`Descripcion linea ${index + 1}`}
@@ -427,8 +425,8 @@ export const ManualEntriesPanel = ({
                                 }
                                 placeholder="Descripcion de la linea"
                               />
-                            </Table.Cell>
-                            <Table.Cell>
+                            </VmTable.Cell>
+                            <VmTable.Cell>
                               <AmountNumberField
                                 fullWidth
                                 aria-label={`Debito linea ${index + 1}`}
@@ -447,8 +445,8 @@ export const ManualEntriesPanel = ({
                                   <VmNumberField.Input />
                                 </VmNumberField.Group>
                               </AmountNumberField>
-                            </Table.Cell>
-                            <Table.Cell>
+                            </VmTable.Cell>
+                            <VmTable.Cell>
                               <AmountNumberField
                                 fullWidth
                                 aria-label={`Credito linea ${index + 1}`}
@@ -478,9 +476,9 @@ export const ManualEntriesPanel = ({
                                   />
                                 </VmNumberField.Group>
                               </AmountNumberField>
-                            </Table.Cell>
-                            <Table.Cell>
-                              <Button
+                            </VmTable.Cell>
+                            <VmTable.Cell>
+                              <VmButton
                                 aria-label="Quitar linea"
                                 isIconOnly
                                 isDisabled={lines.length <= 2}
@@ -489,15 +487,15 @@ export const ManualEntriesPanel = ({
                                 onPress={() => removeLine(line.id)}
                               >
                                 <FontAwesomeIcon icon={faTrash} />
-                              </Button>
-                            </Table.Cell>
-                          </Table.Row>
+                              </VmButton>
+                            </VmTable.Cell>
+                          </VmTable.Row>
                         );
                       })}
                       <TotalsRow id="manual-entry-totals">
-                        <Table.Cell colSpan={3}>
+                        <VmTable.Cell colSpan={3}>
                           <TfootLabel>Totales · RD$</TfootLabel>
-                        </Table.Cell>
+                        </VmTable.Cell>
                         <TotalsNumCell
                           $tone="debit"
                           $error={hasAmounts && !balanced}
@@ -510,11 +508,11 @@ export const ManualEntriesPanel = ({
                         >
                           {formatAccountingMoney(totals.credit)}
                         </TotalsNumCell>
-                        <Table.Cell />
+                        <VmTable.Cell />
                       </TotalsRow>
-                    </Table.Body>
+                    </VmTable.Body>
                   </ManualLinesContent>
-                </Table.ScrollContainer>
+                </VmTable.ScrollContainer>
               </LinesTable>
             </LinesShell>
 
@@ -793,7 +791,7 @@ const LinesShell = styled.div`
   background: var(--ds-color-bg-surface);
 `;
 
-const LinesTable = styled(Table)`
+const LinesTable = styled(VmTable)`
   width: 100%;
   border: 0;
   border-radius: 0;
@@ -855,11 +853,11 @@ const LinesTable = styled(Table)`
   }
 `;
 
-const ManualLinesContent = styled(Table.Content)`
+const ManualLinesContent = styled(VmTable.Content)`
   min-width: 920px;
 `;
 
-const ManualLinesHeader = styled(Table.Header)`
+const ManualLinesHeader = styled(VmTable.Header)`
   .table__column {
     background: var(--ds-color-bg-subtle);
   }
@@ -885,7 +883,7 @@ const AmountNumberField = styled(VmNumberField)`
   }
 `;
 
-const AddLineButton = styled(Button)`
+const AddLineButton = styled(VmButton)`
   margin: var(--ds-space-3) var(--ds-space-4);
 `;
 
@@ -912,7 +910,7 @@ const BalanceBanner = styled.div<{ $balanced: boolean }>`
   }
 `;
 
-const TotalsRow = styled(Table.Row)`
+const TotalsRow = styled(VmTable.Row)`
   background: var(--ds-color-bg-subtle);
 
   .table__cell {
@@ -933,7 +931,7 @@ const TfootLabel = styled.span`
   color: var(--ds-color-text-secondary);
 `;
 
-const TotalsNumCell = styled(Table.Cell)<{
+const TotalsNumCell = styled(VmTable.Cell)<{
   $error?: boolean;
   $tone: 'debit' | 'credit';
 }>`
@@ -1041,7 +1039,7 @@ const TemplateList = styled.div`
   flex-direction: column;
 `;
 
-const TemplateButton = styled(Button)`
+const TemplateButton = styled(VmButton)`
   display: flex;
   align-items: center;
   justify-content: space-between;

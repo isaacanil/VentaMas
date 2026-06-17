@@ -115,7 +115,7 @@ vi.mock('../../../core/utils/callableSessionAuth.util.js', () => ({
   resolveCallableAuthUid: (...args) => resolveCallableAuthUidMock(...args),
 }));
 
-vi.mock('../../../versions/v2/invoice/services/repairTasks.service.js', () => ({
+vi.mock('../../../versions/v2/auth/services/userAccess.service.js', () => ({
   MEMBERSHIP_ROLE_GROUPS: {
     ACCOUNTING_WRITE: ['accounting-write'],
     INVOICE_OPERATOR: ['invoice_operator'],
@@ -364,5 +364,84 @@ describe('replayAccountingEventProjection', () => {
         'businesses/business-1/accountingEventProjectionDeadLetters/event-2',
       ),
     ).toBe(false);
+  });
+
+  it('does not reuse an existing journal entry when it is invalid', async () => {
+    documentSnapshots.set('businesses/business-1/accountingEvents/event-3', {
+      id: 'event-3',
+      businessId: 'business-1',
+      eventType: 'purchase.committed',
+      sourceType: 'purchase',
+      sourceId: 'purchase-3',
+      sourceDocumentType: 'purchase',
+      sourceDocumentId: 'purchase-3',
+      monetary: {
+        amount: 100,
+        functionalAmount: 6200,
+      },
+      projection: {
+        status: 'failed',
+        attemptCount: 1,
+        replayCount: 0,
+      },
+    });
+    documentSnapshots.set('businesses/business-1/journalEntries/event-3', {
+      id: 'event-3',
+      eventId: 'event-3',
+      eventType: 'purchase.committed',
+      totals: {
+        debit: 100,
+        credit: 90,
+      },
+    });
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+      functionalCurrency: 'DOP',
+    });
+    collectionSnapshots.set('businesses/business-1/accountingPostingProfiles', []);
+    collectionSnapshots.set('businesses/business-1/chartOfAccounts', []);
+
+    const response = await replayAccountingEventProjection({
+      data: {
+        businessId: 'business-1',
+        eventId: 'event-3',
+      },
+    });
+
+    expect(response).toMatchObject({
+      ok: false,
+      eventId: 'event-3',
+      status: 'failed',
+      journalEntryId: 'event-3',
+      reusedExistingEntry: false,
+      deadLetterId: 'event-3',
+      lastError: expect.objectContaining({
+        code: 'existing-journal-entry-invalid',
+      }),
+    });
+    expect(
+      documentSnapshots.get('businesses/business-1/accountingEvents/event-3'),
+    ).toMatchObject({
+      projection: expect.objectContaining({
+        status: 'failed',
+        journalEntryId: 'event-3',
+        lastError: expect.objectContaining({
+          code: 'existing-journal-entry-invalid',
+        }),
+      }),
+    });
+    expect(
+      documentSnapshots.get(
+        'businesses/business-1/accountingEventProjectionDeadLetters/event-3',
+      ),
+    ).toMatchObject({
+      eventId: 'event-3',
+      periodKey: '2026-04',
+      projectionStatus: 'failed',
+      lastError: expect.objectContaining({
+        code: 'existing-journal-entry-invalid',
+      }),
+    });
   });
 });

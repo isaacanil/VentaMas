@@ -836,7 +836,7 @@ export const componentRegistry = [
   {
     id: 'vm.menuApp',
     displayName: 'MenuApp',
-    importPath: '@/modules/navigation/components/MenuApp/MenuApp',
+    importPath: '@/modules/navigation/public',
     namedExport: 'MenuApp',
     category: 'navigation',
     status: 'ready',
@@ -938,22 +938,6 @@ export const componentRegistry = [
         cssVar: '--ds-space-4',
         role: 'Body padding',
       },
-    ],
-  },
-  {
-    id: 'vm.searchBar',
-    displayName: 'SearchBar',
-    importPath: '@/components/common/SearchBar/Container',
-    namedExport: 'SearchBar',
-    category: 'layout',
-    status: 'planned',
-    description:
-      'Placeholder container. It exists in code but still lacks a real reusable contract.',
-    sourcePath: 'src/components/common/SearchBar/Container.tsx',
-    tags: ['search', 'placeholder'],
-    props: [],
-    antiExamples: [
-      'Do not use directly for new screens until a real implementation exists.',
     ],
   },
 ] as const satisfies readonly ComponentContract[];

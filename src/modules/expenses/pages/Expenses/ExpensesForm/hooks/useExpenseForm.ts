@@ -30,10 +30,9 @@ import { resolveConfiguredBankAccountId } from '@/utils/payments/bankPaymentPoli
 import {
   validateExpense,
   type ExpenseValidationErrors,
-} from '@/validates/expenseValidate';
-
-import { useActiveBankAccounts } from './useActiveBankAccounts';
-import { useOpenCashRegisters } from './useOpenCashRegisters';
+} from '@/modules/expenses/validation/expenseValidate';
+import { useOpenCashRegisters } from '@/modules/cashReconciliation/public';
+import { useActiveBankAccounts } from '@/modules/accounting/public';
 
 interface ExpenseSliceState {
   expense: Expense;

@@ -19,7 +19,7 @@ import styled from 'styled-components';
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import { selectUser } from '@/features/auth/userSlice';
 import { PageShell } from '@/components/layout/PageShell';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import { hasDeveloperAccess } from '@/utils/access/developerAccess';
 
 import { FinancialSummary } from './components/FinancialSummary';
@@ -32,7 +32,7 @@ import {
 } from './utils/exportAccountReceivableAudit';
 import { formatDate, formatPrice } from './utils/formatters';
 
-import type { TablePaginationConfig } from 'antd/es/table';
+import type { TablePaginationConfig } from 'antd';
 import type { UserIdentity } from '@/types/users';
 
 const { Title, Text } = Typography;

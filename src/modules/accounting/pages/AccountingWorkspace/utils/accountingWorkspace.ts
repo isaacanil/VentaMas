@@ -1,7 +1,6 @@
 import type {
   AccountingEvent,
   AccountingEventType,
-  AccountingModuleKey,
   AccountingPostingAmountSource,
   AccountingPostingCondition,
   AccountingPostingProfile,
@@ -13,6 +12,7 @@ import type {
   JournalEntry,
   JournalEntryLine,
 } from '@/types/accounting';
+import type { AccountingLedgerRecord } from '@/modules/accounting/utils/accountingLedgerRecord';
 import {
   ACCOUNTING_EVENT_TYPE_LABELS,
   ACCOUNTING_MODULE_LABELS,
@@ -25,6 +25,8 @@ import {
 } from '@/utils/accounting/journalEntries';
 import { isAccountingPeriodClosed } from '@/utils/accounting/periodClosures';
 import { normalizePaymentMethodCode } from '@/utils/payments/contracts';
+
+export type { AccountingLedgerRecord } from '@/modules/accounting/utils/accountingLedgerRecord';
 
 export type AccountingWorkspacePanelKey =
   | 'journal-book'
@@ -66,42 +68,6 @@ export interface AccountingProjectionDeadLetter {
     details?: Record<string, unknown>;
   } | null;
   updatedAt: unknown;
-}
-
-export interface AccountingLedgerRecord {
-  id: string;
-  entryDate: Date | null;
-  periodKey: string | null;
-  sourceKind: 'automatic' | 'manual';
-  sourceLabel: string;
-  detailMode: 'posted' | 'projected';
-  eventType: AccountingEventType;
-  moduleKey: AccountingModuleKey;
-  moduleLabel: string;
-  title: string;
-  description: string;
-  reference: string;
-  internalReference: string | null;
-  entryReference: string;
-  documentReference: string | null;
-  journalTypeKey:
-    | 'sale'
-    | 'purchase'
-    | 'payment'
-    | 'collection'
-    | 'expense'
-    | 'payroll'
-    | 'adjustment';
-  journalTypeLabel: string;
-  userLabel: string | null;
-  amount: number;
-  statusLabel: string;
-  statusTone: 'success' | 'warning' | 'neutral';
-  lines: JournalEntryLine[];
-  journalEntry: JournalEntry | null;
-  event: AccountingEvent | null;
-  profile: AccountingPostingProfile | null;
-  searchIndex: string;
 }
 
 export interface TrialBalanceRow {

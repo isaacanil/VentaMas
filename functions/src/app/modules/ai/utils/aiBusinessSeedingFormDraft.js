@@ -1,6 +1,10 @@
 import {
   normalizeAiBusinessSeedingUsernameCandidate,
 } from './aiBusinessSeedingUsernameSuggestions.js';
+import {
+  normalizeAiBusinessSeedingText as normalizeText,
+  readAiBusinessSeedingString as readString,
+} from './aiBusinessSeedingText.util.js';
 
 const BUSINESS_SECTION_HEADING = 'datos del negocio';
 const USERS_SECTION_HEADING = 'usuarios';
@@ -24,17 +28,6 @@ const ROLE_ALIASES = new Map([
   ['comprador', 'buyer'],
   ['compradora', 'buyer'],
 ]);
-
-const readString = (value) =>
-  typeof value === 'string' && value.trim() ? value.trim() : '';
-
-const normalizeText = (value) =>
-  readString(value)
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim();
 
 const normalizeLabel = (value) =>
   normalizeText(value)

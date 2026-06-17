@@ -238,6 +238,50 @@ describe('accountingReports.util', () => {
     });
   });
 
+  it('etiqueta los eventos de costo de venta en el modulo de ventas', () => {
+    const cogsRecords = buildPostedLedgerRecords({
+      journalEntries: [
+        {
+          id: 'je-cogs-recorded',
+          eventType: 'inventory.cogs.recorded',
+          entryDate: new Date('2026-04-20T12:00:00.000Z'),
+          periodKey: '2026-04',
+          status: 'posted',
+          sourceId: 'invoice-1',
+          description: 'Costo de venta factura 1',
+          lines: [],
+          totals: { debit: 0, credit: 0 },
+        },
+        {
+          id: 'je-cogs-voided',
+          eventType: 'inventory.cogs.voided',
+          entryDate: new Date('2026-04-21T12:00:00.000Z'),
+          periodKey: '2026-04',
+          status: 'posted',
+          sourceId: 'invoice-1',
+          description: 'Reversa costo de venta factura 1',
+          lines: [],
+          totals: { debit: 0, credit: 0 },
+        },
+      ],
+      eventsById: new Map(),
+    });
+
+    expect(cogsRecords.map((record) => record.title)).toEqual([
+      'Costo de venta registrado',
+      'Costo de venta anulado',
+    ]);
+    expect(
+      cogsRecords.map((record) => ({
+        moduleKey: record.moduleKey,
+        moduleLabel: record.moduleLabel,
+      })),
+    ).toEqual([
+      { moduleKey: 'sales', moduleLabel: 'Ventas' },
+      { moduleKey: 'sales', moduleLabel: 'Ventas' },
+    ]);
+  });
+
   it('asigna referencias AST estables derivadas del id del asiento', () => {
     const stableRecords = buildPostedLedgerRecords({
       journalEntries: [

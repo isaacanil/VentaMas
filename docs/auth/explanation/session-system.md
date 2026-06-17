@@ -18,7 +18,7 @@ Las Cloud Functions de autenticación v2 gestionan sesiones HTTPS, sincronizan p
   - `users`: perfil del usuario y campos auxiliares (intentos de login, presencia, etc.).
   - `sessionTokens`: sesiones activas generadas por `clientLogin`. Cada documento representa una sesión y contiene la información de expiración.
   - `sessionLogs`: auditoría liviana de eventos de sesión (login, logout y vistas de historial).
-- Cloud Functions HTTPS (archivo `functions/src/versions/v2/auth/controllers/clientAuth.controller.js`)
+- Cloud Functions HTTPS (archivo `functions/src/app/versions/v2/auth/controllers/clientAuth.controller.js`)
   - `clientLogin`, `clientValidateSession`, `clientRefreshSession`.
   - `clientListSessions`, `clientRevokeSession`, `clientLogout`.
   - `clientListSessionLogs` y utilidades internas como `logSessionEvent`, `terminateSession`, `enforceSessionLimit` y `cleanupOldTokens`.
@@ -62,8 +62,8 @@ Cada documento contiene:
 
 El estado visible en la interfaz combina dos fuentes:
 
-1. **Realtime Database**: Cada cliente web publica su conexión en `presence/{uid}/{connectionId}` usando `onDisconnect` para marcarse como `offline` automáticamente en cuanto se pierde la conexión. El hook `useRealtimePresence` (`src/firebase/presence/useRealtimePresence.js`) gestiona esta escritura tomando el `sessionId`/`deviceId` local.
-2. **Aggregator en Cloud Functions**: `syncRealtimePresence` (`functions/src/versions/v2/auth/triggers/presenceSync.js`) escucha cualquier cambio en esa ruta, calcula cuántas conexiones siguen activas y actualiza `users/{id}/presence` con:
+1. **Realtime Database**: Cada cliente web publica su conexión en `presence/{uid}/{connectionId}` usando `onDisconnect` para marcarse como `offline` automáticamente en cuanto se pierde la conexión. El hook `useRealtimePresence` (`src/firebase/presence/useRealtimePresence.ts`) gestiona esta escritura tomando el `sessionId`/`deviceId` local.
+2. **Aggregator en Cloud Functions**: `syncRealtimePresence` (`functions/src/app/versions/v2/auth/triggers/presenceSync.js`) escucha cualquier cambio en esa ruta, calcula cuántas conexiones siguen activas y actualiza `users/{id}/presence` con:
    - `status`: `online` si existe al menos una conexión activa, `offline` en caso contrario.
    - `lastSeen`: `Timestamp` del último `updatedAt` recibido desde Realtime Database.
    - `connectionCount`: número de conexiones activas.
@@ -117,8 +117,8 @@ Todas estas variables pueden definirse como parámetros de Functions o variables
 
 ### Referencias
 
-- Código fuente principal: `functions/src/versions/v2/auth/controllers/clientAuth.controller.js`.
-- Frontend que consume los logs: `src/firebase/Auth/fbAuthV2/fbGetSessionLogs.js` y `src/views/pages/setting/subPage/Users/UserSessionLogs.jsx`.
+- Código fuente principal: `functions/src/app/versions/v2/auth/controllers/clientAuth.controller.js`.
+- Frontend que consume los logs: `src/firebase/Auth/fbAuthV2/fbGetSessionLogs.ts` y `src/modules/settings/pages/setting/subPage/Users/UserSessionLogs.tsx`.
 - Documentación general de TTL: [Firestore TTL documentation](https://firebase.google.com/docs/firestore/ttl) (en producción seguir las políticas de seguridad internas antes de habilitar nuevas reglas).
 
 ## 📈 Impacto / Trade-offs

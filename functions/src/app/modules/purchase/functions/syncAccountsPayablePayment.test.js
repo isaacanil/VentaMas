@@ -552,6 +552,103 @@ describe('syncAccountsPayablePayment', () => {
     expect(buildAccountingEventMock).not.toHaveBeenCalled();
   });
 
+  it('recalculates purchase state from legacy totalPurchase totals', async () => {
+    documentSnapshots.set('businesses/business-1/purchases/purchase-legacy', {
+      id: 'purchase-legacy',
+      numberId: 125,
+      status: 'completed',
+      workflowStatus: 'completed',
+      completedAt: 2,
+      createdAt: 1,
+      provider: {
+        id: 'supplier-legacy',
+        name: 'Supplier Legacy',
+      },
+      totalPurchase: {
+        totalPurchase: 180,
+      },
+      paymentTerms: {
+        condition: 'credit',
+        expectedPaymentAt: 10,
+      },
+    });
+    collectionEntries.set('businesses/business-1/accountsPayablePayments', [
+      {
+        id: 'payment-legacy',
+        data: {
+          purchaseId: 'purchase-legacy',
+          status: 'posted',
+          totalAmount: 45,
+          createdAt: 3,
+          occurredAt: 4,
+          paymentMethods: [
+            {
+              method: 'transfer',
+              value: 45,
+              bankAccountId: 'bank-1',
+            },
+          ],
+        },
+      },
+    ]);
+
+    await syncAccountsPayablePayment({
+      params: {
+        businessId: 'business-1',
+        paymentId: 'payment-legacy',
+      },
+      data: {
+        before: {
+          data: () => null,
+        },
+        after: {
+          data: () => ({
+            purchaseId: 'purchase-legacy',
+            status: 'posted',
+            totalAmount: 45,
+            createdAt: 3,
+            occurredAt: 4,
+            paymentMethods: [
+              {
+                method: 'transfer',
+                value: 45,
+                bankAccountId: 'bank-1',
+              },
+            ],
+          }),
+        },
+      },
+    });
+
+    expect(
+      getDocRef('businesses/business-1/purchases/purchase-legacy').set,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        paymentState: expect.objectContaining({
+          total: 180,
+          paid: 45,
+          balance: 135,
+          paymentCount: 1,
+        }),
+      }),
+      { merge: true },
+    );
+    expect(
+      getDocRef('businesses/business-1/vendorBills/purchase:purchase-legacy').set,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceDocumentId: 'purchase-legacy',
+        supplierId: 'supplier-legacy',
+        totals: {
+          total: 180,
+          paid: 45,
+          balance: 135,
+        },
+      }),
+      { merge: true },
+    );
+  });
+
   it('deletes stale cash movements when an active supplier payment changes method', async () => {
     buildAccountsPayablePaymentCashMovementsMock.mockImplementation(
       ({ payment }) => {

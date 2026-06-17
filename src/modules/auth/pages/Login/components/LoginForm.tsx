@@ -17,6 +17,9 @@ import {
 import { useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import { LogoContainer } from '@/modules/auth/components/LogoContainer/LogoContainer';
+import { SocialLogin } from '@/modules/auth/components/SocialLogin/SocialLogin';
+import { resolvePublicAuthVisibility } from '@/modules/auth/components/SocialLogin/socialLogin.utils';
 import { applyAuthenticatedUserState } from '@/modules/auth/repositories/authState.repository';
 import { resolveDefaultHomeRoute } from '@/modules/auth/utils/defaultHomeRoute';
 import ROUTES_PATH from '@/router/routes/routesName';
@@ -36,9 +39,6 @@ import {
   type LoginFormValues,
   type OnFinishFailedInfo,
 } from './LoginForm.styles';
-import { LogoContainer } from './Header/LogoContainer';
-import { SocialLogin } from './SocialLogin';
-import { resolvePublicAuthVisibility } from './socialLogin.utils';
 import { runLoginSubmission } from './utils/loginSubmission';
 
 interface LoginFormProps {

@@ -20,7 +20,7 @@ Alcance de esta auditoría: análisis estático del árbol actual. No se modific
 | `src/services` | Servicios frontend globales. | Solo se observan pocos dominios (`accountsReceivable`, `invoice`), por lo que no funciona todavía como capa de datos consistente. |
 | `src/utils` | Helpers transversales de negocio, formato, fecha, contabilidad, inventario y otros. | Útil, pero algunos archivos ya contienen lógica de dominio pesada que compite con `modules` y `firebase`. |
 | `src/shared` | Contratos y utilidades compartidas. | Buena ubicación para contratos neutrales, pero hay duplicados con `functions/src/shared`. |
-| `src/types`, `src/models`, `src/domain`, `src/schema`, `src/constants`, `src/validates` | Tipos, modelos, schemas, constantes y validaciones. | La separación conceptual existe, pero algunos conceptos viven en más de una carpeta. |
+| `src/types`, `src/models`, `src/domain`, `src/schema`, `src/constants`, `src/modules/expenses/validation` | Tipos, modelos, schemas, constantes y validaciones. | La separación conceptual existe, pero algunos conceptos viven en más de una carpeta. |
 | `src/features` | Redux slices y estado global. | El store central registra muchas features y desactiva `serializableCheck`, lo que aumenta el acoplamiento. |
 | `src/router` | Rutas, nombres, preloaders y procesamiento de rutas. | La metadata de navegación está repartida entre router, menú, preloaders y toolbars. |
 | `src/design-system`, `src/styles`, `src/theme`, `src/variable.css` | Tokens, temas, estilos globales y normalización visual. | Hay tokens, pero también variables duplicadas y colores hardcodeados en componentes. |
@@ -35,19 +35,19 @@ Alcance de esta auditoría: análisis estático del árbol actual. No se modific
 
 | Problema | Ubicación | Impacto | Severidad | Recomendación |
 | --- | --- | --- | --- | --- |
-| La frontera UI/datos sigue porosa. Se detectaron muchos imports y operaciones Firestore/Functions en `src`, incluidos componentes, hooks y módulos. | `src/modules`, `src/components`, `src/hooks`, ejemplos: `src/components/modals/CreditNoteModal/CreditNoteModal.tsx`, `src/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useAccountingConfig.ts`, `src/modules/accountsReceivable/.../useReceivableInvoices.ts` | Probar UI requiere mocks de infraestructura; mover pantallas arrastra Firebase; las reglas de negocio se repiten entre cliente y backend. | Alta | Crear repositories/services por dominio, empezando por lecturas simples y dominios de bajo riesgo. Dejar hooks como sincronizadores externos. |
-| Contratos contables duplicados y divergentes entre frontend/backend. | `src/shared/accountingSchemas.js`, `functions/src/shared/accountingSchemas.js`, `package.json`, `functions/package.json` | Un schema puede validar distinto en cliente y Functions. El riesgo es alto porque afecta contabilidad y proyección de eventos. | Alta | Añadir prueba espejo de schemas, extraer contrato compartido buildable y alinear versión de Zod gradualmente. |
-| Pagos de CxC mantienen rutas cliente y backend activas. | `functions/src/app/modules/accountReceivable/functions/processAccountsReceivablePayment.js`, `src/firebase/proccessAccountsReceivablePayments/fbPayBalanceForAccounts.ts`, `src/firebase/proccessAccountsReceivablePayments/fbPayActiveInstallmentForAccount.ts`, `src/firebase/proccessAccountsReceivablePayments/insurance/fbProcessMultiplePaymentsAR.ts` | Reglas de balance, cuotas, recibos, caja y contabilidad pueden divergir. | Alta | Mapear pantallas que llaman cada ruta, mover validaciones compartidas a callable backend y deprecar escrituras cliente por fases. |
+| La frontera UI/datos sigue porosa. Se detectaron muchos imports y operaciones Firestore/Functions en `src`, incluidos componentes, hooks y módulos. | `src/modules`, `src/components`, `src/hooks`, ejemplos: `src/modules/invoice/pages/CreditNote/components/CreditNoteModal/CreditNoteModal.tsx`, `src/modules/accounting/hooks/useAccountingConfig.ts`, `src/modules/accountsReceivable/pages/AccountReceivable/pages/AccountReceivableAudit/hooks/useReceivableInvoices.ts` | Probar UI requiere mocks de infraestructura; mover pantallas arrastra Firebase; las reglas de negocio se repiten entre cliente y backend. | Alta | Crear repositories/services por dominio, empezando por lecturas simples y dominios de bajo riesgo. Dejar hooks como sincronizadores externos. |
+| Contratos contables duplicados y divergentes entre frontend/backend. | `src/shared/accountingSchemas.js`, `functions/src/shared/accountingSchemas.js`, `package.json`, `functions/package.json` | Un schema puede validar distinto en cliente y Functions. El riesgo es alto porque afecta contabilidad y proyección de eventos. | Alta | Usar la prueba espejo existente `functions/src/shared/accountingSchemas.parity.test.js`, extraer contrato compartido buildable y alinear versión de Zod gradualmente. |
+| Pagos de CxC mantienen rutas cliente y backend activas. | `functions/src/app/modules/accountReceivable/functions/processAccountsReceivablePayment.js`, `src/firebase/processAccountsReceivablePayments/fbPayBalanceForAccounts.ts`, `src/firebase/processAccountsReceivablePayments/fbPayActiveInstallmentForAccount.ts`, `src/firebase/processAccountsReceivablePayments/insurance/fbProcessMultiplePaymentsAR.ts` | Reglas de balance, cuotas, recibos, caja y contabilidad pueden divergir. | Alta | Mapear pantallas que llaman cada ruta, mover validaciones compartidas a callable backend y deprecar escrituras cliente por fases. |
 | `functions/src/index.js` concentra demasiados exports. | `functions/src/index.js`, `functions/src/app/modules/*`, `functions/src/app/versions/v1`, `functions/src/app/versions/v2` | Agregar o renombrar una función obliga tocar el root. Aumenta riesgo de deploy selectivo incorrecto. | Alta | Crear agregadores de exports por dominio/version y dejar `index.js` como composición mínima. |
-| `components/modals` es un bucket de dominio, no solo UI compartida. | `src/components/modals`, `src/components/modals/ModalManager.tsx`, `src/components/modals/DeveloperModal/components/CommandProcessor/handlers/executeCommand.ts` | Modales globales dependen de slices y reglas de muchos dominios. El shared UI se vuelve dueño de flujos de negocio. | Alta | Mover modales dominiales a `src/modules/<dominio>/components` y dejar en `components/modals` shells compartidos o agregadores temporales. |
+| Los modales de dominio no deben volver a un bucket compartido. | `src/modules/<dominio>/...`, `src/router/components/ModalManager.tsx`, `src/modules/dev/components/DeveloperConsoleModal/components/CommandProcessor/handlers/executeCommand.ts` | Los modales globales se orquestan desde router/features, pero la UI y reglas de cada flujo deben vivir en su módulo dueño. | Alta | Mantener modales dominiales en `src/modules/<dominio>/components` y dejar `ModalManager` como orquestador. |
 | Componentes grandes mezclan UI, estado, reglas y estilos. | `src/modules/accounting/pages/AccountingWorkspace/components/FiscalCompliancePanel.tsx`, `src/modules/sales/pages/Sale/components/Cart/components/InvoiceSummary/InvoiceSummary.tsx`, `src/modules/sales/pages/Sale/components/Cart/components/ProductCardForCart/ProductCardForCart.tsx` | Cambios pequeños obligan editar archivos grandes y sensibles. Aumenta el riesgo de bugs en venta y fiscal. | Alta | Extraer helpers puros con tests, subcomponentes por sección y hooks de view model. Mantener el contenedor como orquestador. |
-| Deuda de accesibilidad en componentes legacy. | `src/components/ui/Button/Button.tsx`, `src/components/ui/Select/Select.tsx`, `src/components/ui/AppModal/AppModal.tsx`, `src/hooks/useModalFocusTrap.ts`, `src/components/ui/Menu/Menu.tsx` | Foco visible, listbox manual y modales custom pueden fallar con teclado o lector de pantalla. | Alta | Restaurar `:focus-visible`, migrar usos nuevos a `VmButton`/`VmSelect`/`VmModal` y retirar overlays custom al tocar pantallas. |
-| `settings` concentra demasiados subdominios. | `src/modules/settings`, `src/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useAccountingConfig.ts`, `src/modules/settings/pages/subscription`, `src/modules/settings/pages/setting` | Configuración general, contable, fiscal, suscripción y usuarios compiten dentro del mismo módulo. | Media-alta | Separar subdominios internos sin cambiar rutas públicas: `settings/accounting`, `settings/fiscal`, `settings/users`, `settings/subscription`. |
+| Deuda de accesibilidad en componentes legacy. | `src/components/ui/Button/Button.tsx`, `src/components/ui/Select/Select.tsx`, `src/modules/contacts/pages/Contact/Client/components/ClientForm/components/AppModal/AppModal.tsx`, `src/hooks/useModalFocusTrap.ts`, `src/components/ui/DropdownMenu/DropdownMenu.tsx` | Foco visible, listbox manual y modales custom pueden fallar con teclado o lector de pantalla. | Alta | Restaurar `:focus-visible`, migrar usos nuevos a `VmButton`/`VmSelect`/`VmModal` y retirar overlays custom al tocar pantallas. |
+| `settings` concentra demasiados subdominios. | `src/modules/settings`, `src/modules/accounting/hooks/useAccountingConfig.ts`, `src/modules/settings/pages/subscription`, `src/modules/settings/pages/setting` | Configuración general, contable, fiscal, suscripción y usuarios compiten dentro del mismo módulo. | Media-alta | Separar subdominios internos sin cambiar rutas públicas: `settings/accounting`, `settings/fiscal`, `settings/users`, `settings/subscription`. |
 | Sistema UI con direcciones activas mezcladas. | `src/components/ui`, `src/components/heroui`, `src/design-system/registry/components.ts`, múltiples imports AntD | Nuevas pantallas pueden elegir AntD, custom UI o Vm por costumbre, no por arquitectura. | Media | Documentar regla por área: AntD legacy permitido, `Vm/HeroUI` preferido para UI nueva. Migrar solo cuando se toca la pantalla. |
 | Estilos y tokens no están completamente centralizados. | `src/variable.css`, `src/styles/variables.css`, `src/styles/theme.css`, `src/design-system`, componentes con `style={{ ... }}` | Contraste, foco, spacing y estados visuales se vuelven inconsistentes. | Media | Consolidar tokens por uso real y reemplazar hardcodes por superficie, empezando por venta, fiscal y dev/admin. |
 | Rutas, menú, preloaders y toolbars duplican metadata. | `src/router/routes/routesName.ts`, `src/router/routes/routes.tsx`, `src/router/routes/routePreloaders.ts`, `src/modules/navigation/components/MenuApp/GlobalMenu/configs/toolbarConfigs.ts`, `src/modules/navigation/components/MenuApp/MenuData/items/*` | Agregar o mover una ruta puede requerir 4 o 5 cambios manuales. | Media | Crear checklist de registro ahora; luego mover a metadata única por ruta y derivar preloaders/toolbars. |
 | Configuración de calidad deja zonas fuera. | `tsconfig.json`, `tsconfig.typecheck.json`, `functions/tsconfig.json`, `eslint.config.js` | `strict: false`, `allowJs`, `checkJs: false` y exclusiones reducen cobertura real de typecheck. | Media | Hacer pilotos por módulo: `checkJs` en backend nuevo, typecheck dev separado y migración gradual de Functions críticas a TS. |
-| Nombres, typos y casing mixto reducen navegabilidad. | `src/firebase/proccessAccountsReceivablePayments`, `src/firebase/tranfer`, `src/firebase/warehouse/warehouseNestedServise.ts`, `src/router/routes/paths/CashReconciliztion.tsx`, `src/Context`, `src/Seo`, `functions/src/app/modules/Inventory` | Búsquedas fallan, imports quedan frágiles en filesystems case-sensitive y se facilita duplicar conceptos. | Media | Renombrar por lotes pequeños con pruebas focalizadas y commits de casing separados. |
+| Nombres, typos y casing mixto reducen navegabilidad. | `functions/src/app/modules/Inventory` y otros legacy pendientes. `src/firebase/processAccountsReceivablePayments` ya quedó normalizado desde el typo histórico. | Búsquedas fallan, imports quedan frágiles en filesystems case-sensitive y se facilita duplicar conceptos. | Media | Renombrar por lotes pequeños con pruebas focalizadas y commits de casing separados. |
 | Cobertura de tests desigual por dominio. | `src/modules/inventory`, `src/modules/contacts`, `src/modules/accountsReceivable`, `functions/src/app/modules/invoice`, `functions/src/app/modules/quotation`, `functions/src/app/modules/products` | Refactors de organización en dominios grandes no tienen red suficiente. | Media | Agregar primero tests de helpers/reglas puras, luego hooks críticos y después flujos monetarios de integración. |
 
 ## 4. Duplicaciones detectadas
@@ -57,9 +57,9 @@ Alcance de esta auditoría: análisis estático del árbol actual. No se modific
 | Archivos involucrados | Qué se repite | Cómo se podría unificar |
 | --- | --- | --- |
 | `src/components/common/Badge/*`, `src/components/ui/StatusBadge/*` | Dos familias de badges/status con tokens, variantes y estilos propios. | Definir un contrato único de `StatusBadge` y dejar wrappers temporales para consumidores antiguos. |
-| `src/modules/contacts/components/OrderFilter/*`, `src/modules/contacts/pages/Contact/Client/components/OrderFilter/*`, `src/modules/contacts/pages/Contact/Provider/components/OrderFilter/*` | Los filtros de cliente/proveedor son re-exports de un componente compartido. Es una duplicación controlada, pero todavía deja rutas profundas heredadas. | Mantener wrapper solo si evita ruptura de imports; planificar migración de imports al componente compartido. |
+| `src/modules/contacts/components/OrderFilter/*`, `src/modules/contacts/pages/Contact/Client/components/OrderFilter/*`, `src/modules/contacts/pages/Contact/Provider/components/OrderFilter/*` | No se detectan referencias activas exactas a `OrderFilter`; los wrappers legacy fueron retirados. | Mantener eliminado; no recrear wrappers salvo nueva necesidad verificada. |
 | `src/modules/orderAndPurchase/pages/OrderAndPurchase/shared/EvidenceUploadDrawer.tsx`, wrappers en `OrderManagement` y `PurchaseManagement` | Drawer compartido con wrappers mínimos por flujo. | Es una buena dirección; documentar como patrón y evitar crear nuevos drawers duplicados. |
-| `src/components/modals/*` y componentes de módulos específicos | Modales de crédito, producto, AR, dev tools e invoice viven en shared. | Mover modales dominiales al módulo dueño y dejar `ModalManager` como orquestador temporal. |
+| Componentes de módulos específicos y `src/router/components/ModalManager.tsx` | Modales de crédito, producto, AR, dev tools e invoice deben vivir en su módulo dueño. | Mantener modales dominiales en el módulo dueño y dejar `ModalManager` como orquestador. |
 | `src/components/ui/Button/Button.tsx`, `src/components/heroui` (`VmButton`) y usos AntD | Botones con contratos y estilos distintos. | Definir `VmButton` como default para UI nueva; corregir foco en legacy mientras se migra. |
 | `src/components/ui/Select/Select.tsx`, `VmSelect`, selects AntD/HeroUI | Selección/listbox con comportamientos distintos. | Migrar formularios nuevos a `VmSelect`; limitar `Select` legacy a pantallas existentes. |
 
@@ -68,18 +68,18 @@ Alcance de esta auditoría: análisis estático del árbol actual. No se modific
 | Archivos involucrados | Qué se repite | Cómo se podría unificar |
 | --- | --- | --- |
 | `src/hooks/useBusinessFeatureEnabled.ts`, `src/hooks/useAccountingRolloutEnabled.ts`, `src/hooks/useAccountingBankPaymentPolicy.ts` | Hooks que leen un documento/config de Firestore con patrón `onSnapshot`, estado de loading/error y fallback. | Crear helper de listener de configuración por negocio, dejando cada hook como adapter de dominio. |
-| `src/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useAccountingConfig.ts`, `useChartOfAccounts.ts`, `useAccountingPostingProfiles.ts`, `useAccountingAuditTrail.ts` | Listeners y normalizadores de configuración contable repartidos en hooks hermanos. | Separar repository contable y un hook orquestador de view model para la pantalla. |
-| `src/firebase/hrPayroll/useHrCommissionEntries.ts`, `useHrCommissionPeriods.ts`, `useHrEmployees.ts` | Hooks Firebase de RRHH con contratos similares de carga, normalización y estado. | Consolidar normalización en `src/modules/hrPayroll/repositories` o `src/firebase/hrPayroll/*.repository.ts` y mantener hooks finos. |
-| `src/hooks/products/useGetProductsWithBatch.ts`, `src/hooks/product/useProductRealtimeListener.ts`, `src/firebase/products/*` | Lectura de productos/inventario por rutas distintas. | Crear servicios por lectura: productos base, stock, lotes y opciones de servicio. |
+| `src/modules/accounting/hooks/useAccountingConfig.ts`, `src/modules/accounting/hooks/useChartOfAccounts.ts`, `src/modules/accounting/hooks/useAccountingPostingProfiles.ts`, `src/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useAccountingAuditTrail.ts` | Listeners y normalizadores de configuración contable repartidos en hooks hermanos. | Separar repository contable y un hook orquestador de view model para la pantalla. |
+| `src/modules/hrPayroll/repositories/useHrCommissionEntries.ts`, `useHrCommissionPeriods.ts`, `useHrEmployees.ts` | Hooks Firebase de RRHH con contratos similares de carga, normalización y estado. | Consolidar normalización en `src/modules/hrPayroll/repositories` y mantener hooks finos. |
+| `src/modules/inventory/pages/Inventory/components/Warehouse/forms/ProductStockForm/hooks/useGetProductsWithBatch.ts`, `src/modules/products/hooks/useProductRealtimeListener.ts`, `src/firebase/products/*` | Lectura de productos/inventario por rutas distintas. | Crear servicios por lectura: productos base, stock, lotes y opciones de servicio. |
 | `src/hooks/useTaxReceiptsFix.ts`, `src/firebase/taxReceipt/*`, módulos de settings fiscales | Lógica fiscal y de secuencia repartida entre hooks, Firebase y settings. | Evitar mover de golpe; primero mapear rutas y extraer validadores puros con pruebas. |
 
 ### Servicios
 
 | Archivos involucrados | Qué se repite | Cómo se podría unificar |
 | --- | --- | --- |
-| `functions/src/app/modules/accountReceivable/functions/processAccountsReceivablePayment.js`, `src/firebase/proccessAccountsReceivablePayments/*` | Procesamiento de pagos CxC en backend y escrituras directas cliente. | Centralizar mutaciones monetarias en callable backend y dejar cliente como adapter. |
+| `functions/src/app/modules/accountReceivable/functions/processAccountsReceivablePayment.js`, `src/firebase/processAccountsReceivablePayments/*` | Procesamiento de pagos CxC en backend y escrituras directas cliente. | Centralizar mutaciones monetarias en callable backend y dejar cliente como adapter. |
 | `src/services/invoice/invoice.service.ts`, `src/firebase/invoices/*`, `functions/src/app/versions/v2/invoice/services/orchestrator.service.js` | Servicios de factura viven en tres capas sin frontera clara. | Definir qué operaciones son cliente, callable y backend interno; documentar contratos. |
-| `src/firebase/warehouse/warehouseService.ts`, `warehouseStructureService.ts`, `warehouseNestedServise.ts`, `stockSyncService.ts` | Servicios de warehouse con nombres y responsabilidades parcialmente solapadas. | Separar estructura, stock, movimientos y sync; corregir typo `Servise` en lote controlado. |
+| `src/firebase/warehouse/warehouseService.ts`, `warehouseStructureService.ts`, `warehouseNestedService.ts`, `stockSyncService.ts` | Servicios de warehouse con nombres y responsabilidades parcialmente solapadas. | Separar estructura, stock, movimientos y sync por lotes controlados. |
 | `src/services/dynamicPermissions.ts`, `src/abilities/*`, módulos de usuarios/configuración | Permisos/roles mezclan CASL, Firestore y configuración. | Crear capa de permisos de dominio con contrato compartido para roles y permisos dinámicos. |
 | `functions/src/index.js` y exports de módulos | Registro manual repetido en entry point. | Agregadores por dominio/version. |
 
@@ -88,7 +88,7 @@ Alcance de esta auditoría: análisis estático del árbol actual. No se modific
 | Archivos involucrados | Qué se repite | Cómo se podría unificar |
 | --- | --- | --- |
 | `src/modules/accounting/pages/AccountingWorkspace/utils/accountingWorkspace.ts`, `src/utils/accounting/*`, `functions/src/app/versions/v2/accounting/utils/*` | Proyección, formateo, balances y lógica contable existen en frontend, utils globales y backend. | Identificar lógica de presentación vs dominio. Compartir solo contratos/validadores puros, no todo el motor. |
-| `src/utils/formatDate.ts`, `src/utils/date/dateUtils.ts`, `src/components/common/DatePicker/utils/dateUtils.ts`, `src/utils/date/serialization.ts` | Fecha y serialización Firestore repartidas. | Crear `src/shared/date` con adaptadores claros: display, Firestore, rangos. |
+| `src/utils/formatDate.ts`, `src/utils/date/dateUtils.ts`, `src/components/common/DatePicker/utils/dateUtils.ts`, `src/utils/serialization/serializeFirestoreData.ts`, `src/utils/date/toMillis.ts` | Fecha, normalización temporal y serialización Firestore repartidas. | Mantener serialización Firestore y conversión a millis en helpers explícitos mientras se define una capa compartida de display/rangos. |
 | `src/utils/format/formatPrice.ts`, `src/utils/accounting/monetary.ts`, `src/utils/accounting/lineMonetary.ts` | Formato y cálculo monetario viven en varios helpers. | Mantener cálculo contable en dominio contable y display monetario en helper compartido. |
 | `src/utils/referenceUtils.ts`, `src/utils/users/resolveUserDisplayNamesBatch.ts`, repositorios de dev | Lecturas Firestore utilitarias sin capa por dominio. | Mover lecturas recurrentes a repositories pequeños y testeables. |
 | `src/utils/flowTrace.ts` | Instrumentación muy grande y con `as any` sobre APIs globales. | Dejar como herramienta dev, pero aislarla del typecheck app o tiparla por capas. |
@@ -100,7 +100,7 @@ Alcance de esta auditoría: análisis estático del árbol actual. No se modific
 | `src/types/accounting.ts`, `src/shared/accountingSchemas.js`, `functions/src/shared/accountingSchemas.js`, interfaces locales en `accountingWorkspace.ts` | Contratos contables de evento, schema, línea y snapshot viven en varios lugares. | Definir fuente canónica: schemas compartidos + tipos derivados o adaptadores por capa. |
 | `src/models/Warehouse/*`, tipos locales en `src/firebase/warehouse/*`, tipos en módulos de inventario | Warehouse/product stock se tipa por modelos y por records locales. | Crear modelos de dominio y DTOs Firestore separados. |
 | `src/types/payments.ts`, tipos locales en CxC, cuentas por pagar y nómina | Métodos/estados de pago aparecen en varios dominios. | Centralizar catálogos canónicos de método/estado y dejar labels por dominio. |
-| `src/types/hrPayroll.ts`, hooks `src/firebase/hrPayroll/*`, componentes RRHH | Tipos de empleado, corte y comisión se transforman varias veces. | Mantener tipos públicos en `src/types/hrPayroll.ts` y mappers en repository. |
+| `src/types/hrPayroll.ts`, repositories `src/modules/hrPayroll/repositories/*`, componentes RRHH | Tipos de empleado, corte y comisión se transforman varias veces. | Mantener tipos públicos en `src/types/hrPayroll.ts` y mappers en repository. |
 | `functions` en JS con `checkJs: false` | Mucho backend productivo no aprovecha tipos reales. | Migrar Functions críticas a TS o habilitar JSDoc/checkJS por módulo. |
 
 ### Estilos
@@ -117,9 +117,9 @@ Alcance de esta auditoría: análisis estático del árbol actual. No se modific
 
 | Archivos involucrados | Qué se repite | Cómo se podría unificar |
 | --- | --- | --- |
-| `src/shared/accountingSchemas.js`, `functions/src/shared/accountingSchemas.js` | Schemas contables duplicados con diferencia real de Zod. | Prueba espejo y contrato compartido. |
-| `functions/src/app/modules/accounting/functions/manageAccountingConfiguration.js`, `src/modules/settings/.../useAccountingConfig.ts`, `src/utils/accounting/*` | Validación y normalización contable repartida entre backend, settings y utils. | Backend debe ser fuente de seguridad; frontend solo normalización/UX. |
-| `functions/src/app/modules/accountReceivable/*`, `src/firebase/proccessAccountsReceivablePayments/*`, `src/modules/accountsReceivable/*` | Validación de pagos, cuotas y balances distribuida. | Callable backend como autoridad; cliente con guards de UX. |
+| `src/shared/accountingSchemas.js`, `functions/src/shared/accountingSchemas.js` | Schemas contables duplicados con diferencia real de Zod. | Prueba espejo existente `functions/src/shared/accountingSchemas.parity.test.js` y contrato compartido. |
+| `functions/src/app/modules/accounting/functions/manageAccountingConfiguration.js`, `src/modules/accounting/hooks/useAccountingConfig.ts`, `src/utils/accounting/*` | Validación y normalización contable repartida entre backend, settings y utils. | Backend debe ser fuente de seguridad; frontend solo normalización/UX. |
+| `functions/src/app/modules/accountReceivable/*`, `src/firebase/processAccountsReceivablePayments/*`, `src/modules/accountsReceivable/*` | Validación de pagos, cuotas y balances distribuida. | Callable backend como autoridad; cliente con guards de UX. |
 | `src/components/modals/ProductForm/*`, `src/firebase/products/*`, `functions/src/app/modules/products/*` | Validación de producto e inventario puede vivir en UI, Firebase y backend. | Extraer validadores puros por dominio antes de mover escrituras. |
 | `src/hooks/useTaxReceiptsFix.ts`, `src/firebase/taxReceipt/*`, Functions fiscales | Validación de secuencias fiscales y NCF en varias capas. | Mantener backend como fuente de integridad y usar cliente solo para advertencias. |
 
@@ -137,7 +137,7 @@ Alcance de esta auditoría: análisis estático del árbol actual. No se modific
 
 1. `src/firebase` no es una frontera suficiente. Aunque muchas llamadas viven allí, también hay imports directos a `firebase/firestore` y `firebase/functions` desde módulos, componentes y hooks. Esto hace difícil distinguir si un archivo de pantalla es UI, hook de sincronización o servicio de datos.
 
-2. `src/components/modals` mezcla shared UI con dominio. Un modal global puede tener sentido para orquestación, pero no para contener reglas de crédito, AR, producto, dev tools, invoice y warehouse.
+2. Los modales de dominio no deben regresar a buckets compartidos. Un modal global puede tener sentido para orquestación, pero no para contener reglas de crédito, AR, producto, dev tools, invoice y warehouse.
 
 3. `src/modules/settings` es demasiado amplio. Incluye configuración general, usuarios, fiscal, contable, suscripciones y componentes de alto detalle. La carpeta es clara como ruta de producto, pero confusa como frontera de dominio.
 
@@ -147,7 +147,7 @@ Alcance de esta auditoría: análisis estático del árbol actual. No se modific
 
 6. La navegación está repartida. Rutas, nombres, preloaders, toolbars y menú viven en archivos distintos. Esto no es grave por sí solo, pero aumenta el costo de cada ruta nueva.
 
-7. Nombres con typos y casing mixto reducen confianza. Ejemplos: `proccessAccountsReceivablePayments`, `tranfer`, `warehouseNestedServise.ts`, `CashReconciliztion.tsx`, `src/Context`, `src/Seo`, `functions/src/app/modules/Inventory`.
+7. Nombres con typos y casing mixto reducen confianza. En esta tanda se normalizó `processAccountsReceivablePayments`; quedan pendientes casos legacy como `functions/src/app/modules/Inventory`.
 
 8. Hay artefactos históricos en raíz. `diagnostico-functions-firestore.md` y `STATE-fiscal-compliance.md` parecen documentación valiosa, pero mezclan historia con configuración raíz.
 
@@ -155,7 +155,7 @@ Alcance de esta auditoría: análisis estático del árbol actual. No se modific
 
 1. Repositories/services por dominio para acceso a datos: empezar por lecturas de bajo riesgo en inventario, contacts o dev/admin antes de tocar facturación, caja, fiscal o pagos.
 
-2. Contratos compartidos contables: crear una fuente canónica para schemas y tests espejo antes de mover lógica.
+2. Contratos compartidos contables: mantener la prueba espejo existente `functions/src/shared/accountingSchemas.parity.test.js` como gate y crear una fuente canónica para schemas antes de mover lógica.
 
 3. Backend como autoridad para mutaciones monetarias: CxC, caja, pagos, contabilidad y fiscal deben preferir callable/Functions con validación fuerte.
 
@@ -183,9 +183,9 @@ Alcance de esta auditoría: análisis estático del árbol actual. No se modific
 | `src/modules/sales/pages/Sale/components/Cart/components/ProductCardForCart/ProductCardForCart.tsx` | Mezcla pricing, lote, seguro, comisión, acciones y estilos. | Extraer hooks de pricing/lote, subcomponentes interactivos accesibles y estilos locales. |
 | `src/components/ui/Button/Button.tsx` | Legacy button elimina foco visible y define comportamiento global delicado. | Restaurar `:focus-visible`, revisar botones icon-only y migrar usos nuevos a `VmButton`. |
 | `src/components/ui/Select/Select.tsx` | Listbox manual incompleto y required visual. | Reemplazar por `VmSelect` o implementar patrón completo con teclado y labels. |
-| `src/components/ui/AppModal/AppModal.tsx` + `src/hooks/useModalFocusTrap.ts` | Modal/focus trap custom sin frontera clara de inert. | Converger a `VmModal`/HeroUI y retirar custom overlay al tocar pantallas. |
-| `src/components/modals/DeveloperModal/components/CommandProcessor/handlers/executeCommand.ts` | Handler muy grande en un modal shared/dev. | Dividir comandos por módulo y mover operaciones a services dev. |
-| `src/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useAccountingConfig.ts` | Hook grande con acceso a datos y normalización contable. | Separar repository, mappers, actions y view model. |
+| `src/modules/contacts/pages/Contact/Client/components/ClientForm/components/AppModal/AppModal.tsx` + `src/hooks/useModalFocusTrap.ts` | Modal/focus trap custom local del formulario de cliente sin frontera clara de inert. | Converger a `VmModal`/HeroUI cuando se vuelva a tocar este formulario. |
+| `src/modules/dev/components/DeveloperConsoleModal/components/CommandProcessor/handlers/executeCommand.ts` | Handler muy grande en un modal shared/dev. | Dividir comandos por módulo y mover operaciones a services dev. |
+| `src/modules/accounting/hooks/useAccountingConfig.ts` | Hook grande con acceso a datos y normalización contable. | Separar repository, mappers, actions y view model. |
 | `src/modules/treasury/hooks/useTreasuryWorkspace.ts` | Hook grande para dominio financiero sensible. | Extraer helpers puros y tests antes de mover lógica. |
 | `src/modules/dev/pages/DevTools/CashCountAudit/CashCountAudit.tsx` | Pantalla dev grande con auditoría, presentación y estilos. | Separar data access, export/formatters y paneles visuales. |
 | `functions/src/app/modules/accounting/functions/manageAccountingConfiguration.js` | Function grande con normalización, validaciones, carga y mutación. | Separar validators, builders, repositories y handlers de acción. |
@@ -301,7 +301,7 @@ Principios para aplicar esta estructura:
 2. Documentar regla UI: `Vm/HeroUI` para UI nueva; AntD/custom solo legacy.
 3. Restaurar foco visible en `src/components/ui/Button/Button.tsx` con token de diseño.
 4. Auditar usos críticos de `src/components/ui/Select/Select.tsx` y bloquear usos nuevos.
-5. Añadir prueba espejo para `src/shared/accountingSchemas.js` y `functions/src/shared/accountingSchemas.js`.
+5. Mantener y ampliar la prueba espejo existente `functions/src/shared/accountingSchemas.parity.test.js` para `src/shared/accountingSchemas.js` y `functions/src/shared/accountingSchemas.js`.
 6. Archivar docs históricos raíz en `docs/archive/` cuando el equipo lo apruebe.
 7. Crear inventario de imports directos a Firebase desde `src/modules` y `src/components`.
 8. Añadir tests de helpers puros en módulos grandes antes de extraer archivos.
@@ -327,7 +327,7 @@ Principios para aplicar esta estructura:
 2. Migrar Functions críticas de JS a TS o habilitar `checkJs` por módulo.
 3. Reducir `src/app/store.ts` con organización por dominio y revisar `serializableCheck`.
 4. Reorganizar `settings` en subdominios internos sin cambiar rutas públicas.
-5. Reubicar modales dominiales fuera de `src/components/modals`.
+5. Mantener modales dominiales fuera de buckets compartidos.
 6. Dividir motores contables frontend/backend en unidades testeables, sin compartir lógica que deba diferir por capa.
 7. Adoptar metadata única para rutas, menú, preloaders y toolbars.
 8. Migrar legacy `Button`, `Select`, `AppModal`, `Menu` a `Vm*` cuando las pantallas se toquen.
@@ -336,7 +336,7 @@ Principios para aplicar esta estructura:
 
 ## 10. Prioridades recomendadas
 
-1. Alinear `src/shared/accountingSchemas.js` y `functions/src/shared/accountingSchemas.js` con una prueba espejo inmediata.
+1. Alinear `src/shared/accountingSchemas.js` y `functions/src/shared/accountingSchemas.js` usando la prueba espejo existente `functions/src/shared/accountingSchemas.parity.test.js`.
 2. Mapear y cerrar la doble ruta de pagos CxC entre cliente y callable backend.
 3. Restaurar foco visible en `src/components/ui/Button/Button.tsx` y bloquear nuevos usos del `Select` legacy.
 4. Crear inventario de imports directos a Firebase y mover lecturas simples a repositories por dominio.

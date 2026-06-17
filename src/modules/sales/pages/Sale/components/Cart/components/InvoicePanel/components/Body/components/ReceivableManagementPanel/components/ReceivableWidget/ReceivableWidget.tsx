@@ -15,14 +15,16 @@ import {
 } from '@/features/accountsReceivable/accountsReceivableSlice';
 import { toggleReceivableStatus } from '@/features/cart/cartSlice';
 import { SelectCartData } from '@/features/cart/cartSlice';
+import { calculateAmountPerInstallment } from '@/utils/accountsReceivable/accountsReceivable';
+import { calculatePaymentDates } from '@/domain/accountsReceivable/paymentDates';
 import { formatDate } from '@/utils/date/dateUtils';
 import { formatPrice } from '@/utils/format';
 import { calculateInvoiceChange } from '@/utils/invoice';
+import { setNumPrecision } from '@/utils/pricing';
 
 type AccountsReceivableState = {
   paymentFrequency?: string;
   totalInstallments: number;
-  installmentAmount: number;
   currentBalance: number;
   paymentDate: number | null;
 };
@@ -45,13 +47,29 @@ export const ReceivableWidget = ({
   const {
     paymentFrequency,
     totalInstallments,
-    installmentAmount,
     currentBalance,
     paymentDate,
   } = useSelector(selectAR) as AccountsReceivableState;
 
   const cartData = useSelector(SelectCartData);
   const change = useMemo(() => calculateInvoiceChange(cartData), [cartData]);
+  const installmentAmount = useMemo(
+    () =>
+      setNumPrecision(
+        calculateAmountPerInstallment(
+          getPositive(change),
+          totalInstallments || 1,
+        ),
+      ),
+    [change, totalInstallments],
+  );
+  const effectivePaymentDate = useMemo(() => {
+    if (paymentDate) return paymentDate;
+    return calculatePaymentDates(
+      paymentFrequency || 'monthly',
+      totalInstallments || 1,
+    ).nextPaymentDate;
+  }, [paymentDate, paymentFrequency, totalInstallments]);
 
   // No mostrar el widget si no está agregado a receivables o no hay cambio negativo
   if (!receivableStatus || !isChangeNegative) {
@@ -80,8 +98,8 @@ export const ReceivableWidget = ({
   };
 
   const getNextPaymentText = () => {
-    if (!paymentDate) return 'No configurado';
-    return formatDate(paymentDate);
+    if (!effectivePaymentDate) return 'No configurado';
+    return formatDate(effectivePaymentDate);
   };
 
   return (

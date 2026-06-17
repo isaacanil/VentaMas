@@ -1,19 +1,17 @@
-import { saveAs } from 'file-saver';
-
 import {
   addReportHeader,
   addTotalsRow,
   applyProfessionalStyling,
   formatCurrencyColumns,
-} from '@/hooks/exportToExcel/exportConfig';
+} from '@/utils/export/excel/exportConfig';
 import type {
   ServiceCommissionRecord,
   ServiceCommissionType,
 } from '@/types/commissions';
+import { saveXlsxFile } from '@/utils/export/xlsx';
 
 import {
   formatReportDate,
-  formatReportMoney,
   getCollaboratorLabel,
   getCommissionBaseLabel,
   getCommissionFormulaLabel,
@@ -38,9 +36,6 @@ type ServiceCommissionExportRow = {
   Tasa: string;
   Tipo: string;
 };
-
-const XLSX_MIME_TYPE =
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
 const SERVICE_COMMISSION_TYPE_LABELS: Record<ServiceCommissionType, string> = {
   fixed: 'Monto fijo',
@@ -161,8 +156,8 @@ export const exportServiceCommissionsReportWorkbook = async ({
   ]);
 
   const buffer = await workbook.xlsx.writeBuffer();
-  saveAs(
-    new Blob([buffer], { type: XLSX_MIME_TYPE }),
-    buildServiceCommissionsReportFileName({ endDate, startDate }),
-  );
+  saveXlsxFile({
+    content: buffer,
+    fileName: buildServiceCommissionsReportFileName({ endDate, startDate }),
+  });
 };

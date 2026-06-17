@@ -1,7 +1,6 @@
 import { SwapOutlined } from '@/constants/icons/antd';
 import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { AlertDialog, Button } from '@heroui/react';
 import { Tag } from 'antd';
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -9,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
+import { VmAlertDialog, VmButton } from '@/components/heroui';
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import {
   logout,
@@ -19,6 +19,10 @@ import {
 import { fbStopDeveloperBusinessImpersonation } from '@/firebase/Auth/fbAuthV2/fbSwitchDeveloperBusiness';
 import { fbSignOut } from '@/firebase/Auth/fbAuthV2/fbSignOut';
 import type { UserIdentity } from '@/types/users';
+import {
+  resolveUserDisplayName,
+  resolveUserInitials,
+} from '@/utils/users/userDisplay';
 
 type MenuUser = UserIdentity & {
   email?: string | null;
@@ -44,6 +48,15 @@ export const UserSection = ({ user: userProp }: UserSectionProps) => {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const resolvedDisplayName = resolveUserDisplayName(
+    { displayName: user?.displayName, username: user?.username },
+    '',
+  );
+  const displayName = resolvedDisplayName || 'Usuario';
+  const initials = resolveUserInitials(
+    resolvedDisplayName || user?.email || 'Usuario',
+    'U',
+  );
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -53,16 +66,6 @@ export const UserSection = ({ user: userProp }: UserSectionProps) => {
       dispatch(logout());
       navigate('/login', { replace: true });
     }
-  };
-  const getDisplayName = (user: MenuUser | null | undefined) => {
-    return user?.displayName && user.displayName.trim() !== ''
-      ? user.displayName
-      : user?.username;
-  };
-
-  const getInitial = (name?: string | null) => {
-    const n = (name || '').trim();
-    return n ? n.charAt(0).toUpperCase() : 'U';
   };
 
   const handleReturnToOriginalBusiness = () => {
@@ -84,13 +87,9 @@ export const UserSection = ({ user: userProp }: UserSectionProps) => {
     <>
     <Container role="group" aria-label="Usuario">
       <Left>
-        <AvatarCircle aria-hidden>
-          {getInitial(getDisplayName(user) || user?.email || 'Usuario')}
-        </AvatarCircle>
+        <AvatarCircle aria-hidden>{initials}</AvatarCircle>
         <Info>
-          <Username title={getDisplayName(user) || 'Usuario'}>
-            {getDisplayName(user) || 'Usuario'}
-          </Username>
+          <Username title={displayName}>{displayName}</Username>
           <BusinessPill color="blue">
             <span>{business?.name || 'Negocio'}</span>
           </BusinessPill>
@@ -119,7 +118,7 @@ export const UserSection = ({ user: userProp }: UserSectionProps) => {
     </Container>
 
       {createPortal(
-      <AlertDialog.Backdrop
+      <VmAlertDialog.Backdrop
         isOpen={confirmOpen}
         onOpenChange={(open) => {
           if (!isLoggingOut) setConfirmOpen(open);
@@ -128,33 +127,33 @@ export const UserSection = ({ user: userProp }: UserSectionProps) => {
         isDismissable={!isLoggingOut}
         isKeyboardDismissDisabled={isLoggingOut}
       >
-        <AlertDialog.Container>
-          <AlertDialog.Dialog className="sm:max-w-[380px]">
-            <AlertDialog.Header>
-              <AlertDialog.Icon status="danger" />
-              <AlertDialog.Heading>¿Cerrar sesión?</AlertDialog.Heading>
-            </AlertDialog.Header>
-            <AlertDialog.Body>
+        <VmAlertDialog.Container>
+          <VmAlertDialog.Dialog className="sm:max-w-[380px]">
+            <VmAlertDialog.Header>
+              <VmAlertDialog.Icon status="danger" />
+              <VmAlertDialog.Heading>¿Cerrar sesión?</VmAlertDialog.Heading>
+            </VmAlertDialog.Header>
+            <VmAlertDialog.Body>
               <p>
                 Tu sesión actual será cerrada y tendrás que iniciar sesión
                 nuevamente.
               </p>
-            </AlertDialog.Body>
-            <AlertDialog.Footer>
-              <Button slot="close" variant="tertiary" isDisabled={isLoggingOut}>
+            </VmAlertDialog.Body>
+            <VmAlertDialog.Footer>
+              <VmButton slot="close" variant="tertiary" isDisabled={isLoggingOut}>
                 Cancelar
-              </Button>
-              <Button
+              </VmButton>
+              <VmButton
                 variant="danger"
                 isDisabled={isLoggingOut}
                 onPress={handleLogout}
               >
                 {isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}
-              </Button>
-            </AlertDialog.Footer>
-          </AlertDialog.Dialog>
-        </AlertDialog.Container>
-      </AlertDialog.Backdrop>
+              </VmButton>
+            </VmAlertDialog.Footer>
+          </VmAlertDialog.Dialog>
+        </VmAlertDialog.Container>
+      </VmAlertDialog.Backdrop>
       , document.body)}
     </>
   );

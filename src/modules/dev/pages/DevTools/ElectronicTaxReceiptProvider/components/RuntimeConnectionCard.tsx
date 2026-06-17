@@ -1,4 +1,3 @@
-import { Label, ListBox, ListBoxItem } from '@heroui/react';
 import { Form } from 'antd';
 import type { FormInstance } from 'antd';
 import type { Key } from 'react';
@@ -8,6 +7,8 @@ import {
   VmButton,
   VmCard,
   VmInput,
+  VmLabel,
+  VmListBox,
   VmNumberField,
   VmSelect,
   VmSwitch,
@@ -258,14 +259,14 @@ const RuntimeModeSelect = ({
         <VmSelect.Indicator />
       </VmSelect.Trigger>
       <VmSelect.Popover>
-        <ListBox aria-label="Etapa de envio" items={MODE_OPTIONS}>
+        <VmListBox aria-label="Etapa de envio" items={MODE_OPTIONS}>
           {(option) => (
-            <ListBoxItem id={option.value} textValue={option.label}>
+            <VmListBox.Item id={option.value} textValue={option.label}>
               {option.label}
-              <ListBoxItem.Indicator />
-            </ListBoxItem>
+              <VmListBox.ItemIndicator />
+            </VmListBox.Item>
           )}
-        </ListBox>
+        </VmListBox>
       </VmSelect.Popover>
     </SelectControl>
   );
@@ -445,7 +446,7 @@ const SelectControl = styled(VmSelect)`
   min-width: 0;
 `;
 
-const HiddenLabel = styled(Label)`
+const HiddenLabel = styled(VmLabel)`
   position: absolute;
   width: 1px;
   height: 1px;

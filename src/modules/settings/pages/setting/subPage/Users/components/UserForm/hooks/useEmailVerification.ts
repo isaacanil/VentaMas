@@ -1,6 +1,6 @@
 import { Form, message } from 'antd';
 import { useCallback, useMemo, useState } from 'react';
-import type { FormInstance } from 'antd/es/form';
+import type { FormInstance } from 'antd';
 
 import {
   fbSendEmailVerification,

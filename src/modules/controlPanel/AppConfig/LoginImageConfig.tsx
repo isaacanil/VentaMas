@@ -10,7 +10,7 @@ import { useEffect, useMemo, useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { storage } from '@/firebase/firebaseconfig';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 import { LoginImageActions } from './components/LoginImageActions';
 import { LoginImagePreview } from './components/LoginImagePreview';
@@ -21,7 +21,7 @@ import {
   LOGIN_IMAGE_STORAGE_PATH,
   resolveUploadFile,
 } from './utils/loginImageCompression';
-import type { UploadFile, UploadProps } from 'antd/es/upload/interface';
+import type { UploadFile, UploadProps } from 'antd';
 
 interface LoginImageConfigState {
   compressedSize: number | null;

@@ -1,10 +1,10 @@
 import { doc, getDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseconfig';
-import { syncVendorBillFromPurchase } from '@/firebase/vendorBills/fbUpsertVendorBill';
 import type { UserIdentity } from '@/types/users';
 import { buildOrderStatusPatch } from '@/utils/order/status';
 import type { Purchase, PurchaseReplenishment } from '@/utils/purchase/types';
 import { canCancelPurchase } from '@/utils/purchase/workflow';
+import { syncVendorBillFromPurchase } from './syncVendorBillFromPurchase';
 
 interface CancelPurchaseResult {
   success: boolean;

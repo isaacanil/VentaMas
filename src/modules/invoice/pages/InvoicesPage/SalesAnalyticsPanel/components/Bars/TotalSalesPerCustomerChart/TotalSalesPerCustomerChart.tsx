@@ -2,7 +2,7 @@ import React from 'react';
 import type { SalesRecord } from '../../../utils';
 import styled from 'styled-components';
 
-import Typography from '@/components/ui/Typografy/Typografy';
+import Typography from '@/components/ui/Typography/Typography';
 
 import { GenericCustomerSalesChart } from './Bars/GenericCustomerSalesChart';
 import { TopSpendingCustomersChart } from './Bars/TopSpendingCustomersChart';

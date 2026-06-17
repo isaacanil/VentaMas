@@ -4,7 +4,7 @@ import {
   getProductsIndividualDiscounts,
   hasIndividualDiscounts,
   resolvePdfCurrency,
-} from '../utils/formatters.js';
+} from '../utils/formatters';
 
 import type { PdfContent, PdfHeaderFooter, PdfTableBody } from '@/pdf/types';
 import type {

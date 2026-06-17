@@ -15,7 +15,7 @@ import {
   ACCOUNTING_POSTING_TAX_TREATMENT_LABELS,
   ACCOUNTING_POSTING_TRANSFER_DIRECTION_LABELS,
 } from '@/utils/accounting/postingProfiles';
-import type { AccountingEventCoverageItem } from '../../AccountingEventCoverageList';
+import type { AccountingEventCoverageItem } from '../../AccountingEventCoverageRail/AccountingEventCoverageList';
 
 interface PostingProfileInspectorProps {
   availablePostingAccountsCount: number;

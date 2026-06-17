@@ -7,8 +7,8 @@ import { getInvoiceProductQuantity, type InvoiceDoc } from '@/firebase/invoices/
 import type { ExpenseDoc } from '@/utils/expenses/types';
 import type { AccountsReceivableRecord } from '@/utils/accountsReceivable/types';
 import type { AggregatedProductStock } from '@/utils/inventory/types';
-import type { VendorBill } from '@/utils/vendorBills/types';
-import { isOpenVendorBill } from '@/utils/vendorBills/fromPurchase';
+import type { VendorBill } from '@/domain/accountsPayable/vendorBills/types';
+import { isOpenVendorBill } from '@/domain/accountsPayable/vendorBills/fromPurchase';
 import type { CashCountRecord, CashCountState } from '@/utils/cashCount/types';
 
 import type {

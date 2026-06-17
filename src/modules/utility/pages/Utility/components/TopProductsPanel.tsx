@@ -1,7 +1,7 @@
 import { useMemo, type JSX } from 'react';
 import styled from 'styled-components';
 
-import { SimpleTypography } from '@/components/ui/Typografy/SimpleTypography';
+import { SimpleTypography } from '@/components/ui/Typography/SimpleTypography';
 import type {
   UtilityCurrencyFormatter,
   UtilityProductBreakdown,

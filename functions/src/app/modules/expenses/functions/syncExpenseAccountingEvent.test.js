@@ -128,6 +128,7 @@ describe('syncExpenseAccountingEvent', () => {
                 },
               },
               createdBy: 'user-1',
+              updatedBy: 'user-2',
             },
           }),
         },
@@ -181,7 +182,11 @@ describe('syncExpenseAccountingEvent', () => {
             netPayableAmount: 100,
           },
         }),
-        createdBy: 'user-1',
+        createdBy: 'system:expense-derived-sync',
+        metadata: {
+          sourceExpenseCreatedBy: 'user-1',
+          sourceExpenseUpdatedBy: 'user-2',
+        },
       }),
     );
 

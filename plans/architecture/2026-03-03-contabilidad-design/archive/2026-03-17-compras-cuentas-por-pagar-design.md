@@ -56,7 +56,7 @@ Evidencia:
 
 - `src/modules/settings/components/GeneralConfig/configs/AccountingConfig/components/AccountingSettingsForm.tsx:130`
 - `src/modules/settings/components/GeneralConfig/configs/AccountingConfig/components/ExchangeRateList.tsx:41`
-- `src/modules/settings/components/GeneralConfig/configs/AccountingConfig/components/ExchangeRateMarketReference.tsx:87`
+- `src/modules/settings/components/GeneralConfig/configs/AccountingConfig/components/ExchangeRatesWorkspace.tsx:204`
 - `src/modules/settings/components/GeneralConfig/configs/AccountingConfig/components/AccountingHistoryList.tsx:76`
 - `src/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useAccountingConfig.ts:235`
 

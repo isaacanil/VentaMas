@@ -1,17 +1,11 @@
-import React from 'react';
 import styled from 'styled-components';
 
-import { Showcase } from './ShowCase';
+import { Showcase, type ShowcaseProps } from './ShowCase';
 
-type ShowcaseValueType = 'none' | 'number' | 'percent' | 'price';
-
-type ShowcaseItem = {
-  title: string;
-  value: number;
-  valueType?: ShowcaseValueType;
-  description?: string | null;
-  color?: boolean | string;
-};
+type ShowcaseItem = Pick<
+  ShowcaseProps,
+  'color' | 'description' | 'title' | 'value' | 'valueType'
+>;
 
 type ShowcaseListProps = {
   showcases: ShowcaseItem[];

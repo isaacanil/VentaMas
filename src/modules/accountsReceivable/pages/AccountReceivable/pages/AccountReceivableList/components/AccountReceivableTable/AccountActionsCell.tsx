@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setAccountPayment } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
 import { selectUser } from '@/features/auth/userSlice';
 import { useAccountingRolloutEnabled } from '@/hooks/useAccountingRolloutEnabled';
-import { useOpenAccountingEntry } from '@/modules/accounting/hooks/useOpenAccountingEntry';
+import { useOpenAccountingEntry } from '@/modules/accounting/public';
 import { useOpenAccountReceivableSummary } from '@/modules/accountsReceivable/hooks/useOpenAccountReceivableSummary';
 import { isPreorderDocument } from '@/utils/invoice/documentIdentity';
 

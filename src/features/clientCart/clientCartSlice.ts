@@ -3,8 +3,8 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { fetchInsuranceAuthByClientId } from '@/features/insurance/insuranceAuthSlice';
 import { fbAddClient } from '@/firebase/client/fbAddClient';
 import { fbUpdateClient } from '@/firebase/client/fbUpdateClient';
-import { compareObjectsByJSON } from '@/utils/object/compareObjects';
 
+import { compareClientCartByJSON } from './clientComparison';
 import { CLIENT_MODE_BAR } from './clientMode';
 
 export const GenericClient = {
@@ -144,7 +144,7 @@ export const clientSlice = createSlice({
       if (
         state?.copyClient !== null &&
         state?.copyClient?.id === state?.client?.id &&
-        !compareObjectsByJSON(state?.client, state?.copyClient)
+        !compareClientCartByJSON(state?.client, state?.copyClient)
       ) {
         fbUpdateClient(user, state.client);
         return;

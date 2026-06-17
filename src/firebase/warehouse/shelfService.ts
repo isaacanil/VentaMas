@@ -20,29 +20,15 @@ import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
+import { toMillis } from '@/utils/date/toMillis';
 import type {
   InventoryUser,
   ShelfRecord,
   TimestampLike,
 } from '@/utils/inventory/types';
 
-const toMillis = (value?: TimestampLike): number => {
-  if (!value) return 0;
-  if (value instanceof Date) return value.getTime();
-  if (typeof value === 'number') return value;
-  if (typeof value === 'string') {
-    const parsed = Date.parse(value);
-    return Number.isNaN(parsed) ? 0 : parsed;
-  }
-  if (typeof value === 'object') {
-    if (typeof value.toMillis === 'function') return value.toMillis();
-    if (typeof value.toDate === 'function') {
-      return value.toDate()?.getTime?.() ?? 0;
-    }
-    if (typeof value.seconds === 'number') return value.seconds * 1000;
-  }
-  return 0;
-};
+const getTimestampMillis = (value?: TimestampLike): number =>
+  toMillis(value) ?? 0;
 
 // Obtener referencia de la colección de estantes de un almacén
 const getShelfCollectionRef = (
@@ -135,7 +121,10 @@ const listenAllShelves = (
       );
       const ordered = shelves
         .slice()
-        .sort((a, b) => toMillis(a.createdAt) - toMillis(b.createdAt));
+        .sort(
+          (a, b) =>
+            getTimestampMillis(a.createdAt) - getTimestampMillis(b.createdAt),
+        );
       callback(ordered);
     },
     (error) => {

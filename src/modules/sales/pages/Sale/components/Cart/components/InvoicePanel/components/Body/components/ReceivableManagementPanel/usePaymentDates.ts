@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { calculatePaymentDates } from './receivableUtils';
+import { calculatePaymentDates } from '@/domain/accountsReceivable/paymentDates';
 
 type PaymentFrequency = 'monthly' | 'weekly' | 'annual' | string;
 

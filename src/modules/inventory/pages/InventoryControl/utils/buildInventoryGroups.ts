@@ -7,8 +7,12 @@ import {
   getItemLocationKey,
   normalizeDateKey,
 } from './inventoryHelpers';
-import { CLEAR_SENTINEL } from '@/utils/inventory/constants';
-import { getEffectiveExpirationDate } from '@/utils/inventory/expiration';
+import { CLEAR_SENTINEL } from '@/modules/inventory/utils/constants';
+import { getEffectiveExpirationDate } from '@/modules/inventory/utils/expiration';
+import {
+  normalizeTrimmedSearchText,
+  normalizedIncludes,
+} from '@/utils/searchText';
 
 import type {
   BuildInventoryGroupsParams,
@@ -334,16 +338,12 @@ export function buildInventoryGroups({
   else if (stockFilter === 'without')
     filteredOut = sorted.filter((g) => Number(g.totalStock ?? 0) <= 0);
 
-  const term = (searchTerm || '').trim().toLowerCase();
+  const term = normalizeTrimmedSearchText(searchTerm);
   if (!term) return filteredOut;
   return filteredOut.filter(
     (g) =>
-      (g.productName || '').toLowerCase().includes(term) ||
-      g._children?.some((c) =>
-        String(c.batchNumberId ?? '')
-          .toLowerCase()
-          .includes(term),
-      ),
+      normalizedIncludes(g.productName ?? '', term) ||
+      g._children?.some((c) => normalizedIncludes(c.batchNumberId ?? '', term)),
   );
 }
 

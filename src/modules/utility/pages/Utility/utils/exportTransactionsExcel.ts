@@ -4,6 +4,7 @@ import type {
   UtilityTransactionRow,
   UtilityTrend,
 } from '@/modules/utility/pages/Utility/types';
+import { saveXlsxFile } from '@/utils/export/xlsx';
 
 import { DateTime } from 'luxon';
 
@@ -65,17 +66,9 @@ export const exportTransactionsExcel = async (
   buildWorksheet(sheet, rows);
 
   const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], {
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  });
-
   const timestamp = DateTime.local().toFormat('yyyyLLdd-HHmm');
-  const link = document.createElement('a');
-  const url = URL.createObjectURL(blob);
-  link.href = url;
-  link.download = `detalle-transacciones-${timestamp}.xlsx`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  saveXlsxFile({
+    content: buffer,
+    fileName: `detalle-transacciones-${timestamp}.xlsx`,
+  });
 };

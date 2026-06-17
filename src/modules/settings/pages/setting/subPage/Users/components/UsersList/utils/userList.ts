@@ -1,33 +1,22 @@
 import { DateTime } from 'luxon';
 
 import { getRoleLabelById, userRoles } from '@/abilities/roles';
+import { toMillis as toDateMillis } from '@/utils/date/toMillis';
+import { asRecord } from '@/utils/object/record';
 import { normalizeRoleId } from '@/utils/roles/normalizeRole';
+import { toCleanString } from '@/utils/text';
 
 import type {
   BusinessUserRecord,
   PresenceMap,
   PresenceStatus,
   TimestampLike,
-  TimestampSeconds,
-  TimestampUnderscore,
-  TimestampWithToMillis,
   UserFilters,
   UserListRow,
   UserProfile,
 } from '../types';
 
-const asRecord = (value: unknown): Record<string, unknown> => {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return {};
-  }
-  return value as Record<string, unknown>;
-};
-
-export const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
-};
+export { toCleanString };
 
 const toStringArray = (value: unknown): string[] => {
   if (!Array.isArray(value)) return [];
@@ -59,44 +48,8 @@ export const resolveBusinessOwnerCandidates = (rawBusiness: unknown): string[] =
   ]);
 };
 
-const isTimestampWithSeconds = (
-  value: TimestampLike,
-): value is TimestampSeconds => {
-  if (!value || typeof value !== 'object') return false;
-  return (
-    typeof (value as TimestampSeconds).seconds === 'number' &&
-    typeof (value as TimestampSeconds).nanoseconds === 'number'
-  );
-};
-
-const isTimestampWithUnderscore = (
-  value: TimestampLike,
-): value is TimestampUnderscore => {
-  if (!value || typeof value !== 'object') return false;
-  return (
-    typeof (value as TimestampUnderscore)._seconds === 'number' &&
-    typeof (value as TimestampUnderscore)._nanoseconds === 'number'
-  );
-};
-
-const hasToMillis = (value: TimestampLike): value is TimestampWithToMillis => {
-  if (!value || typeof value !== 'object') return false;
-  return typeof (value as TimestampWithToMillis).toMillis === 'function';
-};
-
-export const toMillis = (value: TimestampLike) => {
-  if (typeof value === 'number') return value;
-  if (hasToMillis(value)) {
-    return value.toMillis();
-  }
-  if (isTimestampWithSeconds(value)) {
-    return value.seconds * 1000 + value.nanoseconds / 1_000_000;
-  }
-  if (isTimestampWithUnderscore(value)) {
-    return value._seconds * 1000 + value._nanoseconds / 1_000_000;
-  }
-  return null;
-};
+export const toMillis = (value: TimestampLike) =>
+  toDateMillis(value as never) ?? null;
 
 export const ROLE_FILTER_OPTIONS = userRoles.map((role) => ({
   label: role.label,

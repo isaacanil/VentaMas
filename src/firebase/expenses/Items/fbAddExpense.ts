@@ -31,11 +31,6 @@ interface LoadingState {
 
 type SetLoading = (state: LoadingState) => void;
 
-const safeNumber = (value: unknown): number | null => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-};
-
 export const fbAddExpense = async (
   user: UserIdentity | null | undefined,
   setLoading: SetLoading,

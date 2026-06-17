@@ -10,7 +10,7 @@ import type {
 import type { InvoiceData } from '@/types/invoice';
 import { getDateRange } from '@/utils/date/getDateRange';
 import { lazyWithRetry } from '@/utils/lazyWithRetry';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 import { FilterBar } from './components/FilterBar/FilterBar';
 import { sortInvoices, useInvoiceSorting } from './components/FilterBar/hooks';

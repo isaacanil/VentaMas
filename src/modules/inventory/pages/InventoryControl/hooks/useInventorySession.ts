@@ -1,6 +1,7 @@
 import { doc, onSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
+import { db as defaultDb } from '@/firebase/firebaseconfig';
 import type { InventorySession } from '@/utils/inventory/types';
 import type { Firestore } from 'firebase/firestore';
 
@@ -15,7 +16,7 @@ interface UseInventorySessionResult {
 }
 
 export function useInventorySession({
-  db,
+  db = defaultDb,
   businessID,
   sessionId,
 }: UseInventorySessionParams): UseInventorySessionResult {

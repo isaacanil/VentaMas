@@ -1,6 +1,4 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
 
 type UpdateUserInput = {
@@ -31,14 +29,14 @@ type ChangePasswordResponse = {
   message?: string;
 };
 
-const clientUpdateUserCallable = httpsCallable<
+const clientUpdateUserCallable = createFirebaseCallable<
   UpdateUserRequest,
   UpdateUserResponse
->(functions, 'clientUpdateUser');
-const clientChangePasswordCallable = httpsCallable<
+>('clientUpdateUser');
+const clientChangePasswordCallable = createFirebaseCallable<
   ChangePasswordRequest,
   ChangePasswordResponse
->(functions, 'clientChangePassword');
+>('clientChangePassword');
 
 export const fbUpdateUser = async (
   userData: UpdateUserInput,

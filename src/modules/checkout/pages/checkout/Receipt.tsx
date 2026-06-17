@@ -6,16 +6,16 @@ import { selectBusinessData } from '@/features/auth/businessSlice';
 import {
   resolveDocumentIdentity,
   type DocumentIdentity,
-} from '@/utils/invoice/documentIdentity.js';
+} from '@/utils/invoice/documentIdentity';
 import type { InvoiceData, InvoiceBusinessInfo } from '@/types/invoice';
 
 import { Header } from './components/Header/Header';
 import { PaymentArea } from './components/PaymentArea';
 import { ProductList } from './components/ProductList';
 import { Row } from './components/Table/Row';
-import { ThankYouMessage } from './components/ThankYouMessage';
-import { WarrantySignature } from './components/WarrantySignature';
-import { Container, HiddenPrintWrapper } from './Style';
+import { ThankYouMessage } from '@/components/common/ThankYouMessage/ThankYouMessage';
+import { WarrantySignature } from '@/components/common/WarrantySignature';
+import { Container, HiddenPrintWrapper } from './CheckoutReceipt.styles';
 
 type ReceiptProps = {
   data?: InvoiceData | null;

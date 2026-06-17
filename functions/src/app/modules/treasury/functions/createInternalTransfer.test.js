@@ -116,7 +116,7 @@ vi.mock('../../../core/utils/callableSessionAuth.util.js', () => ({
   resolveCallableAuthUid: (...args) => resolveCallableAuthUidMock(...args),
 }));
 
-vi.mock('../../../versions/v2/invoice/services/repairTasks.service.js', () => ({
+vi.mock('../../../versions/v2/auth/services/userAccess.service.js', () => ({
   MEMBERSHIP_ROLE_GROUPS: {
     TREASURY_OPERATOR: ['treasury-operator'],
     INVOICE_OPERATOR: ['invoice-operator'],

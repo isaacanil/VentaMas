@@ -39,7 +39,7 @@ Subir cobertura contra regresiones sin cambiar comportamiento productivo. Priori
    - `src/utils/import/mapData.test.ts`
    - `src/utils/import/processMappedData.test.ts`
    - `src/utils/sorts/sortAccountsReceivable.test.ts`
-   - `src/utils/accountsReceivable/getMaxInstallments.test.ts`
+   - `src/domain/accountsReceivable/getMaxInstallments.test.ts`
 2. Agregar test de permisos sin Firestore real:
    - `src/services/dynamicPermissions.test.ts`
 3. Agregar test functions directo para auditoria de caja:
@@ -73,7 +73,7 @@ Complejidad esencial baja: tests nuevos observan contratos existentes. Complejid
   - orden numerico de facturas
   - fechas `Date`, `seconds`, `toMillis`
   - balances con faltantes como cero
-- `src/utils/accountsReceivable/getMaxInstallments.test.ts`
+- `src/domain/accountsReceivable/getMaxInstallments.test.ts`
   - limites `monthly`, `weekly`
   - fallback para frecuencias desconocidas
 - `src/services/dynamicPermissions.test.ts`
@@ -88,7 +88,7 @@ Complejidad esencial baja: tests nuevos observan contratos existentes. Complejid
 
 ### Tests existentes estabilizados
 
-- `src/hooks/cashCount/usePaymentsForCashCount.test.ts`
+- `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/hooks/usePaymentsForCashCount.test.ts`
 - `src/utils/expenses/payment.test.ts`
 - `src/features/cart/utils/updateAllTotals.test.ts`
 - `src/modules/invoice/pages/InvoicesPage/SalesAnalyticsPanel/analyticsSummary.test.ts`
@@ -129,7 +129,7 @@ Complejidad esencial baja: tests nuevos observan contratos existentes. Complejid
 ### Pasaron
 
 ```powershell
-npm run test:run -- src/utils/accountsReceivable/getMaxInstallments.test.ts src/utils/import/mapData.test.ts src/utils/import/processMappedData.test.ts src/utils/sorts/sortAccountsReceivable.test.ts src/services/dynamicPermissions.test.ts
+npm run test:run -- src/domain/accountsReceivable/getMaxInstallments.test.ts src/utils/import/mapData.test.ts src/utils/import/processMappedData.test.ts src/utils/sorts/sortAccountsReceivable.test.ts src/services/dynamicPermissions.test.ts
 ```
 
 Resultado: `5 passed files`, `16 passed tests`.

@@ -6,7 +6,7 @@ import {
   type ReactElement,
 } from 'react';
 import styled from 'styled-components';
-import type { TooltipProps } from '@/types/ui';
+import type { TooltipProps } from './types';
 
 export const Tooltip = ({
   description = null,

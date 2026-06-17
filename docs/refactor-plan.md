@@ -36,18 +36,18 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - La pantalla de mantenimiento de planes de suscripcion separo estilos y `DeveloperSubscriptionPlanCard` en archivos propios, reduciendo el contenedor principal a carga, acciones y composicion.
 - `DeveloperSubscriptionPlanCard` separo helpers de presentacion y modales de detalle/historial, dejando la tarjeta principal enfocada en estado local y menu de acciones.
 - Los estilos de suscripciones quedaron separados por responsabilidad: layout de pagina en `DeveloperSubscriptionMaintenancePlansPage.styles.ts` y tarjeta/modales en `DeveloperSubscriptionPlanCard.styles.ts`.
-- Las tarjetas principales de suscripcion (`SubscriptionOverviewCard`, `SubscriptionPlansCard`, `SubscriptionBillingCard`, `SubscriptionSettingsCard`, `SubscriptionCurrentPlanCard` y `SubscriptionPaymentMethodCard`) movieron styled-components a archivos `.styles.ts` locales, sin tocar reglas de negocio ni handlers.
+- Las tarjetas principales de suscripcion (`SubscriptionOverviewCard`, `SubscriptionPlansCard`, `SubscriptionBillingCard`, `SubscriptionSettingsCard`, `SubscriptionPlanSummary` y `SubscriptionPaymentMethodCard`) movieron styled-components a archivos `.styles.ts` locales, sin tocar reglas de negocio ni handlers.
 - Los modales de mantenimiento `DeveloperFieldCatalogModal` y `DeveloperPlanVersioningModal` tambien separaron estilos locales; el modal de versionado movio su editor de campos a `DeveloperPlanVersioningFields.tsx` y reemplazo comentarios decorativos por comentarios ASCII simples.
 - `SubscriptionOverviewCard`, `SubscriptionPlansCard` y `SubscriptionBillingCard` separaron subcomponentes de presentacion en archivos locales, dejando los contenedores con estado, filtros y composicion de alto nivel.
 - `SubscriptionOverviewCard` reemplazo el archivo generico `.parts.tsx` por componentes nombrados (`UsageItem`, `ActivityItem`, `QuickAction`) y helpers locales de iconos/estado.
 - `SubscriptionOverviewCard` separo sus secciones principales en componentes nombrados (`SubscriptionPlanSummary`, `SubscriptionUsageSection`, `SubscriptionStatsRow`, `SubscriptionActivityCard` y `SubscriptionQuickActionsCard`) para dejar el contenedor como composicion.
 - `SubscriptionPlansCard` ahora usa componentes nombrados (`PlanOptionCard`, `PlansComparisonTable`, `PlanChangeConfirmModal`) y helpers propios para definiciones/iconos, evitando un archivo `.parts.tsx` grande.
 - `SubscriptionBillingCard` separo tipos, helpers de factura, badge de estado, tabla y modal de detalle en archivos nombrados, y `SubscriptionSettingsCard` movio resolvers fiscales/de negocio a un helper local.
-- `SubscriptionSettingsCard` extrajo el flujo de cancelacion a `SubscriptionCancellationSection`, y `SubscriptionPaymentHistoryCard` movio estilos locales a `.styles.ts`.
-- `SubscriptionCurrentPlanCard` movio mapeos de tono y formateadores a helpers locales; `SubscriptionPaymentMethodCard` separo el bloque de seguridad de pagos en `PaymentSecurityFeature`.
-- Componentes de navegacion/limites de suscripcion (`SubscriptionSectionNav`, `SubscriptionTabbedLayout`, `SubscriptionLimitsCard`) movieron estilos embebidos a archivos `.styles.ts`.
+- `SubscriptionSettingsCard` extrajo el flujo de cancelacion a `SubscriptionCancellationSection`, y la tabla/modal activa de facturas vive en `BillingInvoicesTable` / `BillingInvoiceDetailModal`.
+- `SubscriptionPlanSummary` concentra el resumen del plan activo; `SubscriptionPaymentMethodCard` separo el bloque de seguridad de pagos en `PaymentSecurityFeature`.
+- Componentes de navegacion/limites de suscripcion (`SubscriptionTabbedLayout`, `SubscriptionUsageSection`) movieron estilos embebidos a archivos `.styles.ts`.
 - Las paginas internas de mantenimiento de suscripciones (`Overview`, `Tools`, `Sandbox`, `Success`) y piezas auxiliares (`DeveloperSubscriptionInactiveNotice`, `SimulatedPlanSelectionCard`, `DeveloperSubscriptionMaintenanceModals`) movieron estilos embebidos a archivos locales `.styles.ts`.
-- Componentes pequenos de suscripcion (`DeveloperMaintenanceHub`, `SubscriptionShell` y `MockSubscriptionFlowCard`) movieron estilos locales a `.styles.ts` sin tocar reducers ni callbacks.
+- Componentes pequenos de suscripcion (`SubscriptionLayout` y `MockSubscriptionFlowCard`) movieron estilos locales a `.styles.ts` sin tocar reducers ni callbacks; `DeveloperMaintenanceHub` quedo retirado sin equivalente activo confirmado.
 - Se corrigieron textos visibles con mojibake en el reporte de comisiones de servicio.
 - `CollaboratorsManager` separo sus styled-components a `CollaboratorsManager.styles.ts`.
 - `ServiceCommissionsReport` movio la paginacion local a `components/ReportPagination.tsx`.
@@ -70,6 +70,7 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - `BusinessInfoCard` del flujo dev de AI business seeding movio estilos inline a `.styles.ts` y normalizo texto visible, manteniendo el contrato de datos intacto.
 - `FiltersDrawer` del panel de control movio estilos inline y labels visuales a `.styles.ts`, dejando el drawer enfocado en opciones y callbacks.
 - `BusinessMissingCreatedAt` separo estilos de pagina, tabla y progreso en `.styles.ts`, elimino estilos inline y normalizo textos visibles sin cambiar el escaneo, CSV ni actualizaciones Firestore.
+- Decision diferida: `BusinessMissingCreatedAt` escribe `business.createdAt` en `businesses` y no queda ruteada/expuesta; no exponer hasta definir acceso/uso, revisar los tests existentes (`businessMissingCreatedAtData.test.ts`, `businessMissingCreatedAtCsv.test.ts`) y decidir si su destino es `DevTools/BusinessMissingCreatedAt`.
 - `BusinessSelectorPage` movio su bloque completo de styled-components a `BusinessSelectorPage.styles.ts`, manteniendo el archivo principal enfocado en permisos, seleccion de negocio, invitaciones y navegacion.
 - `Login` y `SignUp` reutilizan `AuthPageShell`, que centraliza imagen de fondo, animacion, boton de regreso, spinner y layout responsive; las paginas quedaron enfocadas en el formulario y su loading.
 - `SocialLogin` y `LogoContainer` eliminaron estilos inline locales en favor de styled-components propios, manteniendo intactos los handlers de autenticacion.
@@ -100,7 +101,7 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - La logica de ingredientes de pizza salio de `firebaseconfig` y vive en `src/firebase/products/customProduct/ingredientTypePizzaService.ts`, dejando la configuracion Firebase enfocada en inicializacion.
 - Los wrappers simples de Cloud Functions reutilizan `src/firebase/functions/callable.ts`, evitando repetir `httpsCallable` y extraccion manual de `data`.
 - Los renames de carpetas `Components` a `components` quedaron registrados como cambios de casing en Git para evitar fallos en filesystems case-sensitive.
-- `FileUploader/FileList` ahora usa `isImageFile`/`isPDFFile` de `utils/fileUtils`, y `FileUploader` + `EvidenceUpload` comparten los styled-components de lista en `components/common/FileList/FileList.styles.ts`.
+- `FileUploader/FileList` ahora usa `isImageFile`/`isPDFFile` de `utils/fileUtils`, y `FileUploader` + `EvidenceUpload` comparten los styled-components de lista en `src/components/common/fileUploadShared/components/FileList.styles.ts`.
 - `FilterBar` movio normalizadores de rango numerico, rango de fecha y estado activo a `FilterBar.utils.ts`, dejando el componente principal mas enfocado en layout/render.
 - `CreditNoteModal` comparte `QuantityAvailabilityDisplay`/`QuantityAvailabilityHint` entre tabla y tarjeta de productos, quitando tooltips/estilos inline duplicados sin tocar los calculos.
 - `ProductCard` de `CreditNoteModal` movio sus styled-components a `ProductCard.styles.ts`, dejando el archivo principal centrado en datos, calculos y render.
@@ -109,13 +110,110 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - Se corrigieron prefijos mojibake en logs de `arPaymentUtils.ts` usando texto ASCII estable, sin cambiar validaciones ni errores lanzados.
 - El modal de autorizacion por PIN movio estilos a archivos locales y elimino estado derivado en `CustomPinInput`; `PinAuthorizationContent` quedo sin inline styles ni textos mojibake.
 - `BackOrders` corrigio el icono de seccion/fallback de fecha con escapes seguros y movio estilos locales de layout al `styles.ts` del modulo.
+- `mapData` y `processMappedData` comparten `mappedRecord.ts` para normalizar/coaccionar valores importados y escribir paths anidados sin duplicar helpers.
+- El login con proveedor reutiliza `src/firebase/functions/callable.ts` para `clientLoginWithProvider`, quitando `httpsCallable` directo del repository de auth.
+- `AuthorizationsPanel` del centro de notificaciones reutiliza `PanelPrimitives` para tarjeta, header, lista, rows y estados vacio/cargando, dejando el panel enfocado en composicion.
+- `InventoryControl` renombro su hook local a `useInventoryLocationNames`; el hook global legacy `src/hooks/useLocationNames` quedo retirado, y los logos duplicados de Welcome/loader apuntan al asset canonico `src/assets/logo/ventamax.svg`.
+- Los hooks de cuentas bancarias activas de gastos y RRHH comparten `src/firebase/accounting/bankAccounts.repository.ts`, centralizando la lectura Firestore y el mapeo de opciones sin cambiar sus contratos publicos.
+- Se retiraron wrappers legacy sin consumidores y datos mock duplicados en `contacts/pages/Contact/*/Selects` y `contacts/pages/Contact/*/components/OrderFilter`.
+- Se normalizaron nombres con typos mecanicos (`ResizableSidebar`, `InvoiceInfo`, `InsuranceConfig`, `TaxReceiptSetting`, `categorySlice`, `CashReconciliation` y `CashReconciliationTable`) con busqueda antes/despues y typecheck.
+- Los defaults puros de producto (`PRODUCT_BRAND_DEFAULT`, tipos de item, impuestos y garantia) viven en `src/domain/products/productDefaults.ts`; las rutas viejas quedan como facades temporales y consumidores de `utils`, templates y modales apuntan al contrato neutral.
+- `InvoiceInfo`, `WarrantyInfo` y `ResizableSidebar` separaron styled-components a archivos `.styles.ts` locales.
+- Las pantallas de orden y compra comparten `src/firebase/provider/useProviderSnapshotById.ts` para escuchar el proveedor seleccionado por ID, quitando listeners Firestore duplicados de los formularios.
+- `tools/deploy.js` y `tools/project.js` ocultan/bloquean deploy de todas las Cloud Functions de staging salvo `ALLOW_ALL_FUNCTIONS_DEPLOY=1`, manteniendo el camino de deploy por funcion especifica.
+- El servicio de jerarquia de almacenes se renombro a `src/firebase/warehouse/warehouseNestedService.ts`, corrigiendo el typo `Servise` y alineando los imports de inventario sin cambiar comportamiento.
+- `useFbGetAccountReceivableByInvoice` dejo de mutar estado durante render: ahora deriva `loading` y la lista expuesta desde el snapshot vigente, y solo actualiza estado dentro del callback de Firestore.
+- Las lecturas repetidas de proveedor en ordenes, ordenes pendientes y compras comparten `src/firebase/provider/providerLookup.ts`, que reutiliza el ref tipado de `providerRefs` y evita tres helpers locales equivalentes.
+- Se normalizaron nombres mecanicos de UI (`DropdownMenu`, `ProductsList`, `ClientControl`) y sus imports activos, reduciendo friccion de busqueda sin tocar logica.
+- `useFilterBar`, `SearchPanel` y `MenuApp` eliminaron setters durante render para sincronizar props; ahora exponen valores efectivos derivados desde drafts con clave de origen.
+- Se retiraron tres `StatusIndicatorDot` duplicados y sin consumidores en contactos/ordenes, confirmados con `rg` antes de borrar.
+- Se retiraron piezas huérfanas sin consumidores (`ProductWeightEntryModal` con su slice registrado pero no usado, `ErrorMassage` y el stub `fbDeteteTaxReceipt`), limpiando estado global y carpetas legacy.
+- `InventoryControl` dejo de importar `db` directamente; sus hooks locales resuelven el `db` por defecto y conservan override opcional para pruebas.
+- `pinAuth` reutiliza `createFirebaseCallable` para sus siete Cloud Functions de autorizacion, eliminando `httpsCallable` directo y extraccion manual repetida de `response.data`.
+- El componente UI compartido de tipografia se normalizo a `Typography` en carpeta, archivo e imports activos, manteniendo intacto el contrato visual existente.
+- Las carpetas raiz de contexto y SEO se normalizaron a `src/context` y `src/seo`, junto con imports activos y targets de lint, para evitar fragilidad por casing.
+- La carpeta utilitaria de transferencia de datos entre negocios se normalizo a `src/firebase/transfer`; no tenia consumidores activos fuera de sus imports internos.
+- Se retiraron componentes legacy de recibos/notificaciones fiscales sin imports activos (`NotificationSection` y ambos `FiscalReceiptsList`), confirmados con busqueda repo-wide.
+- Las mutaciones simples de almacen, clientes, proveedores, productos y creacion de negocio reutilizan `createFirebaseCallable`, quitando `httpsCallable` directo y extraccion manual de `response.data` donde aplicaba.
+- `AuthorizationRequests`, `AddExpensesCategory`, `useFbGetClients`, `useFbGetDoctors`, `useListenSaleUnits`, `useListenInsuranceConfig` y `useListenProduct` dejaron de sincronizar estado derivado con setters durante render/efecto; ahora derivan desde scope o clave vigente y solo actualizan dentro de callbacks externos o acciones del usuario.
+- `useFbGetOrders` se normalizo junto con su import activo y prueba focalizada; tambien se retiro un facade sin consumidores de `InvoicePreview` hacia `ElectronicTaxReceiptInfoCard`.
+- `FileUploader` y `EvidenceUpload` importan directamente componentes visuales compartidos de `fileUploadShared`; se retiraron facades locales que solo reexportaban `DragOverlay`, `FileList`, `FileUploadControls`, `ImageLightbox` y `UploadButton`.
+- `FileUploader` y `EvidenceUpload` tambien importan directamente `PreviewContent` desde `fileUploadShared`, retirando facades locales que solo reenviaban props.
+- La conversion de timestamps Firestore se centralizo en `src/firebase/utils/firestoreDates.ts`, evitando duplicacion entre ordenes y compras y quitando el import cruzado de ordenes hacia `purchase`.
+- Se retiro el archivo legacy sin consumidores de pedidos pendientes; el flujo activo de ordenes pendientes por proveedor vive en `src/firebase/order/useFbGetOrders.tsx`.
+- `ProviderForm` dejo de mantener `selectedCountry` como estado duplicado; ahora deriva el pais desde `Form.useWatch('country')` y conserva el form de AntD como fuente de verdad.
+- `UpdateProduct/InitializeData.ts` fue retirado como facade sin consumidores; los defaults de producto se importan desde `src/domain/products/productDefaults.ts`.
+- `shortenLocationPath` vive en `src/utils/inventory/locations.ts`, reduciendo el import cruzado desde movimientos de inventario hacia componentes profundos de `InventoryControl`.
+- `inventoryTableUtils` dejo de reexportar `Tag`, `Tooltip` y `EditorsList`; los consumidores importan UI desde `antd` y `EditorsList` desde su componente real.
+- Se retiraron componentes legacy sin consumidores (`Account`, `CardList`, `UploadImg`, `RncPanel` raiz, `ProcessViewer`, `PageTransition`, el alias `MainLayoutModal` y el placeholder `SearchBar/Container`) junto con carpetas vacias residuales.
+- El registry de design system ya no publica `vm.searchBar` como componente `planned`, evitando que recetas apunten a un placeholder sin contrato reutilizable.
+- `resolveModuleMeta` salio de una carpeta profunda de `AuthorizationRequests` y vive en `src/modules/authorizations/utils/moduleMeta.ts`, para que Authorizations y NotificationCenter consuman un contrato neutral.
+- `GeneratePinModal` y `PinDetailsModal` salieron de Settings y viven en `src/modules/authorizations/components/pinManagement`, porque son componentes de autorizacion reutilizados por configuracion y gestion personal de PIN.
+- `fbSignIn` y `fbPublicSignUp` reutilizan `createFirebaseCallable`, alineando login/signup publicos con el wrapper compartido sin tocar la gestion de sesion ni Firebase Auth.
+- `fbSignOut`, historial/verificacion de email, impersonacion dev, revoke session y alta de usuarios reutilizan `createFirebaseCallable`; el guard de callables ya no permite reintroducir esa deuda en esos archivos.
+- Se retiraron declaraciones manuales redundantes junto a archivos TypeScript reales (`fbSignIn.d.ts` y `Tree.d.ts`), dejando a `tsc` derivar los contratos desde las fuentes.
+- `InvoiceTemplate2` y `InvoiceTemplate3` comparten `ClassicHeader` y `ClassicFooter` en `templates/Invoicing/shared`, eliminando duplicacion exacta entre plantillas sin cambiar el render.
+- `ThankYouMessage` vive en `src/components/common/ThankYouMessage`, compartido por checkout, factura y cotizacion en lugar de tres copias equivalentes.
+- `WarrantySignature` vive en `src/components/common/WarrantySignature`, compartido por checkout, factura y cotizacion, retirando tres copias equivalentes de la firma por garantia.
+- `BarCode` de `ProductForm` dejo de importar un modal desde `modules/dev/pages/test`; ahora reutiliza el modal local de impresion de etiquetas del propio formulario.
+- Los exportadores Excel viven en `src/utils/export/excel`; la carpeta legacy `src/hooks/exportToExcel` quedo retirada y protegida por guardrail.
+- `useStockAlertThresholds` y `useLocationNames` quedaron bajo `src/modules/inventory/hooks`, con exports publicos de inventario para consumidores externos.
+- `vendorBills` vive en `src/domain/accountsPayable/vendorBills`, y el importador de productos vive en `src/domain/products/import`, retirando buckets de dominio desde `src/utils`.
+- `WebName` vive junto al shell de navegacion y `InfoCard` vive junto al preview de factura, retirando componentes de uso unico desde `src/components/ui`.
+- Los tipos del `FilterBar` de ordenes/compras y la factory comun `createTransactionFilterConfig` viven en `OrderAndPurchase/shared`, quitando el acoplamiento de `Order`, `useOrders` y `AccountsPayable` hacia una carpeta profunda de `Compra`.
+- Las fechas de ordenes/compras reutilizan `OrderAndPurchase/shared/utils/transactionDates.ts` para normalizar millis, validar fechas transaccionales y alimentar `DatePicker` sin mantener copias locales en formularios, tablas y controller utils.
+- Se retiraron duplicados huerfanos de `TotalsSummary` en orden/compra y el filtro legacy de contactos (`OrderFilter`/`OrderMenuFilterShared`) que solo quedaba referenciado en JSX comentado.
+- `GlobalMenu` recupero ownership de `createLazyLoader` y `normalizeMatch`; esos helpers dejaron de vivir en `src/utils` porque dependen exclusivamente del contrato de toolbar de navegacion.
+- `OrderManagement` y `PurchaseManagement` comparten `TransactionNotesInput` para debounce, cleanup y render del campo de notas, dejando wrappers locales solo para labels, placeholder y reglas de longitud.
+- `calculatePaymentDates`, `formatPaymentDate` y `getFormattedDates` viven en `src/domain/accountsReceivable/paymentDates.ts`; `generateInstallments` y el panel de ventas consumen el contrato neutral en vez de importar logica desde una carpeta profunda de UI.
+- `CashCountMetaData` salio del componente profundo de cierre de caja y vive en `src/domain/cashCount/cashCountMetaData.ts`, permitiendo que Firebase, DevTools y la UI reutilicen el calculo desde una capa de dominio.
+- `useActiveBankAccounts` se movio de `ExpensesForm/hooks` a `src/modules/treasury/hooks`, y `useOpenCashRegisters` a `src/modules/cashReconciliation/hooks`, para que gastos, ventas, CxC y compras consuman recursos financieros desde su ownership real.
+- `useProductRealtimeListener` dejo de importar Firestore directo; la suscripcion normalizada vive en `src/firebase/products/productRealtime.repository.ts` y el hook queda enfocado en estado React y valores derivados.
+- Se retiraron huérfanos confirmados sin consumidores: `AddFileBtn`, `ChevronDownButton`, `countBillsByMonth`, `SettingsExample`, `AddProduct&Services`, `OrderDetailModal` y el `Actionmenu` legacy de `InvoiceSummary`.
+- `useActiveBusinessBankAccounts` de RRHH conserva su API publica pero delega en `src/modules/accounting/hooks/useActiveBankAccounts.ts`, evitando mantener dos listeners equivalentes de cuentas bancarias activas.
+- `UsersList` conserva un solo menu de acciones (`ActionMenu`); `UserListActionMenu` era una copia activa equivalente y se retiro para evitar divergencia entre tablas de usuarios.
+- `getTaxReceiptAvailability` y `comprobantesOptions` viven en `src/utils/taxReceipt.ts`; CxC, preordenes, venta, proveedores y compras ya no importan logica fiscal desde carpetas profundas de UI.
+- Se retiraron huerfanos confirmados sin consumidores en `DeveloperModal`, `InvoiceForm`, `ProductExpirySelection`, `SettingsModal`, `UpdateProduct`, `components/ui/Product` y `firebase/accountsReceivable/fetchInstallment.ts`.
+- `useFbGetClientsOnOpen` delega en `useFbGetClients` con `enabled`, compartiendo listener, mapeo y normalizacion de clientes sin romper la API publica de apertura bajo demanda.
+- `toggleClientModal` limpia `addClientToCart` al cerrar y lo deriva del payload al abrir, evitando que aperturas normales hereden accidentalmente el modo de carrito.
+- Los estados vacio/cargando/error de `NotificationCenter` reutilizan `PanelStateBody`, eliminando contenedores locales duplicados en CxC y comprobantes fiscales.
+- `useFbGetCreditNoteApplicationsByInvoice` conserva su API publica pero delega en `useFbGetCreditNoteApplications`, centralizando la suscripcion Firestore de aplicaciones de notas de credito.
+- `TotalSalesCard` y `RangeComparisonCard` de Utility reutilizan `ComparisonMetricCard`, dejando cada wrapper con solo configuracion de titulo, icono, copy y tono visual.
+- Los reportes de compras y gastos reutilizan helpers puros en `src/components/charts` para construir datos de barra y opciones monetarias de Chart.js, reduciendo duplicacion visual sin tocar los acumuladores de dominio.
+- Se retiraron piezas huérfanas de `components/ui/Table` (`Body`, `Header`, `Footer`, `Row`) tras confirmar que no tenian consumidores activos.
+- Se retiraron `NotificationHandler` y el `AlertDialog` legacy de `UserNotification`; `ModalManager` monta directamente `ConfirmationDialog`, que queda como el flujo activo.
+- `downloadQuotationPDF`, `fbUpdateUser` y `fbUpdateUserPassword` reutilizan `createFirebaseCallable`, quitando `httpsCallable` directo en wrappers simples sin cambiar sus APIs publicas.
+- `billingManagement` centraliza su helper dinamico `callBilling` sobre `createFirebaseCallable`, conservando data directa para las pantallas de suscripcion y evitando repetir `response.data`.
+- Los helpers de pagos a proveedor (`fbAddAccountsPayablePayment`, `fbVoidAccountsPayablePayment`) reutilizan `createFirebaseCallable`, manteniendo validaciones locales y retorno directo de data sin repetir `httpsCallable`.
+- `electronicTaxReceipts` usa `callElectronicTaxReceipt` como helper local para agregar `sessionToken` y consumir `createFirebaseCallable` en validacion/configuracion fiscal sin repetir `response.data`.
+- La seleccion de marca de producto vive en `src/domain/products/brandSelection.ts`, compartida por `ProductForm` y `ProductStudio` sin acoplar devtools a carpetas internas del modal.
+- `ProductStudio` importa `buildBrandOptions` desde su owner real y deja `brandUtils.ts` solo para metadata propia del studio.
+- `AccountingConfig` elimino facades de un solo re-export (`ChartOfAccountsList`, `PostingProfilesList`, `AccountingEventCoverageList`) y el componente muerto `ExchangeRateList`, apuntando los consumidores al workspace real.
+- Los documentos vivos de fiscal/contabilidad actualizan rutas normalizadas (`TaxReceiptSetting`, `InsuranceConfig`) y marcan `fbDeteteTaxReceipt` como retirado, dejando intactos los snapshots historicos de auditoria.
+- Se normalizaron imports internos con sufijo `.js` que apuntaban a fuentes TypeScript reales en PDF, inventario, clientes y comprobantes; se dejaron intactos los `.js` reales como `accountingSchemas.js`.
+- `CentredText` se normalizo a `CenteredText`, alineando nombre de archivo, export e imports activos sin cambiar su API visual.
+- `useFbGetProviders` delega la suscripcion Firestore en `src/firebase/provider/provider.repository.ts`, reutilizando `providerRefs` y dejando el hook enfocado en estado React/loading.
+
+## Guardrails añadidos en esta pasada
+
+- `src/modules/moduleBoundaries.test.ts` protege boundaries entre dominios: bloquea imports desde un modulo hacia carpetas privadas de otro (`pages/`, `components/`, `hooks/`, `utils/`), mantiene vacias las allowlists `allowedLegacyDeepImports` y `allowedLegacyPrivateRouterImports`, y tambien cubre buckets legacy retirados, el adapter HeroUI y ciclos entre modulos.
+- `src/modules/publicBarrels.test.ts` fija el contrato runtime exacto de cada `public.ts`: cada modulo debe tener barrel publico registrado y exportar solo los nombres/tipos esperados por el test, para que el barrel sea un contrato acotado y no un indice de carpetas internas.
+- `src/firebase/functions/callableImportGuard.test.ts` obliga a que los wrappers nuevos de Cloud Functions usen `src/firebase/functions/callable.ts` / `createFirebaseCallable`; los imports directos de `httpsCallable` quedan limitados al wrapper compartido y a la deuda enumerada en el test.
+- `tools/deploy.js` y `tools/project.js` bloquean los deploys de todas las Cloud Functions de staging salvo `ALLOW_ALL_FUNCTIONS_DEPLOY=1`. El flujo normal documentado por el helper es `npm run deploy -- staging:functions nombreDeFuncion`, que termina en `--only functions:nombreDeFuncion`.
+
+## Deuda restante de alto riesgo: no tocar sin QA
+
+- Las allowlists de `moduleBoundaries.test.ts` deben seguir vacias. Cualquier necesidad de cruce entre dominios debe pasar por `@/modules/<modulo>/public` o por una capa neutral compartida, con QA funcional cuando toque flujos operativos sensibles.
+- La deuda explícita de `callableImportGuard.test.ts` incluye wrappers de autenticación/sesión/cambio de negocio, contabilidad/DGII/reportes/cierre de periodo, CxC, notas de crédito, facturas, apertura/cierre de caja, tesorería y `src/services/invoice/invoice.service.ts`. No hacer migración masiva a `createFirebaseCallable` sin pruebas de caracterización y QA de cada flujo monetario o fiscal afectado.
+- Los `public.ts` no deben crecer como barrels convenientes. Si un modulo necesita consumir algo de otro dominio, primero confirmar ownership, exponer solo el contrato minimo y actualizar `src/modules/publicBarrels.test.ts`; si el export toca facturacion, pagos, caja, tesoreria, fiscal/NCF o CxC, requiere QA funcional.
+- No cambiar ni usar el bypass `ALLOW_ALL_FUNCTIONS_DEPLOY=1` como parte de limpiezas arquitectónicas. Sirve solo para una decisión explícita de release; para cambios en `functions/`, desplegar funciones específicas.
 
 ## Fase 4 sugerida
 
-Centralizar servicios/API/Firebase por dominio, empezando por dominios de menor riesgo y dejando fuera fiscal, caja, pagos, facturacion y NCF hasta tener pruebas de caracterizacion.
+Centralizar servicios/API/Firebase por dominio, empezando por dominios de menor riesgo y dejando fuera fiscal, caja, pagos, facturacion y NCF hasta tener pruebas de caracterizacion. Ya hay avances en auth provider login, lectura de cuentas bancarias activas y callables simples de inventario/contactos/productos; continuar con lecturas simples antes de escrituras sensibles.
 
 1. Inventariar imports directos a `src/firebase/**` desde componentes y paginas.
 2. Elegir 1 dominio de bajo riesgo y crear `services/<dominio>` o `modules/<dominio>/services`.
 3. Mover solo llamadas de lectura simples detras de un service/repository tipado.
 4. Agregar pruebas de contrato para normalizadores o mappers antes de mover escrituras.
-5. Repetir por dominio, evitando barrels globales y evitando imports profundos entre modulos.
+5. Repetir por dominio, evitando barrels globales y evitando imports profundos entre modulos; cuando se use `public.ts`, tratarlo como contrato publico acotado del modulo owner, no como indice general de carpetas internas.

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { useCategoryState } from '@/Context/CategoryContext/useCategoryState';
+import { useCategoryState } from '@/context/CategoryContext/useCategoryState';
 import { openModal as openActiveIngredientModal } from '@/features/activeIngredients/activeIngredientsSlice';
 import { selectUser } from '@/features/auth/userSlice';
 import { openBrandModal } from '@/features/productBrands/productBrandSlice';
@@ -19,7 +19,11 @@ import { useListenProductBrands } from '@/firebase/products/brands/productBrands
 import { fbAddProduct } from '@/firebase/products/fbAddProduct';
 import { fbGetProduct } from '@/firebase/products/fbGetProduct';
 import { fbUpdateProduct } from '@/firebase/products/fbUpdateProduct';
-import { buildSanitizedProductForSubmit } from '@/utils/products/normalization';
+import {
+  BRAND_DEFAULT_OPTION_VALUE,
+  buildBrandOptions,
+} from '@/domain/products/brandSelection';
+import { buildSanitizedProductForSubmit } from '@/domain/products/normalization';
 
 import {
   useProductPreviewMetrics,
@@ -29,7 +33,7 @@ import type {
   PricingValues,
   ProductFormValues,
 } from '../components/form/ProductForm';
-import { brandFieldMetaByType, buildBrandOptions } from '../utils/brandUtils';
+import { brandFieldMetaByType } from '../utils/brandUtils';
 import {
   FORM_SECTIONS,
   getSectionDomId,
@@ -58,8 +62,6 @@ interface UpdateProductState {
 interface UpdateProductRootState {
   updateProduct: UpdateProductState;
 }
-
-const BRAND_DEFAULT_FORM_VALUE = 'default';
 
 const getFieldKey = (
   changedValues: Partial<ProductFormValues>,
@@ -273,9 +275,9 @@ export const useProductStudioController = () => {
 
       if (
         key === 'brandId' &&
-        (!patch.brandId || patch.brandId === BRAND_DEFAULT_FORM_VALUE)
+        (!patch.brandId || patch.brandId === BRAND_DEFAULT_OPTION_VALUE)
       ) {
-        form.setFieldsValue({ brandId: BRAND_DEFAULT_FORM_VALUE });
+        form.setFieldsValue({ brandId: BRAND_DEFAULT_OPTION_VALUE });
       }
     },
     [dispatch, form, product, productBrands],

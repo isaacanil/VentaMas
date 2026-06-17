@@ -2,9 +2,9 @@ import React, { useMemo } from 'react';
 import styled from 'styled-components';
 import type { ChartOptions } from 'chart.js';
 
-import Typography from '@/components/ui/Typografy/Typografy';
+import Typography from '@/components/ui/Typography/Typography';
 import type { Purchase } from '@/utils/purchase/types';
-import { calculateReplenishmentTotals } from '@/utils/order/totals';
+import { calculateReplenishmentTotals } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/utils/replenishmentTotals';
 
 import { options } from './chartOptions';
 import MonthlyPurchasesChart from './charts/MonthlyPurchasesChart';

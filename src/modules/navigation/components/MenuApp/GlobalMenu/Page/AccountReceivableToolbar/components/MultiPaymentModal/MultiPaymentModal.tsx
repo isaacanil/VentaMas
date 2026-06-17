@@ -3,10 +3,10 @@ import React, { useMemo, useReducer, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
-import type { CheckboxChangeEvent } from 'antd/es/checkbox';
+import type { CheckboxChangeEvent } from 'antd';
 
 import { selectUser } from '@/features/auth/userSlice';
-import { fbProcessMultiplePaymentsAR } from '@/firebase/proccessAccountsReceivablePayments/insurance/fbProcessMultiplePaymentsAR';
+import { fbProcessMultiplePaymentsAR } from '@/firebase/processAccountsReceivablePayments/insurance/fbProcessMultiplePaymentsAR';
 import { formatDate as formatDateUtil } from '@/utils/date/dateUtils';
 import { formatMoney } from '@/utils/formatters';
 import { ShowcaseList } from '@/components/ui/ShowCase/ShowcaseList';

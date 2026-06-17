@@ -3,11 +3,13 @@ import { Button, Card, Divider, Spin, Tooltip } from 'antd';
 import { DateTime } from 'luxon';
 import React, { useEffect, useMemo, useReducer } from 'react';
 import styled from 'styled-components';
-import { collection, getDocs, query, where } from 'firebase/firestore';
 
-import { db } from '@/firebase/firebaseconfig';
+import {
+  fetchAccountReceivablePaymentsByArIds,
+  type AccountReceivablePaymentRecord,
+} from '@/firebase/accountsReceivable/accountReceivablePayments.repository';
 import { useAccountingRolloutEnabled } from '@/hooks/useAccountingRolloutEnabled';
-import { useOpenAccountingEntry } from '@/modules/accounting/hooks/useOpenAccountingEntry';
+import { useOpenAccountingEntry } from '@/modules/accounting/public';
 import type {
   InvoiceData,
   InvoiceMonetaryValue,
@@ -17,20 +19,6 @@ import type { AccountsReceivableDoc } from '@/utils/accountsReceivable/types';
 import type { UserIdentity } from '@/types/users';
 import { formatInvoicePrice } from '@/utils/invoice/documentCurrency';
 import { toMillis } from '@/utils/date/toMillis';
-
-type ArPaymentDoc = {
-  id: string;
-  arId?: string;
-  date?: unknown;
-  createdAt?: unknown;
-  totalPaid?: number;
-  totalAmount?: number;
-  amount?: number;
-  comments?: string;
-  paymentMethods?: InvoicePaymentMethod[];
-  paymentMethod?: InvoicePaymentMethod[];
-  createdUserId?: string;
-};
 
 type PaymentRow = {
   id: string;
@@ -54,17 +42,21 @@ const paymentMethodLabel: Record<string, string> = {
   creditNote: 'Nota de Crédito',
 };
 
-const resolveAmount = (payment: ArPaymentDoc): number =>
+const resolveAmount = (payment: AccountReceivablePaymentRecord): number =>
   Number(payment.totalPaid ?? payment.totalAmount ?? payment.amount ?? 0) || 0;
 
-const resolveMethods = (payment: ArPaymentDoc): InvoicePaymentMethod[] => {
+const resolveMethods = (
+  payment: AccountReceivablePaymentRecord,
+): InvoicePaymentMethod[] => {
   const methods = payment.paymentMethods ?? payment.paymentMethod ?? [];
-  return Array.isArray(methods) ? methods : [];
+  return Array.isArray(methods) ? (methods as InvoicePaymentMethod[]) : [];
 };
 
-const resolvePaymentDateMs = (payment: ArPaymentDoc): number => {
+const resolvePaymentDateMs = (
+  payment: AccountReceivablePaymentRecord,
+): number => {
   const candidate = payment.date ?? payment.createdAt ?? null;
-  return toMillis(candidate as any) ?? 0;
+  return toMillis(candidate) ?? 0;
 };
 
 const resolveMonetaryNumber = (
@@ -140,46 +132,30 @@ export const ReceivablePaymentsInfoCard = ({
       }
 
       dispatch({ type: 'start' });
-      const paymentsRef = collection(
-        db,
-        'businesses',
-        businessId,
-        'accountsReceivablePayments',
-      );
 
-      const payments: PaymentRow[] = [];
-      const loadError = await Promise.all(
-        arIds.map(async (arId) => {
-          const q = query(paymentsRef, where('arId', '==', arId));
-          const snap = await getDocs(q);
-          snap.forEach((docSnap) => {
-            const data = docSnap.data() as Omit<ArPaymentDoc, 'id'>;
-            const amount = resolveAmount(data as ArPaymentDoc);
-            payments.push({
-              id: docSnap.id,
-              arId,
-              dateMs: resolvePaymentDateMs(data as ArPaymentDoc),
-              amount,
-              methods: resolveMethods(data as ArPaymentDoc),
-              comments: String((data as ArPaymentDoc)?.comments ?? ''),
-            });
-          });
-        }),
-      )
-        .then(() => null)
-        .catch((error) => error);
+      try {
+        const paymentDocs = await fetchAccountReceivablePaymentsByArIds({
+          businessId,
+          arIds,
+        });
+        if (!active) return;
 
-      if (!active) return;
+        const payments = paymentDocs.map((payment) => ({
+          id: payment.id,
+          arId: typeof payment.arId === 'string' ? payment.arId : '',
+          dateMs: resolvePaymentDateMs(payment),
+          amount: resolveAmount(payment),
+          methods: resolveMethods(payment),
+          comments: String(payment.comments ?? ''),
+        }));
 
-      if (loadError) {
+        dispatch({ type: 'success', payload: payments });
+      } catch (loadError) {
+        if (!active) return;
         const message =
           loadError instanceof Error ? loadError.message : String(loadError);
         dispatch({ type: 'error', payload: message });
-        return;
       }
-
-      payments.sort((a, b) => b.dateMs - a.dateMs);
-      dispatch({ type: 'success', payload: payments });
     };
 
     void load();

@@ -6,6 +6,7 @@ import {
   toCleanString,
   toFiniteNumber,
 } from '../utils/billingCommon.util.js';
+import { appendQueryParams } from '../utils/queryParams.util.js';
 
 const DEFAULT_CHECKOUT_BASE_URL = 'https://ventamax.web.app/checkout';
 const DEFAULT_PORTAL_BASE_URL = 'https://ventamax.web.app/portal';
@@ -70,15 +71,6 @@ const resolveCheckoutBaseUrl = (returnUrl) => {
   }
 };
 
-const appendQueryParams = (baseUrl, params) => {
-  const url = new URL(baseUrl);
-  Object.entries(params || {}).forEach(([key, value]) => {
-    if (value == null) return;
-    url.searchParams.set(key, String(value));
-  });
-  return url.toString();
-};
-
 const resolveCheckoutReturnUrl = ({
   baseReturnUrl,
   result,
@@ -87,12 +79,11 @@ const resolveCheckoutReturnUrl = ({
   const url = new URL(baseReturnUrl);
   url.pathname = DEFAULT_SUCCESS_RETURN_PATH;
   url.search = '';
-  url.searchParams.set('billingResult', result);
-  url.searchParams.set('provider', 'cardnet');
-  if (orderNumber) {
-    url.searchParams.set('orderNumber', orderNumber);
-  }
-  return url.toString();
+  return appendQueryParams(url.toString(), {
+    billingResult: result,
+    provider: 'cardnet',
+    orderNumber: orderNumber || null,
+  });
 };
 
 const getProviderMode = () => {

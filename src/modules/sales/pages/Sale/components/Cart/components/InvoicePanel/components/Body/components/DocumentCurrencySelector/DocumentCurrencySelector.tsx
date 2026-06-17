@@ -3,6 +3,7 @@ import {
   flip,
   offset as floatingOffset,
   shift,
+  size,
   useFloating,
 } from '@floating-ui/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -32,48 +33,99 @@ import {
 import type { CartData } from '@/features/cart/types';
 
 import type {
+  DocumentCurrencyConfig,
   DocumentCurrencyContext,
   SupportedDocumentCurrency,
 } from './types';
+import { resolveTimestampMillis } from './documentCurrencyDates';
 import { useDocumentCurrencyConfig } from './useDocumentCurrencyConfig';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
 
 const { Text } = Typography;
 
-const resolveTimestampMillis = (value: unknown): number | null => {
-  if (value == null) return null;
+type CartManualRatesByCurrency = NonNullable<CartData['manualRatesByCurrency']>;
+type CartManualRateConfig = NonNullable<
+  CartManualRatesByCurrency[SupportedDocumentCurrency]
+>;
+
+const normalizeCartRateValue = (value: unknown): number | null => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+};
+
+const normalizeCartEffectiveAt = (
+  value: unknown,
+): CartManualRateConfig['effectiveAt'] => {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string') {
-    const parsed = Date.parse(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  if (value instanceof Date) {
-    const millis = value.getTime();
-    return Number.isFinite(millis) ? millis : null;
-  }
-  if (typeof value === 'object') {
-    const record = value as {
-      toMillis?: () => number;
-      toDate?: () => Date;
-      seconds?: number;
-      _seconds?: number;
-    };
-    if (typeof record.toMillis === 'function') {
-      const millis = Number(record.toMillis());
-      return Number.isFinite(millis) ? millis : null;
-    }
-    if (typeof record.toDate === 'function') {
-      const date = record.toDate();
-      if (date instanceof Date) {
-        const millis = date.getTime();
-        return Number.isFinite(millis) ? millis : null;
+  if (typeof value === 'string' && value.trim().length) return value.trim();
+  if (value instanceof Date) return value;
+  return null;
+};
+
+const toComparableEffectiveAt = (value: unknown): number | string | null => {
+  const normalized = normalizeCartEffectiveAt(value);
+  return normalized instanceof Date ? normalized.getTime() : normalized;
+};
+
+const buildCartManualRatesByCurrency = (
+  manualRatesByCurrency: DocumentCurrencyConfig['manualRatesByCurrency'],
+): CartManualRatesByCurrency =>
+  Object.entries(manualRatesByCurrency).reduce<CartManualRatesByCurrency>(
+    (accumulator, [currency, rateConfig]) => {
+      const nextRateConfig: CartManualRateConfig = {
+        buyRate: normalizeCartRateValue(rateConfig?.purchase),
+        sellRate: normalizeCartRateValue(rateConfig?.sale),
+      };
+      const effectiveAt = normalizeCartEffectiveAt(rateConfig?.effectiveAt);
+      if (effectiveAt != null) {
+        nextRateConfig.effectiveAt = effectiveAt;
       }
+      accumulator[currency as SupportedDocumentCurrency] = nextRateConfig;
+      return accumulator;
+    },
+    {},
+  );
+
+const areCartManualRateConfigsEqual = (
+  current: CartManualRateConfig | null | undefined,
+  next: CartManualRateConfig | null | undefined,
+): boolean => {
+  if (current == null || next == null) return current == null && next == null;
+
+  return (
+    normalizeCartRateValue(current.buyRate) ===
+      normalizeCartRateValue(next.buyRate) &&
+    normalizeCartRateValue(current.sellRate) ===
+      normalizeCartRateValue(next.sellRate) &&
+    Object.is(
+      toComparableEffectiveAt(current.effectiveAt),
+      toComparableEffectiveAt(next.effectiveAt),
+    )
+  );
+};
+
+const areCartManualRatesByCurrencyEqual = (
+  current: CartManualRatesByCurrency | null | undefined,
+  next: CartManualRatesByCurrency,
+): boolean => {
+  const currencies = new Set([
+    ...Object.keys(current ?? {}),
+    ...Object.keys(next),
+  ]);
+
+  for (const currency of currencies) {
+    const normalizedCurrency = currency as SupportedDocumentCurrency;
+    if (
+      !areCartManualRateConfigsEqual(
+        current?.[normalizedCurrency],
+        next[normalizedCurrency],
+      )
+    ) {
+      return false;
     }
-    const seconds = Number(record.seconds ?? record._seconds);
-    return Number.isFinite(seconds) ? seconds * 1000 : null;
   }
 
-  return null;
+  return true;
 };
 
 const isSameLocalDay = (left: Date, right: Date): boolean =>
@@ -105,13 +157,29 @@ export const DocumentCurrencySelector = ({
   const { refs, floatingStyles } = useFloating({
     placement: 'bottom-start',
     whileElementsMounted: autoUpdate,
-    middleware: [floatingOffset(10), flip({ padding: 8 }), shift({ padding: 8 })],
+    middleware: [
+      floatingOffset(10),
+      flip({ padding: 8 }),
+      shift({ padding: 8 }),
+      size({
+        apply({ rects, elements }) {
+          Object.assign(elements.floating.style, {
+            width: `${rects.reference.width}px`,
+          });
+        },
+      }),
+    ],
   });
   const { enabled, config, loading, error } =
     useDocumentCurrencyConfig(businessId);
   const cartData = useSelector(SelectCartData) as Pick<
     CartData,
-    'documentCurrency' | 'products'
+    | 'documentCurrency'
+    | 'exchangeRate'
+    | 'functionalCurrency'
+    | 'manualRatesByCurrency'
+    | 'products'
+    | 'rateOverride'
   >;
   const selectedCurrency: SupportedDocumentCurrency =
     normalizeSupportedDocumentCurrency(
@@ -159,10 +227,6 @@ export const DocumentCurrencySelector = ({
   const infoTooltip = isBaseCurrencySelected
     ? `La contabilidad funcional sigue registrándose en ${config.functionalCurrency}.`
     : `La contabilidad funcional se resolverá en ${config.functionalCurrency} usando la tasa de venta activa.`;
-  const referenceWidth =
-    refs.reference.current instanceof HTMLElement
-      ? refs.reference.current.getBoundingClientRect().width
-      : null;
   const setReference = useCallback(
     (node: HTMLElement | null) => refs.setReference(node),
     [refs],
@@ -202,41 +266,58 @@ export const DocumentCurrencySelector = ({
     selectedRateFresh,
   ]);
 
+  const nextAccountingContext = useMemo(
+    () => ({
+      functionalCurrency: config.functionalCurrency,
+      manualRatesByCurrency: buildCartManualRatesByCurrency(
+        config.manualRatesByCurrency,
+      ),
+    }),
+    [config.functionalCurrency, config.manualRatesByCurrency],
+  );
+
+  const nextExchangeRate =
+    selectedCurrency === config.functionalCurrency
+      ? 1
+      : selectedRateFresh
+        ? normalizeCartRateValue(selectedRateConfig?.sale)
+        : null;
+
   useEffect(() => {
     if (loading) return;
 
-    dispatch(
-      setAccountingContext({
-        functionalCurrency: config.functionalCurrency,
-        manualRatesByCurrency: config.manualRatesByCurrency as any,
-      }),
-    );
-  }, [
-    config.functionalCurrency,
-    config.manualRatesByCurrency,
-    dispatch,
-    loading,
-  ]);
-
-  useEffect(() => {
-    dispatch(setDocumentRateOverride(null));
-    if (selectedCurrency === config.functionalCurrency) {
-      dispatch(setDocumentExchangeRate(1));
+    if (
+      cartData?.functionalCurrency === nextAccountingContext.functionalCurrency &&
+      areCartManualRatesByCurrencyEqual(
+        cartData?.manualRatesByCurrency,
+        nextAccountingContext.manualRatesByCurrency,
+      )
+    ) {
       return;
     }
 
-    dispatch(
-      setDocumentExchangeRate(
-        selectedRateFresh ? selectedRateConfig?.sale : null,
-      ),
-    );
+    dispatch(setAccountingContext(nextAccountingContext));
   }, [
-    config.functionalCurrency,
+    cartData?.functionalCurrency,
+    cartData?.manualRatesByCurrency,
     dispatch,
-    selectedRateConfig?.sale,
-    selectedRateConfig?.effectiveAt,
-    selectedCurrency,
-    selectedRateFresh,
+    loading,
+    nextAccountingContext,
+  ]);
+
+  useEffect(() => {
+    if (cartData?.rateOverride != null) {
+      dispatch(setDocumentRateOverride(null));
+    }
+
+    if (cartData?.exchangeRate === nextExchangeRate) return;
+
+    dispatch(setDocumentExchangeRate(nextExchangeRate));
+  }, [
+    cartData?.exchangeRate,
+    cartData?.rateOverride,
+    dispatch,
+    nextExchangeRate,
   ]);
 
   useEffect(() => {
@@ -344,10 +425,7 @@ export const DocumentCurrencySelector = ({
       {isOpen && (
         <FloatingPanel
           ref={setFloating}
-          style={{
-            ...floatingStyles,
-            width: referenceWidth ?? undefined,
-          }}
+          style={floatingStyles}
         >
           <PanelRow>
             <FieldLabel>

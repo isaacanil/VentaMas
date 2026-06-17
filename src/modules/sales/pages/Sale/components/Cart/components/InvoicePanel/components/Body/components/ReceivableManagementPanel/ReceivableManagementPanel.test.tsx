@@ -11,7 +11,6 @@ import { ReceivableManagementPanel } from './ReceivableManagementPanel';
 vi.mock('@/firebase/accountsReceivable/fbGetPendingBalance', () => ({
   fbGetPendingBalance: () => () => undefined,
   useGetPendingBalance: () => 0,
-  usePendingBalance: () => 0,
 }));
 
 vi.mock('antd', () => {

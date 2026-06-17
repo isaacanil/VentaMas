@@ -21,7 +21,7 @@ import {
   DetailSection,
   DetailTabs,
   DetailTitle,
-} from '../HrCommissionPeriodsPage.styles';
+} from './HrCommissionPeriodDetailPanel.styles';
 import { HrCommissionPeriodLineBreakdown } from './HrCommissionPeriodLineBreakdown/HrCommissionPeriodLineBreakdown';
 import { PeriodActionButtons } from './PeriodActionButtons';
 

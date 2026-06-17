@@ -1,5 +1,5 @@
 import { Checkbox, Form, message } from 'antd';
-import { useEffect } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { FocusEvent } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -25,8 +25,54 @@ interface StockAlertFormValues {
 
 type StockThresholdField = 'stockLowThreshold' | 'stockCriticalThreshold';
 
+const STOCK_ALERT_SETTINGS_FIELDS: Array<keyof StockAlertFormValues> = [
+  'stockAlertsEnabled',
+  'stockLowThreshold',
+  'stockCriticalThreshold',
+  'stockAlertEmail',
+];
+
+const buildStockAlertInitialValues = ({
+  stockAlertsEnabled,
+  stockLowThreshold,
+  stockCriticalThreshold,
+  stockAlertEmail,
+}: StockAlertFormValues): StockAlertFormValues => ({
+  stockAlertsEnabled: !!stockAlertsEnabled,
+  stockLowThreshold: Number.isFinite(stockLowThreshold)
+    ? stockLowThreshold
+    : 20,
+  stockCriticalThreshold: Number.isFinite(stockCriticalThreshold)
+    ? stockCriticalThreshold
+    : 10,
+  stockAlertEmail: stockAlertEmail || '',
+});
+
+const getStockAlertHydrationPatch = (
+  currentValues: StockAlertFormValues,
+  previousValues: StockAlertFormValues,
+  nextValues: StockAlertFormValues,
+): Partial<StockAlertFormValues> =>
+  Object.fromEntries(
+    STOCK_ALERT_SETTINGS_FIELDS.flatMap((field) => {
+      const currentValue = currentValues[field];
+      const previousValue = previousValues[field];
+      const nextValue = nextValues[field];
+
+      if (
+        Object.is(currentValue, previousValue) ||
+        Object.is(currentValue, nextValue)
+      ) {
+        return [[field, nextValue]];
+      }
+
+      return [];
+    }),
+  ) as Partial<StockAlertFormValues>;
+
 const StockAlertSettingsSection = () => {
   const [form] = Form.useForm<StockAlertFormValues>();
+  const hydratedStockAlertValuesRef = useRef<StockAlertFormValues | null>(null);
 
   const user = useSelector(selectUser);
   const settingsCart = (useSelector(SelectSettingCart) || {}) as CartSettings;
@@ -37,25 +83,46 @@ const StockAlertSettingsSection = () => {
     stockCriticalThreshold,
     stockAlertEmail,
   } = billing;
+  const stockAlertInitialValues = useMemo(
+    () =>
+      buildStockAlertInitialValues({
+        stockAlertsEnabled,
+        stockLowThreshold,
+        stockCriticalThreshold,
+        stockAlertEmail,
+      }),
+    [
+      stockAlertsEnabled,
+      stockLowThreshold,
+      stockCriticalThreshold,
+      stockAlertEmail,
+    ],
+  );
 
   useEffect(() => {
-    form.setFieldsValue({
-      stockAlertsEnabled: !!stockAlertsEnabled,
-      stockLowThreshold: Number.isFinite(stockLowThreshold)
-        ? stockLowThreshold
-        : 20,
-      stockCriticalThreshold: Number.isFinite(stockCriticalThreshold)
-        ? stockCriticalThreshold
-        : 10,
-      stockAlertEmail: stockAlertEmail || '',
-    });
-  }, [
-    form,
-    stockAlertsEnabled,
-    stockLowThreshold,
-    stockCriticalThreshold,
-    stockAlertEmail,
-  ]);
+    const previousValues = hydratedStockAlertValuesRef.current;
+
+    if (!previousValues) {
+      form.setFieldsValue(stockAlertInitialValues);
+      hydratedStockAlertValuesRef.current = stockAlertInitialValues;
+      return;
+    }
+
+    const currentValues = form.getFieldsValue(STOCK_ALERT_SETTINGS_FIELDS);
+    const hydrationPatch = getStockAlertHydrationPatch(
+      currentValues,
+      previousValues,
+      stockAlertInitialValues,
+    );
+
+    if (Object.keys(hydrationPatch).length > 0) {
+      form.setFieldsValue(hydrationPatch);
+      hydratedStockAlertValuesRef.current = {
+        ...previousValues,
+        ...hydrationPatch,
+      };
+    }
+  }, [form, stockAlertInitialValues]);
 
   const saveSetting = async (data: Partial<CartSettings['billing']>) => {
     try {

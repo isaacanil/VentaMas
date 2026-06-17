@@ -1,4 +1,5 @@
 import { normalizeSalaryDeductionLines } from './hrSalaryDeductions.service.js';
+import { normalizePhoneToE164 } from '../../../core/utils/phone.util.js';
 import {
   normalizeHrDepositAccount,
   validateHrDepositAccount,
@@ -97,23 +98,6 @@ export const normalizeEmployeeGender = (value) => {
 export const normalizeEmail = (value) => {
   const email = toCleanString(value)?.toLowerCase();
   return email || null;
-};
-
-export const normalizePhone = (value) => {
-  const source = toCleanString(value);
-  if (!source) return null;
-
-  const compact = source.replace(/[^\d+]/g, '');
-  if (compact.startsWith('+')) {
-    const digits = compact.slice(1).replace(/\D/g, '');
-    return digits.length >= 8 && digits.length <= 15 ? `+${digits}` : null;
-  }
-
-  const digits = compact.replace(/\D/g, '');
-  if (!digits) return null;
-  if (digits.length === 10) return `+1${digits}`;
-  if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`;
-  return digits.length >= 8 && digits.length <= 15 ? `+${digits}` : null;
 };
 
 export const normalizeIdSegment = (value) => {
@@ -300,7 +284,7 @@ export const normalizeHrEmployeeInput = (input, options = {}) => {
         employeeInput.sexo,
     ),
     email: normalizeEmail(employeeInput.email),
-    phone: normalizePhone(employeeInput.phone || employeeInput.tel),
+    phone: normalizePhoneToE164(employeeInput.phone || employeeInput.tel),
     address: toCleanString(employeeInput.address),
     linkedUserId: toCleanString(
       employeeInput.linkedUserId || employeeInput.userId || employeeInput.uid,

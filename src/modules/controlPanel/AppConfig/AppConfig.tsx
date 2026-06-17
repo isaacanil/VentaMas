@@ -4,7 +4,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { PageShell } from '@/components/layout/PageShell';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 import { APP_CONFIG_OPTIONS, type ConfigOption } from './AppConfig.options';
 import { ContentWrapper, StyledCard } from './AppConfig.styles';

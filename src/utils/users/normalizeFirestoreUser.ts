@@ -1,15 +1,5 @@
-type UnknownRecord = Record<string, unknown>;
-
-const isRecord = (value: unknown): value is UnknownRecord =>
-  value !== null && typeof value === 'object' && !Array.isArray(value);
-
-const asRecord = (value: unknown): UnknownRecord => (isRecord(value) ? value : {});
-
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
+import { asRecord, type UnknownRecord } from '@/utils/object/record';
+import { toCleanString } from '@/utils/text';
 
 const resolveString = (...values: unknown[]): string | null => {
   for (const value of values) {

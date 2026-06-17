@@ -3,13 +3,15 @@ import { useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import UpgradeModal from '@/components/paywall/UpgradeModal/UpgradeModal';
 import { selectUser } from '@/features/auth/userSlice';
-import { withBusinessManagerQuery } from '@/modules/auth/utils/businessManagerRoute';
-import { resolveDefaultHomeRoute } from '@/modules/auth/utils/defaultHomeRoute';
+import {
+  resolveDefaultHomeRoute,
+  withBusinessManagerQuery,
+} from '@/modules/auth/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 
 import { Actions, Container } from './SubscriptionConfig.styles';
+import { SubscriptionUpgradeModal } from '../../../pages/subscription/components/SubscriptionUpgradeModal/SubscriptionUpgradeModal';
 
 const SubscriptionConfig = () => {
   const navigate = useNavigate();
@@ -42,7 +44,7 @@ const SubscriptionConfig = () => {
           </Actions>
         }
       />
-      <UpgradeModal
+      <SubscriptionUpgradeModal
         open={upgradeModalOpen}
         onClose={() => setUpgradeModalOpen(false)}
         onUpgrade={handleOpenPlans}

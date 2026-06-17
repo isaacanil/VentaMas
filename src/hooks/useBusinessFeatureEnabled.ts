@@ -1,25 +1,18 @@
-import { doc, onSnapshot } from 'firebase/firestore';
 import { useSelector } from 'react-redux';
-import { useEffect, useState } from 'react';
 
-import { db } from '@/firebase/firebaseconfig';
 import { selectUser } from '@/features/auth/userSlice';
 import type { UserIdentity } from '@/types/users';
 import {
   resolveActiveBusinessId,
   type BusinessFeatureKey,
 } from '@/utils/businessFeatures';
+import { toCleanString } from '@/utils/text';
 
 import {
-  useAccountingRolloutAvailability,
-  useAccountingRolloutEnabled,
+  resolveAccountingRolloutAvailability,
+  type RolloutAvailabilityState,
 } from './useAccountingRolloutEnabled';
-
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
-};
+import { useAccountingSettingsSnapshot } from './useAccountingSettingsSnapshot';
 
 const readTreasuryFeatureState = (value: unknown): boolean => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -32,51 +25,25 @@ const readTreasuryFeatureState = (value: unknown): boolean => {
 
 const useTreasuryFeatureAvailability = (
   businessId: string | null,
-  isEnabled = true,
+  accountingSettingsSnapshot: ReturnType<typeof useAccountingSettingsSnapshot>,
 ): { enabled: boolean; resolved: boolean } => {
-  const [snapshotState, setSnapshotState] = useState<{
-    businessId: string;
-    enabled: boolean;
-  } | null>(null);
-
-  useEffect(() => {
-    if (!isEnabled || !businessId) {
-      return undefined;
-    }
-
-    const settingsRef = doc(db, 'businesses', businessId, 'settings', 'accounting');
-
-    const unsubscribe = onSnapshot(
-      settingsRef,
-      (snapshot) => {
-        setSnapshotState({
-          businessId,
-          enabled: snapshot.exists()
-            ? readTreasuryFeatureState(snapshot.data())
-            : true,
-        });
-      },
-      () => {
-        setSnapshotState({
-          businessId,
-          enabled: true,
-        });
-      },
-    );
-
-    return unsubscribe;
-  }, [businessId, isEnabled]);
-
-  if (!isEnabled || !businessId) {
+  if (!businessId || accountingSettingsSnapshot.status === 'disabled') {
     return {
       enabled: false,
       resolved: true,
     };
   }
 
-  if (snapshotState?.businessId === businessId) {
+  if (accountingSettingsSnapshot.status === 'ready') {
     return {
-      enabled: snapshotState.enabled,
+      enabled: readTreasuryFeatureState(accountingSettingsSnapshot.data),
+      resolved: true,
+    };
+  }
+
+  if (accountingSettingsSnapshot.status === 'error') {
+    return {
+      enabled: true,
       resolved: true,
     };
   }
@@ -87,28 +54,42 @@ const useTreasuryFeatureAvailability = (
   };
 };
 
+const useBusinessFeatureStates = (
+  businessId?: string | null,
+): {
+  accounting: RolloutAvailabilityState;
+  treasury: { enabled: boolean; resolved: boolean };
+} => {
+  const user = useSelector(selectUser) as UserIdentity | null;
+  const resolvedBusinessId =
+    toCleanString(businessId) ?? resolveActiveBusinessId(user);
+  const accountingSettingsSnapshot = useAccountingSettingsSnapshot(
+    resolvedBusinessId,
+    true,
+  );
+  const accounting = resolveAccountingRolloutAvailability(
+    resolvedBusinessId,
+    accountingSettingsSnapshot,
+  );
+  const treasury = useTreasuryFeatureAvailability(
+    resolvedBusinessId,
+    accountingSettingsSnapshot,
+  );
+
+  return { accounting, treasury };
+};
+
 export const useBusinessFeatureEnabled = (
   feature: BusinessFeatureKey,
   businessId?: string | null,
 ): boolean => {
-  const user = useSelector(selectUser) as UserIdentity | null;
-  const resolvedBusinessId =
-    toCleanString(businessId) ?? resolveActiveBusinessId(user);
-
-  const accountingEnabled = useAccountingRolloutEnabled(
-    resolvedBusinessId,
-    true,
-  );
-  const treasuryAvailability = useTreasuryFeatureAvailability(
-    resolvedBusinessId,
-    true,
-  );
+  const featureStates = useBusinessFeatureStates(businessId);
 
   switch (feature) {
     case 'accounting':
-      return accountingEnabled;
+      return featureStates.accounting.enabled;
     case 'treasury':
-      return treasuryAvailability.enabled;
+      return featureStates.treasury.enabled;
     default:
       return false;
   }
@@ -118,24 +99,13 @@ export const useBusinessFeatureAvailability = (
   feature: BusinessFeatureKey,
   businessId?: string | null,
 ): { enabled: boolean; resolved: boolean } => {
-  const user = useSelector(selectUser) as UserIdentity | null;
-  const resolvedBusinessId =
-    toCleanString(businessId) ?? resolveActiveBusinessId(user);
-
-  const accountingAvailability = useAccountingRolloutAvailability(
-    resolvedBusinessId,
-    true,
-  );
-  const treasuryAvailability = useTreasuryFeatureAvailability(
-    resolvedBusinessId,
-    true,
-  );
+  const featureStates = useBusinessFeatureStates(businessId);
 
   switch (feature) {
     case 'accounting':
-      return accountingAvailability;
+      return featureStates.accounting;
     case 'treasury':
-      return treasuryAvailability;
+      return featureStates.treasury;
     default:
       return { enabled: false, resolved: true };
   }

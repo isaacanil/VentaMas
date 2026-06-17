@@ -4,7 +4,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type ReactNode,
   type UIEvent,
 } from 'react';
 import { useSelector } from 'react-redux';
@@ -14,11 +13,7 @@ import { icons } from '@/constants/icons/icons';
 import { filterData } from '@/hooks/search/useSearch';
 import { useWindowWidth } from '@/hooks/useWindowWidth';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import {
-  DatePicker,
-  type DateRangeValue,
-  type DatePickerProps,
-} from '@/components/ui/Dates/DatePicker/DatePicker';
+import { DatePicker } from '@/components/common/DatePicker/adapters/MillisRangeDatePicker/DatePicker';
 
 import { ColumnMenu } from './components/ColumnMenu/ColumnMenu';
 import { FilterUI } from './components/MenuFilter/MenuFilter';
@@ -26,6 +21,7 @@ import { TableBody } from './components/Table/TableBody/TableBody';
 import { VirtualTableBody } from './components/Table/TableBody/VirtualTableBody';
 import TableFooter from './components/Table/TableFooter/TableFooter';
 import { TableHeader } from './components/Table/TableHeader/TableHeader';
+import { ExpanderButton } from './components/Table/TableRow.styles';
 import { useColumnOrder } from './hooks/useColumnOrder';
 import { useTablePagination } from './hooks/usePagination';
 import useTableFiltering, {
@@ -33,12 +29,13 @@ import useTableFiltering, {
 } from './hooks/useTableFilter';
 import useTableSorting from './hooks/useTableSorting';
 
+import type { TableRow } from './types/ColumnTypes';
 import type {
-  ColumnConfig,
-  FilterConfig as AdvancedTableFilterConfig,
-  FilterOption as AdvancedTableFilterOption,
-  TableRow,
-} from './types/ColumnTypes';
+  AdvancedTableColumn,
+  AdvancedTableFilterConfig,
+  AdvancedTableProps,
+  AdvancedTableScrollMetrics,
+} from './types/AdvancedTableTypes';
 import type { DefaultTheme } from 'styled-components';
 
 interface UserSliceState {
@@ -51,52 +48,9 @@ interface UserStoreState {
   };
 }
 
-interface ScrollMetrics {
-  scrollTop: number;
-  scrollHeight: number;
-  clientHeight: number;
-  isAtTop: boolean;
-  isAtBottom: boolean;
-}
-
-type InternalColumn<Row> = ColumnConfig<Row>;
-const EMPTY_COLUMNS: InternalColumn<TableRow>[] = [];
+const EMPTY_COLUMNS: AdvancedTableColumn<TableRow>[] = [];
 const EMPTY_ROWS: TableRow[] = [];
 const EMPTY_FILTER_CONFIG: AdvancedTableFilterConfig[] = [];
-
-export interface AdvancedTableProps<Row = TableRow> {
-  columns?: InternalColumn<Row>[];
-  data?: Row[];
-  loading?: boolean;
-  numberOfElementsPerPage?: number;
-  groupBy?: string | null;
-  rowSize?: 'small' | 'medium' | 'large';
-  rowBorder?: boolean | string;
-  headerComponent?: ReactNode;
-  filterUI?: boolean;
-  datePicker?: boolean;
-  footerLeftSide?: ReactNode;
-  footerRightSide?: ReactNode;
-  filterConfig?: AdvancedTableFilterConfig[];
-  searchTerm?: string;
-  elementName?: string;
-  tableName?: string;
-  dateRange?: DateRangeValue | null;
-  defaultDate?: DatePickerProps['datesDefault'];
-  datesKeyConfig?: string;
-  setDateRange?: (value: DateRangeValue) => void;
-  emptyText?: ReactNode;
-  onRowClick?: (row: Row) => void;
-  title?: ReactNode;
-  onScroll?: (event: UIEvent<HTMLDivElement>) => void;
-  onScrollMetrics?: (metrics: ScrollMetrics) => void;
-  expandedRowRender?: (row: Row) => ReactNode;
-  rowExpandable?: (row: Row) => boolean;
-  getRowId?: (row: Row, index?: number) => string | number;
-  enableVirtualization?: boolean;
-  paginateVirtualizedData?: boolean;
-  showPagination?: boolean;
-}
 
 const toGroupKey = (value: unknown): string => {
   if (typeof value === 'string') return value;
@@ -143,22 +97,8 @@ const invokeScrollHandler = (
 };
 
 const invokeScrollMetricsHandler = (
-  handler:
-    | ((metrics: {
-        scrollTop: number;
-        scrollHeight: number;
-        clientHeight: number;
-        isAtTop: boolean;
-        isAtBottom: boolean;
-      }) => void)
-    | undefined,
-  metrics: {
-    scrollTop: number;
-    scrollHeight: number;
-    clientHeight: number;
-    isAtTop: boolean;
-    isAtBottom: boolean;
-  },
+  handler: ((metrics: AdvancedTableScrollMetrics) => void) | undefined,
+  metrics: AdvancedTableScrollMetrics,
 ) => {
   if (!handler) return;
   try {
@@ -194,7 +134,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
   footerRightSide,
 
   // Data / config
-  columns = EMPTY_COLUMNS as InternalColumn<Row>[],
+  columns = EMPTY_COLUMNS as AdvancedTableColumn<Row>[],
   data = EMPTY_ROWS as Row[],
   filterConfig = EMPTY_FILTER_CONFIG,
   searchTerm = '',
@@ -230,7 +170,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
   const columnsWithExpander = useMemo(() => {
     if (!expandedRowRender) return columns;
 
-    const expanderCol: InternalColumn<Row> = {
+    const expanderCol: AdvancedTableColumn<Row> = {
       Header: '',
       accessor: '_expander',
       minWidth: '36px',
@@ -265,7 +205,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
 
   const [isReorderMenuOpen, setIsReorderMenuOpen] = useState(false);
   const [columnOrder, setColumnOrder, resetColumnOrder] = useColumnOrder<
-    InternalColumn<Row>
+    AdvancedTableColumn<Row>
   >(columnsWithExpander, tableName, userUid);
 
   const toggleReorderMenu = () => {
@@ -557,11 +497,19 @@ export const AdvancedTable = memo(
 ) as typeof AdvancedTableInner;
 
 export type {
-  InternalColumn as AdvancedTableColumn,
+  AdvancedTableColumn,
   AdvancedTableFilterConfig,
   AdvancedTableFilterOption,
-  ScrollMetrics as AdvancedTableScrollMetrics,
-};
+  AdvancedTableProps,
+  AdvancedTableScrollMetrics,
+  ScrollMetrics,
+} from './types/AdvancedTableTypes';
+
+export {
+  ExpandedRow,
+  ExpanderButton,
+  Row,
+} from './components/Table/TableRow.styles';
 
 const FilterBar = styled.div`
   display: flex;
@@ -670,58 +618,5 @@ const Wrapper = styled.div`
   &::-webkit-scrollbar-thumb {
     background: #888;
     border-radius: 4px;
-  }
-`;
-
-export const ExpanderButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  color: var(--gray-7);
-  cursor: pointer;
-  background: transparent;
-  border: none;
-
-  &:hover {
-    color: var(--gray-9);
-  }
-`;
-
-export const ExpandedRow = styled.div`
-  grid-column: 1 / -1;
-  padding: 8px 12px;
-  background: #fafafa;
-  border-right: 2px solid var(--gray-3);
-  border-bottom: 1px dashed var(--gray-3);
-  border-left: 2px solid var(--gray-3);
-`;
-
-type StyledColumn = InternalColumn<TableRow>;
-
-export const Row = styled.div<{ $columns: StyledColumn[] }>`
-  position: relative;
-  display: grid;
-  grid-template-columns: ${(props) => {
-    if (!props.$columns.length) return '1fr';
-
-    const template = props.$columns.map((col) => {
-      const minWidth = col.minWidth || '100px';
-      const maxWidth = col.maxWidth || '1fr';
-
-      return `minmax(${minWidth}, ${maxWidth})`;
-    });
-
-    const value = template.join(' ');
-    return value || '1fr';
-  }};
-  gap: 0.6em;
-  align-items: center;
-  width: 100%;
-  min-width: fit-content;
-
-  &[data-border='on'] {
-    border-bottom: 1px solid var(--row-border-color, #f0f0f0);
   }
 `;

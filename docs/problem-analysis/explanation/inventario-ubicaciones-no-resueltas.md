@@ -48,12 +48,12 @@
 
 ## Recursos relacionados
 
-- `src/views/pages/InventoryControl/hooks/useLocationNames.js`
-- `src/views/pages/InventoryControl/utils/inventoryHelpers.js`
-- `src/views/pages/InventoryControl/utils/buildInventoryGroups.js`
-- `src/views/pages/InventoryControl/components/InventoryGroupedTable.jsx`
-- `src/views/pages/InventoryControl/components/GroupedLotsModal.jsx`
-- `src/views/pages/InventoryControl/utils/exportInventoryToExcel.js`
+- `src/modules/inventory/pages/InventoryControl/hooks/useInventoryLocationNames.ts`
+- `src/modules/inventory/pages/InventoryControl/utils/inventoryHelpers.ts`
+- `src/modules/inventory/pages/InventoryControl/utils/buildInventoryGroups.ts`
+- `src/modules/inventory/pages/InventoryControl/components/InventoryGroupedTable/InventoryGroupedTable.tsx`
+- `src/modules/inventory/pages/InventoryControl/components/GroupedLotsModal/GroupedLotsModal.tsx`
+- `src/modules/inventory/pages/InventoryControl/utils/exportInventoryToExcel.ts`
 - `docs/inventory/reference/data-model-es.md`
 - `src/models/Warehouse/ProductStock.ts`
 

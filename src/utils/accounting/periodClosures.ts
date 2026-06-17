@@ -7,6 +7,7 @@ import {
 } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import { toCleanString } from '@/utils/text';
 
 import {
   buildAccountingPeriodKey,
@@ -20,12 +21,6 @@ const periodLabelFormatter = new Intl.DateTimeFormat('es-DO', {
   month: 'long',
   year: 'numeric',
 });
-
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
 
 export interface AccountingPeriodClosureLike {
   periodKey: string;

@@ -181,8 +181,8 @@ console.log(newWay); // 7461234567894
 
 ## Referencias
 
-- `src/utils/barcode/barcode.js`
-- `src/hooks/useBarcodeSettings.js`
+- `src/utils/barcode/barcode.ts`
+- `src/modules/products/hooks/useBarcodeSettings.ts`
 - `docs/barcode/reference/gs1-implementation.md`
 
 ### Migración recomendada

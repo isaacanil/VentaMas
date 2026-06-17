@@ -1,3 +1,5 @@
+import { saveXlsxFile } from '@/utils/export/xlsx';
+
 export const createExcelTemplate = async (
   headers: string[],
   fileName: string,
@@ -20,23 +22,11 @@ export const createExcelTemplate = async (
         Math.max(...column.values.map((val) => val.toString().length)) + 2;
     });
 
-    // En lugar de usar file-saver, puedes hacer esto directamente:
     const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    saveXlsxFile({
+      content: buffer,
+      fileName,
     });
-
-    // Crear un enlace temporal para descargar el archivo
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-
-    // Limpiar el DOM
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error al crear la plantilla:', error);
     throw error;

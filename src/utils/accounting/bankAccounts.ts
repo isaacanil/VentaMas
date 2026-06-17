@@ -8,6 +8,7 @@ import {
   type SupportedDocumentCurrency,
 } from '@/utils/accounting/currencies';
 import { toTimestamp } from '@/utils/firebase/toTimestamp';
+import { toCleanString } from '@/utils/text';
 import {
   CUSTOM_BANK_INSTITUTION_CODE,
   DEFAULT_BANK_INSTITUTION_COUNTRY_CODE,
@@ -21,12 +22,6 @@ const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
-
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
 
 const safeNumber = (value: unknown): number | null => {
   const parsed = Number(value);

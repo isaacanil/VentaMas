@@ -12,9 +12,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Modal, Button, Space, Tooltip, Popconfirm } from 'antd';
 import styled from 'styled-components';
 
+import { resolveModuleMeta } from '@/modules/authorizations/utils/moduleMeta';
+
 import { formatDateTime } from '../constants/constants';
-import { resolveModuleMeta } from '../utils/utils';
-import { AuthorizationStatusBadge } from './AuthorizationStatusBadge';
+import { AuthorizationStatusBadge } from './AuthorizationStatusBadge/AuthorizationStatusBadge';
 
 import type { AuthorizationRequest } from '@/modules/authorizations/pages/Authorizations/components/AuthorizationRequests/types';
 

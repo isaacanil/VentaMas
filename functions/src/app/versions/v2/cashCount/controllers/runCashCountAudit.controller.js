@@ -1,11 +1,12 @@
 import { https, logger } from 'firebase-functions';
 
 import { db } from '../../../../core/config/firebase.js';
+import { resolveCallableAuthUid } from '../../../../core/utils/callableSessionAuth.util.js';
 import {
   assertUserAccess,
   getUserAccessProfile,
   MEMBERSHIP_ROLE_GROUPS,
-} from '../../invoice/services/repairTasks.service.js';
+} from '../../auth/services/userAccess.service.js';
 import { assertBusinessSubscriptionAccess } from '../../billing/utils/subscriptionAccess.util.js';
 import { isAccountingRolloutEnabledForBusiness } from '../../accounting/utils/accountingRollout.util.js';
 
@@ -28,10 +29,10 @@ const toNumber = (value) => {
 const getBanknoteTotal = (notes = []) =>
   Array.isArray(notes)
     ? notes.reduce(
-      (t, { value = 0, quantity = 0 }) =>
-        t + toNumber(value) * toNumber(quantity),
-      0,
-    )
+        (t, { value = 0, quantity = 0 }) =>
+          t + toNumber(value) * toNumber(quantity),
+        0,
+      )
     : 0;
 
 const sumExpenses = (expenses = []) =>
@@ -43,7 +44,8 @@ const normalizeMethod = (value) =>
   typeof value === 'string' ? value.trim().toLowerCase() : '';
 
 const isCardMethod = (value) => CARD_METHODS.has(normalizeMethod(value));
-const isTransferMethod = (value) => TRANSFER_METHODS.has(normalizeMethod(value));
+const isTransferMethod = (value) =>
+  TRANSFER_METHODS.has(normalizeMethod(value));
 
 const sumReceivableMetrics = (payments = []) =>
   (Array.isArray(payments) ? payments : []).reduce(
@@ -175,6 +177,11 @@ const toMillis = (ts) => {
   return null;
 };
 
+const toCallableAuthRequest = (data, context) => ({
+  data,
+  auth: context?.auth ?? null,
+});
+
 async function auditBusiness({ businessId, startMs, endMs, absThreshold }) {
   const cashCountsCol = db.collection(`businesses/${businessId}/cashCounts`);
 
@@ -211,7 +218,8 @@ async function auditBusiness({ businessId, startMs, endMs, absThreshold }) {
     try {
       const cashCount = doc.data().cashCount || {};
       const cashCountId = cashCount.id || doc.id;
-      const useCashMovements = isAccountingRolloutEnabledForBusiness(businessId);
+      const useCashMovements =
+        isAccountingRolloutEnabledForBusiness(businessId);
 
       let cashMovements = [];
       if (useCashMovements) {
@@ -297,19 +305,19 @@ async function auditBusiness({ businessId, startMs, endMs, absThreshold }) {
       const invoiceMetrics =
         salesMovementMetrics.count > 0
           ? {
-            card: salesMovementMetrics.card,
-            transfer: salesMovementMetrics.transfer,
-            collected: salesMovementMetrics.total,
-            invoiced: salesMovementMetrics.total,
-          }
+              card: salesMovementMetrics.card,
+              transfer: salesMovementMetrics.transfer,
+              collected: salesMovementMetrics.total,
+              invoiced: salesMovementMetrics.total,
+            }
           : legacyInvoiceMetrics;
       const arMetrics =
         receivableMovementMetrics.count > 0
           ? {
-            card: receivableMovementMetrics.card,
-            transfer: receivableMovementMetrics.transfer,
-            collected: receivableMovementMetrics.total,
-          }
+              card: receivableMovementMetrics.card,
+              transfer: receivableMovementMetrics.transfer,
+              collected: receivableMovementMetrics.total,
+            }
           : legacyReceivableMetrics;
       const totalExpenses =
         expenseMovementMetrics.count > 0
@@ -386,7 +394,9 @@ export const runCashCountAudit = https.onCall(async (data, context) => {
     allBusinesses = false,
   } = data || {};
 
-  const authUid = context?.auth?.uid || null;
+  const authUid = await resolveCallableAuthUid(
+    toCallableAuthRequest(data, context),
+  );
   if (!authUid) {
     throw new https.HttpsError('unauthenticated', 'Usuario no autenticado');
   }

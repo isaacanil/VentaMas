@@ -1,4 +1,3 @@
-import { Button } from '@heroui/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCashRegister,
@@ -12,6 +11,7 @@ import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
+import { VmButton } from '@/components/heroui';
 import ROUTES_NAME from '@/router/routes/routesName';
 
 import { DashboardAlertList } from './components/DashboardAlertList';
@@ -222,30 +222,30 @@ export const HomeDashboard = ({
               <HeaderMeta>{todayLabel}</HeaderMeta>
             </HeaderContent>
             <HeaderActions>
-              <Button
+              <VmButton
                 onPress={() => navigate(ROUTES_NAME.SALES_TERM.SALES)}
                 size="sm"
                 variant="primary"
               >
                 <FontAwesomeIcon icon={faCashRegister} />
                 Nueva venta
-              </Button>
-              <Button
+              </VmButton>
+              <VmButton
                 onPress={() => navigate(ROUTES_NAME.SALES_TERM.BILLS)}
                 size="sm"
                 variant="secondary"
               >
                 <FontAwesomeIcon icon={faReceipt} />
                 Facturas
-              </Button>
-              <Button
+              </VmButton>
+              <VmButton
                 onPress={() => navigate(ROUTES_NAME.SALES_TERM.BILLS_ANALYTICS)}
                 size="sm"
                 variant="secondary"
               >
                 <FontAwesomeIcon icon={faChartLine} />
                 Analíticas
-              </Button>
+              </VmButton>
             </HeaderActions>
           </HeaderBand>
         ) : null}

@@ -1,6 +1,6 @@
 import { Progress } from 'antd';
 
-import { ProgressBar, Stats } from '../LoginImageConfig.styles';
+import { ProgressBar, Stats } from './LoginImageProgress.styles';
 
 type LoginImageProgressProps = {
   compressedSize: number | null;

@@ -123,8 +123,8 @@ Crear un modulo nuevo:
 - Frontend: `src/modules/hrPayroll`
 - Backend Functions: `functions/src/app/modules/hrPayroll`
 - Tipos frontend: `src/types/hrPayroll.ts`
-- Utilidades compartidas: `src/utils/hrPayroll`
-- Firebase hooks: `src/firebase/hrPayroll`
+- Utilidades compartidas: `src/domain/hrPayroll` y `src/modules/hrPayroll/utils`
+- Firebase hooks/repositories: `src/modules/hrPayroll/repositories`
 
 Nombre visible en UI:
 
@@ -559,8 +559,8 @@ Antes de tocar codigo del MVP:
 Archivos esperados:
 
 - `src/types/hrPayroll.ts`
-- `src/firebase/hrPayroll/useHrEmployees.ts`
-- `src/modules/hrPayroll/pages/HrEmployeesPage`
+- `src/modules/hrPayroll/repositories/useHrEmployees.ts`
+- `src/modules/hrPayroll/pages/HrPayrollWorkspace`
 - `functions/src/app/modules/hrPayroll/functions/manageHrEmployee.js`
 - `functions/src/app/modules/hrPayroll/services/hrEmployees.service.js`
 - `firestore.rules`

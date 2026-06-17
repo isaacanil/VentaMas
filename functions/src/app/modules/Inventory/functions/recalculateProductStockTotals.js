@@ -2,17 +2,13 @@ import { logger } from 'firebase-functions';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 
 import { db, serverTimestamp } from '../../../core/config/firebase.js';
+import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.util.js';
 import {
   assertUserAccess,
   MEMBERSHIP_ROLE_GROUPS,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 import { assertBusinessSubscriptionAccess } from '../../../versions/v2/billing/utils/subscriptionAccess.util.js';
-
-const sanitizeQty = (value) => {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) return 0;
-  return parsed;
-};
+import { normalizePositiveStockQuantity } from '../utils/stockQuantity.util.js';
 
 export const recalculateProductStockTotals = onCall(
   {
@@ -26,7 +22,7 @@ export const recalculateProductStockTotals = onCall(
       dryRun = false,
     } = req.data || {};
 
-    const authUid = req.auth?.uid || null;
+    const authUid = await resolveCallableAuthUid(req);
     if (!authUid) {
       throw new HttpsError('unauthenticated', 'Usuario no autenticado.');
     }
@@ -124,7 +120,7 @@ export const recalculateProductStockTotals = onCall(
           continue;
         }
         if (data.status !== 'active') continue;
-        const qty = sanitizeQty(data.quantity);
+        const qty = normalizePositiveStockQuantity(data.quantity);
         if (!qty) continue;
         perProduct.set(productId, (perProduct.get(productId) || 0) + qty);
       }

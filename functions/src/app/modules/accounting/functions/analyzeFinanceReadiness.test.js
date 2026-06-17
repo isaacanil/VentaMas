@@ -5,11 +5,13 @@ const {
   collectionData,
   docData,
   getUserAccessProfileMock,
+  resolveCallableAuthUidMock,
 } = vi.hoisted(() => ({
   assertUserAccessMock: vi.fn(),
   collectionData: new Map(),
   docData: new Map(),
   getUserAccessProfileMock: vi.fn(),
+  resolveCallableAuthUidMock: vi.fn(),
 }));
 
 const makeDocSnap = (id, data = null) => ({
@@ -57,7 +59,11 @@ vi.mock('../../../core/config/firebase.js', () => ({
   },
 }));
 
-vi.mock('../../../versions/v2/invoice/services/repairTasks.service.js', () => ({
+vi.mock('../../../core/utils/callableSessionAuth.util.js', () => ({
+  resolveCallableAuthUid: (...args) => resolveCallableAuthUidMock(...args),
+}));
+
+vi.mock('../../../versions/v2/auth/services/userAccess.service.js', () => ({
   MEMBERSHIP_ROLE_GROUPS: {
     AUDIT: new Set([
       'owner',
@@ -80,10 +86,57 @@ describe('analyzeFinanceReadiness', () => {
     collectionData.clear();
     docData.clear();
     vi.clearAllMocks();
+    resolveCallableAuthUidMock.mockResolvedValue('dev-1');
     assertUserAccessMock.mockResolvedValue(undefined);
     getUserAccessProfileMock.mockResolvedValue({
       userSnap: { exists: true },
       hasGlobalUnscopedAccess: true,
+    });
+  });
+
+  it('rejects when no authenticated uid can be resolved', async () => {
+    const data = { businessId: 'business-1' };
+    const context = { auth: { uid: 'context-user' } };
+    resolveCallableAuthUidMock.mockResolvedValue(null);
+
+    await expect(analyzeFinanceReadiness(data, context)).rejects.toMatchObject({
+      code: 'unauthenticated',
+      message: 'Usuario no autenticado.',
+    });
+
+    expect(resolveCallableAuthUidMock).toHaveBeenCalledWith({
+      data,
+      auth: context.auth,
+    });
+    expect(assertUserAccessMock).not.toHaveBeenCalled();
+    expect(getUserAccessProfileMock).not.toHaveBeenCalled();
+  });
+
+  it('uses the uid resolved by callable auth for read access', async () => {
+    const data = { businessId: 'business-1' };
+    const context = { auth: { uid: 'context-user' } };
+    resolveCallableAuthUidMock.mockResolvedValue('resolved-user');
+    docData.set('businesses/business-1', { businessName: 'Resolved Demo' });
+
+    const result = await analyzeFinanceReadiness(data, context);
+
+    expect(result.status).toBe('done');
+    expect(resolveCallableAuthUidMock).toHaveBeenCalledWith({
+      data,
+      auth: context.auth,
+    });
+    expect(assertUserAccessMock).toHaveBeenCalledWith({
+      authUid: 'resolved-user',
+      businessId: 'business-1',
+      allowedRoles: new Set([
+        'owner',
+        'admin',
+        'manager',
+        'accountant',
+        'controller',
+        'auditor',
+        'dev',
+      ]),
     });
   });
 
@@ -231,6 +284,10 @@ describe('analyzeFinanceReadiness', () => {
           id: 'purchase-event',
           eventType: 'purchase.committed',
           sourceId: 'purchase-1',
+          projection: {
+            status: 'projected',
+            journalEntryId: 'purchase-entry',
+          },
         },
       },
       {
@@ -239,10 +296,29 @@ describe('analyzeFinanceReadiness', () => {
           id: 'payment-event',
           eventType: 'accounts_payable.payment.recorded',
           sourceId: 'payment-1',
+          projection: {
+            status: 'projected',
+            journalEntryId: 'payment-entry',
+          },
         },
       },
     ]);
-    collectionData.set('businesses/business-1/journalEntries', []);
+    collectionData.set('businesses/business-1/journalEntries', [
+      {
+        id: 'purchase-entry',
+        data: {
+          id: 'purchase-entry',
+          totals: { debit: 118, credit: 118 },
+        },
+      },
+      {
+        id: 'payment-entry',
+        data: {
+          id: 'payment-entry',
+          totals: { debit: 118, credit: 118 },
+        },
+      },
+    ]);
     collectionData.set('businesses/business-1/exchangeRates', []);
 
     const result = await analyzeFinanceReadiness(
@@ -258,5 +334,155 @@ describe('analyzeFinanceReadiness', () => {
       warnings: 0,
     });
     expect(result.businessResults[0].status).toBe('ready');
+  });
+
+  it('blocks readiness when a projected accounting event has no matching journal entry', async () => {
+    docData.set('businesses/business-1', { businessName: 'Projection Gap' });
+    docData.set('businesses/business-1/settings/accounting', {
+      functionalCurrency: 'DOP',
+    });
+    collectionData.set('businesses/business-1/purchases', []);
+    collectionData.set('businesses/business-1/vendorBills', []);
+    collectionData.set('businesses/business-1/accountsPayablePayments', []);
+    collectionData.set('businesses/business-1/accountsReceivablePayments', []);
+    collectionData.set('businesses/business-1/bankAccounts', []);
+    collectionData.set('businesses/business-1/cashCounts', []);
+    collectionData.set('businesses/business-1/cashMovements', []);
+    collectionData.set('businesses/business-1/accountingEvents', [
+      {
+        id: 'event-1',
+        data: {
+          id: 'event-1',
+          eventType: 'invoice.committed',
+          sourceId: 'invoice-1',
+          projection: {
+            status: 'projected',
+            journalEntryId: 'missing-entry',
+          },
+        },
+      },
+    ]);
+    collectionData.set('businesses/business-1/journalEntries', []);
+    collectionData.set('businesses/business-1/exchangeRates', []);
+
+    const result = await analyzeFinanceReadiness(
+      { businessId: 'business-1' },
+      { auth: { uid: 'dev-1' } },
+    );
+
+    expect(result.summary).toMatchObject({
+      blocked: 1,
+      blockers: 1,
+    });
+    expect(result.businessResults[0].modules.accounting.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'accounting_event_projected_journal_entry_missing',
+          documentId: 'event-1',
+          journalEntryId: 'missing-entry',
+        }),
+      ]),
+    );
+  });
+
+  it('blocks readiness when active projection dead letters exist', async () => {
+    docData.set('businesses/business-1', { businessName: 'Dead Letter Gap' });
+    docData.set('businesses/business-1/settings/accounting', {
+      functionalCurrency: 'DOP',
+    });
+    collectionData.set('businesses/business-1/purchases', []);
+    collectionData.set('businesses/business-1/vendorBills', []);
+    collectionData.set('businesses/business-1/accountsPayablePayments', []);
+    collectionData.set('businesses/business-1/accountsReceivablePayments', []);
+    collectionData.set('businesses/business-1/bankAccounts', []);
+    collectionData.set('businesses/business-1/cashCounts', []);
+    collectionData.set('businesses/business-1/cashMovements', []);
+    collectionData.set('businesses/business-1/accountingEvents', []);
+    collectionData.set('businesses/business-1/journalEntries', []);
+    collectionData.set(
+      'businesses/business-1/accountingEventProjectionDeadLetters',
+      [
+        {
+          id: 'dead-letter-1',
+          data: {
+            eventId: 'purchase.committed__purchase-1',
+            eventType: 'purchase.committed',
+            projectionStatus: 'pending_account_mapping',
+          },
+        },
+      ],
+    );
+    collectionData.set('businesses/business-1/exchangeRates', []);
+
+    const result = await analyzeFinanceReadiness(
+      { businessId: 'business-1' },
+      { auth: { uid: 'dev-1' } },
+    );
+
+    expect(result.summary).toMatchObject({
+      blocked: 1,
+      blockers: 1,
+    });
+    expect(result.businessResults[0].modules.accounting.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'accounting_projection_dead_letter_active',
+          documentId: 'dead-letter-1',
+          eventId: 'purchase.committed__purchase-1',
+        }),
+      ]),
+    );
+  });
+
+  it('blocks readiness when journal entries are unbalanced or events need account mapping', async () => {
+    docData.set('businesses/business-1', { businessName: 'Accounting Gaps' });
+    docData.set('businesses/business-1/settings/accounting', {
+      functionalCurrency: 'DOP',
+    });
+    collectionData.set('businesses/business-1/purchases', []);
+    collectionData.set('businesses/business-1/vendorBills', []);
+    collectionData.set('businesses/business-1/accountsPayablePayments', []);
+    collectionData.set('businesses/business-1/accountsReceivablePayments', []);
+    collectionData.set('businesses/business-1/bankAccounts', []);
+    collectionData.set('businesses/business-1/cashCounts', []);
+    collectionData.set('businesses/business-1/cashMovements', []);
+    collectionData.set('businesses/business-1/accountingEvents', [
+      {
+        id: 'event-1',
+        data: {
+          id: 'event-1',
+          eventType: 'expense.recorded',
+          sourceId: 'expense-1',
+          projection: {
+            status: 'pending_account_mapping',
+          },
+        },
+      },
+    ]);
+    collectionData.set('businesses/business-1/journalEntries', [
+      {
+        id: 'bad-entry',
+        data: {
+          id: 'bad-entry',
+          totals: { debit: 100, credit: 90 },
+        },
+      },
+    ]);
+    collectionData.set('businesses/business-1/exchangeRates', []);
+
+    const result = await analyzeFinanceReadiness(
+      { businessId: 'business-1' },
+      { auth: { uid: 'dev-1' } },
+    );
+
+    expect(result.summary.blocked).toBe(1);
+    expect(result.businessResults[0].modules.accounting.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ code: 'journal_entry_unbalanced' }),
+        expect.objectContaining({
+          code: 'accounting_event_pending_account_mapping',
+        }),
+      ]),
+    );
   });
 });

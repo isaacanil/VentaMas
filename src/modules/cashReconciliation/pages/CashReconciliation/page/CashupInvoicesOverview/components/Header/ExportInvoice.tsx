@@ -6,9 +6,9 @@ import { useState } from 'react';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
-import { createProfessionalReportCallback } from '@/hooks/exportToExcel/exportConfig';
-import { formatBill } from '@/hooks/exportToExcel/formatBill';
-import exportToExcel from '@/hooks/exportToExcel/useExportToExcel';
+import { createProfessionalReportCallback } from '@/utils/export/excel/exportConfig';
+import { formatBill } from '@/utils/export/excel/formatBill';
+import exportToExcel from '@/utils/export/excel/useExportToExcel';
 import type { CashCountInvoice } from '@/utils/cashCount/types';
 
 type ExportType = 'Resumen' | 'Detailed';

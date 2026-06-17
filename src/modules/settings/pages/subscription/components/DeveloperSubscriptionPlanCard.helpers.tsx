@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { ReactNode } from 'react';
 
 import { Muted } from './DeveloperSubscriptionPlanCard.styles';
-import { toFiniteNumber } from '../subscription.utils';
+import { formatMoney, toFiniteNumber } from '../subscription.utils';
 import type { UnknownRecord } from '../subscription.types';
 
 export const PREVIEW_LIMIT_KEYS: Array<{
@@ -40,12 +40,8 @@ export const PREVIEW_LIMIT_KEYS: Array<{
 ];
 
 export const formatPlanPrice = (amount: number | null): string => {
-  if (!amount) return 'Gratis';
-  return new Intl.NumberFormat('es-DO', {
-    style: 'currency',
-    currency: 'DOP',
-    maximumFractionDigits: 0,
-  }).format(amount);
+  if (amount == null || amount === 0) return 'Gratis';
+  return formatMoney(amount);
 };
 
 export const formatLimitValue = (value: unknown): ReactNode => {

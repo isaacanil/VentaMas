@@ -199,8 +199,8 @@ Esta implementación convierte VentaMax en un sistema completamente profesional 
 ## APIs / rutas
 
 - `generateGTIN13`, `generateGTIN14`, `getRecommendedStructure` (utils de barcode).
-- Hooks/Componentes: `BarcodeGenerator.jsx`, `BarCode.jsx` (selector de tamaños y validaciones).
-- Configuración persistente: `useBarcodeSettings` y servicios `barcodeSettings.js` / `barcodeGeneration.js`.
+- Hooks/Componentes: `BarcodeGenerator.tsx`, `BarCode.tsx` (selector de tamaños y validaciones).
+- Configuración persistente: `useBarcodeSettings` y servicios `barcodeSettings.ts` / `barcodeGeneration.ts`.
 - Impresión: estilos CSS `@page` dinámicos y modal de información técnica para usuarios.
 
 ## Versionado / compatibilidad
@@ -211,8 +211,8 @@ Esta implementación convierte VentaMax en un sistema completamente profesional 
 
 ## Recursos relacionados
 
-- `src/views/pages/Products/components/BarcodeGenerator.jsx`
-- `src/views/pages/Products/components/BarCode.jsx`
-- `src/hooks/useBarcodeSettings.js`
-- `src/firebase/barcode/barcodeSettings.js`
-- `src/firebase/barcode/barcodeGeneration.js`
+- `src/modules/products/components/ProductEditorModal/components/sections/BarcodeGenerator/BarcodeGenerator.tsx`
+- `src/modules/products/components/ProductEditorModal/components/sections/BarCode.tsx`
+- `src/modules/products/hooks/useBarcodeSettings.ts`
+- `src/firebase/barcode/barcodeSettings.ts`
+- `src/firebase/barcode/barcodeGeneration.ts`

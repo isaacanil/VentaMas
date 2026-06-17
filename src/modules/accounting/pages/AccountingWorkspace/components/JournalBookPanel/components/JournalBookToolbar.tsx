@@ -1,16 +1,16 @@
-import {
-  DateField,
-  DateRangePicker,
-  ListBox,
-  RangeCalendar,
-  SearchField,
-  Select,
-  Switch,
-} from '@heroui/react';
 import { parseDate } from '@internationalized/date';
 import type { Dispatch, SetStateAction } from 'react';
 import styled from 'styled-components';
 
+import {
+  VmDateField,
+  VmDateRangePicker,
+  VmListBox,
+  VmRangeCalendar,
+  VmSearchField,
+  VmSelect,
+  VmSwitch,
+} from '@/components/heroui';
 import { JOURNAL_TYPE_OPTIONS } from '../constants';
 
 interface JournalBookToolbarProps {
@@ -49,7 +49,7 @@ export const JournalBookToolbar = ({
   <Toolbar>
     <ToolbarField $width="compact" style={{ gridColumn: 'span 2' }}>
       <ToolbarLabel>Fechas</ToolbarLabel>
-      <DateRangePicker
+      <VmDateRangePicker
         value={
           dateFrom && dateTo
             ? { start: parseDate(dateFrom), end: parseDate(dateTo) }
@@ -66,53 +66,53 @@ export const JournalBookToolbar = ({
           }
         }}
       >
-        <DateField.Group fullWidth>
-          <DateField.Input slot="start">
-            {(segment) => <DateField.Segment segment={segment} />}
-          </DateField.Input>
-          <DateRangePicker.RangeSeparator />
-          <DateField.Input slot="end">
-            {(segment) => <DateField.Segment segment={segment} />}
-          </DateField.Input>
-          <DateField.Suffix>
-            <DateRangePicker.Trigger>
-              <DateRangePicker.TriggerIndicator />
-            </DateRangePicker.Trigger>
-          </DateField.Suffix>
-        </DateField.Group>
-        <DateRangePicker.Popover>
-          <RangeCalendar>
-            <RangeCalendar.Header>
-              <RangeCalendar.YearPickerTrigger>
-                <RangeCalendar.YearPickerTriggerHeading />
-                <RangeCalendar.YearPickerTriggerIndicator />
-              </RangeCalendar.YearPickerTrigger>
-              <RangeCalendar.NavButton slot="previous" />
-              <RangeCalendar.NavButton slot="next" />
-            </RangeCalendar.Header>
-            <RangeCalendar.Grid>
-              <RangeCalendar.GridHeader>
+        <VmDateField.Group fullWidth>
+          <VmDateField.Input slot="start">
+            {(segment) => <VmDateField.Segment segment={segment} />}
+          </VmDateField.Input>
+          <VmDateRangePicker.RangeSeparator />
+          <VmDateField.Input slot="end">
+            {(segment) => <VmDateField.Segment segment={segment} />}
+          </VmDateField.Input>
+          <VmDateField.Suffix>
+            <VmDateRangePicker.Trigger>
+              <VmDateRangePicker.TriggerIndicator />
+            </VmDateRangePicker.Trigger>
+          </VmDateField.Suffix>
+        </VmDateField.Group>
+        <VmDateRangePicker.Popover>
+          <VmRangeCalendar>
+            <VmRangeCalendar.Header>
+              <VmRangeCalendar.YearPickerTrigger>
+                <VmRangeCalendar.YearPickerTriggerHeading />
+                <VmRangeCalendar.YearPickerTriggerIndicator />
+              </VmRangeCalendar.YearPickerTrigger>
+              <VmRangeCalendar.NavButton slot="previous" />
+              <VmRangeCalendar.NavButton slot="next" />
+            </VmRangeCalendar.Header>
+            <VmRangeCalendar.Grid>
+              <VmRangeCalendar.GridHeader>
                 {(day) => (
-                  <RangeCalendar.HeaderCell>{day}</RangeCalendar.HeaderCell>
+                  <VmRangeCalendar.HeaderCell>{day}</VmRangeCalendar.HeaderCell>
                 )}
-              </RangeCalendar.GridHeader>
-              <RangeCalendar.GridBody>
-                {(date) => <RangeCalendar.Cell date={date} />}
-              </RangeCalendar.GridBody>
-            </RangeCalendar.Grid>
-            <RangeCalendar.YearPickerGrid>
-              <RangeCalendar.YearPickerGridBody>
-                {({ year }) => <RangeCalendar.YearPickerCell year={year} />}
-              </RangeCalendar.YearPickerGridBody>
-            </RangeCalendar.YearPickerGrid>
-          </RangeCalendar>
-        </DateRangePicker.Popover>
-      </DateRangePicker>
+              </VmRangeCalendar.GridHeader>
+              <VmRangeCalendar.GridBody>
+                {(date) => <VmRangeCalendar.Cell date={date} />}
+              </VmRangeCalendar.GridBody>
+            </VmRangeCalendar.Grid>
+            <VmRangeCalendar.YearPickerGrid>
+              <VmRangeCalendar.YearPickerGridBody>
+                {({ year }) => <VmRangeCalendar.YearPickerCell year={year} />}
+              </VmRangeCalendar.YearPickerGridBody>
+            </VmRangeCalendar.YearPickerGrid>
+          </VmRangeCalendar>
+        </VmDateRangePicker.Popover>
+      </VmDateRangePicker>
     </ToolbarField>
 
     <ToolbarField $width="compact">
       <ToolbarLabel htmlFor="journal-type">Tipo</ToolbarLabel>
-      <Select
+      <VmSelect
         id="journal-type"
         value={typeFilter}
         onChange={(value) => {
@@ -122,30 +122,30 @@ export const JournalBookToolbar = ({
           }
         }}
       >
-        <Select.Trigger>
-          <Select.Value />
-          <Select.Indicator />
-        </Select.Trigger>
-        <Select.Popover>
-          <ListBox>
+        <VmSelect.Trigger>
+          <VmSelect.Value />
+          <VmSelect.Indicator />
+        </VmSelect.Trigger>
+        <VmSelect.Popover>
+          <VmListBox>
             {JOURNAL_TYPE_OPTIONS.map((option) => (
-              <ListBox.Item
+              <VmListBox.Item
                 key={option.value}
                 id={option.value}
                 textValue={option.label}
               >
                 {option.label}
-                <ListBox.ItemIndicator />
-              </ListBox.Item>
+                <VmListBox.ItemIndicator />
+              </VmListBox.Item>
             ))}
-          </ListBox>
-        </Select.Popover>
-      </Select>
+          </VmListBox>
+        </VmSelect.Popover>
+      </VmSelect>
     </ToolbarField>
 
     <ToolbarField $width="compact">
       <ToolbarLabel htmlFor="journal-module">Modulo</ToolbarLabel>
-      <Select
+      <VmSelect
         id="journal-module"
         value={moduleFilter}
         onChange={(value) => {
@@ -155,30 +155,30 @@ export const JournalBookToolbar = ({
           }
         }}
       >
-        <Select.Trigger>
-          <Select.Value />
-          <Select.Indicator />
-        </Select.Trigger>
-        <Select.Popover>
-          <ListBox>
-            <ListBox.Item id="all" textValue="Todos">
+        <VmSelect.Trigger>
+          <VmSelect.Value />
+          <VmSelect.Indicator />
+        </VmSelect.Trigger>
+        <VmSelect.Popover>
+          <VmListBox>
+            <VmListBox.Item id="all" textValue="Todos">
               Todos
-              <ListBox.ItemIndicator />
-            </ListBox.Item>
+              <VmListBox.ItemIndicator />
+            </VmListBox.Item>
             {moduleOptions.map((option) => (
-              <ListBox.Item key={option} id={option} textValue={option}>
+              <VmListBox.Item key={option} id={option} textValue={option}>
                 {option}
-                <ListBox.ItemIndicator />
-              </ListBox.Item>
+                <VmListBox.ItemIndicator />
+              </VmListBox.Item>
             ))}
-          </ListBox>
-        </Select.Popover>
-      </Select>
+          </VmListBox>
+        </VmSelect.Popover>
+      </VmSelect>
     </ToolbarField>
 
     <ToolbarField $width="search">
       <ToolbarLabel htmlFor="journal-search">Buscar</ToolbarLabel>
-      <SearchField
+      <VmSearchField
         variant="secondary"
         aria-label="Buscar asientos"
         value={query}
@@ -187,19 +187,19 @@ export const JournalBookToolbar = ({
           setQuery(value);
         }}
       >
-        <SearchField.Group>
-          <SearchField.SearchIcon />
-          <SearchField.Input
+        <VmSearchField.Group>
+          <VmSearchField.SearchIcon />
+          <VmSearchField.Input
             id="journal-search"
             placeholder="NCF, referencia, descripcion o cuenta"
           />
-          <SearchField.ClearButton />
-        </SearchField.Group>
-      </SearchField>
+          <VmSearchField.ClearButton />
+        </VmSearchField.Group>
+      </VmSearchField>
     </ToolbarField>
 
     <ToolbarToggle>
-      <Switch
+      <VmSwitch
         id="journal-preview-only"
         isSelected={previewOnly}
         onChange={(isSelected) => {
@@ -207,13 +207,13 @@ export const JournalBookToolbar = ({
           setPreviewOnly(isSelected);
         }}
       >
-        <Switch.Control>
-          <Switch.Thumb />
-        </Switch.Control>
-        <Switch.Content>
+        <VmSwitch.Control>
+          <VmSwitch.Thumb />
+        </VmSwitch.Control>
+        <VmSwitch.Content>
           <ToggleLabel>Solo previos (No posteados)</ToggleLabel>
-        </Switch.Content>
-      </Switch>
+        </VmSwitch.Content>
+      </VmSwitch>
     </ToolbarToggle>
   </Toolbar>
 );

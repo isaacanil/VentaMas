@@ -12,7 +12,7 @@ import {
 } from 'antd';
 import React from 'react';
 
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 import { PRESETS, getRangeFromPreset } from './utils/presets';
 import { runFiscalReceiptsAudit } from './utils/runFiscalReceiptsAudit';

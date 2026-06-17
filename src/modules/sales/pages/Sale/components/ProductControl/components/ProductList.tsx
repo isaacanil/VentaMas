@@ -7,9 +7,9 @@ import styled from 'styled-components';
 
 import ROUTES_NAME from '@/router/routes/routesName';
 import { StatusBar } from '@/modules/sales/pages/Sale/components/StatusBar/StatusBar';
-import { CenteredText } from '@/components/ui/CentredText';
-import { CustomProduct } from '@/components/ui/Product/CustomProduct';
-import { Product } from '@/components/ui/Product/Product/Product';
+import { CenteredText } from '@/components/ui/CenteredText';
+import { CustomProduct } from './ProductCard/CustomProduct';
+import { Product } from './ProductCard/Product/Product';
 import type { ProductRecord } from '@/types/products';
 
 const GridList = styled.div`

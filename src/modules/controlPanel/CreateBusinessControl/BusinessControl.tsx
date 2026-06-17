@@ -14,7 +14,7 @@ import styled from 'styled-components';
 import { PageShell } from '@/components/layout/PageShell';
 import { selectAuthReady, selectUser } from '@/features/auth/userSlice';
 import { BusinessEditModal } from '@/modules/controlPanel/BusinessEditModal/BusinessEditModal';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import { hasDeveloperAccess } from '@/utils/access/developerAccess';
 
 import { BusinessCard } from './components/BusinessCard/BusinessCard';

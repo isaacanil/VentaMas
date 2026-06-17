@@ -1,14 +1,15 @@
-import { NotFound } from '@/modules/app/pages/NotFound/NotFound';
+import { NotFound } from '@/modules/app/public';
 import accountReceivable from '@/router/routes/paths/AccountReceivable';
 import accountsPayable from '@/router/routes/paths/AccountsPayable';
 import accounting from '@/router/routes/paths/Accounting';
 import auth from '@/router/routes/paths/Auth';
 import authorizations from '@/router/routes/paths/Authorizations';
 import basic from '@/router/routes/paths/Basic';
-import cashReconciliation from '@/router/routes/paths/CashReconciliztion';
+import cashReconciliation from '@/router/routes/paths/CashReconciliation';
 import changelogs from '@/router/routes/paths/Changelogs';
 import contacts from '@/router/routes/paths/Contact';
 import creditNote from '@/router/routes/paths/CreditNote';
+import debitNote from '@/router/routes/paths/DebitNote';
 import dev from '@/router/routes/paths/Dev';
 import expenses from '@/router/routes/paths/Expenses';
 import hrPayroll from '@/router/routes/paths/HrPayroll';
@@ -48,6 +49,7 @@ const baseRawRoutes = [
   ...accountReceivable,
   ...(insurance as AppRoute[]),
   ...(creditNote as AppRoute[]),
+  ...(debitNote as AppRoute[]),
   ...(authorizations as AppRoute[]),
   {
     path: '*',

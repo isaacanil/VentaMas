@@ -1,22 +1,55 @@
 import fs from 'fs';
 
 /**
- * Este script analiza la salida de 'tsc --noEmit' para encontrar errores específicos
- * de exportaciones faltantes o propiedades inexistentes.
+ * Analiza un log de TypeScript para encontrar errores específicos de
+ * exportaciones faltantes o propiedades inexistentes.
+ *
+ * No revisa límites entre módulos ni dependencias; ese guard vive en
+ * src/modules/moduleBoundaries.test.ts.
  */
 
-const LOG_FILE = 'tsc_audit.txt';
+const DEFAULT_LOG_FILE = 'tsc_audit.txt';
+const HELP_FLAGS = new Set(['--help', '-h', 'help']);
+
+function printHelp() {
+  console.log(`
+Analiza un log de TypeScript y resume errores TS2305/TS2339.
+
+Uso:
+  node .\\tools\\audit-imports.js [ruta-del-log]
+
+Ejemplos:
+  npm run typecheck:app *> .\\tsc_audit.txt
+  node .\\tools\\audit-imports.js
+  node .\\tools\\audit-imports.js .\\tmp\\tsc_audit.txt
+
+Notas:
+  - Lee .\\tsc_audit.txt por defecto.
+  - No valida límites entre módulos ni dependencias.
+  - Para límites entre módulos usa src\\modules\\moduleBoundaries.test.ts.
+`);
+}
 
 async function main() {
-  if (!fs.existsSync(LOG_FILE)) {
+  const [logFileArg] = process.argv.slice(2);
+
+  if (HELP_FLAGS.has(logFileArg)) {
+    printHelp();
+    return;
+  }
+
+  const logFile = logFileArg ?? DEFAULT_LOG_FILE;
+
+  if (!fs.existsSync(logFile)) {
     console.error(
-      `No se encontró el archivo ${LOG_FILE}. Ejecuta 'npm run typecheck > ${LOG_FILE}' primero.`,
+      `No se encontró el archivo ${logFile}. Ejecuta 'npm run typecheck:app *> .\\${DEFAULT_LOG_FILE}' primero.`,
     );
+    process.exitCode = 1;
     return;
   }
 
   // Intentamos leer como UTF-8, pero si falla o se ve raro, tsc en Windows suele usar UTF-16LE si se redirige con > en PS
-  let rawContent = fs.readFileSync(LOG_FILE);
+  let rawContent = fs.readFileSync(logFile);
   let content = '';
 
   // Check for UTF-16 BOM or null characters (indicative of UTF-16LE)
@@ -68,7 +101,7 @@ async function main() {
     }
   }
 
-  console.log('\n🔍 --- REPORTE DE ERRORES DE INTEGRACIÓN ---\n');
+  console.log('\n🔍 --- REPORTE DE ERRORES DE TYPECHECK ---\n');
 
   if (missingExports.length > 0) {
     console.log('❌ EXPORTACIONES FALTANTES (Broken Imports):');
@@ -97,4 +130,7 @@ async function main() {
   console.log('-------------------------------------------\n');
 }
 
-main().catch(console.error);
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

@@ -1,10 +1,10 @@
 import { HomeOutlined, RollbackOutlined } from '@/constants/icons/antd';
-import { Alert, Button } from '@heroui/react';
 import { m } from 'framer-motion';
 import React from 'react';
 import styled from 'styled-components';
 
 import { Logo } from '@/assets/logo/Logo';
+import { VmAlert, VmButton } from '@/components/heroui';
 import { hasDeveloperAccess } from '@/utils/access/developerAccess';
 
 import { ErrorCard } from './components/ErrorCard';
@@ -44,23 +44,23 @@ export const ErrorElement = ({
           </LogoWrapper>
 
           <StyledAlert status="danger">
-            <Alert.Indicator />
-            <Alert.Content>
-              <Alert.Title>{MESSAGES.ERROR_TITLE}</Alert.Title>
-              <Alert.Description>
+            <VmAlert.Indicator />
+            <VmAlert.Content>
+              <VmAlert.Title>{MESSAGES.ERROR_TITLE}</VmAlert.Title>
+              <VmAlert.Description>
                 {MESSAGES.ERROR_DESCRIPTION}
-              </Alert.Description>
-            </Alert.Content>
+              </VmAlert.Description>
+            </VmAlert.Content>
           </StyledAlert>
 
           <ButtonGroup>
             {canGoBack && (
-              <Button variant="secondary" size="lg" onPress={handleGoBack}>
+              <VmButton variant="secondary" size="lg" onPress={handleGoBack}>
                 <RollbackOutlined />
                 {MESSAGES.GO_BACK}
-              </Button>
+              </VmButton>
             )}
-            <Button
+            <VmButton
               variant="primary"
               size="lg"
               onPress={handleBack}
@@ -68,7 +68,7 @@ export const ErrorElement = ({
             >
               <HomeOutlined />
               {MESSAGES.GO_HOME}
-            </Button>
+            </VmButton>
           </ButtonGroup>
           {hasDeveloperAccess(user) && (
             <ErrorDetails
@@ -108,7 +108,7 @@ const LogoWrapper = styled(m.div)`
   filter: drop-shadow(0 4px 8px rgb(0 0 0 / 8%));
 `;
 
-const StyledAlert = styled(Alert)`
+const StyledAlert = styled(VmAlert)`
   width: 100%;
   border: 1px solid var(--ds-color-state-danger-border, #fecaca);
   background: var(--ds-color-state-danger-subtle, #fef2f2);

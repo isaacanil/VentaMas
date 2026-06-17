@@ -24,7 +24,7 @@ Este documento explica paso a paso qué ocurre en el sistema cuando se **complet
 
 ### 1. Punto de Entrada
 
-Archivo clave: `src/firebase/purchase/fbCompletePurchase.js`
+Archivo clave: `src/firebase/purchase/fbCompletePurchase.ts`
 
 Función: `fbCompletePurchase({ user, purchase, localFiles, setLoading })`
 
@@ -57,7 +57,7 @@ Durante la finalización, el código utiliza `item.quantity` para sumar existenc
 
 ### 3. Manejo del Almacén por Defecto
 
-Archivo: `src/firebase/warehouse/warehouseService.js`
+Archivo: `src/firebase/warehouse/warehouseService.ts`
 
 Función: `getDefaultWarehouse(user)`
 
@@ -79,7 +79,7 @@ Este almacén se usa como destino inicial de todos los ingresos de compras.
 
 ### 4. Agrupación para Crear Batches
 
-Función: `updatePurchaseWarehouseStock(user, purchase, defaultWarehouse)` (dentro de `fbCompletePurchase.js`).
+Función: `updatePurchaseWarehouseStock(user, purchase, defaultWarehouse)` (dentro de `fbCompletePurchase.ts`).
 
 Agrupa las líneas de la compra por la clave:
 
@@ -105,7 +105,7 @@ batchId = `${purchase.id}_${productId}_${new Date(expirationDate).getTime()}`
 
 ### 5. Creación del Batch
 
-Archivo: `src/firebase/warehouse/batchService.js`
+Archivo: `src/firebase/warehouse/batchService.ts`
 
 Función utilizada: `createBatch(user, batchData)`
 
@@ -145,7 +145,7 @@ Si `totalStock === 0`, el batch se crea con `status: 'inactive'`.
 
 ### 6. Creación de ProductStock
 
-Archivo: `src/firebase/warehouse/productStockService.js`
+Archivo: `src/firebase/warehouse/productStockService.ts`
 
 Función: `createProductStock(user, productStockData)`
 
@@ -271,13 +271,13 @@ Esto asegura que al completar una compra no se “sobredoble” el stock de unid
 
 | Concepto               | Archivo                                     | Función                                       |
 | ---------------------- | ------------------------------------------- | --------------------------------------------- |
-| Completar compra       | `firebase/purchase/fbCompletePurchase.js`   | `fbCompletePurchase`                          |
-| Crear batch            | `firebase/warehouse/batchService.js`        | `createBatch`                                 |
-| Crear productStock     | `firebase/warehouse/productStockService.js` | `createProductStock`                          |
-| Almacén por defecto    | `firebase/warehouse/warehouseService.js`    | `getDefaultWarehouse`                         |
-| Backorders (reservar)  | `firebase/purchase/fbAddPurchase.js`        | `addPurchase`                                 |
-| Backorders (completar) | `firebase/purchase/fbCompletePurchase.js`   | `updatePurchaseWarehouseStock` (loop interno) |
-| Movimiento inventario  | `firebase/purchase/fbCompletePurchase.js`   | creación directa con `setDoc`                 |
+| Completar compra       | `firebase/purchase/fbCompletePurchase.ts`   | `fbCompletePurchase`                          |
+| Crear batch            | `firebase/warehouse/batchService.ts`        | `createBatch`                                 |
+| Crear productStock     | `firebase/warehouse/productStockService.ts` | `createProductStock`                          |
+| Almacén por defecto    | `firebase/warehouse/warehouseService.ts`    | `getDefaultWarehouse`                         |
+| Backorders (reservar)  | `firebase/purchase/fbAddPurchase.ts`        | `addPurchase`                                 |
+| Backorders (completar) | `firebase/purchase/fbCompletePurchase.ts`   | `updatePurchaseWarehouseStock` (loop interno) |
+| Movimiento inventario  | `firebase/purchase/fbCompletePurchase.ts`   | creación directa con `setDoc`                 |
 
 ---
 

@@ -1,6 +1,6 @@
 import { Button, Popconfirm, Space, Tag, message } from 'antd';
 import React from 'react';
-import type { ColumnsType } from 'antd/es/table';
+import type { TableColumnsType as ColumnsType } from 'antd';
 
 import { syncProductsStockFromProductsStock } from '@/firebase/warehouse/stockSyncService';
 

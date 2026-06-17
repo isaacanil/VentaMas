@@ -1,23 +1,12 @@
-import {
-    LinearScale,
-    CategoryScale,
-    BarElement,
-    Chart as ChartJS,
-    Tooltip,
-    type ChartData,
-    type ChartOptions,
-    type TooltipItem,
-} from "chart.js";
-import React, { useMemo, useRef } from 'react';
-import { Bar } from 'react-chartjs-2';
+import { useMemo } from 'react';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
-import Typography from '@/components/ui/Typografy/Typografy';
+import { LazyBar } from '@/components/charts/LazyCharts';
+import { createCurrencyBarChartOptions } from '@/components/charts/currencyBarChartOptions';
+import { createSingleDatasetBarData } from '@/components/charts/barChartData';
+import Typography from '@/components/ui/Typography/Typography';
 import type { Purchase, PurchaseReplenishment } from '@/utils/purchase/types';
-import { calculateReplenishmentTotals } from '@/utils/order/totals';
-
-ChartJS.register(LinearScale, CategoryScale, BarElement, Tooltip);
+import { calculateReplenishmentTotals } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/utils/replenishmentTotals';
 
 type PurchaseData = Purchase;
 
@@ -36,38 +25,11 @@ const toNumber = (value: unknown): number => {
     return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const options: ChartOptions<'bar'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-        y: {
-            beginAtZero: true,
-            title: {
-                display: true,
-                text: 'Monto de Compras',
-            },
-        },
-        x: {
-            title: {
-                display: true,
-                text: 'Categoría',
-            },
-        },
-    },
-    plugins: {
-        tooltip: {
-            callbacks: {
-                label: (context: TooltipItem<'bar'>) => {
-                    let label = context.dataset.label || '';
-                    if (label) {
-                        label += " " + formatPrice(context.parsed.y);
-                    }
-                    return label;
-                },
-            },
-        },
-    },
-};
+const options = createCurrencyBarChartOptions({
+    yAxisTitle: 'Monto de Compras',
+    xAxisTitle: 'Categoría',
+    tooltipSeparator: ' ',
+});
 
 const accumulatePurchaseDataByCategory = (purchases: PurchaseRecord[]): CategoryTotals => {
     return purchases.reduce<CategoryTotals>((acc, purchase) => {
@@ -103,23 +65,16 @@ export const CategoryPurchasesBarChart = ({ purchases }: CategoryPurchasesBarCha
         const labels = Object.keys(purchasesByCategory);
         const dataTotals = labels.map((label) => purchasesByCategory[label]?.total ?? 0);
 
-        const chartData: ChartData<'bar', number[], string> = {
+        const chartData = createSingleDatasetBarData({
             labels,
-            datasets: [
-                {
-                    label: 'Compras',
-                    data: dataTotals,
-                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                    borderColor: 'rgba(153, 102, 255, 1)',
-                    borderWidth: 1,
-                },
-            ],
-        };
+            values: dataTotals,
+            datasetLabel: 'Compras',
+            backgroundColor: 'rgba(153, 102, 255, 0.2)',
+            borderColor: 'rgba(153, 102, 255, 1)',
+        });
 
         return chartData;
     }, [purchasesByCategory]);
-
-    const chartRef = useRef<ChartJS<'bar', number[], string> | null>(null);
 
     if (!normalizedPurchases.length) {
         return null;
@@ -128,7 +83,7 @@ export const CategoryPurchasesBarChart = ({ purchases }: CategoryPurchasesBarCha
     return (
         <Container>
             <Typography variant='h3'>Compras Totales por Categoría</Typography>
-            <Bar ref={chartRef} data={data} options={options} />
+            <LazyBar data={data} options={options} />
         </Container>
     )
 }

@@ -5,7 +5,7 @@ import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.
 import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 import { LIMIT_OPERATION_KEYS } from '../../../versions/v2/billing/config/limitOperations.config.js';
 import { assertBusinessSubscriptionAccess } from '../../../versions/v2/billing/utils/subscriptionAccess.util.js';
 import {
@@ -19,6 +19,7 @@ import {
   THRESHOLD,
   asRecord,
   buildPurchasePaymentState,
+  buildSupplierCreditNoteApplicationId,
   normalizePaymentMethodsForAggregation,
   resolvePaymentAmount,
   resolvePurchaseDocumentTotal,
@@ -32,6 +33,9 @@ import {
   buildVendorBillProjection,
   resolvePurchaseIdFromVendorBillRecord,
 } from './vendorBill.shared.js';
+import {
+  isCashMovementReconciledOrLinked,
+} from '../../treasury/utils/cashMovementReconciliation.util.js';
 
 const aggregatePaymentCreditNotes = (paymentRecord) =>
   normalizePaymentMethodsForAggregation(paymentRecord).reduce(
@@ -53,6 +57,26 @@ const aggregatePaymentCreditNotes = (paymentRecord) =>
     new Map(),
   );
 
+const resolveSupplierCreditNoteApplicationId = ({
+  creditNoteId,
+  paymentId,
+  paymentRecord,
+}) => {
+  const appliedCreditNotes = Array.isArray(
+    paymentRecord.metadata?.appliedCreditNotes,
+  )
+    ? paymentRecord.metadata.appliedCreditNotes
+    : [];
+  const matchingApplication = appliedCreditNotes.find(
+    (entry) => toCleanString(entry?.id) === creditNoteId,
+  );
+
+  return (
+    toCleanString(matchingApplication?.applicationId) ??
+    buildSupplierCreditNoteApplicationId({ creditNoteId, paymentId })
+  );
+};
+
 const buildVoidResponse = ({
   paymentRecord,
   paymentState,
@@ -68,14 +92,6 @@ const buildVoidResponse = ({
   restoredCreditNotes: sanitizeForResponse(restoredCreditNotes),
   payment: sanitizeForResponse(paymentRecord),
 });
-
-const isReconciledMovement = (movementRecord) =>
-  Boolean(
-    toCleanString(movementRecord.reconciliationId) ||
-      toCleanString(movementRecord.bankStatementLineId) ||
-      toCleanString(movementRecord.reconciliationStatus)?.toLowerCase() ===
-        'reconciled',
-  );
 
 export const voidSupplierPayment = onCall(async (request) => {
   const authUid = await resolveCallableAuthUid(request);
@@ -195,7 +211,7 @@ export const voidSupplierPayment = onCall(async (request) => {
       .where('sourceId', '==', paymentId);
     const cashMovementsSnap = await transaction.get(cashMovementsQuery);
     const reconciledMovement = cashMovementsSnap.docs.find((docSnap) =>
-      isReconciledMovement(asRecord(docSnap.data())),
+      isCashMovementReconciledOrLinked(asRecord(docSnap.data())),
     );
     if (reconciledMovement) {
       throw new HttpsError(
@@ -255,6 +271,7 @@ export const voidSupplierPayment = onCall(async (request) => {
           : null,
     });
 
+    const now = Timestamp.now();
     const restoredCreditNotes = [];
     for (const [creditNoteId, restoreAmount] of aggregatePaymentCreditNotes(
       paymentRecord,
@@ -291,6 +308,11 @@ export const voidSupplierPayment = onCall(async (request) => {
       const nextRemainingAmount = roundToTwoDecimals(
         Math.max(totalAmount - nextAppliedAmount, 0),
       );
+      const applicationId = resolveSupplierCreditNoteApplicationId({
+        creditNoteId,
+        paymentId,
+        paymentRecord,
+      });
 
       transaction.set(
         creditNoteRef,
@@ -298,15 +320,47 @@ export const voidSupplierPayment = onCall(async (request) => {
           appliedAmount: nextAppliedAmount,
           remainingAmount: nextRemainingAmount,
           status: nextRemainingAmount <= THRESHOLD ? 'applied' : 'open',
-          updatedAt: Timestamp.now(),
+          updatedAt: now,
           updatedBy: authUid,
           lastVoidedPaymentId: paymentId,
+        },
+        { merge: true },
+      );
+      transaction.set(
+        db.doc(
+          `businesses/${businessId}/supplierCreditNoteApplications/${applicationId}`,
+        ),
+        {
+          id: applicationId,
+          businessId,
+          supplierCreditNoteId: creditNoteId,
+          paymentId,
+          purchaseId,
+          vendorBillId,
+          supplierId: toCleanString(paymentRecord.supplierId),
+          status: 'voided',
+          amount: restoreAmount,
+          restoredAmount: restoreAmount,
+          previousAppliedAmount: currentAppliedAmount,
+          nextAppliedAmount,
+          previousRemainingAmount: roundToTwoDecimals(
+            Math.max(totalAmount - currentAppliedAmount, 0),
+          ),
+          nextRemainingAmount,
+          voidedAt: now,
+          voidedBy: authUid,
+          voidReason: reason,
+          updatedAt: now,
+          updatedBy: authUid,
+          sourceType: 'accountsPayablePayment',
+          sourceId: paymentId,
         },
         { merge: true },
       );
 
       restoredCreditNotes.push({
         id: creditNoteId,
+        applicationId,
         restoredAmount: restoreAmount,
         remainingAmount: nextRemainingAmount,
       });
@@ -317,9 +371,9 @@ export const voidSupplierPayment = onCall(async (request) => {
       {
         vendorBillId,
         status: 'void',
-        updatedAt: Timestamp.now(),
+        updatedAt: now,
         updatedBy: authUid,
-        voidedAt: Timestamp.now(),
+        voidedAt: now,
         voidedBy: authUid,
         voidReason: reason,
         metadata: {
@@ -373,9 +427,9 @@ export const voidSupplierPayment = onCall(async (request) => {
         ...paymentRecord,
         vendorBillId,
         status: 'void',
-        updatedAt: Timestamp.now(),
+        updatedAt: now,
         updatedBy: authUid,
-        voidedAt: Timestamp.now(),
+        voidedAt: now,
         voidedBy: authUid,
         voidReason: reason,
         metadata: {

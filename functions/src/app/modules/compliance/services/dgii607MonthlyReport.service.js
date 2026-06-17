@@ -5,31 +5,14 @@ import {
   isConsumerFinalNcf,
   resolvePaymentAmounts,
 } from './dgii607ValidationEngine.service.js';
-
-const PERIOD_KEY_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/;
-
-const isRecord = (value) =>
-  value !== null && typeof value === 'object' && !Array.isArray(value);
-
-const toCleanString = (value) => {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return String(value);
-  }
-
-  if (typeof value !== 'string') return null;
-
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
-
-const toFiniteNumber = (value) => {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string' && value.trim().length) {
-    const normalized = Number(value);
-    return Number.isFinite(normalized) ? normalized : null;
-  }
-  return null;
-};
+import {
+  buildIssueSummary,
+  isRecord,
+  resolveMonthlyPeriodRange,
+  toCleanString,
+  toDate,
+  toFiniteNumber,
+} from './dgiiMonthlyReportShared.util.js';
 
 const toPositiveNumberOrNull = (value) => {
   const parsed = toFiniteNumber(value);
@@ -38,47 +21,6 @@ const toPositiveNumberOrNull = (value) => {
 
 const sumFiniteNumbers = (...values) =>
   values.reduce((total, value) => total + (toFiniteNumber(value) ?? 0), 0);
-
-const toDate = (value) => {
-  if (!value) return null;
-
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? null : value;
-  }
-
-  if (typeof value?.toDate === 'function') {
-    const normalized = value.toDate();
-    return normalized instanceof Date && !Number.isNaN(normalized.getTime())
-      ? normalized
-      : null;
-  }
-
-  if (typeof value?.toMillis === 'function') {
-    const millis = value.toMillis();
-    if (typeof millis === 'number' && Number.isFinite(millis)) {
-      return new Date(millis);
-    }
-  }
-
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return new Date(value);
-  }
-
-  if (typeof value === 'string' && value.trim().length) {
-    const normalized = new Date(value);
-    return Number.isNaN(normalized.getTime()) ? null : normalized;
-  }
-
-  if (isRecord(value) && typeof value.seconds === 'number') {
-    const milliseconds =
-      value.seconds * 1000 +
-      Math.floor((Number(value.nanoseconds) || 0) / 1000000);
-    const normalized = new Date(milliseconds);
-    return Number.isNaN(normalized.getTime()) ? null : normalized;
-  }
-
-  return null;
-};
 
 const EXCLUDED_DGII_607_STATUSES = new Set([
   'cancelled',
@@ -142,6 +84,9 @@ const resolveInvoicePayload = (invoiceDoc) =>
 const resolveCreditNotePayload = (creditNoteDoc) =>
   isRecord(creditNoteDoc?.data) ? creditNoteDoc.data : creditNoteDoc;
 
+const resolveDebitNotePayload = (debitNoteDoc) =>
+  isRecord(debitNoteDoc?.data) ? debitNoteDoc.data : debitNoteDoc;
+
 const resolveWithholdingPayload = (withholdingDoc) =>
   isRecord(withholdingDoc?.data) ? withholdingDoc.data : withholdingDoc;
 
@@ -163,15 +108,15 @@ const resolveCreditNoteTotalAmount = (creditNoteData) =>
   toFiniteNumber(creditNoteData?.monetary?.totalAmount) ??
   toFiniteNumber(creditNoteData?.monetary?.functionalTotals?.total);
 
-const resolveCreditNoteInvoiceNcf = (creditNoteData) =>
-  toCleanString(creditNoteData?.invoiceNcf) ??
-  toCleanString(creditNoteData?.invoiceNCF) ??
-  toCleanString(creditNoteData?.modifiedNcf) ??
-  toCleanString(creditNoteData?.modifiedNCF) ??
-  toCleanString(creditNoteData?.invoice?.ncf) ??
-  toCleanString(creditNoteData?.invoice?.NCF) ??
-  toCleanString(creditNoteData?.sourceInvoice?.ncf) ??
-  toCleanString(creditNoteData?.sourceInvoice?.NCF) ??
+const resolveAdjustmentNoteInvoiceNcf = (adjustmentNoteData) =>
+  toCleanString(adjustmentNoteData?.invoiceNcf) ??
+  toCleanString(adjustmentNoteData?.invoiceNCF) ??
+  toCleanString(adjustmentNoteData?.modifiedNcf) ??
+  toCleanString(adjustmentNoteData?.modifiedNCF) ??
+  toCleanString(adjustmentNoteData?.invoice?.ncf) ??
+  toCleanString(adjustmentNoteData?.invoice?.NCF) ??
+  toCleanString(adjustmentNoteData?.sourceInvoice?.ncf) ??
+  toCleanString(adjustmentNoteData?.sourceInvoice?.NCF) ??
   null;
 
 const resolveInvoiceNcfFromPayload = (invoiceDoc) => {
@@ -187,26 +132,6 @@ const toRecordPeriodKey = (record) => {
   const issuedAt =
     toCleanString(record?.issuedAt) ?? toCleanString(record?.createdAt);
   return issuedAt?.slice(0, 7) ?? null;
-};
-
-const resolveMonthlyPeriodRange = (periodKey) => {
-  const normalizedPeriodKey = toCleanString(periodKey);
-  if (!normalizedPeriodKey || !PERIOD_KEY_REGEX.test(normalizedPeriodKey)) {
-    throw new Error(`Período mensual inválido: ${periodKey}`);
-  }
-
-  const [yearString, monthString] = normalizedPeriodKey.split('-');
-  const year = Number(yearString);
-  const monthIndex = Number(monthString) - 1;
-
-  const start = new Date(Date.UTC(year, monthIndex, 1, 0, 0, 0, 0));
-  const endExclusive = new Date(Date.UTC(year, monthIndex + 1, 1, 0, 0, 0, 0));
-
-  return {
-    periodKey: normalizedPeriodKey,
-    start,
-    endExclusive,
-  };
 };
 
 export const mapInvoiceDocToDgii607Record = ({
@@ -328,7 +253,74 @@ export const mapCreditNoteDocToDgii607Record = ({
       sourcePath: `businesses/${businessId}/creditNotes/${creditNoteId}`,
       issuedAtSource: createdAt?.toISOString() ?? null,
       invoiceId,
-      invoiceNcf: resolveCreditNoteInvoiceNcf(creditNoteData),
+      invoiceNcf: resolveAdjustmentNoteInvoiceNcf(creditNoteData),
+    },
+  };
+};
+
+export const mapDebitNoteDocToDgii607Record = ({
+  businessId,
+  debitNoteId,
+  debitNoteDoc,
+}) => {
+  const debitNoteData = resolveDebitNotePayload(debitNoteDoc);
+  const client = isRecord(debitNoteData?.client) ? debitNoteData.client : {};
+  const createdAt = toDate(debitNoteData?.createdAt);
+
+  const counterpartyId = toCleanString(client.id) ?? null;
+  const identificationNumber =
+    toCleanString(client.rnc) ??
+    toCleanString(client.personalID) ??
+    toCleanString(client.personalId) ??
+    null;
+  const ncf =
+    toCleanString(debitNoteData?.ncf) ??
+    toCleanString(debitNoteData?.eNcf) ??
+    null;
+  const total = resolveCreditNoteTotalAmount(debitNoteData);
+  const tax = resolveCreditNoteTaxAmount(debitNoteData);
+  const documentNumber =
+    toCleanString(debitNoteData?.number) ??
+    toCleanString(debitNoteData?.numberID) ??
+    toCleanString(debitNoteData?.id) ??
+    toCleanString(debitNoteId);
+  const status = toCleanString(debitNoteData?.status) ?? null;
+  const invoiceId =
+    toCleanString(debitNoteData?.invoiceId) ??
+    toCleanString(debitNoteData?.sourceInvoiceId) ??
+    null;
+
+  return {
+    businessId,
+    issuedAt: createdAt?.toISOString() ?? null,
+    createdAt: createdAt?.toISOString() ?? null,
+    documentNumber,
+    invoiceId,
+    counterparty: {
+      id: counterpartyId,
+      identification: {
+        number: identificationNumber,
+      },
+    },
+    clientId: counterpartyId,
+    data: {
+      NCF: ncf,
+    },
+    ncf,
+    totals: {
+      total,
+      tax,
+    },
+    paymentBreakdown: {
+      creditSale: total ?? 0,
+    },
+    status,
+    metadata: {
+      recordId: debitNoteId,
+      sourcePath: `businesses/${businessId}/debitNotes/${debitNoteId}`,
+      issuedAtSource: createdAt?.toISOString() ?? null,
+      invoiceId,
+      invoiceNcf: resolveAdjustmentNoteInvoiceNcf(debitNoteData),
     },
   };
 };
@@ -402,28 +394,6 @@ export const mapThirdPartyWithholdingDocToDgii607Record = ({
     },
   };
 };
-
-const buildIssueSummary = (issues) =>
-  issues.reduce(
-    (summary, issue) => {
-      const severity = toCleanString(issue?.severity) ?? 'unknown';
-      const sourceId = toCleanString(issue?.sourceId) ?? 'unknown';
-      const code = toCleanString(issue?.code) ?? 'unknown';
-
-      summary.total += 1;
-      summary.bySeverity[severity] = (summary.bySeverity[severity] ?? 0) + 1;
-      summary.bySource[sourceId] = (summary.bySource[sourceId] ?? 0) + 1;
-      summary.byCode[code] = (summary.byCode[code] ?? 0) + 1;
-
-      return summary;
-    },
-    {
-      total: 0,
-      bySeverity: {},
-      bySource: {},
-      byCode: {},
-    },
-  );
 
 const buildSourceRecordsSnapshot = (records = []) =>
   records.map((record, index) => ({
@@ -550,19 +520,19 @@ const mergeDgii607InvoicesWithWithholdings = ({
   };
 };
 
-const enrichCreditNotesWithLinkedInvoiceNcf = async ({
+const enrichAdjustmentNotesWithLinkedInvoiceNcf = async ({
   businessId,
-  creditNotes,
+  adjustmentNotes,
   firestore,
 }) => {
-  const missingInvoiceNcf = creditNotes.filter(
-    (creditNote) =>
-      toCleanString(creditNote?.invoiceId) &&
-      !toCleanString(creditNote?.metadata?.invoiceNcf),
+  const missingInvoiceNcf = adjustmentNotes.filter(
+    (adjustmentNote) =>
+      toCleanString(adjustmentNote?.invoiceId) &&
+      !toCleanString(adjustmentNote?.metadata?.invoiceNcf),
   );
 
   if (!missingInvoiceNcf.length || typeof firestore?.doc !== 'function') {
-    return creditNotes;
+    return adjustmentNotes;
   }
 
   const invoiceIds = Array.from(
@@ -580,16 +550,22 @@ const enrichCreditNotesWithLinkedInvoiceNcf = async ({
     ),
   );
 
-  return creditNotes.map((creditNote) => {
-    if (toCleanString(creditNote?.metadata?.invoiceNcf)) return creditNote;
+  return adjustmentNotes.map((adjustmentNote) => {
+    if (toCleanString(adjustmentNote?.metadata?.invoiceNcf)) {
+      return adjustmentNote;
+    }
 
-    const invoiceNcf = invoiceNcfById.get(toCleanString(creditNote.invoiceId));
-    if (!invoiceNcf) return creditNote;
+    const invoiceNcf = invoiceNcfById.get(
+      toCleanString(adjustmentNote.invoiceId),
+    );
+    if (!invoiceNcf) return adjustmentNote;
 
     return {
-      ...creditNote,
+      ...adjustmentNote,
       metadata: {
-        ...(isRecord(creditNote?.metadata) ? creditNote.metadata : {}),
+        ...(isRecord(adjustmentNote?.metadata)
+          ? adjustmentNote.metadata
+          : {}),
         invoiceNcf,
       },
     };
@@ -617,12 +593,12 @@ const enrichIssues = (issues, datasets) =>
 
 const loadLinkedInvoicesById = async ({
   businessId,
-  creditNotes,
+  adjustmentNotes,
   firestore,
 }) => {
   const invoiceIds = Array.from(
     new Set(
-      creditNotes
+      adjustmentNotes
         .map((record) => toCleanString(record?.invoiceId))
         .filter(Boolean),
     ),
@@ -704,17 +680,26 @@ export const loadDgii607Datasets = async ({
   const creditNotesRef = firestore.collection(
     `businesses/${normalizedBusinessId}/creditNotes`,
   );
+  const debitNotesRef = firestore.collection(
+    `businesses/${normalizedBusinessId}/debitNotes`,
+  );
   const withholdingsRef = firestore.collection(
     `businesses/${normalizedBusinessId}/salesThirdPartyWithholdings`,
   );
 
-  const [invoicesSnap, creditNotesSnap, withholdingsSnap] = await Promise.all([
+  const [invoicesSnap, creditNotesSnap, debitNotesSnap, withholdingsSnap] =
+    await Promise.all([
     invoicesRef
       .where('data.date', '>=', start)
       .where('data.date', '<', endExclusive)
       .orderBy('data.date', 'asc')
       .get(),
     creditNotesRef
+      .where('createdAt', '>=', start)
+      .where('createdAt', '<', endExclusive)
+      .orderBy('createdAt', 'asc')
+      .get(),
+    debitNotesRef
       .where('createdAt', '>=', start)
       .where('createdAt', '<', endExclusive)
       .orderBy('createdAt', 'asc')
@@ -733,13 +718,24 @@ export const loadDgii607Datasets = async ({
       invoiceDoc: doc.data(),
     }),
   );
-  const mappedCreditNotes = await enrichCreditNotesWithLinkedInvoiceNcf({
+  const mappedCreditNotes = await enrichAdjustmentNotesWithLinkedInvoiceNcf({
     businessId: normalizedBusinessId,
-    creditNotes: creditNotesSnap.docs.map((doc) =>
+    adjustmentNotes: creditNotesSnap.docs.map((doc) =>
       mapCreditNoteDocToDgii607Record({
         businessId: normalizedBusinessId,
         creditNoteId: doc.id,
         creditNoteDoc: doc.data(),
+      }),
+    ),
+    firestore,
+  });
+  const mappedDebitNotes = await enrichAdjustmentNotesWithLinkedInvoiceNcf({
+    businessId: normalizedBusinessId,
+    adjustmentNotes: debitNotesSnap.docs.map((doc) =>
+      mapDebitNoteDocToDgii607Record({
+        businessId: normalizedBusinessId,
+        debitNoteId: doc.id,
+        debitNoteDoc: doc.data(),
       }),
     ),
     firestore,
@@ -754,6 +750,7 @@ export const loadDgii607Datasets = async ({
 
   const invoiceRecords = splitDgii607Records(mappedInvoices);
   const creditNoteRecords = splitDgii607Records(mappedCreditNotes);
+  const debitNoteRecords = splitDgii607Records(mappedDebitNotes);
   const activeWithholdings = mappedWithholdings.filter(
     (record) => !shouldExcludeFromDgii607(record?.status),
   );
@@ -778,16 +775,19 @@ export const loadDgii607Datasets = async ({
     rawSnapshots: {
       invoices: invoicesSnap,
       creditNotes: creditNotesSnap,
+      debitNotes: debitNotesSnap,
       thirdPartyWithholdings: withholdingsSnap,
     },
     datasets: {
       invoices: invoicesWithWithholdings,
       creditNotes: creditNoteRecords.included,
+      debitNotes: debitNoteRecords.included,
       thirdPartyWithholdings: withholdingRecords.included,
     },
     excludedRecords: {
       invoices: invoiceRecords.excluded,
       creditNotes: creditNoteRecords.excluded,
+      debitNotes: debitNoteRecords.excluded,
       thirdPartyWithholdings: [
         ...statusExcludedWithholdings,
         ...withholdingRecords.excluded,
@@ -799,20 +799,21 @@ export const loadDgii607Datasets = async ({
   };
 };
 
-const buildCreditNoteCrossReferenceIssues = ({
-  creditNotes,
+const buildAdjustmentNoteCrossReferenceIssues = ({
+  sourceId,
+  adjustmentNotes,
   linkedInvoicesById,
   periodKey,
 }) =>
-  creditNotes.flatMap((creditNote, index) => {
-    const invoiceId = toCleanString(creditNote?.invoiceId);
+  adjustmentNotes.flatMap((adjustmentNote, index) => {
+    const invoiceId = toCleanString(adjustmentNote?.invoiceId);
     if (!invoiceId) return [];
 
     const linkedInvoice = linkedInvoicesById[invoiceId];
     if (!linkedInvoice?.exists || !linkedInvoice.record) {
       return [
         {
-          sourceId: 'creditNotes',
+          sourceId,
           index,
           fieldPath: 'invoiceId',
           code: 'linked-invoice-not-found',
@@ -828,7 +829,7 @@ const buildCreditNoteCrossReferenceIssues = ({
     const linkedInvoicePeriodKey = toRecordPeriodKey(linkedRecord);
     if (linkedInvoicePeriodKey && linkedInvoicePeriodKey !== periodKey) {
       issues.push({
-        sourceId: 'creditNotes',
+        sourceId,
         index,
         fieldPath: 'invoiceId',
         code: 'linked-invoice-out-of-period',
@@ -839,14 +840,14 @@ const buildCreditNoteCrossReferenceIssues = ({
       });
     }
 
-    const creditNoteInvoiceNcf = toCleanString(
-      creditNote?.metadata?.invoiceNcf,
+    const adjustmentNoteInvoiceNcf = toCleanString(
+      adjustmentNote?.metadata?.invoiceNcf,
     );
     const linkedInvoiceNcf = toCleanString(linkedRecord?.data?.NCF);
 
-    if (!creditNoteInvoiceNcf) {
+    if (!adjustmentNoteInvoiceNcf) {
       issues.push({
-        sourceId: 'creditNotes',
+        sourceId,
         index,
         fieldPath: 'metadata.invoiceNcf',
         code: 'missing-linked-invoice-ncf',
@@ -854,9 +855,12 @@ const buildCreditNoteCrossReferenceIssues = ({
         linkedRecordId: invoiceId,
         linkedSourcePath: linkedInvoice.sourcePath,
       });
-    } else if (linkedInvoiceNcf && creditNoteInvoiceNcf !== linkedInvoiceNcf) {
+    } else if (
+      linkedInvoiceNcf &&
+      adjustmentNoteInvoiceNcf !== linkedInvoiceNcf
+    ) {
       issues.push({
-        sourceId: 'creditNotes',
+        sourceId,
         index,
         fieldPath: 'metadata.invoiceNcf',
         code: 'linked-invoice-ncf-mismatch',
@@ -864,7 +868,7 @@ const buildCreditNoteCrossReferenceIssues = ({
         linkedRecordId: invoiceId,
         linkedSourcePath: linkedInvoice.sourcePath,
         expectedValue: linkedInvoiceNcf,
-        actualValue: creditNoteInvoiceNcf,
+        actualValue: adjustmentNoteInvoiceNcf,
       });
     }
 
@@ -893,7 +897,7 @@ export const buildDgii607ValidationPreview = async ({
   const { linkedInvoicesById, sourceSnapshot: linkedInvoicesSnapshot } =
     await loadLinkedInvoicesById({
       businessId: normalizedBusinessId,
-      creditNotes: datasets.creditNotes,
+      adjustmentNotes: [...datasets.creditNotes, ...datasets.debitNotes],
       firestore,
     });
 
@@ -901,11 +905,20 @@ export const buildDgii607ValidationPreview = async ({
     reportCode: 'DGII_607',
     datasets,
   });
-  const crossReferenceIssues = buildCreditNoteCrossReferenceIssues({
-    creditNotes: datasets.creditNotes,
-    linkedInvoicesById,
-    periodKey: normalizedPeriodKey,
-  });
+  const crossReferenceIssues = [
+    ...buildAdjustmentNoteCrossReferenceIssues({
+      sourceId: 'creditNotes',
+      adjustmentNotes: datasets.creditNotes,
+      linkedInvoicesById,
+      periodKey: normalizedPeriodKey,
+    }),
+    ...buildAdjustmentNoteCrossReferenceIssues({
+      sourceId: 'debitNotes',
+      adjustmentNotes: datasets.debitNotes,
+      linkedInvoicesById,
+      periodKey: normalizedPeriodKey,
+    }),
+  ];
   const issues = enrichIssues(
     [...validation.issues, ...crossReferenceIssues],
     datasets,
@@ -929,6 +942,12 @@ export const buildDgii607ValidationPreview = async ({
         recordsLoaded: datasets.creditNotes.length,
         recordsExcluded: excludedRecords.creditNotes.length,
       },
+      debitNotes: {
+        periodStart: start.toISOString(),
+        periodEndExclusive: endExclusive.toISOString(),
+        recordsLoaded: datasets.debitNotes.length,
+        recordsExcluded: excludedRecords.debitNotes.length,
+      },
       thirdPartyWithholdings: {
         periodStart: start.toISOString(),
         periodEndExclusive: endExclusive.toISOString(),
@@ -941,6 +960,7 @@ export const buildDgii607ValidationPreview = async ({
     sourceRecords: {
       invoices: buildSourceRecordsSnapshot(datasets.invoices),
       creditNotes: buildSourceRecordsSnapshot(datasets.creditNotes),
+      debitNotes: buildSourceRecordsSnapshot(datasets.debitNotes),
       thirdPartyWithholdings: buildSourceRecordsSnapshot(
         datasets.thirdPartyWithholdings,
       ),
@@ -950,6 +970,9 @@ export const buildDgii607ValidationPreview = async ({
       excludedInvoices: buildSourceRecordsSnapshot(excludedRecords.invoices),
       excludedCreditNotes: buildSourceRecordsSnapshot(
         excludedRecords.creditNotes,
+      ),
+      excludedDebitNotes: buildSourceRecordsSnapshot(
+        excludedRecords.debitNotes,
       ),
       excludedThirdPartyWithholdings: buildSourceRecordsSnapshot(
         excludedRecords.thirdPartyWithholdings,

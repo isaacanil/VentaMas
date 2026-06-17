@@ -1,7 +1,5 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 import { buildClientWritePayload } from './clientNormalizer';
 import type { ClientInput, NormalizedClient } from './clientNormalizer';
@@ -9,6 +7,20 @@ import type { ClientInput, NormalizedClient } from './clientNormalizer';
 type UserWithBusiness = {
   businessID: string;
 };
+type CreateClientPayload = {
+  businessId: string;
+  client: ClientInput;
+  sessionToken?: string;
+};
+type CreateClientResult = {
+  ok: boolean;
+  client?: NormalizedClient;
+};
+
+const createClientCallable = createFirebaseCallable<
+  CreateClientPayload,
+  CreateClientResult
+>('createClient');
 
 export const fbAddClient = async (
   user: UserWithBusiness | null | undefined,
@@ -17,30 +29,19 @@ export const fbAddClient = async (
   try {
     if (!user || !user.businessID) throw new Error('No user or businessID');
     const { sessionToken } = getStoredSession();
-    const createClientCallable = httpsCallable<
-      {
-        businessId: string;
-        client: ClientInput;
-        sessionToken?: string;
-      },
-      {
-        ok: boolean;
-        client?: NormalizedClient;
-      }
-    >(functions, 'createClient');
 
-    const response = await createClientCallable({
+    const result = await createClientCallable({
       businessId: user.businessID,
       client,
       ...(sessionToken ? { sessionToken } : {}),
     });
 
-    if (response.data?.ok !== true) {
+    if (result.ok !== true) {
       throw new Error('No se pudo crear el cliente');
     }
 
     const normalizedClient =
-      response.data?.client ?? buildClientWritePayload(client).client;
+      result.client ?? buildClientWritePayload(client).client;
     return normalizedClient;
   } catch (error) {
     console.error('Error adding document: ', error);

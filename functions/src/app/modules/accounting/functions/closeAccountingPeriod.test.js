@@ -103,7 +103,7 @@ vi.mock('../../../core/utils/callableSessionAuth.util.js', () => ({
   resolveCallableAuthUid: (...args) => resolveCallableAuthUidMock(...args),
 }));
 
-vi.mock('../../../versions/v2/invoice/services/repairTasks.service.js', () => ({
+vi.mock('../../../versions/v2/auth/services/userAccess.service.js', () => ({
   MEMBERSHIP_ROLE_GROUPS: {
     ACCOUNTING_ADMIN: ['accounting-admin'],
     INVOICE_OPERATOR: ['invoice-operator'],
@@ -303,6 +303,90 @@ describe('closeAccountingPeriod', () => {
     expect(transactionSetMock).not.toHaveBeenCalled();
   });
 
+  it('blocks period close when an event has no occurredAt but was recorded inside the period', async () => {
+    collectionSnapshots.set('businesses/business-1/accountingEvents', [
+      {
+        id: 'expense.recorded__expense-1',
+        data: {
+          eventType: 'expense.recorded',
+          recordedAt: '2026-04-15T12:00:00.000Z',
+          projection: {
+            status: 'pending',
+          },
+        },
+      },
+    ]);
+    transactionSnapshots.set(
+      'businesses/business-1/accountingPeriodClosures/2026-04',
+      null,
+    );
+
+    await expect(
+      closeAccountingPeriod({
+        data: {
+          businessId: 'business-1',
+          periodKey: '2026-04',
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      details: expect.objectContaining({
+        unresolvedEventCount: 1,
+        unresolvedEvents: [
+          expect.objectContaining({
+            id: 'expense.recorded__expense-1',
+            projectionStatus: 'pending',
+          }),
+        ],
+      }),
+    });
+
+    expect(transactionSetMock).not.toHaveBeenCalled();
+  });
+
+  it('blocks period close when a projected accounting event points to a missing journal entry', async () => {
+    collectionSnapshots.set('businesses/business-1/accountingEvents', [
+      {
+        id: 'invoice.committed__invoice-1',
+        data: {
+          eventType: 'invoice.committed',
+          projection: {
+            status: 'projected',
+            journalEntryId: 'invoice.committed__invoice-1',
+          },
+        },
+      },
+    ]);
+    collectionSnapshots.set('businesses/business-1/journalEntries', []);
+    transactionSnapshots.set(
+      'businesses/business-1/accountingPeriodClosures/2026-04',
+      null,
+    );
+
+    await expect(
+      closeAccountingPeriod({
+        data: {
+          businessId: 'business-1',
+          periodKey: '2026-04',
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      details: expect.objectContaining({
+        unresolvedEventCount: 1,
+        unresolvedEvents: [
+          expect.objectContaining({
+            id: 'invoice.committed__invoice-1',
+            journalEntryId: 'invoice.committed__invoice-1',
+            projectionStatus: 'projected',
+          }),
+        ],
+      }),
+    });
+
+    expect(transactionSetMock).not.toHaveBeenCalled();
+  });
+
   it('blocks period close when projection dead letters exist', async () => {
     collectionSnapshots.set(
       'businesses/business-1/accountingEventProjectionDeadLetters',
@@ -337,6 +421,40 @@ describe('closeAccountingPeriod', () => {
     });
 
     expect(transactionSetMock).not.toHaveBeenCalled();
+  });
+
+  it('does not block period close with active projection dead letters from another period', async () => {
+    collectionSnapshots.set(
+      'businesses/business-1/accountingEventProjectionDeadLetters',
+      [
+        {
+          id: 'purchase.committed__purchase-1',
+          data: {
+            eventId: 'purchase.committed__purchase-1',
+            eventType: 'purchase.committed',
+            periodKey: '2026-05',
+            projectionStatus: 'pending_account_mapping',
+          },
+        },
+      ],
+    );
+    transactionSnapshots.set(
+      'businesses/business-1/accountingPeriodClosures/2026-04',
+      null,
+    );
+
+    const result = await closeAccountingPeriod({
+      data: {
+        businessId: 'business-1',
+        periodKey: '2026-04',
+      },
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      periodKey: '2026-04',
+    });
+    expect(transactionSetMock).toHaveBeenCalled();
   });
 
   it('does not block period close with resolved projection dead letters', async () => {

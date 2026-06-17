@@ -13,10 +13,9 @@ import barcodePrintModalReducer from '@/features/barcodePrintModalSlice/barcodeP
 import cartReducer from '@/features/cart/cartSlice';
 import cashCountManagementReducer from '@/features/cashCount/cashCountManagementSlice';
 import cashCountState from '@/features/cashCount/cashStateSlice';
-import categoryReducer from '@/features/category/categorySlicer';
+import categoryReducer from '@/features/category/categorySlice';
 import clientCartReducer from '@/features/clientCart/clientCartSlice';
 import creditNoteModalReducer from '@/features/creditNote/creditNoteModalSlice';
-import customPizzaReducer from '@/features/customProducts/customPizzaSlice';
 import customProductReducer from '@/features/customProducts/customProductSlice';
 import doctorsReducer from '@/features/doctors/doctorsSlice';
 import expenseManagement from '@/features/expense/expenseManagementSlice';
@@ -24,7 +23,6 @@ import expensesList from '@/features/expense/expensesListSlice';
 import expenseUI from '@/features/expense/expenseUISlice';
 import fileReducer from '@/features/files/fileSlice';
 import filterProductsSliceReducer from '@/features/filterProduct/filterProductsSlice';
-import addProductReducer from '@/features/Firestore/products/addProductSlice';
 import viewerImageReducer from '@/features/imageViewer/imageViewerSlice';
 import insuranceAccountsReceivableReducer from '@/features/insurance/insuranceAccountsReceivableSlice';
 import insuranceAuthReducer from '@/features/insurance/insuranceAuthSlice';
@@ -33,7 +31,6 @@ import insuranceReducer from '@/features/insurance/insuranceSlice';
 import invoiceFormReducer from '@/features/invoice/invoiceFormSlice';
 import invoicePreviewReducer from '@/features/invoice/invoicePreviewSlice';
 import invoiceWorkspaceModalReducer from '@/features/invoice/invoiceWorkspaceModalSlice';
-import invoicesSlice from '@/features/invoice/invoicesSlice';
 import loaderReducer from '@/features/loader/loaderSlice';
 import modalReducer from '@/features/modals/modalSlice';
 import navReducer from '@/features/nav/navSlice';
@@ -46,11 +43,9 @@ import productOutflowReducer from '@/features/productOutflow/productOutflow';
 import deleteProductStockReducer from '@/features/productStock/deleteProductStockSlice';
 import productStockSimpleReducer from '@/features/productStock/productStockSimpleSlice';
 import productStockReducer from '@/features/productStock/productStockSlice';
-import productWeightEntryModalSlice from '@/features/productWeightEntryModalSlice/productWeightEntryModalSlice';
 import addPurchase from '@/features/purchase/addPurchaseSlice';
 import purchases from '@/features/purchase/purchasesSlice';
 import purchaseUI from '@/features/purchase/purchaseUISlice';
-import searchReducer from '@/features/search/searchSlice';
 import settingReducer from '@/features/setting/settingSlice';
 import taxReceiptReducer from '@/features/taxReceipt/taxReceiptSlice';
 import themeReducer from '@/features/theme/themeSlice';
@@ -58,7 +53,6 @@ import updateProductReducer from '@/features/updateProduct/updateProductSlice';
 import uploadImgReducer from '@/features/uploadImg/uploadImageSlice';
 import UserNotificationReducer from '@/features/UserNotification/UserNotificationSlice';
 import usersManagementSlice from '@/features/usersManagement/usersManagementSlice';
-import productExpirySelectorReducer from '@/features/warehouse/productExpirySelectionSlice';
 import rowShelfModalReducer from '@/features/warehouse/rowShelfModalSlice';
 import segmentModalReducer from '@/features/warehouse/segmentModalSlice';
 import shelfModalReducer from '@/features/warehouse/shelfModalSlice';
@@ -96,13 +90,10 @@ export const store = configureStore({
     note: noteModalReducer,
 
     // Products & Categories
-    search: searchReducer,
     category: categoryReducer,
-    addProduct: addProductReducer,
     updateProduct: updateProductReducer,
     filterProducts: filterProductsSliceReducer,
     customProduct: customProductReducer,
-    customPizza: customPizzaReducer,
     productOutflow: productOutflowReducer,
     activeIngredients: activeIngredientsReducer,
     productBrand: productBrandReducer,
@@ -128,7 +119,6 @@ export const store = configureStore({
 
     // Invoicing
     invoiceForm: invoiceFormReducer,
-    invoices: invoicesSlice,
     invoicePreview: invoicePreviewReducer,
     invoiceWorkspaceModal: invoiceWorkspaceModalReducer,
     taxReceipt: taxReceiptReducer,
@@ -140,13 +130,11 @@ export const store = configureStore({
     rowShelfModal: rowShelfModalReducer,
     segmentModal: segmentModalReducer,
     productStock: productStockReducer,
-    productExpirySelector: productExpirySelectorReducer,
     productStockSimple: productStockSimpleReducer,
     deleteProductStock: deleteProductStockReducer,
 
     // Utilities
     barcodePrintModal: barcodePrintModalReducer,
-    productWeightEntryModalSlice: productWeightEntryModalSlice,
     files: fileReducer,
     insurance: insuranceReducer,
     insuranceConfigModal: insuranceConfigModalReducer,

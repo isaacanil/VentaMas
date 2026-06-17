@@ -1,11 +1,7 @@
 import type { RouteStatus } from './routeMeta';
 
+import { isRecord } from '@/utils/object/record';
 import type { RouteRequiredCapabilitiesMode } from '@/utils/access/routeCapabilities';
-
-type UnknownRecord = Record<string, unknown>;
-
-const isRecord = (value: unknown): value is UnknownRecord =>
-  value !== null && typeof value === 'object' && !Array.isArray(value);
 
 export interface AppRouteMetaFields {
   title?: string;
@@ -66,7 +62,9 @@ export const getRouteMetaFromHandle = (
   return routeMeta as AppRouteMetaFields;
 };
 
-export const mergeRouteHandleMeta = (route: RouteMetaCarrier): AppRouteHandle | undefined => {
+export const mergeRouteHandleMeta = (
+  route: RouteMetaCarrier,
+): AppRouteHandle | undefined => {
   const existingHandle = isRecord(route.handle)
     ? ({ ...route.handle } as AppRouteHandle)
     : undefined;

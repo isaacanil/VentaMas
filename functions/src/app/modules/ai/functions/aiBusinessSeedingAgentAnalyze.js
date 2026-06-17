@@ -13,6 +13,9 @@ import {
 } from '../config/genkit.js';
 import { aiBusinessSeedingAnalyzeFlow } from '../flows/aiBusinessSeedingAnalyze.flow.js';
 import { AI_BUSINESS_SEEDING_CONSTRAINED_OUTPUT } from '../utils/aiBusinessSeedingStructuredOutput.js';
+import {
+  readAiCallableObject as readObject,
+} from '../utils/aiCallablePayload.util.js';
 import { assertAiBusinessSeedingDeveloperAccess } from './aiBusinessSeedingAccess.js';
 
 const DEBUG_ERROR_PROJECTS = new Set(['ventamax-staging']);
@@ -20,9 +23,6 @@ const DEFAULT_ANALYZE_RESPONSE_DEADLINE_MS = 150_000;
 const MIN_ANALYZE_RESPONSE_DEADLINE_MS = 10_000;
 const AI_ANALYZE_DEADLINE_CATEGORY = 'AI_ANALYZE_DEADLINE_EXCEEDED';
 const AI_STRUCTURED_OUTPUT_EMPTY_CATEGORY = 'AI_STRUCTURED_OUTPUT_EMPTY';
-
-const readObject = (value) =>
-  value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 
 const readEnvString = (value) =>
   typeof value === 'string' && value.trim() ? value.trim() : '';

@@ -1,8 +1,9 @@
-import { Button } from '@heroui/react';
 import { CopyOutlined } from '@/constants/icons/antd';
 import { m, type Variants } from 'framer-motion';
 import React from 'react';
 import styled from 'styled-components';
+
+import { VmButton } from '@/components/heroui';
 
 interface ErrorDetailsProps {
   errorStackTrace?: string | null;
@@ -22,7 +23,7 @@ export const ErrorDetails = ({
     <Container variants={variants}>
       <DetailsHeader>
         <DetailsTitle>Detalles del error</DetailsTitle>
-        <Button
+        <VmButton
           isIconOnly
           size="sm"
           variant="ghost"
@@ -31,7 +32,7 @@ export const ErrorDetails = ({
           isDisabled={!errorStackTrace}
         >
           <CopyOutlined />
-        </Button>
+        </VmButton>
       </DetailsHeader>
       <ErrorCode>{errorStackTrace ?? 'Sin detalle disponible.'}</ErrorCode>
     </Container>

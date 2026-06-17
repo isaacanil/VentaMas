@@ -18,7 +18,7 @@ import {
   GroupTitle,
   PreviewButton,
   TypeTag,
-} from '@/components/common/FileList/FileList.styles';
+} from './FileList.styles';
 import { isImageFile, isPDFFile } from '@/utils/fileUtils';
 
 import type { PreviewableFile } from '../types';

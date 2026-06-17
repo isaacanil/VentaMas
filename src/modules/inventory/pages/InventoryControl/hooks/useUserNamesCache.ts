@@ -1,6 +1,7 @@
 import { doc, getDoc } from 'firebase/firestore';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { db as defaultDb } from '@/firebase/firebaseconfig';
 import {
   resolveUserDisplayNamesBatch,
   collectUIDsForInventoryTable,
@@ -35,7 +36,7 @@ interface UseUserNamesCacheResult {
 }
 
 export function useUserNamesCache({
-  db,
+  db = defaultDb,
   user,
   countsMeta,
   session,
@@ -45,7 +46,24 @@ export function useUserNamesCache({
     {},
   );
   const [resolvingUIDs, setResolvingUIDs] = useState<ResolvingMap>({});
+  const resolvingUIDsRef = useRef<ResolvingMap>({});
   const [namesBatchLoading, setNamesBatchLoading] = useState(false);
+
+  const seededUsersNameCache = useMemo(() => {
+    const seed: Record<string, string> = {};
+
+    for (const key in countsMeta) {
+      const meta = countsMeta[key];
+      if (meta?.updatedBy && meta?.updatedByName) {
+        seed[meta.updatedBy] = meta.updatedByName;
+      }
+    }
+
+    return {
+      ...seed,
+      ...usersNameCache,
+    };
+  }, [countsMeta, usersNameCache]);
 
   // Helper para resolver un único usuario (esquema flexible users/{uid})
   const resolveUserDisplayName = useCallback(
@@ -120,38 +138,28 @@ export function useUserNamesCache({
     const uids = collectUIDsForInventoryTable({ countsMeta, session });
     if (uids.length === 0) return;
 
-    // Sembrar lo que ya venga con updatedByName
-    const seed: Record<string, string> = {};
-    for (const key in countsMeta) {
-      const m = countsMeta[key];
-      if (m?.updatedBy && m?.updatedByName && !usersNameCache[m.updatedBy]) {
-        seed[m.updatedBy] = m.updatedByName;
-      }
-    }
-    if (Object.keys(seed).length) {
-      setUsersNameCache((prev) => ({ ...prev, ...seed }));
-    }
-
     const missing = uids.filter(
-      (uid) => !usersNameCache[uid] && !seed[uid] && !resolvingUIDs[uid],
+      (uid) => !seededUsersNameCache[uid] && !resolvingUIDsRef.current[uid],
     );
     if (!missing.length) return;
 
     let cancelled = false;
-    setResolvingUIDs((prev) => ({
-      ...prev,
+    const nextResolvingUIDs = {
+      ...resolvingUIDsRef.current,
       ...missing.reduce<Record<string, boolean>>((acc, uid) => {
         acc[uid] = true;
         return acc;
       }, {}),
-    }));
+    };
+    resolvingUIDsRef.current = nextResolvingUIDs;
+    setResolvingUIDs(nextResolvingUIDs);
     setNamesBatchLoading(true);
     (async () => {
       try {
         const loaded = await resolveUserDisplayNamesBatch(
           db,
           missing,
-          usersNameCache,
+          seededUsersNameCache,
         );
         if (!cancelled && Object.keys(loaded).length > 0) {
           setUsersNameCache((prev) => ({ ...prev, ...loaded }));
@@ -160,11 +168,10 @@ export function useUserNamesCache({
         /* noop */
       } finally {
         if (!cancelled) {
-          setResolvingUIDs((prev) => {
-            const clone = { ...prev };
-            missing.forEach((uid) => delete clone[uid]);
-            return clone;
-          });
+          const nextResolvingUIDs = { ...resolvingUIDsRef.current };
+          missing.forEach((uid) => delete nextResolvingUIDs[uid]);
+          resolvingUIDsRef.current = nextResolvingUIDs;
+          setResolvingUIDs(nextResolvingUIDs);
           setNamesBatchLoading(false);
         }
       }
@@ -172,11 +179,11 @@ export function useUserNamesCache({
     return () => {
       cancelled = true;
     };
-  }, [countsMeta, session, usersNameCache, resolvingUIDs, db]);
+  }, [countsMeta, session, seededUsersNameCache, db]);
 
   return {
     currentUserResolvedName,
-    usersNameCache,
+    usersNameCache: seededUsersNameCache,
     resolvingUIDs,
     namesBatchLoading,
   };

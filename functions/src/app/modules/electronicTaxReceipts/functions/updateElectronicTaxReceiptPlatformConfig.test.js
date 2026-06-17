@@ -57,7 +57,7 @@ vi.mock('../../../core/utils/callableSessionAuth.util.js', () => ({
   resolveCallableAuthUid: (...args) => resolveCallableAuthUidMock(...args),
 }));
 
-vi.mock('../../../versions/v2/invoice/services/repairTasks.service.js', () => ({
+vi.mock('../../../versions/v2/auth/services/userAccess.service.js', () => ({
   getUserAccessProfile: (...args) => getUserAccessProfileMock(...args),
 }));
 
@@ -122,6 +122,47 @@ describe('updateElectronicTaxReceiptPlatformConfig', () => {
         integrationInstanceCode: 'ventamax-global-test',
         mode: 'required',
       }),
+    });
+  });
+
+  it('keeps platform normalization for mode, timeout, and boolean fields', async () => {
+    const enabledResult = await updateElectronicTaxReceiptPlatformConfig({
+      data: {
+        baseUrl: '  https://gisys.example/api/v1  ',
+        integrationInstanceCode: '  ventamax-global-test  ',
+        electronicModelEnabled: true,
+        mode: 'unsupported',
+        timeoutMs: '45000.4',
+      },
+    });
+
+    const enabledWrite = writes.get('platformConfig/gisysFact');
+    expect(enabledResult.runtime.mode).toBe('shadow');
+    expect(enabledWrite.payload).toMatchObject({
+      baseUrl: 'https://gisys.example/api/v1',
+      integrationInstanceCode: 'ventamax-global-test',
+      electronicModelEnabled: true,
+      electronicTransportEnabled: false,
+      mode: 'shadow',
+      timeoutMs: 45000,
+    });
+
+    const disabledResult = await updateElectronicTaxReceiptPlatformConfig({
+      data: {
+        integrationInstanceCode: 'ventamax-global-test',
+        electronicModelEnabled: 'true',
+        mode: 'required',
+        timeoutMs: 3000,
+      },
+    });
+
+    const disabledWrite = writes.get('platformConfig/gisysFact');
+    expect(disabledResult.runtime.electronicPreparationEnabled).toBe(false);
+    expect(disabledWrite.payload).toMatchObject({
+      electronicModelEnabled: false,
+      electronicTransportEnabled: false,
+      mode: 'shadow',
+      timeoutMs: 20000,
     });
   });
 

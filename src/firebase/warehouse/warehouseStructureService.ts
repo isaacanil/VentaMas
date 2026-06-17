@@ -29,6 +29,82 @@ type StructureElement = WarehouseStructureElement;
 type StructurePayload = WarehouseStructurePayload;
 type StructureData = WarehouseStructureData;
 
+type StructureElementSource = StructurePayload & {
+  id: string;
+};
+
+type BuildStructureElementParams = {
+  type: StructureType;
+  elementId: string;
+  data: StructurePayload;
+  updatedAt: string;
+  updatedBy?: string;
+};
+
+const buildStructureLocation = (
+  type: StructureType,
+  elementId: string,
+  data: StructurePayload,
+) => {
+  switch (type) {
+    case 'warehouses':
+      return buildLocationPath({ warehouseId: elementId });
+    case 'shelves':
+      return buildLocationPath({
+        warehouseId: data.warehouseId,
+        shelfId: elementId,
+      });
+    case 'rows':
+      return buildLocationPath({
+        warehouseId: data.warehouseId,
+        shelfId: data.shelfId,
+        rowShelfId: elementId,
+      });
+    case 'segments':
+      return buildLocationPath({
+        warehouseId: data.warehouseId,
+        shelfId: data.shelfId,
+        rowShelfId: data.rowShelfId,
+        segmentId: elementId,
+      });
+  }
+};
+
+const buildStructureElement = ({
+  type,
+  elementId,
+  data,
+  updatedAt,
+  updatedBy,
+}: BuildStructureElementParams): StructureElement => ({
+  id: elementId,
+  name: data.name,
+  location: buildStructureLocation(type, elementId, data),
+  updatedAt,
+  updatedBy,
+  isDeleted: false,
+});
+
+const buildStructureElements = (
+  type: StructureType,
+  records: StructureElementSource[],
+  user: InventoryUser,
+): Record<string, StructureElement> => {
+  const elements: Record<string, StructureElement> = {};
+
+  records.forEach((record) => {
+    elements[record.id] = buildStructureElement({
+      type,
+      elementId: record.id,
+      data: record,
+      updatedAt: new Date().toISOString(),
+      updatedBy: user.uid,
+    });
+  });
+
+  return elements;
+};
+
 // Función para actualizar o añadir un elemento a la estructura
 const updateStructureElement = async (
   user: InventoryUser,
@@ -43,48 +119,18 @@ const updateStructureElement = async (
       ? (docSnapshot.data().elements as Record<string, StructureElement>)
       : {};
 
-    // Construir la ruta de ubicación basada en el tipo
-    let location = '';
-    switch (type) {
-      case 'warehouses':
-        location = buildLocationPath({ warehouseId: elementId });
-        break;
-      case 'shelves':
-        location = buildLocationPath({
-          warehouseId: data.warehouseId,
-          shelfId: elementId,
-        });
-        break;
-      case 'rows':
-        location = buildLocationPath({
-          warehouseId: data.warehouseId,
-          shelfId: data.shelfId,
-          rowShelfId: elementId,
-        });
-        break;
-      case 'segments':
-        location = buildLocationPath({
-          warehouseId: data.warehouseId,
-          shelfId: data.shelfId,
-          rowShelfId: data.rowShelfId,
-          segmentId: elementId,
-        });
-        break;
-    }
-
     await setDoc(
       structureDoc,
       {
         elements: {
           ...existingData,
-          [elementId]: {
-            id: elementId,
-            name: data.name,
-            location,
+          [elementId]: buildStructureElement({
+            type,
+            elementId,
+            data,
             updatedAt: new Date().toISOString(),
             updatedBy: user.uid,
-            isDeleted: false,
-          },
+          }),
         },
       },
       { merge: true },
@@ -105,75 +151,35 @@ export const createStructureFromExisting = async (
 
     // Procesar almacenes
     const warehousesDoc = getStructureDoc(user.businessID!, 'warehouses');
-    const warehouseElements: Record<string, StructureElement> = {};
-    structureData.warehouses.forEach((warehouse) => {
-      warehouseElements[warehouse.id] = {
-        id: warehouse.id,
-        name: warehouse.name,
-        location: buildLocationPath({ warehouseId: warehouse.id }),
-        updatedAt: new Date().toISOString(),
-        updatedBy: user.uid,
-        isDeleted: false,
-      };
+    batch.set(warehousesDoc, {
+      elements: buildStructureElements(
+        'warehouses',
+        structureData.warehouses,
+        user,
+      ),
     });
-    batch.set(warehousesDoc, { elements: warehouseElements });
 
     // Procesar estantes
     const shelvesDoc = getStructureDoc(user.businessID!, 'shelves');
-    const shelfElements: Record<string, StructureElement> = {};
-    structureData.shelves.forEach((shelf) => {
-      shelfElements[shelf.id] = {
-        id: shelf.id,
-        name: shelf.name,
-        location: buildLocationPath({
-          warehouseId: shelf.warehouseId,
-          shelfId: shelf.id,
-        }),
-        updatedAt: new Date().toISOString(),
-        updatedBy: user.uid,
-        isDeleted: false,
-      };
+    batch.set(shelvesDoc, {
+      elements: buildStructureElements('shelves', structureData.shelves, user),
     });
-    batch.set(shelvesDoc, { elements: shelfElements });
 
     // Procesar filas
     const rowsDoc = getStructureDoc(user.businessID!, 'rows');
-    const rowElements: Record<string, StructureElement> = {};
-    structureData.rows.forEach((row) => {
-      rowElements[row.id] = {
-        id: row.id,
-        name: row.name,
-        location: buildLocationPath({
-          warehouseId: row.warehouseId,
-          shelfId: row.shelfId,
-          rowShelfId: row.id,
-        }),
-        updatedAt: new Date().toISOString(),
-        updatedBy: user.uid,
-        isDeleted: false,
-      };
+    batch.set(rowsDoc, {
+      elements: buildStructureElements('rows', structureData.rows, user),
     });
-    batch.set(rowsDoc, { elements: rowElements });
 
     // Procesar segmentos
     const segmentsDoc = getStructureDoc(user.businessID!, 'segments');
-    const segmentElements: Record<string, StructureElement> = {};
-    structureData.segments.forEach((segment) => {
-      segmentElements[segment.id] = {
-        id: segment.id,
-        name: segment.name,
-        location: buildLocationPath({
-          warehouseId: segment.warehouseId,
-          shelfId: segment.shelfId,
-          rowShelfId: segment.rowShelfId,
-          segmentId: segment.id,
-        }),
-        updatedAt: new Date().toISOString(),
-        updatedBy: user.uid,
-        isDeleted: false,
-      };
+    batch.set(segmentsDoc, {
+      elements: buildStructureElements(
+        'segments',
+        structureData.segments,
+        user,
+      ),
     });
-    batch.set(segmentsDoc, { elements: segmentElements });
 
     // Ejecutar todas las operaciones
     await batch.commit();

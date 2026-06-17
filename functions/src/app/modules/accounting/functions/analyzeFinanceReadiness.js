@@ -1,21 +1,49 @@
 import { https, logger } from 'firebase-functions';
 
 import { db } from '../../../core/config/firebase.js';
+import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.util.js';
 import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
   getUserAccessProfile,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 
 const ALL_BUSINESSES_SENTINEL = 'ALL';
 const DEFAULT_DOCUMENT_LIMIT = 300;
 const MAX_DOCUMENT_LIMIT = 1000;
 const BUSINESS_LIMIT = 100;
 const ISSUE_SAMPLE_LIMIT = 25;
-const BANK_METHODS = new Set(['card', 'credit_card', 'debit_card', 'transfer', 'bank_transfer', 'check']);
+const BANK_METHODS = new Set([
+  'card',
+  'credit_card',
+  'debit_card',
+  'transfer',
+  'bank_transfer',
+  'check',
+]);
 const CASH_METHODS = new Set(['cash', 'open_cash']);
-const COMPLETED_PURCHASE_STATUSES = new Set(['completed', 'delivered', 'posted']);
+const COMPLETED_PURCHASE_STATUSES = new Set([
+  'completed',
+  'delivered',
+  'posted',
+]);
 const VOID_STATUSES = new Set(['void', 'voided', 'canceled', 'cancelled']);
+const BLOCKING_PROJECTION_STATUSES = new Set([
+  'failed',
+  'error',
+  'pending_account_mapping',
+]);
+const WARNING_PROJECTION_STATUSES = new Set(['pending']);
+const NON_POSTING_PROJECTION_STATUSES = new Set([
+  'voided',
+  'skipped_zero_amount',
+]);
+const BLOCKING_DEAD_LETTER_STATUSES = new Set([
+  'failed',
+  'pending',
+  'pending_account_mapping',
+]);
+const BALANCE_THRESHOLD = 0.01;
 
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -29,7 +57,13 @@ const toCleanString = (value) => {
   return trimmed.length ? trimmed : null;
 };
 
-const toUpperCleanString = (value) => toCleanString(value)?.toUpperCase() ?? null;
+const toUpperCleanString = (value) =>
+  toCleanString(value)?.toUpperCase() ?? null;
+
+const toCallableAuthRequest = (data, context) => ({
+  data,
+  auth: context?.auth ?? null,
+});
 
 const safeNumber = (value) => {
   const parsed = Number(value);
@@ -141,8 +175,12 @@ const resolvePaymentMethods = (record) => {
     }
   }
 
-  const method = toCleanString(record.method ?? asRecord(record.payment).method);
-  const amount = safeNumber(record.amount ?? record.totalAmount ?? record.value);
+  const method = toCleanString(
+    record.method ?? asRecord(record.payment).method,
+  );
+  const amount = safeNumber(
+    record.amount ?? record.totalAmount ?? record.value,
+  );
   return method
     ? [
         {
@@ -200,7 +238,9 @@ const fetchCollection = async (businessId, collectionName, maxDocuments) => {
 };
 
 const fetchAccountingSettings = async (businessId) => {
-  const snap = await db.doc(`businesses/${businessId}/settings/accounting`).get();
+  const snap = await db
+    .doc(`businesses/${businessId}/settings/accounting`)
+    .get();
   return snap.exists ? asRecord(snap.data()) : {};
 };
 
@@ -214,7 +254,63 @@ const buildEventIndex = (events) =>
     return index;
   }, new Set());
 
-const analyzeBusiness = async ({ businessId, businessRecord = {}, maxDocuments }) => {
+const resolveProjectionStatus = (event) => {
+  const projection = asRecord(event.projection);
+  return toCleanString(projection.status ?? event.projectionStatus);
+};
+
+const resolveEventJournalEntryId = (event) => {
+  const projection = asRecord(event.projection);
+  const metadata = asRecord(event.metadata);
+  return toCleanString(
+    projection.journalEntryId ??
+      event.journalEntryId ??
+      metadata.journalEntryId,
+  );
+};
+
+const isBlockingProjectionDeadLetter = (deadLetter) => {
+  if (
+    VOID_STATUSES.has(toCleanString(asRecord(deadLetter.metadata).eventStatus))
+  ) {
+    return false;
+  }
+
+  return BLOCKING_DEAD_LETTER_STATUSES.has(
+    toCleanString(deadLetter.projectionStatus) ?? 'pending',
+  );
+};
+
+const resolveJournalEntryTotals = (entry) => {
+  const totals = asRecord(entry.totals);
+  const explicitDebit = safeNumber(totals.debit);
+  const explicitCredit = safeNumber(totals.credit);
+  if (explicitDebit != null && explicitCredit != null) {
+    return {
+      credit: explicitCredit,
+      debit: explicitDebit,
+    };
+  }
+
+  return (Array.isArray(entry.lines) ? entry.lines : []).reduce(
+    (accumulator, line) => ({
+      credit: accumulator.credit + (safeNumber(line?.credit) ?? 0),
+      debit: accumulator.debit + (safeNumber(line?.debit) ?? 0),
+    }),
+    { credit: 0, debit: 0 },
+  );
+};
+
+const isJournalEntryBalanced = (entry) => {
+  const totals = resolveJournalEntryTotals(entry);
+  return Math.abs(totals.debit - totals.credit) <= BALANCE_THRESHOLD;
+};
+
+const analyzeBusiness = async ({
+  businessId,
+  businessRecord = {},
+  maxDocuments,
+}) => {
   const [
     settings,
     purchases,
@@ -226,6 +322,7 @@ const analyzeBusiness = async ({ businessId, businessRecord = {}, maxDocuments }
     cashMovements,
     accountingEvents,
     journalEntries,
+    projectionDeadLetters,
     exchangeRates,
   ] = await Promise.all([
     fetchAccountingSettings(businessId),
@@ -238,6 +335,11 @@ const analyzeBusiness = async ({ businessId, businessRecord = {}, maxDocuments }
     fetchCollection(businessId, 'cashMovements', maxDocuments),
     fetchCollection(businessId, 'accountingEvents', maxDocuments),
     fetchCollection(businessId, 'journalEntries', maxDocuments),
+    fetchCollection(
+      businessId,
+      'accountingEventProjectionDeadLetters',
+      maxDocuments,
+    ),
     fetchCollection(businessId, 'exchangeRates', maxDocuments),
   ]);
 
@@ -260,6 +362,10 @@ const analyzeBusiness = async ({ businessId, businessRecord = {}, maxDocuments }
   );
   const cashCountIds = new Set(cashCounts.map((cashCount) => cashCount.id));
   const eventIndex = buildEventIndex(accountingEvents);
+  const journalEntryIds = new Set(
+    journalEntries.map((entry) => toCleanString(entry.id)).filter(Boolean),
+  );
+  const journalEntriesMayBeTruncated = journalEntries.length >= maxDocuments;
 
   const completedPurchases = purchases.filter((purchase) => {
     const status = resolveStatus(purchase);
@@ -324,56 +430,72 @@ const analyzeBusiness = async ({ businessId, businessRecord = {}, maxDocuments }
     cashMovements: cashMovements.length,
   };
 
-  [...accountsPayablePayments, ...accountsReceivablePayments].forEach((payment) => {
-    if (VOID_STATUSES.has(resolveStatus(payment))) return;
-    const paymentMethods = resolvePaymentMethods(payment);
-    paymentMethods.forEach((method, index) => {
-      const methodCode = normalizeMethodCode(method.method);
-      const bankAccountId = toCleanString(method.bankAccountId ?? payment.bankAccountId);
-      const cashCountId = toCleanString(method.cashCountId ?? payment.cashCountId);
-      const cashAccountId = toCleanString(method.cashAccountId ?? payment.cashAccountId);
-      if (isBankMethod(methodCode) && !bankAccountId) {
-        addIssue(modules.treasury, {
-          severity: 'blocker',
-          code: 'payment_bank_method_missing_bank_account',
-          message: 'Pago con método bancario no tiene cuenta bancaria.',
-          collection: payment.purchaseId ? 'accountsPayablePayments' : 'accountsReceivablePayments',
-          documentId: payment.id,
-          methodIndex: index,
-        });
-      }
-      if (bankAccountId && !activeBankAccountIds.has(bankAccountId)) {
-        addIssue(modules.treasury, {
-          severity: 'warning',
-          code: 'payment_bank_account_inactive_or_missing',
-          message: 'Pago apunta a cuenta bancaria inexistente o inactiva.',
-          collection: payment.purchaseId ? 'accountsPayablePayments' : 'accountsReceivablePayments',
-          documentId: payment.id,
-          methodIndex: index,
-        });
-      }
-      if (isCashMethod(methodCode) && !cashCountId && !cashAccountId) {
-        addIssue(modules.treasury, {
-          severity: 'warning',
-          code: 'payment_cash_method_missing_cash_destination',
-          message: 'Pago en efectivo no tiene cuadre ni cuenta de caja.',
-          collection: payment.purchaseId ? 'accountsPayablePayments' : 'accountsReceivablePayments',
-          documentId: payment.id,
-          methodIndex: index,
-        });
-      }
-      if (cashCountId && !cashCountIds.has(cashCountId)) {
-        addIssue(modules.treasury, {
-          severity: 'warning',
-          code: 'payment_cash_count_missing',
-          message: 'Pago apunta a cuadre de caja no encontrado en muestra.',
-          collection: payment.purchaseId ? 'accountsPayablePayments' : 'accountsReceivablePayments',
-          documentId: payment.id,
-          methodIndex: index,
-        });
-      }
-    });
-  });
+  [...accountsPayablePayments, ...accountsReceivablePayments].forEach(
+    (payment) => {
+      if (VOID_STATUSES.has(resolveStatus(payment))) return;
+      const paymentMethods = resolvePaymentMethods(payment);
+      paymentMethods.forEach((method, index) => {
+        const methodCode = normalizeMethodCode(method.method);
+        const bankAccountId = toCleanString(
+          method.bankAccountId ?? payment.bankAccountId,
+        );
+        const cashCountId = toCleanString(
+          method.cashCountId ?? payment.cashCountId,
+        );
+        const cashAccountId = toCleanString(
+          method.cashAccountId ?? payment.cashAccountId,
+        );
+        if (isBankMethod(methodCode) && !bankAccountId) {
+          addIssue(modules.treasury, {
+            severity: 'blocker',
+            code: 'payment_bank_method_missing_bank_account',
+            message: 'Pago con método bancario no tiene cuenta bancaria.',
+            collection: payment.purchaseId
+              ? 'accountsPayablePayments'
+              : 'accountsReceivablePayments',
+            documentId: payment.id,
+            methodIndex: index,
+          });
+        }
+        if (bankAccountId && !activeBankAccountIds.has(bankAccountId)) {
+          addIssue(modules.treasury, {
+            severity: 'warning',
+            code: 'payment_bank_account_inactive_or_missing',
+            message: 'Pago apunta a cuenta bancaria inexistente o inactiva.',
+            collection: payment.purchaseId
+              ? 'accountsPayablePayments'
+              : 'accountsReceivablePayments',
+            documentId: payment.id,
+            methodIndex: index,
+          });
+        }
+        if (isCashMethod(methodCode) && !cashCountId && !cashAccountId) {
+          addIssue(modules.treasury, {
+            severity: 'warning',
+            code: 'payment_cash_method_missing_cash_destination',
+            message: 'Pago en efectivo no tiene cuadre ni cuenta de caja.',
+            collection: payment.purchaseId
+              ? 'accountsPayablePayments'
+              : 'accountsReceivablePayments',
+            documentId: payment.id,
+            methodIndex: index,
+          });
+        }
+        if (cashCountId && !cashCountIds.has(cashCountId)) {
+          addIssue(modules.treasury, {
+            severity: 'warning',
+            code: 'payment_cash_count_missing',
+            message: 'Pago apunta a cuadre de caja no encontrado en muestra.',
+            collection: payment.purchaseId
+              ? 'accountsPayablePayments'
+              : 'accountsReceivablePayments',
+            documentId: payment.id,
+            methodIndex: index,
+          });
+        }
+      });
+    },
+  );
 
   cashMovements.forEach((movement) => {
     if (VOID_STATUSES.has(resolveStatus(movement))) return;
@@ -405,7 +527,10 @@ const analyzeBusiness = async ({ businessId, businessRecord = {}, maxDocuments }
   });
 
   const monetaryDocuments = [
-    ...completedPurchases.map((record) => ({ collection: 'purchases', record })),
+    ...completedPurchases.map((record) => ({
+      collection: 'purchases',
+      record,
+    })),
     ...accountsPayablePayments.map((record) => ({
       collection: 'accountsPayablePayments',
       record,
@@ -450,22 +575,123 @@ const analyzeBusiness = async ({ businessId, businessRecord = {}, maxDocuments }
     }
   });
 
+  const projectionStatusCounts = accountingEvents.reduce((counts, event) => {
+    const status = resolveProjectionStatus(event) ?? 'missing';
+    counts[status] = (counts[status] ?? 0) + 1;
+    return counts;
+  }, {});
+  const unbalancedJournalEntries = journalEntries.filter(
+    (entry) => !isJournalEntryBalanced(entry),
+  );
+  const activeProjectionDeadLetters = projectionDeadLetters.filter(
+    isBlockingProjectionDeadLetter,
+  );
+
   modules.accounting.metrics = {
     accountingEvents: accountingEvents.length,
+    activeProjectionDeadLetters: activeProjectionDeadLetters.length,
     journalEntries: journalEntries.length,
+    projectionDeadLetters: projectionDeadLetters.length,
     cutoverAt: accountingCutoverAt,
+    projectionStatuses: projectionStatusCounts,
+    unbalancedJournalEntries: unbalancedJournalEntries.length,
   };
 
+  activeProjectionDeadLetters.forEach((deadLetter) => {
+    addIssue(modules.accounting, {
+      severity: 'blocker',
+      code: 'accounting_projection_dead_letter_active',
+      message: 'Dead letter activo de proyección contable.',
+      collection: 'accountingEventProjectionDeadLetters',
+      documentId: deadLetter.id,
+      eventId: toCleanString(deadLetter.eventId),
+      eventType: toCleanString(deadLetter.eventType),
+      projectionStatus: toCleanString(deadLetter.projectionStatus) ?? 'pending',
+    });
+  });
+
+  unbalancedJournalEntries.forEach((entry) => {
+    addIssue(modules.accounting, {
+      severity: 'blocker',
+      code: 'journal_entry_unbalanced',
+      message: 'Asiento contable descuadrado en la muestra analizada.',
+      collection: 'journalEntries',
+      documentId: entry.id,
+      totals: resolveJournalEntryTotals(entry),
+    });
+  });
+
   accountingEvents.forEach((event) => {
-    const projection = asRecord(event.projection);
-    const status = toCleanString(projection.status ?? event.projectionStatus);
-    if (status === 'failed' || status === 'error') {
+    const status = resolveProjectionStatus(event);
+    if (!status) {
       addIssue(modules.accounting, {
-        severity: 'blocker',
-        code: 'accounting_event_projection_failed',
-        message: 'Evento contable tiene proyección fallida.',
+        severity: 'warning',
+        code: 'accounting_event_missing_projection_status',
+        message: 'Evento contable no expone estado de proyección auditable.',
         collection: 'accountingEvents',
         documentId: event.id,
+      });
+      return;
+    }
+
+    if (NON_POSTING_PROJECTION_STATUSES.has(status)) {
+      return;
+    }
+
+    if (BLOCKING_PROJECTION_STATUSES.has(status)) {
+      addIssue(modules.accounting, {
+        severity: 'blocker',
+        code:
+          status === 'pending_account_mapping'
+            ? 'accounting_event_pending_account_mapping'
+            : 'accounting_event_projection_failed',
+        message:
+          status === 'pending_account_mapping'
+            ? 'Evento contable pendiente de mapeo de cuentas.'
+            : 'Evento contable tiene proyección fallida.',
+        collection: 'accountingEvents',
+        documentId: event.id,
+      });
+      return;
+    }
+
+    if (WARNING_PROJECTION_STATUSES.has(status)) {
+      addIssue(modules.accounting, {
+        severity: 'warning',
+        code: 'accounting_event_projection_pending',
+        message: 'Evento contable sigue pendiente de proyección.',
+        collection: 'accountingEvents',
+        documentId: event.id,
+      });
+      return;
+    }
+
+    if (status !== 'projected') {
+      return;
+    }
+
+    const journalEntryId = resolveEventJournalEntryId(event);
+    if (!journalEntryId) {
+      addIssue(modules.accounting, {
+        severity: 'blocker',
+        code: 'accounting_event_projected_without_journal_entry_id',
+        message: 'Evento proyectado no referencia el asiento generado.',
+        collection: 'accountingEvents',
+        documentId: event.id,
+      });
+      return;
+    }
+
+    if (!journalEntryIds.has(journalEntryId)) {
+      addIssue(modules.accounting, {
+        severity: journalEntriesMayBeTruncated ? 'warning' : 'blocker',
+        code: 'accounting_event_projected_journal_entry_missing',
+        message: journalEntriesMayBeTruncated
+          ? 'Evento proyectado referencia un asiento no encontrado en la muestra.'
+          : 'Evento proyectado referencia un asiento inexistente.',
+        collection: 'accountingEvents',
+        documentId: event.id,
+        journalEntryId,
       });
     }
   });
@@ -578,7 +804,9 @@ const assertReadAccess = async ({ authUid, businessIds, allBusinesses }) => {
 };
 
 export const analyzeFinanceReadiness = https.onCall(async (data, context) => {
-  const authUid = context?.auth?.uid;
+  const authUid = await resolveCallableAuthUid(
+    toCallableAuthRequest(data, context),
+  );
   if (!authUid) {
     throw new https.HttpsError('unauthenticated', 'Usuario no autenticado.');
   }

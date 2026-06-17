@@ -10,38 +10,43 @@ type UserRootState = Parameters<typeof selectUser>[0];
 
 type AccountRow = AccountsReceivableDoc & { id: string };
 
+type AccountsReceivableSnapshot = {
+  businessId: string | null;
+  invoiceId: string | null;
+  accountsReceivable: AccountRow[];
+};
+
 export const useFbGetAccountReceivableByInvoice = (
   invoiceId: string | null | undefined,
 ) => {
   const user = useSelector((state: UserRootState) => selectUser(state));
-  const [accountsReceivable, setAccountsReceivable] = useState<AccountRow[]>(
-    [],
-  );
-  const [loading, setLoading] = useState(true);
+  const businessId = user?.businessID ?? null;
+  const [snapshot, setSnapshot] = useState<AccountsReceivableSnapshot>({
+    businessId: null,
+    invoiceId: null,
+    accountsReceivable: [],
+  });
 
-  const deps = [user?.businessID, invoiceId];
-  const [prevDeps, setPrevDeps] = useState(deps);
+  const hasScope = Boolean(businessId && invoiceId);
+  const hasCurrentSnapshot =
+    hasScope &&
+    snapshot.businessId === businessId &&
+    snapshot.invoiceId === invoiceId;
 
-  if (!user?.businessID || !invoiceId) {
-    if (accountsReceivable.length > 0) setAccountsReceivable([]);
-    if (loading) setLoading(false);
-  } else {
-    const depsChanged = deps.some((d, i) => d !== prevDeps[i]);
-    if (depsChanged) {
-      setPrevDeps(deps);
-      setLoading(true);
-    }
-  }
+  const accountsReceivable = hasCurrentSnapshot
+    ? snapshot.accountsReceivable
+    : [];
+  const loading = hasScope && !hasCurrentSnapshot;
 
   useEffect(() => {
-    if (!user?.businessID || !invoiceId) {
+    if (!businessId || !invoiceId) {
       return undefined;
     }
 
     const ref = collection(
       db,
       'businesses',
-      user.businessID,
+      businessId,
       'accountsReceivable',
     );
     const q = query(ref, where('invoiceId', '==', invoiceId));
@@ -53,17 +58,24 @@ export const useFbGetAccountReceivableByInvoice = (
           id: doc.id,
           ...(doc.data() as AccountsReceivableDoc),
         }));
-        setAccountsReceivable(list);
-        setLoading(false);
+        setSnapshot({
+          businessId,
+          invoiceId,
+          accountsReceivable: list,
+        });
       },
       (err) => {
         console.error('Error fetching accounts receivable by invoice:', err);
-        setLoading(false);
+        setSnapshot({
+          businessId,
+          invoiceId,
+          accountsReceivable: [],
+        });
       },
     );
 
     return () => unsubscribe();
-  }, [user?.businessID, invoiceId]);
+  }, [businessId, invoiceId]);
 
   return { accountsReceivable, loading };
 };

@@ -14,11 +14,12 @@ import {
 } from '@/features/cashCount/cashCountManagementSlice';
 import { fbRecordAuthorizationApproval } from '@/firebase/authorization/approvalLogs';
 import { fbCashCountOpening } from '@/firebase/cashCount/opening/fbCashCountOpening';
-import { useAuthorizationModules } from '@/hooks/useAuthorizationModules';
-import { useAuthorizationPin } from '@/hooks/useAuthorizationPin';
-import { useCashAccounts } from '@/modules/treasury/hooks/useCashAccounts';
-import { PeerReviewAuthorization } from '@/components/modals/PeerReviewAuthorization/PeerReviewAuthorization';
-import { PinAuthorizationModal } from '@/components/modals/PinAuthorizationModal/PinAuthorizationModal';
+import { useCashAccounts } from '@/modules/accounting/public';
+import {
+  PinAuthorizationModal,
+  useAuthorizationModules,
+  useAuthorizationPin,
+} from '@/modules/authorizations/public';
 import { Comments } from '@/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/Comments/Comments';
 import { DateSection } from '@/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/components/Header/DateSection';
 import { CashDenominationCalculator } from '@/modules/cashReconciliation/pages/CashReconciliation/resource/CashDenominationCalculator/CashDenominationCalculator';
@@ -32,6 +33,7 @@ import { resolveUserIdentityBusinessId } from '@/utils/users/userIdentityAccess'
 
 import { Footer } from './components/Footer/Footer';
 import { Header } from './components/Headers/Header';
+import { PeerReviewAuthorization } from '../../resource/PeerReviewAuthorization/PeerReviewAuthorization';
 
 const { Text } = Typography;
 

@@ -6,7 +6,7 @@ import {
   Paragraph,
   Spacing,
   Subtitle,
-} from '@/modules/checkout/pages/checkout/Style';
+} from '@/modules/checkout/pages/checkout/CheckoutReceipt.styles';
 import type {
   AccountsReceivablePaymentReceipt,
   ReceivablePaymentMethod,

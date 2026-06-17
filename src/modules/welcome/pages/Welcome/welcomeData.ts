@@ -1,4 +1,5 @@
 import welcomeDataRaw from './WelcomeData.json';
+import logo from '@/assets/logo/ventamax.svg';
 
 import type { WelcomeData, WelcomeFeatureIcon } from './types';
 
@@ -17,6 +18,7 @@ const isFeatureIcon = (value: string): value is WelcomeFeatureIcon =>
 
 const normalizeWelcomeData = (data: typeof welcomeDataRaw): WelcomeData => ({
   ...data,
+  logo,
   features: data.features.map((feature) => ({
     ...feature,
     icon: isFeatureIcon(feature.icon) ? feature.icon : 'StarOutlined',

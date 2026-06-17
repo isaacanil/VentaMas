@@ -1,7 +1,5 @@
-import { httpsCallable } from 'firebase/functions';
-
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 import { resolveBillingCallableErrorMessage } from './callableErrors';
 
 type UnknownRecord = Record<string, unknown>;
@@ -27,13 +25,14 @@ const callBilling = async <TInput extends BillingPayload, TOutput>(
   callableName: string,
   payload: TInput,
 ): Promise<TOutput> => {
-  const callable = httpsCallable<TInput & { sessionToken?: string }, TOutput>(
-    functions,
+  const callable = createFirebaseCallable<
+    TInput & { sessionToken?: string },
+    TOutput
+  >(
     callableName,
   );
   try {
-    const response = await callable(withSessionToken(payload));
-    return response.data;
+    return await callable(withSessionToken(payload));
   } catch (error: unknown) {
     throw new Error(
       resolveBillingCallableErrorMessage(

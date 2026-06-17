@@ -29,7 +29,7 @@ import {
   getServiceCommissionCollaboratorOptionLabel,
   getServiceCommissionCollaboratorOptionValue,
   type ServiceCommissionCollaboratorOption,
-} from '@/utils/commissions/collaboratorOptions';
+} from '@/domain/commissions/collaboratorOptions';
 import {
   buildServiceCommissionLineSnapshot,
   calculateServiceCommissionAmount,

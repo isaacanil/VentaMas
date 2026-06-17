@@ -4,7 +4,8 @@ import {
   addReportHeader,
   applyProfessionalStyling,
   formatCurrencyColumns,
-} from '@/hooks/exportToExcel/exportConfig';
+} from '@/utils/export/excel/exportConfig';
+import { saveXlsxFile } from '@/utils/export/xlsx';
 
 import {
   formatAccountingPeriod,
@@ -36,22 +37,6 @@ type BalanceSheetExportRow = {
   Cuenta: string;
   Nombre: string;
   Balance: number;
-};
-
-const downloadWorkbook = async (
-  workbook: { xlsx: { writeBuffer: () => Promise<ArrayBuffer> } },
-  fileName: string,
-) => {
-  const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], {
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = fileName;
-  anchor.click();
-  setTimeout(() => URL.revokeObjectURL(url), 100);
 };
 
 const applySheetHeaderStyling = (
@@ -239,8 +224,9 @@ export const exportFinancialReportsWorkbook = async ({
     ['Balance'],
   );
 
-  await downloadWorkbook(
-    workbook,
-    buildFinancialReportExportFileName(periodKey),
-  );
+  const buffer = await workbook.xlsx.writeBuffer();
+  saveXlsxFile({
+    content: buffer,
+    fileName: buildFinancialReportExportFileName(periodKey),
+  });
 };

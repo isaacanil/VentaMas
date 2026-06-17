@@ -1,16 +1,14 @@
-const MAX_USERNAME_LENGTH = 32;
+import {
+  normalizeAiBusinessSeedingText as normalizeText,
+} from './aiBusinessSeedingText.util.js';
 
-const readString = (value) =>
-  typeof value === 'string' && value.trim() ? value.trim() : '';
+const MAX_USERNAME_LENGTH = 32;
 
 export const normalizeAiBusinessSeedingUsernameCandidate = (
   value,
   maxLength = MAX_USERNAME_LENGTH,
 ) => {
-  const text = readString(value)
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
+  const text = normalizeText(value)
     .replace(/[^a-z0-9.-]+/g, '-')
     .replace(/-+/g, '-')
     .replace(/\.{2,}/g, '.')

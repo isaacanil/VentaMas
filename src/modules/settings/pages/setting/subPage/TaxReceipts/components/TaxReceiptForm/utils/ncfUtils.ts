@@ -149,6 +149,72 @@ export const normalizeDigits = (digits?: string | number | null): string => {
   return trimmed.length ? trimmed : '0';
 };
 
+export interface FormatNcfDigitsOptions {
+  prefix?: string | null;
+  sequenceLength?: number | string | null;
+}
+
+export const formatNcfDigits = (
+  rawDigits: string | number | null | undefined,
+  { prefix, sequenceLength }: FormatNcfDigitsOptions = {},
+): string | null => {
+  if (rawDigits === undefined || rawDigits === null) return null;
+
+  const digits = normalizeDigits(String(rawDigits));
+  if (!digits) return null;
+
+  const resolvedLength = Number(sequenceLength);
+  const length =
+    Number.isFinite(resolvedLength) && resolvedLength > 0
+      ? resolvedLength
+      : digits.length;
+  const padded = length > 0 ? digits.padStart(length, '0') : digits;
+  const prefixValue = typeof prefix === 'string' ? prefix : '';
+
+  return prefixValue ? `${prefixValue}${padded}` : padded;
+};
+
+const extractLedgerEntryNcfDigits = (
+  item: LedgerEntry | null | undefined,
+  prefix?: string | null,
+): string | null => {
+  if (!item) return null;
+  if (
+    typeof item.normalizedDigits === 'string' &&
+    item.normalizedDigits.length > 0
+  ) {
+    return item.normalizedDigits;
+  }
+  if (Number.isFinite(item.number)) {
+    return Number(item.number).toString();
+  }
+  if (typeof item.ncf === 'string') {
+    const trimmed = item.ncf.trim();
+    const prefixValue = typeof prefix === 'string' ? prefix : '';
+    if (prefixValue && trimmed.startsWith(prefixValue)) {
+      return trimmed.slice(prefixValue.length);
+    }
+    const prefixIndex = prefixValue
+      ? trimmed.toUpperCase().indexOf(prefixValue.toUpperCase())
+      : -1;
+    if (prefixValue && prefixIndex >= 0) {
+      return trimmed.slice(prefixIndex + prefixValue.length);
+    }
+    return trimmed.replace(/[^0-9]/g, '');
+  }
+  return null;
+};
+
+export const formatLedgerEntryNcf = (
+  item: LedgerEntry | null | undefined,
+  options: FormatNcfDigitsOptions = {},
+): string => {
+  const digits = extractLedgerEntryNcfDigits(item, options.prefix);
+  const formatted = formatNcfDigits(digits, options);
+  if (formatted) return formatted;
+  return item?.ncf || '';
+};
+
 export const resolveIncrement = (value: unknown): number => {
   const numeric = Number(value);
   if (!Number.isFinite(numeric) || numeric <= 0) {

@@ -1,7 +1,6 @@
 import { Form, Select, message, Button } from 'antd';
-import { onSnapshot, doc } from 'firebase/firestore';
 import { DateTime } from 'luxon';
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
@@ -19,13 +18,14 @@ import {
 } from '@/features/addOrder/addOrderSlice';
 import { selectUser } from '@/features/auth/userSlice';
 import { toggleProviderModal } from '@/features/modals/modalSlice';
-import { db } from '@/firebase/firebaseconfig';
 import { useFbGetProviders } from '@/firebase/provider/useFbGetProvider';
+import { useProviderSnapshotById } from '@/firebase/provider/useProviderSnapshotById';
 import { getBackOrdersByProduct } from '@/firebase/warehouse/backOrderService';
 import EvidenceUpload from '@/components/common/EvidenceUpload/EvidenceUpload';
 import ProductsTable from '@/modules/orderAndPurchase/pages/OrderAndPurchase/OrderManagement/components/ProductsTable';
 import BackOrdersModal from '@/modules/orderAndPurchase/pages/OrderAndPurchase/PurchaseManagement/components/BackOrdersModal';
 import ProductModal from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/ProductModal';
+import { parseTransactionDate } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/utils/transactionDates';
 import { toMillis } from '@/utils/date/toMillis';
 import type { BackOrder } from '@/models/Warehouse/BackOrder';
 import type { ProviderDataItem, ProviderInfo } from '@/utils/provider/types';
@@ -34,7 +34,7 @@ import type {
   PurchaseBackOrderRef,
   PurchaseReplenishment,
 } from '@/utils/purchase/types';
-import type { Order } from '@/utils/order/types';
+import type { Order } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/orderTypes';
 import type { EvidenceFileInput } from '@/components/common/EvidenceUpload/types';
 import type { UserIdentity } from '@/types/users';
 
@@ -76,7 +76,6 @@ interface GeneralFormProps {
   backOrderAssociationId?: string | null;
 }
 
-const MIN_VALID_TRANSACTION_MILLIS = 946684800000; // 2000-01-01T00:00:00.000Z
 const EMPTY_EVIDENCE_FILES: EvidenceFileInput[] = [];
 const EMPTY_PURCHASE_ATTACHMENTS: PurchaseAttachment[] = [];
 const EMPTY_GENERAL_FORM_ERRORS: GeneralFormErrors = {};
@@ -189,24 +188,6 @@ const toUpdateProductValue = (
   return nextValue;
 };
 
-const normalizeTransactionMillis = (value: unknown): number | null => {
-  const rawMillis = toMillis(value as any);
-  if (typeof rawMillis !== 'number' || !Number.isFinite(rawMillis)) {
-    return null;
-  }
-  const normalized = rawMillis < 100_000_000_000 ? rawMillis * 1000 : rawMillis;
-  return normalized >= MIN_VALID_TRANSACTION_MILLIS ? normalized : null;
-};
-
-const parseDate = (value: unknown) => {
-  const millis = normalizeTransactionMillis(value);
-  if (typeof millis === 'number') {
-    return DateTime.fromMillis(millis);
-  }
-  if (DateTime.isDateTime(value) && value.isValid) return value;
-  return null;
-};
-
 const GeneralForm = ({
   files = EMPTY_EVIDENCE_FILES,
   attachmentUrls = EMPTY_PURCHASE_ATTACHMENTS,
@@ -218,9 +199,6 @@ const GeneralForm = ({
 }: GeneralFormProps) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser) as UserIdentity | null;
-  const [providerSnapshot, setProviderSnapshot] = useState<ProviderInfo | null>(
-    null,
-  );
   const { providers = EMPTY_PROVIDER_ITEMS } = useFbGetProviders() as {
     providers?: ProviderDataItem[];
   };
@@ -239,6 +217,15 @@ const GeneralForm = ({
   } = useSelector(selectOrder) as unknown as Order;
   const noteValue = typeof note === 'string' ? note : '';
   const providerIdValue = typeof providerId === 'string' ? providerId : null;
+  const handleProviderSyncError = useCallback((error: unknown) => {
+    console.error('Error observando proveedor:', error);
+    message.error('Error al sincronizar datos del proveedor');
+  }, []);
+  const { providerSnapshot, setProviderSnapshot } = useProviderSnapshotById({
+    businessId: user?.businessID,
+    providerId: providerIdValue,
+    onError: handleProviderSyncError,
+  });
   const providerFromState =
     providers.find((p) => p.provider.id === providerIdValue)?.provider ?? null;
   const activeProvider =
@@ -292,37 +279,6 @@ const GeneralForm = ({
     },
     [dispatch],
   );
-
-  // Efecto para observar cambios en el proveedor
-  useEffect(() => {
-    const businessID = user?.businessID;
-    const providerID = providerIdValue;
-
-    if (!businessID || !providerID) return;
-
-    const ref = doc(db, 'businesses', businessID, 'providers', providerID);
-
-    const unsub = onSnapshot(
-      ref,
-      (docSnapshot) => {
-        if (!docSnapshot.exists()) return;
-        const snapshotProvider = docSnapshot.data()?.provider;
-        if (!snapshotProvider) return;
-
-        setProviderSnapshot((prev) => ({
-          ...prev,
-          ...snapshotProvider,
-          id: providerID,
-        }));
-      },
-      (error) => {
-        console.error('Error observando proveedor:', error);
-        message.error('Error al sincronizar datos del proveedor');
-      },
-    );
-
-    return () => unsub();
-  }, [providerIdValue, user?.businessID]);
   const handleProviderSelect = (providerData: ProviderInfo | null) => {
     setProviderSnapshot(providerData);
     dispatch(setOrder({ provider: providerData?.id || null }));
@@ -509,7 +465,7 @@ const GeneralForm = ({
                 }
               >
                 <DatePicker
-                  value={parseDate(deliveryAt) as any}
+                  value={parseTransactionDate(deliveryAt) as any}
                   onChange={(value) => handleDateChange('deliveryAt', value)}
                   format="DD/MM/YYYY"
                   style={{ width: '100%' }}

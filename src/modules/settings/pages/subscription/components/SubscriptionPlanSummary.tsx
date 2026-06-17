@@ -14,7 +14,7 @@ import {
   PlanPeriod,
   PlanPrice,
   PlanTitleRow,
-} from './SubscriptionOverviewCard.styles';
+} from './SubscriptionPlanSummary.styles';
 
 interface SubscriptionPlanSummaryProps {
   billingCycle: string | null;

@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { icons } from '@/constants/icons/icons';
 import { formatPrice } from '@/utils/format';
 
-import type { ColumnsType } from 'antd/es/table';
+import type { TableColumnsType as ColumnsType } from 'antd';
 
 interface ProductListRow {
   id?: string;

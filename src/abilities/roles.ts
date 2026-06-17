@@ -4,30 +4,34 @@ import type {
   UserRoleLike,
   UserRoleOption,
 } from '@/types/users';
-import { normalizeRoleId, getRoleLabel } from '@/utils/roles/normalizeRole';
+import {
+  ROLE_LABELS,
+  normalizeRoleId,
+  getRoleLabel,
+} from '@/utils/roles/normalizeRole';
 
 export const userRoles = [
   {
     id: 'owner',
-    label: 'Propietario',
+    label: ROLE_LABELS.owner,
     primaryColor: '#0EA5E9',
     secondaryColor: '#e0f2fe',
   },
   {
     id: 'admin',
-    label: 'Admin',
+    label: ROLE_LABELS.admin,
     primaryColor: '#9750DD',
     secondaryColor: '#f5ebff',
   },
   {
     id: 'manager',
-    label: 'Gerente',
+    label: ROLE_LABELS.manager,
     primaryColor: '#F31260',
     secondaryColor: '#ffe3ec',
   },
   {
     id: 'cashier',
-    label: 'Cajero',
+    label: ROLE_LABELS.cashier,
     primaryColor: '#F5A524',
     secondaryColor: '#fff8ec',
   },
@@ -36,31 +40,31 @@ export const userRoles = [
   // { id: 'specialCashier2', label: 'Cajero - Especial 2', primaryColor: '#F5A524', secondaryColor: '#fff8ec' },
   {
     id: 'buyer',
-    label: 'Comprador',
+    label: ROLE_LABELS.buyer,
     primaryColor: '#17C964',
     secondaryColor: '#e3ffef',
   },
   {
     id: 'accountant',
-    label: 'Contador',
+    label: ROLE_LABELS.accountant,
     primaryColor: '#2563EB',
     secondaryColor: '#DBEAFE',
   },
   {
     id: 'controller',
-    label: 'Contralor',
+    label: ROLE_LABELS.controller,
     primaryColor: '#0F766E',
     secondaryColor: '#CCFBF1',
   },
   {
     id: 'auditor',
-    label: 'Auditor',
+    label: ROLE_LABELS.auditor,
     primaryColor: '#6D28D9',
     secondaryColor: '#EDE9FE',
   },
   {
     id: 'dev',
-    label: 'Dev',
+    label: ROLE_LABELS.dev,
     primaryColor: '#f312bb',
     secondaryColor: '#ffebfd',
   },

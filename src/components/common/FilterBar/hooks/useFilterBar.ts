@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 // Shared state helper for filter bars that keep filters and sort direction together.
 export type FilterBarState<TFilters extends Record<string, unknown>> = {
@@ -10,27 +10,34 @@ export type FilterBarSort = {
   isAscending?: boolean;
 };
 
+type FilterBarStateSnapshot<TFilters extends Record<string, unknown>> =
+  FilterBarState<TFilters> & {
+    defaultFiltersKey: string;
+  };
+
 export const useFilterBar = <TFilters extends Record<string, unknown>>(
   defaultFilters: TFilters = {} as TFilters,
   defaultSort: FilterBarSort = { isAscending: false },
 ) => {
-  const [state, setState] = useState<FilterBarState<TFilters>>({
+  const currentDefaultFiltersKey = JSON.stringify(defaultFilters);
+  const [state, setState] = useState<FilterBarStateSnapshot<TFilters>>({
     filters: defaultFilters,
     isAscending: defaultSort.isAscending ?? false,
+    defaultFiltersKey: currentDefaultFiltersKey,
   });
 
-  const [prevDefaultFiltersSerialized, setPrevDefaultFiltersSerialized] =
-    useState(() => JSON.stringify(defaultFilters));
+  const effectiveFilters =
+    state.defaultFiltersKey === currentDefaultFiltersKey
+      ? state.filters
+      : defaultFilters;
 
-  // PATR├ôN RECOMENDADO REACT: Ajustar estado durante render al cambiar props
-  const currentDefaultFiltersSerialized = JSON.stringify(defaultFilters);
-  if (currentDefaultFiltersSerialized !== prevDefaultFiltersSerialized) {
-    setPrevDefaultFiltersSerialized(currentDefaultFiltersSerialized);
-    setState((prev) => ({
-      ...prev,
-      filters: defaultFilters,
-    }));
-  }
+  const effectiveState = useMemo<FilterBarState<TFilters>>(
+    () => ({
+      filters: effectiveFilters,
+      isAscending: state.isAscending,
+    }),
+    [effectiveFilters, state.isAscending],
+  );
 
   const setFilters = useCallback((newFilters: TFilters) => {
     const cleanedFilters = Object.fromEntries(
@@ -39,25 +46,32 @@ export const useFilterBar = <TFilters extends Record<string, unknown>>(
     setState((prev) => ({
       ...prev,
       filters: cleanedFilters,
+      defaultFiltersKey: currentDefaultFiltersKey,
     }));
-  }, []);
+  }, [currentDefaultFiltersKey]);
 
   const setSorting = useCallback((ascending: boolean) => {
     setState((prev) => ({
       ...prev,
+      filters:
+        prev.defaultFiltersKey === currentDefaultFiltersKey
+          ? prev.filters
+          : defaultFilters,
       isAscending: ascending,
+      defaultFiltersKey: currentDefaultFiltersKey,
     }));
-  }, []);
+  }, [currentDefaultFiltersKey, defaultFilters]);
 
   const resetAll = useCallback(() => {
     setState({
       filters: defaultFilters,
       isAscending: defaultSort.isAscending ?? false,
+      defaultFiltersKey: currentDefaultFiltersKey,
     });
-  }, [defaultFilters, defaultSort.isAscending]);
+  }, [currentDefaultFiltersKey, defaultFilters, defaultSort.isAscending]);
 
   return {
-    state,
+    state: effectiveState,
     setFilters,
     setSorting,
     resetAll,

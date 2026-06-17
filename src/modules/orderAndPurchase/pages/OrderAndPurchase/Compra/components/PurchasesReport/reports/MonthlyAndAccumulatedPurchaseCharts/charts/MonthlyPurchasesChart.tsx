@@ -1,7 +1,8 @@
-import React from 'react';
-import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
-import type { ChartData, ChartOptions } from 'chart.js';
+import type { ChartOptions } from 'chart.js';
+
+import { LazyBar } from '@/components/charts/LazyCharts';
+import { createSingleDatasetBarData } from '@/components/charts/barChartData';
 
 interface MonthlyPurchasesChartProps {
     monthlyData: Record<string, number>;
@@ -11,20 +12,17 @@ interface MonthlyPurchasesChartProps {
 const MonthlyPurchasesChart = ({ monthlyData, options }: MonthlyPurchasesChartProps) => {
     const labels = Object.keys(monthlyData);
     const dataMonthly = labels.map((label) => monthlyData[label]);
-    const data: ChartData<'bar', number[], string> = {
+    const data = createSingleDatasetBarData({
         labels,
-        datasets: [{
-            label: 'Total por Mes',
-            data: dataMonthly,
-            backgroundColor: 'rgba(255, 159, 64, 0.2)',
-            borderColor: 'rgba(255, 159, 64, 1)',
-            borderWidth: 1,
-        }]
-    };
+        values: dataMonthly,
+        datasetLabel: 'Total por Mes',
+        backgroundColor: 'rgba(255, 159, 64, 0.2)',
+        borderColor: 'rgba(255, 159, 64, 1)',
+    });
 
     return (
         <Container>
-            <Bar data={data} options={options} />
+            <LazyBar data={data} options={options} />
         </Container>
     );
 };

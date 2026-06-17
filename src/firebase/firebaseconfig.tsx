@@ -10,15 +10,11 @@ import { connectAuthEmulator, getAuth } from 'firebase/auth';
 //TODO ***FIRESTORE***********************************
 import { getDatabase, type Database } from 'firebase/database';
 import {
-  collection,
   connectFirestoreEmulator,
-  getDocs,
   initializeFirestore,
   memoryLocalCache,
   persistentLocalCache,
   persistentMultipleTabManager,
-  query,
-  where,
 } from 'firebase/firestore';
 import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
 //TODO ***STORAGE***********************************
@@ -210,21 +206,6 @@ export const getLazyGenerativeModel = async (): Promise<GenerativeModel> => {
     });
   }
   return _generativeModelInstance;
-};
-
-interface UserDocument {
-  name?: string;
-}
-
-export const listFirst5UserNames = async (): Promise<string[]> => {
-  const usersRef = collection(db, 'users');
-  const q = query(usersRef, where('name', '==', 'dev#3407'));
-  const snap = await getDocs(q);
-
-  return snap.docs
-    .map((docSnap) => docSnap.data() as UserDocument)
-    .map((user) => user.name)
-    .filter((name): name is string => Boolean(name));
 };
 
 // function servicesEmulator() {

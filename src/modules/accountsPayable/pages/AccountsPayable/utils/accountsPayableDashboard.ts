@@ -2,8 +2,8 @@ import { toMillis } from '@/utils/date/toMillis';
 import { formatPrice } from '@/utils/format/formatPrice';
 import { isSettledPaymentStateStatus } from '@/utils/payments/paymentState';
 import type { Purchase, PurchasePaymentCondition } from '@/utils/purchase/types';
-import { resolveVendorBillDueAtMillis } from '@/utils/vendorBills/fromPurchase';
-import type { VendorBill } from '@/utils/vendorBills/types';
+import { resolveVendorBillDueAtMillis } from '@/domain/accountsPayable/vendorBills/fromPurchase';
+import type { VendorBill } from '@/domain/accountsPayable/vendorBills/types';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 

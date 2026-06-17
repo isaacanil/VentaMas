@@ -6,6 +6,7 @@ import type {
   UserAccessControl,
 } from '@/types/models';
 import { normalizeRoleId } from '@/utils/roles/normalizeRole';
+import { toCleanString } from '@/utils/text';
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -50,12 +51,6 @@ const isRecord = (value: unknown): value is UnknownRecord =>
 
 const asRecord = (value: unknown): UnknownRecord =>
   isRecord(value) ? value : {};
-
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
 
 const resolveString = (...values: unknown[]): string | null => {
   for (const value of values) {

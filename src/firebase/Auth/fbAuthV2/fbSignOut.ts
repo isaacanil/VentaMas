@@ -1,6 +1,4 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 import {
   clearStoredSession,
@@ -17,10 +15,10 @@ type LogoutResponse = {
   message?: string;
 };
 
-const clientLogoutCallable = httpsCallable<LogoutRequest, LogoutResponse>(
-  functions,
-  'clientLogout',
-);
+const clientLogoutCallable = createFirebaseCallable<
+  LogoutRequest,
+  LogoutResponse
+>('clientLogout');
 
 export const fbSignOut = async (): Promise<void> => {
   setLogoutInProgress(true);

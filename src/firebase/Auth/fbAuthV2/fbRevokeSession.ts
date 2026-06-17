@@ -1,6 +1,4 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 import { getStoredSession } from './sessionClient';
 
@@ -21,10 +19,10 @@ type RevokeSessionResponse = {
   [key: string]: unknown;
 };
 
-const revokeSessionCallable = httpsCallable<
+const revokeSessionCallable = createFirebaseCallable<
   RevokeSessionCallableRequest,
   RevokeSessionResponse
->(functions, 'clientRevokeSession');
+>('clientRevokeSession');
 
 /**
  * Revoca (cierra forzosamente) una sesión específica de un usuario.
@@ -47,13 +45,11 @@ export const fbRevokeSession = async ({
    */
 
   try {
-    const response = await revokeSessionCallable({
+    const data = await revokeSessionCallable({
       sessionToken,
       targetToken: sessionId,
       targetUserId: userId,
     });
-
-    const data = response?.data || {};
 
     if (!data.ok) {
       console.warn('La revocación reportó un error:', data?.message);

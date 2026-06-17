@@ -38,10 +38,10 @@ Abrir la base tecnica del modulo de contabilidad sin romper el sistema actual, e
 
 ## Documentos relacionados
 
-- [README](/C:/Dev/VentaMas/plans/architecture/2026-03-03-contabilidad-design/README.md)
-- [2026-03-09-repo-audit.md](/C:/Dev/VentaMas/plans/architecture/2026-03-03-contabilidad-design/audit/2026-03-09-repo-audit.md)
-- [contabilidad-backlog.md](/C:/Dev/VentaMas/plans/architecture/2026-03-03-contabilidad-design/contabilidad-backlog.md)
-- [contabilidad-checklist.md](/C:/Dev/VentaMas/plans/architecture/2026-03-03-contabilidad-design/contabilidad-checklist.md)
+- [README](../../plans/architecture/2026-03-03-contabilidad-design/README.md)
+- [2026-03-09-repo-audit.md](../../plans/architecture/2026-03-03-contabilidad-design/audit/2026-03-09-repo-audit.md)
+- [contabilidad-backlog.md](../../plans/architecture/2026-03-03-contabilidad-design/contabilidad-backlog.md)
+- [contabilidad-checklist.md](../../plans/architecture/2026-03-03-contabilidad-design/contabilidad-checklist.md)
 
 ## Regla de comentarios para esta rama
 

@@ -7,6 +7,29 @@ import { isAccountingRolloutEnabledForBusiness } from '../../../versions/v2/acco
 
 import { MovementType, MovementReason } from './movementEnums.js';
 
+const BACK_ORDERS_COLLECTION = 'backOrders';
+
+const getPhysicalStockQuantity = (productStockSnap) => {
+  const rawQuantity = productStockSnap?.get?.('quantity');
+  const quantity = Number(rawQuantity);
+  if (
+    rawQuantity !== undefined &&
+    rawQuantity !== null &&
+    Number.isFinite(quantity)
+  ) {
+    return Math.max(quantity, 0);
+  }
+
+  const legacyStock = Number(productStockSnap?.get?.('stock'));
+  return Number.isFinite(legacyStock) ? Math.max(legacyStock, 0) : 0;
+};
+
+const hasSelectedPhysicalStock = (product) =>
+  Boolean(product?.productStockId && product?.batchId);
+
+const shouldAdjustInventoryLine = (product) =>
+  Boolean(product?.trackInventory) || hasSelectedPhysicalStock(product);
+
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 
@@ -161,7 +184,7 @@ export async function adjustProductInventory(
     if (!pendingQty || pendingQty <= 0) return;
     const backorderId = nanoid();
     const ts = serverTimestamp();
-    tx.set(db.doc(`businesses/${businessID}/backorders/${backorderId}`), {
+    tx.set(db.doc(`businesses/${businessID}/${BACK_ORDERS_COLLECTION}/${backorderId}`), {
       id: backorderId,
       productId,
       quantity: pendingQty,
@@ -216,7 +239,7 @@ export async function adjustProductInventory(
 
   for (let index = 0; index < products.length; index += 1) {
     const prod = products[index];
-    if (!prod?.trackInventory) continue;
+    if (!shouldAdjustInventoryLine(prod)) continue;
 
     const {
       id: productId,
@@ -256,10 +279,7 @@ export async function adjustProductInventory(
     const batchSnap = prereq.batchSnap;
     const productSnap = prereq.productSnap;
 
-    const rawAvailable = Number(productStockSnap?.get('quantity'));
-    const availableStock = Number.isFinite(rawAvailable)
-      ? Math.max(rawAvailable, 0)
-      : 0;
+    const availableStock = getPhysicalStockQuantity(productStockSnap);
     const qtyToConsume = Math.min(quantityRequested, availableStock);
     const backorderQty = quantityRequested - qtyToConsume;
     const remainingStock = Math.max(availableStock - qtyToConsume, 0);
@@ -268,6 +288,7 @@ export async function adjustProductInventory(
 
     const stockPayload = {
       quantity: remainingStock,
+      stock: remainingStock,
       updatedAt: serverTimestamp(),
       updatedBy: uid,
     };

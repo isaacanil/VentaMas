@@ -1,5 +1,5 @@
 import type { FormEvent, Key, ReactNode } from 'react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import {
   VmAlert,
@@ -12,7 +12,8 @@ import {
   VmSelect,
   VmTextArea,
 } from '@/components/heroui';
-import { VmPhoneField } from '@/components/phone';
+import { HrEmployeePhoneField } from './HrEmployeePhoneField/HrEmployeePhoneField';
+import { useBankInstitutionCatalog } from '@/domain/banking/useBankInstitutionCatalog';
 import {
   HR_EMPLOYEE_DOCUMENT_TYPE_LABELS as DOCUMENT_TYPE_LABELS,
   HR_EMPLOYEE_GENDER_LABELS as GENDER_LABELS,
@@ -30,9 +31,14 @@ import {
   HR_DEPOSIT_ACCOUNT_TYPE_LABELS,
   getHrDepositAccountValidationMessage,
   normalizeHrDepositAccount,
-} from '@/utils/hrPayroll/depositAccounts';
-import { normalizeSalaryDeductionLines } from '@/utils/hrPayroll/salaryDeductions';
+} from '@/domain/hrPayroll/depositAccounts';
+import { normalizeSalaryDeductionLines } from '@/domain/hrPayroll/salaryDeductions';
 
+import {
+  buildHrDepositBankOptions,
+  resolveHrDepositBankSelection,
+  type HrDepositBankOption,
+} from './HrEmployeeEditorModal.bankOptions';
 import {
   DOCUMENT_PLACEHOLDERS,
   UNSPECIFIED_GENDER_KEY,
@@ -117,6 +123,15 @@ function EmployeeFormSection({
   );
 }
 
+const resolveDepositBankLabel = (
+  options: readonly HrDepositBankOption[],
+  selectedBankName: string | null,
+): string | null =>
+  selectedBankName
+    ? (options.find((option) => option.value === selectedBankName)?.label ??
+      selectedBankName)
+    : null;
+
 export function HrEmployeeEditorModal({
   employee,
   initialValues,
@@ -130,10 +145,26 @@ export function HrEmployeeEditorModal({
   const [validationMessage, setValidationMessage] = useState<string | null>(
     null,
   );
+  const bankInstitutionCatalog = useBankInstitutionCatalog(undefined, open);
   const title = employee ? 'Editar colaborador' : 'Nuevo colaborador';
   const defaultExpandedKeys = employee
     ? ALL_EMPLOYEE_SECTION_KEYS
     : ['general'];
+  const depositBankOptions = useMemo(
+    () =>
+      buildHrDepositBankOptions(
+        bankInstitutionCatalog.entries,
+        draft.depositAccount?.bankName,
+      ),
+    [bankInstitutionCatalog.entries, draft.depositAccount?.bankName],
+  );
+  const selectedDepositBankName = resolveHrDepositBankSelection(
+    depositBankOptions,
+    draft.depositAccount?.bankName,
+  );
+  const selectedDepositBankLabel =
+    resolveDepositBankLabel(depositBankOptions, selectedDepositBankName) ??
+    (bankInstitutionCatalog.loading ? 'Cargando bancos...' : 'Sin banco');
 
   const updateField = <K extends keyof HrEmployeeFormValues>(
     field: K,
@@ -151,6 +182,10 @@ export function HrEmployeeEditorModal({
     setDraft((current) => applyLinkedUserDefaults(current, linkedUser));
   };
 
+  const handleDepositBankChange = (key: Key | null) => {
+    updateDepositAccountField('bankName', key ? String(key) : null);
+  };
+
   const updateDepositAccountField = <
     K extends keyof NonNullable<HrEmployeeInput['depositAccount']>,
   >(
@@ -163,12 +198,12 @@ export function HrEmployeeEditorModal({
       depositAccount: normalizeHrDepositAccount(
         field === 'accountType'
           ? {
-              ...(current.depositAccount ?? {}),
+              ...current.depositAccount,
               [field]: value,
             }
           : {
               accountType: current.depositAccount?.accountType ?? 'checking',
-              ...(current.depositAccount ?? {}),
+              ...current.depositAccount,
               [field]: value,
             },
       ),
@@ -431,7 +466,7 @@ export function HrEmployeeEditorModal({
 
               <Field>
                 <FieldLabel>Telefono</FieldLabel>
-                <VmPhoneField
+                <HrEmployeePhoneField
                   id="hr-employee-phone"
                   ariaLabel="Telefono"
                   value={draft.phone ?? ''}
@@ -623,15 +658,43 @@ export function HrEmployeeEditorModal({
 
               <Field>
                 <FieldLabel>Banco destino</FieldLabel>
-                <VmInput
+                <VmSelect
                   aria-label="Banco destino"
-                  value={draft.depositAccount?.bankName ?? ''}
-                  disabled={saving}
-                  placeholder="Banco Popular"
-                  onChange={(event) =>
-                    updateDepositAccountField('bankName', event.target.value)
-                  }
-                />
+                  selectedKey={selectedDepositBankName}
+                  isDisabled={saving || bankInstitutionCatalog.loading}
+                  onSelectionChange={handleDepositBankChange}
+                >
+                  <VmSelect.Trigger>
+                    <VmSelect.Value>{selectedDepositBankLabel}</VmSelect.Value>
+                    <VmSelect.Indicator />
+                  </VmSelect.Trigger>
+                  <VmSelect.Popover>
+                    <VmListBox aria-label="Bancos destino">
+                      <VmListBox.Item id="" textValue="Sin banco">
+                        Sin banco
+                        <VmListBox.ItemIndicator />
+                      </VmListBox.Item>
+                      {depositBankOptions.map((option) => (
+                        <VmListBox.Item
+                          key={option.value}
+                          id={option.value}
+                          textValue={option.label}
+                        >
+                          {option.label}
+                          <VmListBox.ItemIndicator />
+                        </VmListBox.Item>
+                      ))}
+                    </VmListBox>
+                  </VmSelect.Popover>
+                </VmSelect>
+                {bankInstitutionCatalog.error ? (
+                  <FieldHint>{bankInstitutionCatalog.error}</FieldHint>
+                ) : null}
+                {!bankInstitutionCatalog.loading &&
+                !bankInstitutionCatalog.error &&
+                !depositBankOptions.length ? (
+                  <FieldHint>No hay bancos activos en el catalogo.</FieldHint>
+                ) : null}
               </Field>
 
               <Field>

@@ -45,9 +45,9 @@ import {
   resolvePurchaseReceiptChanges,
   resolvePurchaseWorkflowStatus,
 } from '@/utils/purchase/workflow';
-import { buildPurchaseReceiptHistory } from '@/utils/purchase/receiptHistory';
-import { syncVendorBillFromPurchase } from '@/firebase/vendorBills/fbUpsertVendorBill';
+import { buildPurchaseReceiptHistory } from './utils/receiptHistory';
 import { syncPurchaseAttachments } from './attachmentService';
+import { syncVendorBillFromPurchase } from './syncVendorBillFromPurchase';
 import { assertPurchaseCompletionAccountingPeriodOpen } from './utils/purchaseAccountingPeriod';
 
 interface WarehouseRecord {

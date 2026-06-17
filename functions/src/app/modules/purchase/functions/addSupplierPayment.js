@@ -6,7 +6,7 @@ import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.
 import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 import { LIMIT_OPERATION_KEYS } from '../../../versions/v2/billing/config/limitOperations.config.js';
 import { assertBusinessSubscriptionAccess } from '../../../versions/v2/billing/utils/subscriptionAccess.util.js';
 import {
@@ -22,6 +22,7 @@ import {
   asRecord,
   buildIdempotencyRequestHash,
   buildPurchasePaymentState,
+  buildSupplierCreditNoteApplicationId,
   normalizeSupplierPaymentMethodCode,
   paymentMethodRequiresBankAccount,
   paymentMethodRequiresCashCount,
@@ -579,6 +580,7 @@ export const addSupplierPayment = onCall(async (request) => {
     const creditNoteRequests = aggregateCreditNoteRequests(normalizedPaymentMethods);
     const appliedCreditNotes = [];
     const creditNoteWrites = [];
+    const creditNoteApplicationWrites = [];
     for (const [
       creditNoteId,
       requestedAmount,
@@ -649,9 +651,14 @@ export const addSupplierPayment = onCall(async (request) => {
       const nextRemainingAmount = roundToTwoDecimals(
         Math.max(creditTotal - nextAppliedAmount, 0),
       );
+      const applicationId = buildSupplierCreditNoteApplicationId({
+        creditNoteId,
+        paymentId,
+      });
 
       appliedCreditNotes.push({
         id: creditNoteId,
+        applicationId,
         appliedAmount: requestedAmount,
         remainingAmount: nextRemainingAmount,
       });
@@ -666,6 +673,38 @@ export const addSupplierPayment = onCall(async (request) => {
           updatedBy: authUid,
           lastAppliedAt: occurredAt,
           lastAppliedPaymentId: paymentId,
+        },
+      });
+      creditNoteApplicationWrites.push({
+        ref: db.doc(
+          `businesses/${businessId}/supplierCreditNoteApplications/${applicationId}`,
+        ),
+        payload: {
+          id: applicationId,
+          businessId,
+          supplierCreditNoteId: creditNoteId,
+          paymentId,
+          purchaseId,
+          vendorBillId: resolvedVendorBillId,
+          supplierId,
+          status: 'applied',
+          amount: requestedAmount,
+          appliedAmount: requestedAmount,
+          previousAppliedAmount: currentAppliedAmount,
+          nextAppliedAmount,
+          previousRemainingAmount: currentRemainingAmount,
+          nextRemainingAmount,
+          occurredAt,
+          createdAt: now,
+          createdBy: authUid,
+          updatedAt: now,
+          updatedBy: authUid,
+          sourceType: 'accountsPayablePayment',
+          sourceId: paymentId,
+          metadata: {
+            purchaseNumber: purchaseRecord.numberId ?? null,
+            note,
+          },
         },
       });
     }
@@ -807,6 +846,9 @@ export const addSupplierPayment = onCall(async (request) => {
     });
 
     creditNoteWrites.forEach((entry) => {
+      transaction.set(entry.ref, entry.payload, { merge: true });
+    });
+    creditNoteApplicationWrites.forEach((entry) => {
       transaction.set(entry.ref, entry.payload, { merge: true });
     });
 

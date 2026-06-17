@@ -24,10 +24,11 @@ import {
   assertBusinessCreationLimit,
   provisionBusinessCoreInTransaction,
   runBusinessPostProvisioning,
-} from '../../../../modules/business/functions/createBusiness.js';
+} from '../../../../modules/business/services/businessProvisioning.service.js';
 import { LIMIT_OPERATION_KEYS } from '../../billing/config/limitOperations.config.js';
 import { incrementBusinessUsageMetric } from '../../billing/services/usage.service.js';
 import { assertBusinessSubscriptionAccess } from '../../billing/utils/subscriptionAccess.util.js';
+import { resolveCallableAuthUid } from '../../../../core/utils/callableSessionAuth.util.js';
 
 const USERS_COLLECTION = 'users';
 const SESSION_COLLECTION = 'sessionTokens';
@@ -236,6 +237,61 @@ const hasBusinessAccess = (userData, businessId) => {
   return extractUserBusinessIds(userData).includes(resolvedBusinessId);
 };
 
+const resolveClientUpdateBusinessId = ({ payload, currentUser }) => {
+  const explicitBusinessId =
+    toCleanString(payload.businessID) ||
+    toCleanString(payload.businessId) ||
+    toCleanString(payload.activeBusinessId) ||
+    toCleanString(payload.lastSelectedBusinessId) ||
+    toCleanString(currentUser.businessID) ||
+    toCleanString(currentUser.businessId) ||
+    toCleanString(currentUser.activeBusinessId) ||
+    toCleanString(currentUser.lastSelectedBusinessId) ||
+    null;
+
+  if (explicitBusinessId) return explicitBusinessId;
+
+  const targetBusinessIds = extractUserBusinessIds(currentUser);
+  return targetBusinessIds.length === 1 ? targetBusinessIds[0] : null;
+};
+
+const hasOwn = (value, key) =>
+  Object.prototype.hasOwnProperty.call(isPlainObject(value) ? value : {}, key);
+
+const NON_DEV_CLIENT_UPDATE_FIELDS = [
+  'id',
+  'name',
+  'displayName',
+  'realName',
+  'email',
+  'phoneNumber',
+  'phoneNumberE164',
+  'photoURL',
+  'active',
+];
+
+const buildClientUpdatePayload = ({ payload, userId, actorRole }) => {
+  const normalizedPayload = {};
+
+  if (actorRole === ROLE.DEV) {
+    Object.assign(normalizedPayload, payload);
+  } else {
+    NON_DEV_CLIENT_UPDATE_FIELDS.forEach((field) => {
+      if (hasOwn(payload, field)) {
+        normalizedPayload[field] = payload[field];
+      }
+    });
+  }
+
+  normalizedPayload.id = userId;
+  delete normalizedPayload.user;
+  delete normalizedPayload.businessID;
+  delete normalizedPayload.businessId;
+  delete normalizedPayload.role;
+
+  return normalizedPayload;
+};
+
 const resolveCurrentRoleFromUserData = (userData = {}) => {
   if (hasPlatformDevRoleFromUserData(userData)) {
     return ROLE.DEV;
@@ -335,6 +391,55 @@ const resolveBusinessIdFromEntry = (entry) => {
   );
 };
 
+const hasBusinessMembershipEntry = (entries, businessId) =>
+  normalizeBusinessEntries(entries).some(
+    (entry) => resolveBusinessIdFromEntry(entry) === businessId,
+  );
+
+const hasLegacyTargetBusinessMembership = (userData, businessId) => {
+  const root = isPlainObject(userData) ? userData : {};
+  return (
+    hasBusinessMembershipEntry(root.accessControl, businessId) ||
+    hasBusinessMembershipEntry(root.memberships, businessId) ||
+    hasBusinessMembershipEntry(root.availableBusinesses, businessId) ||
+    toCleanString(root.activeBusinessId) === businessId ||
+    toCleanString(root.lastSelectedBusinessId) === businessId ||
+    toCleanString(root.defaultBusinessId) === businessId ||
+    toCleanString(root.businessID) === businessId ||
+    toCleanString(root.businessId) === businessId
+  );
+};
+
+const assertTargetUserBusinessMembership = async ({
+  userData,
+  userId,
+  businessId,
+}) => {
+  const resolvedBusinessId = toCleanString(businessId);
+  const resolvedUserId = toCleanString(userId);
+
+  if (!resolvedBusinessId) {
+    throw new HttpsError(
+      'invalid-argument',
+      'businessID es requerido para actualizar usuarios.',
+    );
+  }
+
+  const memberSnap = await db
+    .doc(`businesses/${resolvedBusinessId}/members/${resolvedUserId}`)
+    .get();
+  if (memberSnap.exists) return;
+
+  if (hasLegacyTargetBusinessMembership(userData, resolvedBusinessId)) {
+    return;
+  }
+
+  throw new HttpsError(
+    'permission-denied',
+    'No puedes actualizar un usuario que no pertenece a este negocio.',
+  );
+};
+
 const updateBusinessRoleEntries = (
   entries,
   businessId,
@@ -413,21 +518,35 @@ const updateBusinessStatusEntries = (entries, businessId, nextStatus) => {
   });
 };
 
-const resolveRoleSwitchActor = async (request, action = 'role-switch') => {
-  const { data = {}, auth } = request || {};
+const resolveClientCallableUserId = async (
+  request,
+  { action = 'client-auth', mapSessionError = null } = {},
+) => {
+  const { data = {} } = request || {};
   const sessionToken = data?.sessionToken || null;
 
-  let userId = null;
   if (sessionToken) {
-    const sessionSnap = await ensureActiveSession(sessionToken, {
-      eventContext: { action },
-    });
-    userId = sessionSnap.get('userId');
-  } else if (auth?.uid) {
-    userId = auth.uid;
+    try {
+      const sessionSnap = await ensureActiveSession(sessionToken, {
+        eventContext: { action },
+      });
+      return toCleanString(sessionSnap.get('userId'));
+    } catch (error) {
+      if (typeof mapSessionError === 'function') {
+        throw mapSessionError(error);
+      }
+      throw error;
+    }
   }
 
-  const resolvedUserId = toCleanString(userId);
+  return toCleanString(await resolveCallableAuthUid({ ...request, data }));
+};
+
+const resolveRoleSwitchActor = async (request, action = 'role-switch') => {
+  const resolvedUserId = await resolveClientCallableUserId(request, {
+    action,
+  });
+
   if (!resolvedUserId) {
     throw new HttpsError('permission-denied', 'Usuario no autenticado.');
   }
@@ -539,56 +658,89 @@ async function ensureUserExists(userId) {
 }
 
 async function assertAdminAccess(request, action = 'admin-access') {
-  const { data = {}, auth } = request || {};
-  const sessionToken = data?.sessionToken || null;
-
   const PRIVILEGED_ROLES = [ROLE.ADMIN, ROLE.OWNER, ROLE.DEV];
-
-  let userId = null;
-  if (sessionToken) {
-    try {
-      const snap = await ensureActiveSession(sessionToken, {
-        eventContext: { action },
-      });
-      userId = snap.get('userId');
-    } catch {
-      throw new HttpsError(
-        'permission-denied',
-        'Acceso denegado: Se requieren permisos de administrador',
-      );
-    }
-  } else if (auth?.uid) {
-    userId = auth.uid;
-  }
-
-  if (!userId) {
-    throw new HttpsError(
+  const deniedError = () =>
+    new HttpsError(
       'permission-denied',
       'Acceso denegado: Se requieren permisos de administrador',
     );
+
+  const userId = await resolveClientCallableUserId(request, {
+    action,
+    mapSessionError: deniedError,
+  });
+
+  if (!userId) {
+    throw deniedError();
   }
 
   let adminSnap;
   try {
     adminSnap = await ensureUserExists(userId);
   } catch {
-    throw new HttpsError(
-      'permission-denied',
-      'Acceso denegado: Se requieren permisos de administrador',
-    );
+    throw deniedError();
   }
 
   const resolvedRole = resolvePrivilegedRoleFromUserData(
     adminSnap.data() || {},
   );
   if (!PRIVILEGED_ROLES.includes(resolvedRole)) {
-    throw new HttpsError(
-      'permission-denied',
-      'Acceso denegado: Se requieren permisos de administrador',
-    );
+    throw deniedError();
   }
 
   return { userId, adminSnap, role: resolvedRole };
+}
+
+async function assertAdminCanManageTargetUser(
+  request,
+  targetUserId,
+  action = 'admin-target-user-access',
+) {
+  const {
+    userId: actorUserId,
+    adminSnap,
+    role: actorRole,
+  } = await assertAdminAccess(request, action);
+  const targetSnap = await ensureUserExists(targetUserId);
+
+  if (actorRole === ROLE.DEV) {
+    return { actorUserId, adminSnap, actorRole, targetSnap };
+  }
+
+  const targetData = targetSnap.data() || {};
+  const targetGlobalRole = resolvePrivilegedRoleFromUserData(targetData);
+  if (targetGlobalRole === ROLE.DEV) {
+    throw new HttpsError(
+      'permission-denied',
+      'Solo un usuario dev puede gestionar otro usuario dev.',
+    );
+  }
+
+  const businessId = resolveClientUpdateBusinessId({
+    payload: request?.data || {},
+    currentUser: targetData,
+  });
+  const actorData = adminSnap.data() || {};
+  if (!hasBusinessAccess(actorData, businessId)) {
+    throw new HttpsError(
+      'permission-denied',
+      'No tienes permisos para gestionar usuarios de este negocio.',
+    );
+  }
+
+  await assertTargetUserBusinessMembership({
+    userData: targetData,
+    userId: targetUserId,
+    businessId,
+  });
+
+  return {
+    actorUserId,
+    adminSnap,
+    actorRole,
+    targetSnap,
+    businessId,
+  };
 }
 
 async function cleanupOldTokens(userId, keepTokenId = null) {
@@ -2460,7 +2612,7 @@ export const clientUpdateUser = onCall(
       );
     }
     await ensureUniqueUsername(name, userId);
-    if (Object.prototype.hasOwnProperty.call(payload, 'password')) {
+    if (actorRole === ROLE.DEV && hasOwn(payload, 'password')) {
       assertPassword(payload.password);
     }
 
@@ -2474,24 +2626,38 @@ export const clientUpdateUser = onCall(
       );
     }
 
-    if (
-      actorRole !== ROLE.DEV &&
-      Object.prototype.hasOwnProperty.call(payload, 'platformRoles')
-    ) {
+    if (actorRole !== ROLE.DEV && hasOwn(payload, 'platformRoles')) {
       throw new HttpsError(
         'permission-denied',
         'Solo un usuario dev puede modificar platformRoles.',
       );
     }
 
-    const businessID =
-      payload.businessID ||
-      payload.businessId ||
-      currentUser.businessID ||
-      currentUser.businessId ||
+    const businessID = resolveClientUpdateBusinessId({
+      payload,
+      currentUser,
+    });
+
+    const aliasResolvedBusinessId =
+      toCleanString(payload.activeBusinessId) ||
+      toCleanString(payload.lastSelectedBusinessId) ||
+      toCleanString(payload.businessID) ||
+      toCleanString(payload.businessId) ||
       null;
 
-    if (actorRole !== ROLE.DEV && businessID) {
+    if (
+      actorRole !== ROLE.DEV &&
+      aliasResolvedBusinessId &&
+      businessID &&
+      aliasResolvedBusinessId !== businessID
+    ) {
+      throw new HttpsError(
+        'permission-denied',
+        'No puedes cambiar el contexto de negocio del usuario desde esta operación.',
+      );
+    }
+
+    if (actorRole !== ROLE.DEV) {
       const actorData = adminSnap.data() || {};
       if (!hasBusinessAccess(actorData, businessID)) {
         throw new HttpsError(
@@ -2499,12 +2665,14 @@ export const clientUpdateUser = onCall(
           'No tienes permisos para gestionar usuarios de este negocio.',
         );
       }
+      await assertTargetUserBusinessMembership({
+        userData: currentUser,
+        userId,
+        businessId: businessID,
+      });
     }
 
-    const hasActiveFlag = Object.prototype.hasOwnProperty.call(
-      payload,
-      'active',
-    );
+    const hasActiveFlag = hasOwn(payload, 'active');
     if (hasActiveFlag && payload.active === false) {
       if (toCleanString(actorUserId) === toCleanString(userId)) {
         throw new HttpsError(
@@ -2552,20 +2720,14 @@ export const clientUpdateUser = onCall(
         ? payload.email.trim().toLowerCase()
         : (currentUser.email ?? null);
 
-    const aliasResolvedBusinessId =
-      toCleanString(payload.activeBusinessId) ||
-      toCleanString(payload.lastSelectedBusinessId) ||
-      toCleanString(payload.businessID) ||
-      toCleanString(payload.businessId) ||
-      null;
     const aliasResolvedRole =
       normalizeRole(payload.activeRole || payload.role || '') || null;
 
-    const normalizedPayload = { ...payload };
-    delete normalizedPayload.user;
-    delete normalizedPayload.businessID;
-    delete normalizedPayload.businessId;
-    delete normalizedPayload.role;
+    const normalizedPayload = buildClientUpdatePayload({
+      payload,
+      userId,
+      actorRole,
+    });
 
     const updated = {
       ...currentUser,
@@ -2681,12 +2843,16 @@ export const clientChangePassword = onCall(
 export const clientSetUserPassword = onCall(
   { cors: CLIENT_AUTH_CORS_ORIGINS },
   async (request) => {
-    await assertAdminAccess(request, 'client-set-user-password');
     const { data } = request || {};
     const { userId, newPassword } = data || {};
     if (!userId) {
       throw new HttpsError('invalid-argument', 'ID de usuario requerido');
     }
+    await assertAdminCanManageTargetUser(
+      request,
+      userId,
+      'client-set-user-password',
+    );
     assertPassword(newPassword);
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -2904,7 +3070,6 @@ function generateVerificationCode() {
 export const clientSendEmailVerification = onCall(
   { cors: CLIENT_AUTH_CORS_ORIGINS, secrets: MAIL_SECRETS },
   async (request) => {
-    await assertAdminAccess(request, 'send-email-verification');
     const { data } = request || {};
     const userId = data?.userId;
     const email =
@@ -2917,7 +3082,11 @@ export const clientSendEmailVerification = onCall(
       throw new HttpsError('invalid-argument', 'Correo electrónico inválido.');
     }
 
-    await ensureUserExists(userId);
+    await assertAdminCanManageTargetUser(
+      request,
+      userId,
+      'send-email-verification',
+    );
 
     const code = generateVerificationCode();
     const hashedCode = await bcrypt.hash(code, 6);
@@ -3003,7 +3172,6 @@ export const clientSendEmailVerification = onCall(
 export const clientVerifyEmailCode = onCall(
   { cors: CLIENT_AUTH_CORS_ORIGINS },
   async (request) => {
-    await assertAdminAccess(request, 'verify-email-code');
     const { data } = request || {};
     const userId = data?.userId;
     const code = typeof data?.code === 'string' ? data.code.trim() : '';
@@ -3018,7 +3186,11 @@ export const clientVerifyEmailCode = onCall(
       );
     }
 
-    const snap = await ensureUserExists(userId);
+    const { targetSnap: snap } = await assertAdminCanManageTargetUser(
+      request,
+      userId,
+      'verify-email-code',
+    );
     const docData = snap.data() || {};
     const verification = docData.emailVerification;
 

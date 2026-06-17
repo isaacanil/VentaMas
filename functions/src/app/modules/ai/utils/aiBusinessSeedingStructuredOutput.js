@@ -1,5 +1,10 @@
 import { z } from 'genkit';
 
+import {
+  normalizeAiBusinessSeedingText as normalizeText,
+  readAiBusinessSeedingString as readString,
+} from './aiBusinessSeedingText.util.js';
+
 export const AI_BUSINESS_SEEDING_SCHEMA_VERSION = 'ai-business-seeding-v2';
 export const AI_BUSINESS_SEEDING_CONSTRAINED_OUTPUT = true;
 
@@ -127,17 +132,6 @@ const buildNormalizedOutput = ({ action, data }) => {
     constrainedOutput: AI_BUSINESS_SEEDING_CONSTRAINED_OUTPUT,
   };
 };
-
-const readString = (value) =>
-  typeof value === 'string' && value.trim() ? value.trim() : '';
-
-const normalizeText = (value) =>
-  readString(value)
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim();
 
 const normalizeBusinessType = (value) => {
   const normalized = normalizeText(value);

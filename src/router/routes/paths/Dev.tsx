@@ -3,96 +3,69 @@ import { Navigate } from 'react-router-dom';
 
 import { ROUTE_STATUS } from '@/router/routes/routeMeta';
 import RoutesName from '@/router/routes/routesName';
+import {
+  loadAccountingPilotAuditRoute,
+  loadAiBusinessSeedingRoute,
+  loadBSeriesInvoicesRoute,
+  loadCashCountAuditRoute,
+  loadElectronicTaxReceiptProviderConfigRoute,
+  loadErrorReportsRoute,
+  loadErrorScreenPreviewRoute,
+  loadFinanceReadinessAuditRoute,
+  loadFiscalReceiptsAuditRoute,
+  loadInventoryMigrationToolRoute,
+  loadInvoiceV2RecoveryRoute,
+  loadProductFormV2TestBenchRoute,
+  loadProductPriceAuditRoute,
+  loadSyncDiagnosticsRoute,
+  loadTestPlaygroundRoute,
+} from '@/modules/dev/public';
+import {
+  loadAllUsersControlRoute,
+  loadAppConfigRoute,
+  loadBusinessControlRoute,
+  loadChangelogCreateRoute,
+  loadLoginImageConfigRoute,
+} from '@/modules/controlPanel/public';
+import {
+  loadDeveloperSubscriptionMaintenancePlansRoute,
+  loadDeveloperSubscriptionMaintenanceRoute,
+} from '@/modules/settings/public';
 import type { AppRoute } from '@/router/types/routeTypes';
 
-const AllUsersControl = lazy(() =>
-  import('@/modules/controlPanel/AllUsersControl/AllUsersControl').then(
-    (module) => ({ default: module.AllUsersControl }),
-  ),
-);
-const AppConfig = lazy(
-  () => import('@/modules/controlPanel/AppConfig/AppConfig'),
-);
-const LoginImageConfig = lazy(
-  () => import('@/modules/controlPanel/AppConfig/LoginImageConfig'),
-);
-const ChangeLogCreate = lazy(
-  () =>
-    import('@/modules/controlPanel/ChangeLogControl/ChangeLogCreate/ChangeLogCreate'),
-);
-const BusinessControl = lazy(() =>
-  import('@/modules/controlPanel/CreateBusinessControl/BusinessControl').then(
-    (module) => ({ default: module.BusinessControl }),
-  ),
-);
-const AiBusinessSeeding = lazy(
-  () => import('@/modules/dev/pages/dev/AiBusinessSeeding/AiBusinessSeeding'),
-);
-const BSeriesInvoices = lazy(
-  () => import('@/modules/dev/pages/DevTools/BSeriesInvoices/BSeriesInvoices'),
-);
-const CashCountAudit = lazy(
-  () => import('@/modules/dev/pages/DevTools/CashCountAudit/CashCountAudit'),
-);
-const FiscalReceiptsAudit = lazy(() =>
-  import('@/modules/dev/pages/DevTools/FiscalReceiptsAudit/FiscalReceiptsAudit').then(
-    (module) => ({ default: module.FiscalReceiptsAudit }),
-  ),
-);
-const InventoryMigrationTool = lazy(
-  () => import('@/modules/dev/pages/DevTools/InventoryMigrationTool'),
-);
-const InvoiceV2Recovery = lazy(
-  () =>
-    import('@/modules/dev/pages/DevTools/InvoiceV2Recovery/InvoiceV2Recovery'),
-);
-const SyncDiagnostics = lazy(
-  () => import('@/modules/dev/pages/DevTools/SyncDiagnostics'),
-);
-const TestPlayground = lazy(
-  () => import('@/modules/dev/pages/DevTools/TestPlayground'),
-);
-const ErrorScreenPreview = lazy(
-  () =>
-    import('@/modules/dev/pages/DevTools/ErrorScreenPreview/ErrorScreenPreview'),
-);
-const ErrorReports = lazy(
-  () => import('@/modules/dev/pages/DevTools/ErrorReports/ErrorReports'),
-);
+const AllUsersControl = lazy(loadAllUsersControlRoute);
+const AppConfig = lazy(loadAppConfigRoute);
+const LoginImageConfig = lazy(loadLoginImageConfigRoute);
+const ChangeLogCreate = lazy(loadChangelogCreateRoute);
+const BusinessControl = lazy(loadBusinessControlRoute);
+const AiBusinessSeeding = lazy(loadAiBusinessSeedingRoute);
+const BSeriesInvoices = lazy(loadBSeriesInvoicesRoute);
+const CashCountAudit = lazy(loadCashCountAuditRoute);
+const FiscalReceiptsAudit = lazy(loadFiscalReceiptsAuditRoute);
+const InventoryMigrationTool = lazy(loadInventoryMigrationToolRoute);
+const InvoiceV2Recovery = lazy(loadInvoiceV2RecoveryRoute);
+const SyncDiagnostics = lazy(loadSyncDiagnosticsRoute);
+const TestPlayground = lazy(loadTestPlaygroundRoute);
+const ErrorScreenPreview = lazy(loadErrorScreenPreviewRoute);
+const ErrorReports = lazy(loadErrorReportsRoute);
 const ElectronicTaxReceiptProviderConfigPage = lazy(
-  () =>
-    import('@/modules/dev/pages/DevTools/ElectronicTaxReceiptProvider/ElectronicTaxReceiptProviderConfigPage'),
+  loadElectronicTaxReceiptProviderConfigRoute,
 );
-const CheckProductPriceAudit = lazy(
-  () =>
-    import('@/modules/dev/pages/test/pages/checkProductPriceField/CheckProductPriceAudit'),
-);
+const CheckProductPriceAudit = lazy(loadProductPriceAuditRoute);
 const Doc = lazy(() =>
   import('@/components/ui/AdvancedTable/Doc').then((module) => ({
     default: module.Doc,
   })),
 );
-const Menu = lazy(() => import('@/components/ui/Menu/Menu'));
-const ProductFormV2TestBench = lazy(
-  () =>
-    import('@/modules/dev/pages/DevTools/ProductFormV2Test/ProductFormV2TestBench'),
-);
+const ProductFormV2TestBench = lazy(loadProductFormV2TestBenchRoute);
 const DeveloperSubscriptionMaintenancePage = lazy(
-  () =>
-    import('@/modules/settings/pages/subscription/DeveloperSubscriptionMaintenancePage'),
+  loadDeveloperSubscriptionMaintenanceRoute,
 );
 const DeveloperSubscriptionMaintenancePlansPage = lazy(
-  () =>
-    import('@/modules/settings/pages/subscription/DeveloperSubscriptionMaintenancePlansPage'),
+  loadDeveloperSubscriptionMaintenancePlansRoute,
 );
-const AccountingPilotAudit = lazy(
-  () =>
-    import('@/modules/dev/pages/DevTools/AccountingPilotAudit/AccountingPilotAudit'),
-);
-const FinanceReadinessAudit = lazy(
-  () =>
-    import('@/modules/dev/pages/DevTools/FinanceReadinessAudit/FinanceReadinessAudit'),
-);
+const AccountingPilotAudit = lazy(loadAccountingPilotAuditRoute);
+const FinanceReadinessAudit = lazy(loadFinanceReadinessAuditRoute);
 
 const {
   BUSINESSES,
@@ -149,11 +122,6 @@ const Routes: AppRoute[] = [
     element: <Doc />,
     devOnly: true,
     status: ROUTE_STATUS.BETA,
-  },
-  {
-    path: '/menu',
-    element: <Menu />,
-    devOnly: true,
   },
   {
     path: RoutesName.DEV_VIEW_TERM.FISCAL_RECEIPTS_AUDIT,

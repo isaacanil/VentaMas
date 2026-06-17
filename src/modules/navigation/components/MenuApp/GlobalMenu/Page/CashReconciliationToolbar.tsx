@@ -4,7 +4,7 @@ import { useMatch, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
-import { useDialog } from '@/Context/Dialog/useDialog';
+import { useDialog } from '@/context/Dialog/useDialog';
 import { selectCashReconciliation } from '@/features/cashCount/cashStateSlice';
 
 interface CashReconciliationToolbarProps {

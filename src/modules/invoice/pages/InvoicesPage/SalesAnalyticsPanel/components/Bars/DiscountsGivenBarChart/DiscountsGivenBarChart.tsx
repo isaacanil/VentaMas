@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { LazyBar } from '@/components/charts/LazyCharts';
+import { createSingleDatasetBarData } from '@/components/charts/barChartData';
 import styled from 'styled-components';
 import type { SalesRecord } from '../../../utils';
 import {
@@ -9,7 +10,7 @@ import {
   toNumber,
 } from '../../../utils';
 
-import Typography from '@/components/ui/Typografy/Typografy';
+import Typography from '@/components/ui/Typography/Typography';
 
 const options = {
   responsive: true,
@@ -61,18 +62,13 @@ export const DiscountsGivenBarChart = ({ sales }: { sales: SalesRecord[] }) => {
     const labels = Object.keys(discountsByDate);
     const dataTotals = labels.map((label) => discountsByDate[label]);
 
-    return {
+    return createSingleDatasetBarData({
       labels,
-      datasets: [
-        {
-          label: 'Descuentos ($)',
-          data: dataTotals,
-          backgroundColor: 'rgba(255, 99, 132, 0.2)',
-          borderColor: 'rgba(255, 99, 132, 1)',
-          borderWidth: 1,
-        },
-      ],
-    };
+      values: dataTotals,
+      datasetLabel: 'Descuentos ($)',
+      backgroundColor: 'rgba(255, 99, 132, 0.2)',
+      borderColor: 'rgba(255, 99, 132, 1)',
+    });
   }, [discountsByDate]);
 
   if (!normalizedSales.length) {

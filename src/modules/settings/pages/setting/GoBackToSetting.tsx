@@ -3,6 +3,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigate } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 
+import ROUTES_NAME from '@/router/routes/routesName';
+
 const pulse = keyframes`
   0% {
     transform: scale(1);
@@ -50,7 +52,7 @@ const BackButton = () => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate('/app/settings');
+    navigate(ROUTES_NAME.SETTING_TERM.SETTING);
   };
 
   return (

@@ -6,9 +6,9 @@ import { ACCOUNTING_CURRENCY_CODES } from '@/utils/accounting/currencies';
 import { AccountingHistoryList } from './AccountingHistoryList';
 import { AddChartOfAccountModal } from './AddChartOfAccountModal';
 import { AddExchangeRateModal } from './AddExchangeRateModal';
-import { ChartOfAccountsList } from './ChartOfAccountsList';
+import { ChartOfAccountsList } from './ChartOfAccountsWorkspace/ChartOfAccountsList';
 import { ExchangeRatesWorkspace } from './ExchangeRatesWorkspace';
-import { PostingProfilesList } from './PostingProfilesList';
+import { PostingProfilesList } from './PostingProfilesWorkspace/PostingProfilesList';
 import type {
   AccountingPostingProfile,
   ChartOfAccount,
@@ -17,9 +17,9 @@ import type { ChartOfAccountDraft } from '@/utils/accounting/chartOfAccounts';
 import type { AccountingPostingProfileDraft } from '@/utils/accounting/postingProfiles';
 import type {
   AccountingSettingsConfig,
+  ExchangeRateReferenceSnapshot,
   SupportedDocumentCurrency,
-} from '../utils/accountingConfig';
-import type { ExchangeRateReferenceSnapshot } from '../utils/exchangeRateReference';
+} from '@/modules/accounting/public';
 import type { AccountingAuditEntry } from '../utils/accountingAudit';
 import type {
   AccountingPanelItem,

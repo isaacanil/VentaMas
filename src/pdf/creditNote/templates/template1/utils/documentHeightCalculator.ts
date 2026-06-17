@@ -2,7 +2,7 @@
 
 import type { TimestampLike } from '@/utils/date/types';
 import { toMillis } from '@/utils/date/toMillis';
-import type { CreditNoteBusinessInfo, CreditNoteData } from '../../../types.js';
+import type { CreditNoteBusinessInfo, CreditNoteData } from '../../../types';
 
 // Constantes basadas en los estilos del PDF
 const STYLES = {

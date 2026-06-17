@@ -1,12 +1,11 @@
 import {
-  ExclamationCircleOutlined,
-  WarningOutlined,
-  UserOutlined,
   CreditCardOutlined,
+  ExclamationCircleOutlined,
   FileTextOutlined,
   LockOutlined,
+  UserOutlined,
+  WarningOutlined,
 } from '@/constants/icons/antd';
-import { Button } from 'antd';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -14,6 +13,26 @@ import { OPERATION_MODES } from '@/constants/modes';
 import { selectClient } from '@/features/clientCart/clientCartSlice';
 import { toggleClientModal } from '@/features/modals/modalSlice';
 
+import {
+  ActionButton,
+  ActionRow,
+  AlertShell,
+  Header,
+  HeaderTitle,
+  ItemCount,
+  StatusBadge,
+  StatusMarker,
+  ValidationCard,
+  ValidationContent,
+  ValidationIcon,
+  ValidationList,
+  ValidationMessage,
+  ValidationTitle,
+} from './GenericClientAlert.styles';
+import {
+  buildARValidations,
+  type ValidationIcon as ValidationIconName,
+} from './GenericClientAlert.utils';
 import { MiniClientSelector } from './MiniClientSelector/MiniClientSelector';
 
 import type { CreditLimitConfig } from '@/utils/accountsReceivable/types';
@@ -22,19 +41,6 @@ import type { ReactNode } from 'react';
 type ClientIdentity = {
   id?: string;
   name?: string;
-};
-
-type ValidationStatus = 'error' | 'warning' | 'success' | 'info';
-
-type ValidationAction = true | 'selectClient';
-
-type ValidationItem = {
-  status: ValidationStatus;
-  icon: ReactNode;
-  title: string;
-  message: string;
-  priority: number;
-  action?: ValidationAction;
 };
 
 type UnifiedARAlertProps = {
@@ -49,6 +55,15 @@ type UnifiedARAlertProps = {
   isChangeNegative: boolean;
   abilitiesLoading: boolean;
   creditLimitValue?: number | null;
+};
+
+const VALIDATION_ICONS: Record<ValidationIconName, ReactNode> = {
+  creditCard: <CreditCardOutlined />,
+  exclamation: <ExclamationCircleOutlined />,
+  fileText: <FileTextOutlined />,
+  lock: <LockOutlined />,
+  user: <UserOutlined />,
+  warning: <WarningOutlined />,
 };
 
 const UnifiedARAlert = ({
@@ -86,310 +101,87 @@ const UnifiedARAlert = ({
     setIsMiniClientSelectorOpen(false);
   };
 
-  // Construir lista de validaciones según las condiciones
-  const validations: ValidationItem[] = [];
+  const validations = buildARValidations({
+    isGenericClient,
+    isInvoiceLimitExceeded,
+    isCreditLimitExceeded,
+    creditLimit,
+    activeAccountsReceivableCount,
+    clientId,
+    invoiceId,
+    hasAccountReceivablePermission,
+    isChangeNegative,
+    abilitiesLoading,
+    creditLimitValue,
+  });
 
-  // 0. Acceso restringido (prioridad más alta)
-  if (
-    !hasAccountReceivablePermission &&
-    isChangeNegative &&
-    !abilitiesLoading
-  ) {
-    validations.push({
-      status: 'error',
-      icon: <LockOutlined />,
-      title: 'Acceso Restringido',
-      message:
-        'No se puede facturar ventas con cambio negativo sin permisos de CxC',
-      priority: 0,
-    });
-  }
-  // 1. Cliente genérico
-  if (isGenericClient && isChangeNegative) {
-    validations.push({
-      status: 'error',
-      icon: <UserOutlined />,
-      title: 'No se puede agregar a cuenta por cobrar con cliente genérico',
-      message:
-        'Selecciona un cliente específico para continuar con la cuenta por cobrar',
-      priority: 1,
-      action: 'selectClient',
-    });
-  }
-
-  // 2. Sin cliente o factura
-  if (!clientId && !invoiceId) {
-    validations.push({
-      status: 'error',
-      icon: <ExclamationCircleOutlined />,
-      title: 'Información incompleta',
-      message: 'Se requiere cliente para CxC',
-      priority: 2,
-    });
-  }
-
-  // 3. Sin límites configurados
-  if (
-    !isGenericClient &&
-    !creditLimit?.creditLimit?.status &&
-    !creditLimit?.invoice?.status
-  ) {
-    validations.push({
-      status: 'warning',
-      icon: <WarningOutlined />,
-      title: 'Configuración pendiente',
-      message: 'Define límites de crédito y facturas',
-      action: true,
-      priority: 3,
-    });
-  } // 4. Límite de crédito superado
-  if (isCreditLimitExceeded) {
-    const newBalanceDisplay =
-      creditLimitValue != null ? creditLimitValue.toFixed(2) : '0.00';
-    const limitDisplay = creditLimit?.creditLimit?.value || 0;
-
-    validations.push({
-      status: 'warning',
-      icon: <CreditCardOutlined />,
-      title: 'Límite de crédito excedido',
-      message: `Nuevo balance: $${newBalanceDisplay} (límite: $${limitDisplay})`,
-      action: true,
-      priority: 4,
-    });
-  }
-  // 5. Límite de facturas superado
-  if (isInvoiceLimitExceeded) {
-    validations.push({
-      status: 'warning',
-      icon: <FileTextOutlined />,
-      title: 'Límite de facturas alcanzado',
-      message: `${activeAccountsReceivableCount + 1} / ${creditLimit?.invoice?.value} facturas (incluyendo esta)`,
-      action: true,
-      priority: 5,
-    });
-  }
-
-  // Si no hay validaciones (todo está bien), no mostrar nada
   if (validations.length === 0) {
     return null;
   }
 
-  // Ordenar por prioridad
-  validations.sort((a, b) => a.priority - b.priority);
-
-  const getStatusStyle = (status: ValidationStatus) => {
-    switch (status) {
-      case 'error':
-        return {
-          color: '#ff4d4f',
-          backgroundColor: '#fff2f0',
-          borderColor: '#ffccc7',
-        };
-      case 'warning':
-        return {
-          color: '#faad14',
-          backgroundColor: '#fffbe6',
-          borderColor: '#ffe58f',
-        };
-      case 'success':
-        return {
-          color: '#52c41a',
-          backgroundColor: '#f6ffed',
-          borderColor: '#b7eb8f',
-        };
-      default:
-        return {
-          color: '#1890ff',
-          backgroundColor: '#e6f7ff',
-          borderColor: '#91d5ff',
-        };
-    }
-  };
-
-  const primaryStatus = validations[0]?.status || 'info';
-  const statusStyle = getStatusStyle(primaryStatus);
+  const primaryStatus = validations[0]?.status ?? 'info';
 
   return (
-    <div
-      style={{
-        backgroundColor: '#fafafa',
-        border: '1px solid #f0f0f0',
-        borderRadius: '8px',
-        padding: '16px',
-        width: '100%',
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          marginBottom: '12px',
-          paddingBottom: '8px',
-          borderBottom: '1px solid #f0f0f0',
-        }}
-      >
-        <div
-          style={{
-            width: '6px',
-            height: '20px',
-            backgroundColor: statusStyle.color,
-            borderRadius: '3px',
-          }}
-        />
-        <span
-          style={{
-            fontSize: '14px',
-            fontWeight: '600',
-            color: '#262626',
-          }}
-        >
-          Validación CxC
-        </span>
-        <div
-          style={{
-            marginLeft: 'auto',
-            fontSize: '11px',
-            color: '#8c8c8c',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-          }}
-        >
+    <AlertShell>
+      <Header>
+        <StatusMarker $status={primaryStatus} />
+        <HeaderTitle>Validación CxC</HeaderTitle>
+        <ItemCount>
           {validations.length} {validations.length === 1 ? 'item' : 'items'}
-        </div>
-      </div>
-      {/* Content */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '8px',
-        }}
-      >
-        {validations.map((validation) => {
-          const itemStyle = getStatusStyle(validation.status);
-          return (
-            <div
-              key={`${validation.priority}-${validation.status}-${validation.title}`}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '10px 12px',
-                backgroundColor: itemStyle.backgroundColor,
-                border: `1px solid ${itemStyle.borderColor}`,
-                borderRadius: '6px',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              {/* Status Icon */}
-              <div
-                style={{
-                  color: itemStyle.color,
-                  fontSize: '16px',
-                  flexShrink: 0,
-                }}
-              >
-                {validation.icon}
-              </div>
+        </ItemCount>
+      </Header>
 
-              {/* Content */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: '13px',
-                    fontWeight: '500',
-                    color: '#262626',
-                    marginBottom: '2px',
-                  }}
-                >
-                  {validation.title}
-                </div>
-                <div
-                  style={{
-                    fontSize: '12px',
-                    color: '#595959',
-                    lineHeight: '1.3',
-                  }}
-                >
-                  {validation.message}
-                </div>
-              </div>
+      <ValidationList>
+        {validations.map((validation) => (
+          <ValidationCard
+            key={`${validation.priority}-${validation.status}-${validation.title}`}
+            $status={validation.status}
+          >
+            <ValidationIcon $status={validation.status}>
+              {VALIDATION_ICONS[validation.icon]}
+            </ValidationIcon>
 
-              {/* Status Badge */}
-              <div
-                style={{
-                  fontSize: '10px',
-                  fontWeight: '500',
-                  color: itemStyle.color,
-                  backgroundColor: 'rgb(255 255 255 / 80%)',
-                  padding: '2px 6px',
-                  borderRadius: '10px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.3px',
-                  flexShrink: 0,
-                }}
-              >
-                {validation.status}
-              </div>
-            </div>
-          );
-        })}
-      </div>{' '}
-      {/* Action Button */}
+            <ValidationContent>
+              <ValidationTitle>{validation.title}</ValidationTitle>
+              <ValidationMessage>{validation.message}</ValidationMessage>
+            </ValidationContent>
+
+            <StatusBadge $status={validation.status}>
+              {validation.status}
+            </StatusBadge>
+          </ValidationCard>
+        ))}
+      </ValidationList>
+
       {validations.some((v) => v.action) && (
-        <div
-          style={{
-            marginTop: '12px',
-            paddingTop: '12px',
-            borderTop: '1px solid #f0f0f0',
-            display: 'flex',
-            justifyContent: 'flex-end',
-            gap: '8px',
-          }}
-        >
+        <ActionRow>
           {validations.some((v) => v.action === 'selectClient') && (
-            <Button
+            <ActionButton
               type="primary"
               size="small"
               onClick={openMiniClientSelector}
               icon={<UserOutlined />}
-              style={{
-                height: '32px',
-                fontSize: '12px',
-                fontWeight: '500',
-                borderRadius: '6px',
-              }}
             >
               Seleccionar Cliente
-            </Button>
+            </ActionButton>
           )}
           {validations.some((v) => v.action === true) && (
-            <Button
+            <ActionButton
               type="primary"
               size="small"
               onClick={openCreditLimitModal}
-              style={{
-                height: '32px',
-                fontSize: '12px',
-                fontWeight: '500',
-                borderRadius: '6px',
-              }}
             >
               Configurar límites
-            </Button>
+            </ActionButton>
           )}
-        </div>
+        </ActionRow>
       )}
-      {/* Mini Client Selector Modal */}
+
       <MiniClientSelector
         isOpen={isMiniClientSelectorOpen}
         onClose={closeMiniClientSelector}
       />
-    </div>
+    </AlertShell>
   );
 };
 

@@ -3,7 +3,7 @@ import {
   money,
   getProductsIndividualDiscounts,
   hasIndividualDiscounts,
-} from '../utils/formatters.js';
+} from '../utils/formatters';
 
 import type { PdfHeaderFooter } from '@/pdf/types';
 import type { QuotationData } from '@/pdf/invoicesAndQuotation/types';

@@ -1,10 +1,8 @@
+import { getErrorMessage as getSharedErrorMessage } from '@/utils/errors';
 import type { HrCommissionEntryRecord } from '@/types/hrPayroll';
 
-export const getErrorMessage = (error: unknown): string => {
-  if (error instanceof Error) return error.message;
-  if (typeof error === 'string') return error;
-  return 'No se pudo completar la operacion.';
-};
+export const getErrorMessage = (error: unknown): string =>
+  getSharedErrorMessage(error, 'No se pudo completar la operacion.');
 
 export const matchesCommissionSearch = (
   entry: HrCommissionEntryRecord,

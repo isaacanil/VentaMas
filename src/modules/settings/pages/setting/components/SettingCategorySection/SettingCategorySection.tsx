@@ -1,4 +1,4 @@
-import Typography from '@/components/ui/Typografy/Typografy';
+import Typography from '@/components/ui/Typography/Typography';
 
 import { Card } from '../Card';
 import type { SettingItem } from '../../SettingData';

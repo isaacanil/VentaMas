@@ -8,7 +8,7 @@ import {
   deleteAllItems,
   SelectCategoryList,
   SelectCategoryState,
-} from '@/features/category/categorySlicer';
+} from '@/features/category/categorySlice';
 import { useGetFavoriteProductCategories } from '@/firebase/categories/fbGetFavoriteProductCategories';
 import { fbToggleFavoriteProductCategory } from '@/firebase/categories/fbToggleFavoriteProductCategory';
 import { useFbGetCategories } from '@/firebase/categories/useFbGetCategories';
@@ -18,9 +18,9 @@ import type {
 } from '@/firebase/categories/types';
 import { useListenActiveIngredients } from '@/firebase/products/activeIngredient/activeIngredients';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
-import { filterFavoriteProductCategories } from '@/utils/data/products/category';
 import type { UserIdentity } from '@/types/users';
 
+import { filterFavoriteProductCategories } from './categoryFilters';
 import { CategoryBar } from './components/CategoryBar/CategoryBar';
 import { DropdownMenu } from './components/DropdownMenu/DropdownMenu';
 

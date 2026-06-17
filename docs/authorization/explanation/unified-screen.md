@@ -15,12 +15,12 @@ El flujo de autorizaciones se expandió con pantallas aisladas (solicitudes de f
 ### Estructura de componentes
 
 ```
-src/views/pages/Authorizations/
-├── AuthorizationsManager.jsx          # Contenedor principal con tabs
-├── InvoiceEditAuthorizations.jsx      # Vista heredada (solo para compatibilidad)
+src/modules/authorizations/pages/Authorizations/
+├── AuthorizationsManager.tsx          # Contenedor principal con tabs
 └── components/
-    ├── AuthorizationRequests.jsx      # Tab 1: Solicitudes
-    └── PinManagement.jsx              # Tab 2: Gestión de PINs
+    ├── AuthorizationRequests/
+    │   └── AuthorizationRequests.tsx  # Tab 1: Solicitudes
+    └── PersonalPinManagement.tsx      # Tab 2: Gestión de PINs
 ```
 
 `AuthorizationsManager` maneja el estado del tab activo, provee filtros y delega la carga de datos en cada tab para evitar renders globales.
@@ -63,10 +63,11 @@ src/views/pages/Authorizations/
 
 ### Integración con el sistema existente
 
-- Rutas: `src/routes/paths/Authorizations.jsx` apunta ahora a `AuthorizationsManager`.
+- Rutas: `src/router/routes/paths/Authorizations.tsx` carga `src/modules/authorizations/pages/Authorizations/AuthorizationsManager.tsx`.
+- Menú Admin: `src/modules/navigation/components/MenuApp/MenuData/items/admin.tsx` expone la entrada hacia `/authorizations`.
 - Servicios:
   - `AuthorizationRequests` utiliza `listenToAuthorizationsByStatus`.
-  - `PinManagement` consume `usePinAuthorization` + `fbGetUsersWithPinStatus`.
+  - `PersonalPinManagement` consume `usePinAuthorization` + `fbGetUsersWithPinStatus`.
 - Flags (`authorizationFlowEnabled`, `enabledAuthorizationModules`) determinan qué tab está habilitado y qué acciones se muestran.
 
 ## 📈 Impacto / Trade-offs

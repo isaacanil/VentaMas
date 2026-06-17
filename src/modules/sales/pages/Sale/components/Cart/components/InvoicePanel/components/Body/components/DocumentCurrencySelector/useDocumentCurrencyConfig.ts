@@ -9,6 +9,7 @@ import {
   normalizeSupportedDocumentCurrency,
 } from '@/utils/accounting/currencies';
 
+import { resolveTimestampMillis } from './documentCurrencyDates';
 import type { DocumentCurrencyConfig, SupportedDocumentCurrency } from './types';
 
 const normalizeCurrency = (value: unknown): SupportedDocumentCurrency =>
@@ -23,38 +24,6 @@ const DEFAULT_CONFIG: DocumentCurrencyConfig = {
 const safeNumber = (value: unknown): number | null => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
-};
-
-const resolveTimestampMillis = (value: unknown): number | null => {
-  if (value == null) return null;
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string') {
-    const parsed = Date.parse(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  if (value instanceof Date) {
-    const millis = value.getTime();
-    return Number.isFinite(millis) ? millis : null;
-  }
-
-  const record = asRecord(value);
-  const toMillis = record.toMillis;
-  if (typeof toMillis === 'function') {
-    const millis = Number(toMillis.call(value));
-    return Number.isFinite(millis) ? millis : null;
-  }
-
-  const toDate = record.toDate;
-  if (typeof toDate === 'function') {
-    const date = toDate.call(value);
-    if (date instanceof Date) {
-      const millis = date.getTime();
-      return Number.isFinite(millis) ? millis : null;
-    }
-  }
-
-  const seconds = Number(record.seconds ?? record._seconds);
-  return Number.isFinite(seconds) ? seconds * 1000 : null;
 };
 
 const asRecord = (value: unknown): Record<string, unknown> =>

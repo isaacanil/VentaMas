@@ -6,7 +6,14 @@ import {
   FieldValue,
   Timestamp,
 } from '../../../../../core/config/firebase.js';
+import { resolveCallableAuthUid } from '../../../../../core/utils/callableSessionAuth.util.js';
 import { getNextID } from '../../../../../core/utils/getNextID.js';
+import {
+  assertUserAccess,
+  MEMBERSHIP_ROLE_GROUPS,
+} from '../../../../v2/auth/services/userAccess.service.js';
+import { toCleanString } from '../../../../v2/billing/utils/billingCommon.util.js';
+import { assertBusinessSubscriptionAccess } from '../../../../v2/billing/utils/subscriptionAccess.util.js';
 import { createBatch } from '../../batch/services/batch.service.js';
 import {
   MovementReason,
@@ -31,29 +38,57 @@ function commitChunked(applyFns = [], chunkSize = 450) {
 export const finalizeInventorySession = onCall(async (req) => {
   try {
     const {
-      user,
+      user: payloadUser,
       sessionId,
       groups = [],
       counts = {},
       stocks = [],
       countsMeta = {},
     } = req.data || {};
-    if (!user?.businessID || !user?.uid) {
+
+    const user =
+      payloadUser &&
+      typeof payloadUser === 'object' &&
+      !Array.isArray(payloadUser)
+        ? payloadUser
+        : {};
+    const actorUid = await resolveCallableAuthUid(req);
+    if (!actorUid) {
+      throw new HttpsError('unauthenticated', 'Usuario no autenticado');
+    }
+
+    const payloadUid = toCleanString(user.uid);
+    if (payloadUid && payloadUid !== actorUid) {
+      logger.warn('UID del auth no coincide con UID de payload', {
+        authUid: actorUid,
+        uid: payloadUid,
+      });
       throw new HttpsError(
-        'invalid-argument',
-        'user.businessID y user.uid son requeridos',
+        'permission-denied',
+        'El usuario autenticado no coincide con el payload',
       );
     }
-    if (req?.auth?.uid && req.auth.uid !== user.uid) {
-      logger.warn('UID del auth no coincide con UID de payload', {
-        authUid: req.auth.uid,
-        uid: user.uid,
-      });
+
+    const businessID = toCleanString(user.businessID);
+    if (!businessID) {
+      throw new HttpsError('invalid-argument', 'user.businessID es requerido');
     }
     if (!sessionId)
       throw new HttpsError('invalid-argument', 'sessionId requerido');
 
-    const businessID = user.businessID;
+    await assertUserAccess({
+      authUid: actorUid,
+      businessId: businessID,
+      allowedRoles: MEMBERSHIP_ROLE_GROUPS.MAINTENANCE,
+    });
+
+    await assertBusinessSubscriptionAccess({
+      businessId: businessID,
+      action: 'write',
+      requiredModule: 'inventory',
+    });
+
+    const actorUser = { ...user, businessID, uid: actorUid };
     const now = FieldValue.serverTimestamp();
 
     const stockById = new Map(stocks.map((s) => [s.id, s]));
@@ -296,7 +331,7 @@ export const finalizeInventorySession = onCall(async (req) => {
           stock: adj.toQty,
           status: adj.toQty > 0 ? 'active' : 'inactive',
           updatedAt: now,
-          updatedBy: user.uid,
+          updatedBy: actorUid,
         }),
       );
 
@@ -308,7 +343,7 @@ export const finalizeInventorySession = onCall(async (req) => {
           b.update(batchRef, {
             quantity: FieldValue.increment(adj.delta),
             updatedAt: now,
-            updatedBy: user.uid,
+            updatedBy: actorUid,
           }),
         );
       }
@@ -320,7 +355,7 @@ export const finalizeInventorySession = onCall(async (req) => {
       const movement = {
         id: mvRef.id,
         createdAt: now,
-        createdBy: user.uid,
+        createdBy: actorUid,
         productId: adj.productId,
         productName: adj.productName || '',
         productStockId: adj.productStockId,
@@ -345,7 +380,7 @@ export const finalizeInventorySession = onCall(async (req) => {
         b.update(stockRef, {
           expirationDate: exp.to ?? null,
           updatedAt: now,
-          updatedBy: user.uid,
+          updatedBy: actorUid,
         }),
       );
     }
@@ -361,7 +396,7 @@ export const finalizeInventorySession = onCall(async (req) => {
     // 3) Crear batches y stocks sintéticos si aplica
     try {
       if (syntheticCreations.length) {
-        const dw = await ensureDefaultWarehouse(user);
+        const dw = await ensureDefaultWarehouse(actorUser);
         defaultWarehouseId = dw?.id || null;
       }
     } catch (e) {
@@ -373,10 +408,10 @@ export const finalizeInventorySession = onCall(async (req) => {
     const synthWrites = [];
     for (const sc of syntheticCreations) {
       try {
-        const numberId = await getNextID(user, 'batches');
+        const numberId = await getNextID(actorUser, 'batches');
         const batchShortName = `${sc.productName || 'Producto'}_INV_${new Date().toISOString().slice(0, 10)}`;
         const batchNumber = `INV_${sessionId}_${sc.productId}_${Date.now()}`;
-        const batch = await createBatch(user, {
+        const batch = await createBatch(actorUser, {
           productId: sc.productId,
           numberId,
           batchNumber,
@@ -411,8 +446,8 @@ export const finalizeInventorySession = onCall(async (req) => {
           isDeleted: false,
           createdAt: now,
           updatedAt: now,
-          createdBy: user.uid,
-          updatedBy: user.uid,
+          createdBy: actorUid,
+          updatedBy: actorUid,
           source: sc.reason || 'inventory-finalization',
         };
         synthWrites.push((b) => b.set(psRef, newPs));
@@ -424,7 +459,7 @@ export const finalizeInventorySession = onCall(async (req) => {
             {
               id: mvRef.id,
               createdAt: now,
-              createdBy: user.uid,
+              createdBy: actorUid,
               productId: sc.productId,
               productName: sc.productName || '',
               productStockId: psRef.id,
@@ -507,7 +542,7 @@ export const finalizeInventorySession = onCall(async (req) => {
         b.update(bref, {
           quantity: FieldValue.increment(d),
           updatedAt: now,
-          updatedBy: user.uid,
+          updatedBy: actorUid,
         }),
       );
     }
@@ -538,7 +573,7 @@ export const finalizeInventorySession = onCall(async (req) => {
             tx.update(pref, {
               stock: next,
               updatedAt: now,
-              updatedBy: user.uid,
+              updatedBy: actorUid,
             });
           }),
         ),
@@ -583,7 +618,7 @@ export const finalizeInventorySession = onCall(async (req) => {
           b.update(pref, {
             stock: Math.max(0, sum),
             updatedAt: now,
-            updatedBy: user.uid,
+            updatedBy: actorUid,
           }),
         );
       }
@@ -640,8 +675,9 @@ export const finalizeInventorySession = onCall(async (req) => {
     const baseUpdate = {
       status: 'closed',
       closedAt: now,
-      closedBy: user.uid,
+      closedBy: actorUid,
       frozenAt: now,
+      updatedBy: actorUid,
       finalizeSummary: {
         productsUpdated: affectedProducts.size,
         batchesUpdated: affectedBatches.size,
@@ -681,8 +717,8 @@ export const finalizeInventorySession = onCall(async (req) => {
     throw e instanceof HttpsError
       ? e
       : new HttpsError(
-        'internal',
-        e?.message || 'Error finalizando inventario',
-      );
+          'internal',
+          e?.message || 'Error finalizando inventario',
+        );
   }
 });

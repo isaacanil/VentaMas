@@ -152,7 +152,8 @@ describe('syncPurchaseCommittedAccountingEvent', () => {
             completedAt: {
               toMillis: () => Date.parse('2026-04-05T10:00:00.000Z'),
             },
-            updatedBy: 'user-1',
+            createdBy: 'client-created-user',
+            updatedBy: 'client-updated-user',
           }),
         },
       },
@@ -168,6 +169,11 @@ describe('syncPurchaseCommittedAccountingEvent', () => {
         counterpartyId: 'supplier-1',
         currency: 'USD',
         functionalCurrency: 'DOP',
+        createdBy: 'system:purchase-accounting-event-sync',
+        metadata: {
+          sourcePurchaseCreatedBy: 'client-created-user',
+          sourcePurchaseUpdatedBy: 'client-updated-user',
+        },
         monetary: expect.objectContaining({
           amount: 100,
           subtotalAmount: 82,

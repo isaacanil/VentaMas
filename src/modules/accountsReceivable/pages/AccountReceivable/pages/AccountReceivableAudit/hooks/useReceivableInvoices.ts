@@ -14,7 +14,7 @@ import {
   DEFAULT_SAMPLE_LIMIT,
   FIRESTORE_IN_LIMIT,
   MAX_SAMPLE_LIMIT,
-} from '@/modules/accountsReceivable/pages/AccountReceivable/pages/AccountReceivableAudit/constants';
+} from '../constants';
 
 import {
   chunkArray,
@@ -42,6 +42,27 @@ interface FetchResultState {
   fetchInvoices: (limitValue?: number | string) => Promise<void>;
 }
 
+interface ReceivableInvoicesState {
+  requestKey: string | null;
+  receivableInvoices: ReceivableAuditInvoice[];
+  receivablesByInvoice: ReceivablesLookup;
+  totalCreditInvoicesCount: number | null;
+  lastUpdated: number | null;
+  error: string | null;
+}
+
+const EMPTY_RECEIVABLE_INVOICES: ReceivableAuditInvoice[] = [];
+const EMPTY_RECEIVABLES_BY_INVOICE: ReceivablesLookup = {};
+
+const INITIAL_RECEIVABLE_INVOICES_STATE: ReceivableInvoicesState = {
+  requestKey: null,
+  receivableInvoices: EMPTY_RECEIVABLE_INVOICES,
+  receivablesByInvoice: EMPTY_RECEIVABLES_BY_INVOICE,
+  totalCreditInvoicesCount: null,
+  lastUpdated: null,
+  error: null,
+};
+
 const normalizeLimitValue = (value?: number | string): number => {
   const numericValue =
     value !== undefined && value !== null
@@ -62,17 +83,12 @@ export const useReceivableInvoices = (
       ? Number(options.defaultLimit)
       : DEFAULT_SAMPLE_LIMIT;
 
-  const [receivableInvoices, setReceivableInvoices] = useState<
-    ReceivableAuditInvoice[]
-  >([]);
-  const [receivablesByInvoice, setReceivablesByInvoice] =
-    useState<ReceivablesLookup>({});
-  const [totalCreditInvoicesCount, setTotalCreditInvoicesCount] = useState<
-    number | null
-  >(null);
-  const [lastUpdated, setLastUpdated] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [resultState, setResultState] = useState<ReceivableInvoicesState>(
+    INITIAL_RECEIVABLE_INVOICES_STATE,
+  );
+  const [loadingRequestKey, setLoadingRequestKey] = useState<string | null>(
+    null,
+  );
 
   const fetchReceivablesByInvoiceIds = useCallback(
     async (invoiceIds: string[]): Promise<ReceivablesLookup> => {
@@ -112,24 +128,17 @@ export const useReceivableInvoices = (
 
   const fetchInvoices = useCallback(
     async (limitValue?: number | string) => {
-      if (!businessId) {
-        setReceivableInvoices([]);
-        setReceivablesByInvoice({});
-        setTotalCreditInvoicesCount(null);
-        setLastUpdated(null);
-        setError(null);
-        return;
-      }
+      if (!businessId) return;
 
+      const requestKey = businessId;
       const normalizedLimit = normalizeLimitValue(limitValue ?? defaultLimit);
 
-      setLoading(true);
-      setError(null);
+      setLoadingRequestKey(requestKey);
       try {
         const invoicesRef = collection(
           db,
           'businesses',
-          businessId,
+          requestKey,
           'invoices',
         );
         const invoicesBaseQuery = query(
@@ -146,13 +155,17 @@ export const useReceivableInvoices = (
           getCountFromServer(invoicesBaseQuery),
         ]);
         const totalCount = countSnap.data()?.count ?? 0;
-        setTotalCreditInvoicesCount(totalCount);
         const rows = snap.docs.map(mapInvoiceDoc);
-        setReceivableInvoices(rows);
         const invoiceIds = rows.map((invoice) => invoice.invoiceId);
         const receivableMap = await fetchReceivablesByInvoiceIds(invoiceIds);
-        setReceivablesByInvoice(receivableMap);
-        setLastUpdated(Date.now());
+        setResultState({
+          requestKey,
+          receivableInvoices: rows,
+          receivablesByInvoice: receivableMap,
+          totalCreditInvoicesCount: totalCount,
+          lastUpdated: Date.now(),
+          error: null,
+        });
       } catch (err: unknown) {
         const errorObj = err as { code?: string; message?: string };
         console.error(
@@ -165,28 +178,42 @@ export const useReceivableInvoices = (
             : errorObj?.code === 'failed-precondition'
               ? 'Firestore requiere un índice compuesto para esta consulta. Crea el índice sugerido en la consola y vuelve a intentarlo.'
               : errorObj?.message || 'No se pudieron obtener las facturas.';
-        setError(friendlyMessage);
-        setReceivableInvoices([]);
-        setReceivablesByInvoice({});
-        setTotalCreditInvoicesCount(null);
+        setResultState({
+          requestKey,
+          receivableInvoices: EMPTY_RECEIVABLE_INVOICES,
+          receivablesByInvoice: EMPTY_RECEIVABLES_BY_INVOICE,
+          totalCreditInvoicesCount: null,
+          lastUpdated: null,
+          error: friendlyMessage,
+        });
       } finally {
-        setLoading(false);
+        setLoadingRequestKey((currentRequestKey) =>
+          currentRequestKey === requestKey ? null : currentRequestKey,
+        );
       }
     },
     [businessId, defaultLimit, fetchReceivablesByInvoiceIds],
   );
 
   useEffect(() => {
-    if (!businessId) {
-      setReceivableInvoices([]);
-      setReceivablesByInvoice({});
-      setTotalCreditInvoicesCount(null);
-      setLastUpdated(null);
-      setError(null);
-      return;
-    }
+    if (!businessId) return;
     void fetchInvoices(defaultLimit);
   }, [businessId, defaultLimit, fetchInvoices]);
+
+  const hasCurrentResult =
+    Boolean(businessId) && resultState.requestKey === businessId;
+  const receivableInvoices = hasCurrentResult
+    ? resultState.receivableInvoices
+    : EMPTY_RECEIVABLE_INVOICES;
+  const receivablesByInvoice = hasCurrentResult
+    ? resultState.receivablesByInvoice
+    : EMPTY_RECEIVABLES_BY_INVOICE;
+  const lastUpdated = hasCurrentResult ? resultState.lastUpdated : null;
+  const totalCreditInvoicesCount = hasCurrentResult
+    ? resultState.totalCreditInvoicesCount
+    : null;
+  const loading = Boolean(businessId) && loadingRequestKey === businessId;
+  const error = hasCurrentResult ? resultState.error : null;
 
   const missingReceivableInvoices = useMemo(
     () =>

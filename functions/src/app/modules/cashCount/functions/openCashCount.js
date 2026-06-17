@@ -7,26 +7,12 @@ import { getNextIDTransactional } from '../../../core/utils/getNextID.js';
 import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 import { LIMIT_OPERATION_KEYS } from '../../../versions/v2/billing/config/limitOperations.config.js';
 import { incrementBusinessUsageMetric } from '../../../versions/v2/billing/services/usage.service.js';
 import { assertBusinessSubscriptionAccess } from '../../../versions/v2/billing/utils/subscriptionAccess.util.js';
 import { toCleanString, toFiniteNumber } from '../../../versions/v2/billing/utils/billingCommon.util.js';
-
-const asRecord = (value) =>
-  value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-
-const toMillis = (value) => {
-  if (!value) return null;
-  if (typeof value?.toMillis === 'function') return value.toMillis();
-  const numeric = Number(value);
-  return Number.isFinite(numeric) ? numeric : null;
-};
-
-const toUserRef = (userId) => {
-  const normalized = toCleanString(userId);
-  return normalized ? db.doc(`users/${normalized}`) : null;
-};
+import { asRecord, toMillis, toUserRef } from '../utils/cashCountCallable.util.js';
 
 const sanitizeBanknotes = (value) => {
   if (!Array.isArray(value)) return [];
@@ -38,6 +24,25 @@ const sanitizeBanknotes = (value) => {
       quantity: toFiniteNumber(banknote.quantity, 0),
     };
   });
+};
+
+const resolveOpeningEmployeeId = ({ payload, authUid }) => {
+  const requestedEmployeeIds = [
+    toCleanString(payload.employeeID),
+    toCleanString(payload.employeeId),
+  ].filter(Boolean);
+  const mismatchedEmployeeId = requestedEmployeeIds.find(
+    (employeeId) => employeeId !== authUid,
+  );
+
+  if (mismatchedEmployeeId) {
+    throw new HttpsError(
+      'permission-denied',
+      'No puedes abrir caja para otro empleado',
+    );
+  }
+
+  return authUid;
 };
 
 export const openCashCount = onCall(async (request) => {
@@ -52,10 +57,7 @@ export const openCashCount = onCall(async (request) => {
     toCleanString(payload.businessId) ||
     toCleanString(payload.businessID) ||
     null;
-  const employeeId =
-    toCleanString(payload.employeeID) ||
-    toCleanString(payload.employeeId) ||
-    authUid;
+  const employeeId = resolveOpeningEmployeeId({ payload, authUid });
   const approvalEmployeeId =
     toCleanString(payload.approvalEmployeeID) ||
     toCleanString(payload.approvalEmployeeId) ||

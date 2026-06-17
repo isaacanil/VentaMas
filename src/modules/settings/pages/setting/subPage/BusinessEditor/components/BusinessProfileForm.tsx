@@ -1,5 +1,4 @@
-import type { FormInstance } from 'antd';
-import type { UploadProps } from 'antd/es/upload/interface';
+import type { FormInstance, UploadProps } from 'antd';
 
 import {
   BusinessProfileHeader,
@@ -63,7 +62,7 @@ export const BusinessProfileForm = ({
       uploading={uploading}
     />
     <ContactChannelsSection />
-    <LocationSection countries={countries} />
+    <LocationSection countries={countries} form={form} />
   </StyledForm>
 );
 

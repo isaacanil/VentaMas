@@ -1,11 +1,7 @@
+export { toCleanString } from '../../../../core/utils/string.util.js';
+
 export const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-
-export const toCleanString = (value) => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
 
 export const toFiniteNumber = (value, fallback = 0) => {
   const parsed = Number(value);

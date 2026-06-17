@@ -68,12 +68,11 @@ export const AuthorizationRequests = ({
     statusParam && STATUS_VALUE_SET.has(statusParam as StatusFilterValue)
       ? (statusParam as StatusFilterValue)
       : null;
+  const effectiveStatusFilter = normalizedStatusParam ?? DEFAULT_STATUS;
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
 
   const {
     loading,
-    statusFilter,
-    setStatusFilter,
     detailRequest,
     currentPage,
     setCurrentPage,
@@ -84,13 +83,12 @@ export const AuthorizationRequests = ({
     handleViewDetails,
     closeDetailModal,
     filteredRequests,
-  } = useAuthorizationRequests(user, searchTerm, dateRange);
-
-  useEffect(() => {
-    if (normalizedStatusParam && normalizedStatusParam !== statusFilter) {
-      setStatusFilter(normalizedStatusParam);
-    }
-  }, [normalizedStatusParam, setStatusFilter, statusFilter]);
+  } = useAuthorizationRequests(
+    user,
+    searchTerm,
+    dateRange,
+    effectiveStatusFilter,
+  );
 
   useEffect(() => {
     if (!statusParam) {
@@ -108,7 +106,6 @@ export const AuthorizationRequests = ({
   }, [normalizedStatusParam, searchParams, setSearchParams, statusParam]);
 
   const handleStatusChange = (value: StatusFilterValue) => {
-    setStatusFilter(value);
     const params = new URLSearchParams(searchParams);
     params.set('status', value);
     setSearchParams(params);
@@ -140,16 +137,12 @@ export const AuthorizationRequests = ({
     Math.ceil((totalRequests || 1) / ITEMS_PER_PAGE),
   );
 
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [totalPages, currentPage, setCurrentPage]);
+  const safeCurrentPage = Math.min(currentPage, totalPages);
 
   const paginatedRequests = useMemo<AuthorizationRequestListItem[]>(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const start = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
     return filteredRequests.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredRequests, currentPage]);
+  }, [filteredRequests, safeCurrentPage]);
 
   const shouldShowPagination = totalRequests > ITEMS_PER_PAGE;
 
@@ -187,7 +180,7 @@ export const AuthorizationRequests = ({
             <FilterGroup>
               <FilterLabel>Estado:</FilterLabel>
               <Select<StatusFilterValue>
-                value={statusFilter}
+                value={effectiveStatusFilter}
                 style={{ width: 200 }}
                 onChange={handleStatusChange}
                 options={STATUS_OPTIONS}
@@ -245,7 +238,7 @@ export const AuthorizationRequests = ({
           {shouldShowPagination && (
             <PaginationWrapper>
               <Pagination
-                current={currentPage}
+                current={safeCurrentPage}
                 pageSize={ITEMS_PER_PAGE}
                 total={totalRequests}
                 onChange={setCurrentPage}

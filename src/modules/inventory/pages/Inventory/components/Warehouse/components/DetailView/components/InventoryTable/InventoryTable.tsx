@@ -2,10 +2,10 @@ import { MoreOutlined } from '@/constants/icons/antd';
 import { Dropdown } from 'antd';
 
 import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
-import BatchViewModal from '@/modules/inventory/pages/Inventory/components/Warehouse/components/DetailView/components/BatchViewModal';
-import { ProductMovementModal } from '@/modules/inventory/pages/Inventory/components/Warehouse/components/DetailView/components/ProductMovementModal';
 
 import { AdvancedFilterModal } from './components/AdvancedFilterModal';
+import BatchViewModal from './components/modals/BatchViewModal';
+import { ProductMovementModal } from './components/modals/ProductMovementModal';
 import { SearchControls } from './components/SearchControls';
 import { useInventoryColumns } from './hooks/useInventoryColumns';
 import { useInventoryTableController } from './hooks/useInventoryTableController';

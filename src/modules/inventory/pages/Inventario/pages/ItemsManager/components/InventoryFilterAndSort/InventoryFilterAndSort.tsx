@@ -26,7 +26,8 @@ import { ButtonIconMenu } from '@/components/ui/Button/ButtonIconMenu';
 
 import { Body } from './components/Body/Body';
 import { Header } from './components/Header/Header';
-import type { InventoryFilterAndSortProps } from '@/types/ui';
+import type { InventoryFilterAndSortProps } from './types';
+import { normalizeFilterArrayForExactComparison } from './utils/filterValues';
 
 type FilterMeta = ReturnType<typeof selectFilterMeta>;
 type FilterField = keyof typeof DEFAULT_FILTERS;
@@ -38,9 +39,6 @@ type UserLike = {
   user_id?: string;
 } | null;
 
-const normalizeArray = (value: unknown): unknown[] =>
-  Array.isArray(value) ? value : value == null ? [] : [value];
-
 const isSameFilterValue = (
   field: FilterField,
   current: unknown,
@@ -48,8 +46,8 @@ const isSameFilterValue = (
 ) => {
   const defaultValue = DEFAULT_FILTERS[field];
   if (Array.isArray(defaultValue)) {
-    const currentArr = normalizeArray(current);
-    const compareArr = normalizeArray(comparison);
+    const currentArr = normalizeFilterArrayForExactComparison(current);
+    const compareArr = normalizeFilterArrayForExactComparison(comparison);
     if (currentArr.length !== compareArr.length) return false;
     return currentArr.every((item, index) => item === compareArr[index]);
   }

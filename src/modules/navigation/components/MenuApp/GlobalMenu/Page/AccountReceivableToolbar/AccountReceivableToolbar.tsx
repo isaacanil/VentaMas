@@ -13,8 +13,8 @@ import {
   addTotalsRow,
   addReportHeader,
   formatCurrencyColumns,
-} from '@/hooks/exportToExcel/exportConfig';
-import exportToExcel from '@/hooks/exportToExcel/useExportToExcel';
+} from '@/utils/export/excel/exportConfig';
+import exportToExcel from '@/utils/export/excel/useExportToExcel';
 import useBusiness from '@/hooks/useBusiness';
 import { toMillis } from '@/utils/date/dateUtils';
 import { getDateRange } from '@/utils/date/getDateRange';

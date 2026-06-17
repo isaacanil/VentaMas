@@ -16,7 +16,6 @@ import { selectTaxReceiptType } from '@/features/taxReceipt/taxReceiptSlice';
 import { fbAddAR } from '@/firebase/accountsReceivable/fbAddAR';
 import { fbAddInstallmentAR } from '@/firebase/accountsReceivable/fbAddInstallmentAR';
 import { fbGetAccountReceivableByInvoiceOnce } from '@/firebase/accountsReceivable/fbGetAccountReceivableByInvoiceOnce';
-import { getTaxReceiptAvailability } from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/utils/getTaxReceiptAvailability';
 import { autoCompletePreorderInvoice } from '@/services/invoice/autoCompletePreorderInvoice';
 import type { InvoiceData } from '@/types/invoice';
 import type { TaxReceiptItem } from '@/types/taxReceipt';
@@ -24,6 +23,7 @@ import type { UserIdentity } from '@/types/users';
 import type { AccountsReceivableDoc } from '@/utils/accountsReceivable/types';
 import { flowTrace } from '@/utils/flowTrace';
 import { validateInvoiceCart } from '@/utils/invoiceValidation';
+import { getTaxReceiptAvailability } from '@/utils/taxReceipt';
 
 import type { AccountsReceivableState, ClientLike } from '../types';
 import { normalizeClientForCart, resolveClientId } from '../utils';

@@ -1,6 +1,6 @@
 import { Badge, Tooltip, type TooltipProps } from 'antd';
 
-import type { ButtonIconMenuProps } from '@/types/ui';
+import type { ButtonIconMenuProps } from './types';
 
 import { Container, INDICATOR_BADGE_STYLE } from './ButtonIconMenu.styles';
 

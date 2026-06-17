@@ -4,13 +4,13 @@ import {
   signInWithPopup,
   signOut,
 } from 'firebase/auth';
-import { httpsCallable } from 'firebase/functions';
 
 import {
   buildSessionInfo,
   storeSessionLocally,
 } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { auth, functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
+import { auth } from '@/firebase/firebaseconfig';
 
 import {
   assertValidProviderLoginPayload,
@@ -26,10 +26,10 @@ type ProviderLoginRequest = {
 
 const GOOGLE_PROVIDER_ID = 'google.com';
 const googleProvider = new GoogleAuthProvider();
-const clientLoginWithProviderCallable = httpsCallable<
+const clientLoginWithProviderCallable = createFirebaseCallable<
   ProviderLoginRequest,
   ProviderLoginResponse
->(functions, 'clientLoginWithProvider');
+>('clientLoginWithProvider');
 
 export const authenticateWithGoogleProvider =
   async (): Promise<ValidProviderLoginPayload> => {
@@ -42,7 +42,7 @@ export const authenticateWithGoogleProvider =
       providerId: GOOGLE_PROVIDER_ID,
       sessionInfo,
     });
-    const payload = response?.data || {};
+    const payload = response || {};
 
     assertValidProviderLoginPayload(payload);
 

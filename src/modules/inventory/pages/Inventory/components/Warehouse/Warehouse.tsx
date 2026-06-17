@@ -4,16 +4,16 @@ import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { navigateWarehouse } from '@/features/warehouse/warehouseSlice';
-import { useListenProductsStockByLocation } from '@/hooks/useProductStock';
-import { useTransformedWarehouseData } from '@/firebase/warehouse/warehouseNestedServise';
+import { useListenProductsStockByLocation } from '@/modules/inventory/hooks/useProductStock';
+import { useTransformedWarehouseData } from '@/firebase/warehouse/warehouseNestedService';
 import { useDefaultWarehouse } from '@/firebase/warehouse/warehouseService';
 import type { RowShelf } from '@/models/Warehouse/RowShelf';
 import type { Segment } from '@/models/Warehouse/Segment';
 import type { Shelf } from '@/models/Warehouse/Shelf';
 import type { Warehouse as WarehouseModel } from '@/models/Warehouse/Warehouse';
-import { ResizableSidebar } from '@/components/layout/ResizebleSidebar/ResizebleSidebar';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
+import { ResizableSidebar } from './components/ResizableSidebar/ResizableSidebar';
 import InventoryMenu from './components/DetailView/InventoryMenu';
 import Sidebar from './components/Sidebar/Sidebar';
 

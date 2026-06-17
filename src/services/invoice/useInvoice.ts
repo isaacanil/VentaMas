@@ -2,8 +2,9 @@ import { useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { GenericClient } from '@/features/clientCart/clientCartSlice';
-import { getCashCountStrategy } from '@/notification/cashCountNotification/cashCountNotificacion';
+import { getCashCountStrategy } from '@/features/UserNotification/cashCountNotification';
 import type { InvoiceData } from '@/types/invoice';
+import { measure } from '@/utils/perf/measure';
 
 import {
   submitInvoice,
@@ -12,6 +13,8 @@ import {
 } from './invoice.service';
 import type {
   InvoiceAttemptResult,
+  InvoiceProcessPhaseTrace,
+  InvoiceProcessPhaseTracer,
   InvoiceProcessParams,
   InvoiceServiceError,
   InvoiceSubmitResult,
@@ -41,6 +44,46 @@ const simulateDelay = (ms: number): Promise<void> =>
 
 const isRecord = (value: unknown): value is UnknownRecord =>
   typeof value === 'object' && value !== null;
+
+const emitInvoicePhaseTrace = (
+  tracer: InvoiceProcessPhaseTracer | undefined,
+  trace: InvoiceProcessPhaseTrace,
+): void => {
+  if (!tracer) return;
+  try {
+    tracer(trace);
+  } catch {
+    // Instrumentation must never interrupt invoice processing.
+  }
+};
+
+const resolveTraceErrorMeta = (
+  error: unknown,
+): Pick<InvoiceProcessPhaseTrace, 'errorCode' | 'errorName'> => {
+  const errorRecord = isRecord(error) ? error : {};
+  return {
+    errorCode:
+      typeof errorRecord.code === 'string' ? errorRecord.code : null,
+    errorName:
+      error instanceof Error
+        ? error.name
+        : typeof errorRecord.name === 'string'
+          ? errorRecord.name
+          : null,
+  };
+};
+
+const measureWhenTracing = async <T,>(
+  label: string,
+  tracer: InvoiceProcessPhaseTracer | undefined,
+  fn: () => Promise<T>,
+): Promise<T> => {
+  if (!tracer) {
+    return fn();
+  }
+
+  return (await measure(label, fn)) as T;
+};
 
 const buildTestModeInvoice = async ({
   cart,
@@ -203,17 +246,48 @@ export default function useInvoice() {
       attemptLabel = 'primary',
     ): Promise<InvoiceAttemptResult> => {
       let submission: InvoiceSubmitResult | null = null;
+      let activePhase: InvoiceProcessPhaseTrace['phase'] = 'createInvoiceV2';
 
-      const { signal, ...submissionPayload } = params;
+      const { signal, onProgress, onPhaseTrace, ...submissionPayload } = params;
 
       try {
-        submission = await submitInvoice(submissionPayload);
-
-        const result: InvoiceWaitResult = await waitForInvoiceResult({
-          businessId: submission.businessId,
-          invoiceId: submission.invoiceId,
-          signal,
+        onProgress?.('registering-sale');
+        emitInvoicePhaseTrace(onPhaseTrace, {
+          phase: 'createInvoiceV2',
+          status: 'started',
+          attempt: attemptLabel,
         });
+        submission = await measureWhenTracing(
+          'InvoicePanel.submit.createInvoiceV2',
+          onPhaseTrace,
+          () => submitInvoice(submissionPayload),
+        );
+        emitInvoicePhaseTrace(onPhaseTrace, {
+          phase: 'createInvoiceV2',
+          status: 'completed',
+          attempt: attemptLabel,
+          invoiceStatus: submission.status ?? null,
+          reused: Boolean(submission.reused),
+        });
+
+        onProgress?.('confirming-invoice');
+        activePhase = 'waitForInvoiceResult';
+        emitInvoicePhaseTrace(onPhaseTrace, {
+          phase: 'waitForInvoiceResult',
+          status: 'started',
+          attempt: attemptLabel,
+          reused: Boolean(submission.reused),
+        });
+        const result: InvoiceWaitResult = await measureWhenTracing(
+          'InvoicePanel.submit.waitForInvoiceResult',
+          onPhaseTrace,
+          () =>
+            waitForInvoiceResult({
+              businessId: submission.businessId,
+              invoiceId: submission.invoiceId,
+              signal,
+            }),
+        );
         const metaStatus = isRecord(result.invoiceMeta)
           ? result.invoiceMeta.status
           : undefined;
@@ -221,6 +295,14 @@ export default function useInvoice() {
           typeof metaStatus === 'string'
             ? metaStatus
             : submission.status || 'pending';
+        emitInvoicePhaseTrace(onPhaseTrace, {
+          phase: 'waitForInvoiceResult',
+          status: 'completed',
+          attempt: attemptLabel,
+          hasInvoice: Boolean(result.invoice),
+          invoiceStatus: resolvedStatus,
+          reused: Boolean(submission.reused),
+        });
 
         return {
           invoice: result.invoice,
@@ -233,6 +315,13 @@ export default function useInvoice() {
           attempt: attemptLabel,
         };
       } catch (err) {
+        emitInvoicePhaseTrace(onPhaseTrace, {
+          phase: activePhase,
+          status: 'failed',
+          attempt: attemptLabel,
+          reused: submission ? Boolean(submission.reused) : null,
+          ...resolveTraceErrorMeta(err),
+        });
         const errObj = err as InvoiceServiceError;
         if (submission) {
           safeAssign(errObj, 'invoiceId', submission.invoiceId);
@@ -254,7 +343,25 @@ export default function useInvoice() {
 
       try {
         if (params?.isTestMode) {
-          const testResult = await buildTestModeInvoice(params);
+          params.onProgress?.('registering-sale');
+          emitInvoicePhaseTrace(params.onPhaseTrace, {
+            phase: 'testPreview',
+            status: 'started',
+            attempt: 'test',
+          });
+          const testResult = await measureWhenTracing(
+            'InvoicePanel.submit.testPreview',
+            params.onPhaseTrace,
+            () => buildTestModeInvoice(params),
+          );
+          emitInvoicePhaseTrace(params.onPhaseTrace, {
+            phase: 'testPreview',
+            status: 'completed',
+            attempt: 'test',
+            hasInvoice: true,
+            invoiceStatus: 'test-preview',
+            reused: false,
+          });
           return {
             invoice: testResult.invoice,
             invoiceId: testResult.invoiceId,

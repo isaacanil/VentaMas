@@ -1,6 +1,4 @@
-import { PureAbility } from '@casl/ability';
-
-import { defineAbilitiesFor } from '@/abilities';
+import { canBaseAbility } from './baseAbility';
 
 const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value)
@@ -20,8 +18,5 @@ export const hasDeveloperAccess = (user: unknown): boolean => {
   const platformRoles = asRecord(root.platformRoles);
   if (platformRoles.dev === true) return true;
 
-  const rules = defineAbilitiesFor(user);
-  const ability = new PureAbility(rules);
-
-  return ability.can('developerAccess', 'all');
+  return canBaseAbility(user, 'developerAccess', 'all');
 };

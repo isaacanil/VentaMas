@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import styled from 'styled-components';
 
 import { LazyLine } from '@/components/charts/LazyCharts';
+import { formatCount } from '@/utils/formatCounts';
 import { formatPrice } from '@/utils/format';
 
 import {
@@ -103,7 +104,7 @@ export const PurchasesTrendSection = ({
     },
     {
       label: 'Items registrados',
-      value: new Intl.NumberFormat('es-DO').format(summary.totals.items),
+      value: formatCount(summary.totals.items),
     },
     {
       label: 'Balance pendiente',
@@ -111,9 +112,7 @@ export const PurchasesTrendSection = ({
     },
     {
       label: 'Compras con saldo',
-      value: new Intl.NumberFormat('es-DO').format(
-        summary.totals.purchasesWithBalance,
-      ),
+      value: formatCount(summary.totals.purchasesWithBalance),
     },
   ];
 

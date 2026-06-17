@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import PurchaseCompletionSummary from '@/components/Purchase/PurchaseCompletionSummary';
+import PurchaseCompletionSummary from '@/modules/orderAndPurchase/components/PurchaseCompletionSummary/PurchaseCompletionSummary';
 import type { Purchase } from '@/utils/purchase/types';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
-import { FilterBar } from './components/FilterBar/FilterBar';
+import { MenuApp } from '@/modules/navigation/public';
+import { FilterBar } from '../shared/components/TransactionFilterBar/FilterBar';
 import { PurchaseTable } from './components/PurchasesTable/PurchasesTable';
 import { usePurchasesViewState } from './hooks/usePurchasesViewState';
 

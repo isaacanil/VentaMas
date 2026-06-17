@@ -5,9 +5,9 @@ import { getCurrencyLabel } from '@/utils/accounting/currencies';
 
 import type {
   AccountingManualRatesByCurrency,
+  ExchangeRateReferenceSnapshot,
   SupportedDocumentCurrency,
-} from '../utils/accountingConfig';
-import type { ExchangeRateReferenceSnapshot } from '../utils/exchangeRateReference';
+} from '@/modules/accounting/public';
 
 const EMPTY_CURRENCIES: SupportedDocumentCurrency[] = [];
 const EMPTY_MANUAL_RATES: AccountingManualRatesByCurrency = {};

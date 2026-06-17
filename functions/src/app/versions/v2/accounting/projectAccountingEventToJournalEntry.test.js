@@ -1147,6 +1147,7 @@ describe('projectAccountingEventToJournalEntry', () => {
       ),
     ).toMatchObject({
       id: 'expense.recorded__expense-closed-1',
+      periodKey: '2026-04',
       projectionStatus: 'failed',
       lastError: expect.objectContaining({
         code: 'accounting-period-closed',
@@ -2055,6 +2056,137 @@ describe('projectAccountingEventToJournalEntry', () => {
         accountSystemKey: 'customer_credits',
         debit: 0,
         credit: 118,
+      }),
+    ]);
+  });
+
+  it('projects issued customer debit notes as receivable revenue adjustments', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+      functionalCurrency: 'DOP',
+    });
+    collectionSnapshots.set('businesses/business-1/accountingPostingProfiles', [
+      {
+        id: 'profile-customer-debit-note-issued',
+        data: {
+          id: 'profile-customer-debit-note-issued',
+          name: 'Nota de debito emitida',
+          eventType: 'customer_debit_note.issued',
+          status: 'active',
+          priority: 10,
+          linesTemplate: [
+            {
+              id: 'l1',
+              side: 'debit',
+              accountSystemKey: 'accounts_receivable',
+              amountSource: 'document_total',
+            },
+            {
+              id: 'l2',
+              side: 'credit',
+              accountSystemKey: 'sales',
+              amountSource: 'net_sales',
+            },
+            {
+              id: 'l3',
+              side: 'credit',
+              accountSystemKey: 'tax_payable',
+              amountSource: 'tax_total',
+            },
+          ],
+        },
+      },
+    ]);
+    collectionSnapshots.set('businesses/business-1/chartOfAccounts', [
+      {
+        id: 'ar-1',
+        data: {
+          id: 'ar-1',
+          code: '1120',
+          name: 'Cuentas por cobrar',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'accounts_receivable',
+        },
+      },
+      {
+        id: 'sales-1',
+        data: {
+          id: 'sales-1',
+          code: '4100',
+          name: 'Ventas',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'sales',
+        },
+      },
+      {
+        id: 'tax-1',
+        data: {
+          id: 'tax-1',
+          code: '2200',
+          name: 'Impuestos por pagar',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'tax_payable',
+        },
+      },
+    ]);
+
+    await projectAccountingEventToJournalEntry({
+      params: {
+        businessId: 'business-1',
+        eventId: 'customer_debit_note.issued__debit-note-1',
+      },
+      data: {
+        data: () => ({
+          id: 'customer_debit_note.issued__debit-note-1',
+          businessId: 'business-1',
+          eventType: 'customer_debit_note.issued',
+          eventVersion: 1,
+          sourceType: 'debitNote',
+          sourceId: 'debit-note-1',
+          sourceDocumentId: 'debit-note-1',
+          sourceDocumentType: 'debitNote',
+          monetary: {
+            amount: 118,
+            taxAmount: 18,
+            functionalAmount: 118,
+            functionalTaxAmount: 18,
+          },
+        }),
+      },
+    });
+
+    const journalEntry =
+      documentSnapshots.get(
+        'businesses/business-1/journalEntries/customer_debit_note.issued__debit-note-1',
+      ) ?? null;
+
+    expect(journalEntry).toMatchObject({
+      id: 'customer_debit_note.issued__debit-note-1',
+      eventType: 'customer_debit_note.issued',
+      totals: {
+        debit: 118,
+        credit: 118,
+      },
+    });
+    expect(journalEntry.lines).toEqual([
+      expect.objectContaining({
+        accountSystemKey: 'accounts_receivable',
+        debit: 118,
+        credit: 0,
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'sales',
+        debit: 0,
+        credit: 100,
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'tax_payable',
+        debit: 0,
+        credit: 18,
       }),
     ]);
   });

@@ -7,6 +7,7 @@ export const ACCOUNTING_EVENT_TYPE_VALUES = [
   'accounts_receivable.payment.voided',
   'customer_credit_note.issued',
   'customer_credit_note.applied',
+  'customer_debit_note.issued',
   'purchase.committed',
   'accounts_payable.payment.recorded',
   'accounts_payable.payment.voided',
@@ -46,6 +47,13 @@ export const ACCOUNTING_TREASURY_PAYMENT_CHANNEL_VALUES = [
   'mixed',
   'other',
 ];
+
+const DEFAULT_ACCOUNTING_TREASURY_SNAPSHOT = {
+  cashAccountId: null,
+  cashCountId: null,
+  bankAccountId: null,
+  paymentChannel: null,
+};
 
 const trimString = (value) => {
   if (typeof value !== 'string') return value;
@@ -181,7 +189,9 @@ export const AccountingEventSchema = z
     currency: nullableTrimmedStringSchema.optional().default(null),
     functionalCurrency: nullableTrimmedStringSchema.optional().default(null),
     monetary: AccountingEventMonetarySnapshotSchema.optional().default({}),
-    treasury: AccountingEventTreasurySnapshotSchema.optional().default({}),
+    treasury: AccountingEventTreasurySnapshotSchema.optional().default(
+      DEFAULT_ACCOUNTING_TREASURY_SNAPSHOT,
+    ),
     payload: z.record(z.string(), z.unknown()).optional().default({}),
     dedupeKey: nullableTrimmedStringSchema.optional().default(null),
     idempotencyKey: nullableTrimmedStringSchema.optional().default(null),

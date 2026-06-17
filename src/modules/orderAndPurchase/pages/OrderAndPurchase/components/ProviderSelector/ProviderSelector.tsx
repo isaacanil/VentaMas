@@ -6,14 +6,15 @@ import {
 } from '@/constants/icons/antd';
 import { Form, Input, Button, Drawer, Dropdown, Tooltip } from 'antd';
 import type { FormItemProps, MenuProps, InputRef } from 'antd';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import styled from 'styled-components';
+import { useAutoFocusOnOpen } from '@/hooks/useAutoFocusOnOpen';
 import { normalizeText } from '@/utils/text';
 import type {
   ProviderDataItem,
   ProviderInfo as ProviderInfoRecord,
 } from '@/utils/provider/types';
-import { comprobantesOptions } from '@/modules/contacts/pages/Contact/Provider/components/CreateContact/constants';
+import { comprobantesOptions } from '@/utils/taxReceipt';
 
 const Wrapper = styled.div`
   display: grid;
@@ -162,15 +163,7 @@ const ProviderSelector = ({
   const [search, setSearch] = useState('');
   const searchInputRef = useRef<InputRef | null>(null);
 
-  useEffect(() => {
-    if (visible && searchInputRef.current) {
-      const focusTimer = window.setTimeout(() => {
-        searchInputRef.current?.focus();
-      }, 100);
-      return () => window.clearTimeout(focusTimer);
-    }
-    return undefined;
-  }, [visible]);
+  useAutoFocusOnOpen({ open: visible, ref: searchInputRef });
 
   const filteredProviders = search
     ? providers.filter(

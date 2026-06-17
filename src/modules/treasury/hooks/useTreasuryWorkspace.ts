@@ -3,12 +3,10 @@ import { message } from 'antd';
 import { Timestamp, collection, onSnapshot } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
-import { fbCreateBankReconciliation } from '@/firebase/treasury/fbCreateBankReconciliation';
-import { fbCreateBankStatementLine } from '@/firebase/treasury/fbCreateBankStatementLine';
-import { fbCreateInternalTransfer } from '@/firebase/treasury/fbCreateInternalTransfer';
-import { fbResolveBankStatementLineMatch } from '@/firebase/treasury/fbResolveBankStatementLineMatch';
-import { useAccountingConfig } from '@/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useAccountingConfig';
-import { useCashAccounts } from '@/modules/treasury/hooks/useCashAccounts';
+import {
+  useAccountingConfig,
+  useCashAccounts,
+} from '@/modules/accounting/public';
 import type {
   BankReconciliationRecord,
   BankStatementLine,
@@ -23,6 +21,10 @@ import {
   sortByOccurredAtDesc,
 } from '../utils/liquidity';
 import { buildTreasuryIdempotencyKey } from '../utils/idempotency';
+import { fbCreateBankReconciliation } from '../repositories/fbCreateBankReconciliation';
+import { fbCreateBankStatementLine } from '../repositories/fbCreateBankStatementLine';
+import { fbCreateInternalTransfer } from '../repositories/fbCreateInternalTransfer';
+import { fbResolveBankStatementLineMatch } from '../repositories/fbResolveBankStatementLineMatch';
 import {
   normalizeBankReconciliationRecord,
   normalizeBankStatementLineRecord,

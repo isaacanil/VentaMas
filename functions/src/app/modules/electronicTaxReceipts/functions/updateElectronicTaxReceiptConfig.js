@@ -6,7 +6,7 @@ import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.
 import {
   assertUserAccess,
   MEMBERSHIP_ROLE_GROUPS,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 import { getGisysFactPlatformConfig } from '../config/gisysFactPlatform.config.js';
 import { getGisysFactConfigIssues } from '../config/gisysFact.config.js';
 import { assertElectronicTaxReceiptDeveloperAccess } from '../utils/electronicTaxReceiptAccess.util.js';

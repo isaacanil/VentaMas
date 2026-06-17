@@ -17,6 +17,10 @@ import styled from 'styled-components';
 import { selectUser } from '@/features/auth/userSlice';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
 import {
+  formatBatchLabel,
+  formatInventoryQuantity,
+} from '@/modules/inventory/utils/format';
+import {
   closeDeleteModal,
   selectDeleteModalState,
   changeActionType,
@@ -24,7 +28,7 @@ import {
 import { deleteBatch } from '@/firebase/warehouse/batchService';
 import { deleteProductStock } from '@/firebase/warehouse/productStockService';
 import { MovementReason } from '@/models/Warehouse/Movement';
-import { useProductStockData } from '@/hooks/useProductStockData';
+import { useProductStockData } from './hooks/useProductStockData';
 import type { InventoryUser } from '@/utils/inventory/types';
 
 const { TextArea } = Input;
@@ -106,9 +110,8 @@ const formatExpirationDate = (value: unknown): string | null => {
 };
 
 const StockInfoSummary = ({ stockData }: StockInfoSummaryProps) => {
-  const expirationLabel = formatExpirationDate(
-    (stockData as any).expirationDate,
-  );
+  const stock = stockData as any;
+  const expirationLabel = formatExpirationDate(stock.expirationDate);
 
   return (
     <Descriptions
@@ -119,10 +122,20 @@ const StockInfoSummary = ({ stockData }: StockInfoSummaryProps) => {
       contentStyle={{ padding: '4px 8px' }}
       labelStyle={{ padding: '4px 8px' }}
       items={[
-        ...((stockData as any).numberId
-          ? [{ key: 'lote', label: 'Número de Lote', children: String((stockData as any).numberId ?? '') }]
+        ...(stock.numberId
+          ? [
+              {
+                key: 'lote',
+                label: 'Número de Lote',
+                children: formatBatchLabel(stock.numberId),
+              },
+            ]
           : []),
-        { key: 'qty', label: 'Cantidad Total', children: `${(stockData as any).quantity} unidades` },
+        {
+          key: 'qty',
+          label: 'Cantidad Total',
+          children: `${formatInventoryQuantity(stock.quantity)} unidades`,
+        },
         ...(expirationLabel
           ? [{ key: 'exp', label: 'Fecha de Vencimiento', children: expirationLabel }]
           : []),
@@ -131,8 +144,7 @@ const StockInfoSummary = ({ stockData }: StockInfoSummaryProps) => {
           label: 'Ubicaciones',
           children: (
             <>
-              {(stockData as any).locations}{' '}
-              {(stockData as any).locations > 1 ? 'ubicaciones' : 'ubicación'}
+              {stock.locations} {stock.locations > 1 ? 'ubicaciones' : 'ubicación'}
             </>
           ),
         },

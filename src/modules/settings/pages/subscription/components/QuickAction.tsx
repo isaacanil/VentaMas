@@ -5,7 +5,7 @@ import {
   QuickActionButton,
   QuickActionDesc,
   QuickActionLabel,
-} from './SubscriptionOverviewCard.styles';
+} from './QuickAction.styles';
 
 interface QuickActionProps {
   label: string;

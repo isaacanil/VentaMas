@@ -1,10 +1,3 @@
-export { buildBrandOptions } from '@/components/modals/ProductForm/utils/brandSelection';
-export type {
-  BrandOption,
-  ProductBrandInput,
-  ProductBrandOptionSource,
-} from '@/components/modals/ProductForm/utils/brandSelection';
-
 interface BrandFieldMeta {
   label: string;
   placeholder: string;

@@ -1,10 +1,9 @@
-import { Button } from '@heroui/react';
 import { faGrip, faThumbtack } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useCallback, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { VmDropdown } from '@/components/heroui';
+import { VmButton, VmDropdown } from '@/components/heroui';
 
 import { ShortcutIcon } from './ModuleLauncher/ModuleShortcutGrid';
 
@@ -110,7 +109,7 @@ export const ModuleLauncherDock = ({
               }
               trigger="longPress"
             >
-              <Button
+              <VmButton
                 aria-label={shortcut.title}
                 className={[
                   'flex h-[58px] w-[58px] min-w-[58px] flex-col justify-center gap-1 rounded-[14px] border px-1.5 shadow-sm transition min-[1300px]:w-[66px] min-[1300px]:min-w-[66px]',
@@ -129,7 +128,7 @@ export const ModuleLauncherDock = ({
                 <span className="max-w-full truncate text-[10px] font-semibold leading-none tracking-normal">
                   {label}
                 </span>
-              </Button>
+              </VmButton>
               <VmDropdown.Popover className="z-[320] min-w-44" placement="top">
                 <VmDropdown.Menu
                   aria-label={`Acciones de ${shortcut.title}`}
@@ -162,7 +161,7 @@ export const ModuleLauncherDock = ({
           className="relative inline-flex h-[58px] min-w-[60px] min-[1300px]:w-[66px] min-[1300px]:min-w-[66px]"
           title="Módulos"
         >
-          <Button
+          <VmButton
             aria-label="Ver módulos"
             className="flex h-[58px] w-[60px] min-w-[60px] flex-col justify-center gap-1 rounded-[14px] bg-blue-600 px-1.5 text-white shadow-md shadow-blue-900/20 hover:bg-blue-700 min-[1300px]:w-[66px] min-[1300px]:min-w-[66px]"
             onPress={onOpenModules}
@@ -173,7 +172,7 @@ export const ModuleLauncherDock = ({
             <span className="max-w-full truncate text-[10px] font-semibold leading-none tracking-normal">
               Módulos
             </span>
-          </Button>
+          </VmButton>
           {alertCount > 0 ? (
             <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white min-[1300px]:right-0 min-[1300px]:top-0">
               {alertCount}

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 
 import ExpensesForm from '@/modules/expenses/pages/Expenses/ExpensesForm/ExpensesForm';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 import { ExpensesTable } from './components/ExpenseTable/ExpensesTable';
 

@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
-import { buildAccountReceivableListUrl } from '@/modules/accountsReceivable/utils/accountReceivableNavigation';
+import { buildAccountReceivableListUrl } from '@/modules/accountsReceivable/public';
 import { replacePathParams } from '@/router/routes/replacePathParams';
 import ROUTES_NAME from '@/router/routes/routesName';
 
@@ -26,12 +26,13 @@ export function useAppNavigation() {
     settings: () => navigate(ROUTES_NAME.SETTING_TERM.SETTINGS),
     setting: () => navigate(ROUTES_NAME.SETTING_TERM.SETTING),
     users: () => navigate(ROUTES_NAME.SETTING_TERM.USERS),
-    appInfo: () => navigate(ROUTES_NAME.SETTING_TERM.APP_INFO),
-    businessInfo: () => navigate(ROUTES_NAME.SETTING_TERM.BUSINESS_INFO),
-    taxReceipt: () => navigate(ROUTES_NAME.SETTING_TERM.TAX_RECEIPT),
+    appInfo: () => navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_APP_INFO),
+    businessInfo: () =>
+      navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_BUSINESS),
+    taxReceipt: () =>
+      navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_TAX_RECEIPT),
 
     // Inventario
-    createProduct: () => navigate(ROUTES_NAME.INVENTORY_TERM.CREATE_PRODUCT),
     product: (productId: string) =>
       navigate(
         replacePathParams(ROUTES_NAME.INVENTORY_TERM.PRODUCT, productId),
@@ -77,17 +78,8 @@ export function useAppNavigation() {
     // Aseguradoras
     insuranceConfig: () =>
       navigate(ROUTES_NAME.INSURANCE_TERM.INSURANCE_CONFIG),
-    insuranceList: () => navigate(ROUTES_NAME.INSURANCE_TERM.INSURANCE_LIST),
     insuranceCreate: () =>
       navigate(ROUTES_NAME.INSURANCE_TERM.INSURANCE_CREATE),
-    insuranceEdit: (id: string) =>
-      navigate(
-        replacePathParams(ROUTES_NAME.INSURANCE_TERM.INSURANCE_EDIT, id),
-      ),
-    insuranceDetails: (id: string) =>
-      navigate(
-        replacePathParams(ROUTES_NAME.INSURANCE_TERM.INSURANCE_DETAILS, id),
-      ),
   };
 
   return navigateTo;

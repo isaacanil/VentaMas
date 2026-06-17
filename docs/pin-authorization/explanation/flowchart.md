@@ -58,7 +58,7 @@ El flujo de autorizaciones con PIN habilita configuraciones centralizadas, gener
                │
                ▼
     ┌──────────────────────────────────┐
-    │ AuthorizationConfig.jsx          │
+    │ AuthorizationConfig.tsx          │
     │ - Lista usuarios                 │
     │ - Muestra estado de PINs         │
     │ - Estadísticas                   │
@@ -68,7 +68,7 @@ El flujo de autorizaciones con PIN habilita configuraciones centralizadas, gener
                │
                ▼
     ┌──────────────────────────────────┐
-    │ GeneratePinModal.jsx             │
+    │ GeneratePinModal.tsx             │
     │ - Seleccionar módulos            │
     │   □ Facturación                  │
     │   □ Cuentas por Cobrar           │
@@ -89,7 +89,7 @@ El flujo de autorizaciones con PIN habilita configuraciones centralizadas, gener
                │
                ▼
     ┌──────────────────────────────────┐
-    │ PinDetailsModal.jsx              │
+    │ PinDetailsModal.tsx              │
     │ ┌──────────────────────────────┐ │
     │ │   PIN: 123456                │ │
     │ │   (mostrado UNA sola vez)    │ │
@@ -130,7 +130,7 @@ El flujo de autorizaciones con PIN habilita configuraciones centralizadas, gener
                │
                ▼
     ┌──────────────────────────────────────────┐
-    │ PinAuthorizationModal.jsx                │
+    │ PinAuthorizationModal.tsx                │
     │                                          │
     │  Se requiere autorización                │
     │  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━   │
@@ -441,18 +441,18 @@ Cualquier operación con PIN
 │                                                                 │
 │  FRONTEND                                                       │
 │  ├── Pantallas                                                  │
-│  │   └── AuthorizationConfig.jsx                              │
-│  │       ├── GeneratePinModal.jsx                             │
-│  │       └── PinDetailsModal.jsx                              │
+│  │   └── AuthorizationConfig.tsx                              │
+│  │       ├── GeneratePinModal.tsx                             │
+│  │       └── PinDetailsModal.tsx                              │
 │  │                                                             │
 │  ├── Modals Compartidos                                        │
-│  │   └── PinAuthorizationModal.jsx                            │
+│  │   └── PinAuthorizationModal.tsx                            │
 │  │                                                             │
 │  ├── Hooks                                                     │
-│  │   └── useAuthorizationPin.js                               │
+│  │   └── useAuthorizationPin.ts                               │
 │  │                                                             │
 │  └── Integraciones                                             │
-│      └── InvoiceEditAuthorizations.jsx (modificado)           │
+│      └── useInvoiceEditAuthorization.tsx (modificado)         │
 │                                                                 │
 │  BACKEND (Firebase)                                            │
 │  ├── Servicios                                                 │

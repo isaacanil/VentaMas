@@ -2,15 +2,14 @@ import { logger } from 'firebase-functions';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 
 import { GISYS_FACT_SECRETS } from '../../../core/config/secrets.js';
-import { ROLE } from '../../../core/constants/roles.constants.js';
 import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.util.js';
-import { getUserAccessProfile } from '../../../versions/v2/invoice/services/repairTasks.service.js';
 import {
   resolveGisysFactConfig,
   resolveGisysFactToken,
 } from '../config/gisysFact.config.js';
 import { getGisysFactPlatformConfig } from '../config/gisysFactPlatform.config.js';
 import { checkGisysFactHealth } from '../services/gisysFactClient.service.js';
+import { assertElectronicTaxReceiptDeveloperAccess } from '../utils/electronicTaxReceiptAccess.util.js';
 
 const buildCheck = ({ key, label, status, detail }) => ({
   key,
@@ -18,16 +17,6 @@ const buildCheck = ({ key, label, status, detail }) => ({
   status,
   detail: detail || null,
 });
-
-const assertDeveloperAccess = async (authUid) => {
-  const profile = await getUserAccessProfile(authUid);
-  if (!profile.userSnap?.exists || profile.rootRole !== ROLE.DEV) {
-    throw new HttpsError(
-      'permission-denied',
-      'Solo desarrolladores pueden validar la configuración global e-CF.',
-    );
-  }
-};
 
 const buildStatus = ({
   baseUrlConfigured,
@@ -58,7 +47,10 @@ export const validateElectronicTaxReceiptPlatformConfig = onCall(
       throw new HttpsError('unauthenticated', 'Usuario no autenticado');
     }
 
-    await assertDeveloperAccess(authUid);
+    await assertElectronicTaxReceiptDeveloperAccess(authUid, {
+      permissionDeniedMessage:
+        'Solo desarrolladores pueden validar la configuración global e-CF.',
+    });
 
     const platformConfig = await getGisysFactPlatformConfig();
     const config = resolveGisysFactConfig({}, platformConfig);

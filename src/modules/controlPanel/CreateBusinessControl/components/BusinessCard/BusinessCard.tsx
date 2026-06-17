@@ -15,9 +15,14 @@ import { useMemo } from 'react';
 import styled from 'styled-components';
 
 import type { BusinessCreatedAt, BusinessInfo, OwnerSource } from '../../types';
+import {
+  getBusinessAccessStatusDisplay,
+  getBusinessSubscriptionStatusDisplay,
+  type BusinessStatusDisplayTone,
+} from '../../utils/businessStatusDisplay';
 import type { FC, SyntheticEvent } from 'react';
 
-type StatusTone = 'ok' | 'warn' | 'danger' | 'neutral';
+type StatusTone = BusinessStatusDisplayTone;
 
 interface BusinessCardProps {
   business: BusinessInfo;
@@ -25,61 +30,6 @@ interface BusinessCardProps {
   onOpenAccessActions?: (business: BusinessInfo) => void;
   onOpenFiscalActions?: (business: BusinessInfo) => void;
 }
-
-const SUBSCRIPTION_LABELS: Record<string, string> = {
-  active: 'Activa',
-  trialing: 'En prueba',
-  past_due: 'Pago pendiente',
-  canceled: 'Cancelada',
-  paused: 'Pausada',
-  unpaid: 'Sin pago',
-};
-
-const ACCESS_STATUS_LABELS: Record<string, string> = {
-  active: 'Activo',
-  read_only: 'Solo lectura',
-  suspended: 'Suspendido',
-  inactive: 'Inactivo',
-  offboarded: 'Offboarding',
-  closed: 'Cerrado',
-  disabled: 'Deshabilitado',
-  blocked: 'Bloqueado',
-};
-
-const getSubscriptionTone = (status: string | null): StatusTone => {
-  if (!status) return 'neutral';
-  if (status === 'active') return 'ok';
-  if (status === 'trialing') return 'warn';
-  if (status === 'past_due' || status === 'unpaid') return 'warn';
-  if (status === 'canceled') return 'danger';
-  return 'neutral';
-};
-
-const getSubscriptionLabel = (status: string | null): string => {
-  if (!status) return 'Sin suscripción';
-  return SUBSCRIPTION_LABELS[status] || status;
-};
-
-const getAccessStatusTone = (status: string | null): StatusTone => {
-  if (!status || status === 'active') return 'ok';
-  if (status === 'read_only') return 'warn';
-  if (
-    status === 'suspended' ||
-    status === 'inactive' ||
-    status === 'offboarded' ||
-    status === 'closed' ||
-    status === 'disabled' ||
-    status === 'blocked'
-  ) {
-    return 'danger';
-  }
-  return 'neutral';
-};
-
-const getAccessStatusLabel = (status: string | null): string => {
-  if (!status) return ACCESS_STATUS_LABELS.active;
-  return ACCESS_STATUS_LABELS[status] || status;
-};
 
 const getOwnerSourceLabel = (source: OwnerSource): string => {
   if (source === 'ownerUid') return 'ownerUid';
@@ -162,11 +112,12 @@ export const BusinessCard: FC<BusinessCardProps> = ({
           : 'active';
     const fiscalRollout = business.fiscalRollout;
     const monthlyComplianceReady =
-      fiscalRollout.reportingEnabled &&
-      fiscalRollout.monthlyComplianceEnabled;
+      fiscalRollout.reportingEnabled && fiscalRollout.monthlyComplianceEnabled;
     const fiscalPartiallyEnabled =
-      fiscalRollout.reportingEnabled ||
-      fiscalRollout.monthlyComplianceEnabled;
+      fiscalRollout.reportingEnabled || fiscalRollout.monthlyComplianceEnabled;
+    const accessDisplay = getBusinessAccessStatusDisplay(accessStatus);
+    const subscriptionDisplay =
+      getBusinessSubscriptionStatusDisplay(subscriptionStatus);
 
     return {
       address: business.address || 'Sin dirección proporcionada',
@@ -184,10 +135,10 @@ export const BusinessCard: FC<BusinessCardProps> = ({
       ownerLabel: hasOwner ? 'Con dueño' : 'Sin dueño',
       ownerSourceLabel: getOwnerSourceLabel(ownerSource),
       accessStatus,
-      accessTone: getAccessStatusTone(accessStatus),
-      accessLabel: getAccessStatusLabel(accessStatus),
-      subscriptionTone: getSubscriptionTone(subscriptionStatus),
-      subscriptionLabel: getSubscriptionLabel(subscriptionStatus),
+      accessTone: accessDisplay.tone,
+      accessLabel: accessDisplay.label,
+      subscriptionTone: subscriptionDisplay.tone,
+      subscriptionLabel: subscriptionDisplay.label,
       fiscalTone: monthlyComplianceReady
         ? ('ok' as StatusTone)
         : fiscalPartiallyEnabled

@@ -1,7 +1,7 @@
 import type { FormInstance } from 'antd';
 import { nanoid } from 'nanoid';
 
-import { fbProcessClientPaymentAR } from '@/firebase/proccessAccountsReceivablePayments/fbProccessClientPaymentAR';
+import { fbProcessClientPaymentAR } from '@/firebase/processAccountsReceivablePayments/fbProcessClientPaymentAR';
 import type { UserIdentity } from '@/types/users';
 
 import {

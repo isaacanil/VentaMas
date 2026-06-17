@@ -15,22 +15,23 @@ import styled from 'styled-components';
 import { store } from '@/app/store';
 import { icons } from '@/constants/icons/icons';
 import { OPERATION_MODES } from '@/constants/modes';
-import { useDialog } from '@/Context/Dialog/useDialog';
+import { useDialog } from '@/context/Dialog/useDialog';
 import { selectUser } from '@/features/auth/userSlice';
 import { toggleBarcodeModal } from '@/features/barcodePrintModalSlice/barcodePrintModalSlice';
 import { openModalUpdateProd } from '@/features/modals/modalSlice';
 import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
 import { ChangeProductData } from '@/features/updateProduct/updateProductSlice';
-import { fbDeleteProduct } from '@/firebase/products/fbDeleteproduct';
+import { fbDeleteProduct } from '@/firebase/products/fbDeleteProduct';
 import { filterData } from '@/hooks/search/useSearch';
 import { formatPrice } from '@/utils/format';
 import { formatNumber } from '@/utils/format';
 import { getTax, getTotalPrice } from '@/utils/pricing';
-import { ProductCategoryBar } from '@/modules/products/components/ProductCategoryBar/ProductCategoryBar';
+import { hasDeveloperAccess } from '@/utils/access/developerAccess';
+import { ProductCategoryBar } from '@/modules/products/public';
 import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
-import { ImgCell } from '@/components/ui/AdvancedTable/components/Cells/Img/ImgCell';
+import { ImgCell } from '@/components/ui/AdvancedTable/components/Cells';
 import { ButtonGroup } from '@/components/ui/Button/Button';
-import StockIndicator from '@/components/ui/labels/StockIndicator';
+import StockIndicator from './components/StockIndicator';
 import type { AdvancedTableProps } from '@/components/ui/AdvancedTable/AdvancedTable';
 import type { ProductRecord } from '@/types/products';
 
@@ -62,6 +63,7 @@ export const ProductsTable = ({ products, searchTerm }: ProductTableProps) => {
   const navigate = useNavigate();
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled) as boolean;
   const user = useSelector(selectUser);
+  const canOpenProductStudio = hasDeveloperAccess(user);
   const { setDialogConfirm } = useDialog();
   const [isAtBottom, setIsAtBottom] = useState(false);
   const [totalsDismissed, setTotalsDismissed] = useState(false);
@@ -203,7 +205,7 @@ export const ProductsTable = ({ products, searchTerm }: ProductTableProps) => {
               icon: <EditOutlined />,
               onClick: () => handleUpdateProduct(product),
             },
-            ...(user?.role === 'dev'
+            ...(canOpenProductStudio
               ? [
                 {
                   label: 'Editar en ProductStudio',

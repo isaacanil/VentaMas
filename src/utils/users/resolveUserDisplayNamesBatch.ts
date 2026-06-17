@@ -10,13 +10,7 @@ import {
 } from 'firebase/firestore';
 
 import type { CountsMetaMap, InventorySession } from '@/utils/inventory/types';
-
-const firstNonEmpty = (...vals: Array<unknown>) => {
-  const match = vals.find(
-    (v): v is string => typeof v === 'string' && v.trim() !== '',
-  );
-  return match ? match.trim() : undefined;
-};
+import { resolveUserDisplayName } from './userDisplay';
 
 function chunk<T>(arr: T[], size = 10): T[][] {
   const out: T[][] = [];
@@ -58,17 +52,12 @@ export async function resolveUserDisplayNamesBatch(
           name?: unknown;
           displayName?: unknown;
           fullName?: unknown;
+          username?: unknown;
           email?: unknown;
+          uid?: unknown;
+          id?: unknown;
         };
-        const name =
-          firstNonEmpty(
-            data.realName,
-            data.name,
-            data.displayName,
-            data.fullName,
-            data.email,
-          ) || docSnap.id;
-        results[docSnap.id] = name;
+        results[docSnap.id] = resolveUserDisplayName(data, docSnap.id);
       });
       // fallback para ids no encontrados en este lote
       for (const uid of group) {

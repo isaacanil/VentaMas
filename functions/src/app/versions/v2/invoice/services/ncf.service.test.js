@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const getTaxReceiptDocFromTxMock = vi.hoisted(() => vi.fn());
-const serverTimestampMock = vi.hoisted(() => vi.fn(() => ({ __op: 'serverTimestamp' })));
+const serverTimestampMock = vi.hoisted(() =>
+  vi.fn(() => ({ __op: 'serverTimestamp' })),
+);
 
 let usageRefCounter = 0;
 
@@ -129,6 +131,76 @@ describe('ncf.service', () => {
         status: 'pending',
       },
     );
+  });
+
+  it('usa 8 digitos para comprobantes B legacy con secuencia de ceros sin sequenceLength', async () => {
+    getTaxReceiptDocFromTxMock.mockResolvedValue({
+      ref: receiptRef,
+      data: () => ({
+        data: {
+          type: 'B',
+          serie: '02',
+          sequence: '0000000000',
+          increase: 1,
+          quantity: 5,
+        },
+      }),
+    });
+
+    await expect(
+      reserveNcf(tx, {
+        businessId: 'business-1',
+        userId: 'user-1',
+        ncfType: 'fiscal-consumer',
+      }),
+    ).resolves.toEqual({
+      ncfCode: 'B0200000001',
+      usageId: 'usage-1',
+      taxReceiptRef: receiptRef,
+    });
+
+    expect(tx.update).toHaveBeenCalledWith(receiptRef, {
+      data: expect.objectContaining({
+        sequence: 1,
+        quantity: 4,
+        sequenceLength: 8,
+      }),
+    });
+  });
+
+  it('infiere sequenceLength desde sequence string existente cuando no es el seed B de ceros', async () => {
+    getTaxReceiptDocFromTxMock.mockResolvedValue({
+      ref: receiptRef,
+      data: () => ({
+        data: {
+          type: 'B',
+          serie: '02',
+          sequence: '0000000010',
+          increase: 1,
+          quantity: 5,
+        },
+      }),
+    });
+
+    await expect(
+      reserveNcf(tx, {
+        businessId: 'business-1',
+        userId: 'user-1',
+        ncfType: 'fiscal-consumer',
+      }),
+    ).resolves.toEqual({
+      ncfCode: 'B020000000011',
+      usageId: 'usage-1',
+      taxReceiptRef: receiptRef,
+    });
+
+    expect(tx.update).toHaveBeenCalledWith(receiptRef, {
+      data: expect.objectContaining({
+        sequence: 11,
+        quantity: 4,
+        sequenceLength: 10,
+      }),
+    });
   });
 
   it('rechaza cuando la configuracion no tiene cantidad suficiente', async () => {

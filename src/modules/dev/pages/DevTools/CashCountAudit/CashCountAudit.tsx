@@ -22,6 +22,7 @@ import React, { useEffect, useMemo, useReducer } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { CashCountMetaData } from '@/domain/cashCount/cashCountMetaData';
 import { selectUser } from '@/features/auth/userSlice';
 import {
   fetchAccountsReceivablePaymentsByCashierAndRange,
@@ -33,7 +34,6 @@ import {
   listenCashCounts,
   runCashCountAudit,
 } from '@/firebase/cashCount/cashCountAudit.service';
-import { CashCountMetaData } from '@/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData';
 import {
   getErrorMessage,
   resolveBusinessName,

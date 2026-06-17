@@ -12,7 +12,7 @@ Las autorizaciones de edición permiten que un cajero solicite permiso para modi
 
 ### Estado actual (2025-09)
 
-- Servicio Firestore operativo (`invoiceEditAuthorizations.js`).
+- Servicio Firestore operativo (`src/firebase/authorizations/invoiceEditAuthorizations.ts`).
 - Pantalla `AuthorizationsManager` con filtros y acciones.
 - Modal de solicitud disponible desde el botón “Editar” (puede comentarse para pruebas).
 
@@ -48,7 +48,7 @@ Las autorizaciones de edición permiten que un cajero solicite permiso para modi
 
 ## APIs / rutas
 
-### Servicios (`src/firebase/authorizations/invoiceEditAuthorizations.js`)
+### Servicios (`src/firebase/authorizations/invoiceEditAuthorizations.ts`)
 
 - `requestInvoiceEditAuthorization(user, invoice, reasons, note)`
 - `approveInvoiceEditAuthorization(user, requestId, approver)`
@@ -61,12 +61,13 @@ Las autorizaciones de edición permiten que un cajero solicite permiso para modi
 
 ### UI de solicitud
 
-- Modal `RequestInvoiceEditAuthorization`: muestra motivos (24h/cuadre), envía nota optional y maneja mensajes “pendiente” / “enviada”.
+- Modal `RequestInvoiceEditAuthorization` (`src/modules/invoice/pages/InvoicesPage/components/RequestInvoiceEditAuthorization/RequestInvoiceEditAuthorization.tsx`): muestra motivos (24h/cuadre), envía nota optional y maneja mensajes “pendiente” / “enviada”.
 
 ### Pantalla de Autorizaciones
 
-- `Authorizations/InvoiceEditAuthorizations.jsx`: tabla con columnas (Factura, Solicitado por, Motivos, Creada, Expira, Estado, Acción) y filtros (Pendientes, Completadas, etc.).
-- Ruta `/authorizations` (`src/routes/paths/Authorizations.jsx`), acceso desde menú Admin.
+- `src/modules/authorizations/pages/Authorizations/AuthorizationsManager.tsx`: pantalla unificada con tabs y filtros.
+- `src/modules/authorizations/pages/Authorizations/components/AuthorizationRequests/AuthorizationRequests.tsx`: tabla/listado de solicitudes con estado, referencia, solicitante, motivos, fechas y acciones.
+- Ruta `/authorizations` (`src/router/routes/paths/Authorizations.tsx`), acceso desde menú Admin (`src/modules/navigation/components/MenuApp/MenuData/items/admin.tsx`).
 
 ### Integración con botón “Editar”
 
@@ -82,7 +83,7 @@ Pseudoflujo:
 ## Versionado / compatibilidad
 
 - Ventana y expiración fijas (48 h) desde la versión de septiembre 2025.
-- Compatible con pantallas nuevas (`AuthorizationsManager`) y legacy (`InvoiceEditAuthorizations`), aunque la UI principal es la unificada.
+- La UI principal es la pantalla unificada `AuthorizationsManager`.
 
 ### Consideraciones de seguridad
 
@@ -99,11 +100,12 @@ Pseudoflujo:
 
 ## Recursos relacionados
 
-- `src/firebase/authorizations/invoiceEditAuthorizations.js`
-- `src/views/pages/Authorizations/InvoiceEditAuthorizations.jsx`
-- `src/views/component/modals/RequestInvoiceEditAuthorization/RequestInvoiceEditAuthorization.jsx`
-- `src/routes/paths/Authorizations.jsx`
-- `src/views/templates/MenuApp/MenuData/items/admin.jsx`
+- `src/firebase/authorizations/invoiceEditAuthorizations.ts`
+- `src/modules/authorizations/pages/Authorizations/AuthorizationsManager.tsx`
+- `src/modules/authorizations/pages/Authorizations/components/AuthorizationRequests/AuthorizationRequests.tsx`
+- `src/modules/invoice/pages/InvoicesPage/components/RequestInvoiceEditAuthorization/RequestInvoiceEditAuthorization.tsx`
+- `src/router/routes/paths/Authorizations.tsx`
+- `src/modules/navigation/components/MenuApp/MenuData/items/admin.tsx`
 
 ### Glosario rápido
 

@@ -10,6 +10,7 @@ import type { LocationNamesMap } from '@/utils/inventory/types';
 
 import { LocationDisplay } from './LocationDisplay';
 import type { ProductStockItem, StockStatus } from '../types';
+import { formatStockQuantity } from '../utils/stockDisplay';
 
 type ProductStockProps = {
   stock: ProductStockItem;
@@ -35,7 +36,7 @@ const ProductStock = ({
   const lifecycleStatus = stock?.status === 'inactive' ? 'inactive' : 'active';
   const lifecycleLabel = lifecycleStatus === 'inactive' ? 'Inactivo' : 'Activo';
   const formattedQuantity = useMemo(
-    () => Number(stock.quantity ?? 0).toLocaleString(),
+    () => formatStockQuantity(stock.quantity),
     [stock.quantity],
   );
   const locationPath = stock.location ? String(stock.location) : '';

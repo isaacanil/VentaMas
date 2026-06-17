@@ -7,14 +7,16 @@ import {
   useDeveloperFeaturesData,
   useMenuCardData,
 } from '@/modules/home/pages/Home/CardData';
-
 import {
   CATEGORY_ORDER,
+  normalizeSearch,
+  uniqueShortcutsByRoute,
+} from '@/modules/home/utils/homeShortcutUtils';
+
+import {
   MAX_PINNED_SHORTCUTS,
   getInitialPinnedKeys,
-  normalizeSearch,
   normalizeShortcuts,
-  uniqueShortcutsByRoute,
 } from './moduleLauncherUtils';
 
 import type { Dispatch, SetStateAction } from 'react';

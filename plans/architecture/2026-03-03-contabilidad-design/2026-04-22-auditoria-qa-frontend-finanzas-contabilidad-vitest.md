@@ -36,7 +36,7 @@ Archivos fuente clave revisados:
 - `src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/utils/validateInvoiceSubmissionGuards.ts`
 - `src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/DocumentCurrencySelector/DocumentCurrencySelector.tsx`
 - `src/modules/accountsReceivable/components/PaymentForm/**`
-- `src/firebase/proccessAccountsReceivablePayments/fbProccessClientPaymentAR.ts`
+- `src/firebase/processAccountsReceivablePayments/fbProcessClientPaymentAR.ts`
 - `src/modules/accountsPayable/pages/AccountsPayable/**`
 - `src/modules/orderAndPurchase/pages/OrderAndPurchase/Compra/components/PurchasesTable/RegisterSupplierPaymentModal.tsx`
 - `src/modules/orderAndPurchase/pages/OrderAndPurchase/Compra/components/PurchasesTable/utils/supplierPaymentMethods.ts`
@@ -56,7 +56,7 @@ Archivos fuente clave revisados:
 | P1 | Cuadre de caja cierre | `CashRegisterClosure.tsx:157-167` | `fbCashCountChangeState(..., 'closing')` no se espera antes de abrir autorizacion. | Usuario puede autorizar cierre aunque el estado remoto no haya cambiado. Riesgo de doble cierre o error tardio. |
 | P1 | Cuadre de caja autorizacion | `completeCashRegisterClosure.ts:21-68` | Cierre backend corre antes de registrar autorizacion. Si falla bitacora de autorizacion, UI devuelve error generico aunque caja pudo cerrar. | Estado parcial: caja cerrada, UI dice fallo. Operador puede reintentar y crear confusion. |
 | P1 | POS dead-letter / outbox | `submitInvoicePanel.ts:220-241`, `:257-286` | Estados no `committed` solo muestran info generica; `failedTask` se loguea en consola, no se convierte en recuperacion visible. | Venta puede quedar operativa con asiento/efecto lateral fallido y usuario sin ruta de reparacion. |
-| P1 | CxC + notas credito | `fbProccessClientPaymentAR.ts:229` | Consumo de notas de credito ocurre despues del cobro AR. Si falla, el cobro puede quedar exitoso y la nota sin consumir. | UI puede comunicar exito aunque el saldo de credito quede inconsistente. |
+| P1 | CxC + notas credito | `fbProcessClientPaymentAR.ts:229` | Consumo de notas de credito ocurre despues del cobro AR. Si falla, el cobro puede quedar exitoso y la nota sin consumir. | UI puede comunicar exito aunque el saldo de credito quede inconsistente. |
 | P1 | Pago proveedor cash gate | `RegisterSupplierPaymentModal.tsx:123`, `:273`, `:325`, `supplierPaymentMethods.ts:305` | Modal muestra gate de caja, pero submit solo se deshabilita por rollout/submitting. El bloqueo real queda en validacion tardia. | UX permite intentar accion imposible. Riesgo menor de backend, alto de operacion confusa. |
 | P1 | Gastos doble submit | `ExpensesForm.tsx:99`, `:113` | Boton de guardar no esta ligado explicitamente a `loading.isOpen`; solo aparece loader. | Si loader no bloquea eventos, hay riesgo de doble click/doble write. |
 | P2 | Tesoreria write-off | `ResolveBankStatementLineModal.tsx:116-178`, `useTreasuryWorkspace.ts:781-782` | Write-off exige razon, pero no comunica impacto contable ni link a asiento/evento. | Ajustes bancarios quedan visibles en tesoreria, pero trazabilidad contable queda debil para auditoria. |
@@ -94,7 +94,7 @@ Hallazgos:
 - `PaymentForm` limpia estado con `closePaymentModal`, `form.resetFields` y estados locales. Bien.
 - `PaymentFields` bloquea tarjeta/transferencia si no hay banco activo/configurado. Bien en intencion.
 - La resolucion de banco usa `resolveConfiguredBankAccountId({ moduleKey: 'accountsReceivable' })`, afectada por el bug compartido de cuenta bancaria por modulo.
-- `fbProccessClientPaymentAR` consume notas de credito despues del pago AR. Si esa llamada falla, el cobro ya puede estar aplicado.
+- `fbProcessClientPaymentAR` consume notas de credito despues del pago AR. Si esa llamada falla, el cobro ya puede estar aplicado.
 
 Riesgo UI: estado local se limpia bien, pero la UI no diferencia "cobro aplicado, nota de credito pendiente de consumir". Eso debe ser un warning recuperable, no exito plano.
 

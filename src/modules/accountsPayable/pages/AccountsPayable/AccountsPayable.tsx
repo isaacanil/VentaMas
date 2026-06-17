@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { PageBody } from '@/components/layout/PageShell';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import { replacePathParams } from '@/router/routes/replacePathParams';
 import { ROUTES } from '@/router/routes/routesName';
-import { FilterBar } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/Compra/components/FilterBar/FilterBar';
-import { RegisterSupplierPaymentModal } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/Compra/components/PurchasesTable/RegisterSupplierPaymentModal';
-import { SupplierPaymentHistoryModal } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/Compra/components/PurchasesTable/components/SupplierPaymentHistoryModal';
+import { FilterBar } from '@/modules/orderAndPurchase/public';
+import {
+  RegisterSupplierPaymentModal,
+  SupplierPaymentHistoryModal,
+} from '@/modules/orderAndPurchase/public';
 
 import { AccountsPayableDetailDrawer } from './components/AccountsPayableDetailDrawer';
 import { AccountsPayableSummaryStrip } from './components/AccountsPayableSummaryStrip';

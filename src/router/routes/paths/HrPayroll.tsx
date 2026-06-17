@@ -1,20 +1,17 @@
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
 import { Navigate } from 'react-router-dom';
 
+import {
+  loadHrCommissionPeriodsRoute,
+  loadHrCommissionsRoute,
+  loadHrPayrollWorkspaceRoute,
+} from '@/modules/hrPayroll/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/types/routeTypes';
 
-const HrPayrollWorkspace = lazy(
-  () =>
-    import('@/modules/hrPayroll/pages/HrPayrollWorkspace/HrPayrollWorkspace'),
-);
-const HrCommissionsPage = lazy(
-  () => import('@/modules/hrPayroll/pages/HrCommissionsPage/HrCommissionsPage'),
-);
-const HrCommissionPeriodsPage = lazy(
-  () =>
-    import('@/modules/hrPayroll/pages/HrCommissionPeriodsPage/HrCommissionPeriodsPage'),
-);
+const HrPayrollWorkspace = lazy(loadHrPayrollWorkspaceRoute);
+const HrCommissionsPage = lazy(loadHrCommissionsRoute);
+const HrCommissionPeriodsPage = lazy(loadHrCommissionPeriodsRoute);
 
 const {
   HR_PAYROLL,

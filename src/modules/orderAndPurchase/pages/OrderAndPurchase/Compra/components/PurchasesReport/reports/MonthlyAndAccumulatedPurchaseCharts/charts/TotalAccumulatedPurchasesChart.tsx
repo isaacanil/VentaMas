@@ -1,7 +1,8 @@
-import React from 'react';
-import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
-import type { ChartData, ChartOptions } from 'chart.js';
+import type { ChartOptions } from 'chart.js';
+
+import { LazyBar } from '@/components/charts/LazyCharts';
+import { createSingleDatasetBarData } from '@/components/charts/barChartData';
 
 interface TotalAccumulatedPurchasesChartProps {
     totalAccumulated: number;
@@ -9,20 +10,17 @@ interface TotalAccumulatedPurchasesChartProps {
 }
 
 const TotalAccumulatedPurchasesChart = ({ totalAccumulated, options }: TotalAccumulatedPurchasesChartProps) => {
-    const data: ChartData<'bar', number[], string> = {
+    const data = createSingleDatasetBarData({
         labels: ['Total Acumulado'],
-        datasets: [{
-            label: 'Total Acumulado',
-            data: [totalAccumulated],
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 1,
-        }]
-    };
+        values: [totalAccumulated],
+        datasetLabel: 'Total Acumulado',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+    });
 
     return (
         <Container>
-            <Bar data={data} options={options} />
+            <LazyBar data={data} options={options} />
         </Container>
     )
 };

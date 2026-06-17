@@ -10,9 +10,10 @@ import {
   setCashCountClosingComments,
   updateCashCountTotals,
 } from '@/features/cashCount/cashCountManagementSlice';
-import { useInvoicesForCashCount } from '@/hooks/cashCount/useInvoicesForCashCount';
-import { usePaymentsForCashCount } from '@/hooks/cashCount/usePaymentsForCashCount';
-import { useExpensesForCashCount } from '@/hooks/expense/useExpensesForCashCount';
+import { useExpensesForCashCount } from '../../../hooks/useExpensesForCashCount';
+import { useInvoicesForCashCount } from '../../../hooks/useInvoicesForCashCount';
+import { usePaymentsForCashCount } from '../../../hooks/usePaymentsForCashCount';
+import { CashCountMetaData } from '@/domain/cashCount/cashCountMetaData';
 import { isArrayEmpty } from '@/utils/array/ensureArray';
 import type { AccountsReceivablePayment } from '@/utils/accountsReceivable/types';
 import type {
@@ -26,7 +27,6 @@ import { Comments } from '@/modules/cashReconciliation/pages/CashReconciliation/
 import { DateSection } from '@/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/components/Header/DateSection';
 import { CashDenominationCalculator } from '@/modules/cashReconciliation/pages/CashReconciliation/resource/CashDenominationCalculator/CashDenominationCalculator';
 
-import { CashCountMetaData } from './CashCountMetaData';
 import { CashBoxClosureDetails } from './components/CashBoxClosureDetails/CashBoxClosureDetails';
 import { TransactionSummary } from './components/TransactionSummary/TransactionSummary';
 import { ViewExpenses } from './components/ViewExpenses/ViewExpenses';

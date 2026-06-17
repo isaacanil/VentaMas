@@ -457,7 +457,7 @@ Puntos P0 concretos:
 |---|---|---|
 | `/home` | `src/modules/home/pages/Home/components/HomeDashboard/hooks/useHomeDashboardData.tsx` | Métricas por listener delegado: invoices today/month, AR, vendorBills, productsStock, products. |
 | Productos | `src/firebase/products/fbGetProducts.ts` | Listener principal `products` sin filtros server-side. Loggear `snapshot.size` y `docChanges().length`. |
-| Productos con batch | `src/hooks/products/useGetProductsWithBatch.ts` | Listener `products` completo. Candidato a duplicación con `useGetProducts`. |
+| Productos con batch | `src/modules/inventory/pages/Inventory/components/Warehouse/forms/ProductStockForm/hooks/useGetProductsWithBatch.ts` | Listener `products` completo. Candidato a duplicación con `useGetProducts`. |
 | productsStock por filtro | `src/firebase/products/fbGetProducts.ts` | Listeners por warehouse, filtros server-side por `location`, `isDeleted`, `status`. |
 | Inventario control | `src/modules/inventory/pages/InventoryControl/hooks/useInventoryStocksProducts.ts` | `productsStock` con `orderBy(updatedAt)` y filtro client-side; `products` completo con filtro client-side. |
 | Stock home | `src/hooks/useProductStock.ts` | `useListenAllActiveProductsStock` y `useInventoryProductIds`. |

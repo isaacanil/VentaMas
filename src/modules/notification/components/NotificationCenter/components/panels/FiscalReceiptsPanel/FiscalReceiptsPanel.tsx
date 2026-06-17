@@ -6,7 +6,6 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Empty } from 'antd';
 import { useMemo } from 'react';
-import styled from 'styled-components';
 
 import { formatNumber } from '@/utils/formatNumber';
 import {
@@ -25,8 +24,9 @@ import {
   MetaLabel,
   MetaValue,
 } from '@/modules/notification/components/NotificationCenter/components/panels/shared/PanelPrimitives';
+import { PanelStateCard } from '@/modules/notification/components/NotificationCenter/components/panels/shared/PanelStateCard';
 import SimplePanelHeader from '@/modules/notification/components/NotificationCenter/components/panels/shared/SimplePanelHeader';
-import type { FiscalReceiptsPanelProps } from '@/types/ui';
+import type { FiscalReceiptsPanelProps } from '@/modules/notification/components/NotificationCenter/components/panels/types';
 
 const STATUS_MAP = {
   critical: {
@@ -95,20 +95,12 @@ const FiscalReceiptsPanel = ({
 
   if (sortedReceipts.length === 0) {
     return (
-      <PanelCard>
-        <SimplePanelHeader
-          icon={faReceipt}
-          title={title}
-          badgeCount={0}
-          showMeta={false}
+      <PanelStateCard icon={faReceipt} title={title}>
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description="No hay comprobantes configurados"
         />
-        <StateContainer>
-          <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description="No hay comprobantes configurados"
-          />
-        </StateContainer>
-      </PanelCard>
+      </PanelStateCard>
     );
   }
 
@@ -196,13 +188,5 @@ const ReceiptRow = ({ receipt }: { receipt: any }) => {
     </PanelRow>
   );
 };
-
-const StateContainer = styled.div`
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-`;
 
 export default FiscalReceiptsPanel;

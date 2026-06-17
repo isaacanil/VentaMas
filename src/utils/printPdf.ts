@@ -1,5 +1,6 @@
 type PrintPdfOptions = {
   showModal?: boolean;
+  onPrintDialogClose?: () => void;
   [key: string]: unknown;
 };
 
@@ -33,6 +34,14 @@ export async function printPdfBase64(
   const defaultOptions = {
     showModal: true,
   };
+  const finalizePrintOnce = (() => {
+    let finalized = false;
+    return () => {
+      if (finalized) return;
+      finalized = true;
+      options.onPrintDialogClose?.();
+    };
+  })();
 
   // Lazy‐load print-js only when needed to keep bundle size unchanged for callers
   const tryPrintJs = async (): Promise<boolean> => {
@@ -69,12 +78,25 @@ export async function printPdfBase64(
       if (newWindow) {
         newWindow.opener = null;
         scheduleBlobUrlRevoke(blobUrl);
+        const finalizeFromWindow = () => {
+          finalizePrintOnce();
+          newWindow.removeEventListener('afterprint', finalizeFromWindow);
+          newWindow.removeEventListener('pagehide', finalizeFromWindow);
+        };
+        newWindow.addEventListener('afterprint', finalizeFromWindow, {
+          once: true,
+        });
+        newWindow.addEventListener('pagehide', finalizeFromWindow, {
+          once: true,
+        });
         const onLoad = () => {
           try {
             newWindow.focus();
             newWindow.print();
+            window.setTimeout(finalizePrintOnce, 1_000);
           } catch (e) {
             console.warn('window.print() failed inside newWindow', e);
+            finalizePrintOnce();
           }
         };
         // Some browsers fire load immediately, others need listener
@@ -90,6 +112,7 @@ export async function printPdfBase64(
         link.download = 'document.pdf';
         link.click();
         scheduleBlobUrlRevoke(blobUrl, 0);
+        finalizePrintOnce();
       }
       return true;
     } catch (e) {

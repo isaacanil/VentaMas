@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import type { SalesRecord } from '../../../utils';
 import { toNumber } from '../../../utils';
 
-import Typography from '@/components/ui/Typografy/Typografy';
+import Typography from '@/components/ui/Typography/Typography';
 
 const options = {
   responsive: true,

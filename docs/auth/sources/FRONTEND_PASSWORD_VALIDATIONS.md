@@ -11,7 +11,7 @@
 
 ## Registro de Usuarios (UI)
 
-- **Archivo:** `src/modules/settings/pages/setting/subPage/Users/components/UserForm.tsx` (SignUpModal)
+- **Archivo:** `src/modules/settings/pages/setting/subPage/Users/components/UserForm/UserForm.tsx` (SignUpModal)
 - **Reglas (cuando NO es modo edición):**
   - `password` requerido.
   - Debe contener al menos **1 mayúscula** (`/(?=.*[A-Z])/`).
@@ -81,7 +81,7 @@
 
 ### 1) Modal PIN con fallback a contraseña
 
-- **Archivo:** `src/components/modals/PinAuthorizationModal/PinAuthorizationModal.tsx`
+- **Archivo:** `src/modules/authorizations/components/PinAuthorizationModal/PinAuthorizationModal.tsx`
 - **Reglas PIN:**
   - El input **solo acepta dígitos** (se filtran con `replace(/\D/g, '')`).
   - **Longitud exacta 6**; si no, error.
@@ -98,7 +98,7 @@
 
 ### 2) Peer Review Authorization (password)
 
-- **Archivo:** `src/components/modals/PeerReviewAuthorization/PeerReviewAuthorization.tsx`
+- **Archivo:** `src/modules/cashReconciliation/pages/CashReconciliation/resource/PeerReviewAuthorization/PeerReviewAuthorization.tsx`
 - **Reglas:**
   - `name` requerido.
   - `password` requerido.

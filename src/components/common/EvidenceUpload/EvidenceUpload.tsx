@@ -1,27 +1,25 @@
 import { message } from 'antd';
-import { useReducer, useEffect, useMemo, useCallback } from 'react';
-import type { ChangeEvent } from 'react';
 
+import FileList from '../fileUploadShared/components/FileList';
+import FileUploadControls from '../fileUploadShared/components/FileUploadControls';
+import FileUploadRuntimeLayer from '../fileUploadShared/components/FileUploadRuntimeLayer';
+import useFileUploadController from '../fileUploadShared/hooks/useFileUploadController';
+import type {
+  CreateLocalUploadFileContext,
+  NormalizeLocalPreviewFileContext,
+} from '../fileUploadShared/hooks/useFileUploadController';
 import {
-  getLocalURL,
-  revokeLocalURL,
-  isImageFile,
-  isPDFFile,
-  getFileTypeFromUrl,
-} from '@/utils/fileUtils';
-
-import useGlobalFileDragOverlay from '../fileUploadShared/hooks/useGlobalFileDragOverlay';
-import DragOverlay from './DragOverlay';
-import FileList from './FileList';
-import FileUploadControls from './FileUploadControls';
-import ImageLightbox from './ImageLightbox';
-import PreviewContent from './PreviewContent';
+  EVIDENCE_FILE_TYPES,
+  EVIDENCE_FILE_TYPE_LABELS,
+  EVIDENCE_FILE_TYPE_SELECTOR_LABELS,
+  getEvidenceGroupType,
+  getEvidenceRemoveFileId,
+} from './evidenceFileConfig';
 import type {
   EvidenceFile,
   EvidenceFileCategory,
   EvidenceFileInput,
 } from './types';
-import type { LightboxSlide } from '../fileUploadShared/types';
 
 interface EvidenceUploadProps {
   files?: EvidenceFile[];
@@ -33,67 +31,25 @@ interface EvidenceUploadProps {
 
 const EMPTY_EVIDENCE_FILES: EvidenceFile[] = [];
 
-interface EvidenceUploadUiState {
-  fileType: EvidenceFileCategory;
-  isDragging: boolean;
-  previewFile: EvidenceFile | null;
-  previewVisible: boolean;
-  lightboxOpen: boolean;
-  lightboxIndex: number;
-}
+const createEvidenceUploadFile = (
+  file: File,
+  { fileType, id }: CreateLocalUploadFileContext<EvidenceFileCategory>,
+): EvidenceFileInput => ({
+  file,
+  type: fileType,
+  id,
+  name: file.name,
+  isLocal: true,
+});
 
-type EvidenceUploadUiAction =
-  | { type: 'setFileType'; fileType: EvidenceFileCategory }
-  | { type: 'setDragging'; value: boolean }
-  | { type: 'openPreview'; file: EvidenceFile }
-  | { type: 'setPreviewVisible'; value: boolean }
-  | { type: 'setPreviewFile'; file: EvidenceFile | null }
-  | { type: 'openLightbox'; index: number }
-  | { type: 'setLightboxOpen'; value: boolean }
-  | { type: 'setLightboxIndex'; index: number };
-
-const initialEvidenceUploadUiState: EvidenceUploadUiState = {
-  fileType: 'receipts',
-  isDragging: false,
-  previewFile: null,
-  previewVisible: false,
-  lightboxOpen: false,
-  lightboxIndex: 0,
-};
-
-const evidenceUploadUiReducer = (
-  state: EvidenceUploadUiState,
-  action: EvidenceUploadUiAction,
-): EvidenceUploadUiState => {
-  switch (action.type) {
-    case 'setFileType':
-      return { ...state, fileType: action.fileType };
-    case 'setDragging':
-      return { ...state, isDragging: action.value };
-    case 'openPreview':
-      return {
-        ...state,
-        previewFile: action.file,
-        previewVisible: true,
-      };
-    case 'setPreviewVisible':
-      return { ...state, previewVisible: action.value };
-    case 'setPreviewFile':
-      return { ...state, previewFile: action.file };
-    case 'openLightbox':
-      return {
-        ...state,
-        lightboxOpen: true,
-        lightboxIndex: action.index,
-      };
-    case 'setLightboxOpen':
-      return { ...state, lightboxOpen: action.value };
-    case 'setLightboxIndex':
-      return { ...state, lightboxIndex: action.index };
-    default:
-      return state;
-  }
-};
+const normalizeEvidencePreviewFile = (
+  file: EvidenceFile,
+  { getLocalURL }: NormalizeLocalPreviewFileContext<EvidenceFileCategory>,
+): EvidenceFile => ({
+  ...file,
+  isLocal: true,
+  preview: file.file ? getLocalURL(file.file) : null,
+});
 
 const EvidenceUpload = ({
   files = EMPTY_EVIDENCE_FILES,
@@ -102,180 +58,84 @@ const EvidenceUpload = ({
   onRemoveFiles,
   showFileList = true,
 }: EvidenceUploadProps) => {
-  const [uiState, dispatchUi] = useReducer(
-    evidenceUploadUiReducer,
-    initialEvidenceUploadUiState,
-  );
   const {
     fileType,
+    setFileType,
     isDragging,
     previewFile,
     previewVisible,
     lightboxOpen,
     lightboxIndex,
-  } = uiState;
-
-  const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(e.target.files || []);
-    addFiles(selectedFiles);
-  };
-
-  const addFiles = (newFiles: File[]) => {
-    if (!onAddFiles) return;
-
-    const filesWithType: EvidenceFileInput[] = newFiles.map((file) => ({
-      file,
-      type: fileType,
-      id: Math.random().toString(36).slice(2, 11),
-      name: file.name,
-      isLocal: true, // Bandera para identificar archivos locales
-    }));
-    onAddFiles(filesWithType);
-    message.success(`${newFiles.length} archivo(s) agregado(s)`);
-  };
-
-  const setDragging = useCallback((value: boolean) => {
-    dispatchUi({ type: 'setDragging', value });
-  }, []);
-
-  const { handleDrop, handleDragOver, handleDragLeave } =
-    useGlobalFileDragOverlay({
-      setDragging,
-      onFilesDrop: addFiles,
-    });
-
-  const handleRemoveFile = (fileId: string) => {
-    onRemoveFiles?.(fileId);
-  };
-
-  const allFiles = useMemo(() => {
-    // Solo mapeamos los archivos locales con su vista previa
-    const localFiles: EvidenceFile[] = (files || []).map((file) => ({
-      ...file,
-      isLocal: true,
-      preview: file.file ? getLocalURL(file.file) : null,
-    }));
-
-    // Solo incluimos archivos remotos que ya están en Firebase
-    const remoteFiles: EvidenceFile[] = (attachmentUrls || [])
-      .filter((attachment) =>
-        attachment.url?.includes('firebasestorage.googleapis.com'),
-      )
-      .map((attachment, index) => ({
-        id:
-          attachment.id ||
-          attachment.url ||
-          `${attachment.name || 'attachment'}-${index}`,
-        name: attachment.name || 'Archivo sin nombre',
-        type: attachment.type || getFileTypeFromUrl(attachment.url ?? ''),
-        url: attachment.url,
-        isLocal: false,
-        preview: null,
-      }));
-
-    return [...localFiles, ...remoteFiles];
-  }, [files, attachmentUrls]);
-
-  const imageSlides = useMemo<LightboxSlide[]>(
-    () =>
-      allFiles
-        .filter((file) => isImageFile(file.name) && (file.preview || file.url))
-        .map((file) => ({
-          src: file.preview || file.url || '',
-          title: file.name,
-          description: `Tipo: ${file.type}`,
-        })),
-    [allFiles],
-  );
-
-  useEffect(() => {
-    // Cleanup URLs when component unmounts
-    return () => {
-      allFiles
-        .filter((file) => file.isLocal && file.preview)
-        .forEach((file) => {
-          revokeLocalURL(file.preview);
-        });
-    };
-  }, [allFiles]);
-
-  const handlePreview = useCallback(
-    (file: EvidenceFile) => {
-      if (!file) return;
-
-      const isImage = isImageFile(file.name);
-      const isPDF = isPDFFile(file.name);
-
-      if (isImage) {
-        const resolvedUrl = file.url || file.preview || '';
-        const index = imageSlides.findIndex(
-          (img) => img.title === file.name && img.src === resolvedUrl,
-        );
-        dispatchUi({ type: 'openLightbox', index: Math.max(0, index) });
-      } else if (isPDF) {
-        dispatchUi({ type: 'openPreview', file });
-      }
-    },
-    [imageSlides],
-  );
-
-  const setPreviewVisibleState = useCallback((value: boolean) => {
-    dispatchUi({ type: 'setPreviewVisible', value });
-  }, []);
-
-  const setPreviewFileState = useCallback((file: EvidenceFile | null) => {
-    dispatchUi({ type: 'setPreviewFile', file });
-  }, []);
-
-  const setLightboxOpenState = useCallback((value: boolean) => {
-    dispatchUi({ type: 'setLightboxOpen', value });
-  }, []);
-
-  const setLightboxIndexState = useCallback((value: number) => {
-    dispatchUi({ type: 'setLightboxIndex', index: value });
-  }, []);
+    allFiles,
+    imageSlides,
+    handleFileInput,
+    handleDrop,
+    handleDragOver,
+    handleDragLeave,
+    handleRemoveFile,
+    handlePreview,
+    setPreviewVisible,
+    setPreviewFile,
+    setLightboxOpen,
+    setLightboxIndex,
+  } = useFileUploadController<
+    EvidenceFile,
+    EvidenceFile,
+    EvidenceFile,
+    EvidenceFileInput,
+    EvidenceFileCategory
+  >({
+    files,
+    attachmentUrls,
+    defaultFileType: 'receipts',
+    onAddFiles: onAddFiles ?? null,
+    onRemoveFiles: onRemoveFiles ?? null,
+    successMessage: '{count} archivo(s) agregado(s)',
+    notifySuccess: (text) => message.success(text),
+    createLocalUploadFile: createEvidenceUploadFile,
+    normalizeLocalPreviewFile: normalizeEvidencePreviewFile,
+  });
 
   return (
     <div>
       {onAddFiles && (
         <FileUploadControls
           fileType={fileType}
-          setFileType={(value) =>
-            dispatchUi({ type: 'setFileType', fileType: value })
-          }
+          setFileType={setFileType}
           handleFileInput={handleFileInput}
+          fileTypes={EVIDENCE_FILE_TYPES}
+          fileTypeLabels={EVIDENCE_FILE_TYPE_SELECTOR_LABELS}
+          title="Adjuntar Evidencia"
+          typeSelectorLabel="Tipo"
         />
       )}
 
       {showFileList && (
-        <FileList
+        <FileList<EvidenceFile>
           files={allFiles}
           removeFile={onRemoveFiles ? handleRemoveFile : undefined}
           handlePreview={handlePreview}
+          fileTypeLabels={EVIDENCE_FILE_TYPE_LABELS}
+          getGroupType={getEvidenceGroupType}
+          getRemoveFileId={getEvidenceRemoveFileId}
         />
       )}
 
-      <PreviewContent
+      <FileUploadRuntimeLayer<EvidenceFile>
+        fileType={fileType}
+        imageSlides={imageSlides}
+        isDragging={isDragging}
+        lightboxIndex={lightboxIndex}
+        lightboxOpen={lightboxOpen}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
         previewFile={previewFile}
         previewVisible={previewVisible}
-        setPreviewVisible={setPreviewVisibleState}
-        setPreviewFile={setPreviewFileState}
-      />
-
-      <ImageLightbox
-        lightboxOpen={lightboxOpen}
-        setLightboxOpen={setLightboxOpenState}
-        lightboxIndex={lightboxIndex}
-        setLightboxIndex={setLightboxIndexState}
-        slides={imageSlides}
-      />
-
-      <DragOverlay
-        isDragging={isDragging}
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        fileType={fileType}
+        setLightboxIndex={setLightboxIndex}
+        setLightboxOpen={setLightboxOpen}
+        setPreviewFile={setPreviewFile}
+        setPreviewVisible={setPreviewVisible}
       />
     </div>
   );

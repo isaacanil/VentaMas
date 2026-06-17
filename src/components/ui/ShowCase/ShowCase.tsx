@@ -4,9 +4,9 @@ import { formatNumber } from '@/utils/format';
 import { formatPriceByCurrency } from '@/utils/format';
 import type { SupportedDocumentCurrency } from '@/types/products';
 
-type ShowcaseValueType = 'none' | 'number' | 'percent' | 'price';
+export type ShowcaseValueType = 'none' | 'number' | 'percent' | 'price';
 
-interface ShowcaseProps {
+export interface ShowcaseProps {
   title: string;
   value: number;
   valueType?: ShowcaseValueType;

@@ -1,5 +1,6 @@
-import { Card } from '@heroui/react';
 import styled from 'styled-components';
+
+import { VmCard } from '@/components/heroui';
 
 import { formatJournalAmount } from '../utils/formatters';
 
@@ -15,25 +16,25 @@ export const JournalBookSummary = ({
   summary,
 }: JournalBookSummaryProps) => (
   <SummaryStrip>
-    <Card>
-      <Card.Content>
+    <VmCard>
+      <VmCard.Content>
         <SummaryLabel>Debitos periodo</SummaryLabel>
         <SummaryValue $tone="debit">
           {formatJournalAmount(summary.debit)}
         </SummaryValue>
         <SummaryMeta>{summary.debitMovements} movimientos</SummaryMeta>
-      </Card.Content>
-    </Card>
-    <Card>
-      <Card.Content>
+      </VmCard.Content>
+    </VmCard>
+    <VmCard>
+      <VmCard.Content>
         <SummaryLabel>Creditos periodo</SummaryLabel>
         <SummaryValue $tone="credit">
           {formatJournalAmount(summary.credit)}
         </SummaryValue>
         <SummaryMeta>{summary.creditMovements} movimientos</SummaryMeta>
-      </Card.Content>
-    </Card>
-    <Card
+      </VmCard.Content>
+    </VmCard>
+    <VmCard
       style={
         difference < 0.005
           ? {
@@ -43,7 +44,7 @@ export const JournalBookSummary = ({
           : {}
       }
     >
-      <Card.Content>
+      <VmCard.Content>
         <SummaryLabel>Diferencia</SummaryLabel>
         <SummaryValue $balanced={difference < 0.005}>
           {formatJournalAmount(difference)}
@@ -51,10 +52,10 @@ export const JournalBookSummary = ({
         <SummaryMeta>
           {difference < 0.005 ? 'Cuadrado' : 'Revisar descuadre'}
         </SummaryMeta>
-      </Card.Content>
-    </Card>
-    <Card>
-      <Card.Content>
+      </VmCard.Content>
+    </VmCard>
+    <VmCard>
+      <VmCard.Content>
         <SummaryLabel>Estado</SummaryLabel>
         <StatusStack>
           <StatusMetric>
@@ -84,8 +85,8 @@ export const JournalBookSummary = ({
             </StatusMetric>
           )}
         </StatusStack>
-      </Card.Content>
-    </Card>
+      </VmCard.Content>
+    </VmCard>
   </SummaryStrip>
 );
 

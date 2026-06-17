@@ -84,6 +84,15 @@ export const ScrollArea = styled.div`
   }
 `;
 
+export const PanelStateBody = styled.div<{ $padding?: string }>`
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: ${({ $padding }) => $padding ?? '40px 20px'};
+  text-align: center;
+`;
+
 export const PanelRow = styled.div`
   display: flex;
   gap: 12px;

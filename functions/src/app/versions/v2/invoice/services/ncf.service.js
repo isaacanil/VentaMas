@@ -1,6 +1,52 @@
 import { db, FieldValue } from '../../../../core/config/firebase.js';
 import { getTaxReceiptDocFromTx } from '../../../../modules/taxReceipt/services/getTaxReceipt.js';
 
+const DEFAULT_SEQUENCE_LENGTH = 10;
+const LEGACY_B_SEQUENCE_LENGTH = 8;
+
+const toPositiveIntegerOrNull = (value) => {
+  const number = Number(value);
+  return Number.isInteger(number) && number > 0 ? number : null;
+};
+
+const inferSequenceLengthFromSequence = (sequence) => {
+  if (typeof sequence !== 'string') return null;
+
+  const normalized = sequence.trim();
+  if (!/^\d+$/.test(normalized)) return null;
+
+  return normalized.length;
+};
+
+const isLegacyBReceipt = (typeCode) =>
+  String(typeCode ?? '')
+    .trim()
+    .toUpperCase()
+    .startsWith('B');
+
+const isAllZeroString = (value) =>
+  typeof value === 'string' && /^0+$/.test(value.trim());
+
+const resolveSequenceLength = ({ sequenceLength, sequence, typeCode }) => {
+  const explicitLength = toPositiveIntegerOrNull(sequenceLength);
+  if (explicitLength !== null) return explicitLength;
+
+  const inferredLength = inferSequenceLengthFromSequence(sequence);
+  const isBReceipt = isLegacyBReceipt(typeCode);
+  if (
+    inferredLength !== null &&
+    !(
+      isBReceipt &&
+      inferredLength > LEGACY_B_SEQUENCE_LENGTH &&
+      isAllZeroString(sequence)
+    )
+  ) {
+    return inferredLength;
+  }
+
+  return isBReceipt ? LEGACY_B_SEQUENCE_LENGTH : DEFAULT_SEQUENCE_LENGTH;
+};
+
 /**
  * Reserva un NCF de forma transaccional.
  * - Lee el recibo fiscal por nombre.
@@ -29,7 +75,11 @@ export async function reserveNcf(tx, { businessId, userId, ncfType }) {
   const typeCode = String(receiptData.type ?? '').trim();
   const serieRaw = String(receiptData.serie ?? '').trim();
   const serieCode = serieRaw.padStart(2, '0');
-  const seqLength = Number(receiptData.sequenceLength) || 10;
+  const seqLength = resolveSequenceLength({
+    sequenceLength: receiptData.sequenceLength,
+    sequence: receiptData.sequence,
+    typeCode,
+  });
 
   const toBigIntSafe = (value, label) => {
     try {

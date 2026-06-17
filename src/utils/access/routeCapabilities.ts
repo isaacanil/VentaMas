@@ -1,6 +1,4 @@
-import { PureAbility } from '@casl/ability';
-
-import { defineAbilitiesFor } from '@/abilities';
+import { createBaseAbilityForUser } from './baseAbility';
 
 export type RouteRequiredCapabilitiesMode = 'any' | 'all';
 
@@ -19,10 +17,10 @@ export const hasRequiredCapabilitiesAccess = ({
       )
     : [];
 
+  const ability = createBaseAbilityForUser(user);
   if (capabilities.length === 0) return true;
-  if (!user || typeof user !== 'object') return false;
+  if (!ability) return false;
 
-  const ability = new PureAbility(defineAbilitiesFor(user));
   if (mode === 'all') {
     return capabilities.every((capability) => ability.can(capability, 'all'));
   }

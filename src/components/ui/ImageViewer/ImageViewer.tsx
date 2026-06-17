@@ -12,8 +12,8 @@ import {
 } from '@/features/imageViewer/imageViewerSlice';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
 import { Button } from '@/components/ui/Button/Button';
-import { CenteredText } from '@/components/ui/CentredText';
-import Typography from '@/components/ui/Typografy/Typografy';
+import { CenteredText } from '@/components/ui/CenteredText';
+import Typography from '@/components/ui/Typography/Typography';
 
 import {
   FULL_SIZE_TRANSFORM_STYLE,

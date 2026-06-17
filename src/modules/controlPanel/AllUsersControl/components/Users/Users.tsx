@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import { fbGetUsers } from '@/firebase/Auth/fbGetUser';
 import { fbGetBusinessesList } from '@/firebase/dev/businesses/fbGetBusinessesList';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 import { TableUser } from './TableUser';
 import { UsersFilterBar } from './UsersFilterBar';

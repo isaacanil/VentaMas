@@ -1,6 +1,4 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
 
 type SetPasswordRequest = {
@@ -14,10 +12,10 @@ type SetPasswordResponse = {
   message?: string;
 };
 
-const clientSetUserPasswordCallable = httpsCallable<
+const clientSetUserPasswordCallable = createFirebaseCallable<
   SetPasswordRequest,
   SetPasswordResponse
->(functions, 'clientSetUserPassword');
+>('clientSetUserPassword');
 
 export const fbUpdateUserPassword = async (
   userId: string,

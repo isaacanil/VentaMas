@@ -35,6 +35,7 @@ const { documentRefs, documentSnapshots, getDocRef } = vi.hoisted(() => {
 
 vi.mock('firebase-functions/v2/firestore', () => ({
   onDocumentCreated: (_options, handler) => handler,
+  onDocumentWritten: (_options, handler) => handler,
 }));
 
 vi.mock('../../../core/config/firebase.js', () => ({
@@ -153,6 +154,30 @@ describe('syncCustomerCreditNoteAccountingEvents', () => {
       },
       createdBy: 'user-1',
     });
+  });
+
+  it('does not create an accounting event while an electronic credit note is pending', async () => {
+    await syncCustomerCreditNoteIssuedAccountingEvent({
+      params: {
+        businessId: 'business-1',
+        creditNoteId: 'credit-note-pending',
+      },
+      data: {
+        data: () => ({
+          id: 'credit-note-pending',
+          status: 'electronic_pending',
+          totalAmount: 118,
+          client: { id: 'client-1' },
+          createdAt: { seconds: 1772543000, nanoseconds: 0 },
+        }),
+      },
+    });
+
+    expect(
+      documentSnapshots.get(
+        'businesses/business-1/accountingEvents/customer_credit_note.issued__credit-note-pending',
+      ),
+    ).toBeUndefined();
   });
 
   it('creates an accounting event when a customer credit note is applied', async () => {

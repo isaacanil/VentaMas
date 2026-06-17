@@ -1,12 +1,7 @@
 import type { UserIdentity } from '@/types/users';
+import { toCleanString } from '@/utils/text';
 
 export type BusinessFeatureKey = 'accounting' | 'treasury';
-
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
-};
 
 export const resolveActiveBusinessId = (
   user: UserIdentity | null | undefined,

@@ -2,16 +2,12 @@ import { InfoCircleOutlined, GlobalOutlined } from '@/constants/icons/antd';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Form, Input, Button, Select, message, Tooltip, Space } from 'antd';
-import {
-  getCountries,
-  getCountryCallingCode,
-  type CountryCode,
-} from 'libphonenumber-js/min';
 import { useEffect, useState, type ReactNode } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 // Local imports
 import { OPERATION_MODES } from '@/constants/modes';
+import { selectBusinessData } from '@/features/auth/businessSlice';
 import { selectUser } from '@/features/auth/userSlice';
 import {
   SelectProviderModalData,
@@ -21,17 +17,21 @@ import { fbAddProvider } from '@/firebase/provider/fbAddProvider';
 import { fbCheckProviderExists } from '@/firebase/provider/fbCheckProviderExists';
 import { fbUpdateProvider } from '@/firebase/provider/fbUpdateProvider';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { useRncSearch } from '@/hooks/useRncSearch';
+import { useRncSearch } from '@/modules/contacts/hooks/useRncSearch';
 import {
-  formatPhoneNumber,
-  unformatPhoneNumber,
-  isValidPhoneNumber,
-} from '@/utils/format';
+  formatPhoneForInternationalDisplay,
+  getPhoneCountryCallingCode,
+  getSupportedPhoneCountries,
+  isPhoneInputValid,
+  unformatPhoneForStorage,
+  type PhoneCountryCode,
+} from '@/shared/phone/phoneNumber';
+import { comprobantesOptions } from '@/utils/taxReceipt';
 import { Modal } from '@/components/common/Modal/Modal';
 import { DgiiSyncAlert } from '@/modules/contacts/components/Rnc/DgiiSyncAlert/DgiiSyncAlert';
 import { RncPanel } from '@/modules/contacts/components/Rnc/RncPanel/RncPanel';
+import { getBusinessCountryPhoneCode } from '@/shared/location/businessLocations';
 
-import { comprobantesOptions } from './constants';
 import {
   AlertStack,
   DetailsPanel,
@@ -67,7 +67,7 @@ const resolveProviderSaveErrorMessage = (error: unknown): string => {
 };
 
 interface CountryOption {
-  value: CountryCode;
+  value: PhoneCountryCode;
   label: ReactNode;
   searchText: string;
 }
@@ -80,7 +80,7 @@ interface ProviderFormValues {
   address?: string;
   voucherType?: string;
   notes?: string;
-  country?: CountryCode;
+  country?: PhoneCountryCode;
 }
 
 type ProviderModalData = ProviderFormValues & {
@@ -88,18 +88,20 @@ type ProviderModalData = ProviderFormValues & {
 };
 
 // Generate country options
-const countryOptions: CountryOption[] = getCountries().map((country) => ({
-  value: country,
-  label: (
-    <Space>
-      <span>{country}</span>
-      <span style={{ color: '#888', fontSize: '0.9em' }}>
-        (+{getCountryCallingCode(country)})
-      </span>
-    </Space>
-  ),
-  searchText: `${country} +${getCountryCallingCode(country)}`,
-}));
+const countryOptions: CountryOption[] = getSupportedPhoneCountries().map(
+  (country) => ({
+    value: country,
+    label: (
+      <Space>
+        <span>{country}</span>
+        <span style={{ color: '#888', fontSize: '0.9em' }}>
+          (+{getPhoneCountryCallingCode(country)})
+        </span>
+      </Space>
+    ),
+    searchText: `${country} +${getPhoneCountryCallingCode(country)}`,
+  }),
+);
 
 interface OptionalLabelProps {
   children: ReactNode;
@@ -123,11 +125,15 @@ export const ProviderForm = () => {
     data?: ProviderModalData | null;
   };
   const user = useSelector(selectUser);
+  const business = useSelector(selectBusinessData);
   const [form] = Form.useForm<ProviderFormValues>();
-  const [selectedCountry, setSelectedCountry] = useState<CountryCode>('DO');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmittedSuccessfully, setHasSubmittedSuccessfully] =
     useState(false);
+  const defaultCountry = getBusinessCountryPhoneCode(business?.country);
+  const selectedCountry =
+    (Form.useWatch('country', form) as PhoneCountryCode | undefined) ??
+    defaultCountry;
 
   const isWideScreen = useMediaQuery('(min-width: 1101px)');
 
@@ -154,7 +160,6 @@ export const ProviderForm = () => {
     if (!isOpen) {
       setIsSubmitting(false);
       setHasSubmittedSuccessfully(false);
-      setSelectedCountry('DO');
       return;
     }
 
@@ -162,22 +167,23 @@ export const ProviderForm = () => {
     setHasSubmittedSuccessfully(false);
 
     if (mode === updateMode && data) {
-      form.setFieldsValue(data);
-      setSelectedCountry(data.country ?? 'DO');
+      form.setFieldsValue({
+        ...data,
+        country: data.country ?? defaultCountry,
+      });
       // Si hay un RNC en los datos, consultarlo automáticamente
       if (data.rnc) {
         consultarRNC(data.rnc);
       }
     } else {
-      setSelectedCountry('DO');
       // Initialize form with default empty values for non-required fields
       form.setFieldsValue({
-        country: 'DO',
+        country: defaultCountry,
         email: '',
         notes: '',
       });
     }
-  }, [isOpen, mode, data, form, consultarRNC]);
+  }, [isOpen, mode, data, form, consultarRNC, defaultCountry]);
 
   const handleOpenModal = () => {
     dispatch(toggleProviderModal({ mode: createMode }));
@@ -223,7 +229,10 @@ export const ProviderForm = () => {
       return;
     }
     setIsSubmitting(true);
-    message.loading({ content: 'Guardando proveedor...', key: 'providerSubmit' });
+    message.loading({
+      content: 'Guardando proveedor...',
+      key: 'providerSubmit',
+    });
 
     try {
       const currentProviderId = mode === updateMode ? (data?.id ?? null) : null;
@@ -263,7 +272,10 @@ export const ProviderForm = () => {
 
       const provider = {
         ...values,
-        tel: unformatPhoneNumber(values.tel ?? ''),
+        tel: unformatPhoneForStorage(
+          values.tel ?? '',
+          values.country ?? selectedCountry,
+        ),
         email: values.email || '',
         notes: values.notes || '',
         address: values.address || '',
@@ -303,15 +315,20 @@ export const ProviderForm = () => {
 
   const onPhoneChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
-    const formattedPhoneNumber = formatPhoneNumber(value, selectedCountry);
+    const formattedPhoneNumber = formatPhoneForInternationalDisplay(
+      value,
+      selectedCountry,
+    );
     form.setFieldsValue({ tel: formattedPhoneNumber });
   };
 
-  const onCountryChange = (value: CountryCode) => {
-    setSelectedCountry(value);
+  const onCountryChange = (value: PhoneCountryCode) => {
     const currentPhone = form.getFieldValue('tel');
     if (currentPhone) {
-      const formattedPhoneNumber = formatPhoneNumber(currentPhone, value);
+      const formattedPhoneNumber = formatPhoneForInternationalDisplay(
+        currentPhone,
+        value,
+      );
       form.setFieldsValue({ tel: formattedPhoneNumber });
     }
   };
@@ -334,7 +351,11 @@ export const ProviderForm = () => {
         onCancel={handleOpenModal}
         centered
         footer={[
-          <Button key="cancel" onClick={handleOpenModal} disabled={isSubmitting}>
+          <Button
+            key="cancel"
+            onClick={handleOpenModal}
+            disabled={isSubmitting}
+          >
             Cancelar
           </Button>,
           <Button
@@ -488,7 +509,7 @@ export const ProviderForm = () => {
                   <Space.Compact style={{ width: '100%' }}>
                     <Form.Item
                       name="country"
-                      initialValue="DO"
+                      initialValue={defaultCountry}
                       style={{ marginBottom: 0, width: '40%' }}
                     >
                       <Select
@@ -518,7 +539,7 @@ export const ProviderForm = () => {
                         {
                           validator: (_, value) => {
                             if (!value) return Promise.resolve();
-                            return isValidPhoneNumber(value, selectedCountry)
+                            return isPhoneInputValid(value, selectedCountry)
                               ? Promise.resolve()
                               : Promise.reject(
                                   <span>
@@ -532,7 +553,7 @@ export const ProviderForm = () => {
                     >
                       <Input
                         onChange={onPhoneChange}
-                        placeholder={`Ejemplo: ${getCountryCallingCode(selectedCountry)} XX XXX XXXX`}
+                        placeholder={`Ejemplo: ${getPhoneCountryCallingCode(selectedCountry)} XX XXX XXXX`}
                         type="tel"
                       />
                     </Form.Item>

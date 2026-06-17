@@ -1,8 +1,8 @@
 import { collection, getDocs, writeBatch } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
-import { compareObjects } from '@/utils/object/compareObject';
 
+import { compareClientObjects } from './compareClientObjects';
 import {
   buildClientWritePayload,
   CLIENT_ROOT_FIELDS,
@@ -52,7 +52,7 @@ export async function fbNormalizeClients(
     const normalizedClient = extractNormalizedClient(data);
     const currentClient = data?.client ?? {};
 
-    const clientMatches = compareObjects({
+    const clientMatches = compareClientObjects({
       object1: currentClient as Record<string, unknown>,
       object2: normalizedClient as NormalizedClient,
       maxDepth: 5,

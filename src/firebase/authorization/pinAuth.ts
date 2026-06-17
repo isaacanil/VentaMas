@@ -1,6 +1,4 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 import type { UserIdentity } from '@/types/users';
 
 type ActorPayload = {
@@ -74,25 +72,34 @@ type ValidatePinResponse = {
   moduleStatus: ModulePinDetail | null;
 };
 
-const generateModulePinsCallable = httpsCallable(
-  functions,
-  'generateModulePins',
-);
-const deactivateModulePinsCallable = httpsCallable(
-  functions,
-  'deactivateModulePins',
-);
-const getUserModulePinStatusCallable = httpsCallable(
-  functions,
-  'getUserModulePinStatus',
-);
-const getBusinessPinsSummaryCallable = httpsCallable(
-  functions,
-  'getBusinessPinsSummary',
-);
-const validateModulePinCallable = httpsCallable(functions, 'validateModulePin');
-const getUserModulePinsCallable = httpsCallable(functions, 'getUserModulePins');
-const sendPinByEmailCallable = httpsCallable(functions, 'sendPinByEmail');
+const generateModulePinsCallable = createFirebaseCallable<
+  Record<string, unknown>,
+  Record<string, unknown>
+>('generateModulePins');
+const deactivateModulePinsCallable = createFirebaseCallable<
+  Record<string, unknown>,
+  unknown
+>('deactivateModulePins');
+const getUserModulePinStatusCallable = createFirebaseCallable<
+  Record<string, unknown>,
+  Record<string, unknown>
+>('getUserModulePinStatus');
+const getBusinessPinsSummaryCallable = createFirebaseCallable<
+  Record<string, unknown>,
+  { users?: Array<Record<string, unknown>> }
+>('getBusinessPinsSummary');
+const validateModulePinCallable = createFirebaseCallable<
+  Record<string, unknown>,
+  Record<string, unknown>
+>('validateModulePin');
+const getUserModulePinsCallable = createFirebaseCallable<
+  Record<string, unknown>,
+  Record<string, unknown>
+>('getUserModulePins');
+const sendPinByEmailCallable = createFirebaseCallable<
+  Record<string, unknown>,
+  Record<string, unknown>
+>('sendPinByEmail');
 
 const resolveUserId = (
   currentUser: UserIdentity | null | undefined,
@@ -286,7 +293,7 @@ export const fbGenerateUserPin = async (
       modules,
       actor: buildActorPayload(currentUser),
     });
-    return normalizeGeneratedPins(response.data as Record<string, unknown>);
+    return normalizeGeneratedPins(response);
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'No se pudo generar el PIN.';
@@ -333,7 +340,7 @@ export const fbGetUserPinStatus = async (
       targetUserId: targetUserId || actorId,
       actor: buildActorPayload(currentUser),
     });
-    return normalizePinStatus(response.data as Record<string, unknown>);
+    return normalizePinStatus(response);
   } catch (error) {
     const message =
       error instanceof Error
@@ -354,9 +361,7 @@ export const fbGetUsersWithPinStatus = async (
     const response = await getBusinessPinsSummaryCallable({
       actor: buildActorPayload(currentUser),
     });
-    return normalizeBusinessUsers(
-      (response.data as { users?: Array<Record<string, unknown>> })?.users,
-    );
+    return normalizeBusinessUsers(response.users);
   } catch (error) {
     const message =
       error instanceof Error
@@ -388,7 +393,7 @@ export const fbValidateUserPin = async (
       username,
       actor: buildActorPayload(currentUser),
     });
-    const data = (response.data || {}) as Record<string, unknown>;
+    const data = response || {};
     return {
       valid: Boolean(data.valid),
       reason: (data.reason as string) || null,
@@ -424,7 +429,7 @@ export const fbViewUserPins = async (
       modules,
       actor: buildActorPayload(currentUser),
     });
-    const payload = (response.data || {}) as Record<string, unknown>;
+    const payload = response || {};
     const pins = Array.isArray(payload.pins)
       ? (payload.pins as Array<Record<string, unknown>>).map((entry) => ({
           ...entry,
@@ -467,7 +472,7 @@ export const fbSendPinByEmail = async (
       metadata: metadata || {},
       actor: buildActorPayload(currentUser),
     });
-    const data = (response.data || {}) as Record<string, unknown>;
+    const data = response || {};
     return {
       ok: Boolean(data.ok),
       message: (data.message as string) || 'Correo enviado.',

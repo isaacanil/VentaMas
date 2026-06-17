@@ -15,7 +15,6 @@ export const ToolBar = () => {
   return (
     <Container>
       <Wrapper>
-        {/* <OrderFilter></OrderFilter> */}
         <Tooltip
           description="Realizar Comprar"
           Children={

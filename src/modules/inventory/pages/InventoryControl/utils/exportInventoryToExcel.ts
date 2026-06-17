@@ -1,14 +1,66 @@
-import { saveAs } from 'file-saver';
 import { DateTime } from 'luxon';
 
+import { saveXlsxFile } from '@/utils/export/xlsx';
+import { formatDateTime as formatInventoryDateTime } from '@/modules/inventory/utils/dates';
 import type {
   CountsMap,
   CountsMetaMap,
   ExportInventoryOptions,
   ExportSessionInfo,
   InventoryGroup,
-  TimestampLike,
 } from '@/utils/inventory/types';
+
+const EXCEL_DATE_FORMAT = 'yyyy-LL-dd';
+const EXCEL_DATE_TIME_FORMAT = 'yyyy-LL-dd HH:mm';
+
+type InventoryExportStats = {
+  products: number;
+  rows: number;
+  rowsWithDiff: number;
+  stockSistema: number;
+  conteoReal: number;
+  diferencia: number;
+  rowsWithManualExp: number;
+  positiveDiff: number;
+  negativeDiff: number;
+};
+
+const createInventoryExportStats = (): InventoryExportStats => ({
+  products: 0,
+  rows: 0,
+  rowsWithDiff: 0,
+  stockSistema: 0,
+  conteoReal: 0,
+  diferencia: 0,
+  rowsWithManualExp: 0,
+  positiveDiff: 0,
+  negativeDiff: 0,
+});
+
+const recordInventoryExportRow = (
+  stats: InventoryExportStats,
+  {
+    conteoReal,
+    diferencia,
+    hasManual,
+    stockSistema,
+  }: {
+    conteoReal: number;
+    diferencia: number;
+    hasManual: boolean;
+    stockSistema: number;
+  },
+) => {
+  stats.rows += 1;
+  stats.stockSistema += stockSistema;
+  stats.conteoReal += conteoReal;
+  stats.diferencia += diferencia;
+
+  if (diferencia !== 0) stats.rowsWithDiff += 1;
+  if (diferencia > 0) stats.positiveDiff += 1;
+  if (diferencia < 0) stats.negativeDiff += 1;
+  if (hasManual) stats.rowsWithManualExp += 1;
+};
 
 /**
  * Export inventory grouped data to Excel
@@ -56,21 +108,13 @@ export async function exportInventoryToExcel(
   ];
   sheet.columns = baseColumns;
 
-  const globalStats = {
-    products: 0,
-    rows: 0,
-    rowsWithDiff: 0,
-    stockSistema: 0,
-    conteoReal: 0,
-    diferencia: 0,
-    rowsWithManualExp: 0,
-    positiveDiff: 0,
-    negativeDiff: 0,
-  };
+  const globalStats = createInventoryExportStats();
 
   for (const g of groups) {
+    let productHasExportedRows = false;
+
     for (const child of g._children || []) {
-      // Salvaguarda: si algún proceso previo agregó un pseudo-child de totales, lo ignoramos.ignoramos.
+      // Salvaguarda: si algún proceso previo agregó un pseudo-child de totales, lo ignoramos.
       const rowType =
         typeof child?.rowType === 'string' ? child.rowType.toLowerCase() : '';
       if (rowType === 'total') continue;
@@ -87,7 +131,9 @@ export async function exportInventoryToExcel(
         rowType: child.type === 'noexp' ? 'SIN VENC.' : 'LOTE',
         ...(includeBatchKey ? { batchKey: key } : {}),
         batchNumberId: child.batchNumberId || '',
-        expirationDate: formatDate(child.expirationDate as any),
+        expirationDate: child.expirationDate
+          ? formatInventoryDateTime(child.expirationDate, EXCEL_DATE_FORMAT)
+          : '',
         stockSistema,
         conteoReal,
         diferencia,
@@ -99,13 +145,27 @@ export async function exportInventoryToExcel(
           })
           .join('; '),
         hasManualExp: hasManual ? 'Sí' : 'No',
-        manualExpirationDate: hasManual
-          ? formatDate(manualExpirationDate as any)
-          : '',
+        manualExpirationDate:
+          hasManual && manualExpirationDate
+            ? formatInventoryDateTime(manualExpirationDate, EXCEL_DATE_FORMAT)
+            : '',
         updatedByName: m.updatedByName || '',
-        updatedAt: m.updatedAt ? formatDateTime(m.updatedAt as any) : '',
+        updatedAt: m.updatedAt
+          ? formatInventoryDateTime(m.updatedAt, EXCEL_DATE_TIME_FORMAT)
+          : '',
       };
       sheet.addRow(row);
+      recordInventoryExportRow(globalStats, {
+        conteoReal,
+        diferencia,
+        hasManual,
+        stockSistema,
+      });
+      productHasExportedRows = true;
+    }
+
+    if (productHasExportedRows) {
+      globalStats.products += 1;
     }
   }
 
@@ -117,7 +177,10 @@ export async function exportInventoryToExcel(
     ];
     const push = (metric: string, value: string | number) =>
       summary.addRow({ metric, value });
-    push('Fecha Exportación', DateTime.local().toFormat('yyyy-LL-dd HH:mm'));
+    push(
+      'Fecha Exportación',
+      formatInventoryDateTime(DateTime.local(), EXCEL_DATE_TIME_FORMAT),
+    );
     if (sessionInfo?.name) push('Sesión', sessionInfo.name);
     if (sessionInfo?.id) push('Session ID', sessionInfo.id);
     push('Productos con filas', globalStats.products);
@@ -139,55 +202,8 @@ export async function exportInventoryToExcel(
   }
 
   const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], {
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  saveXlsxFile({
+    content: buffer,
+    fileName: `${filename}_${onlyDifferences ? 'differences_' : ''}${DateTime.local().toFormat('yyyy-LL-dd_HH-mm')}.xlsx`,
   });
-  saveAs(
-    blob,
-    `${filename}_${onlyDifferences ? 'differences_' : ''}${DateTime.local().toFormat('yyyy-LL-dd_HH-mm')}.xlsx`,
-  );
-}
-
-function formatDate(d: TimestampLike) {
-  if (!d) return '';
-  try {
-    let date;
-    if (d instanceof Date) date = d;
-    else if (
-      typeof d === 'object' &&
-      d &&
-      'toDate' in d &&
-      typeof (d as { toDate?: () => Date }).toDate === 'function'
-    )
-      date = (d as { toDate: () => Date }).toDate();
-    else if (typeof d === 'object' && typeof d.seconds === 'number')
-      date = new Date((d as { seconds: number }).seconds * 1000);
-    else date = new Date(d as string | number);
-    if (isNaN(date.getTime())) return '';
-    return DateTime.fromJSDate(date).toFormat('yyyy-LL-dd');
-  } catch {
-    return '';
-  }
-}
-
-function formatDateTime(d: TimestampLike) {
-  if (!d) return '';
-  try {
-    let date;
-    if (d instanceof Date) date = d;
-    else if (
-      typeof d === 'object' &&
-      d &&
-      'toDate' in d &&
-      typeof (d as { toDate?: () => Date }).toDate === 'function'
-    )
-      date = (d as { toDate: () => Date }).toDate();
-    else if (typeof d === 'object' && typeof d.seconds === 'number')
-      date = new Date((d as { seconds: number }).seconds * 1000);
-    else date = new Date(d as string | number);
-    if (isNaN(date.getTime())) return '';
-    return DateTime.fromJSDate(date).toFormat('yyyy-LL-dd HH:mm');
-  } catch {
-    return '';
-  }
 }

@@ -7,8 +7,8 @@ import { toggleSignUpUser } from '@/features/modals/modalSlice';
 
 import { ModalTitle, StoreIcon } from './BusinessEditModal.styles';
 import type { BusinessEditModalProps } from './BusinessEditModal.types';
-import { BusinessInfoSummary } from './components/BusinessInfoSummary';
-import { BusinessUserAccessSection } from './components/BusinessUserAccessSection';
+import { BusinessInfoSummary } from './components/BusinessInfoSummary/BusinessInfoSummary';
+import { BusinessUserAccessSection } from './components/BusinessUserAccessSection/BusinessUserAccessSection';
 
 export const BusinessEditModal: React.FC<BusinessEditModalProps> = ({
   isOpen,

@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { SelectSettingCart } from '@/features/cart/cartSlice';
-import InvoiceTemplates from '@/modules/invoice/components/Invoice/components/InvoiceTemplates/InvoiceTemplates';
+import { InvoiceTemplates } from '@/modules/invoice/public';
 import {
   DocumentCurrencySelector,
   type DocumentCurrencyContext,

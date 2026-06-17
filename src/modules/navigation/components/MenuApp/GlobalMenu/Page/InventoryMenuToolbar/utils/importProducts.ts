@@ -4,15 +4,15 @@ import { fbAddProducts } from '@/firebase/products/fbAddProducts';
 import {
   createProductTemplate,
   importProductData,
-} from '@/utils/import/product';
+} from '@/domain/products/import';
+import { fbAddActiveIngredients } from '@/firebase/products/activeIngredient/fbAddActiveIngredients';
 import type { UserWithBusiness } from '@/types/users';
 
-import { fbAddActiveIngredients } from '../fbAddActiveIngredients';
 import type {
   ImportOptions,
   ImportProgressStats,
   InventoryProduct,
-} from '../InventoryMenuToolbar';
+} from '../types';
 
 type ImportProductsResult = {
   errorMessage?: string;

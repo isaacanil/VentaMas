@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import { fbDeleteClient } from '@/firebase/client/fbDeleteClient';
-import { fbDeleteProduct } from '@/firebase/products/fbDeleteproduct';
+import { fbDeleteProduct } from '@/firebase/products/fbDeleteProduct';
 
 interface AlertState {
   deleteProduct: {

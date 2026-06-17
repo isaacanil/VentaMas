@@ -49,6 +49,12 @@ const toCleanString = (value) => {
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 
+const hasSelectedPhysicalStock = (product) =>
+  Boolean(toCleanString(product?.productStockId) && toCleanString(product?.batchId));
+
+const shouldTrackProductInventory = (product) =>
+  Boolean(product?.trackInventory) || hasSelectedPhysicalStock(product);
+
 const stripAccents = (value) =>
   String(value || '')
     .normalize('NFD')
@@ -563,7 +569,7 @@ export async function createPendingInvoice({
           id: p.id,
           name: p.name,
           amountToBuy: p.amountToBuy,
-          trackInventory: !!p.trackInventory,
+          trackInventory: shouldTrackProductInventory(p),
           productStockId: p.productStockId,
           batchId: p.batchId,
         }))

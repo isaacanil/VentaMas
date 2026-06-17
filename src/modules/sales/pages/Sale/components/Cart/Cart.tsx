@@ -1,10 +1,10 @@
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { ClientControl } from '@/modules/contacts/components/ClientControl/ClienteControl';
+import { ClientControl } from '@/modules/contacts/public';
 
 import InvoiceSummary from './components/InvoiceSummary/InvoiceSummary';
-import { ProductsList } from './components/ProductsList/ProductsLit';
+import { ProductsList } from './components/ProductsList/ProductsList';
 
 interface CartStateShape {
   cart?: {

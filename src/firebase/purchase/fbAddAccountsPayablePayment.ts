@@ -1,7 +1,5 @@
-import { httpsCallable } from 'firebase/functions';
-
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 import type {
   AccountsPayablePayment,
   PaymentMethodEntry,
@@ -42,6 +40,23 @@ export interface AddAccountsPayablePaymentResult {
   payment?: AccountsPayablePayment | null;
 }
 
+type AddAccountsPayablePaymentPayload = {
+  businessId: string;
+  purchaseId: string;
+  vendorBillId?: string | null;
+  occurredAt: number;
+  nextPaymentAt?: number | null;
+  idempotencyKey: string;
+  note?: string | null;
+  paymentMethods: PaymentMethodEntry[];
+  sessionToken?: string;
+};
+
+const addSupplierPaymentCallable = createFirebaseCallable<
+  AddAccountsPayablePaymentPayload,
+  AddAccountsPayablePaymentResult
+>('addSupplierPayment');
+
 export const fbAddAccountsPayablePayment = async (
   user: UserIdentity | null | undefined,
   input: AddAccountsPayablePaymentInput,
@@ -63,22 +78,7 @@ export const fbAddAccountsPayablePayment = async (
   }
 
   const { sessionToken } = getStoredSession();
-  const callable = httpsCallable<
-    {
-      businessId: string;
-      purchaseId: string;
-      vendorBillId?: string | null;
-      occurredAt: number;
-      nextPaymentAt?: number | null;
-      idempotencyKey: string;
-      note?: string | null;
-      paymentMethods: PaymentMethodEntry[];
-      sessionToken?: string;
-    },
-    AddAccountsPayablePaymentResult
-  >(functions, 'addSupplierPayment');
-
-  const response = await callable({
+  const result = await addSupplierPaymentCallable({
     businessId,
     purchaseId,
     vendorBillId: toCleanString(input.vendorBillId),
@@ -92,9 +92,9 @@ export const fbAddAccountsPayablePayment = async (
     ...(sessionToken ? { sessionToken } : {}),
   });
 
-  if (!response.data?.ok) {
+  if (!result?.ok) {
     throw new Error('No se pudo registrar el pago al proveedor.');
   }
 
-  return response.data;
+  return result;
 };

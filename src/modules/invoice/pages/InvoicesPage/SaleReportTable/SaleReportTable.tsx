@@ -36,7 +36,7 @@ import {
   resolveElectronicTaxReceiptSnapshot,
   resolveElectronicTaxReceiptStatusLabel,
   resolveFiscalDocumentNumber,
-} from '@/utils/invoice/electronicTaxReceipt';
+} from '@/modules/invoice/utils/electronicTaxReceipt';
 import { isProgrammaticLetterPdfTemplate } from '@/utils/invoice/template';
 import { getProductsTax, getTotalItems } from '@/utils/pricing';
 import { Invoice } from '@/modules/invoice/components/Invoice/components/Invoice/Invoice';

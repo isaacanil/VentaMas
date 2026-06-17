@@ -26,7 +26,7 @@ import {
   sortUserListRows,
   STATUS_FILTER_OPTIONS,
 } from './utils/userList';
-import { createUserListColumns } from './utils/userListTable';
+import { createUserListColumns } from './components/UserListColumns';
 
 const {
   SETTING_TERM: { USERS, USERS_ACTIVITY_DETAIL },

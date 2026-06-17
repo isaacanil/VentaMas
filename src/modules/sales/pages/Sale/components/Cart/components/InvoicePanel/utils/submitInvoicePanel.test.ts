@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { InvoiceProcessParams } from '@/services/invoice/types';
 import { validateInvoiceSubmissionGuards } from './validateInvoiceSubmissionGuards';
 import { submitInvoicePanel } from './submitInvoicePanel';
 
@@ -21,7 +22,7 @@ vi.mock('@/features/productStock/productStockSimpleSlice', () => ({
   })),
 }));
 
-vi.mock('@/notification/cashCountNotification/cashCountNotificacion', () => ({
+vi.mock('@/features/UserNotification/cashCountNotification', () => ({
   getCashCountStrategy: vi.fn(() => ({
     handleConfirm: vi.fn(),
   })),
@@ -173,6 +174,198 @@ describe('submitInvoicePanel', () => {
         ncfType: 'CONSUMIDOR FINAL',
       }),
     );
+  });
+
+  it('reporta los estados de progreso durante el submit de venta', async () => {
+    const args = baseArgs();
+    args.business = {
+      id: 'business-1',
+      features: {
+        fiscal: {
+          electronicModelEnabled: true,
+          electronicTransportEnabled: true,
+        },
+      },
+    };
+    args.runInvoice = vi.fn(async (params: InvoiceProcessParams) => {
+      params.onProgress?.('registering-sale');
+      params.onProgress?.('confirming-invoice');
+      return {
+        invoice: { id: 'invoice-1', products: [] },
+        status: 'committed',
+      };
+    });
+
+    await submitInvoicePanel(args as never);
+
+    expect(args.setLoading).toHaveBeenCalledWith({
+      status: true,
+      message: 'Validando venta',
+    });
+    expect(args.setLoading).toHaveBeenCalledWith({
+      status: true,
+      message: 'Registrando venta',
+    });
+    expect(args.setLoading).toHaveBeenCalledWith({
+      status: true,
+      message: 'Confirmando factura',
+    });
+    expect(args.setLoading).toHaveBeenCalledWith({
+      status: true,
+      message: 'Preparando comprobante/impresión',
+    });
+  });
+
+  it('mantiene el carrito abierto cuando la factura queda pending', async () => {
+    const args = baseArgs();
+    const pendingInvoice = { id: 'invoice-pending', products: [] };
+    args.business = {
+      id: 'business-1',
+      features: {
+        fiscal: {
+          electronicModelEnabled: true,
+          electronicTransportEnabled: true,
+        },
+      },
+    };
+    args.runInvoice = vi.fn().mockResolvedValue({
+      invoice: pendingInvoice,
+      status: 'pending',
+    });
+
+    await submitInvoicePanel(args as never);
+
+    expect(args.setInvoice).toHaveBeenCalledWith(null);
+    expect(args.handleAfterPrint).not.toHaveBeenCalled();
+    expect(args.handleInvoicePrinting).not.toHaveBeenCalled();
+    expect(notificationMock.info).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Factura pendiente de confirmación',
+      }),
+    );
+    expect(args.setLoading).toHaveBeenLastCalledWith({
+      status: false,
+      message: '',
+    });
+  });
+
+  it('normaliza la CxC efectiva antes de procesar una venta a credito', async () => {
+    const args = baseArgs();
+    args.business = {
+      id: 'business-1',
+      features: {
+        fiscal: {
+          electronicModelEnabled: true,
+          electronicTransportEnabled: true,
+        },
+      },
+    };
+    args.cart = {
+      ...args.cart,
+      isAddedToReceivables: true,
+      payment: { value: 100 },
+      totalPurchase: { value: 300 },
+    };
+    args.accountsReceivable = {
+      paymentFrequency: 'weekly',
+      totalInstallments: 4,
+      paymentDate: 1700000000000,
+      comments: 'venta a credito',
+    };
+
+    await submitInvoicePanel(args as never);
+
+    expect(args.runInvoice).toHaveBeenCalledWith(
+      expect.objectContaining({
+        accountsReceivable: expect.objectContaining({
+          paymentFrequency: 'weekly',
+          totalInstallments: 4,
+          paymentDate: 1700000000000,
+          comments: 'venta a credito',
+          installmentAmount: 50,
+          totalReceivable: 200,
+        }),
+      }),
+    );
+  });
+
+  it('emite trazas sanitizadas del submit sin exponer carrito, factura ni idempotencyKey', async () => {
+    const args = baseArgs();
+    args.business = {
+      id: 'business-1',
+      features: {
+        fiscal: {
+          electronicModelEnabled: true,
+          electronicTransportEnabled: true,
+        },
+      },
+    };
+    args.runInvoice = vi.fn(async (params: InvoiceProcessParams) => {
+      params.onPhaseTrace?.({
+        phase: 'createInvoiceV2',
+        status: 'started',
+        attempt: 'primary',
+      });
+      params.onPhaseTrace?.({
+        phase: 'createInvoiceV2',
+        status: 'completed',
+        attempt: 'primary',
+        invoiceStatus: 'pending',
+        reused: false,
+      });
+      params.onPhaseTrace?.({
+        phase: 'waitForInvoiceResult',
+        status: 'started',
+        attempt: 'primary',
+        reused: false,
+      });
+      params.onPhaseTrace?.({
+        phase: 'waitForInvoiceResult',
+        status: 'completed',
+        attempt: 'primary',
+        hasInvoice: true,
+        invoiceStatus: 'committed',
+        reused: false,
+      });
+
+      return {
+        invoice: { id: 'invoice-1', products: [] },
+        invoiceId: 'invoice-1',
+        invoiceMeta: { status: 'committed' },
+        canonical: null,
+        status: 'committed',
+        reused: false,
+        idempotencyKey: 'cart:cart-1',
+        attempt: 'primary',
+      };
+    });
+    const consoleInfo = vi
+      .spyOn(console, 'info')
+      .mockImplementation(() => undefined);
+
+    try {
+      await submitInvoicePanel(args as never);
+
+      expect(args.runInvoice).toHaveBeenCalledWith(
+        expect.objectContaining({
+          onPhaseTrace: expect.any(Function),
+        }),
+      );
+
+      const serializedLogs = JSON.stringify(consoleInfo.mock.calls);
+      expect(serializedLogs).toContain('inicio');
+      expect(serializedLogs).toContain('validaciones previas');
+      expect(serializedLogs).toContain('runInvoice/createInvoiceV2');
+      expect(serializedLogs).toContain('waitForInvoiceResult');
+      expect(serializedLogs).toContain('impresion');
+      expect(serializedLogs).toContain('cleanup');
+      expect(serializedLogs).not.toContain('cart-1');
+      expect(serializedLogs).not.toContain('cart:cart-1');
+      expect(serializedLogs).not.toContain('invoice-1');
+      expect(serializedLogs).not.toContain('product-1');
+    } finally {
+      consoleInfo.mockRestore();
+    }
   });
 
   it('bloquea consumidor final desde RD$250,000 sin cliente identificado', async () => {

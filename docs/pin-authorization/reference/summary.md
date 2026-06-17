@@ -1,5 +1,8 @@
 # Sistema de Autorización con PIN - Resumen de Implementación
 
+> Nota 2026-06-15: las rutas listadas abajo fueron actualizadas al árbol actual
+> basado en `src/modules`, `src/components`, `src/hooks` y `src/firebase`.
+
 ## 📘 Descripción
 
 Implementar un sistema de autorización híbrido que permite a usuarios autorizar acciones críticas con un PIN de 6 dígitos (Facturación y Cuentas por Cobrar), manteniendo fallback de contraseña y auditoría completa.
@@ -12,24 +15,24 @@ Implementar un sistema de autorización híbrido que permite a usuarios autoriza
 
 #### Pantalla de Configuración
 
-- [src/views/pages/setting/subPage/AuthorizationConfig/AuthorizationConfig.jsx](../src/views/pages/setting/subPage/AuthorizationConfig/AuthorizationConfig.jsx)
+- `src/modules/settings/pages/setting/subPage/AuthorizationConfig/AuthorizationConfig.tsx`
   - Pantalla principal de configuración de PINs
   - Lista de usuarios con estado de PIN
   - Generación y regeneración de PINs
   - Estadísticas de uso
 
-- [src/views/pages/setting/subPage/AuthorizationConfig/components/GeneratePinModal.jsx](../src/views/pages/setting/subPage/AuthorizationConfig/components/GeneratePinModal.jsx)
+- `src/modules/authorizations/components/pinManagement/GeneratePinModal.tsx`
   - Modal para generar/regenerar PINs
   - Selección de módulos habilitados
 
-- [src/views/pages/setting/subPage/AuthorizationConfig/components/PinDetailsModal.jsx](../src/views/pages/setting/subPage/AuthorizationConfig/components/PinDetailsModal.jsx)
+- `src/modules/authorizations/components/pinManagement/PinDetailsModal.tsx`
   - Modal que muestra el PIN generado (una sola vez)
   - Opción de imprimir PIN
   - Información de expiración
 
 #### Modal de Autorización
 
-- [src/views/component/modals/PinAuthorizationModal/PinAuthorizationModal.jsx](../src/views/component/modals/PinAuthorizationModal/PinAuthorizationModal.jsx)
+- `src/modules/authorizations/components/PinAuthorizationModal/PinAuthorizationModal.tsx`
   - Modal reutilizable para solicitar autorización con PIN
   - Fallback a contraseña completa
   - Validación en tiempo real
@@ -37,7 +40,7 @@ Implementar un sistema de autorización híbrido que permite a usuarios autoriza
 
 #### Hook Personalizado
 
-- [src/hooks/useAuthorizationPin.js](../src/hooks/useAuthorizationPin.js)
+- `src/modules/authorizations/hooks/useAuthorizationPin.ts`
   - Hook para simplificar la integración de autorización con PIN
   - Manejo de estado del modal
   - Callbacks de autorización
@@ -46,7 +49,7 @@ Implementar un sistema de autorización híbrido que permite a usuarios autoriza
 
 #### Servicios
 
-- [src/firebase/authorization/pinAuth.js](../src/firebase/authorization/pinAuth.js)
+- `src/firebase/authorization/pinAuth.ts`
   - `fbGenerateUserPin()` - Genera PIN para un usuario
   - `fbDeactivateUserPin()` - Desactiva PIN de un usuario
   - `fbValidateUserPin()` - Valida PIN con usuario
@@ -71,21 +74,21 @@ Implementar un sistema de autorización híbrido que permite a usuarios autoriza
 
 ### Rutas y Navegación
 
-- [src/routes/routesName.js](../src/routes/routesName.js)
+- [src/router/routes/routesName.ts](../../../src/router/routes/routesName.ts)
   - Agregado `AUTHORIZATION_CONFIG` a `SETTING_TERM`
   - Agregado `AUTHORIZATION_CONFIG` a `AUTHORIZATIONS_TERM`
   - Agregado `GENERAL_CONFIG_AUTHORIZATION`
 
-- [src/routes/paths/Setting.jsx](../src/routes/paths/Setting.jsx)
+- [src/router/routes/paths/Setting.tsx](../../../src/router/routes/paths/Setting.tsx)
   - Importado componente `AuthorizationConfig`
   - Agregada ruta para configuración de autorización
 
-- [src/views/pages/setting/SettingData.jsx](../src/views/pages/setting/SettingData.jsx)
+- [src/modules/settings/pages/setting/SettingData.tsx](../../../src/modules/settings/pages/setting/SettingData.tsx)
   - Agregada opción "Configuración de Autorización" al menú de settings
 
 ### Integración con Módulos Existentes
 
-- [src/views/pages/Authorizations/InvoiceEditAuthorizations.jsx](../src/views/pages/Authorizations/InvoiceEditAuthorizations.jsx)
+- `src/modules/authorizations/pages/Authorizations/components/AuthorizationRequests/AuthorizationRequests.tsx`
   - Integrado `PinAuthorizationModal`
   - Agregado hook `useAuthorizationPin`
   - Los admins ahora pueden aprobar con PIN
@@ -273,8 +276,7 @@ businesses/{businessID}/pinAuthLogs/{logId}/
 ### Integración Básica
 
 ```jsx
-import { useAuthorizationPin } from '../hooks/useAuthorizationPin';
-import { PinAuthorizationModal } from '../views/component/modals/PinAuthorizationModal/PinAuthorizationModal';
+import { PinAuthorizationModal, useAuthorizationPin } from '@/modules/authorizations/public';
 
 function MiComponente() {
   const { showModal, modalProps } = useAuthorizationPin({
@@ -309,7 +311,7 @@ function MiComponente() {
 Actualmente la validación se hace client-side con servicios Firebase. Para mayor seguridad, se puede implementar:
 
 ```
-functions/src/versions/v2/auth/pin/
+functions/src/app/versions/v2/auth/pin/
   - validatePin.controller.js
   - generatePin.controller.js
   - deactivatePin.controller.js
@@ -375,9 +377,10 @@ Esto agregaría:
 
 ## Recursos relacionados
 
-- `src/views/pages/setting/subPage/AuthorizationConfig/*`
-- `src/views/component/modals/PinAuthorizationModal/*`
-- `src/firebase/authorization/pinAuth.js`
+- `src/modules/settings/pages/setting/subPage/AuthorizationConfig/*`
+- `src/modules/authorizations/components/pinManagement/*`
+- `src/modules/authorizations/components/PinAuthorizationModal/*`
+- `src/firebase/authorization/pinAuth.ts`
 - `docs/pin-authorization/how-to/integration.md`
 - `docs/pin-authorization/how-to/testing-guide.md`
 

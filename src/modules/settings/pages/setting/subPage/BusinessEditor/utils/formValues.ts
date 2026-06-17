@@ -1,3 +1,9 @@
+import {
+  DEFAULT_BUSINESS_COUNTRY_CODE,
+  normalizeBusinessCountryCode,
+  normalizeBusinessSubdivisionForStorage,
+} from '@/shared/location/businessLocations';
+
 const FORM_FIELDS = [
   'businessType',
   'name',
@@ -43,7 +49,7 @@ const DEFAULT_FORM_VALUES: BusinessFormValues = {
   rnc: '',
   email: '',
   tel: '',
-  country: '',
+  country: DEFAULT_BUSINESS_COUNTRY_CODE,
   province: '',
   address: '',
   logo: '',
@@ -66,8 +72,11 @@ const mapBusinessDataToFormValues = (business?: BusinessProfileData | null) =>
     rnc: business?.rnc,
     email: business?.email,
     tel: business?.tel,
-    country: business?.country,
-    province: business?.province,
+    country: normalizeBusinessCountryCode(business?.country),
+    province: normalizeBusinessSubdivisionForStorage(
+      business?.country,
+      business?.province,
+    ),
     address: business?.address,
     logo: business?.logoUrl || business?.logo,
   });

@@ -136,7 +136,7 @@ No empezar por snapshots grandes ni por componentes puramente visuales.
   - caja en closing
   - producto sin seleccion fisica
   - error consultando inventario
-- [x] [src/utils/inventory/productStockSelection.ts](c:\Dev\VentaMas\src\utils\inventory\productStockSelection.ts)
+- [x] [src/modules/sales/pages/Sale/utils/productStockSelection.ts](c:\Dev\VentaMas\src\modules\sales\pages\Sale\utils\productStockSelection.ts)
   - conteo de ubicaciones
   - conteo de stock disponible
   - mensaje de seleccion faltante
@@ -145,7 +145,7 @@ No empezar por snapshots grandes ni por componentes puramente visuales.
 
 ### Accounts Receivable
 
-- [x] [src/utils/accountsReceivable/generateInstallments.ts](c:\Dev\VentaMas\src\utils\accountsReceivable\generateInstallments.ts)
+- [x] [src/domain/accountsReceivable/generateInstallments.ts](c:\Dev\VentaMas\src\domain\accountsReceivable\generateInstallments.ts)
   - cuotas iguales
   - ajuste de redondeo en ultima cuota
   - fechas segun frecuencia
@@ -154,7 +154,7 @@ No empezar por snapshots grandes ni por componentes puramente visuales.
   - disponible
   - excedido
   - nulos y defaults
-- [ ] [src/utils/accountsReceivable/getMaxInstallments.ts](c:\Dev\VentaMas\src\utils\accountsReceivable\getMaxInstallments.ts)
+- [x] [src/domain/accountsReceivable/getMaxInstallments.ts](c:\Dev\VentaMas\src\domain\accountsReceivable\getMaxInstallments.ts)
 - [ ] [src/utils/sorts/sortAccountsReceivable.ts](c:\Dev\VentaMas\src\utils\sorts\sortAccountsReceivable.ts)
 
 ### Suscripciones, Permisos y Rutas
@@ -345,7 +345,7 @@ Inventario top-level consolidado en [2026-03-17-testing-module-audit.md](c:\Dev\
 - [ ] [src/hooks/useInsuranceEnabled.ts](c:\Dev\VentaMas\src\hooks\useInsuranceEnabled.ts)
 - [ ] [src/hooks/barcode/useBarcodeScanner.tsx](c:\Dev\VentaMas\src\hooks\barcode\useBarcodeScanner.tsx)
 - [ ] [src/hooks/cashCount/useInvoicesForCashCount.tsx](c:\Dev\VentaMas\src\hooks\cashCount\useInvoicesForCashCount.tsx)
-- [ ] [src/hooks/products/useGetProductsWithBatch.ts](c:\Dev\VentaMas\src\hooks\products\useGetProductsWithBatch.ts)
+- [ ] [src/modules/inventory/pages/Inventory/components/Warehouse/forms/ProductStockForm/hooks/useGetProductsWithBatch.ts](c:\Dev\VentaMas\src\modules\inventory\pages\Inventory\components\Warehouse\forms\ProductStockForm\hooks\useGetProductsWithBatch.ts)
 - [ ] [src/hooks/routes/useNavigationTracker.ts](c:\Dev\VentaMas\src\hooks\routes\useNavigationTracker.ts)
 
 ### Modulos De Functions Aun No Mapeados Explicitamente
@@ -407,7 +407,7 @@ Inventario top-level consolidado en [2026-03-17-testing-module-audit.md](c:\Dev\
 - [x] [src/utils/pricing.ts](c:\Dev\VentaMas\src\utils\pricing.ts)
 - [x] [src/utils/accounting/lineMonetary.ts](c:\Dev\VentaMas\src\utils\accounting\lineMonetary.ts)
 - [x] [src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/utils/validateInvoiceSubmissionGuards.ts](c:\Dev\VentaMas\src\modules\sales\pages\Sale\components\Cart\components\InvoicePanel\utils\validateInvoiceSubmissionGuards.ts)
-- [x] [src/utils/accountsReceivable/generateInstallments.ts](c:\Dev\VentaMas\src\utils\accountsReceivable\generateInstallments.ts)
+- [x] [src/domain/accountsReceivable/generateInstallments.ts](c:\Dev\VentaMas\src\domain\accountsReceivable\generateInstallments.ts)
 - [x] [src/modules/settings/pages/subscription/subscription.utils.ts](c:\Dev\VentaMas\src\modules\settings\pages\subscription\subscription.utils.ts)
 - [x] [functions/src/app/versions/v2/billing/services/usage.service.js](c:\Dev\VentaMas\functions\src\app\versions\v2\billing\services\usage.service.js)
 - [x] [functions/src/app/versions/v2/auth/utils/membershipContext.util.js](c:\Dev\VentaMas\functions\src\app\versions\v2\auth\utils\membershipContext.util.js)

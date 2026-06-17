@@ -7,6 +7,92 @@ import type {
 } from '@/types/taxReceipt';
 import { TAX_RECEIPT_NUMERIC_FIELDS } from '@/types/taxReceipt';
 
+export interface ComprobanteOption {
+  value: string;
+  label: string;
+  description: string;
+}
+
+export type TaxReceiptAvailability = {
+  receipt: TaxReceiptItem | null;
+  depleted: boolean;
+};
+
+export const comprobantesOptions: ComprobanteOption[] = [
+  {
+    value: '01',
+    label: 'Factura de Crédito Fiscal',
+    description:
+      'Registra transacciones comerciales de bienes/servicios. Permite sustentar gastos y créditos de ISR o ITBIS.',
+  },
+  {
+    value: '02',
+    label: 'Factura de Consumo',
+    description:
+      'Acredita transferencias de bienes o servicios a consumidores finales. Sin efectos tributarios.',
+  },
+  {
+    value: '03',
+    label: 'Nota de Débito',
+    description:
+      'Documento emitido para recuperar costos como intereses, fletes, tras emitir el comprobante fiscal.',
+  },
+  {
+    value: '04',
+    label: 'Nota de Crédito',
+    description:
+      'Documento emitido para anular operaciones, efectuar devoluciones, conceder descuentos o corregir errores.',
+  },
+  {
+    value: '11',
+    label: 'Comprobante de Compra',
+    description:
+      'Emitido al adquirir bienes o servicios de personas no registradas como contribuyentes.',
+  },
+  {
+    value: '12',
+    label: 'Comprobante de Registro Único de Ingresos',
+    description:
+      'Resumen de transacciones diarias a consumidores finales, generalmente exentos de ITBIS.',
+  },
+  {
+    value: '13',
+    label: 'Comprobante para Gastos Menores',
+    description:
+      'Para sustentar pagos menores relacionados con actividades laborales, como transporte o consumibles.',
+  },
+  {
+    value: '14',
+    label: 'Comprobante para Regímenes Especiales',
+    description:
+      'Utilizado en ventas o servicios exentos a personas bajo regímenes tributarios especiales.',
+  },
+  {
+    value: '15',
+    label: 'Comprobante Gubernamental',
+    description:
+      'Utilizado para facturar bienes/servicios al Gobierno Central y entidades relacionadas.',
+  },
+  {
+    value: '16',
+    label: 'Comprobante para Exportaciones',
+    description:
+      'Usado para reportar ventas de bienes fuera del territorio nacional por exportadores y zonas francas.',
+  },
+  {
+    value: '17',
+    label: 'Comprobante para Pagos al Exterior',
+    description:
+      'Emitido para pagos de rentas gravadas a personas no residentes fiscales, incluye retención del ISR.',
+  },
+  {
+    value: 'e-CF',
+    label: 'Comprobante Fiscal Electrónico',
+    description:
+      'Documento digital que acredita transferencias de bienes o prestación de servicios cumpliendo normativa.',
+  },
+];
+
 const isTaxReceiptDocument = (
   item: TaxReceiptItem,
 ): item is TaxReceiptDocument =>
@@ -51,6 +137,48 @@ const normalizeDocumentFormat = (
 export const getTaxReceiptData = (item: TaxReceiptItem): TaxReceiptData => {
   if (isTaxReceiptDocument(item)) return hydrateTaxReceiptData(item.data);
   return hydrateTaxReceiptData(item);
+};
+
+const resolveReceiptData = (
+  item: TaxReceiptItem | null | undefined,
+): TaxReceiptData | null => {
+  if (!item || typeof item !== 'object') return null;
+  if ('data' in item) return item.data ?? null;
+  return item;
+};
+
+export const getTaxReceiptAvailability = (
+  receipts: TaxReceiptItem[] | null | undefined,
+  receiptName: string | null | undefined,
+): TaxReceiptAvailability => {
+  if (!Array.isArray(receipts) || !receiptName) {
+    return {
+      receipt: null,
+      depleted: true,
+    };
+  }
+
+  const receipt =
+    receipts.find((item) => resolveReceiptData(item)?.name === receiptName) ||
+    null;
+  if (!receipt) {
+    return {
+      receipt: null,
+      depleted: true,
+    };
+  }
+
+  const receiptData = resolveReceiptData(receipt);
+  const quantity = Number(receiptData?.quantity);
+  const increase = Number(receiptData?.increase);
+  const normalizedIncrease =
+    Number.isFinite(increase) && increase > 0 ? increase : 1;
+  const normalizedQuantity = Number.isFinite(quantity) ? quantity : 0;
+
+  return {
+    receipt,
+    depleted: normalizedQuantity < normalizedIncrease,
+  };
 };
 
 export const normalizeTaxReceiptData = (

@@ -18,9 +18,9 @@ import {
 import type { SyntheticEvent } from 'react';
 import styled from 'styled-components';
 
-import { imgFailed } from '@/components/modals/ProductForm/ImageManager/ImageManager';
-import type { BrandOption } from '@/components/modals/ProductForm/utils/brandSelection';
-import { matchesSelectOptionText } from '@/components/modals/ProductForm/utils/selectOptionText';
+import type { BrandOption } from '@/domain/products/brandSelection';
+import { imgFailed } from '@/domain/products/productAssets';
+import { matchesSelectOptionText } from '@/domain/products/selectOptionText';
 import type { CategoryDocument } from '@/firebase/categories/types';
 import {
   DividerLabel,

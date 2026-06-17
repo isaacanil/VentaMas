@@ -1,4 +1,3 @@
-import { AlertDialog, Avatar, Button, Chip, Dropdown, Separator } from '@heroui/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCreditCard,
@@ -9,6 +8,14 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
+import {
+  VmAlertDialog,
+  VmAvatar,
+  VmButton,
+  VmChip,
+  VmDropdown,
+  VmSeparator,
+} from '@/components/heroui';
 import { getRoleLabelById } from '@/abilities/roles';
 import { logout } from '@/features/auth/userSlice';
 import { fbSignOut } from '@/firebase/Auth/fbAuthV2/fbSignOut';
@@ -134,42 +141,42 @@ export const SessionInfoDropdown = ({
 
   return (
     <>
-      <Dropdown isOpen={isOpen} onOpenChange={setIsOpen}>
-        <Dropdown.Trigger
+      <VmDropdown isOpen={isOpen} onOpenChange={setIsOpen}>
+        <VmDropdown.Trigger
           aria-label={`Opciones de sesión de ${fullName}`}
           className="rounded-full bg-transparent p-0 outline-none"
         >
           <CombinedPill userName={userName} fullName={fullName} />
-        </Dropdown.Trigger>
+        </VmDropdown.Trigger>
 
-        <Dropdown.Popover
+        <VmDropdown.Popover
           placement="bottom end"
           className="z-[450] w-80 overflow-hidden p-0"
         >
           <div className="flex items-center gap-3 p-3">
-            <Avatar size="md" variant="soft">
-              <Avatar.Fallback>{initial}</Avatar.Fallback>
-            </Avatar>
+            <VmAvatar size="md" variant="soft">
+              <VmAvatar.Fallback>{initial}</VmAvatar.Fallback>
+            </VmAvatar>
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-semibold">
                 {displayName}
               </div>
               <div className="mt-1">
-                <Chip size="sm" variant="soft" color="accent">
-                  <Chip.Label>{role}</Chip.Label>
-                </Chip>
+                <VmChip size="sm" variant="soft" color="accent">
+                  <VmChip.Label>{role}</VmChip.Label>
+                </VmChip>
               </div>
             </div>
           </div>
-          <Separator />
+          <VmSeparator />
 
-          <Dropdown.Menu
+          <VmDropdown.Menu
             aria-label="Opciones de sesión"
             onAction={handleMenuAction}
             className="p-1"
           >
-            <Dropdown.Section>
-              <Dropdown.Item id="settings" textValue="Configuración">
+            <VmDropdown.Section>
+              <VmDropdown.Item id="settings" textValue="Configuración">
                 <span
                   data-slot="label"
                   className="inline-flex items-center gap-2"
@@ -177,10 +184,10 @@ export const SessionInfoDropdown = ({
                   <FontAwesomeIcon icon={faGear} fixedWidth />
                   Configuración
                 </span>
-              </Dropdown.Item>
+              </VmDropdown.Item>
 
               {canManagePayments && (
-                <Dropdown.Item
+                <VmDropdown.Item
                   id="subscription"
                   textValue="Gestionar suscripción"
                 >
@@ -191,12 +198,12 @@ export const SessionInfoDropdown = ({
                     <FontAwesomeIcon icon={faCreditCard} fixedWidth />
                     Gestionar suscripción
                   </span>
-                </Dropdown.Item>
+                </VmDropdown.Item>
               )}
-            </Dropdown.Section>
-            <Separator />
-            <Dropdown.Section>
-              <Dropdown.Item
+            </VmDropdown.Section>
+            <VmSeparator />
+            <VmDropdown.Section>
+              <VmDropdown.Item
                 id="logout"
                 variant="danger"
                 textValue="Cerrar sesión"
@@ -208,13 +215,13 @@ export const SessionInfoDropdown = ({
                   <FontAwesomeIcon icon={faRightToBracket} fixedWidth />
                   Cerrar sesión
                 </span>
-              </Dropdown.Item>
-            </Dropdown.Section>
-          </Dropdown.Menu>
-        </Dropdown.Popover>
-      </Dropdown>
+              </VmDropdown.Item>
+            </VmDropdown.Section>
+          </VmDropdown.Menu>
+        </VmDropdown.Popover>
+      </VmDropdown>
 
-      <AlertDialog.Backdrop
+      <VmAlertDialog.Backdrop
         isOpen={confirmOpen}
         onOpenChange={(open) => {
           if (!isLoggingOut) setConfirmOpen(open);
@@ -223,33 +230,33 @@ export const SessionInfoDropdown = ({
         isDismissable={!isLoggingOut}
         isKeyboardDismissDisabled={isLoggingOut}
       >
-        <AlertDialog.Container>
-          <AlertDialog.Dialog className="sm:max-w-[380px]">
-            <AlertDialog.Header>
-              <AlertDialog.Icon status="danger" />
-              <AlertDialog.Heading>¿Cerrar sesión?</AlertDialog.Heading>
-            </AlertDialog.Header>
-            <AlertDialog.Body>
+        <VmAlertDialog.Container>
+          <VmAlertDialog.Dialog className="sm:max-w-[380px]">
+            <VmAlertDialog.Header>
+              <VmAlertDialog.Icon status="danger" />
+              <VmAlertDialog.Heading>¿Cerrar sesión?</VmAlertDialog.Heading>
+            </VmAlertDialog.Header>
+            <VmAlertDialog.Body>
               <p>
                 Tu sesión actual será cerrada y tendrás que iniciar sesión
                 nuevamente.
               </p>
-            </AlertDialog.Body>
-            <AlertDialog.Footer>
-              <Button slot="close" variant="tertiary" isDisabled={isLoggingOut}>
+            </VmAlertDialog.Body>
+            <VmAlertDialog.Footer>
+              <VmButton slot="close" variant="tertiary" isDisabled={isLoggingOut}>
                 Cancelar
-              </Button>
-              <Button
+              </VmButton>
+              <VmButton
                 variant="danger"
                 isDisabled={isLoggingOut}
                 onPress={handleLogout}
               >
                 {isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}
-              </Button>
-            </AlertDialog.Footer>
-          </AlertDialog.Dialog>
-        </AlertDialog.Container>
-      </AlertDialog.Backdrop>
+              </VmButton>
+            </VmAlertDialog.Footer>
+          </VmAlertDialog.Dialog>
+        </VmAlertDialog.Container>
+      </VmAlertDialog.Backdrop>
     </>
   );
 };

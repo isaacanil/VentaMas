@@ -1,14 +1,12 @@
+import { normalizeSearchText } from '@/utils/searchText';
+
 import type { SettingItem } from '../SettingData';
 
 export type SettingSearchableOption = {
   searchTokens?: string[];
 };
 
-export const normalizeSettingSearchText = (value: unknown = '') =>
-  String(value)
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
+export const normalizeSettingSearchText = normalizeSearchText;
 
 export const getSettingItemKey = (item: Pick<SettingItem, 'route' | 'title'>) =>
   item.route || item.title;

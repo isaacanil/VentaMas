@@ -1,14 +1,11 @@
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
 
+import { loadAuthorizationsManagerRoute } from '@/modules/authorizations/public';
 import { ROUTE_STATUS } from '@/router/routes/routeMeta';
 import ROUTES_NAME from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/types/routeTypes';
 
-const AuthorizationsManager = lazy(() =>
-  import('@/modules/authorizations/pages/Authorizations/AuthorizationsManager').then(
-    (module) => ({ default: module.AuthorizationsManager }),
-  ),
-);
+const AuthorizationsManager = lazy(loadAuthorizationsManagerRoute);
 
 const { AUTHORIZATIONS_LIST } = ROUTES_NAME.AUTHORIZATIONS_TERM;
 

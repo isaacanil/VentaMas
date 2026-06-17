@@ -17,15 +17,19 @@ import {
   buildAccountsPayablePaymentVoidCashMovements,
 } from '../../../versions/v2/accounting/utils/cashMovement.util.js';
 import {
-  applyOverduePaymentState,
-  buildPaymentState,
-} from '../../../versions/v2/accounting/utils/paymentState.util.js';
-import {
+  THRESHOLD,
+  asRecord,
+  buildPurchasePaymentState,
   normalizePaymentMethodsForAggregation,
   resolvePaymentAmount,
   resolvePaymentRecordCashAccountId,
   resolvePaymentRecordCashCountId,
+  resolvePurchaseDocumentTotal,
   resolvePurchaseSupplierId,
+  roundToTwoDecimals,
+  safeNumber,
+  toCleanString,
+  toMillis,
 } from './payablePayments.shared.js';
 import {
   buildCanonicalVendorBillIdFromPurchaseId,
@@ -37,77 +41,7 @@ export { buildVendorBillProjection } from './vendorBill.shared.js';
 const REGION = 'us-central1';
 const MEMORY = '256MiB';
 const NODE_VERSION = '20';
-const THRESHOLD = 0.01;
 const INACTIVE_PAYMENT_STATUSES = new Set(['void', 'draft']);
-
-const asRecord = (value) =>
-  value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-
-const toCleanString = (value) => {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return String(value);
-  }
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
-
-const safeNumber = (value) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-};
-
-const roundToTwoDecimals = (value) =>
-  Math.round((safeNumber(value) || 0) * 100) / 100;
-
-const toMillis = (value) => {
-  if (value == null) return null;
-  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
-  if (typeof value === 'string') {
-    const parsed = Date.parse(value);
-    return Number.isNaN(parsed) ? null : parsed;
-  }
-  if (typeof value?.toMillis === 'function') {
-    const parsed = value.toMillis();
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  if (typeof value?.toDate === 'function') {
-    const dateValue = value.toDate();
-    return dateValue instanceof Date ? dateValue.getTime() : null;
-  }
-  const record = asRecord(value);
-  const seconds =
-    typeof record.seconds === 'number'
-      ? record.seconds
-      : typeof record._seconds === 'number'
-        ? record._seconds
-        : null;
-  const nanoseconds =
-    typeof record.nanoseconds === 'number'
-      ? record.nanoseconds
-      : typeof record._nanoseconds === 'number'
-        ? record._nanoseconds
-        : 0;
-  if (seconds == null) return null;
-  return seconds * 1000 + Math.floor(nanoseconds / 1e6);
-};
-
-const resolvePurchaseDocumentTotal = (purchaseRecord) => {
-  const monetary = asRecord(purchaseRecord.monetary);
-  const documentTotals = asRecord(monetary.documentTotals);
-  const totalFromPaymentState = safeNumber(purchaseRecord.paymentState?.total);
-  const totalFromMonetary = safeNumber(
-    documentTotals.total ?? documentTotals.gross,
-  );
-  const totalFallback =
-    safeNumber(purchaseRecord.totalAmount) ??
-    safeNumber(purchaseRecord.total) ??
-    safeNumber(purchaseRecord.amount);
-
-  return roundToTwoDecimals(
-    totalFromPaymentState ?? totalFromMonetary ?? totalFallback ?? 0,
-  );
-};
 
 const syncVendorBillPaymentState = async ({
   businessId,
@@ -136,41 +70,6 @@ const syncVendorBillPaymentState = async ({
   }
 
   await vendorBillRef.set(vendorBillProjection, { merge: true });
-};
-
-const buildLegacyAwarePaymentState = ({
-  purchaseRecord,
-  total,
-  paid,
-  paymentCount,
-  lastPaymentAt,
-  lastPaymentId,
-  nextPaymentAt,
-}) => {
-  const currentPaymentState = asRecord(purchaseRecord.paymentState);
-  const balance = roundToTwoDecimals(Math.max(total - paid, 0));
-  const hasLegacyReviewState =
-    paymentCount === 0 &&
-    (currentPaymentState.status === 'unknown_legacy' ||
-      currentPaymentState.migratedFromLegacy === true);
-
-  const baseState = buildPaymentState({
-    total,
-    paid,
-    balance,
-    paymentCount,
-    lastPaymentAt,
-    lastPaymentId,
-    nextPaymentAt,
-    requiresReview:
-      hasLegacyReviewState ||
-      (paymentCount === 0 && currentPaymentState.requiresReview === true),
-    migratedFromLegacy:
-      hasLegacyReviewState || currentPaymentState.migratedFromLegacy === true,
-    status: hasLegacyReviewState ? 'unknown_legacy' : undefined,
-  });
-
-  return applyOverduePaymentState(baseState);
 };
 
 const resolvePaymentStatus = (paymentRecord) =>
@@ -486,7 +385,7 @@ const syncPurchasePaymentState = async ({ businessId, purchaseId }) => {
         null
       : null;
 
-  const paymentState = buildLegacyAwarePaymentState({
+  const paymentState = buildPurchasePaymentState({
     purchaseRecord,
     total,
     paid,

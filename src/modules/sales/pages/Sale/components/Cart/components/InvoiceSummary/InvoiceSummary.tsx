@@ -1,5 +1,4 @@
 import { notification, Spin, message } from 'antd';
-import { Button, ButtonGroup, Dropdown, Select, ListBox } from '@heroui/react';
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, {
@@ -42,10 +41,7 @@ import {
   selectTaxReceiptEnabled,
 } from '@/features/taxReceipt/taxReceiptSlice';
 import { useIsOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
-import { useAuthorizationModules } from '@/hooks/useAuthorizationModules';
-import { useAuthorizationPin } from '@/hooks/useAuthorizationPin';
-import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
-import useInsuranceFormComplete from '@/hooks/useInsuranceFormComplete';
+import { useInsuranceEnabled } from '@/modules/insurance/public';
 import type {
   InvoiceBusinessInfo,
   InvoiceData,
@@ -56,16 +52,28 @@ import { hasDeveloperAccess } from '@/utils/access/developerAccess';
 import { requiresInvoiceDiscountPinAuthorization } from '@/utils/access/invoiceDiscountAccess';
 import { validateInvoiceCart } from '@/utils/invoiceValidation';
 import { getTotalDiscount } from '@/utils/pricing';
-import { PinAuthorizationModal } from '@/components/modals/PinAuthorizationModal/PinAuthorizationModal';
-import { Invoice } from '@/modules/invoice/components/Invoice/components/Invoice/Invoice';
+import {
+  PinAuthorizationModal,
+  useAuthorizationModules,
+  useAuthorizationPin,
+} from '@/modules/authorizations/public';
+import { Invoice } from '@/modules/invoice/public';
 import { handleCancelShipping } from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/handleCancelShipping';
 import { CashRegisterAlertModal } from '@/modules/sales/pages/Sale/components/modals/CashRegisterAlertModal';
 import { usePreorderModal } from '@/modules/sales/pages/Sale/components/usePreorderModal';
 import { PreorderModal } from '@/modules/sales/pages/Sale/components/PreorderModal';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber/AnimatedNumber';
 import CustomInput from '@/components/ui/Inputs/CustomInput';
+import {
+  VmButton,
+  VmButtonGroup,
+  VmDropdown,
+  VmListBox,
+  VmSelect,
+} from '@/components/heroui';
 import { useDocumentCurrencyConfig } from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/DocumentCurrencySelector/useDocumentCurrencyConfig';
 
+import useInsuranceFormComplete from './hooks/useInsuranceFormComplete';
 import { useInvoiceSummaryUiState } from './hooks/useInvoiceSummaryUiState';
 import { useLocalStorageBoolean } from './hooks/useLocalStorageBoolean';
 
@@ -892,28 +900,28 @@ const InvoiceSummary = () => {
         )}
         {warningMessage && <WarningPill message={warningMessage} />}
         <TotalLine>
-          <ButtonGroup isDisabled={isSavingPreorder}>
-            <Button
+          <VmButtonGroup isDisabled={isSavingPreorder}>
+            <VmButton
               variant="primary"
               isDisabled={disabled}
               onPress={action}
             >
               {text}
-            </Button>
-            <Dropdown>
-              <Button variant="primary" isIconOnly aria-label="Más opciones">
-                <ButtonGroup.Separator />
+            </VmButton>
+            <VmDropdown>
+              <VmButton variant="primary" isIconOnly aria-label="Más opciones">
+                <VmButtonGroup.Separator />
                 <FontAwesomeIcon icon={faChevronDown} />
-              </Button>
-              <Dropdown.Popover placement="top end">
-                <Dropdown.Menu
+              </VmButton>
+              <VmDropdown.Popover placement="top end">
+                <VmDropdown.Menu
                   onAction={(key) => {
                     if (key === 'document-currency') return;
                     const opt = menuOptions.find((o) => o.text === key);
                     opt?.action();
                   }}
                 >
-                  <Dropdown.Item
+                  <VmDropdown.Item
                     key="document-currency"
                     id="document-currency"
                     textValue="Moneda del documento"
@@ -923,34 +931,34 @@ const InvoiceSummary = () => {
                       onKeyDown={(event) => event.stopPropagation()}
                     >
                       <CurrencyMenuLabel>Moneda</CurrencyMenuLabel>
-                      <Select
+                      <VmSelect
                         selectedKey={documentCurrency}
                         onSelectionChange={handleCurrencyChange}
                         isDisabled={hasCartProducts}
                         aria-label="Moneda del documento"
                       >
-                        <Select.Trigger>
-                          <Select.Value />
-                          <Select.Indicator />
-                        </Select.Trigger>
-                        <Select.Popover>
-                          <ListBox>
+                        <VmSelect.Trigger>
+                          <VmSelect.Value />
+                          <VmSelect.Indicator />
+                        </VmSelect.Trigger>
+                        <VmSelect.Popover>
+                          <VmListBox>
                             {availableDocumentCurrencies.map((currency) => (
-                              <ListBox.Item
+                              <VmListBox.Item
                                 key={currency}
                                 id={currency}
                                 textValue={currency}
                               >
                                 {currency}
-                              </ListBox.Item>
+                              </VmListBox.Item>
                             ))}
-                          </ListBox>
-                        </Select.Popover>
-                      </Select>
+                          </VmListBox>
+                        </VmSelect.Popover>
+                      </VmSelect>
                     </CurrencyMenuControl>
-                  </Dropdown.Item>
+                  </VmDropdown.Item>
                   {menuOptions.map((option) => (
-                    <Dropdown.Item
+                    <VmDropdown.Item
                       key={option.text}
                       id={option.text}
                       textValue={option.text}
@@ -961,12 +969,12 @@ const InvoiceSummary = () => {
                         {option.icon}
                         {option.text}
                       </span>
-                    </Dropdown.Item>
+                    </VmDropdown.Item>
                   ))}
-                </Dropdown.Menu>
-              </Dropdown.Popover>
-            </Dropdown>
-          </ButtonGroup>
+                </VmDropdown.Menu>
+              </VmDropdown.Popover>
+            </VmDropdown>
+          </VmButtonGroup>
           <TotalLabel>
             <AnimatedNumber value={formatPriceByCurrency(total, documentCurrency)} />
           </TotalLabel>

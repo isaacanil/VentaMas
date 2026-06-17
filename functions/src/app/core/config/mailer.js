@@ -22,6 +22,8 @@
 import { logger } from 'firebase-functions';
 import nodemailer from 'nodemailer';
 
+import { sanitizeMailHeader } from '../utils/emailContent.util.js';
+
 // Importamos parámetros (defineString / defineSecret) para preferir .value()
 // Mantendremos fallback a process.env para compatibilidad con ejecuciones locales sin params.
 import {
@@ -40,6 +42,22 @@ import {
 let cachedTransport = null;
 let transportVerified = false; // verificación única por instancia
 
+export class MailDeliveryError extends Error {
+  constructor(reason, message, cause = null) {
+    super(message);
+    this.name = 'MailDeliveryError';
+    this.reason = reason;
+    if (cause) {
+      this.cause = cause;
+    }
+  }
+}
+
+export function isMailDeliveryError(error, reason = null) {
+  if (!(error instanceof MailDeliveryError)) return false;
+  return reason ? error.reason === reason : true;
+}
+
 function paramOrEnv(paramDef, envName) {
   try {
     // Algunos params (secrets) usan .value(), otros (defineSecret) exponen .value() asíncrono
@@ -52,10 +70,6 @@ function paramOrEnv(paramDef, envName) {
     /* ignore */
   }
   return process.env[envName];
-}
-
-function sanitizeMailHeader(value) {
-  return String(value || '').replace(/[\r\n]+/g, ' ').trim();
 }
 
 async function resolveSecrets() {
@@ -229,4 +243,42 @@ export async function sendMail({
     subject: finalSubject,
   });
   return info;
+}
+
+export async function sendRequiredMail(
+  mailOptions,
+  { logMessage = '[mailer] Error enviando correo', logContext = {} } = {},
+) {
+  const transport = await getTransport();
+  if (!transport) {
+    throw new MailDeliveryError(
+      'transport-unavailable',
+      'Servicio de correo no configurado.',
+    );
+  }
+
+  try {
+    const info = await sendMail(mailOptions);
+    if (info?.skipped) {
+      throw new MailDeliveryError(
+        'transport-unavailable',
+        'Servicio de correo no configurado.',
+      );
+    }
+    return info;
+  } catch (error) {
+    if (isMailDeliveryError(error)) {
+      throw error;
+    }
+
+    logger.error(logMessage, {
+      ...logContext,
+      error: String(error?.message || error),
+    });
+    throw new MailDeliveryError(
+      'send-failed',
+      'No se pudo enviar el correo.',
+      error,
+    );
+  }
 }

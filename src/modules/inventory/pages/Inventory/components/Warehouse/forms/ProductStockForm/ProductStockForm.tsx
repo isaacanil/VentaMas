@@ -22,9 +22,7 @@ import {
   createProductStock,
   updateProductStock,
 } from '@/firebase/warehouse/productStockService';
-import { useListenProductsStock } from '@/hooks/useProductStock';
-import { useGetProductsWithBatch } from '@/hooks/products/useGetProductsWithBatch';
-import useListenBatches from '@/hooks/products/useListenBatch';
+import { useListenProductsStock } from '@/modules/inventory/hooks/useProductStock';
 import { formatNumber } from '@/utils/format';
 import type {
   InventoryStockItem,
@@ -35,6 +33,8 @@ import type {
 import { ProductStockAlerts } from './components/ProductStockAlerts';
 import { ProductStockAvailability } from './components/ProductStockAvailability';
 import { ProductStockSelectors } from './components/ProductStockSelectors';
+import { useGetProductsWithBatch } from './hooks/useGetProductsWithBatch';
+import useListenBatches from './hooks/useListenBatch';
 
 const FormContainer = styled(Form)`
   display: flex;

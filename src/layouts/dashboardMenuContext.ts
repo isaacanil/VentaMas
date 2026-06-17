@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { MenuAppUIProps } from '@/modules/navigation/components/MenuApp/MenuApp';
+import type { MenuAppUIProps } from '@/modules/navigation/public';
 
 export type DashboardMenuConfig = MenuAppUIProps;
 

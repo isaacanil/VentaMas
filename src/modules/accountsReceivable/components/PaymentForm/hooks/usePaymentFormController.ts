@@ -23,7 +23,6 @@ import {
   selectTaxReceiptEnabled,
   selectTaxReceiptType,
 } from '@/features/taxReceipt/taxReceiptSlice';
-import { getTaxReceiptAvailability } from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/utils/getTaxReceiptAvailability';
 import type { CreditNoteSelection } from '@/types/creditNote';
 import type { TaxReceiptItem } from '@/types/taxReceipt';
 import type { UserIdentity } from '@/types/users';
@@ -31,6 +30,7 @@ import {
   PAYMENT_OPTIONS,
   PAYMENT_SCOPE,
 } from '@/utils/accountsReceivable/accountsReceivable';
+import { getTaxReceiptAvailability } from '@/utils/taxReceipt';
 
 import { useAutoCompletePreorder } from './useAutoCompletePreorder';
 import { usePaymentFormUiState } from './usePaymentFormUiState';

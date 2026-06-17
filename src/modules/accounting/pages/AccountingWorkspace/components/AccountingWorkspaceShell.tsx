@@ -1,5 +1,6 @@
-import { Skeleton } from '@heroui/react';
 import type { ReactNode } from 'react';
+
+import { VmSkeleton } from '@/components/heroui';
 
 interface AccountingWorkspaceShellProps {
   children: ReactNode;
@@ -28,14 +29,14 @@ export const AccountingWorkspaceShell = ({
               Preparando datos del modulo contable…
             </p>
             <div className="flex flex-col gap-2">
-              <Skeleton className="h-4 w-full rounded-lg" />
-              <Skeleton className="h-4 w-3/4 rounded-lg" />
-              <Skeleton className="h-4 w-full rounded-lg" />
-              <Skeleton className="h-4 w-1/2 rounded-lg" />
-              <Skeleton className="h-4 w-full rounded-lg" />
-              <Skeleton className="h-4 w-2/3 rounded-lg" />
-              <Skeleton className="h-4 w-full rounded-lg" />
-              <Skeleton className="h-4 w-3/4 rounded-lg" />
+              <VmSkeleton className="h-4 w-full rounded-lg" />
+              <VmSkeleton className="h-4 w-3/4 rounded-lg" />
+              <VmSkeleton className="h-4 w-full rounded-lg" />
+              <VmSkeleton className="h-4 w-1/2 rounded-lg" />
+              <VmSkeleton className="h-4 w-full rounded-lg" />
+              <VmSkeleton className="h-4 w-2/3 rounded-lg" />
+              <VmSkeleton className="h-4 w-full rounded-lg" />
+              <VmSkeleton className="h-4 w-3/4 rounded-lg" />
             </div>
           </div>
         ) : (

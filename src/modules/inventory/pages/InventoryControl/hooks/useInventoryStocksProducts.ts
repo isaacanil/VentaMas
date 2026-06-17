@@ -1,6 +1,7 @@
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
 
+import { db as defaultDb } from '@/firebase/firebaseconfig';
 import type { InventoryStockItem } from '@/utils/inventory/types';
 import type { Firestore } from 'firebase/firestore';
 
@@ -37,7 +38,7 @@ interface UseInventoryStocksProductsResult {
 }
 
 export function useInventoryStocksProducts({
-  db,
+  db = defaultDb,
   businessID,
 }: UseInventoryStocksProductsParams): UseInventoryStocksProductsResult {
   const [stocks, setStocks] = useState<InventoryStockItem[]>([]);

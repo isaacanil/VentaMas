@@ -133,8 +133,40 @@ export interface InvoiceAttemptResult extends InvoiceWaitResult {
   attempt: string;
 }
 
+export type InvoiceProgressStage =
+  | 'validating-sale'
+  | 'registering-sale'
+  | 'confirming-invoice'
+  | 'preparing-receipt';
+
+export type InvoiceProgressReporter = (stage: InvoiceProgressStage) => void;
+
+export type InvoiceProcessPhase =
+  | 'testPreview'
+  | 'createInvoiceV2'
+  | 'waitForInvoiceResult';
+
+export type InvoiceProcessPhaseStatus = 'started' | 'completed' | 'failed';
+
+export type InvoiceProcessPhaseTrace = {
+  phase: InvoiceProcessPhase;
+  status: InvoiceProcessPhaseStatus;
+  attempt?: string;
+  errorCode?: string | null;
+  errorName?: string | null;
+  hasInvoice?: boolean;
+  invoiceStatus?: string | null;
+  reused?: boolean | null;
+};
+
+export type InvoiceProcessPhaseTracer = (
+  trace: InvoiceProcessPhaseTrace,
+) => void;
+
 export interface InvoiceProcessParams extends InvoiceRequestParams {
   signal?: AbortSignal;
+  onProgress?: InvoiceProgressReporter;
+  onPhaseTrace?: InvoiceProcessPhaseTracer;
 }
 
 export type InvoiceServiceError = Error & {

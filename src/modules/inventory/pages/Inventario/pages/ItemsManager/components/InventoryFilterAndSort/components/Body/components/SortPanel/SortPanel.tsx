@@ -1,5 +1,5 @@
 import { Button, Select, Tooltip } from 'antd';
-import { useCallback, useEffect, useMemo, type ReactNode } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -15,11 +15,26 @@ import {
 } from '@/features/filterProduct/filterProductsSlice';
 import { opcionesCriterio } from '@/modules/inventory/pages/Inventario/pages/ItemsManager/components/InventoryFilterAndSort/InventoryFilterAndSortMetadata';
 
+import { LabelWithStatus } from '../shared/LabelWithStatus';
+
 type SortPanelProps = {
   contextKey?: string;
 };
 
 type OrdenValue = string | boolean;
+
+const ordenPorCriterio: Record<string, OrdenValue> = {
+  nombre: 'asc',
+  categoria: 'asc',
+  stock: 'ascNum',
+  impuesto: 'ascNum',
+  costo: 'ascNum',
+  precio: 'ascNum',
+  inventariable: true,
+};
+
+const getDefaultOrdenForCriterio = (criterio: string): OrdenValue =>
+  ordenPorCriterio[criterio] ?? DEFAULT_FILTERS.orden;
 
 export const SortPanel = ({
   contextKey = DEFAULT_FILTER_CONTEXT,
@@ -37,6 +52,12 @@ export const SortPanel = ({
   const handleCriterioChange = useCallback(
     (newCriterio: string) => {
       dispatch(setCriterio({ context: contextKey, value: newCriterio }));
+      dispatch(
+        setOrden({
+          context: contextKey,
+          value: getDefaultOrdenForCriterio(newCriterio) as string,
+        }),
+      );
     },
     [contextKey, dispatch],
   );
@@ -47,19 +68,6 @@ export const SortPanel = ({
     },
     [contextKey, dispatch],
   );
-
-  useEffect(() => {
-    const ordenPorCriterio: Record<string, OrdenValue> = {
-      nombre: 'asc',
-      categoria: 'asc',
-      stock: 'ascNum',
-      impuesto: 'ascNum',
-      costo: 'ascNum',
-      precio: 'ascNum',
-      inventariable: true,
-    };
-    handleOrdenChange(ordenPorCriterio[criterio] ?? DEFAULT_FILTERS.orden);
-  }, [criterio, handleOrdenChange]);
 
   const criterioOptions = opcionesCriterio.map((o) => ({
     value: o.valor,
@@ -181,36 +189,3 @@ const FlexGrow = styled.div`
     pointer-events: none;
   }
 `;
-
-export const Label = styled.label`
-  display: inline-flex;
-  gap: 0.35em;
-  align-items: center;
-  font-size: 0.72rem;
-  font-weight: 500;
-`;
-
-const ModifiedMarker = styled.div`
-  width: 0.7rem;
-  height: 0.7rem;
-  font-size: 0.7rem;
-  background-color: #ffaa0bff;
-  border: 1px solid #ffff;
-  border-radius: 50%;
-  box-shadow: 0 0 4px rgb(0 0 0 / 20%);
-`;
-
-type LabelWithStatusProps = {
-  children: ReactNode;
-  modified?: boolean;
-};
-
-export const LabelWithStatus = ({
-  children,
-  modified,
-}: LabelWithStatusProps) => (
-  <Label>
-    <span>{children}</span>
-    {modified ? <ModifiedMarker aria-hidden="true"></ModifiedMarker> : null}
-  </Label>
-);

@@ -1,9 +1,6 @@
 import {
   CopyOutlined,
   DownOutlined,
-  FilePdfOutlined,
-  FileTextOutlined,
-  GlobalOutlined,
   QrcodeOutlined,
   SyncOutlined,
 } from '@/constants/icons/antd';
@@ -12,12 +9,7 @@ import type { Key, ReactNode } from 'react';
 import { useState } from 'react';
 import styled from 'styled-components';
 
-import {
-  VmButton,
-  VmCard,
-  VmChip,
-  VmDropdown,
-} from '@/components/heroui';
+import { VmButton, VmCard, VmChip, VmDropdown } from '@/components/heroui';
 import { fbRefreshElectronicTaxReceiptStatus } from '@/firebase/electronicTaxReceipts/fbRefreshElectronicTaxReceiptStatus';
 import type {
   ElectronicTaxReceiptSnapshot,
@@ -28,7 +20,8 @@ import {
   resolveElectronicTaxReceiptSnapshot,
   resolveElectronicTaxReceiptStatusKey,
   resolveElectronicTaxReceiptStatusLabel,
-} from '@/utils/invoice/electronicTaxReceipt';
+} from '@/modules/invoice/utils/electronicTaxReceipt';
+import { cleanString } from '@/utils/text';
 
 type Props = {
   businessId?: string | null;
@@ -43,12 +36,6 @@ type MenuAction = {
   key: string;
   label: string;
   run: () => void;
-};
-
-const cleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed || null;
 };
 
 const resolveQrUrl = (
@@ -106,6 +93,9 @@ const openLink = (url: string) => {
   window.open(url, '_blank', 'noopener,noreferrer');
 };
 
+const isAcceptedStatus = (statusKey: string): boolean =>
+  statusKey === 'accepted' || statusKey === 'accepted_conditional';
+
 export const ElectronicTaxReceiptInfoCard = ({
   businessId,
   className,
@@ -136,6 +126,8 @@ export const ElectronicTaxReceiptInfoCard = ({
     resolveElectronicTaxReceiptStatusKey(snapshot) || '',
   ).toLowerCase();
   const qrIsUsable = statusKey.includes('accepted');
+  const documentType =
+    cleanString(snapshot.documentType)?.toUpperCase() || null;
   const eNcf = cleanString(snapshot.eNcf);
   const submissionId = cleanString(snapshot.submissionId);
   const trackId =
@@ -149,13 +141,27 @@ export const ElectronicTaxReceiptInfoCard = ({
             : ''
         }`
       : null);
-  const isRfceFlow = isRfceElectronicTaxReceipt(snapshot);
-  const securityCode = cleanString(snapshot.securityCode);
   const qrUrl = resolveQrUrl(snapshot);
-  const statusUrl = cleanString(snapshot.links?.status);
-  const xmlUrl = cleanString(snapshot.links?.xml);
-  const signedXmlUrl = cleanString(snapshot.links?.signedXml);
-  const pdfUrl = cleanString(snapshot.links?.pdf);
+  const qrUrlLower = qrUrl?.toLowerCase() || '';
+  const isRfceQr = qrUrlLower.includes('consultatimbrefc');
+  const isRfceFlow =
+    isRfceElectronicTaxReceipt(snapshot) ||
+    isRfceQr ||
+    (documentType === 'E32' && !trackId && isAcceptedStatus(statusKey));
+  const evidenceReferenceLabel = trackId
+    ? 'TrackID'
+    : isRfceFlow
+      ? 'RFCE'
+      : 'TrackID';
+  const evidenceReferenceValue =
+    trackId ||
+    rfceReference ||
+    (isRfceFlow
+      ? isAcceptedStatus(statusKey)
+        ? 'RFCE aceptado'
+        : 'RFCE pendiente'
+      : 'DGII pendiente');
+  const securityCode = cleanString(snapshot.securityCode);
   const diagnosticMessage =
     cleanString(snapshot.lastError) ||
     cleanString(snapshot.rfceLastErrorMessage) ||
@@ -165,6 +171,9 @@ export const ElectronicTaxReceiptInfoCard = ({
     Boolean(diagnosticMessage) ||
     statusColor(snapshot) === 'danger' ||
     Boolean(snapshot.manualReviewRequired);
+  const diagnosticDescription = isRfceFlow
+    ? 'GISYS marcó esta submission como no aceptada. El QR fue generado pero no es válido fiscalmente hasta que DGII acepte el RFCE.'
+    : 'GISYS marcó esta submission como no aceptada. El QR fue generado pero no es válido fiscalmente hasta que DGII acepte el e-CF.';
 
   const actions: MenuAction[] = [];
   const addCopyAction = (key: string, label: string, value?: string | null) => {
@@ -195,24 +204,10 @@ export const ElectronicTaxReceiptInfoCard = ({
   addCopyAction('copy-submission', 'ID de envío', submissionId);
   addCopyAction('copy-track', 'TrackId', trackId);
   addCopyAction('copy-security', 'código de seguridad', securityCode);
-  addCopyAction('copy-qr', qrIsUsable ? 'URL QR' : 'URL QR (evidencia)', qrUrl);
   if (qrIsUsable) {
+    addCopyAction('copy-qr', 'URL QR', qrUrl);
     addOpenAction('open-qr', 'Abrir consulta QR', qrUrl, <QrcodeOutlined />);
   }
-  addOpenAction(
-    'open-status',
-    'Abrir estado proveedor',
-    statusUrl,
-    <GlobalOutlined />,
-  );
-  addOpenAction('open-pdf', 'Abrir PDF', pdfUrl, <FilePdfOutlined />);
-  addOpenAction('open-xml', 'Abrir XML', xmlUrl, <FileTextOutlined />);
-  addOpenAction(
-    'open-signed-xml',
-    'Abrir XML firmado',
-    signedXmlUrl,
-    <FileTextOutlined />,
-  );
 
   const actionByKey = new Map(actions.map((action) => [action.key, action]));
 
@@ -329,22 +324,14 @@ export const ElectronicTaxReceiptInfoCard = ({
                 Diagnóstico GISYS · Submission no aceptada
               </DiagnosticTitle>
               <DiagnosticDescription>
-                GISYS marcó esta submission como no aceptada. El QR fue
-                generado pero no es válido fiscalmente hasta que RFCE/DGII
-                acepte el e-CF.
+                {diagnosticDescription}
               </DiagnosticDescription>
             </DiagnosticCopy>
           ) : null}
           <EvidenceTags>
             <EvidenceTag>
-              <EvidenceTagLabel>
-                {trackId ? 'TrackID' : isRfceFlow ? 'RFCE' : 'TrackID'}
-              </EvidenceTagLabel>
-              <EvidenceTagValue>
-                {trackId ||
-                  rfceReference ||
-                  (isRfceFlow ? 'RFCE pendiente' : 'DGII pendiente')}
-              </EvidenceTagValue>
+              <EvidenceTagLabel>{evidenceReferenceLabel}</EvidenceTagLabel>
+              <EvidenceTagValue>{evidenceReferenceValue}</EvidenceTagValue>
             </EvidenceTag>
             {securityCode ? (
               <EvidenceTag>

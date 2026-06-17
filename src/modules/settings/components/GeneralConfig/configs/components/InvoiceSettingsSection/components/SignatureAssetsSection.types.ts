@@ -1,8 +1,5 @@
-import type {
-  UploadChangeParam,
-  UploadFile,
-  UploadProps,
-} from 'antd/es/upload/interface';
+import type { UploadFile, UploadProps } from 'antd';
+import type { UploadChangeParam } from 'antd/es/upload/interface';
 
 import type {
   InvoiceAssetType,

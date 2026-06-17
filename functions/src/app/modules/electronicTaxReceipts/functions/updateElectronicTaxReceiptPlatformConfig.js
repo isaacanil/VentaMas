@@ -10,23 +10,12 @@ import {
 import { GISYS_FACT_PLATFORM_CONFIG_PATH } from '../config/gisysFactPlatform.config.js';
 import { checkGisysFactHealth } from '../services/gisysFactClient.service.js';
 import { assertElectronicTaxReceiptDeveloperAccess } from '../utils/electronicTaxReceiptAccess.util.js';
-import { toCleanString } from '../utils/electronicTaxReceiptConfig.util.js';
-
-const VALID_MODES = new Set(['shadow', 'pilot', 'required']);
-
-const toBoolean = (value) => value === true;
-
-const normalizeMode = (value) => {
-  const normalized = toCleanString(value)?.toLowerCase();
-  return VALID_MODES.has(normalized) ? normalized : 'shadow';
-};
-
-const normalizeTimeoutMs = (value) => {
-  const numeric = Number(value);
-  return Number.isFinite(numeric) && numeric >= 5000 && numeric <= 120000
-    ? Math.round(numeric)
-    : 20000;
-};
+import {
+  normalizeMode,
+  normalizeTimeoutMs,
+  toBoolean,
+  toCleanString,
+} from '../utils/electronicTaxReceiptConfig.util.js';
 
 export const updateElectronicTaxReceiptPlatformConfig = onCall(
   { cors: true, invoker: 'public' },
@@ -40,7 +29,9 @@ export const updateElectronicTaxReceiptPlatformConfig = onCall(
 
     const data = request?.data || {};
     const electronicModelEnabled = toBoolean(data.electronicModelEnabled);
-    const mode = electronicModelEnabled ? normalizeMode(data.mode) : 'shadow';
+    const mode = electronicModelEnabled
+      ? normalizeMode(data.mode, 'shadow')
+      : 'shadow';
     const platformConfig = {
       provider: 'gisys',
       providerId: 'gisys_fact',

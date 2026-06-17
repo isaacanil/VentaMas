@@ -1,5 +1,4 @@
 import { Button } from 'antd';
-import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useMatch } from 'react-router-dom';
 import styled from 'styled-components';

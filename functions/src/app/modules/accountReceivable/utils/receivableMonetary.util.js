@@ -1,14 +1,8 @@
-const THRESHOLD = 0.01;
-
-const asRecord = (value) =>
-  value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-
-const safeNumber = (value) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-};
-
-const roundToTwoDecimals = (value) => Math.round(safeNumber(value) * 100) / 100;
+import {
+  RECEIVABLE_PAYMENT_THRESHOLD as THRESHOLD,
+  asReceivableRecord as asRecord,
+  roundReceivableAmount as roundToTwoDecimals,
+} from './receivablePaymentMath.util.js';
 
 const resolveCurrencyCode = (value) => {
   const record = asRecord(value);

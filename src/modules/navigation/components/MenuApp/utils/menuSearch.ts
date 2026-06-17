@@ -1,4 +1,5 @@
 import type { MenuItem } from '@/types/menu';
+import { normalizeTrimmedSearchText } from '@/utils/searchText';
 
 export interface MenuSearchItem extends MenuItem {
   searchContextTitle?: string;
@@ -6,15 +7,10 @@ export interface MenuSearchItem extends MenuItem {
 
 export type GroupedMenuItems = Record<string, MenuSearchItem[]>;
 
-const normalizeSearchText = (value?: unknown) =>
-  String(value ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
-
 const getMenuItemSearchValue = (item: MenuItem) =>
-  normalizeSearchText([item.title, item.label, item.tag?.text].join(' '));
+  normalizeTrimmedSearchText(
+    [item.title, item.label, item.tag?.text].join(' '),
+  );
 
 const getMenuItemTitle = (item: MenuItem) =>
   String(item.title ?? item.label ?? '').trim();
@@ -78,7 +74,7 @@ export const filterGroupedMenuByQuery = (
   groupedMenuItems: GroupedMenuItems,
   query: string,
 ): GroupedMenuItems => {
-  const normalizedQuery = normalizeSearchText(query);
+  const normalizedQuery = normalizeTrimmedSearchText(query);
   if (!normalizedQuery) return groupedMenuItems;
 
   return Object.entries(groupedMenuItems).reduce<GroupedMenuItems>(

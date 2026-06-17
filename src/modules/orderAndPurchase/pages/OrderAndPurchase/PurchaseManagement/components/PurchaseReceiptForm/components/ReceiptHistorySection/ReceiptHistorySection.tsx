@@ -1,6 +1,6 @@
 import { HistoryOutlined } from '@ant-design/icons';
 import { Table } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import type { TableColumnsType as ColumnsType } from 'antd';
 import styled from 'styled-components';
 
 import type { PurchaseReceiptEvent, PurchaseReplenishment } from '@/utils/purchase/types';

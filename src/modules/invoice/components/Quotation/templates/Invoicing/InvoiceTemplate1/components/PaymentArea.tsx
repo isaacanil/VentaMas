@@ -1,9 +1,9 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
-import { usePendingBalance } from '@/firebase/accountsReceivable/fbGetPendingBalance';
+import { useGetPendingBalance } from '@/firebase/accountsReceivable/fbGetPendingBalance';
 import type { QuotationData } from '@/pdf/invoicesAndQuotation/types';
 import type { UserIdentity } from '@/types/users';
 import { formatInvoicePrice } from '@/utils/invoice/documentCurrency';
@@ -44,7 +44,6 @@ type PaymentAreaProps = {
 };
 
 export const PaymentArea = ({ data }: PaymentAreaProps) => {
-  const [pendingBalance, setPendingBalance] = useState(0);
   const user = useSelector(selectUser) as UserIdentity | null;
   const businessID = user?.businessID;
   const clientId = data?.client?.id;
@@ -57,11 +56,12 @@ export const PaymentArea = ({ data }: PaymentAreaProps) => {
   const formatNumber = (num?: number | string | null) =>
     formatInvoicePrice(toNumber(num), data);
 
-  usePendingBalance(
-    businessID ? String(businessID) : undefined,
-    clientId ? String(clientId) : undefined,
-    setPendingBalance,
-  );
+  const pendingBalance = useGetPendingBalance({
+    dependencies: [
+      businessID ? String(businessID) : undefined,
+      clientId ? String(clientId) : undefined,
+    ],
+  });
 
   const paymentRows: PaymentRow[] = resolveInvoicePaymentMethods(
     data?.paymentMethod,

@@ -3,10 +3,10 @@ import {
   getProductIndividualDiscount,
   getProductTotalPrice,
   getProductTax,
-} from '../utils/formatters.js';
+} from '../utils/formatters';
 
 import type { PdfContent, PdfTableBody, PdfTableRow } from '@/pdf/types';
-import type { CreditNoteData } from '../../../types.js';
+import type { CreditNoteData } from '../../../types';
 
 /* ──────────────────────────────────────────────── */
 export function buildContent(d: CreditNoteData): PdfContent[] {

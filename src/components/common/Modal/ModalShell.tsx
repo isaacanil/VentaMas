@@ -1,14 +1,13 @@
 import { type ReactNode } from 'react';
-import styled from 'styled-components';
 
 import { Modal, type ModalProps } from './Modal';
+import { Body } from './ModalShell.styles';
 
 type ModalShellProps = Omit<ModalProps, 'footer' | 'children'> & {
   footer: ReactNode;
   children: ReactNode;
   bodyClassName?: string;
 };
-
 export const ModalShell = ({
   footer,
   children,
@@ -37,8 +36,3 @@ export const ModalShell = ({
     </Modal>
   );
 };
-
-const Body = styled.div`
-  padding: 16px 20px 20px;
-
-`;

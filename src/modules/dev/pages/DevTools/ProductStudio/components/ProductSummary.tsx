@@ -2,8 +2,8 @@ import { StopOutlined } from '@/constants/icons/antd';
 import { Divider, Image, Space, Typography } from 'antd';
 import styled from 'styled-components';
 
-import { PRODUCT_BRAND_DEFAULT } from '@/features/updateProduct/updateProductSlice';
-import { imgFailed } from '@/components/modals/ProductForm/ImageManager/ImageManager';
+import { PRODUCT_BRAND_DEFAULT } from '@/domain/products/productDefaults';
+import { imgFailed } from '@/domain/products/productAssets';
 import type {
   ProductPreviewMetrics,
   ProductSnapshot,

@@ -107,7 +107,7 @@ vi.mock('@/utils/purchase/workflow', () => ({
     resolvePurchaseWorkflowStatusMock(...args),
 }));
 
-vi.mock('@/utils/purchase/receiptHistory', () => ({
+vi.mock('./utils/receiptHistory', () => ({
   buildPurchaseReceiptHistory: (...args: unknown[]) =>
     buildPurchaseReceiptHistoryMock(...args),
 }));

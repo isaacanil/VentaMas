@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Paragraph } from '@/modules/checkout/pages/checkout/Style';
+import { Paragraph } from '@/modules/checkout/pages/checkout/CheckoutReceipt.styles';
 
 type ReceiptListProps<T> = {
   title: string;

@@ -22,7 +22,6 @@ export const screenRecipes = [
       'vm.statusBadge',
       'vm.datePicker',
     ],
-    forbiddenComponents: ['vm.searchBar'],
     states: ['loading', 'empty', 'hasResults', 'error'],
     compositionRules: [
       'Use PageLayout as the page root inside dashboard flows.',

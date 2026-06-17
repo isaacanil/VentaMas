@@ -4,6 +4,7 @@ import {
   getDoc,
   getDocs,
   limit,
+  onSnapshot,
   query,
   where,
 } from 'firebase/firestore';
@@ -503,6 +504,14 @@ type FailedTaskRecord = UnknownRecord & {
   type?: string;
 };
 
+type InvoiceMetaRecord = UnknownRecord & {
+  status?: string;
+};
+
+type CanonicalInvoiceRecord = UnknownRecord & {
+  data?: InvoiceData | null;
+};
+
 const fetchFailedTask = async ({
   businessId,
   invoiceId,
@@ -525,6 +534,360 @@ const fetchFailedTask = async ({
   return { id: docSnap.id, ...(docSnap.data() as FailedTaskRecord) };
 };
 
+const createInvoiceAbortError = (): DOMException =>
+  new DOMException('La consulta de factura fue cancelada', 'AbortError');
+
+const createInvoiceTimeoutError = ({
+  businessId,
+  invoiceId,
+  lastSnapshot,
+}: {
+  businessId: string;
+  invoiceId: string;
+  lastSnapshot: UnknownRecord | null;
+}): InvoiceServiceError => {
+  const timeoutError: InvoiceServiceError = new Error(
+    'Tiempo de espera agotado al confirmar la factura. Verifica el estado en el historial de facturación.',
+  );
+  timeoutError.code = 'invoice-timeout';
+  timeoutError.invoice = lastSnapshot;
+  timeoutError.invoiceId = invoiceId;
+  timeoutError.businessId = businessId;
+  return timeoutError;
+};
+
+const createInvoiceRetriesExceededError = ({
+  businessId,
+  invoiceId,
+  lastSnapshot,
+}: {
+  businessId: string;
+  invoiceId: string;
+  lastSnapshot: UnknownRecord | null;
+}): InvoiceServiceError => {
+  const exhaustedError: InvoiceServiceError = new Error(
+    'No se pudo confirmar la factura después de varios intentos. Verifica el historial de facturación o intenta nuevamente.',
+  );
+  exhaustedError.code = 'invoice-retries-exceeded';
+  exhaustedError.invoice = lastSnapshot;
+  exhaustedError.invoiceId = invoiceId;
+  exhaustedError.businessId = businessId;
+  return exhaustedError;
+};
+
+const createSnapshotUnavailableError = ({
+  businessId,
+  invoiceId,
+  lastSnapshot,
+  originalError,
+}: {
+  businessId: string;
+  invoiceId: string;
+  lastSnapshot: UnknownRecord | null;
+  originalError: unknown;
+}): InvoiceServiceError => {
+  const snapshotError: InvoiceServiceError = new Error(
+    'No se pudo abrir el listener temporal de la factura.',
+  );
+  snapshotError.code = 'invoice-snapshot-unavailable';
+  snapshotError.invoice = lastSnapshot;
+  snapshotError.invoiceId = invoiceId;
+  snapshotError.businessId = businessId;
+  snapshotError.originalError = originalError;
+  return snapshotError;
+};
+
+const createInvoiceFailedError = async ({
+  businessId,
+  invoiceId,
+  invoiceData,
+}: {
+  businessId: string;
+  invoiceId: string;
+  invoiceData: InvoiceMetaRecord;
+}): Promise<InvoiceServiceError> => {
+  const failedTask = await fetchFailedTask({ businessId, invoiceId });
+  const errorMessage =
+    failedTask?.lastError ||
+    (failedTask?.type
+      ? `La tarea ${failedTask.type} falló durante el procesamiento.`
+      : 'El proceso de factura falló.');
+  return Object.assign(new Error(errorMessage), {
+    code: 'invoice-failed',
+    invoice: invoiceData,
+    failedTask,
+  }) as InvoiceServiceError;
+};
+
+const resolveInvoiceWaitResult = async ({
+  businessId,
+  invoiceId,
+  invoiceData,
+  canonicalData,
+}: {
+  businessId: string;
+  invoiceId: string;
+  invoiceData: InvoiceMetaRecord | null;
+  canonicalData: CanonicalInvoiceRecord | null;
+}): Promise<InvoiceWaitResult | null> => {
+  if (!invoiceData) {
+    return null;
+  }
+
+  const invoiceStatus = invoiceData.status;
+  if (invoiceStatus === 'failed') {
+    throw await createInvoiceFailedError({ businessId, invoiceId, invoiceData });
+  }
+
+  const isFrontendReady = invoiceStatus === 'frontend_ready';
+  const isCommitted = invoiceStatus === 'committed';
+  if (!isFrontendReady && !isCommitted) {
+    return null;
+  }
+
+  if (!canonicalData) {
+    return null;
+  }
+
+  const canonicalInvoice = canonicalData.data ?? null;
+  if (
+    !isCanonicalInvoiceReadyForFrontend({
+      canonicalInvoice,
+      invoiceMeta: invoiceData,
+    })
+  ) {
+    return null;
+  }
+
+  return {
+    invoice: canonicalInvoice,
+    canonical: canonicalData,
+    invoiceMeta: invoiceData,
+  };
+};
+
+const waitForInvoiceResultFromSnapshots = ({
+  businessId,
+  invoiceId,
+  signal,
+  timeoutMs,
+}: {
+  businessId: string;
+  invoiceId: string;
+  signal?: AbortSignal;
+  timeoutMs?: number;
+}): Promise<InvoiceWaitResult> => {
+  const invoiceRef = doc(
+    db,
+    `businesses/${businessId}/invoicesV2/${invoiceId}`,
+  );
+  const canonicalRef = doc(
+    db,
+    `businesses/${businessId}/invoices/${invoiceId}`,
+  );
+
+  return new Promise((resolve, reject) => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let settled = false;
+    let latestInvoiceData: InvoiceMetaRecord | null = null;
+    let latestCanonicalData: CanonicalInvoiceRecord | null = null;
+    let lastSnapshot: UnknownRecord | null = null;
+    const unsubscribes: Array<() => void> = [];
+
+    const cleanup = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      signal?.removeEventListener('abort', handleAbort);
+      unsubscribes.splice(0).forEach((unsubscribe) => unsubscribe());
+    };
+
+    const finish = (callback: () => void) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      callback();
+    };
+
+    const rejectWithError = (error: unknown) => {
+      finish(() => reject(error));
+    };
+
+    const resolveWithResult = (result: InvoiceWaitResult) => {
+      finish(() => resolve(result));
+    };
+
+    function handleAbort() {
+      rejectWithError(createInvoiceAbortError());
+    }
+
+    const evaluateSnapshots = () => {
+      if (settled || !latestInvoiceData) return;
+
+      void resolveInvoiceWaitResult({
+        businessId,
+        invoiceId,
+        invoiceData: latestInvoiceData,
+        canonicalData: latestCanonicalData,
+      })
+        .then((result) => {
+          if (result) {
+            resolveWithResult(result);
+          }
+        })
+        .catch(rejectWithError);
+    };
+
+    const handleSnapshotError = (error: unknown) => {
+      rejectWithError(
+        createSnapshotUnavailableError({
+          businessId,
+          invoiceId,
+          lastSnapshot,
+          originalError: error,
+        }),
+      );
+    };
+
+    const registerUnsubscribe = (unsubscribe: () => void) => {
+      if (settled) {
+        unsubscribe();
+        return;
+      }
+      unsubscribes.push(unsubscribe);
+    };
+
+    if (signal?.aborted) {
+      reject(createInvoiceAbortError());
+      return;
+    }
+
+    signal?.addEventListener('abort', handleAbort, { once: true });
+    timeoutId = setTimeout(() => {
+      rejectWithError(
+        createInvoiceTimeoutError({
+          businessId,
+          invoiceId,
+          lastSnapshot,
+        }),
+      );
+    }, Math.max(0, timeoutMs ?? DEFAULT_TIMEOUT_MS));
+
+    try {
+      registerUnsubscribe(
+        onSnapshot(
+          invoiceRef,
+          (invoiceSnap) => {
+            latestInvoiceData = invoiceSnap.exists()
+              ? (invoiceSnap.data() as InvoiceMetaRecord)
+              : null;
+            if (latestInvoiceData) {
+              lastSnapshot = latestInvoiceData;
+            }
+            evaluateSnapshots();
+          },
+          handleSnapshotError,
+        ),
+      );
+      registerUnsubscribe(
+        onSnapshot(
+          canonicalRef,
+          (canonicalSnap) => {
+            latestCanonicalData = canonicalSnap.exists()
+              ? (canonicalSnap.data() as CanonicalInvoiceRecord)
+              : null;
+            evaluateSnapshots();
+          },
+          handleSnapshotError,
+        ),
+      );
+    } catch (error) {
+      rejectWithError(
+        createSnapshotUnavailableError({
+          businessId,
+          invoiceId,
+          lastSnapshot,
+          originalError: error,
+        }),
+      );
+    }
+  });
+};
+
+const waitForInvoiceResultByPolling = async ({
+  businessId,
+  invoiceId,
+  signal,
+  pollInterval,
+  timeoutMs,
+}: {
+  businessId: string;
+  invoiceId: string;
+  signal?: AbortSignal;
+  pollInterval: number;
+  timeoutMs: number;
+}): Promise<InvoiceWaitResult> => {
+  const invoiceRef = doc(
+    db,
+    `businesses/${businessId}/invoicesV2/${invoiceId}`,
+  );
+  const canonicalRef = doc(
+    db,
+    `businesses/${businessId}/invoices/${invoiceId}`,
+  );
+
+  const startedAt = Date.now();
+  let lastSnapshot: UnknownRecord | null = null;
+  const maxRetries = Math.max(1, Math.ceil(timeoutMs / pollInterval));
+  let retryCount = 0;
+
+  while (retryCount < maxRetries) {
+    if (signal?.aborted) {
+      throw createInvoiceAbortError();
+    }
+
+    const invoiceSnap = await getDoc(invoiceRef);
+    retryCount++;
+    const invoiceData = invoiceSnap.exists()
+      ? (invoiceSnap.data() as UnknownRecord & { status?: string })
+      : null;
+    if (invoiceData) {
+      lastSnapshot = invoiceData;
+      const invoiceStatus = invoiceData.status;
+      const isFrontendReady = invoiceStatus === 'frontend_ready';
+      const isCommitted = invoiceStatus === 'committed';
+      const canonicalSnap =
+        isFrontendReady || isCommitted ? await getDoc(canonicalRef) : null;
+      const canonicalData = canonicalSnap?.exists()
+        ? (canonicalSnap.data() as CanonicalInvoiceRecord)
+        : null;
+
+      const result = await resolveInvoiceWaitResult({
+        businessId,
+        invoiceId,
+        invoiceData,
+        canonicalData,
+      });
+      if (result) {
+        return result;
+      }
+    }
+
+    if (Date.now() - startedAt >= timeoutMs) {
+      throw createInvoiceTimeoutError({ businessId, invoiceId, lastSnapshot });
+    }
+
+    await delay(pollInterval);
+  }
+
+  throw createInvoiceRetriesExceededError({
+    businessId,
+    invoiceId,
+    lastSnapshot,
+  });
+};
+
 export const waitForInvoiceResult = async ({
   businessId,
   invoiceId,
@@ -545,100 +908,27 @@ export const waitForInvoiceResult = async ({
     throw new Error('invoiceId es requerido para consultar la factura');
   }
 
-  const invoiceRef = doc(
-    db,
-    `businesses/${businessId}/invoicesV2/${invoiceId}`,
-  );
-  const canonicalRef = doc(
-    db,
-    `businesses/${businessId}/invoices/${invoiceId}`,
-  );
-
   const startedAt = Date.now();
-  let lastSnapshot: UnknownRecord | null = null;
-  const maxRetries = Math.max(1, Math.ceil(timeoutMs / pollInterval));
-  let retryCount = 0;
-
-  while (retryCount < maxRetries) {
-    if (signal?.aborted) {
-      throw new DOMException(
-        'La consulta de factura fue cancelada',
-        'AbortError',
-      );
+  try {
+    return await waitForInvoiceResultFromSnapshots({
+      businessId,
+      invoiceId,
+      signal,
+      timeoutMs,
+    });
+  } catch (error) {
+    const serviceError = error as InvoiceServiceError;
+    if (serviceError?.code !== 'invoice-snapshot-unavailable') {
+      throw error;
     }
-
-    const invoiceSnap = await getDoc(invoiceRef);
-    retryCount++;
-    const invoiceData = invoiceSnap.exists()
-      ? (invoiceSnap.data() as UnknownRecord & { status?: string })
-      : null;
-    if (invoiceData) {
-      lastSnapshot = invoiceData;
-      const invoiceStatus = invoiceData.status;
-      if (invoiceStatus === 'failed') {
-        const failedTask = await fetchFailedTask({ businessId, invoiceId });
-        const errorMessage =
-          failedTask?.lastError ||
-          (failedTask?.type
-            ? `La tarea ${failedTask.type} falló durante el procesamiento.`
-            : 'El proceso de factura falló.');
-        const error: InvoiceServiceError = Object.assign(
-          new Error(errorMessage),
-          {
-            code: 'invoice-failed',
-            invoice: invoiceData,
-            failedTask,
-          },
-        );
-        throw error;
-      }
-
-      const isFrontendReady = invoiceStatus === 'frontend_ready';
-      const isCommitted = invoiceStatus === 'committed';
-
-      if (isFrontendReady || isCommitted) {
-        const canonicalSnap = await getDoc(canonicalRef);
-        if (canonicalSnap.exists()) {
-          const canonicalData = canonicalSnap.data() as UnknownRecord & {
-            data?: InvoiceData | null;
-          };
-          const canonicalInvoice = canonicalData?.data ?? null;
-          if (
-            !isCanonicalInvoiceReadyForFrontend({
-              canonicalInvoice,
-              invoiceMeta: invoiceData,
-            })
-          ) {
-            await delay(pollInterval);
-            continue;
-          }
-          return {
-            invoice: canonicalInvoice,
-            canonical: canonicalData ?? null,
-            invoiceMeta: invoiceData,
-          };
-        }
-      }
-    }
-
-    if (Date.now() - startedAt >= timeoutMs) {
-      const timeoutError: InvoiceServiceError = new Error(
-        'Tiempo de espera agotado al confirmar la factura. Verifica el estado en el historial de facturación.',
-      );
-      timeoutError.code = 'invoice-timeout';
-      timeoutError.invoice = lastSnapshot;
-      throw timeoutError;
-    }
-
-    await delay(pollInterval);
   }
 
-  const exhaustedError: InvoiceServiceError = new Error(
-    'No se pudo confirmar la factura después de varios intentos. Verifica el historial de facturación o intenta nuevamente.',
-  );
-  exhaustedError.code = 'invoice-retries-exceeded';
-  exhaustedError.invoice = lastSnapshot;
-  exhaustedError.invoiceId = invoiceId;
-  exhaustedError.businessId = businessId;
-  throw exhaustedError;
+  const remainingTimeoutMs = timeoutMs - (Date.now() - startedAt);
+  return waitForInvoiceResultByPolling({
+    businessId,
+    invoiceId,
+    signal,
+    pollInterval,
+    timeoutMs: Math.max(1, remainingTimeoutMs),
+  });
 };

@@ -6,10 +6,12 @@ import { useCallback, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled, { keyframes } from 'styled-components';
 
+import { getRoleLabelById } from '@/abilities/roles';
 import DatePicker from '@/components/DatePicker';
 import { selectUser } from '@/features/auth/userSlice';
 import { fbListApprovalLogs } from '@/firebase/authorization/approvalLogs';
 import { getDateRange } from '@/utils/date/getDateRange';
+import { resolveUserDisplayName } from '@/utils/users/userDisplay';
 
 interface UserSnapshot {
   uid?: string;
@@ -300,14 +302,6 @@ const TARGET_LABELS: Record<string, string> = {
   cart: 'Carrito',
 };
 
-const ROLE_LABELS: Record<string, string> = {
-  admin: 'Administrador',
-  owner: 'Propietario',
-  dev: 'Desarrollador',
-  manager: 'Gerente',
-  cashier: 'Cajero',
-};
-
 const isCashRegisterEntry = (entry: ApprovalLogEntry) => {
   const action = entry.action || '';
   const targetType = entry.target?.type || '';
@@ -326,11 +320,11 @@ const isCashRegisterEntry = (entry: ApprovalLogEntry) => {
 };
 
 const resolveName = (user?: UserSnapshot | null) =>
-  user?.name || user?.email || user?.uid || '—';
+  resolveUserDisplayName(user, '—');
 
 const resolveUserSummary = (user?: UserSnapshot | null) => {
   if (!user) return '—';
-  const roleLabel = user.role ? ROLE_LABELS[user.role] || user.role : '';
+  const roleLabel = user.role ? getRoleLabelById(user.role) : '';
   return roleLabel ? `${resolveName(user)} (${roleLabel})` : resolveName(user);
 };
 

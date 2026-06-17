@@ -16,10 +16,11 @@ Este documento describe el flujo completo para “hacer la factura” desde el p
 
 ### Componentes y archivos clave
 
-- UI principal: `src/views/component/Cart/components/InvoicePanel/InvoicePanel.jsx:70`
-- Acción principal (submit): `src/views/component/Cart/components/InvoicePanel/InvoicePanel.jsx:208`
-- Servicio de negocio: `src/services/invoice/invoiceService.js:24`
-- Utilidades relacionadas: actualización de inventario, NCF, AR, preórdenes y modo prueba (mismos archivo, ver funciones referenciadas más abajo).
+- UI principal: `src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/InvoicePanel.tsx:28` (ruta actual).
+- Acción principal (submit): `src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/hooks/useInvoicePanelController.ts:340` delega en `src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/utils/submitInvoicePanel.ts:214` (ruta actual).
+- Servicio cliente: `src/services/invoice/useInvoice.ts:250` y `src/services/invoice/invoice.service.ts:482` (ruta actual del servicio cliente anterior).
+- Servicio backend transaccional: `functions/src/app/modules/invoice/services/invoice.service.js:25` (`processInvoiceData`).
+- Utilidades relacionadas: actualización de inventario, NCF, AR, preórdenes y modo prueba (ver rutas actuales referenciadas más abajo).
 
 ---
 
@@ -34,7 +35,7 @@ Responsable de:
 Puntos relevantes:
 
 - `handleCancelShipping`: limpia carrito, cierra panel, borra cliente y datos de seguro cuando corresponde.
-- `handleSubmit` (`InvoicePanel.jsx:208`):
+- `handleSubmit` (`src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/hooks/useInvoicePanelController.ts:340`; `submitInvoicePanel` en `src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/utils/submitInvoicePanel.ts:214`, ruta actual):
   - Bloquea tipo de NCF mientras procesa.
   - Valida formulario de AR si la venta es a crédito.
   - Calcula `dueDate` según configuración de plazos.
@@ -56,7 +57,9 @@ Estados/flags importantes:
 
 ### Servicio: processInvoice (negocio)
 
-Firma: `export async function processInvoice(params) -> { invoice }` (`invoiceService.js:24`)
+Firma actual: `processInvoice(params)` (`src/services/invoice/useInvoice.ts:250`) envuelve `submitInvoice` (`src/services/invoice/invoice.service.ts:482`) y la callable `createInvoiceV2`; la lógica transaccional está en `processInvoiceData(...)` (`functions/src/app/modules/invoice/services/invoice.service.js:25`).
+
+Nota de ruta: el servicio cliente anterior ya no existe; las referencias siguientes apuntan a la ruta actual o nombran el equivalente del snapshot histórico cuando el nombre cambió.
 
 Parámetros clave:
 
@@ -66,20 +69,20 @@ Parámetros clave:
 
 Flujo principal:
 
-1. Validar carrito: `verifyCartItems` (`invoiceService.js:112`).
-2. Modo prueba (si `isTestMode`): `processTestModeInvoice` (`invoiceService.js:257`) y retornar mock de factura sin persistir.
-3. Validar cuadre de caja: `validateCashReconciliation` (`invoiceService.js:118`). Requiere estado `open` o aborta con estrategia de notificación.
-4. NCF (si habilitado): `handleTaxReceiptGeneration` (`invoiceService.js:136`) usando `fbGetAndUpdateTaxReceipt`.
-5. Cliente: `retrieveAndUpdateClientData` (`invoiceService.js:147`) con `fbUpsertClient`; usa `GenericClient` como fallback.
+1. Validar carrito: `validateInvoiceCart` (`functions/src/app/modules/invoice/utils/invoiceValidation.js:34`, ruta actual; snapshot histórico: `verifyCartItems`).
+2. Modo prueba (si `isTestMode`): `buildTestModeInvoice` (`src/services/invoice/useInvoice.ts:45`, ruta actual) y retornar mock de factura sin persistir.
+3. Validar cuadre de caja: `checkOpenCashCount` (`functions/src/app/modules/cashCount/utils/cashCountCheck.js:13`, ruta actual). Requiere estado `open` o aborta con estrategia de notificación.
+4. NCF (si habilitado): `getAndUpdateTaxReceipt` (`functions/src/app/modules/taxReceipt/services/taxReceiptAdmin.service.js:76`, ruta actual).
+5. Cliente: `retrieveAndUpdateClient` (`functions/src/app/modules/client/services/clientAdmin.service.js:22`, ruta actual); usa `GenericClient` como fallback.
 6. Generar factura:
-   - Si es preorden: `generalInvoiceFromPreorder` (`invoiceService.js:235`) con `fbGenerateInvoiceFromPreorder`.
-   - Si es venta normal: `generateFinalInvoice` (`invoiceService.js:164`) que llama a `fbAddInvoice` y adjunta `NCF`, `client` y `cashCountId`. Considera `dueDate` con `checkIfHasDueDate` (`invoiceService.js:100`).
-7. Inventario: `adjustProductInventory` (`invoiceService.js:158`) con `fbUpdateProductsStock`.
-   - Antes de enviar al backend se normaliza el carrito (`src/services/invoice/invoice.service.js:45`), forzando que cada producto lleve `productStockId` y `batchId` en `null` cuando no existan valores reales. Esto evita que Firestore rechace la factura por campos `undefined` y deja explícito que no hay stock o lote vinculado.
+   - Si es preorden: `generateInvoiceFromPreorder` (`functions/src/app/modules/invoice/services/invoiceGeneration.service.js:94`, ruta actual).
+   - Si es venta normal: `generateFinalInvoice` (`functions/src/app/modules/invoice/services/invoiceGeneration.service.js:35`, ruta actual) adjunta `NCF`, `client` y `cashCountId`. Considera `dueDate` con `checkIfHasDueDate` (`functions/src/app/modules/invoice/services/invoiceGeneration.service.js:25`, ruta actual).
+7. Inventario: `adjustProductInventory` (`functions/src/app/modules/Inventory/services/Inventory.service.js:127`, ruta actual).
+   - Antes de enviar al backend se normaliza el carrito (`src/services/invoice/invoice.service.ts:174`, ruta actual), forzando que cada producto lleve `productStockId` y `batchId` en `null` cuando no existan valores reales. Esto evita que Firestore rechace la factura por campos `undefined` y deja explícito que no hay stock o lote vinculado.
 8. Notas de crédito: si existen en el carrito, `fbConsumeCreditNotes`.
 9. Cuentas por cobrar:
-   - AR normal: `manageReceivableAccounts` (`invoiceService.js:179`) usa `fbAddAR` y `fbAddInstallmentAR`.
-   - AR de seguros: `manageInsuranceReceivableAccounts` (`invoiceService.js:192`) normaliza estructura, obtiene nombre del seguro (`getInsurance`) y registra autorización (`addInsuranceAuth`).
+   - AR normal: `manageReceivableAccounts` (`functions/src/app/modules/accountReceivable/services/accountReceivable.service.js:6`, ruta actual).
+   - AR de seguros: `manageInsuranceReceivableAccounts` (`functions/src/app/modules/accountReceivable/services/insuranceAccountReceivable.service.js:8`, ruta actual) normaliza estructura, obtiene nombre del seguro y registra autorización.
 10. Retorno: `{ invoice }`.
 
 Errores y garantías:
@@ -157,17 +160,21 @@ Postcondiciones:
 
 ### Referencias rápidas
 
-- `src/views/component/Cart/components/InvoicePanel/InvoicePanel.jsx:70`
-- `src/views/component/Cart/components/InvoicePanel/InvoicePanel.jsx:208`
-- `src/services/invoice/invoiceService.js:24`
-- `src/services/invoice/invoiceService.js:100`
-- `src/services/invoice/invoiceService.js:112`
-- `src/services/invoice/invoiceService.js:118`
-- `src/services/invoice/invoiceService.js:136`
-- `src/services/invoice/invoiceService.js:147`
-- `src/services/invoice/invoiceService.js:158`
-- `src/services/invoice/invoiceService.js:164`
-- `src/services/invoice/invoiceService.js:179`
-- `src/services/invoice/invoiceService.js:192`
-- `src/services/invoice/invoiceService.js:235`
-- `src/services/invoice/invoiceService.js:257`
+- `src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/InvoicePanel.tsx:28`
+- `src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/hooks/useInvoicePanelController.ts:340`
+- `src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/utils/submitInvoicePanel.ts:214`
+- `src/services/invoice/useInvoice.ts:45`
+- `src/services/invoice/useInvoice.ts:250`
+- `src/services/invoice/invoice.service.ts:174`
+- `src/services/invoice/invoice.service.ts:482`
+- `functions/src/app/modules/invoice/services/invoice.service.js:25`
+- `functions/src/app/modules/invoice/utils/invoiceValidation.js:34`
+- `functions/src/app/modules/cashCount/utils/cashCountCheck.js:13`
+- `functions/src/app/modules/taxReceipt/services/taxReceiptAdmin.service.js:76`
+- `functions/src/app/modules/client/services/clientAdmin.service.js:22`
+- `functions/src/app/modules/invoice/services/invoiceGeneration.service.js:25`
+- `functions/src/app/modules/invoice/services/invoiceGeneration.service.js:35`
+- `functions/src/app/modules/invoice/services/invoiceGeneration.service.js:94`
+- `functions/src/app/modules/Inventory/services/Inventory.service.js:127`
+- `functions/src/app/modules/accountReceivable/services/accountReceivable.service.js:6`
+- `functions/src/app/modules/accountReceivable/services/insuranceAccountReceivable.service.js:8`

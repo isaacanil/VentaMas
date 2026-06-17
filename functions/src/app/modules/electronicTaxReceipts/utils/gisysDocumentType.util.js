@@ -12,10 +12,12 @@ const normalizeToken = (value) =>
 const GISYS_DOCUMENT_BY_FISCAL_TYPE = Object.freeze({
   B01: 'E31',
   B02: 'E32',
+  B03: 'E33',
   B04: 'E34',
   B15: 'E45',
   E31: 'E31',
   E32: 'E32',
+  E33: 'E33',
   E34: 'E34',
   E45: 'E45',
 });
@@ -31,10 +33,12 @@ const resolveFromToken = (value) => {
 
   if (compact.startsWith('B01')) return 'E31';
   if (compact.startsWith('B02')) return 'E32';
+  if (compact.startsWith('B03')) return 'E33';
   if (compact.startsWith('B04')) return 'E34';
   if (compact.startsWith('B15')) return 'E45';
   if (compact.startsWith('E31')) return 'E31';
   if (compact.startsWith('E32')) return 'E32';
+  if (compact.startsWith('E33')) return 'E33';
   if (compact.startsWith('E34')) return 'E34';
   if (compact.startsWith('E45')) return 'E45';
 
@@ -46,6 +50,8 @@ const resolveFromToken = (value) => {
   if (token.includes('TAX CREDIT')) return 'E31';
   if (token.includes('GUBERNAMENTAL')) return 'E45';
   if (token.includes('GOVERNMENT')) return 'E45';
+  if (token.includes('NOTA') && token.includes('DEBITO')) return 'E33';
+  if (token.includes('DEBIT NOTE')) return 'E33';
   if (token.includes('NOTA') && token.includes('CREDITO')) return 'E34';
   if (token.includes('CREDIT NOTE')) return 'E34';
 
@@ -53,11 +59,13 @@ const resolveFromToken = (value) => {
 };
 
 export const resolveGisysDocumentType = ({
+  documentType,
   ncfType,
   ncf,
   cart,
 } = {}) => {
   const candidates = [
+    documentType,
     ncf?.documentType,
     ncf?.electronicDocumentType,
     ncf?.fiscalType,
@@ -81,4 +89,4 @@ export const resolveGisysDocumentType = ({
 };
 
 export const isSupportedGisysDocumentType = (documentType) =>
-  ['E31', 'E32', 'E34', 'E45'].includes(String(documentType || '').trim().toUpperCase());
+  ['E31', 'E32', 'E33', 'E34', 'E45'].includes(String(documentType || '').trim().toUpperCase());

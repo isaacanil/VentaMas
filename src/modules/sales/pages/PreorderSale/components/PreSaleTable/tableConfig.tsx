@@ -1,4 +1,4 @@
-import { getTimeElapsed } from '@/hooks/useFormatTime';
+import { getTimeElapsed } from '@/utils/date/formatTime';
 import type { ColumnConfig } from '@/components/ui/AdvancedTable/types/ColumnTypes';
 
 import {

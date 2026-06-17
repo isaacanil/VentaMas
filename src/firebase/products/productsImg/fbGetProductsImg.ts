@@ -1,4 +1,4 @@
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, type Unsubscribe } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 import type { UserIdentity } from '@/types/users';
@@ -7,7 +7,7 @@ import type { ProductImageRecord } from '@/types/products';
 export const fbGetProductsImg = (
   user: UserIdentity | null,
   SetAllImg: (images: ProductImageRecord[]) => void,
-): void => {
+): Unsubscribe | undefined => {
   if (!user || !user?.businessID) {
     return;
   }
@@ -18,7 +18,7 @@ export const fbGetProductsImg = (
     'productsImages',
   );
 
-  onSnapshot(imageRef, (querySnapshot) => {
+  return onSnapshot(imageRef, (querySnapshot) => {
     const img: ProductImageRecord[] = [];
     querySnapshot.forEach((doc) => {
       img.push(doc.data() as ProductImageRecord);

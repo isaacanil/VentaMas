@@ -1,7 +1,5 @@
-import { httpsCallable } from 'firebase/functions';
-
-import { functions } from '@/firebase/firebaseconfig';
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 
 type BaseRequest = {
   sessionToken?: string | null;
@@ -28,20 +26,20 @@ export type DeveloperBusinessImpersonationStatus = {
   remainingMs?: number | null;
 };
 
-const startBusinessImpersonationCallable = httpsCallable<
+const startBusinessImpersonationCallable = createFirebaseCallable<
   StartBusinessImpersonationRequest,
   DeveloperBusinessImpersonationStatus
->(functions, 'clientStartBusinessImpersonation');
+>('clientStartBusinessImpersonation');
 
-const stopBusinessImpersonationCallable = httpsCallable<
+const stopBusinessImpersonationCallable = createFirebaseCallable<
   StopBusinessImpersonationRequest,
   DeveloperBusinessImpersonationStatus
->(functions, 'clientStopBusinessImpersonation');
+>('clientStopBusinessImpersonation');
 
-const getBusinessImpersonationStatusCallable = httpsCallable<
+const getBusinessImpersonationStatusCallable = createFirebaseCallable<
   GetBusinessImpersonationStatusRequest,
   DeveloperBusinessImpersonationStatus
->(functions, 'clientGetBusinessImpersonationStatus');
+>('clientGetBusinessImpersonationStatus');
 
 const withSessionToken = (): BaseRequest => {
   const { sessionToken } = getStoredSession();
@@ -68,12 +66,12 @@ export const fbStartDeveloperBusinessImpersonation = async ({
   ttlMinutes?: number;
 }): Promise<DeveloperBusinessImpersonationStatus> => {
   try {
-    const response = await startBusinessImpersonationCallable({
+    const data = await startBusinessImpersonationCallable({
       targetBusinessId,
       ...(typeof ttlMinutes === 'number' ? { ttlMinutes } : {}),
       ...withSessionToken(),
     });
-    return (response.data || {}) as DeveloperBusinessImpersonationStatus;
+    return data || {};
   } catch (error) {
     throw new Error(
       extractErrorMessage(error, 'No se pudo iniciar la impersonación de negocio'),
@@ -83,8 +81,8 @@ export const fbStartDeveloperBusinessImpersonation = async ({
 
 export const fbStopDeveloperBusinessImpersonation = async (): Promise<DeveloperBusinessImpersonationStatus> => {
   try {
-    const response = await stopBusinessImpersonationCallable(withSessionToken());
-    return (response.data || {}) as DeveloperBusinessImpersonationStatus;
+    const data = await stopBusinessImpersonationCallable(withSessionToken());
+    return data || {};
   } catch (error) {
     throw new Error(
       extractErrorMessage(error, 'No se pudo detener la impersonación de negocio'),
@@ -94,9 +92,9 @@ export const fbStopDeveloperBusinessImpersonation = async (): Promise<DeveloperB
 
 export const fbGetDeveloperBusinessImpersonationStatus = async (): Promise<DeveloperBusinessImpersonationStatus> => {
   try {
-    const response =
+    const data =
       await getBusinessImpersonationStatusCallable(withSessionToken());
-    return (response.data || {}) as DeveloperBusinessImpersonationStatus;
+    return data || {};
   } catch (error) {
     throw new Error(
       extractErrorMessage(error, 'No se pudo obtener el estado de impersonación'),

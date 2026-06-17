@@ -33,8 +33,9 @@ import {
 } from '@/firebase/warehouse/warehouseService';
 import { replacePathParams } from '@/router/routes/replacePathParams';
 import ROUTES_PATH from '@/router/routes/routesName';
-import Tree from '@/modules/inventory/components/tree/Tree';
 import type { InventoryUser } from '@/utils/inventory/types';
+
+import Tree from '../tree/Tree';
 
 const SidebarContainer = styled.div`
   display: flex;

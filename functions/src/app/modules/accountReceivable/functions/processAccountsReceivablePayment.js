@@ -1,14 +1,14 @@
-import { createHash } from 'node:crypto';
-
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import { nanoid } from 'nanoid';
 
 import { db, Timestamp, FieldValue } from '../../../core/config/firebase.js';
 import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.util.js';
+import { buildIdempotencyRequestHash } from '../../../core/utils/idempotencyRequestHash.util.js';
+import { sanitizeForResponse } from '../../../core/utils/responseSerialization.util.js';
 import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 import { LIMIT_OPERATION_KEYS } from '../../../versions/v2/billing/config/limitOperations.config.js';
 import { assertBusinessSubscriptionAccess } from '../../../versions/v2/billing/utils/subscriptionAccess.util.js';
 import { toCleanString } from '../../../versions/v2/billing/utils/billingCommon.util.js';
@@ -150,42 +150,6 @@ const buildReceivableFxSettlementAccountingEvent = ({
     createdAt: occurredAt,
     createdBy,
   });
-
-const sanitizeForResponse = (value) => {
-  if (value instanceof Timestamp) {
-    return value.toMillis();
-  }
-  if (Array.isArray(value)) {
-    return value.map((item) => sanitizeForResponse(item));
-  }
-  if (!value || typeof value !== 'object') {
-    return value;
-  }
-  const next = {};
-  Object.entries(value).forEach(([key, nestedValue]) => {
-    if (nestedValue === undefined) return;
-    next[key] = sanitizeForResponse(nestedValue);
-  });
-  return next;
-};
-
-const stableSerialize = (value) => {
-  if (value == null || typeof value !== 'object') {
-    return JSON.stringify(value);
-  }
-  if (Array.isArray(value)) {
-    return `[${value.map((item) => stableSerialize(item)).join(',')}]`;
-  }
-
-  const record = asRecord(value);
-  return `{${Object.keys(record)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${stableSerialize(record[key])}`)
-    .join(',')}}`;
-};
-
-const buildIdempotencyRequestHash = (value) =>
-  createHash('sha256').update(stableSerialize(value)).digest('hex');
 
 const resolveCashCountEmployeeId = (employee) => {
   if (typeof employee === 'string' && employee.trim()) {

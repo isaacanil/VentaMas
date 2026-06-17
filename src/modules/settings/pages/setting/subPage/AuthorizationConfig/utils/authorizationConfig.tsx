@@ -5,7 +5,7 @@ import {
   SafetyOutlined,
 } from '@/constants/icons/antd';
 import { Button, Space, Tag, Typography } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import type { TableColumnsType as ColumnsType } from 'antd';
 import type { ModulePinDetail } from '@/firebase/authorization/pinAuth';
 
 import type {

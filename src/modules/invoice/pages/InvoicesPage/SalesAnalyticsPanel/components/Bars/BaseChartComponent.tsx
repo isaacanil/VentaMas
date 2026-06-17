@@ -1,7 +1,7 @@
 import React from 'react';
 import type { ReactNode } from 'react';
 import styled from 'styled-components';
-import Typography from '@/components/ui/Typografy/Typografy';
+import Typography from '@/components/ui/Typography/Typography';
 
 type BaseChartContainerProps = {
   title: ReactNode;

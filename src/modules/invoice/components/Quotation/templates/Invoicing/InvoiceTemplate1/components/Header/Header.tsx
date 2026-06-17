@@ -8,7 +8,7 @@ import type { QuotationData } from '@/pdf/invoicesAndQuotation/types';
 import type { InvoiceBusinessInfo } from '@/types/invoice';
 import { formatDateTime } from '@/utils/date/dateUtils';
 import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
-import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity.js';
+import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity';
 import {
   InfoItem,
   Spacing,

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import MyEditor from '@/components/ui/BlockEditor/TextEditor';
+import MyEditor from './components/BlockEditor/TextEditor';
 
 const ChangeLogCreate: React.FC = () => {
   return <MyEditor />;

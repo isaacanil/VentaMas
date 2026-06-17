@@ -1,12 +1,8 @@
 import { Form, message } from 'antd';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import type {
-  RcFile,
-  UploadChangeParam,
-  UploadFile,
-  UploadProps,
-} from 'antd/es/upload/interface';
+import type { UploadFile, UploadProps } from 'antd';
+import type { RcFile, UploadChangeParam } from 'antd/es/upload/interface';
 
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import { SelectSettingCart } from '@/features/cart/cartSlice';
@@ -17,7 +13,7 @@ import {
   fbUpdateInvoiceSignatureAssets,
   fbUploadBusinessInvoiceSignatureAsset,
 } from '@/firebase/businessInfo/fbAddBusinessInfo';
-import InvoiceTemplates from '@/modules/invoice/components/Invoice/components/InvoiceTemplates/InvoiceTemplates';
+import { InvoiceTemplates } from '@/modules/invoice/public';
 import { beforeUpload as processAssetBeforeUpload } from '@/modules/settings/pages/setting/subPage/BusinessEditor/utils/imageUpload';
 import type { InvoiceSignatureAssets } from '@/types/invoice';
 import { isInvoiceTemplateV3Beta } from '@/utils/invoice/template';
@@ -57,8 +53,17 @@ const INITIAL_ASSET_UPLOAD_STAGE: Record<
   stamp: null,
 };
 
+const INVOICE_MESSAGE_FIELD = 'invoiceMessage';
+
+const buildInvoiceInitialValues = (
+  invoiceMessage: string,
+): InvoiceFormValues => ({
+  invoiceMessage,
+});
+
 const InvoiceSettingsSection = () => {
   const [form] = Form.useForm<InvoiceFormValues>();
+  const hydratedInvoiceValuesRef = useRef<InvoiceFormValues | null>(null);
   const business = useSelector(selectBusinessData);
   const {
     billing: { invoiceType: selectedInvoiceType },
@@ -74,6 +79,10 @@ const InvoiceSettingsSection = () => {
   );
   const [messageApi, contextHolder] = message.useMessage();
   const currentMessage = business?.invoice?.invoiceMessage || '';
+  const invoiceInitialValues = useMemo(
+    () => buildInvoiceInitialValues(currentMessage),
+    [currentMessage],
+  );
   const currentSignatureAssets = useMemo(
     () => normalizeSignatureAssets(business?.invoice?.signatureAssets),
     [business?.invoice?.signatureAssets],
@@ -111,8 +120,28 @@ const InvoiceSettingsSection = () => {
   );
 
   useEffect(() => {
-    form.setFieldsValue({ invoiceMessage: currentMessage });
-  }, [form, currentMessage]);
+    const previousValues = hydratedInvoiceValuesRef.current;
+
+    if (!previousValues) {
+      form.setFieldsValue(invoiceInitialValues);
+      hydratedInvoiceValuesRef.current = invoiceInitialValues;
+      return;
+    }
+
+    const currentValue = form.getFieldValue(INVOICE_MESSAGE_FIELD);
+    const previousValue = previousValues.invoiceMessage;
+    const nextValue = invoiceInitialValues.invoiceMessage;
+
+    if (Object.is(currentValue, previousValue)) {
+      form.setFieldsValue(invoiceInitialValues);
+      hydratedInvoiceValuesRef.current = invoiceInitialValues;
+      return;
+    }
+
+    if (Object.is(currentValue, nextValue)) {
+      hydratedInvoiceValuesRef.current = invoiceInitialValues;
+    }
+  }, [form, invoiceInitialValues]);
 
   const handleInvoiceMessageBlur = () => {
     const value = form.getFieldValue('invoiceMessage') ?? '';

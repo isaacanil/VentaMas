@@ -1,23 +1,13 @@
-import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { onCall } from 'firebase-functions/v2/https';
 import { nanoid } from 'nanoid';
 
 import { db, FieldValue } from '../../../core/config/firebase.js';
-import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.util.js';
 import { getNextIDTransactional } from '../../../core/utils/getNextID.js';
 import { buildClientWritePayload } from '../utils/clientNormalizer.js';
-import {
-  MEMBERSHIP_ROLE_GROUPS,
-  assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
 import { LIMIT_OPERATION_KEYS } from '../../../versions/v2/billing/config/limitOperations.config.js';
 import { incrementBusinessUsageMetric } from '../../../versions/v2/billing/services/usage.service.js';
-import {
-  assertBusinessSubscriptionAccess,
-} from '../../../versions/v2/billing/utils/subscriptionAccess.util.js';
+import { prepareLimitedCreateOperation } from '../../../versions/v2/billing/utils/limitedCreateOperation.util.js';
 import { toCleanString } from '../../../versions/v2/billing/utils/billingCommon.util.js';
-
-const asRecord = (value) =>
-  value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 
 const toSerializableClient = (client) => {
   if (!client || typeof client !== 'object') return null;
@@ -29,36 +19,17 @@ const toSerializableClient = (client) => {
 };
 
 export const createClient = onCall(async (request) => {
-  const authUid = await resolveCallableAuthUid(request);
-  if (!authUid) {
-    throw new HttpsError('unauthenticated', 'Usuario no autenticado');
-  }
-
-  const payload = asRecord(request?.data);
-  const clientInput = asRecord(payload.client);
-  const businessId =
-    toCleanString(payload.businessId) ||
-    toCleanString(payload.businessID) ||
-    toCleanString(clientInput.businessID) ||
-    null;
-
-  if (!businessId) {
-    throw new HttpsError('invalid-argument', 'businessId es requerido');
-  }
-  if (!Object.keys(clientInput).length) {
-    throw new HttpsError('invalid-argument', 'client es requerido');
-  }
-
-  await assertUserAccess({
+  const {
     authUid,
     businessId,
-    allowedRoles: MEMBERSHIP_ROLE_GROUPS.INVOICE_OPERATOR,
-  });
-
-  await assertBusinessSubscriptionAccess({
-    businessId,
-    action: 'write',
+    input: clientInput,
+    metricKey,
+    incrementBy,
+  } = await prepareLimitedCreateOperation({
+    request,
+    inputKey: 'client',
     operation: LIMIT_OPERATION_KEYS.CLIENT_CREATE,
+    inputBusinessIdKeys: ['businessID'],
   });
 
   const user = { uid: authUid, businessID: businessId };
@@ -98,8 +69,8 @@ export const createClient = onCall(async (request) => {
 
     await incrementBusinessUsageMetric({
       businessId,
-      metricKey: 'clientsTotal',
-      incrementBy: 1,
+      metricKey,
+      incrementBy,
       tx: transaction,
     });
   });

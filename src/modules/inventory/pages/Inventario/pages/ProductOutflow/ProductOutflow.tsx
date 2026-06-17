@@ -11,17 +11,17 @@ import {
   SelectProductOutflow,
   setProductOutflowData,
 } from '@/features/productOutflow/productOutflow';
-import { fbDeleteProductOutflow } from '@/firebase/ProductOutflow/fbDeleteProductOutflow';
-import { fbGetProductOutflow } from '@/firebase/ProductOutflow/fbGetProductOutflow';
+import { fbDeleteProductOutflow } from '@/modules/inventory/repositories/productOutflow/fbDeleteProductOutflow';
+import { fbGetProductOutflow } from '@/modules/inventory/repositories/productOutflow/fbGetProductOutflow';
 import useScroll from '@/hooks/useScroll';
 import DateUtils from '@/utils/date/dateUtils';
 const { formatDate, toMillis } = DateUtils;
 import { ButtonGroup } from '@/components/ui/Button/ButtonGroup';
-import { CenteredText } from '@/components/ui/CentredText';
+import { CenteredText } from '@/components/ui/CenteredText';
 import { FormattedValue } from '@/components/ui/FormattedValue/FormattedValue';
 import Loader from '@/components/ui/loader/Loader';
 import type { UserWithBusiness } from '@/types/users';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 import { Header } from './components/Header/Header';
 import {
@@ -97,7 +97,7 @@ export const ProductOutflow = () => {
   }, [outflowList, dispatch, outflowProduct.mode, outflowProduct.data.id]);
 
   useEffect(() => {
-    fbGetProductOutflow({
+    return fbGetProductOutflow({
       user,
       setOutflowList,
       setOutflowListLoader,

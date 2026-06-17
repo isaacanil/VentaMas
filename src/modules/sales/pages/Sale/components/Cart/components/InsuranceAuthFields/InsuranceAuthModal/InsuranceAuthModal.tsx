@@ -12,8 +12,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import DatePicker from '@/components/DatePicker';
-import DoctorModal from '@/components/DoctorModal/DoctorModal';
-import DoctorSelector from '@/components/DoctorSelector/DoctorSelector';
 import type { DoctorRecord } from '@/types/doctors';
 import type { UserIdentity, UserWithBusiness } from '@/types/users';
 import { selectUser } from '@/features/auth/userSlice';
@@ -34,10 +32,12 @@ import {
   getClientInsuranceByClientId,
 } from '@/firebase/insurance/clientInsuranceService';
 import { useListenInsuranceConfig } from '@/firebase/insurance/insuranceService';
-import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
-import FileUploader from '@/components/common/FileUploader/FileUploader';
+import { useInsuranceEnabled } from '@/modules/insurance/public';
 
 import Dependent from './components/Dependent/Dependent';
+import DoctorModal from './components/DoctorModal/DoctorModal';
+import DoctorSelector from './components/DoctorSelector/DoctorSelector';
+import FileUploader from './components/FileUploader/FileUploader';
 
 type ClientIdentity = {
   id?: string;
@@ -178,7 +178,6 @@ const persistClientInsurance = async ({
   }
 };
 
-// Importamos el componente FileUploader
 // Importamos los componentes de médicos
 
 const Row = styled.div`

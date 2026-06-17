@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 
-import { getTimeElapsed } from '@/hooks/useFormatTime';
+import { getTimeElapsed } from '@/utils/date/formatTime';
+import { toMillis } from '@/utils/date/toMillis';
 import { formatPrice } from '@/utils/format';
 
 import type { TimestampLike } from '@/utils/accountsReceivable/types';
@@ -44,22 +45,6 @@ const LastPaymentRow = styled.span`
   white-space: nowrap;
 `;
 
-const toMillis = (value?: TimestampLike): number | null => {
-  if (!value) return null;
-  if (value instanceof Date) return value.getTime();
-  if (typeof value === 'number') return value;
-  if (typeof value === 'string') {
-    const asNum = Number(value);
-    return Number.isNaN(asNum) ? new Date(value).getTime() : asNum;
-  }
-  if (typeof value === 'object') {
-    if (typeof value.toMillis === 'function') return value.toMillis();
-    if (typeof value.toDate === 'function') return value.toDate().getTime();
-    if (typeof value.seconds === 'number') return value.seconds * 1000;
-  }
-  return null;
-};
-
 interface PaymentSummaryCellProps {
   totalPaid: number;
   initialAmount: number;
@@ -78,7 +63,7 @@ export const PaymentSummaryCell = ({
   initialAmount,
   lastPaymentDate,
 }: PaymentSummaryCellProps) => {
-  const time = toMillis(lastPaymentDate);
+  const time = toMillis(lastPaymentDate) ?? null;
   const lastPaymentText = time ? getTimeElapsed(time, 0) : 'Sin pagos';
   const status = getStatus(totalPaid, initialAmount);
 

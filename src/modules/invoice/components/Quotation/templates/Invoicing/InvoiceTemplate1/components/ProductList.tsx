@@ -10,8 +10,10 @@ import {
   resetAmountToBuyForProduct,
 } from '@/utils/pricing';
 import { resolveInvoiceAmount } from '@/utils/invoice/amount';
-import { convertTimeToSpanish } from '@/components/modals/ProductForm/components/sections/warranty.helpers';
-import { PRODUCT_BRAND_DEFAULT } from '@/features/updateProduct/updateProductSlice';
+import {
+  PRODUCT_BRAND_DEFAULT,
+  convertTimeToSpanish,
+} from '@/domain/products/productDefaults';
 
 import { Col } from './Table/Col';
 import { Row } from './Table/Row';

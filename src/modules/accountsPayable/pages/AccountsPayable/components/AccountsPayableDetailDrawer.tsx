@@ -11,8 +11,8 @@ import {
 } from '@/constants/icons/antd';
 import { selectUser } from '@/features/auth/userSlice';
 import { openFileCenter } from '@/features/files/fileSlice';
-import { useOpenAccountingEntry } from '@/modules/accounting/hooks/useOpenAccountingEntry';
-import { useAccountsPayablePayments } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/Compra/components/PurchasesTable/hooks/useAccountsPayablePayments';
+import { useOpenAccountingEntry } from '@/modules/accounting/public';
+import { useAccountsPayablePayments } from '@/modules/accountsPayable/hooks/useAccountsPayablePayments';
 import type { AccountsPayablePayment, PaymentMethodEntry } from '@/types/payments';
 import type { UserIdentity } from '@/types/users';
 import { toMillis } from '@/utils/date/toMillis';

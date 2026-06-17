@@ -1,0 +1,1 @@
+export { ProductQRCode } from './ProductQRCode';

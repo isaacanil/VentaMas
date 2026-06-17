@@ -1,7 +1,7 @@
 import { WarningOutlined } from '@/constants/icons/antd';
 import React from 'react';
 
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 import {
   ConfigButton,

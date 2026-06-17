@@ -3,7 +3,7 @@ import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseconfig';
 import type { UserIdentity } from '@/types/users';
 
-import type { BarcodeSettings } from './types';
+import type { BarcodeSettings } from '@/domain/barcode/types';
 
 /**
  * Guarda la configuracion de codigos de barras para un negocio

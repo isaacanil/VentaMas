@@ -37,6 +37,7 @@ export const processInvoicePrint = async ({
           invoiceType,
         }),
       );
+      handleAfterPrint();
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Error desconocido';

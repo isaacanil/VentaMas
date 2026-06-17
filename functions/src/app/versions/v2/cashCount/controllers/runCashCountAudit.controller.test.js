@@ -5,11 +5,13 @@ const {
   assertUserAccessMock,
   collectionData,
   isAccountingRolloutEnabledForBusinessMock,
+  resolveCallableAuthUidMock,
 } = vi.hoisted(() => ({
   assertBusinessSubscriptionAccessMock: vi.fn(),
   assertUserAccessMock: vi.fn(),
   collectionData: new Map(),
   isAccountingRolloutEnabledForBusinessMock: vi.fn(),
+  resolveCallableAuthUidMock: vi.fn(),
 }));
 
 const getNestedValue = (value, path) =>
@@ -65,7 +67,11 @@ vi.mock('../../../../core/config/firebase.js', () => ({
   },
 }));
 
-vi.mock('../../invoice/services/repairTasks.service.js', () => ({
+vi.mock('../../../../core/utils/callableSessionAuth.util.js', () => ({
+  resolveCallableAuthUid: (...args) => resolveCallableAuthUidMock(...args),
+}));
+
+vi.mock('../../auth/services/userAccess.service.js', () => ({
   MEMBERSHIP_ROLE_GROUPS: {
     AUDIT: ['owner', 'admin', 'dev'],
   },
@@ -92,9 +98,11 @@ describe('runCashCountAudit', () => {
     assertBusinessSubscriptionAccessMock.mockResolvedValue(undefined);
     assertUserAccessMock.mockResolvedValue(undefined);
     isAccountingRolloutEnabledForBusinessMock.mockReturnValue(true);
+    resolveCallableAuthUidMock.mockResolvedValue('auditor-1');
   });
 
   it('nets receivable payment void cash movements when recalculating discrepancies', async () => {
+    resolveCallableAuthUidMock.mockResolvedValue('resolved-auditor-1');
     collectionData.set('businesses/business-1/cashCounts', [
       {
         id: 'cash-count-1',
@@ -149,17 +157,17 @@ describe('runCashCountAudit', () => {
     collectionData.set('businesses/business-1/invoices', []);
     collectionData.set('businesses/business-1/expenses', []);
 
-    const result = await runCashCountAudit(
-      {
-        businessId: 'business-1',
-        threshold: 0,
+    const payload = {
+      businessId: 'business-1',
+      threshold: 0,
+    };
+    const context = {
+      auth: {
+        uid: 'context-auditor-1',
       },
-      {
-        auth: {
-          uid: 'auditor-1',
-        },
-      },
-    );
+    };
+
+    const result = await runCashCountAudit(payload, context);
 
     expect(result).toMatchObject({
       status: 'done',
@@ -167,8 +175,12 @@ describe('runCashCountAudit', () => {
       scanned: 1,
       discrepancies: [],
     });
+    expect(resolveCallableAuthUidMock).toHaveBeenCalledWith({
+      data: payload,
+      auth: context.auth,
+    });
     expect(assertUserAccessMock).toHaveBeenCalledWith({
-      authUid: 'auditor-1',
+      authUid: 'resolved-auditor-1',
       businessId: 'business-1',
       allowedRoles: ['owner', 'admin', 'dev'],
     });
@@ -176,6 +188,75 @@ describe('runCashCountAudit', () => {
       businessId: 'business-1',
       action: 'read',
       requiredModule: 'cashReconciliation',
+    });
+  });
+
+  it('resolves the callable actor from an adapted request', async () => {
+    const payload = {
+      businessId: 'business-1',
+      sessionToken: 'session-token-1',
+    };
+    const context = {
+      auth: {
+        uid: 'firebase-auth-uid',
+      },
+    };
+
+    const result = await runCashCountAudit(payload, context);
+
+    expect(result).toMatchObject({
+      status: 'done',
+      businessId: 'business-1',
+      scanned: 0,
+      discrepancies: [],
+    });
+    expect(resolveCallableAuthUidMock).toHaveBeenCalledWith({
+      data: payload,
+      auth: context.auth,
+    });
+  });
+
+  it('rejects unauthenticated requests when no callable actor is resolved', async () => {
+    resolveCallableAuthUidMock.mockResolvedValue(null);
+
+    await expect(
+      runCashCountAudit(
+        {
+          businessId: 'business-1',
+        },
+        {
+          auth: {
+            uid: 'firebase-auth-uid',
+          },
+        },
+      ),
+    ).rejects.toMatchObject({
+      code: 'unauthenticated',
+      message: 'Usuario no autenticado',
+    });
+
+    expect(assertUserAccessMock).not.toHaveBeenCalled();
+    expect(assertBusinessSubscriptionAccessMock).not.toHaveBeenCalled();
+  });
+
+  it('passes the resolved actor to assertUserAccess', async () => {
+    resolveCallableAuthUidMock.mockResolvedValue('session-user-1');
+
+    await runCashCountAudit(
+      {
+        businessId: 'business-1',
+      },
+      {
+        auth: {
+          uid: 'firebase-auth-uid',
+        },
+      },
+    );
+
+    expect(assertUserAccessMock).toHaveBeenCalledWith({
+      authUid: 'session-user-1',
+      businessId: 'business-1',
+      allowedRoles: ['owner', 'admin', 'dev'],
     });
   });
 });

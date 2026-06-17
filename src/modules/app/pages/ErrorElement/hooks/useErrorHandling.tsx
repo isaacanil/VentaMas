@@ -4,9 +4,9 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { selectUser } from '@/features/auth/userSlice';
-import { fbRecordError } from '@/firebase/errors/fbRecordError';
 import ROUTES_NAME from '@/router/routes/routesName';
 import { MESSAGES } from '@/modules/app/pages/ErrorElement/constants';
+import { fbRecordError } from '../repositories/errorReport.repository';
 
 type ErrorMessage = string | null | undefined;
 

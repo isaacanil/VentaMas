@@ -1,9 +1,9 @@
-import { Alert } from '@heroui/react';
 import { useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import { VmAlert } from '@/components/heroui';
 import { PageShell } from '@/components/layout/PageShell';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 
 import { AccountingWorkspaceShell } from './components/AccountingWorkspaceShell';
@@ -18,10 +18,10 @@ import { useAccountingOriginNavigation } from './hooks/useAccountingOriginNaviga
 import { useAccountingWorkspace } from './hooks/useAccountingWorkspace';
 import { useFiscalMonthlyComplianceAvailability } from './hooks/useFiscalMonthlyComplianceAvailability';
 import {
-  findAccountingLedgerRecord,
   getAccountingEntryLocatorFromSearch,
   getAccountingEntryLocatorKey,
 } from '@/modules/accounting/utils/accountingNavigation';
+import { findAccountingLedgerRecord } from '@/modules/accounting/utils/accountingLedgerRecord';
 import {
   DEFAULT_ACCOUNTING_WORKSPACE_PANEL,
   getAccountingWorkspacePanel,
@@ -150,68 +150,68 @@ export default function AccountingWorkspace() {
 
   const notices = [
     !isAccountingRolloutBusiness ? (
-      <Alert key="rollout-info" status="accent">
-        <Alert.Indicator />
-        <Alert.Content>
-          <Alert.Title>
+      <VmAlert key="rollout-info" status="accent">
+        <VmAlert.Indicator />
+        <VmAlert.Content>
+          <VmAlert.Title>
             Este negocio no esta marcado como rollout contable piloto.
-          </Alert.Title>
-          <Alert.Description>
+          </VmAlert.Title>
+          <VmAlert.Description>
             La pantalla sigue disponible para disenar el flujo y probar asientos
             manuales, pero algunos eventos automaticos pueden no aparecer.
-          </Alert.Description>
-        </Alert.Content>
-      </Alert>
+          </VmAlert.Description>
+        </VmAlert.Content>
+      </VmAlert>
     ) : null,
     configError || chartError || postingProfilesError ? (
-      <Alert key="load-error" status="danger">
-        <Alert.Indicator />
-        <Alert.Content>
-          <Alert.Title>
+      <VmAlert key="load-error" status="danger">
+        <VmAlert.Indicator />
+        <VmAlert.Content>
+          <VmAlert.Title>
             Hay datos contables que no cargaron por completo.
-          </Alert.Title>
-          <Alert.Description>
+          </VmAlert.Title>
+          <VmAlert.Description>
             {configError ??
               chartError ??
               postingProfilesError ??
               'Error de carga.'}
-          </Alert.Description>
-        </Alert.Content>
-      </Alert>
+          </VmAlert.Description>
+        </VmAlert.Content>
+      </VmAlert>
     ) : null,
     setupIncomplete ? (
-      <Alert key="setup-incomplete" status="warning">
-        <Alert.Indicator />
-        <Alert.Content>
-          <Alert.Title>
+      <VmAlert key="setup-incomplete" status="warning">
+        <VmAlert.Indicator />
+        <VmAlert.Content>
+          <VmAlert.Title>
             Contabilidad habilitada sin base contable completa.
-          </Alert.Title>
-          <Alert.Description>
+          </VmAlert.Title>
+          <VmAlert.Description>
             Completa el catalogo de cuentas y las reglas de contabilización en
             Configuracion &gt; Contabilidad. Mientras falte esta base, los
             documentos crean eventos, pero no generan asientos posteados para
             mayor y reportes.
-          </Alert.Description>
-        </Alert.Content>
-      </Alert>
+          </VmAlert.Description>
+        </VmAlert.Content>
+      </VmAlert>
     ) : null,
   ].filter(Boolean);
 
   const content = (() => {
     if (!accountingEnabled) {
       return (
-        <Alert status="warning">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Title>
+        <VmAlert status="warning">
+          <VmAlert.Indicator />
+          <VmAlert.Content>
+            <VmAlert.Title>
               La contabilidad general aun no esta habilitada para este negocio.
-            </Alert.Title>
-            <Alert.Description>
+            </VmAlert.Title>
+            <VmAlert.Description>
               Activa contabilidad desde Settings &gt; Accounting para usar libro
               diario, reportes y cierres.{' '}
-            </Alert.Description>
-          </Alert.Content>
-        </Alert>
+            </VmAlert.Description>
+          </VmAlert.Content>
+        </VmAlert>
       );
     }
 

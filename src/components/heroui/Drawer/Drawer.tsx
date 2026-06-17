@@ -107,6 +107,7 @@ const VmDrawerRoot = ({
 
 export const VmDrawer = Object.assign(VmDrawerRoot, {
   Root: VmDrawerRoot,
+  Primitive: HeroDrawer,
   Backdrop: HeroDrawer.Backdrop,
   Content: HeroDrawer.Content,
   Dialog: VmDrawerDialog,

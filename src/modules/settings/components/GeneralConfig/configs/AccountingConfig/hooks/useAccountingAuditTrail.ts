@@ -15,7 +15,7 @@ import type {
   BankAccount,
   ChartOfAccount,
 } from '@/types/accounting';
-import type { AccountingSettingsHistoryEntry } from '../utils/accountingConfig';
+import type { AccountingSettingsHistoryEntry } from '@/modules/accounting/public';
 import {
   buildAccountingAuditEntryRecord,
   buildLegacyAuditFetchCandidates,

@@ -1,7 +1,5 @@
-import { httpsCallable } from 'firebase/functions';
-
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { functions } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 import {
   ReverseJournalEntryInputSchema,
   ReverseJournalEntryResultSchema,
@@ -21,19 +19,24 @@ export interface ReverseJournalEntryResult {
   reused: boolean;
 }
 
+type ReverseJournalEntryRequest = ReverseJournalEntryInput & {
+  sessionToken?: string;
+};
+
+const reverseJournalEntryCallable = createFirebaseCallable<
+  ReverseJournalEntryRequest,
+  ReverseJournalEntryResult
+>('reverseJournalEntry');
+
 export const fbReverseJournalEntry = async (
   input: ReverseJournalEntryInput,
 ): Promise<ReverseJournalEntryResult> => {
   const { sessionToken } = getStoredSession();
   const parsedInput = ReverseJournalEntryInputSchema.parse(input);
-  const callable = httpsCallable<
-    ReverseJournalEntryInput & { sessionToken?: string },
-    ReverseJournalEntryResult
-  >(functions, 'reverseJournalEntry');
 
-  const response = await callable({
+  const result = await reverseJournalEntryCallable({
     ...parsedInput,
     ...(sessionToken ? { sessionToken } : {}),
   });
-  return ReverseJournalEntryResultSchema.parse(response.data);
+  return ReverseJournalEntryResultSchema.parse(result);
 };

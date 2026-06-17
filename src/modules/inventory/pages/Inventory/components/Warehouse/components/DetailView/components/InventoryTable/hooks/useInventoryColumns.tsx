@@ -2,6 +2,7 @@ import { InfoCircleOutlined, EllipsisOutlined } from '@/constants/icons/antd';
 import { Button, Dropdown, Tooltip } from 'antd';
 import React, { useMemo } from 'react';
 
+import { formatBatchLabel } from '@/modules/inventory/utils/format';
 import {
   ActionContainer,
   ActionButton,
@@ -50,9 +51,10 @@ export const useInventoryColumns = ({
         minWidth: '150px',
         cell: ({ value }: { value: InventoryRow['batch'] }) => {
           if (!value) return 'N/A';
-          const displayLabel = value.batchNumberId
-            ? `# ${value.batchNumberId}`
-            : 'N/A';
+          const displayLabel = formatBatchLabel(value.batchNumberId, {
+            noBatchLabel: 'N/A',
+            prefix: '# ',
+          });
 
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

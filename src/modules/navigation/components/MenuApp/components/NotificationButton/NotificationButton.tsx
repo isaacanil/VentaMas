@@ -4,7 +4,12 @@ import { useDispatch } from 'react-redux';
 import { icons } from '@/constants/icons/icons';
 import { openNotificationCenter } from '@/features/notification/notificationCenterSlice';
 import { ButtonIconMenu } from '@/components/ui/Button/ButtonIconMenu';
-import type { NotificationButtonProps } from '@/types/ui';
+
+type NotificationButtonProps = {
+  handleCloseMenu?: () => void;
+  className?: string;
+  [key: string]: unknown;
+};
 
 export const NotificationButton = ({
   handleCloseMenu,

@@ -1,4 +1,5 @@
 import type { MissingBusiness } from '../types';
+import { buildCsvFromRows } from '@/utils/export/csv';
 
 export const buildMissingBusinessesCsv = (missing: MissingBusiness[]) => {
   const headers = ['id', 'name'];
@@ -7,10 +8,7 @@ export const buildMissingBusinessesCsv = (missing: MissingBusiness[]) => {
     sanitizeCsv(business.name),
   ]);
 
-  return [
-    headers.join(','),
-    ...rows.map((row) => row.map(escapeCsv).join(',')),
-  ].join('\n');
+  return buildCsvFromRows({ headers, rows });
 };
 
 export const createMissingBusinessesCsvFilename = (date = new Date()) => {
@@ -22,13 +20,4 @@ const sanitizeCsv = (text: unknown) => {
   return String(text)
     .replace(/[\n\r]+/g, ' ')
     .trim();
-};
-
-const escapeCsv = (value: unknown) => {
-  if (value == null) return '';
-  const str = String(value);
-  if (/[",\n]/.test(str)) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
 };

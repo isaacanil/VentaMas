@@ -43,8 +43,13 @@ export const useFbGetExpenses = (
   const sharedExpenses = useSelector(selectExpenseList) as ExpenseDoc[];
 
   const [localExpenses, setLocalExpenses] = useState<ExpenseDoc[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<unknown>(null);
+  const [snapshotState, setSnapshotState] = useState<{
+    loadedKey: string | null;
+    error: unknown;
+  }>({
+    loadedKey: null,
+    error: null,
+  });
 
   const rangeStart = useMemo(
     () => toMillis(range?.startDate),
@@ -67,22 +72,7 @@ export const useFbGetExpenses = (
     [scope, setSharedExpenses],
   );
 
-  // ✅ “Key” reactiva para detectar cambios (business/range/scope)
   const queryKey = `${user?.businessID ?? ''}|${rangeStart}|${rangeEnd}|${scope}`;
-  const [prevKey, setPrevKey] = useState(queryKey);
-
-  // ✅ Patrón de la doc: setState condicional basado en “prev vs current”
-  if (queryKey !== prevKey) {
-    setPrevKey(queryKey);
-    setError(null);
-
-    if (!user?.businessID) {
-      setLoading(false);
-      if (scope === LOCAL_SCOPE) setLocalExpenses([]);
-    } else {
-      setLoading(true);
-    }
-  }
 
   useEffect(() => {
     if (!user?.businessID) return;
@@ -121,27 +111,36 @@ export const useFbGetExpenses = (
         });
 
         setExpensesByScope(list);
-        setError(null);
-        setLoading(false);
+        setSnapshotState({
+          loadedKey: queryKey,
+          error: null,
+        });
       },
       (listenerError) => {
         console.error('Error fetching expenses: ', listenerError);
-        setError(listenerError);
-        setLoading(false);
+        setSnapshotState({
+          loadedKey: queryKey,
+          error: listenerError,
+        });
       },
     );
 
     return unsubscribe;
-  }, [user?.businessID, rangeStart, rangeEnd, setExpensesByScope]);
+  }, [user?.businessID, rangeStart, rangeEnd, setExpensesByScope, queryKey]);
 
   const expenses = scope === SHARED_SCOPE ? sharedExpenses : localExpenses;
 
-  // ✅ si no hay business, no “toques” estado: solo devuelve vacío
   const hasBusiness = Boolean(user?.businessID);
+  const loading = hasBusiness && snapshotState.loadedKey !== queryKey;
+  const error =
+    hasBusiness && snapshotState.loadedKey === queryKey
+      ? snapshotState.error
+      : null;
+
   return {
     expenses: hasBusiness ? (loading ? [] : expenses) : [],
     loading: hasBusiness ? loading : false,
-    error: hasBusiness ? error : null,
+    error,
   };
 };
 

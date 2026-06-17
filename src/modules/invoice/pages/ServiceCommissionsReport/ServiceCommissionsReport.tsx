@@ -1,4 +1,3 @@
-import { ListBoxItem } from '@heroui/react';
 import { parseDate } from '@internationalized/date';
 import { message } from 'antd';
 import dayjs from 'dayjs';
@@ -12,6 +11,7 @@ import {
   VmAlert,
   VmDateField,
   VmDateRangePicker,
+  VmListBox,
   VmRangeCalendar,
   VmSelect,
   VmSpinner,
@@ -21,10 +21,10 @@ import { FileExcelOutlined, TeamOutlined } from '@/constants/icons/antd';
 import { useServiceCommissionCollaborators } from '@/firebase/commissions/useServiceCommissionCollaborators';
 import { useServiceCommissionsReport } from '@/firebase/commissions/useServiceCommissionsReport';
 import { selectUser } from '@/features/auth/userSlice';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 import type { UserIdentity } from '@/types/users';
-import { buildServiceCommissionCollaboratorOptions } from '@/utils/commissions/collaboratorOptions';
+import { buildServiceCommissionCollaboratorOptions } from '@/domain/commissions/collaboratorOptions';
 
 import { ReportPagination } from './components/ReportPagination';
 import {
@@ -300,23 +300,23 @@ export const ServiceCommissionsReport = () => {
                   </VmSelect.Trigger>
                   <VmSelect.Popover>
                     <CollaboratorListBox aria-label="Colaboradores">
-                      <ListBoxItem
+                      <VmListBox.Item
                         key={ALL_COLLABORATORS_KEY}
                         id={ALL_COLLABORATORS_KEY}
                         textValue="Todos los colaboradores"
                       >
                         Todos los colaboradores
-                        <ListBoxItem.Indicator />
-                      </ListBoxItem>
+                        <VmListBox.ItemIndicator />
+                      </VmListBox.Item>
                       {collaboratorOptions.map((option) => (
-                        <ListBoxItem
+                        <VmListBox.Item
                           key={option.value}
                           id={option.value}
                           textValue={option.label}
                         >
                           {option.label}
-                          <ListBoxItem.Indicator />
-                        </ListBoxItem>
+                          <VmListBox.ItemIndicator />
+                        </VmListBox.Item>
                       ))}
                     </CollaboratorListBox>
                   </VmSelect.Popover>

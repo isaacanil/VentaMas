@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   buildDgii607ValidationPreview,
   mapCreditNoteDocToDgii607Record,
+  mapDebitNoteDocToDgii607Record,
   mapInvoiceDocToDgii607Record,
   resolveMonthlyPeriodRange,
 } from './dgii607MonthlyReport.service.js';
@@ -44,7 +45,11 @@ const createFirestoreMock = ({
 
   return {
     collection: vi.fn((collectionPath) => {
-      const query = queries[collectionPath];
+      const query =
+        queries[collectionPath] ??
+        (collectionPath.endsWith('/debitNotes')
+          ? createQueryMock([])
+          : null);
       if (!query) {
         throw new Error(`Unexpected collection path: ${collectionPath}`);
       }
@@ -174,6 +179,65 @@ describe('dgii607MonthlyReport.service', () => {
         issuedAtSource: '2026-04-11T09:30:00.000Z',
         invoiceId: 'invoice-1',
         invoiceNcf: 'B0100000015',
+      },
+    });
+  });
+
+  it('normaliza una nota de debito real al shape del validador 607', () => {
+    const result = mapDebitNoteDocToDgii607Record({
+      businessId: 'business-1',
+      debitNoteId: 'debit-note-1',
+      debitNoteDoc: {
+        id: 'debit-note-1',
+        numberID: 4,
+        number: 'ND-2026-000004',
+        ncf: 'E330000000004',
+        createdAt: {
+          toDate: () => new Date('2026-04-12T09:30:00.000Z'),
+        },
+        client: {
+          id: 'client-1',
+          rnc: '101010101',
+        },
+        totalAmount: 118,
+        taxAmount: 18,
+        invoiceId: 'invoice-1',
+        invoiceNcf: 'E310000000008',
+        status: 'issued',
+      },
+    });
+
+    expect(result).toEqual({
+      businessId: 'business-1',
+      issuedAt: '2026-04-12T09:30:00.000Z',
+      createdAt: '2026-04-12T09:30:00.000Z',
+      documentNumber: 'ND-2026-000004',
+      invoiceId: 'invoice-1',
+      counterparty: {
+        id: 'client-1',
+        identification: {
+          number: '101010101',
+        },
+      },
+      clientId: 'client-1',
+      data: {
+        NCF: 'E330000000004',
+      },
+      ncf: 'E330000000004',
+      totals: {
+        total: 118,
+        tax: 18,
+      },
+      paymentBreakdown: {
+        creditSale: 118,
+      },
+      status: 'issued',
+      metadata: {
+        recordId: 'debit-note-1',
+        sourcePath: 'businesses/business-1/debitNotes/debit-note-1',
+        issuedAtSource: '2026-04-12T09:30:00.000Z',
+        invoiceId: 'invoice-1',
+        invoiceNcf: 'E310000000008',
       },
     });
   });

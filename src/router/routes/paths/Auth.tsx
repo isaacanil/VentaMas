@@ -1,27 +1,24 @@
 import ROUTES_NAME from '@/router/routes/routesName';
-import FrontendFeatureRouteGate from '@/components/availability/FrontendFeatureRouteGate';
-import { CLAIM_BUSINESS_BLOCKED_COPY } from '@/components/availability/FrontendFeatureRouteGate.config';
+import FrontendFeatureRouteGate from '@/router/guards/availability/FrontendFeatureRouteGate';
+import { CLAIM_BUSINESS_BLOCKED_COPY } from '@/router/guards/availability/FrontendFeatureRouteGate.config';
+import {
+  loadClaimBusinessRoute,
+  loadLoginRoute,
+  loadSignUpRoute,
+} from '@/modules/auth/public';
 import { redirectAuthenticatedToDefaultLoader } from '@/router/routes/loaders/accessLoaders';
-import { Login } from '@/modules/auth/pages/Login/Login';
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
 import type { AppRoute } from '@/router/types/routeTypes';
 
-const ClaimBusinessPage = lazy(() =>
-  import('@/modules/auth/pages/ClaimBusinessPage/ClaimBusinessPage').then(
-    (module) => ({ default: module.ClaimBusinessPage }),
-  ),
-);
-const SignUpPage = lazy(() =>
-  import('@/modules/auth/pages/SignUp/SignUp').then((module) => ({
-    default: module.SignUp,
-  })),
-);
+const ClaimBusinessPage = lazy(loadClaimBusinessRoute);
+const LoginPage = lazy(loadLoginRoute);
+const SignUpPage = lazy(loadSignUpRoute);
 
 const { LOGIN, SIGNUP, CLAIM_BUSINESS } = ROUTES_NAME.AUTH_TERM;
 const Routes: AppRoute[] = [
   {
     path: LOGIN,
-    element: <Login />,
+    element: <LoginPage />,
     isPublic: true,
     loader: redirectAuthenticatedToDefaultLoader,
   },

@@ -4,7 +4,12 @@ import type {
   AccountingOperationType,
   AccountingRateType,
 } from '@/types/accounting';
-import type { SupportedDocumentCurrency } from '@/utils/accounting/currencies';
+import {
+  ACCOUNTING_CURRENCY_CODES,
+  DEFAULT_FUNCTIONAL_CURRENCY,
+  normalizeSupportedDocumentCurrency,
+  type SupportedDocumentCurrency,
+} from '@/utils/accounting/currencies';
 
 const safeNumber = (value: unknown): number | null => {
   const parsed = Number(value);
@@ -74,6 +79,74 @@ export const buildAccountingManualRatesByCurrency = (
       );
       return accumulator;
     }, {});
+
+const normalizeLegacyAccountingManualRates = (
+  value: unknown,
+  functionalCurrency: SupportedDocumentCurrency,
+): AccountingManualRatesByCurrency => {
+  const record = asRecord(value);
+  const legacyUsdRate = safeNumber(record.USD);
+  const normalizedForeignCurrency = normalizeSupportedDocumentCurrency(
+    record.foreignCurrency,
+    DEFAULT_FUNCTIONAL_CURRENCY,
+  );
+  const foreignCurrency =
+    normalizedForeignCurrency === functionalCurrency
+      ? null
+      : normalizedForeignCurrency;
+
+  if (!foreignCurrency) {
+    return {};
+  }
+
+  const normalized = normalizeAccountingCurrencyRateConfig(value);
+  return {
+    [foreignCurrency]: {
+      buyRate: normalized.buyRate ?? legacyUsdRate,
+      sellRate: normalized.sellRate ?? legacyUsdRate,
+    },
+  };
+};
+
+export const normalizeAccountingManualRatesByCurrency = (
+  value: unknown,
+  functionalCurrency: SupportedDocumentCurrency,
+  documentCurrencies: SupportedDocumentCurrency[],
+): AccountingManualRatesByCurrency => {
+  const record = asRecord(value);
+  const nestedRates = Object.entries(
+    record,
+  ).reduce<AccountingManualRatesByCurrency>(
+    (accumulator, [currencyKey, nestedValue]) => {
+      if (
+        !(ACCOUNTING_CURRENCY_CODES as readonly string[]).includes(currencyKey)
+      ) {
+        return accumulator;
+      }
+
+      const normalizedCurrency = currencyKey as SupportedDocumentCurrency;
+      if (normalizedCurrency === functionalCurrency) {
+        return accumulator;
+      }
+
+      accumulator[normalizedCurrency] =
+        normalizeAccountingCurrencyRateConfig(nestedValue);
+      return accumulator;
+    },
+    {},
+  );
+
+  const sourceRates =
+    Object.keys(nestedRates).length > 0
+      ? nestedRates
+      : normalizeLegacyAccountingManualRates(value, functionalCurrency);
+
+  return buildAccountingManualRatesByCurrency(
+    functionalCurrency,
+    documentCurrencies,
+    sourceRates,
+  );
+};
 
 export const getAccountingRateValue = (
   value: AccountingCurrencyRateConfig | null | undefined,

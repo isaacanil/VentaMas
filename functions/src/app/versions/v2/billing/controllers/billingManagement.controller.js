@@ -4,6 +4,11 @@ import { URL } from 'node:url';
 
 import { db, FieldValue } from '../../../../core/config/firebase.js';
 import { MAIL_SECRETS } from '../../../../core/config/secrets.js';
+import {
+  escapeHtml,
+  sanitizeMailHeader,
+} from '../../../../core/utils/emailContent.util.js';
+import { resolveCallableAuthUid } from '../../../../core/utils/callableSessionAuth.util.js';
 import { BILLING_DEFAULT_PROVIDER } from '../config/planCatalog.constants.js';
 import {
   toCleanString,
@@ -45,7 +50,6 @@ import {
 } from '../services/providerAdapter.service.js';
 
 const USERS_COLLECTION = 'users';
-const SESSION_COLLECTION = 'sessionTokens';
 const PAYMENT_HISTORY_SUBCOLLECTION = 'paymentHistory';
 const CHECKOUT_SESSIONS_SUBCOLLECTION = 'checkoutSessions';
 const PUBLIC_PLAN_HIDDEN_CODES = new Set(['demo', 'legacy']);
@@ -72,26 +76,8 @@ const DEFAULT_PAYMENT_STATUS_BY_SUBSCRIPTION_STATUS = {
   deprecated: 'void',
   none: 'canceled',
 };
-const SESSION_IDLE_TIMEOUT_MS = Number(process.env.CLIENT_AUTH_MAX_IDLE_MS) || 0;
-const DISABLE_SESSION_EXPIRY =
-  String(process.env.CLIENT_AUTH_DISABLE_SESSION_EXPIRY || '').toLowerCase() ===
-  'true';
-
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function sanitizeMailHeader(value) {
-  return String(value ?? '').replace(/[\r\n]+/g, ' ').trim();
-}
 
 const usersCol = db.collection(USERS_COLLECTION);
-const sessionsCol = db.collection(SESSION_COLLECTION);
 
 const isUserDev = (userData) => {
   const root = asRecord(userData);
@@ -102,53 +88,8 @@ const isUserDev = (userData) => {
   );
 };
 
-const resolveUserIdFromSession = async (request) => {
-  const sessionToken = toCleanString(request?.data?.sessionToken);
-  if (!sessionToken) return null;
-
-  const sessionRef = sessionsCol.doc(sessionToken);
-  const sessionSnap = await sessionRef.get();
-  if (!sessionSnap.exists) {
-    throw new HttpsError('unauthenticated', 'Sesion invalida o expirada');
-  }
-
-  const data = sessionSnap.data() || {};
-  const userId = toCleanString(data.userId);
-  if (!userId) {
-    throw new HttpsError('unauthenticated', 'Sesion sin usuario asociado');
-  }
-
-  if (!DISABLE_SESSION_EXPIRY) {
-    const now = Date.now();
-    const expiresAt = toMillis(data.expiresAt);
-    if (!expiresAt || expiresAt <= now) {
-      throw new HttpsError('unauthenticated', 'La sesion ha expirado');
-    }
-    if (SESSION_IDLE_TIMEOUT_MS > 0) {
-      const lastActivity = toMillis(data.lastActivity);
-      if (lastActivity && now - lastActivity > SESSION_IDLE_TIMEOUT_MS) {
-        throw new HttpsError(
-          'unauthenticated',
-          'Sesion cerrada por inactividad',
-        );
-      }
-    }
-  }
-
-  await sessionRef.set(
-    {
-      lastActivity: FieldValue.serverTimestamp(),
-      status: 'active',
-    },
-    { merge: true },
-  );
-
-  return userId;
-};
-
 const resolveAuthUser = async (request) => {
-  const uidFromSession = await resolveUserIdFromSession(request);
-  const userId = uidFromSession || request?.auth?.uid || null;
+  const userId = toCleanString(await resolveCallableAuthUid(request));
   if (!userId) {
     throw new HttpsError('unauthenticated', 'Usuario no autenticado');
   }
@@ -328,10 +269,7 @@ const buildPublicPlanCatalogEntries = ({
       );
     });
 
-const buildPlanChangeSummary = ({
-  previousVersion,
-  nextVersion,
-}) => {
+const buildPlanChangeSummary = ({ previousVersion, nextVersion }) => {
   const previous = asRecord(previousVersion);
   const next = asRecord(nextVersion);
   const changes = [];
@@ -481,7 +419,9 @@ const sendPlanVersionNoticeEmails = async ({
   const recipientsByEmail = new Map();
 
   for (const accountDoc of accountsSnap.docs) {
-    const activeSubscription = await getActiveSubscriptionForBillingAccount(accountDoc.id);
+    const activeSubscription = await getActiveSubscriptionForBillingAccount(
+      accountDoc.id,
+    );
     const activePlanCode =
       toCleanString(activeSubscription?.planId)?.toLowerCase() || null;
     if (activePlanCode !== planCode) continue;
@@ -695,7 +635,11 @@ const writePendingCheckoutSession = async ({
   const normalizedBillingAccountId = toCleanString(billingAccountId);
   const normalizedBusinessId = toCleanString(businessId);
   const normalizedPlanCode = toCleanString(planCode);
-  if (!normalizedBillingAccountId || !normalizedBusinessId || !normalizedPlanCode) {
+  if (
+    !normalizedBillingAccountId ||
+    !normalizedBusinessId ||
+    !normalizedPlanCode
+  ) {
     return null;
   }
 
@@ -750,16 +694,15 @@ const writePendingCheckoutSession = async ({
 
 const ACTIVE_CHECKOUT_PROVIDER_ID = 'cardnet';
 
-const resolveRequestedPaymentProvider = ({
-  requestedProvider,
-}) => {
+const resolveRequestedPaymentProvider = ({ requestedProvider }) => {
   const providerFromRequest = toCleanString(requestedProvider)?.toLowerCase();
   if (providerFromRequest === ACTIVE_CHECKOUT_PROVIDER_ID) {
     return providerFromRequest;
   }
 
-  const envOverride =
-    toCleanString(process.env.BILLING_CHECKOUT_PROVIDER_OVERRIDE)?.toLowerCase();
+  const envOverride = toCleanString(
+    process.env.BILLING_CHECKOUT_PROVIDER_OVERRIDE,
+  )?.toLowerCase();
   if (envOverride === ACTIVE_CHECKOUT_PROVIDER_ID) return envOverride;
 
   return ACTIVE_CHECKOUT_PROVIDER_ID;
@@ -774,6 +717,7 @@ export const getBillingOverview = onCall(async (request) => {
   }
 
   const { userId } = await resolveAuthUser(request);
+
   await assertBillingAccessForBusiness({
     businessId,
     actorUserId: userId,
@@ -808,6 +752,7 @@ export const createSubscriptionCheckoutSession = onCall(async (request) => {
   }
 
   const { userId } = await resolveAuthUser(request);
+
   await assertBillingAccessForBusiness({
     businessId,
     actorUserId: userId,
@@ -815,10 +760,10 @@ export const createSubscriptionCheckoutSession = onCall(async (request) => {
   });
 
   await ensureBusinessBillingSetup({ businessId, actorUserId: userId });
-  const subscriptionSnapshot = await getBusinessSubscriptionSnapshot(businessId);
-  const { billingAccountId, ownerUid } = await resolveBillingAccountIdFromBusiness(
-    businessId,
-  );
+  const subscriptionSnapshot =
+    await getBusinessSubscriptionSnapshot(businessId);
+  const { billingAccountId, ownerUid } =
+    await resolveBillingAccountIdFromBusiness(businessId);
   await ensureBillingAccountForOwner({ ownerUid, actorUserId: userId });
 
   const providerId = resolveRequestedPaymentProvider({
@@ -869,8 +814,9 @@ export const createSubscriptionCheckoutSession = onCall(async (request) => {
     currency: selectedCurrency,
     amount: selectedAmount,
   });
-  const normalizedCheckoutSession =
-    normalizeCheckoutSessionAdapterResponse(checkoutSessionResult);
+  const normalizedCheckoutSession = normalizeCheckoutSessionAdapterResponse(
+    checkoutSessionResult,
+  );
 
   try {
     await writePendingCheckoutSession({
@@ -902,49 +848,50 @@ export const createSubscriptionCheckoutSession = onCall(async (request) => {
   };
 });
 
-export const createSubscriptionBillingPortalSession = onCall(async (request) => {
-  const businessId = toCleanString(request?.data?.businessId);
-  const returnUrl = toCleanString(request?.data?.returnUrl);
-  const requestedProvider = toCleanString(request?.data?.provider);
-  if (!businessId) {
-    throw new HttpsError('invalid-argument', 'businessId es requerido');
-  }
+export const createSubscriptionBillingPortalSession = onCall(
+  async (request) => {
+    const businessId = toCleanString(request?.data?.businessId);
+    const returnUrl = toCleanString(request?.data?.returnUrl);
+    const requestedProvider = toCleanString(request?.data?.provider);
+    if (!businessId) {
+      throw new HttpsError('invalid-argument', 'businessId es requerido');
+    }
 
-  const { userId } = await resolveAuthUser(request);
-  await assertBillingAccessForBusiness({
-    businessId,
-    actorUserId: userId,
-    allowRoles: ['owner', 'admin'],
-  });
+    const { userId } = await resolveAuthUser(request);
+    await assertBillingAccessForBusiness({
+      businessId,
+      actorUserId: userId,
+      allowRoles: ['owner', 'admin'],
+    });
 
-  await ensureBusinessBillingSetup({ businessId, actorUserId: userId });
-  await getBusinessSubscriptionSnapshot(businessId);
-  const { billingAccountId, ownerUid } = await resolveBillingAccountIdFromBusiness(
-    businessId,
-  );
-  await ensureBillingAccountForOwner({ ownerUid, actorUserId: userId });
+    await ensureBusinessBillingSetup({ businessId, actorUserId: userId });
+    await getBusinessSubscriptionSnapshot(businessId);
+    const { billingAccountId, ownerUid } =
+      await resolveBillingAccountIdFromBusiness(businessId);
+    await ensureBillingAccountForOwner({ ownerUid, actorUserId: userId });
 
-  const providerId = resolveRequestedPaymentProvider({
-    requestedProvider,
-  });
-  const adapter = resolvePaymentProviderAdapter(providerId);
-  const resolvedProviderId = toCleanString(adapter?.providerId) || providerId;
+    const providerId = resolveRequestedPaymentProvider({
+      requestedProvider,
+    });
+    const adapter = resolvePaymentProviderAdapter(providerId);
+    const resolvedProviderId = toCleanString(adapter?.providerId) || providerId;
 
-  const url = await adapter.createBillingPortalSession({
-    billingAccountId,
-    businessId,
-    returnUrl,
-    actorUserId: userId,
-  });
+    const url = await adapter.createBillingPortalSession({
+      billingAccountId,
+      businessId,
+      returnUrl,
+      actorUserId: userId,
+    });
 
-  return {
-    ok: true,
-    provider: resolvedProviderId,
-    billingAccountId,
-    businessId,
-    url,
-  };
-});
+    return {
+      ok: true,
+      provider: resolvedProviderId,
+      billingAccountId,
+      businessId,
+      url,
+    };
+  },
+);
 
 export const verifySubscriptionCheckoutSession = onCall(async (request) => {
   const businessId = toCleanString(request?.data?.businessId);
@@ -964,7 +911,8 @@ export const verifySubscriptionCheckoutSession = onCall(async (request) => {
   });
 
   await ensureBusinessBillingSetup({ businessId, actorUserId: userId });
-  const { billingAccountId } = await resolveBillingAccountIdFromBusiness(businessId);
+  const { billingAccountId } =
+    await resolveBillingAccountIdFromBusiness(businessId);
   const checkoutRef = db
     .doc(`billingAccounts/${billingAccountId}`)
     .collection(CHECKOUT_SESSIONS_SUBCOLLECTION)
@@ -984,7 +932,8 @@ export const verifySubscriptionCheckoutSession = onCall(async (request) => {
     );
   }
 
-  const currentStatus = toCleanString(checkoutSession.status)?.toLowerCase() || 'pending';
+  const currentStatus =
+    toCleanString(checkoutSession.status)?.toLowerCase() || 'pending';
   const currentPaymentId = toCleanString(checkoutSession.paymentId);
   const currentSubscriptionId = toCleanString(checkoutSession.subscriptionId);
   if (
@@ -1127,7 +1076,9 @@ export const processMockSubscriptionScenario = onCall(async (request) => {
     throw new HttpsError('invalid-argument', 'businessId es requerido');
   }
 
-  const { userId } = await resolveAuthUser(request);
+  const { userId, userData } = await resolveAuthUser(request);
+  assertDeveloperAccess(userData);
+
   await assertBillingAccessForBusiness({
     businessId,
     actorUserId: userId,
@@ -1289,7 +1240,9 @@ export const devPublishPlanCatalogVersion = onCall(
     const noticeWindowDays = request?.data?.noticeWindowDays;
     const plansBeforePublish = await listPlanCatalog();
     const previousPlanEntry =
-      plansBeforePublish.find((item) => toCleanString(item.planCode) === planCode) || {};
+      plansBeforePublish.find(
+        (item) => toCleanString(item.planCode) === planCode,
+      ) || {};
     const previousVersion = asRecord(previousPlanEntry.currentVersion);
 
     const result = await publishPlanCatalogVersion({
@@ -1310,16 +1263,17 @@ export const devPublishPlanCatalogVersion = onCall(
 
     const plans = await listPlanCatalog();
     const planEntry =
-      plans.find((item) => toCleanString(item.planCode) === result.planCode) || {};
+      plans.find((item) => toCleanString(item.planCode) === result.planCode) ||
+      {};
     const displayName =
       toCleanString(planEntry.displayName) || toCleanString(result.planCode);
     const nextVersion =
       (Array.isArray(planEntry.versions)
         ? planEntry.versions.find(
-          (item) =>
-            toCleanString(item?.versionId) === result.versionId ||
-            toCleanString(item?.version) === result.versionId,
-        )
+            (item) =>
+              toCleanString(item?.versionId) === result.versionId ||
+              toCleanString(item?.version) === result.versionId,
+          )
         : null) ||
       planEntry.currentVersion ||
       {};
@@ -1327,18 +1281,20 @@ export const devPublishPlanCatalogVersion = onCall(
     const notifications = noNotice
       ? { recipientCount: 0, delivered: 0, skipped: 0, failed: 0 }
       : await sendPlanVersionNoticeEmails({
-        planCode: result.planCode,
-        versionId: result.versionId,
-        displayName,
-        effectiveAt: result.effectiveAt,
-        noticeWindowDays: result.noticeWindowDays,
-        previousVersion,
-        nextVersion,
-      });
+          planCode: result.planCode,
+          versionId: result.versionId,
+          displayName,
+          effectiveAt: result.effectiveAt,
+          noticeWindowDays: result.noticeWindowDays,
+          previousVersion,
+          nextVersion,
+        });
 
     if (!noNotice) {
       await db
-        .doc(`billingPlanCatalog/${result.planCode}/versions/${result.versionId}`)
+        .doc(
+          `billingPlanCatalog/${result.planCode}/versions/${result.versionId}`,
+        )
         .set(
           {
             noticeEmailLastSentAt: FieldValue.serverTimestamp(),
@@ -1421,7 +1377,8 @@ export const devAssignSubscription = onCall(async (request) => {
   const planCode = toCleanString(request?.data?.planCode);
   const scope = toCleanString(request?.data?.scope) || 'account';
   const targetBusinessId = toCleanString(request?.data?.targetBusinessId);
-  const provider = toCleanString(request?.data?.provider) || BILLING_DEFAULT_PROVIDER;
+  const provider =
+    toCleanString(request?.data?.provider) || BILLING_DEFAULT_PROVIDER;
   const status = toCleanString(request?.data?.status) || 'active';
   const effectiveAt = request?.data?.effectiveAt || null;
   const note = toCleanString(request?.data?.note);
@@ -1491,7 +1448,3 @@ export const devRecordPaymentHistoryItem = onCall(async (request) => {
     paymentId: paymentRef.id,
   };
 });
-
-
-
-

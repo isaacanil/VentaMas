@@ -1,5 +1,5 @@
-import { RequireAuth } from '@/modules/auth/components/RequireAuth';
-import { ErrorBoundary } from '@/modules/app/pages/ErrorElement/ErrorBoundary';
+import { ErrorBoundary } from '@/modules/app/public';
+import { RequireAuth } from '@/modules/auth/public';
 import { mergeRouteHandleMeta } from '@/router/routes/routeHandle';
 
 import { isValidElement, type ReactElement, type ReactNode } from 'react';

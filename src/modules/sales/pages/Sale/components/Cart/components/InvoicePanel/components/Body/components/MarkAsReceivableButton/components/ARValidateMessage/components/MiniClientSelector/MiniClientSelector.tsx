@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 
 import { addClient } from '@/features/clientCart/clientCartSlice';
 import { useFbGetClientsOnOpen } from '@/firebase/client/useFbGetClientsOnOpen';
-import { filtrarDatos } from '@/hooks/useSearchFilter';
+import { filterByDeepSearchText } from '@/utils/searchText';
 
 const { Search } = Input;
 const { Text } = Typography;
@@ -46,7 +46,7 @@ export const MiniClientSelector = ({
   );
 
   const filteredClients = useMemo<ClientRow[]>(
-    () => filtrarDatos(nonGenericClients, searchTerm) as ClientRow[],
+    () => filterByDeepSearchText(nonGenericClients, searchTerm),
     [nonGenericClients, searchTerm],
   );
 

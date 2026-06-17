@@ -1,7 +1,7 @@
-import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity.js';
+import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity';
 import { toMillis } from '@/utils/date/dateUtils';
 
-import { measurePreciseTextBlock } from './textMeasurement.js';
+import { measurePreciseTextBlock } from './textMeasurement';
 
 import type { TimestampLike } from '@/utils/date/types';
 import type { InvoiceClient, InvoicePaymentMethod } from '@/types/invoice';

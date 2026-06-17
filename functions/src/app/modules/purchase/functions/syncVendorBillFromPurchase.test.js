@@ -93,6 +93,51 @@ describe('syncVendorBillFromPurchase', () => {
     );
   });
 
+  it('builds initial payment state from legacy purchase totals', async () => {
+    await syncVendorBillFromPurchase({
+      params: {
+        businessId: 'business-1',
+        purchaseId: 'purchase-legacy-totals',
+      },
+      data: {
+        after: {
+          data: () => ({
+            providerId: 'supplier-legacy',
+            numberId: 121,
+            workflowStatus: 'completed',
+            completedAt: '2026-04-12T12:00:00.000Z',
+            totals: {
+              total: 275.25,
+            },
+            paymentTerms: {
+              expectedPaymentAt: '2026-04-25T12:00:00.000Z',
+            },
+          }),
+        },
+      },
+    });
+
+    expect(setMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceDocumentId: 'purchase-legacy-totals',
+        status: 'approved',
+        supplierId: 'supplier-legacy',
+        totals: {
+          total: 275.25,
+          paid: 0,
+          balance: 275.25,
+        },
+        paymentState: expect.objectContaining({
+          total: 275.25,
+          paid: 0,
+          balance: 275.25,
+          paymentCount: 0,
+        }),
+      }),
+      { merge: true },
+    );
+  });
+
   it('deletes the canonical vendor bill when the purchase document is removed', async () => {
     await syncVendorBillFromPurchase({
       params: {

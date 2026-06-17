@@ -1,12 +1,12 @@
 import { signInWithCustomToken, signOut } from 'firebase/auth';
-import { httpsCallable } from 'firebase/functions';
 
 import { login } from '@/features/auth/userSlice';
 import {
   buildSessionInfo,
   storeSessionLocally,
 } from '@/firebase/Auth/fbAuthV2/sessionClient';
-import { auth, functions } from '@/firebase/firebaseconfig';
+import { auth } from '@/firebase/firebaseconfig';
+import { createFirebaseCallable } from '@/firebase/functions/callable';
 import { normalizeCurrentUserContext } from '@/utils/auth-adapter';
 
 export interface FbSignInUser {
@@ -27,7 +27,29 @@ export interface FbSignInResult {
   businessHasOwners?: boolean;
 }
 
-const clientLoginCallable = httpsCallable(functions, 'clientLogin');
+type ClientLoginPayload = {
+  username: string;
+  password?: string;
+  sessionInfo: ReturnType<typeof buildSessionInfo>;
+};
+
+type ClientLoginResponse = {
+  ok?: boolean;
+  message?: string;
+  userId?: string;
+  user?: FbSignInUser;
+  firebaseCustomToken?: string;
+  sessionToken?: string;
+  sessionExpiresAt?: number;
+  session?: any;
+  activeSessions?: any[];
+  businessHasOwners?: boolean;
+};
+
+const clientLoginCallable = createFirebaseCallable<
+  ClientLoginPayload,
+  ClientLoginResponse
+>('clientLogin');
 
 const toLegacyCompatibleAuthPayload = (userData: FbSignInUser) => {
   const normalized = normalizeCurrentUserContext(userData);
@@ -105,13 +127,12 @@ export const fbSignIn = async (user: {
 }): Promise<FbSignInResult> => {
   try {
     const sessionInfo = buildSessionInfo();
-    const response = await clientLoginCallable({
+    const payload = await clientLoginCallable({
       username: user.name,
       password: user.password,
       sessionInfo,
     });
 
-    const payload = (response?.data || {}) as any;
     if (!payload.ok) {
       throw new Error(payload?.message || 'Error al iniciar sesión');
     }

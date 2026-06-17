@@ -23,6 +23,7 @@ import {
   SortOption,
   TitleIcon,
 } from './FiltersDrawer.styles';
+import { getBusinessSubscriptionStatusDisplay } from '../../utils/businessStatusDisplay';
 
 type SortBy = 'newest' | 'oldest';
 type OwnerStateFilter = 'all' | 'with_owner' | 'without_owner';
@@ -52,19 +53,6 @@ interface FiltersDrawerProps {
   availableSubscriptionStatuses: string[];
   resultsCount: number;
 }
-
-const SUBSCRIPTION_LABELS: Record<string, string> = {
-  active: 'Activa',
-  trialing: 'En prueba',
-  past_due: 'Pago pendiente',
-  canceled: 'Cancelada',
-  paused: 'Pausada',
-  unpaid: 'Sin pago',
-};
-
-const getSubscriptionStatusLabel = (status: string): string => {
-  return SUBSCRIPTION_LABELS[status] || status;
-};
 
 const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
   visible,
@@ -204,7 +192,9 @@ const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
             allowClear
             options={availableSubscriptionStatuses.map((status) => ({
               value: status,
-              label: getSubscriptionStatusLabel(status),
+              label: status
+                ? getBusinessSubscriptionStatusDisplay(status).label
+                : status,
             }))}
           />
         </FilterControl>

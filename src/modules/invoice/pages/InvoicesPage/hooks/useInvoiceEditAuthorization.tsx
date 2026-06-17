@@ -6,8 +6,8 @@ import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { SelectSettingCart } from '@/features/cart/cartSlice';
-import RequestInvoiceEditAuthorization from '@/components/modals/RequestInvoiceEditAuthorization/RequestInvoiceEditAuthorization';
 import { hasAuthorizationApproveAccess } from '@/utils/access/authorizationAccess';
+import RequestInvoiceEditAuthorization from '../components/RequestInvoiceEditAuthorization/RequestInvoiceEditAuthorization';
 import {
   MAX_EDIT_WINDOW_SECONDS,
   type AuthorizationRequest,

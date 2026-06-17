@@ -57,7 +57,7 @@ Reusar el flujo actual de CxC:
 - **PaymentForm** (CxC): `src/modules/accountsReceivable/components/PaymentForm/PaymentForm.tsx`
 - **Cuentas por cobrar** (creación): `src/firebase/accountsReceivable/fbAddAR.ts`
 - **Cuotas CxC**: `src/firebase/accountsReceivable/fbAddInstallmentAR.ts`
-- **Acciones preventa**: `src/modules/sales/pages/PreorderSale/components/PreSaleTable/tableCells.tsx`
+- **Acciones preventa**: `src/modules/sales/pages/PreorderSale/components/PreSaleTable/tableCells/TableCells.tsx`
 
 ## Cambios mínimos propuestos (UI)
 

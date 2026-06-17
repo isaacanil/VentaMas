@@ -4,7 +4,8 @@ import { useState } from 'react';
 import styled from 'styled-components';
 
 import type { CashCountExpense } from '@/utils/cashCount/types';
-import { PillButton } from '@/components/common/PillButton/PillButton';
+
+import { PillButton } from '../shared/PillButton/PillButton';
 
 const { Title, Text } = Typography;
 

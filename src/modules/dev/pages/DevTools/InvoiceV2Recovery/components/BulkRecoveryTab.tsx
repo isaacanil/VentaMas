@@ -10,6 +10,8 @@ import {
 } from 'antd';
 import React from 'react';
 
+import { buildCsvFromRows, downloadCsvFile } from '@/utils/export/csv';
+
 const { Paragraph, Text } = Typography;
 
 interface BulkOptions {
@@ -80,57 +82,35 @@ export const BulkRecoveryTab: React.FC<BulkRecoveryTabProps> = ({
       return;
     }
 
-    const formatValue = (value: unknown) => {
-      if (value === null || value === undefined) return '';
-      const stringValue = String(value);
-      if (/[",\n]/.test(stringValue)) {
-        return `"${stringValue.replace(/"/g, '""')}"`;
-      }
-      return stringValue;
-    };
-
-    const rows = [
-      [
-        'businessId',
-        'invoiceId',
-        'needsCanonical',
-        'needsReceivable',
-        'tasks',
-        'status',
-        'nextInvoiceCursor',
-      ],
+    const headers = [
+      'businessId',
+      'invoiceId',
+      'needsCanonical',
+      'needsReceivable',
+      'tasks',
+      'status',
+      'nextInvoiceCursor',
     ];
 
-    businessesWithRepairs.forEach((business) => {
-      const summaryCursor = business.nextInvoiceCursor || '';
-      (business.repairs || []).forEach((repair) => {
-        rows.push([
-          business.businessId,
-          repair.invoiceId,
-          repair.needsCanonical ? 'Sí' : 'No',
-          repair.needsReceivable ? 'Sí' : 'No',
-          (repair.tasks || []).join(' | '),
-          repair.status || 'pending',
-          summaryCursor,
-        ]);
-      });
+    const rows = businessesWithRepairs.flatMap((business) => {
+      const summaryCursor = business.nextInvoiceCursor ?? '';
+      return (business.repairs ?? []).map((repair) => [
+        business.businessId,
+        repair.invoiceId,
+        repair.needsCanonical ? 'Sí' : 'No',
+        repair.needsReceivable ? 'Sí' : 'No',
+        (repair.tasks ?? []).join(' | '),
+        repair.status ?? 'pending',
+        summaryCursor,
+      ]);
     });
 
-    const csvContent = rows
-      .map((row) => row.map(formatValue).join(','))
-      .join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute(
-      'download',
-      `reparaciones-invoice-v2-${new Date().toISOString().split('T')[0]}.csv`,
-    );
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
+    downloadCsvFile({
+      csv: buildCsvFromRows({ headers, rows }),
+      fileName: `reparaciones-invoice-v2-${
+        new Date().toISOString().split('T')[0]
+      }.csv`,
+    });
   };
 
   return (

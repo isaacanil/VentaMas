@@ -1,8 +1,8 @@
 import { UploadOutlined } from '@/constants/icons/antd';
 import { Button, Upload } from 'antd';
-import type { UploadFile, UploadProps } from 'antd/es/upload/interface';
+import type { UploadFile, UploadProps } from 'antd';
 
-import { Actions } from '../LoginImageConfig.styles';
+import { Actions } from './LoginImageActions.styles';
 
 type LoginImageActionsProps = {
   beforeUpload: UploadProps['beforeUpload'];

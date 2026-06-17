@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { selectAR } from '@/features/accountsReceivable/accountsReceivableSlice';
 import { selectUser } from '@/features/auth/userSlice';
 import { fbGetActiveARCount } from '@/firebase/accountsReceivable/fbGetActiveARCount';
-import { resolveCreditLimitStatus } from '@/utils/accountsReceivable/creditLimit';
+import { resolveCreditLimitStatus } from '@/domain/accountsReceivable/creditLimit';
 import type { CreditLimitConfig } from '@/utils/accountsReceivable/types';
 import { calculateInvoiceChange } from '@/utils/invoice';
 import { toNumber } from '@/utils/number/toNumber';

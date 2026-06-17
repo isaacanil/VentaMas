@@ -1,14 +1,19 @@
 import { AnimatePresence, m } from 'framer-motion';
 import { GlobalOutlined } from '@/constants/icons/antd';
-import { Form, Input, Button } from 'antd';
+import { Form, Input, Button, Select } from 'antd';
 import type { FormInstance } from 'antd';
 import { useEffect, type KeyboardEvent } from 'react';
 import styled from 'styled-components';
 
-import { useRncSearch } from '@/hooks/useRncSearch';
+import { useRncSearch } from '@/modules/contacts/hooks/useRncSearch';
 import { DgiiSyncAlert } from '@/modules/contacts/components/Rnc/DgiiSyncAlert/DgiiSyncAlert';
 import { RncPanel } from '@/modules/contacts/components/Rnc/RncPanel/RncPanel';
 import type { ClientInput } from '@/firebase/client/clientNormalizer';
+import {
+  getBusinessSubdivisionLabel,
+  getBusinessSubdivisionOptions,
+  isBusinessSubdivisionValueSupported,
+} from '@/shared/location/businessLocations';
 
 const Wrapper = styled.div<{ $hasRnc?: boolean }>`
   display: grid;
@@ -19,12 +24,14 @@ const Wrapper = styled.div<{ $hasRnc?: boolean }>`
 type ClientGeneralInfoProps = {
   form: FormInstance;
   customerData: ClientInput;
+  businessCountry?: string | null;
   onRncPanelChange?: (hasPanel: boolean) => void;
 };
 
 export const ClientGeneralInfo = ({
   form,
   customerData,
+  businessCountry,
   onRncPanelChange,
 }: ClientGeneralInfoProps) => {
   const {
@@ -38,6 +45,8 @@ export const ClientGeneralInfo = ({
   } = useRncSearch(form, 'personalID');
 
   const hasRncPanel = !!(loading || rncInfo);
+  const subdivisionLabel = getBusinessSubdivisionLabel(businessCountry);
+  const subdivisionOptions = getBusinessSubdivisionOptions(businessCountry);
 
   useEffect(() => {
     onRncPanelChange?.(hasRncPanel);
@@ -175,8 +184,25 @@ export const ClientGeneralInfo = ({
           <Form.Item name="sector" label="Sector">
             <Input />
           </Form.Item>
-          <Form.Item name="province" label="Provincia">
-            <Input />
+          <Form.Item
+            name="province"
+            label={subdivisionLabel}
+            rules={[
+              {
+                validator: (_, value) =>
+                  isBusinessSubdivisionValueSupported(businessCountry, value)
+                    ? Promise.resolve()
+                    : Promise.reject(
+                        new Error(`Seleccione un ${subdivisionLabel.toLowerCase()} válido.`),
+                      ),
+              },
+            ]}
+          >
+            <Select
+              allowClear
+              placeholder={`Seleccione ${subdivisionLabel.toLowerCase()}`}
+              options={subdivisionOptions}
+            />
           </Form.Item>
         </Form>
       </m.div>

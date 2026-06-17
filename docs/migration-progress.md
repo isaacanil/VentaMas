@@ -20,10 +20,10 @@
 ### Menú
 
 - **Tipos comunes**: `src/types/menu.ts` (propiedades comunes de MenuItem, condiciones, tags).
-- **MenuData tipado**: `src/views/templates/MenuApp/MenuData/MenuData.tsx`.
+- **MenuData tipado**: `src/modules/navigation/components/MenuApp/MenuData/MenuData.tsx`.
 - **Items tipados**:
-  - `src/views/templates/MenuApp/MenuData/items/*.tsx`
-  - `src/views/templates/MenuApp/MenuData/items/inventory.ts`
+  - `src/modules/navigation/components/MenuApp/MenuData/items/*.tsx`
+  - `src/modules/navigation/components/MenuApp/MenuData/items/inventory.ts`
 - **Acceso/filtrado centralizado**:
   - `src/utils/menuAccess.ts` con tipado y reglas consistentes.
 
@@ -33,7 +33,7 @@
 - **Utilidades comunes**: `src/utils/taxReceipt.ts`.
 - **Firebase + Settings** alineados con tipos:
   - `src/firebase/taxReceipt/*.ts`
-  - `src/views/pages/setting/subPage/TaxReceipts/TaxReceIptSetting.tsx`
+  - `src/modules/settings/pages/setting/subPage/TaxReceipts/TaxReceiptSetting.tsx`
 - **Redundancia eliminada**:
   - Eliminado `src/views/pages/setting/subPage/TaxReceipts/utils/taxReceiptUtils.ts`.
   - Eliminado `src/views/pages/setting/subPage/TaxReceipts/hooks/useTaxReceiptSetting.tsx`.
@@ -47,7 +47,7 @@
 ### Filtros de facturas y fechas
 
 - **Tipos comunes**: `src/types/invoiceFilters.ts`.
-- **Sorting y filtros tipados**: `src/views/pages/InvoicesPage/components/FilterBar/FilterBar.tsx` y `src/views/pages/InvoicesPage/components/FilterBar/hooks/index.ts`.
+- **Sorting y filtros tipados**: `src/modules/invoice/pages/InvoicesPage/components/FilterBar/FilterBar.tsx` y `src/modules/invoice/pages/InvoicesPage/components/FilterBar/hooks/index.ts`.
 - **Rangos de fecha tipados**: `src/utils/date/getDateRange.ts`.
 - **Firebase invoices tipado**: `src/firebase/invoices/useFbGetInvoicesWithFilters.ts`.
 
@@ -63,54 +63,54 @@
   - `src/firebase/warehouse/segmentService.ts`
   - `src/firebase/warehouse/backOrderService.ts`
   - `src/firebase/warehouse/locationService.ts`
-  - `src/firebase/warehouse/warehouseNestedServise.ts`
+  - `src/firebase/warehouse/warehouseNestedService.ts`
   - `src/firebase/warehouse/stockSyncService.ts`
   - `src/firebase/warehouse/useListenMovementsByParams.ts`
 
 ### Inventario (stock y movimientos)
 
-- **Filtro de stock tipado**: `src/views/pages/Inventory/components/Warehouse/components/ProductStockBrowser/constants.ts`.
+- **Filtro de stock tipado**: `src/modules/inventory/pages/Inventory/components/Warehouse/components/ProductStockBrowser/constants.ts`.
 - **Product stock overview sin `@ts-nocheck`**:
-  - `src/views/pages/Inventory/components/Warehouse/components/ProductStockOverview/ProductStockOverview.tsx`
-  - `src/views/pages/Inventory/components/Warehouse/components/ProductStockOverview/components/*.tsx`
+  - `src/modules/inventory/pages/Inventory/components/Warehouse/components/ProductStockOverview/ProductStockOverview.tsx`
+  - `src/modules/inventory/pages/Inventory/components/Warehouse/components/ProductStockOverview/components/*.tsx`
 - **Movimientos tipados y normalizados**:
-  - `src/views/pages/Inventory/components/AllMovements/AllMovements.tsx`
-  - `src/views/pages/Inventory/components/AllMovements/MovementsFilterBar.tsx`
+  - `src/modules/inventory/pages/Inventory/components/AllMovements/AllMovements.tsx`
+  - `src/modules/inventory/pages/Inventory/components/AllMovements/MovementsFilterBar.tsx`
 
 ### Inventario (control de inventario)
 
 - **Control tipado sin `@ts-nocheck`**:
-  - `src/views/pages/InventoryControl/InventoryControl.tsx`
-  - `src/views/pages/InventoryControl/hooks/*`
-  - `src/views/pages/InventoryControl/components/*`
-  - `src/views/pages/InventoryControl/components/GroupedLotsModal/*`
-  - `src/views/pages/InventoryControl/components/InventoryGroupedTable/*`
-  - `src/views/pages/InventoryControl/utils/inventoryHelpers.ts`
-  - `src/views/pages/InventoryControl/tools/migrateInventoryCounts.ts`
+  - `src/modules/inventory/pages/InventoryControl/InventoryControl.tsx`
+  - `src/modules/inventory/pages/InventoryControl/hooks/*`
+  - `src/modules/inventory/pages/InventoryControl/components/*`
+  - `src/modules/inventory/pages/InventoryControl/components/GroupedLotsModal/*`
+  - `src/modules/inventory/pages/InventoryControl/components/InventoryGroupedTable/*`
+  - `src/modules/inventory/pages/InventoryControl/utils/inventoryHelpers.ts`
+  - `src/modules/inventory/pages/InventoryControl/tools/migrateInventoryCounts.ts`
 
 ### Cuentas por cobrar (CxC)
 
 - **Tipos centralizados**: `src/utils/accountsReceivable/types.ts`.
 - **Listener de CxC tipado**: `src/firebase/accountsReceivable/accountReceivableServices.ts`.
 - **Lista y tabla tipadas**:
-  - `src/views/pages/AccountReceivable/pages/AccountReceivableList/AccountReceivableList.tsx`
-  - `src/views/pages/AccountReceivable/pages/AccountReceivableList/components/AccountReceivableTable/*`
-  - `src/views/pages/AccountReceivable/pages/AccountReceivableList/components/FilterAccountReceivable/FilterAccountReceivable.tsx`
+  - `src/modules/accountsReceivable/pages/AccountReceivable/pages/AccountReceivableList/AccountReceivableList.tsx`
+  - `src/modules/accountsReceivable/pages/AccountReceivable/pages/AccountReceivableList/components/AccountReceivableTable/*`
+  - `src/modules/accountsReceivable/pages/AccountReceivable/pages/AccountReceivableList/components/FilterAccountReceivable/FilterAccountReceivable.tsx`
 - **Sorting y helpers tipados**:
   - `src/utils/sorts/sortAccountsReceivable.ts`
   - `src/utils/accountsReceivable/accountsReceivable.ts`
 - **Detalle, pagos y cuotas tipados**:
-  - `src/firebase/accountsReceivable/fetchAccountsReceivableDetails.ts`
   - `src/firebase/accountsReceivable/fbAddAR.ts`
   - `src/firebase/accountsReceivable/fbAddInstallmentAR.ts`
   - `src/firebase/accountsReceivable/fbGetAccountReceivableDetails.ts`
   - `src/firebase/accountsReceivable/useClientAccountsReceivable.ts`
-  - `src/utils/accountsReceivable/getMaxInstallments.ts`
-  - `src/utils/accountsReceivable/generateInstallments.ts`
-  - `src/views/pages/AccountReceivable/pages/ReceivablePaymentReceipt/ReceivablePaymentReceipt.tsx`
-  - `src/views/pages/AccountReceivable/pages/AccountReceivableInfo/AccountReceivableInfo.tsx`
+  - `src/domain/accountsReceivable/getMaxInstallments.ts`
+  - `src/domain/accountsReceivable/generateInstallments.ts`
+  - `src/modules/invoice/pages/InvoicesPage/ReceivablePaymentReceipt.tsx`
+  - `src/modules/accountsReceivable/pages/AccountReceivable/pages/AccountReceivableInfo/AccountReceivableInfo.tsx`
 - **Fechas de pago centralizadas**:
-  - `src/views/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/ReceivableManagementPanel/receivableUtils.ts`
+  - `src/domain/accountsReceivable/paymentDates.ts`
+  - Hook local de UI: `src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/ReceivableManagementPanel/usePaymentDates.ts`
 
 ### Cuadre de caja (Cash Reconciliation)
 
@@ -125,25 +125,25 @@
   - `src/firebase/cashCount/opening/fbCashCountOpening.ts`
   - `src/firebase/cashCount/useCurrentCashDrawer.ts`
   - `src/firebase/cashCount/useIsOpenCashReconciliation.ts`
-  - `src/hooks/cashCount/useInvoicesForCashCount.tsx`
-  - `src/hooks/cashCount/usePaymentsForCashCount.ts`
-  - `src/hooks/expense/useExpensesForCashCount.tsx`
+- `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/hooks/useInvoicesForCashCount.tsx`
+- `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/hooks/usePaymentsForCashCount.ts`
+- `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/hooks/useExpensesForCashCount.tsx`
 - **UI tipada**:
-  - `src/views/pages/CashReconciliation/components/Body/CashRecociliationTable.tsx`
-  - `src/views/pages/CashReconciliation/components/Body/tableConfig.tsx`
-  - `src/views/pages/CashReconciliation/components/FilterBar/FilterCashReconciliation.tsx`
-  - `src/views/pages/CashReconciliation/resource/CashCountStatusIndicator/CashCountStateIndicator.tsx`
-  - `src/views/pages/CashReconciliation/page/CashupInvoicesOverview/*`
-  - `src/views/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/components/ViewInvoive/ViewInvoice.tsx`
-  - `src/views/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/components/ViewExpenses/ViewExpenses.tsx`
-  - `src/views/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/components/TransactionSummary/TransactionSummary.tsx`
-  - `src/views/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/components/CashBoxClosureDetails/CashBoxClosureDetails.tsx`
-  - `src/views/pages/CashReconciliation/page/CashRegisterClosure/components/Header/CashReconciliationState/CashReconciliationState.tsx`
+  - `src/modules/cashReconciliation/pages/CashReconciliation/components/Body/CashReconciliationTable.tsx`
+  - `src/modules/cashReconciliation/pages/CashReconciliation/components/Body/tableConfig.tsx`
+  - `src/modules/cashReconciliation/pages/CashReconciliation/components/FilterBar/FilterCashReconciliation.tsx`
+  - `src/modules/cashReconciliation/pages/CashReconciliation/resource/CashCountStatusIndicator/CashCountStateIndicator.tsx`
+  - `src/modules/cashReconciliation/pages/CashReconciliation/page/CashupInvoicesOverview/*`
+  - `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/components/ViewInvoive/ViewInvoice.tsx`
+  - `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/components/ViewExpenses/ViewExpenses.tsx`
+  - `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/components/TransactionSummary/TransactionSummary.tsx`
+  - `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/components/CashBoxClosureDetails/CashBoxClosureDetails.tsx`
+  - `src/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/components/Header/CashReconciliationState/CashReconciliationState.tsx`
 
 ### Gastos (Expenses)
 
 - **Tipos centralizados**: `src/utils/expenses/types.ts`.
-- **Constantes + normalización**: `src/utils/expenses/constants.ts`, `src/utils/expenses/normalize.ts`.
+- **Constantes + normalización**: `src/modules/expenses/utils/constants.ts`, `src/utils/expenses/normalize.ts`.
 - **Firebase tipado**:
   - `src/firebase/expenses/Items/fbAddExpense.ts`
   - `src/firebase/expenses/Items/fbUpdateExpense.ts`
@@ -152,24 +152,24 @@
   - `src/firebase/expenses/maintenance/fbFixExpenseTimestamps.ts`
   - `src/firebase/expenses/categories/*.ts`
 - **UI + hooks tipados**:
-  - `src/views/pages/Expenses/ExpensesList/ExpensesList.tsx`
-  - `src/views/pages/Expenses/ExpensesList/components/ExpenseTable/ExpensesTable.tsx`
-  - `src/views/pages/Expenses/ExpensesList/components/FilterBar/FilterExpenses.tsx`
-  - `src/views/pages/Expenses/ExpensesList/components/ExpenseReport/ExpenseReport.tsx`
-  - `src/views/pages/Expenses/ExpensesForm/ExpensesForm.tsx`
-  - `src/views/pages/Expenses/ExpensesForm/hooks/useExpenseForm.ts`
-  - `src/views/pages/Expenses/ExpensesForm/hooks/useOpenCashRegisters.ts`
-  - `src/views/pages/Expenses/ExpensesForm/components/ManageExpenseCategoriesModal.tsx`
-  - `src/validates/expenseValidate.tsx`
+  - `src/modules/expenses/pages/Expenses/ExpensesList/ExpensesList.tsx`
+  - `src/modules/expenses/pages/Expenses/ExpensesList/components/ExpenseTable/ExpensesTable.tsx`
+  - `src/modules/expenses/pages/Expenses/ExpensesList/components/FilterBar/FilterExpenses.tsx`
+  - `src/modules/expenses/pages/Expenses/ExpensesList/components/ExpenseReport/ExpenseReport.tsx`
+  - `src/modules/expenses/pages/Expenses/ExpensesForm/ExpensesForm.tsx`
+  - `src/modules/expenses/pages/Expenses/ExpensesForm/hooks/useExpenseForm.ts`
+  - `src/modules/cashReconciliation/hooks/useOpenCashRegisters.ts`
+  - `src/modules/expenses/pages/Expenses/ExpensesForm/components/ManageExpenseCategoriesModal.tsx`
+- `src/modules/expenses/validation/expenseValidate.ts`
 
 ### Compras (Purchase)
 
 - **Tipos base centralizados**: `src/utils/purchase/types.ts`.
 - **Utilidades tipadas**:
-  - `src/views/pages/OrderAndPurchase/PurchaseManagement/purchaseLogic.ts`
-  - `src/views/pages/OrderAndPurchase/PurchaseManagement/purchaseManagementUtils.ts`
+  - `src/modules/orderAndPurchase/pages/OrderAndPurchase/PurchaseManagement/purchaseLogic.ts`
+  - `src/modules/orderAndPurchase/pages/OrderAndPurchase/PurchaseManagement/purchaseManagementUtils.ts`
 - **Pantalla principal tipada**:
-  - `src/views/pages/OrderAndPurchase/PurchaseManagement/PurchaseManagement.tsx`
+  - `src/modules/orderAndPurchase/pages/OrderAndPurchase/PurchaseManagement/PurchaseManagement.tsx`
 - **Firebase tipado y lógica de adjuntos centralizada**:
   - `src/firebase/purchase/attachmentService.ts`
   - `src/firebase/purchase/fbAddPurchase.ts`
@@ -184,21 +184,21 @@
 
 ## Componentes ajustados
 
-- **MenuApp** tipado: `src/views/templates/MenuApp/MenuApp.tsx`.
+- **MenuApp** tipado: `src/modules/navigation/components/MenuApp/MenuApp.tsx`.
 - **Tree** tipado y reutilizable: `src/views/component/tree/Tree.tsx`.
 - **Inventario** sin setState en effect:
-  - `src/views/pages/Inventory/components/Warehouse/components/DetailView/InventoryMenu.tsx`.
+  - `src/modules/inventory/pages/Inventory/components/Warehouse/components/DetailView/InventoryMenu.tsx`.
 - **Facturas**:
-  - `src/views/pages/InvoicesPage/InvoicesPage.tsx`.
-  - `src/views/pages/InvoicesPage/ReceivablePaymentReceipt.tsx`.
+  - `src/modules/invoice/pages/InvoicesPage/InvoicesPage.tsx`.
+  - `src/modules/invoice/pages/InvoicesPage/ReceivablePaymentReceipt.tsx`.
 - **TaxReceipts** (form y secciones) tipados:
-  - `src/views/pages/setting/subPage/TaxReceipts/components/TaxReceiptForm/TaxReceiptForm.tsx`.
-  - `src/views/pages/setting/subPage/TaxReceipts/components/ReceiptTableSection/ReceiptTableSection.tsx`.
-  - `src/views/pages/setting/subPage/TaxReceipts/components/AddReceiptModal/AddReceiptModal.tsx`.
+  - `src/modules/settings/pages/setting/subPage/TaxReceipts/components/TaxReceiptForm/TaxReceiptForm.tsx`.
+  - `src/modules/settings/pages/setting/subPage/TaxReceipts/components/ReceiptTableSection/ReceiptTableSection.tsx`.
+  - `src/modules/settings/pages/setting/subPage/TaxReceipts/components/AddReceiptModal/AddReceiptModal.tsx`.
 - **Usuarios**:
   - `src/views/pages/setting/subPage/Users/components/DynamicPermissionsManager/DynamicPermissionsManager.tsx`.
   - `src/views/pages/setting/subPage/Users/components/RoleDowngradeConfirmationModal/RoleDowngradeConfirmationModal.tsx`.
-  - `src/views/pages/setting/subPage/Users/components/CashierMigrationTool/CashierMigrationTool.tsx`.
+  - `src/modules/settings/pages/setting/subPage/Users/components/CashierMigrationTool/CashierMigrationTool.tsx` (retirado; sin equivalente activo confirmado).
 
 ## Limpieza y calidad
 
@@ -214,8 +214,8 @@
 - Eliminados reexports:
   - `src/features/expense/index.ts`.
   - `src/features/purchase/index.ts`.
-  - `src/Context/CategoryContext/index.ts`.
-  - `src/Context/Dialog/index.ts`.
+  - `src/context/CategoryContext/index.ts`.
+  - `src/context/Dialog/index.ts`.
   - `src/views/pages/CreditNote/index.ts`.
   - `src/views/pages/CreditNote/CreditNoteList/components/index.ts`.
   - `src/views/pages/InvoicesPage/components/FilterBar/index.ts`.
@@ -226,7 +226,7 @@
   - `src/components/common/NotificationSection/index.ts`.
   - `src/components/common/index.ts`.
   - `src/views/component/modals/ProductForm/components/sections/BarcodeGenerator/components/index.ts`.
-  - `src/views/component/modals/ProductForm/components/sections/BarcodeCorrector/index.ts`.
+  - `src/views/component/modals/ProductForm/components/sections/BarcodeCorrector/index.ts` (retirado con el componente huérfano; sin equivalente directo confirmado).
   - `src/views/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/InvoiceComment/index.ts`.
   - `src/assets/index.ts`.
 - Eliminados archivos vacíos/no usados:

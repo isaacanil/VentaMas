@@ -1,16 +1,21 @@
 import React, { Fragment, useMemo, useState } from 'react';
+import { message } from 'antd';
 import { DateTime } from 'luxon';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
+import { selectUser } from '@/features/auth/userSlice';
+import { selectBusinessData } from '@/features/auth/businessSlice';
 import { useBusinessDataConfig } from '@/features/auth/useBusinessDataConfig';
 import { openCreditNoteModal } from '@/features/creditNote/creditNoteModalSlice';
 import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
 import { useFbGetCreditNotes } from '@/firebase/creditNotes/useFbGetCreditNotes';
+import { fbRefreshElectronicTaxReceiptStatus } from '@/firebase/electronicTaxReceipts/fbRefreshElectronicTaxReceiptStatus';
 import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt';
 import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import ROUTES_NAME from '@/router/routes/routesName';
+import { resolveBusinessFiscalRollout } from '@/utils/fiscal/fiscalRollout';
 
 import { CreditNoteConfigWarningState } from './CreditNoteConfigWarningState';
 import { CreditNoteFilters } from './components/CreditNoteFilters';
@@ -26,8 +31,11 @@ import type {
   CreditNoteRecord,
 } from '@/types/creditNote';
 import type { TaxReceiptDocument } from '@/types/taxReceipt';
+import type { UserIdentity } from '@/types/users';
 
 type TaxReceiptEnabledRootState = Parameters<typeof selectTaxReceiptEnabled>[0];
+type UserRootState = Parameters<typeof selectUser>[0];
+type BusinessRootState = Parameters<typeof selectBusinessData>[0];
 
 type CreditNoteFiltersState = Omit<
   CreditNoteFiltersType,
@@ -41,9 +49,19 @@ export const CreditNoteList = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [refreshingCreditNoteId, setRefreshingCreditNoteId] = useState<
+    string | null
+  >(null);
   const [filters, setFilters] = useState<CreditNoteFiltersState>(
     () => buildDefaultCreditNoteFilters(),
   );
+  const user = useSelector<UserRootState, UserIdentity | null>(selectUser);
+  const business = useSelector<BusinessRootState, Record<string, unknown> | null>(
+    selectBusinessData,
+  );
+  const hasBusinessFiscalContext = Boolean(business);
+  const electronicModelEnabled =
+    resolveBusinessFiscalRollout(business).electronicModelEnabled;
 
   const { creditNotes, loading: creditNotesLoading } = useFbGetCreditNotes(
     filters as CreditNoteFiltersType,
@@ -75,12 +93,16 @@ export const CreditNoteList = () => {
 
   const showConfigWarning = useMemo(
     () =>
+      hasBusinessFiscalContext &&
       !creditNotesLoading &&
       !taxReceiptLoading &&
+      !electronicModelEnabled &&
       (!taxReceiptEnabled ||
         (taxReceiptEnabled && !isCreditNoteReceiptConfigured)),
     [
       creditNotesLoading,
+      electronicModelEnabled,
+      hasBusinessFiscalContext,
       isCreditNoteReceiptConfigured,
       taxReceiptEnabled,
       taxReceiptLoading,
@@ -109,10 +131,43 @@ export const CreditNoteList = () => {
     );
   };
 
+  const handleRefreshElectronicStatus = async (record: CreditNoteRecord) => {
+    const creditNoteId = record.id;
+    if (!user?.businessID || !creditNoteId) {
+      message.error('No se pudo identificar la nota de credito');
+      return;
+    }
+    if (!record.electronicTaxReceipt?.submissionId) {
+      message.warning('Esta nota aun no tiene submissionId de GISYS');
+      return;
+    }
+
+    setRefreshingCreditNoteId(String(creditNoteId));
+    try {
+      const result = await fbRefreshElectronicTaxReceiptStatus({
+        businessId: user.businessID,
+        creditNoteId: String(creditNoteId),
+        documentKind: 'creditNote',
+      });
+      message.success(
+        `Estado e-CF actualizado: ${
+          result.electronicTaxReceipt?.status || 'consultado'
+        }`,
+      );
+    } catch (error) {
+      console.error('Error al consultar estado e-CF de nota de credito:', error);
+      message.error('No se pudo consultar el estado e-CF');
+    } finally {
+      setRefreshingCreditNoteId(null);
+    }
+  };
+
   const columns = useCreditNoteColumns({
     creditNotes,
     onView: handleView,
     onEdit: handleEdit,
+    onRefreshElectronicStatus: handleRefreshElectronicStatus,
+    refreshingCreditNoteId,
   });
 
   const transformedData = creditNotes.map((record) => ({

@@ -3,10 +3,10 @@ import {
   formatDate,
   formatInputDate,
   normalizeExpirationValue,
-} from '@/utils/inventory/dates';
+} from '@/modules/inventory/utils/dates';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
-import { getEffectiveCount, getPersistedCount } from '@/utils/inventory/counts';
-import { formatNumber } from '@/utils/inventory/format';
+import { getEffectiveCount, getPersistedCount } from '@/modules/inventory/utils/counts';
+import { formatNumber } from '@/modules/inventory/utils/format';
 import type {
   LocationNamesMap,
   ResolvingMap,
@@ -34,25 +34,6 @@ export function resolveLocationDisplay(
     resolvedLabel ||
     (isLoading ? 'Cargando ubicación...' : 'Ubicación sin nombre');
   return { label, isLoading };
-}
-
-export function shortenLocationPath(path?: string) {
-  if (!path || typeof path !== 'string') return path;
-  if (!path.includes('/')) return path;
-  const parts = path.split('/').filter(Boolean);
-  if (parts.length <= 1) return truncateSegment(parts[0]);
-  const MAX_SEG_LEN = 14;
-  const first = truncateSegment(parts[0], MAX_SEG_LEN);
-  const last = truncateSegment(parts[parts.length - 1], MAX_SEG_LEN);
-  if (parts.length <= 2) return `${first}/${last}`;
-  return `${first}/.../${last}`;
-}
-
-function truncateSegment(seg: string, limit = 14) {
-  if (!seg) return '';
-  if (seg.length <= limit) return seg;
-  if (limit <= 1) return '…';
-  return seg.slice(0, limit - 1) + '…';
 }
 
 // ===== Editors / Users Helpers =====
@@ -119,6 +100,3 @@ export const TagsWrap = styled.div`
   flex-wrap: wrap;
   gap: 6px;
 `;
-
-export { Tag, Tooltip } from 'antd';
-export { EditorsList } from './inventoryTableComponents';

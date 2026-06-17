@@ -29,7 +29,7 @@ export const useDatePicker = ({
   onChange,
   presets,
 }: UseDatePickerArgs) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpenState] = useState(false);
   const [currentDate, setCurrentDate] = useState<DateTime>(() => {
     return getValueAnchorDate(mode, value) ?? DateTime.local();
   });
@@ -38,6 +38,17 @@ export const useDatePicker = ({
   const [showPresetsDropdown, setShowPresetsDropdown] = useState(false);
   const presetsDropdownRef = useRef<HTMLDivElement | null>(null);
   const initialValueRef = useRef<DatePickerValue>(value);
+
+  const setOpen = (nextOpen: boolean) => {
+    if (nextOpen && !open) {
+      const nextDate = getValueAnchorDate(mode, value);
+      if (nextDate) {
+        setCurrentDate(nextDate);
+      }
+    }
+
+    setOpenState(nextOpen);
+  };
 
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {

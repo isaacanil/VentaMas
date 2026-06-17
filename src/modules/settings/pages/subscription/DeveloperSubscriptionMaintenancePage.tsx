@@ -4,9 +4,11 @@ import { useSelector } from 'react-redux';
 
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import { selectUser } from '@/features/auth/userSlice';
-import { withBusinessManagerQuery } from '@/modules/auth/utils/businessManagerRoute';
-import { resolveCurrentActiveBusinessId } from '@/modules/auth/utils/businessContext';
-import { resolveDefaultHomeRoute } from '@/modules/auth/utils/defaultHomeRoute';
+import {
+  resolveCurrentActiveBusinessId,
+  resolveDefaultHomeRoute,
+  withBusinessManagerQuery,
+} from '@/modules/auth/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 
 import { DeveloperSubscriptionInactiveNotice } from './components/DeveloperSubscriptionInactiveNotice';

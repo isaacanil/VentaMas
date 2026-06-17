@@ -1,6 +1,6 @@
 import { DeleteOutlined } from '@/constants/icons/antd';
 import { Table, Button, Input, Form, InputNumber } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import type { TableColumnsType as ColumnsType } from 'antd';
 import { DateTime } from 'luxon';
 import type { ReactNode } from 'react';
 

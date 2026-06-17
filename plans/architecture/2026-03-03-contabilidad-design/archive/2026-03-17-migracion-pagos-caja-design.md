@@ -280,7 +280,7 @@ Es una variante de AR con:
 Evidencia:
 
 - `functions/src/app/modules/accountReceivable/services/insuranceAccountReceivable.service.js`
-- `src/firebase/proccessAccountsReceivablePayments/insurance/fbProcessMultiplePaymentsAR.ts`
+- `src/firebase/processAccountsReceivablePayments/insurance/fbProcessMultiplePaymentsAR.ts`
 
 #### Cambio objetivo
 

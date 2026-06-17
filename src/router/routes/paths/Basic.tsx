@@ -1,30 +1,17 @@
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
 
+import { loadCheckoutRedirectRoute } from '@/modules/checkout/public';
+import { loadDeveloperHubRoute, loadHomeRoute } from '@/modules/home/public';
+import { loadWelcomeRoute, loadWelcomeV2Route } from '@/modules/welcome/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 import { redirectAuthenticatedToDefaultLoader } from '@/router/routes/loaders/accessLoaders';
-import { DeveloperHub } from '@/modules/home/pages/DeveloperHub/DeveloperHub';
-import { Home } from '@/modules/home/pages/Home/Home';
 import type { AppRoute } from '@/router/types/routeTypes';
 
-const CheckoutRedirect = lazy(() =>
-  import('@/modules/checkout/pages/CheckoutRedirect/CheckoutRedirect').then(
-    (module) => ({
-      default: module.default,
-    }),
-  ),
-);
-
-const Welcome = lazy(() =>
-  import('@/modules/welcome/pages/Welcome/Welcome').then((module) => ({
-    default: module.Welcome,
-  })),
-);
-
-const WelcomeV2 = lazy(() =>
-  import('@/modules/welcome/pages/WelcomeV2/WelcomeV2').then((module) => ({
-    default: module.WelcomeV2,
-  })),
-);
+const CheckoutRedirect = lazy(loadCheckoutRedirectRoute);
+const DeveloperHub = lazy(loadDeveloperHubRoute);
+const Home = lazy(loadHomeRoute);
+const Welcome = lazy(loadWelcomeRoute);
+const WelcomeV2 = lazy(loadWelcomeV2Route);
 
 const { BASIC_TERM } = ROUTES_NAME;
 const { HOME, WELCOME, DEVELOPER_HUB } = BASIC_TERM;

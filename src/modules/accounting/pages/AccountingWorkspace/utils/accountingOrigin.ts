@@ -1,4 +1,4 @@
-import { buildAccountReceivableListUrl } from '@/modules/accountsReceivable/utils/accountReceivableNavigation';
+import { buildAccountReceivableListUrl } from '@/modules/accountsReceivable/public';
 import { normalizeAccountingNavigationDocumentType } from '@/modules/accounting/utils/accountingNavigation';
 import ROUTES_NAME from '@/router/routes/routesName';
 import { replacePathParams } from '@/router/routes/replacePathParams';

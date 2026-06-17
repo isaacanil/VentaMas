@@ -7,6 +7,7 @@ import {
   buildNonBlockingFailureSummary,
   summarizeOutboxTasks,
 } from '../services/failurePolicy.service.js';
+import { resolveInvoiceTriggerActorUid } from './invoiceTriggerActor.util.js';
 
 let depsPromise;
 async function loadDeps() {
@@ -68,6 +69,17 @@ export const processInvoiceCompensation = onDocumentCreated(
         const invoiceSnap = await tx.get(invoiceRef);
         if (!invoiceSnap.exists) return;
         const invoice = invoiceSnap.data();
+        const actorUid = resolveInvoiceTriggerActorUid({
+          invoice,
+          payload: cData?.payload,
+          logger,
+          context: {
+            businessId,
+            invoiceId,
+            compId,
+            type,
+          },
+        });
 
         const usageId = invoice?.snapshot?.ncf?.usageId;
         let usageSnap = null;
@@ -145,8 +157,11 @@ export const processInvoiceCompensation = onDocumentCreated(
           }
           await deleteCanonicalInvoice(tx, { businessId, invoiceId });
         } else if (type === 'attachToCashCount') {
-          const userId = cData?.payload?.userId;
-          await detachFromCashCount(tx, { businessId, invoiceId, userId });
+          await detachFromCashCount(tx, {
+            businessId,
+            invoiceId,
+            userId: actorUid,
+          });
         } else if (type === 'closePreorder') {
           const canonRef = db.doc(
             `businesses/${businessId}/invoices/${invoiceId}`,

@@ -1,8 +1,9 @@
 import { useState } from 'react';
 
-import { PillButton } from '@/components/common/PillButton/PillButton';
 import { CashupInvoicesOverview } from '@/modules/cashReconciliation/pages/CashReconciliation/page/CashupInvoicesOverview/CashupInvoicesOverview';
 import type { CashCountInvoice } from '@/utils/cashCount/types';
+
+import { PillButton } from '../shared/PillButton/PillButton';
 
 interface ViewInvoiceProps {
   invoices?: CashCountInvoice[];

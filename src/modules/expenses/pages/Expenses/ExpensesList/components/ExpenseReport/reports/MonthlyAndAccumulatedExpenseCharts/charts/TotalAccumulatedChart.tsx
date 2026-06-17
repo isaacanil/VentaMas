@@ -1,7 +1,9 @@
 import type { JSX } from 'react';
 import { Bar } from 'react-chartjs-2';
-import type { ChartData, ChartOptions } from 'chart.js';
+import type { ChartOptions } from 'chart.js';
 import styled from 'styled-components';
+
+import { createSingleDatasetBarData } from '@/components/charts/barChartData';
 
 interface TotalAccumulatedChartProps {
     totalAccumulated: number;
@@ -13,16 +15,13 @@ const TotalAccumulatedChart = ({
     totalAccumulated,
     options,
 }: TotalAccumulatedChartProps): JSX.Element => {
-    const data: ChartData<'bar', number[], string> = {
+    const data = createSingleDatasetBarData({
         labels: ['Total Acumulado'],
-        datasets: [{
-            label: 'Total Acumulado',
-            data: [totalAccumulated],
-            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-            borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 1,
-        }]
-    };
+        values: [totalAccumulated],
+        datasetLabel: 'Total Acumulado',
+        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+        borderColor: 'rgba(255, 99, 132, 1)',
+    });
 
     return (
         <Container>

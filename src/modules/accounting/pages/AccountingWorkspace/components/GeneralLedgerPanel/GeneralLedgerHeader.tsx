@@ -1,7 +1,6 @@
-import { Button } from '@heroui/react';
 import styled from 'styled-components';
 
-import { VmTooltip } from '@/components/heroui';
+import { VmButton, VmTooltip } from '@/components/heroui';
 import { FileExcelOutlined, InfoCircleOutlined } from '@/constants/icons/antd';
 
 interface GeneralLedgerHeaderProps {
@@ -38,13 +37,13 @@ export const GeneralLedgerHeader = ({
     </HeaderCopy>
 
     <HeaderActions>
-      <Button variant="secondary" isPending={exporting} onPress={onExport}>
+      <VmButton variant="secondary" isPending={exporting} onPress={onExport}>
         <FileExcelOutlined />
         Exportar
-      </Button>
-      <Button variant="tertiary" onPress={onAuxiliary}>
+      </VmButton>
+      <VmButton variant="tertiary" onPress={onAuxiliary}>
         Auxiliar
-      </Button>
+      </VmButton>
     </HeaderActions>
   </PageHeader>
 );

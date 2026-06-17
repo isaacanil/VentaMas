@@ -1,33 +1,26 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { nanoid } from 'nanoid';
 
-import { warrantyOptions } from '@/components/modals/ProductForm/components/sections/warranty.helpers';
-import { initTaxes } from '@/components/modals/UpdateProduct/InitializeData';
-
-const DEFAULT_BRAND = 'Sin marca';
-export const PRODUCT_BRAND_DEFAULT = DEFAULT_BRAND;
-
-export const PRODUCT_ITEM_TYPE_OPTIONS = [
-  { value: 'product', label: 'Producto' },
-  { value: 'service', label: 'Servicio' },
-  { value: 'combo', label: 'Combo' },
-];
-const DEFAULT_ITEM_TYPE = PRODUCT_ITEM_TYPE_OPTIONS[0].value;
+import {
+  DEFAULT_PRODUCT_ITEM_TYPE,
+  PRODUCT_BRAND_DEFAULT,
+  initTaxes,
+  warrantyOptions,
+} from '@/domain/products/productDefaults';
 
 const normalizeBrand = (value: any) => {
   if (typeof value !== 'string') {
-    return DEFAULT_BRAND;
+    return PRODUCT_BRAND_DEFAULT;
   }
   const trimmed = value.replace(/\s+/g, ' ').trim();
-  return trimmed || DEFAULT_BRAND;
+  return trimmed || PRODUCT_BRAND_DEFAULT;
 };
 
 const createEmptyProduct = () => ({
   name: '',
-  brand: DEFAULT_BRAND,
+  brand: PRODUCT_BRAND_DEFAULT,
   image: '',
   category: '',
-  itemType: DEFAULT_ITEM_TYPE,
+  itemType: DEFAULT_PRODUCT_ITEM_TYPE,
   pricing: {
     currency: 'DOP',
     cost: 0,
@@ -80,7 +73,7 @@ const initialState = {
   product: createEmptyProduct(),
 };
 
-export const updateProductSlice = createSlice({
+const updateProductSlice = createSlice({
   name: 'updateProduct',
   initialState,
   reducers: {
@@ -137,73 +130,6 @@ export const updateProductSlice = createSlice({
         state.product.pricing.price = action.payload.pricing.price;
       }
     },
-    // Activa o desactiva la venta por unidades
-    toggleSaleUnits: (state: any, action: PayloadAction<any>) => {
-      const { isSoldInUnits } = action.payload;
-      state.product.isSoldInUnits = isSoldInUnits;
-
-      if (isSoldInUnits && state.product.saleUnits.length === 0) {
-        // Inicializar saleUnits con ejemplos si se activa y está vacío
-        state.product.saleUnits = [
-          {
-            id: nanoid(),
-            unitName: 'Caja',
-            quantity: 30,
-            pricing: {
-              currency: 'DOP',
-              cost: 0,
-              price: 0,
-              listPrice: 0,
-              listPriceEnable: true,
-              avgPrice: 0,
-              avgPriceEnable: false,
-              minPrice: 0,
-              minPriceEnable: false,
-              cardPrice: 0,
-              offerPrice: 0,
-              tax: initTaxes[0],
-            },
-          },
-          {
-            id: nanoid(),
-            unitName: 'Pastilla',
-            quantity: 1,
-            pricing: {
-              currency: 'DOP',
-              cost: 0,
-              price: 0,
-              listPrice: 0,
-              listPriceEnable: true,
-              avgPrice: 0,
-              avgPriceEnable: false,
-              minPrice: 0,
-              minPriceEnable: false,
-              cardPrice: 0,
-              offerPrice: 0,
-              tax: initTaxes[0],
-            },
-          },
-        ];
-        // Seleccionar la primera saleUnit por defecto
-        state.product.selectedSaleUnitId = state.product.saleUnits[0].id;
-      } else if (!isSoldInUnits) {
-        // Si se desactiva, limpiar saleUnits y restablecer selectedSaleUnitId
-        state.product.saleUnits = [];
-        state.product.selectedSaleUnitId = null;
-      }
-    },
-    // Selecciona una unidad de venta específica
-    selectSaleUnit: (state: any, action: PayloadAction<any>) => {
-      const { saleUnitId } = action.payload;
-      const exists = state.product.saleUnits.some(
-        (unit) => unit.id === saleUnitId,
-      );
-      if (exists) {
-        state.product.selectedSaleUnitId = saleUnitId;
-      }
-    },
-    // Actualiza todas las unidades de venta
-
     clearUpdateProductData: (state: any) => {
       state.product = createEmptyProduct();
       state.status = false;
@@ -217,17 +143,12 @@ export const {
   clearUpdateProductData,
   ChangeProductImage,
   setProduct,
-  toggleSaleUnits,
-  selectSaleUnit,
 } = updateProductSlice.actions;
 
 //selectors
 export const selectUpdateProductData = (state: any) => state.updateProduct;
 export const selectUpdateProductStatus = (state: any) =>
   state.updateProduct.status;
-export const selectProduct = (state: any) => state.updateProduct.product;
-export const selectSaleUnits = (state: any) =>
-  state.updateProduct.product.saleUnits;
 export const selectIsSoldInUnits = (state: any) =>
   state.updateProduct.product.isSoldInUnits;
 export const selectSelectedSaleUnit = (state: any) => {
@@ -237,9 +158,5 @@ export const selectSelectedSaleUnit = (state: any) => {
     null
   );
 };
-export const selectSaleUnitById = (state: any, id: any) =>
-  (state.updateProduct.product.saleUnits || []).find(
-    (unit: any) => unit.id === id,
-  );
 
 export default updateProductSlice.reducer;

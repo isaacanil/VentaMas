@@ -61,3 +61,16 @@ export const getInvoiceTotalsSnapshot = (
     individualDiscounts: getInvoiceIndividualDiscounts(data?.products),
   };
 };
+
+export function calculateInvoicesTotal(
+  invoices: ReadonlyArray<{ data?: InvoiceData | null }> = [],
+): number {
+  return invoices.reduce(
+    (total, invoice) => total + Number(invoice.data?.totalPurchase?.value ?? 0),
+    0,
+  );
+}
+
+export function countInvoices<T>(invoices: ReadonlyArray<T> = []): number {
+  return invoices.length;
+}

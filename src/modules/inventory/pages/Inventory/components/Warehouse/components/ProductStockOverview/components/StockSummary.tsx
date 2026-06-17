@@ -6,6 +6,7 @@ import styled from 'styled-components';
 
 import BackOrderList from './BackOrderList';
 import type { ProductStockItem } from '../types';
+import { formatStockQuantity } from '../utils/stockDisplay';
 
 const Container = styled.div`
   display: grid;
@@ -122,7 +123,7 @@ const StockSummary = ({ filteredStock, productId }: StockSummaryProps) => {
                 <FontAwesomeIcon icon={faBoxes} />
               </IconContainer>
               <StatInfo>
-                <StatValue>{totalUnits.toLocaleString()}</StatValue>
+                <StatValue>{formatStockQuantity(totalUnits)}</StatValue>
                 <StatLabel>Unidades</StatLabel>
               </StatInfo>
             </StatItem>

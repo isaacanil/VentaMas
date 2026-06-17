@@ -1,3 +1,10 @@
+import { createCountFormatter } from './formatCounts';
+
+const legacyNumberFormatter = createCountFormatter({
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+});
+
 export const formatNumber = (
   value: string | number | null | undefined,
 ): string => {
@@ -15,8 +22,5 @@ export const formatNumber = (
     }
     num = parsed;
   }
-  return num.toLocaleString('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  });
+  return legacyNumberFormatter.format(num);
 };

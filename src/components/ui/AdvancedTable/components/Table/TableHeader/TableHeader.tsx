@@ -3,8 +3,8 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
-import { Row } from '@/components/ui/AdvancedTable/AdvancedTable';
-import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/AdvancedTable';
+import { Row } from '@/components/ui/AdvancedTable/components/Table/TableRow.styles';
+import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/types/AdvancedTableTypes';
 import type {
   SortConfig,
   TableRow,

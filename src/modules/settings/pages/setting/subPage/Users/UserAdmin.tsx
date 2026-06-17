@@ -9,7 +9,7 @@ import styled from 'styled-components';
 
 import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import ROUTES_NAME from '@/router/routes/routesName';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 import { PageShell } from '@/components/layout/PageShell';
 
 const {

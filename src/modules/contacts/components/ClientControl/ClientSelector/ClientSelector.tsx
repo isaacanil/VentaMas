@@ -14,8 +14,8 @@ import { CLIENT_MODE_BAR } from '@/features/clientCart/clientMode';
 import { toggleClientModal } from '@/features/modals/modalSlice';
 import { fbDeleteClient } from '@/firebase/client/fbDeleteClient';
 import { useFbGetClientsOnOpen } from '@/firebase/client/useFbGetClientsOnOpen';
-import { filtrarDatos } from '@/hooks/useSearchFilter';
 import { lazyWithRetry } from '@/utils/lazyWithRetry';
+import { filterByDeepSearchText } from '@/utils/searchText';
 
 type UserRootState = Parameters<typeof selectUser>[0];
 type ClientRootState = Parameters<typeof selectClient>[0];
@@ -100,7 +100,7 @@ export const ClientSelector = () => {
     clients.filter(({ client }) => !client.name);
 
   const filteredClients = useMemo(
-    () => filtrarDatos(clients, searchTerm),
+    () => filterByDeepSearchText(clients, searchTerm),
     [clients, searchTerm],
   );
   const duplicateClients = useMemo(

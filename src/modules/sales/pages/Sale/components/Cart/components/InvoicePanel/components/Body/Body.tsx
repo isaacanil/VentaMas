@@ -11,10 +11,12 @@ import {
 } from '@/features/cart/cartSlice';
 import { selectClient } from '@/features/clientCart/clientCartSlice';
 import { useUserAccess } from '@/hooks/abilities/useAbilities';
-import { useCreditLimitCheck } from '@/hooks/accountsReceivable/useCheckAccountReceivable';
-import { useCreditLimitRealtime } from '@/hooks/accountsReceivable/useCreditLimitRealtime';
-import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
-import CreditSelector from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/components/CreditSelector/CreditSelector';
+import { useInsuranceEnabled } from '@/modules/insurance/public';
+import {
+  useCreditLimitCheck,
+  useCreditLimitRealtime,
+} from '@/modules/accountsReceivable/public';
+import { CreditSelector } from '@/modules/invoice/public';
 import type { CreditNoteSelection } from '@/types/creditNote';
 
 import AccountsReceivableManager from './components/AccountsReceivableManager/AccountsReceivableManager';

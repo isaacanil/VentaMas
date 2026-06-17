@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const resolveCallableAuthUidMock = vi.hoisted(() => vi.fn());
+
 vi.mock('firebase-functions', () => ({
   logger: {
     error: vi.fn(),
@@ -32,7 +34,7 @@ vi.mock('../../../core/config/firebase.js', () => ({
   },
 }));
 
-vi.mock('../../../versions/v1/modules/warehouse/services/warehouse.service.js', () => ({
+vi.mock('../../warehouse/services/defaultWarehouse.service.js', () => ({
   ensureDefaultWarehouse: vi.fn(),
 }));
 
@@ -60,13 +62,22 @@ vi.mock('../../../versions/v2/billing/utils/billingCommon.util.js', () => ({
   toCleanString: (value) => (typeof value === 'string' ? value.trim() : ''),
 }));
 
-import { ensureDefaultWarehouse } from '../../../versions/v1/modules/warehouse/services/warehouse.service.js';
+vi.mock('../../../core/utils/callableSessionAuth.util.js', () => ({
+  resolveCallableAuthUid: (...args) => resolveCallableAuthUidMock(...args),
+}));
+
+import { db } from '../../../core/config/firebase.js';
+import { ensureDefaultWarehouse } from '../../warehouse/services/defaultWarehouse.service.js';
 import { ensureBusinessOnboardingSubscription } from '../../../versions/v2/billing/services/subscriptionSnapshot.service.js';
-import { runBusinessPostProvisioning } from './createBusiness.js';
+import {
+  createBusiness,
+  runBusinessPostProvisioning,
+} from './createBusiness.js';
 
 describe('runBusinessPostProvisioning', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resolveCallableAuthUidMock.mockResolvedValue('user-1');
     ensureBusinessOnboardingSubscription.mockResolvedValue({ ok: true });
     ensureDefaultWarehouse.mockResolvedValue({ ok: true });
   });
@@ -85,5 +96,32 @@ describe('runBusinessPostProvisioning', () => {
       businessID: 'business-1',
       uid: 'user-1',
     });
+  });
+});
+
+describe('createBusiness auth boundary', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resolveCallableAuthUidMock.mockResolvedValue(null);
+  });
+
+  it('does not trust payload user uid when callable auth is missing', async () => {
+    await expect(
+      createBusiness({
+        data: {
+          business: {
+            id: 'business-1',
+            name: 'Negocio',
+          },
+          user: {
+            uid: 'spoofed-user',
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'unauthenticated',
+    });
+
+    expect(db.runTransaction).not.toHaveBeenCalled();
   });
 });

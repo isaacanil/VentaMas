@@ -5,7 +5,6 @@ import { useBusinessDataConfig } from '@/features/auth/useBusinessDataConfig';
 import { useBusinessFiscalSync } from '@/features/fiscal/useBusinessFiscalSync';
 import { ReloadImageHiddenSetting } from '@/features/setting/settingSlice';
 import { useHydrateTaxReceiptSettings } from '@/features/taxReceipt/useHydrateTaxReceiptSettings';
-import { useUserDocListener } from '@/firebase/Auth/fbAuthV2/fbSignIn/updateUserData';
 import {
   getOrCreatePresenceConnectionId,
   getStoredSession,
@@ -15,16 +14,15 @@ import { useCurrentCashDrawer } from '@/firebase/cashCount/useCurrentCashDrawer'
 import { useRealtimePresence } from '@/firebase/presence/useRealtimePresence';
 import { useFbTaxReceiptToggleStatus } from '@/firebase/Settings/taxReceipt/fbGetTaxReceiptToggleStatus';
 import { useAutoCreateDefaultTaxReceipt } from '@/firebase/taxReceipt/fbAutoCreateDefaultReceipt';
-import {
-  useLoadUserAbilities,
-  useAbilities,
-} from '@/hooks/abilities/useAbilities';
-import { useNavigationTracker } from '@/hooks/routes/useNavigationTracker';
+import { useLoadUserAbilities } from '@/hooks/abilities/useAbilities';
 import { useCheckForInternetConnection } from '@/hooks/useCheckForInternetConnection';
-import { useDeveloperCommands } from '@/hooks/useDeveloperCommands';
 import { usePersistentDeveloperBusiness } from '@/hooks/usePersistentDeveloperBusiness';
 import { useTaxReceiptsFix } from '@/hooks/useTaxReceiptsFix';
+import { useUserDocListener } from '@/modules/auth/public';
 import { hasDeveloperAccess } from '@/utils/access/developerAccess';
+
+import { useDeveloperCommands } from './hooks/useDeveloperCommands';
+import { useNavigationTracker } from './hooks/useNavigationTracker';
 
 interface User {
   uid?: string;
@@ -85,7 +83,6 @@ export const GlobalListeners = ({ user }: { user: UserState }) => {
     customSessionId,
   });
   useCurrentCashDrawer();
-  useAbilities();
   useAutoCreateDefaultTaxReceipt();
   useHydrateTaxReceiptSettings();
   useFbTaxReceiptToggleStatus();

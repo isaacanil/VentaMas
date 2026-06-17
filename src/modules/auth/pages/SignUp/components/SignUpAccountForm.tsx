@@ -22,11 +22,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 
 import { login } from '@/features/auth/userSlice';
+import { LogoContainer } from '@/modules/auth/components/LogoContainer/LogoContainer';
+import { SocialLogin } from '@/modules/auth/components/SocialLogin/SocialLogin';
 import { resolveDefaultHomeRoute } from '@/modules/auth/utils/defaultHomeRoute';
 import ROUTES_PATH from '@/router/routes/routesName';
-
-import { LogoContainer } from '@/modules/auth/pages/Login/components/Header/LogoContainer';
-import { SocialLogin } from '@/modules/auth/pages/Login/components/SocialLogin';
 
 import { runSignUpSubmission } from './utils/signUpSubmission';
 

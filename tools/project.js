@@ -8,6 +8,12 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.join(__dirname, '..');
+const ALLOW_ALL_FUNCTIONS_DEPLOY_ENV = 'ALLOW_ALL_FUNCTIONS_DEPLOY';
+const ALLOW_ALL_FUNCTIONS_DEPLOY_VALUE = '1';
+
+function isAllFunctionsDeployAllowed() {
+  return process.env[ALLOW_ALL_FUNCTIONS_DEPLOY_ENV] === ALLOW_ALL_FUNCTIONS_DEPLOY_VALUE;
+}
 
 const PROJECT_ENVIRONMENTS = {
   staging: {
@@ -18,6 +24,7 @@ const PROJECT_ENVIRONMENTS = {
         message: 'Deploy staging: hosting + todas las functions',
         command: 'deploy',
         args: ['staging:all'],
+        requiresAllFunctionsDeployGuard: true,
       },
       {
         name: 'deploy:staging',
@@ -36,6 +43,7 @@ const PROJECT_ENVIRONMENTS = {
         message: 'Deploy staging: todas las functions',
         command: 'deploy',
         args: ['staging:functions:all'],
+        requiresAllFunctionsDeployGuard: true,
       },
       {
         name: 'sync:indexes:prod-to-staging',
@@ -93,7 +101,7 @@ function isInteractive() {
 }
 
 function usage() {
-  return [
+  const examples = [
     'Usage:',
     '  node tools/project.js',
     '  node tools/project.js sync [sync action/options]',
@@ -104,8 +112,19 @@ function usage() {
     '  npm run project -- sync',
     '  npm run project -- sync indexes:prod-to-staging --dry-run',
     '  npm run project -- deploy staging',
-    '  npm run project -- deploy staging:all',
-  ].join('\n');
+  ];
+
+  if (isAllFunctionsDeployAllowed()) {
+    examples.push('  npm run project -- deploy staging:all');
+  } else {
+    examples.push(
+      '',
+      `Staging all-functions deploy targets are hidden and blocked unless ${ALLOW_ALL_FUNCTIONS_DEPLOY_ENV}=${ALLOW_ALL_FUNCTIONS_DEPLOY_VALUE}.`,
+      'Use the normal scoped path instead: npm run project -- deploy staging:functions nombreDeFuncion',
+    );
+  }
+
+  return examples.join('\n');
 }
 
 async function promptProjectEnvironment() {
@@ -130,10 +149,16 @@ async function promptProjectAction(environment) {
     name: 'projectAction',
     message: `Selecciona operacion para ${PROJECT_ENVIRONMENTS[environment].label}`,
     choices: [
-      ...PROJECT_ENVIRONMENTS[environment].actions.map((action) => ({
-        name: action.name,
-        message: action.message,
-      })),
+      ...PROJECT_ENVIRONMENTS[environment].actions
+        .filter(
+          (action) =>
+            !action.requiresAllFunctionsDeployGuard ||
+            isAllFunctionsDeployAllowed(),
+        )
+        .map((action) => ({
+          name: action.name,
+          message: action.message,
+        })),
       { name: 'help', message: 'Ver ayuda / ejemplos' },
       { name: 'back', message: 'Volver a ambientes' },
       { name: 'exit', message: 'Salir' },

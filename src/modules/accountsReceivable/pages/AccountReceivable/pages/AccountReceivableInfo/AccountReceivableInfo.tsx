@@ -1,6 +1,6 @@
 import { Navigate, useParams } from 'react-router-dom';
 
-import { buildAccountReceivableListUrl } from '@/modules/accountsReceivable/utils/accountReceivableNavigation';
+import { buildAccountReceivableListUrl } from '../../../../utils/accountReceivableNavigation';
 
 export default function AccountReceivableInfo() {
   const { id } = useParams<{ id?: string }>();

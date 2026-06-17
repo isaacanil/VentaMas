@@ -1,6 +1,7 @@
 import { message } from 'antd';
 import imageCompression from 'browser-image-compression';
-import type { RcFile, UploadProps } from 'antd/es/upload/interface';
+import type { UploadProps } from 'antd';
+import type { RcFile } from 'antd/es/upload/interface';
 
 export const compressImage = async (file: RcFile): Promise<File | null> => {
   const fileSize = file.size / (1024 * 1024);

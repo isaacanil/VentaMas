@@ -17,7 +17,7 @@ import type {
 import {
   analyzeAvailableProductStocks,
   buildMissingPhysicalSelectionMessage,
-} from '@/utils/inventory/productStockSelection';
+} from '@/modules/sales/pages/Sale/utils/productStockSelection';
 import { getProductStockByProductId } from '@/firebase/warehouse/productStockService';
 
 type GuardFailure =
@@ -34,6 +34,7 @@ type GuardFailure =
       message: string;
       ok: false;
       product: ProductRecord;
+      availableStocks?: InventoryStockItem[];
     }
   | {
       code: 'service-commission-collaborator';
@@ -197,6 +198,7 @@ export const validateInvoiceSubmissionGuards = async ({
         product: invalidProduct as unknown as ProductRecord,
       }),
       product: invalidProduct as unknown as ProductRecord,
+      availableStocks: summary.availableStocks,
     };
   } catch (error) {
     console.error(

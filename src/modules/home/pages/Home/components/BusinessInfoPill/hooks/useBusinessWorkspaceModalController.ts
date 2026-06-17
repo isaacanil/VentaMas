@@ -10,17 +10,15 @@ import { useNavigate } from 'react-router-dom';
 
 import { getRoleLabelById } from '@/abilities/roles';
 import { addUserData, selectUser } from '@/features/auth/userSlice';
-import { useBusinessMetadata } from '@/modules/auth/hooks/useBusinessMetadata';
 import {
   buildAccessControlFromBusinesses,
   normalizeAvailableBusinesses,
-  resolveCurrentActiveBusinessId,
-  setStoredActiveBusinessId,
-} from '@/modules/auth/utils/businessContext';
-import {
   resolveBusinessDevIdLabel,
   resolveBusinessDisplayName,
-} from '@/modules/auth/utils/businessDisplay';
+  resolveCurrentActiveBusinessId,
+  setStoredActiveBusinessId,
+  useBusinessMetadata,
+} from '@/modules/auth/public';
 import ROUTES_PATH from '@/router/routes/routesName';
 import type { MembershipStatus } from '@/types/models';
 import type { UserIdentity } from '@/types/users';

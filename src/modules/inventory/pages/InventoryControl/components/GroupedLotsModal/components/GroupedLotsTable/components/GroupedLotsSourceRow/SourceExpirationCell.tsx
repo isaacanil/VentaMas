@@ -3,7 +3,7 @@ import { DateTime } from 'luxon';
 import React from 'react';
 
 import DatePicker from '@/components/DatePicker';
-import { CLEAR_SENTINEL } from '@/utils/inventory/constants';
+import { CLEAR_SENTINEL } from '@/modules/inventory/utils/constants';
 
 import { formatInputDate } from '../../../../../inventoryTableUtils';
 

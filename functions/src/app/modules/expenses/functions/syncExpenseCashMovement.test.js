@@ -72,6 +72,9 @@ describe('syncExpenseCashMovement', () => {
       id: 'exp_exp_1',
       sourceDocumentType: 'expense',
       amount: 80,
+      metadata: {
+        category: 'Servicios',
+      },
     });
 
     await syncExpenseCashMovement({
@@ -88,17 +91,31 @@ describe('syncExpenseCashMovement', () => {
             expense: {
               id: 'expense-1',
               amount: 80,
+              createdBy: 'client-controlled-created',
+              updatedBy: 'client-controlled-updated',
             },
           }),
         },
       },
     });
 
+    expect(buildExpenseCashMovementMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        businessId: 'business-1',
+        expenseId: 'expense-1',
+        createdBy: 'system:expense-derived-sync',
+      }),
+    );
     expect(setMock).toHaveBeenCalledWith(
       {
         id: 'exp_exp_1',
         sourceDocumentType: 'expense',
         amount: 80,
+        metadata: {
+          category: 'Servicios',
+          sourceExpenseCreatedBy: 'client-controlled-created',
+          sourceExpenseUpdatedBy: 'client-controlled-updated',
+        },
       },
       { merge: true },
     );

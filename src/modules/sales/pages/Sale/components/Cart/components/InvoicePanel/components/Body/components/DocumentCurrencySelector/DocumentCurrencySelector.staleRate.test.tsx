@@ -20,6 +20,7 @@ vi.mock('@floating-ui/react', () => ({
   flip: vi.fn(() => ({})),
   offset: vi.fn(() => ({})),
   shift: vi.fn(() => ({})),
+  size: vi.fn(() => ({})),
   useFloating: () => ({
     refs: {
       reference: { current: null },

@@ -1,24 +1,22 @@
-import {
-  DownloadOutlined,
-  HistoryOutlined,
-} from '@ant-design/icons';
-import {
-  Alert as HeroAlert,
-  Button as HeroButton,
-  Card as HeroCard,
-  Chip as HeroChip,
-  Modal as HeroModal,
-  Table as HeroTable,
-} from '@heroui/react';
+import { DownloadOutlined, HistoryOutlined } from '@ant-design/icons';
 import { message } from 'antd';
 import { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
+import {
+  VmAlert,
+  VmButton,
+  VmCard,
+  VmChip,
+  VmModal,
+  VmTable,
+} from '@/components/heroui';
 import { fbExportDgiiTxtReport } from '@/firebase/accounting/fbExportDgiiTxtReport';
 import {
   fbRunMonthlyComplianceReport,
   type MonthlyComplianceReportCode,
 } from '@/firebase/accounting/fbRunMonthlyComplianceReport';
+import { downloadTextFile } from '@/utils/export/download';
 
 import { useMonthlyComplianceRuns } from '../hooks/useMonthlyComplianceRuns';
 import { formatAccountingPeriod } from '../utils/accountingWorkspace';
@@ -37,6 +35,27 @@ import {
   resolveMonthlyComplianceStatusTone,
   type MonthlyComplianceRun,
 } from '../utils/monthlyCompliance';
+import {
+  buildFiscalDate,
+  formatFiscalDate,
+  getDaysUntil,
+  getFiscalCalendarItems,
+} from './utils/fiscalComplianceCalendar';
+import {
+  formatCurrency,
+  formatMoney,
+  formatShortDate,
+  getDgii606ExcludedRows,
+  getDgii606ItbisTotal,
+  getDgii606Rows,
+  getDgii607ExcludedRows,
+  getDgii607Rows,
+  getDgii608Rows,
+  getRunRecordCount,
+  resolveDgiiDocumentType,
+  resolveExcludedReason,
+  toPreviewText,
+} from './utils/fiscalCompliancePreview';
 
 interface FiscalCompliancePanelProps {
   businessId: string | null;
@@ -65,9 +84,9 @@ const REPORT_LABELS: Record<MonthlyComplianceReportCode, string> = {
 const getStatusTone = (status: string) =>
   resolveMonthlyComplianceStatusTone(status);
 
-type HeroChipColor = 'default' | 'accent' | 'danger' | 'success' | 'warning';
+type VmChipColor = 'default' | 'accent' | 'danger' | 'success' | 'warning';
 
-const getStatusChipColor = (status: string): HeroChipColor => {
+const getStatusChipColor = (status: string): VmChipColor => {
   const tone = getStatusTone(status);
   return tone === 'neutral' ? 'default' : tone;
 };
@@ -86,11 +105,6 @@ interface GroupedFiscalIssue {
   documentNumber: string;
   fields: string[];
 }
-
-type FiscalSourceRow = Record<string, unknown> & {
-  sourceId: string;
-  index: number;
-};
 
 const groupFiscalIssues = (issues: MonthlyComplianceRun['issues']) => {
   const groups = new Map<
@@ -153,224 +167,6 @@ const resolveReportOptionLabel = (reportCode: MonthlyComplianceReportCode) =>
     (option) => option.value === reportCode,
   )?.label ?? reportCode;
 
-const formatMoney = (value: unknown) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed)
-    ? parsed.toLocaleString('es-DO', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })
-    : '-';
-};
-
-const formatCurrency = (value: unknown) => `RD$ ${formatMoney(value)}`;
-
-const padDatePart = (value: number) => String(value).padStart(2, '0');
-
-const formatShortDate = (value: unknown) => {
-  if (typeof value !== 'string' || !value.length) return '-';
-  const isoDateMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (!isoDateMatch) return '-';
-  const [, year, month, day] = isoDateMatch;
-  return `${day}/${month}/${year}`;
-};
-
-const toPreviewText = (value: unknown) =>
-  typeof value === 'string' && value.trim().length ? value.trim() : '-';
-
-const hasPreviewValue = (value: unknown) =>
-  typeof value === 'string' && value.trim().length > 0;
-
-const toSourceRows = (
-  sourceRecords: Record<string, unknown>,
-  sourceId: string,
-): FiscalSourceRow[] => {
-  const records = Array.isArray(sourceRecords[sourceId])
-    ? sourceRecords[sourceId]
-    : [];
-
-  return records.map((record, index) => ({
-    ...(record && typeof record === 'object'
-      ? (record as Record<string, unknown>)
-      : {}),
-    sourceId,
-    index,
-  }));
-};
-
-const getDgii606ExcludedRows = (run: MonthlyComplianceRun) => {
-  const sourceRecords = run.sourceSnapshot.sourceRecords;
-  return [
-    ...toSourceRows(sourceRecords, 'excludedPurchases'),
-    ...toSourceRows(sourceRecords, 'excludedExpenses'),
-    ...toSourceRows(sourceRecords, 'excludedAccountsPayablePayments'),
-  ].sort((left, right) =>
-    String(left.issuedAt ?? '').localeCompare(String(right.issuedAt ?? '')),
-  );
-};
-
-const getDgii606Rows = (run: MonthlyComplianceRun) => {
-  const sourceRecords = run.sourceSnapshot.sourceRecords;
-  return [
-    ...toSourceRows(sourceRecords, 'purchases'),
-    ...toSourceRows(sourceRecords, 'expenses'),
-  ].sort((left, right) =>
-    String(left.issuedAt ?? '').localeCompare(String(right.issuedAt ?? '')),
-  );
-};
-
-const getDgii607Rows = (run: MonthlyComplianceRun) => {
-  const sourceRecords = run.sourceSnapshot.sourceRecords;
-  return [
-    ...toSourceRows(sourceRecords, 'invoices'),
-    ...toSourceRows(sourceRecords, 'thirdPartyWithholdings'),
-    ...toSourceRows(sourceRecords, 'creditNotes'),
-  ]
-    .filter((row) => hasPreviewValue(row.documentFiscalNumber))
-    .sort((left, right) =>
-      String(left.retentionDate ?? left.issuedAt ?? '').localeCompare(
-        String(right.retentionDate ?? right.issuedAt ?? ''),
-      ),
-    );
-};
-
-const getDgii607ExcludedRows = (run: MonthlyComplianceRun) => {
-  const sourceRecords = run.sourceSnapshot.sourceRecords;
-  return [
-    ...toSourceRows(sourceRecords, 'excludedInvoices'),
-    ...toSourceRows(sourceRecords, 'excludedThirdPartyWithholdings'),
-    ...toSourceRows(sourceRecords, 'excludedCreditNotes'),
-  ].sort((left, right) =>
-    String(left.retentionDate ?? left.issuedAt ?? '').localeCompare(
-      String(right.retentionDate ?? right.issuedAt ?? ''),
-    ),
-  );
-};
-
-const getDgii608Rows = (run: MonthlyComplianceRun) => {
-  const sourceRecords = run.sourceSnapshot.sourceRecords;
-  return [
-    ...toSourceRows(sourceRecords, 'invoices'),
-    ...toSourceRows(sourceRecords, 'creditNotes'),
-  ].sort((left, right) =>
-    String(left.issuedAt ?? '').localeCompare(String(right.issuedAt ?? '')),
-  );
-};
-
-const resolveDgiiDocumentType = (documentFiscalNumber: unknown) => {
-  const ncf = toPreviewText(documentFiscalNumber).toUpperCase();
-  if (ncf.startsWith('B01')) return '01';
-  if (ncf.startsWith('B02')) return '02';
-  if (ncf.startsWith('B04')) return '04';
-  return '-';
-};
-
-const resolveExcludedReason = (row: Record<string, unknown>) => {
-  if (!hasPreviewValue(row.documentFiscalNumber)) return 'Sin NCF';
-  return 'Fuera del reporte';
-};
-
-const getRunRecordCount = (run: MonthlyComplianceRun | null) => {
-  if (!run) return 0;
-  if (run.reportCode === 'DGII_606') return getDgii606Rows(run).length;
-  if (run.reportCode === 'DGII_607') return getDgii607Rows(run).length;
-  if (run.reportCode === 'DGII_608') return getDgii608Rows(run).length;
-
-  return run.validationSummary.sourceSummaries.reduce(
-    (total, source) => total + source.recordsScanned,
-    0,
-  );
-};
-
-const getDgii606ItbisTotal = (run: MonthlyComplianceRun | null) =>
-  run
-    ? getDgii606Rows(run).reduce((total, row) => {
-        const parsed = Number(row.itbisTotal);
-        return Number.isFinite(parsed) ? total + parsed : total;
-      }, 0)
-    : 0;
-
-const parsePeriodStart = (periodKey: string) => {
-  const [year, month] = periodKey.split('-').map(Number);
-  if (!year || !month) return new Date();
-  return new Date(year, month - 1, 1);
-};
-
-const addMonths = (date: Date, months: number) =>
-  new Date(date.getFullYear(), date.getMonth() + months, date.getDate());
-
-const buildFiscalDate = (
-  periodKey: string,
-  monthOffset: number,
-  day: number,
-) => {
-  const periodStart = parsePeriodStart(periodKey);
-  return new Date(
-    periodStart.getFullYear(),
-    periodStart.getMonth() + monthOffset,
-    day,
-  );
-};
-
-const formatFiscalDate = (date: Date) =>
-  [
-    padDatePart(date.getDate()),
-    padDatePart(date.getMonth() + 1),
-    date.getFullYear(),
-  ].join('/');
-
-const getDaysUntil = (date: Date) => {
-  const today = new Date();
-  const todayStart = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate(),
-  );
-  const targetStart = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-  );
-  return Math.ceil(
-    (targetStart.getTime() - todayStart.getTime()) / (24 * 60 * 60 * 1000),
-  );
-};
-
-const getFiscalCalendarItems = (periodKey: string) => {
-  const nextMonth = addMonths(parsePeriodStart(periodKey), 1);
-  const monthLabel = nextMonth.toLocaleDateString('es-DO', { month: 'long' });
-  const capitalizedMonth =
-    monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
-
-  return [
-    {
-      date: buildFiscalDate(periodKey, 1, 15),
-      label: 'Envio formatos 606, 607, 608',
-      tone: 'warning' as const,
-    },
-    {
-      date: buildFiscalDate(periodKey, 1, 20),
-      label: `Pago ITBIS (IT-1) - ${capitalizedMonth}`,
-      tone: 'warning' as const,
-    },
-    {
-      date: buildFiscalDate(periodKey, 1, 30),
-      label: 'Retención ISR asalariados',
-      tone: 'success' as const,
-    },
-    {
-      date: buildFiscalDate(periodKey, 2, 15),
-      label: 'Envio IR-17 - anticipo',
-      tone: 'success' as const,
-    },
-    {
-      date: buildFiscalDate(periodKey, 3, 28),
-      label: 'Declaración jurada anual IR-2',
-      tone: 'success' as const,
-    },
-  ];
-};
-
 export const FiscalCompliancePanel = ({
   businessId,
   enabled,
@@ -409,7 +205,9 @@ export const FiscalCompliancePanel = ({
   });
   const periodOptions = useMemo(() => {
     const uniquePeriods = Array.from(
-      new Set([effectivePeriodKey, ...periods, ...runPeriodKeys].filter(Boolean)),
+      new Set(
+        [effectivePeriodKey, ...periods, ...runPeriodKeys].filter(Boolean),
+      ),
     );
 
     return uniquePeriods.map((period) => ({
@@ -557,15 +355,10 @@ export const FiscalCompliancePanel = ({
         reportRunId: selectedRun.id,
       });
 
-      const blob = new Blob([result.content], {
-        type: 'text/plain;charset=utf-8',
+      downloadTextFile({
+        text: result.content,
+        fileName: result.fileName,
       });
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = result.fileName;
-      anchor.click();
-      setTimeout(() => URL.revokeObjectURL(url), 100);
 
       void message.success(
         `${REPORT_LABELS[reportCode]} generado: ${result.fileName} (${result.rowCount} filas).`,
@@ -681,15 +474,15 @@ export const FiscalCompliancePanel = ({
                   <strong>
                     {REPORT_LABELS[run.reportCode]} · v{run.version}
                   </strong>
-                  <HeroChip
+                  <VmChip
                     className="w-fit"
                     color={getStatusChipColor(run.status)}
                     variant="soft"
                   >
-                    <HeroChip.Label>
+                    <VmChip.Label>
                       {resolveMonthlyComplianceStatusLabel(run.status)}
-                    </HeroChip.Label>
-                  </HeroChip>
+                    </VmChip.Label>
+                  </VmChip>
                 </RunItemTop>
                 <span>{formatMonthlyComplianceRunDate(run.createdAt)}</span>
                 <span>{run.validationSummary.totalIssues} issues</span>
@@ -750,7 +543,7 @@ export const FiscalCompliancePanel = ({
             ))}
           </ToolbarSelect>
 
-          <HeroButton
+          <VmButton
             size="sm"
             variant="primary"
             isDisabled={monthlyComplianceActionsDisabled}
@@ -758,8 +551,8 @@ export const FiscalCompliancePanel = ({
             onPress={() => void handleRun(activeTab)}
           >
             Generar {REPORT_LABELS[activeTab]}
-          </HeroButton>
-          <HeroButton
+          </VmButton>
+          <VmButton
             size="sm"
             variant="secondary"
             isDisabled={
@@ -771,8 +564,8 @@ export const FiscalCompliancePanel = ({
           >
             <DownloadOutlined />
             Exportar TXT
-          </HeroButton>
-          <HeroButton
+          </VmButton>
+          <VmButton
             isIconOnly
             aria-label="Ver corridas e issues"
             size="sm"
@@ -780,37 +573,37 @@ export const FiscalCompliancePanel = ({
             onPress={handleOpenRunsModal}
           >
             <HistoryOutlined />
-          </HeroButton>
+          </VmButton>
         </Toolbar>
       </SectionHeader>
 
       <ExecutiveGrid>
         <ExecutiveCard>
-          <HeroCard.Header>
+          <VmCard.Header>
             <ExecutiveLabel>Total a pagar ITBIS</ExecutiveLabel>
-          </HeroCard.Header>
-          <HeroCard.Content>
+          </VmCard.Header>
+          <VmCard.Content>
             <ExecutiveValue>
               {formatCurrency(getDgii606ItbisTotal(latest606Run))}
             </ExecutiveValue>
             <ExecutiveMeta>
               Vence {formatFiscalDate(itbisPaymentDate)} · IT-1
             </ExecutiveMeta>
-          </HeroCard.Content>
+          </VmCard.Content>
         </ExecutiveCard>
         {REPORT_CODES.map((reportCode) => {
           const latestRun = latestRunByCode[reportCode];
           return (
             <ExecutiveCard key={reportCode}>
-              <HeroCard.Header>
+              <VmCard.Header>
                 <ExecutiveLabel>
                   Registros {REPORT_LABELS[reportCode]}
                   {reportCode === 'DGII_608' ? ' (anulados)' : ''}
                 </ExecutiveLabel>
-              </HeroCard.Header>
-              <HeroCard.Content>
+              </VmCard.Header>
+              <VmCard.Content>
                 <ExecutiveValue>{getRunRecordCount(latestRun)}</ExecutiveValue>
-                <HeroChip
+                <VmChip
                   className="w-fit"
                   color={
                     !latestRun
@@ -822,15 +615,15 @@ export const FiscalCompliancePanel = ({
                   size="sm"
                   variant="soft"
                 >
-                  <HeroChip.Label>
+                  <VmChip.Label>
                     {latestRun
                       ? latestRun.validationSummary.totalIssues
                         ? `${latestRun.validationSummary.totalIssues} issues`
                         : 'Validado'
                       : 'Sin corrida'}
-                  </HeroChip.Label>
-                </HeroChip>
-              </HeroCard.Content>
+                  </VmChip.Label>
+                </VmChip>
+              </VmCard.Content>
             </ExecutiveCard>
           );
         })}
@@ -838,76 +631,76 @@ export const FiscalCompliancePanel = ({
 
       {error ? (
         <ComplianceAlert status="danger">
-          <HeroAlert.Content>
-            <HeroAlert.Title>
+          <VmAlert.Content>
+            <VmAlert.Title>
               No se pudieron cargar las corridas de cumplimiento fiscal.
-            </HeroAlert.Title>
-            <HeroAlert.Description>{error}</HeroAlert.Description>
-          </HeroAlert.Content>
+            </VmAlert.Title>
+            <VmAlert.Description>{error}</VmAlert.Description>
+          </VmAlert.Content>
         </ComplianceAlert>
       ) : null}
 
       {!monthlyComplianceResolved ? (
         <ComplianceAlert status="accent">
-          <HeroAlert.Content>
-            <HeroAlert.Title>
+          <VmAlert.Content>
+            <VmAlert.Title>
               Validando habilitacion de compliance mensual DGII.
-            </HeroAlert.Title>
-            <HeroAlert.Description>
+            </VmAlert.Title>
+            <VmAlert.Description>
               Las acciones de generar y exportar se activaran cuando el estado
               fiscal del negocio este confirmado.
-            </HeroAlert.Description>
-          </HeroAlert.Content>
+            </VmAlert.Description>
+          </VmAlert.Content>
         </ComplianceAlert>
       ) : !monthlyComplianceAvailable ? (
         <ComplianceAlert status="warning">
-          <HeroAlert.Content>
-            <HeroAlert.Title>
+          <VmAlert.Content>
+            <VmAlert.Title>
               Compliance mensual DGII no habilitado.
-            </HeroAlert.Title>
-            <HeroAlert.Description>
+            </VmAlert.Title>
+            <VmAlert.Description>
               {monthlyComplianceUnavailableMessage}
-            </HeroAlert.Description>
-          </HeroAlert.Content>
+            </VmAlert.Description>
+          </VmAlert.Content>
         </ComplianceAlert>
       ) : null}
 
       <WorkspaceWrapper>{renderReportWorkspace(activeTab)}</WorkspaceWrapper>
 
       {runsModalOpen ? (
-        <HeroModal.Backdrop
+        <VmModal.Backdrop
           isOpen={runsModalOpen}
           onOpenChange={handleRunsModalOpenChange}
           className="z-[350]"
         >
-          <HeroModal.Container
+          <VmModal.Container
             placement="top"
             scroll="inside"
             size="cover"
             className="max-w-[1040px] mt-4"
           >
-            <HeroModal.Dialog>
-              <HeroModal.Header>
-                <HeroModal.Heading>
+            <VmModal.Dialog>
+              <VmModal.Header>
+                <VmModal.Heading>
                   Corridas e issues ·{' '}
                   {formatAccountingPeriod(effectivePeriodKey)}
-                </HeroModal.Heading>
-                <HeroModal.CloseTrigger />
-              </HeroModal.Header>
-              <HeroModal.Body>
+                </VmModal.Heading>
+                <VmModal.CloseTrigger />
+              </VmModal.Header>
+              <VmModal.Body>
                 <ModalBody>{renderRunsWorkspace()}</ModalBody>
-              </HeroModal.Body>
-            </HeroModal.Dialog>
-          </HeroModal.Container>
-        </HeroModal.Backdrop>
+              </VmModal.Body>
+            </VmModal.Dialog>
+          </VmModal.Container>
+        </VmModal.Backdrop>
       ) : null}
 
       <SupportGrid>
-        <HeroCard>
-          <HeroCard.Header>
+        <VmCard>
+          <VmCard.Header>
             <DetailTitle>Calendario fiscal</DetailTitle>
-          </HeroCard.Header>
-          <HeroCard.Content>
+          </VmCard.Header>
+          <VmCard.Content>
             <NativeTableWrap>
               <NativeTable aria-label="Calendario fiscal">
                 <thead>
@@ -939,14 +732,14 @@ export const FiscalCompliancePanel = ({
                 </tbody>
               </NativeTable>
             </NativeTableWrap>
-          </HeroCard.Content>
-        </HeroCard>
+          </VmCard.Content>
+        </VmCard>
 
-        <HeroCard>
-          <HeroCard.Header>
+        <VmCard>
+          <VmCard.Header>
             <DetailTitle>Historial de corridas DGII</DetailTitle>
-          </HeroCard.Header>
-          <HeroCard.Content>
+          </VmCard.Header>
+          <VmCard.Content>
             {!recentHistoryRuns.length ? (
               <EmptyText className="p-4">Sin corridas registradas.</EmptyText>
             ) : (
@@ -986,10 +779,9 @@ export const FiscalCompliancePanel = ({
                 </NativeTable>
               </NativeTableWrap>
             )}
-          </HeroCard.Content>
-        </HeroCard>
+          </VmCard.Content>
+        </VmCard>
       </SupportGrid>
-
     </Panel>
   );
 };
@@ -1000,7 +792,7 @@ const Dgii606Preview = ({ run }: { run: MonthlyComplianceRun }) => {
 
   return (
     <PreviewPanel>
-      <HeroCard.Header>
+      <VmCard.Header>
         <PreviewHeader>
           <div>
             <DetailTitle>Detalle 606</DetailTitle>
@@ -1008,41 +800,41 @@ const Dgii606Preview = ({ run }: { run: MonthlyComplianceRun }) => {
               Compras y gastos normalizados para revisión legal del periodo.
             </SectionDescription>
           </div>
-          <HeroChip
+          <VmChip
             className="w-fit"
             color={getStatusChipColor(run.status)}
             variant="soft"
           >
-            <HeroChip.Label>
+            <VmChip.Label>
               {resolveMonthlyComplianceStatusLabel(run.status)}
-            </HeroChip.Label>
-          </HeroChip>
+            </VmChip.Label>
+          </VmChip>
         </PreviewHeader>
-      </HeroCard.Header>
-      <HeroCard.Content>
-        <HeroTable>
-          <HeroTable.ScrollContainer>
-            <HeroTable.Content
+      </VmCard.Header>
+      <VmCard.Content>
+        <VmTable>
+          <VmTable.ScrollContainer>
+            <VmTable.Content
               aria-label="Detalle 606"
               className="min-w-[1320px]"
             >
-              <HeroTable.Header>
-                <HeroTable.Column isRowHeader>Fuente</HeroTable.Column>
-                <HeroTable.Column>Documento</HeroTable.Column>
-                <HeroTable.Column>ID origen</HeroTable.Column>
-                <HeroTable.Column>RNC proveedor</HeroTable.Column>
-                <HeroTable.Column>Tipo gasto</HeroTable.Column>
-                <HeroTable.Column>NCF</HeroTable.Column>
-                <HeroTable.Column>Fecha</HeroTable.Column>
-                <HeroTable.Column>Pago</HeroTable.Column>
-                <HeroTable.Column>Forma pago</HeroTable.Column>
-                <HeroTable.Column>Servicios</HeroTable.Column>
-                <HeroTable.Column>Bienes</HeroTable.Column>
-                <HeroTable.Column>Total</HeroTable.Column>
-                <HeroTable.Column>ITBIS</HeroTable.Column>
-                <HeroTable.Column>Estado</HeroTable.Column>
-              </HeroTable.Header>
-              <HeroTable.Body
+              <VmTable.Header>
+                <VmTable.Column isRowHeader>Fuente</VmTable.Column>
+                <VmTable.Column>Documento</VmTable.Column>
+                <VmTable.Column>ID origen</VmTable.Column>
+                <VmTable.Column>RNC proveedor</VmTable.Column>
+                <VmTable.Column>Tipo gasto</VmTable.Column>
+                <VmTable.Column>NCF</VmTable.Column>
+                <VmTable.Column>Fecha</VmTable.Column>
+                <VmTable.Column>Pago</VmTable.Column>
+                <VmTable.Column>Forma pago</VmTable.Column>
+                <VmTable.Column>Servicios</VmTable.Column>
+                <VmTable.Column>Bienes</VmTable.Column>
+                <VmTable.Column>Total</VmTable.Column>
+                <VmTable.Column>ITBIS</VmTable.Column>
+                <VmTable.Column>Estado</VmTable.Column>
+              </VmTable.Header>
+              <VmTable.Body
                 items={rows}
                 renderEmptyState={() => (
                   <EmptyStateCard>
@@ -1055,59 +847,59 @@ const Dgii606Preview = ({ run }: { run: MonthlyComplianceRun }) => {
                 )}
               >
                 {(row) => (
-                  <HeroTable.Row
+                  <VmTable.Row
                     id={`${row.sourceId}-${row.recordId ?? row.index}`}
                   >
-                    <HeroTable.Cell>
+                    <VmTable.Cell>
                       {translateSourceId(String(row.sourceId))}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {toPreviewText(row.documentNumber)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {toPreviewText(row.recordId)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {toPreviewText(row.counterpartyIdentificationNumber)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {toPreviewText(row.expenseType)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {toPreviewText(row.documentFiscalNumber)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {formatShortDate(row.issuedAt)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {formatShortDate(row.paymentAt)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {toPreviewText(row.paymentFormCode)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {formatMoney(row.serviceAmount)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {formatMoney(row.goodsAmount)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>{formatMoney(row.total)}</HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>{formatMoney(row.total)}</VmTable.Cell>
+                    <VmTable.Cell>
                       {formatMoney(row.itbisTotal)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
-                      <HeroChip color="default" size="sm" variant="soft">
-                        <HeroChip.Label>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
+                      <VmChip color="default" size="sm" variant="soft">
+                        <VmChip.Label>
                           {toPreviewText(row.status)}
-                        </HeroChip.Label>
-                      </HeroChip>
-                    </HeroTable.Cell>
-                  </HeroTable.Row>
+                        </VmChip.Label>
+                      </VmChip>
+                    </VmTable.Cell>
+                  </VmTable.Row>
                 )}
-              </HeroTable.Body>
-            </HeroTable.Content>
-          </HeroTable.ScrollContainer>
-        </HeroTable>
+              </VmTable.Body>
+            </VmTable.Content>
+          </VmTable.ScrollContainer>
+        </VmTable>
 
         {excludedRows.length ? (
           <ExcludedRecordsTable
@@ -1115,7 +907,7 @@ const Dgii606Preview = ({ run }: { run: MonthlyComplianceRun }) => {
             title="Registros leidos que no entran al 606"
           />
         ) : null}
-      </HeroCard.Content>
+      </VmCard.Content>
     </PreviewPanel>
   );
 };
@@ -1126,7 +918,7 @@ const Dgii607Preview = ({ run }: { run: MonthlyComplianceRun }) => {
 
   return (
     <PreviewPanel>
-      <HeroCard.Header>
+      <VmCard.Header>
         <PreviewHeader>
           <div>
             <DetailTitle>Detalle 607</DetailTitle>
@@ -1135,43 +927,43 @@ const Dgii607Preview = ({ run }: { run: MonthlyComplianceRun }) => {
               agrupable).
             </SectionDescription>
           </div>
-          <HeroChip
+          <VmChip
             className="w-fit"
             color={getStatusChipColor(run.status)}
             variant="soft"
           >
-            <HeroChip.Label>
+            <VmChip.Label>
               {resolveMonthlyComplianceStatusLabel(run.status)}
-            </HeroChip.Label>
-          </HeroChip>
+            </VmChip.Label>
+          </VmChip>
         </PreviewHeader>
-      </HeroCard.Header>
-      <HeroCard.Content>
-        <HeroTable>
-          <HeroTable.ScrollContainer>
-            <HeroTable.Content
+      </VmCard.Header>
+      <VmCard.Content>
+        <VmTable>
+          <VmTable.ScrollContainer>
+            <VmTable.Content
               aria-label="Detalle 607"
               className="min-w-[1680px]"
             >
-              <HeroTable.Header>
-                <HeroTable.Column isRowHeader>RNC cliente</HeroTable.Column>
-                <HeroTable.Column>Fuente</HeroTable.Column>
-                <HeroTable.Column>Documento</HeroTable.Column>
-                <HeroTable.Column>NCF</HeroTable.Column>
-                <HeroTable.Column>Tipo</HeroTable.Column>
-                <HeroTable.Column>Fecha</HeroTable.Column>
-                <HeroTable.Column>Total</HeroTable.Column>
-                <HeroTable.Column>ITBIS</HeroTable.Column>
-                <HeroTable.Column>ITBIS retenido</HeroTable.Column>
-                <HeroTable.Column>ISR retenido</HeroTable.Column>
-                <HeroTable.Column>Efectivo</HeroTable.Column>
-                <HeroTable.Column>Cheque/Tr.</HeroTable.Column>
-                <HeroTable.Column>Tarjeta</HeroTable.Column>
-                <HeroTable.Column>Crédito</HeroTable.Column>
-                <HeroTable.Column>Factura ref.</HeroTable.Column>
-                <HeroTable.Column>Estado</HeroTable.Column>
-              </HeroTable.Header>
-              <HeroTable.Body
+              <VmTable.Header>
+                <VmTable.Column isRowHeader>RNC cliente</VmTable.Column>
+                <VmTable.Column>Fuente</VmTable.Column>
+                <VmTable.Column>Documento</VmTable.Column>
+                <VmTable.Column>NCF</VmTable.Column>
+                <VmTable.Column>Tipo</VmTable.Column>
+                <VmTable.Column>Fecha</VmTable.Column>
+                <VmTable.Column>Total</VmTable.Column>
+                <VmTable.Column>ITBIS</VmTable.Column>
+                <VmTable.Column>ITBIS retenido</VmTable.Column>
+                <VmTable.Column>ISR retenido</VmTable.Column>
+                <VmTable.Column>Efectivo</VmTable.Column>
+                <VmTable.Column>Cheque/Tr.</VmTable.Column>
+                <VmTable.Column>Tarjeta</VmTable.Column>
+                <VmTable.Column>Crédito</VmTable.Column>
+                <VmTable.Column>Factura ref.</VmTable.Column>
+                <VmTable.Column>Estado</VmTable.Column>
+              </VmTable.Header>
+              <VmTable.Body
                 items={rows}
                 renderEmptyState={() => (
                   <EmptyStateCard>
@@ -1184,61 +976,61 @@ const Dgii607Preview = ({ run }: { run: MonthlyComplianceRun }) => {
                 )}
               >
                 {(row) => (
-                  <HeroTable.Row
+                  <VmTable.Row
                     id={`${row.sourceId}-${row.recordId ?? row.index}`}
                   >
-                    <HeroTable.Cell>
+                    <VmTable.Cell>
                       {toPreviewText(row.counterpartyIdentificationNumber)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {translateSourceId(String(row.sourceId))}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {toPreviewText(row.documentNumber)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {toPreviewText(row.documentFiscalNumber)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {resolveDgiiDocumentType(row.documentFiscalNumber)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {formatShortDate(row.retentionDate ?? row.issuedAt)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>{formatMoney(row.total)}</HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>{formatMoney(row.total)}</VmTable.Cell>
+                    <VmTable.Cell>
                       {formatMoney(row.itbisTotal)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {formatMoney(row.itbisWithheld)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {formatMoney(row.incomeTaxWithheld)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>{formatMoney(row.cash)}</HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>{formatMoney(row.cash)}</VmTable.Cell>
+                    <VmTable.Cell>
                       {formatMoney(row.checkTransfer)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>{formatMoney(row.card)}</HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>{formatMoney(row.card)}</VmTable.Cell>
+                    <VmTable.Cell>
                       {formatMoney(row.creditSale)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {toPreviewText(row.invoiceId ?? row.invoiceNcf)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
-                      <HeroChip color="default" size="sm" variant="soft">
-                        <HeroChip.Label>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
+                      <VmChip color="default" size="sm" variant="soft">
+                        <VmChip.Label>
                           {toPreviewText(row.status)}
-                        </HeroChip.Label>
-                      </HeroChip>
-                    </HeroTable.Cell>
-                  </HeroTable.Row>
+                        </VmChip.Label>
+                      </VmChip>
+                    </VmTable.Cell>
+                  </VmTable.Row>
                 )}
-              </HeroTable.Body>
-            </HeroTable.Content>
-          </HeroTable.ScrollContainer>
-        </HeroTable>
+              </VmTable.Body>
+            </VmTable.Content>
+          </VmTable.ScrollContainer>
+        </VmTable>
 
         {excludedRows.length ? (
           <ExcludedRecordsTable
@@ -1246,7 +1038,7 @@ const Dgii607Preview = ({ run }: { run: MonthlyComplianceRun }) => {
             title="Registros leidos que no entran al 607"
           />
         ) : null}
-      </HeroCard.Content>
+      </VmCard.Content>
     </PreviewPanel>
   );
 };
@@ -1256,7 +1048,7 @@ const Dgii608Preview = ({ run }: { run: MonthlyComplianceRun }) => {
 
   return (
     <PreviewPanel>
-      <HeroCard.Header>
+      <VmCard.Header>
         <PreviewHeader>
           <div>
             <DetailTitle>Detalle 608</DetailTitle>
@@ -1267,36 +1059,36 @@ const Dgii608Preview = ({ run }: { run: MonthlyComplianceRun }) => {
               Secuencia NCF - 09 Cese operaciones - 10 Perdida o hurto.
             </SectionDescription>
           </div>
-          <HeroChip
+          <VmChip
             className="w-fit"
             color={getStatusChipColor(run.status)}
             variant="soft"
           >
-            <HeroChip.Label>
+            <VmChip.Label>
               {resolveMonthlyComplianceStatusLabel(run.status)}
-            </HeroChip.Label>
-          </HeroChip>
+            </VmChip.Label>
+          </VmChip>
         </PreviewHeader>
-      </HeroCard.Header>
-      <HeroCard.Content>
-        <HeroTable>
-          <HeroTable.ScrollContainer>
-            <HeroTable.Content
+      </VmCard.Header>
+      <VmCard.Content>
+        <VmTable>
+          <VmTable.ScrollContainer>
+            <VmTable.Content
               aria-label="Detalle 608"
               className="min-w-[1040px]"
             >
-              <HeroTable.Header>
-                <HeroTable.Column isRowHeader>Fuente</HeroTable.Column>
-                <HeroTable.Column>Documento</HeroTable.Column>
-                <HeroTable.Column>NCF anulado</HeroTable.Column>
-                <HeroTable.Column>Fecha</HeroTable.Column>
-                <HeroTable.Column>Razon</HeroTable.Column>
-                <HeroTable.Column>Descripcion</HeroTable.Column>
-                <HeroTable.Column>Factura ref.</HeroTable.Column>
-                <HeroTable.Column>ID origen</HeroTable.Column>
-                <HeroTable.Column>Estado</HeroTable.Column>
-              </HeroTable.Header>
-              <HeroTable.Body
+              <VmTable.Header>
+                <VmTable.Column isRowHeader>Fuente</VmTable.Column>
+                <VmTable.Column>Documento</VmTable.Column>
+                <VmTable.Column>NCF anulado</VmTable.Column>
+                <VmTable.Column>Fecha</VmTable.Column>
+                <VmTable.Column>Razon</VmTable.Column>
+                <VmTable.Column>Descripcion</VmTable.Column>
+                <VmTable.Column>Factura ref.</VmTable.Column>
+                <VmTable.Column>ID origen</VmTable.Column>
+                <VmTable.Column>Estado</VmTable.Column>
+              </VmTable.Header>
+              <VmTable.Body
                 items={rows}
                 renderEmptyState={() => (
                   <EmptyStateCard>
@@ -1309,49 +1101,49 @@ const Dgii608Preview = ({ run }: { run: MonthlyComplianceRun }) => {
                 )}
               >
                 {(row) => (
-                  <HeroTable.Row
+                  <VmTable.Row
                     id={`${row.sourceId}-${row.recordId ?? row.index}`}
                   >
-                    <HeroTable.Cell>
+                    <VmTable.Cell>
                       {translateSourceId(String(row.sourceId))}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {toPreviewText(row.documentNumber)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {toPreviewText(row.documentFiscalNumber)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {formatShortDate(row.issuedAt)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {toPreviewText(row.reasonCode)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {toPreviewText(row.reasonLabel ?? row.reason)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {toPreviewText(row.invoiceId)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
                       {toPreviewText(row.recordId)}
-                    </HeroTable.Cell>
-                    <HeroTable.Cell>
-                      <HeroChip color="default" size="sm" variant="soft">
-                        <HeroChip.Label>
+                    </VmTable.Cell>
+                    <VmTable.Cell>
+                      <VmChip color="default" size="sm" variant="soft">
+                        <VmChip.Label>
                           {toPreviewText(row.status) === '-'
                             ? 'Registrado'
                             : toPreviewText(row.status)}
-                        </HeroChip.Label>
-                      </HeroChip>
-                    </HeroTable.Cell>
-                  </HeroTable.Row>
+                        </VmChip.Label>
+                      </VmChip>
+                    </VmTable.Cell>
+                  </VmTable.Row>
                 )}
-              </HeroTable.Body>
-            </HeroTable.Content>
-          </HeroTable.ScrollContainer>
-        </HeroTable>
-      </HeroCard.Content>
+              </VmTable.Body>
+            </VmTable.Content>
+          </VmTable.ScrollContainer>
+        </VmTable>
+      </VmCard.Content>
     </PreviewPanel>
   );
 };
@@ -1365,52 +1157,52 @@ const ExcludedRecordsTable = ({
 }) => (
   <ExcludedPanel>
     <ExcludedTitle>{title}</ExcludedTitle>
-    <HeroTable>
-      <HeroTable.ScrollContainer>
-        <HeroTable.Content aria-label={title} className="min-w-[1040px]">
-          <HeroTable.Header>
-            <HeroTable.Column isRowHeader>Fuente</HeroTable.Column>
-            <HeroTable.Column>Documento</HeroTable.Column>
-            <HeroTable.Column>ID origen</HeroTable.Column>
-            <HeroTable.Column>NCF</HeroTable.Column>
-            <HeroTable.Column>Fecha</HeroTable.Column>
-            <HeroTable.Column>Total</HeroTable.Column>
-            <HeroTable.Column>ITBIS</HeroTable.Column>
-            <HeroTable.Column>Estado</HeroTable.Column>
-            <HeroTable.Column>Motivo</HeroTable.Column>
-          </HeroTable.Header>
-          <HeroTable.Body items={rows}>
+    <VmTable>
+      <VmTable.ScrollContainer>
+        <VmTable.Content aria-label={title} className="min-w-[1040px]">
+          <VmTable.Header>
+            <VmTable.Column isRowHeader>Fuente</VmTable.Column>
+            <VmTable.Column>Documento</VmTable.Column>
+            <VmTable.Column>ID origen</VmTable.Column>
+            <VmTable.Column>NCF</VmTable.Column>
+            <VmTable.Column>Fecha</VmTable.Column>
+            <VmTable.Column>Total</VmTable.Column>
+            <VmTable.Column>ITBIS</VmTable.Column>
+            <VmTable.Column>Estado</VmTable.Column>
+            <VmTable.Column>Motivo</VmTable.Column>
+          </VmTable.Header>
+          <VmTable.Body items={rows}>
             {(row) => (
-              <HeroTable.Row
+              <VmTable.Row
                 id={`${row.sourceId}-${row.recordId ?? row.index}`}
               >
-                <HeroTable.Cell>
+                <VmTable.Cell>
                   {translateSourceId(String(row.sourceId))}
-                </HeroTable.Cell>
-                <HeroTable.Cell>
+                </VmTable.Cell>
+                <VmTable.Cell>
                   {toPreviewText(row.documentNumber)}
-                </HeroTable.Cell>
-                <HeroTable.Cell>{toPreviewText(row.recordId)}</HeroTable.Cell>
-                <HeroTable.Cell>
+                </VmTable.Cell>
+                <VmTable.Cell>{toPreviewText(row.recordId)}</VmTable.Cell>
+                <VmTable.Cell>
                   {toPreviewText(row.documentFiscalNumber)}
-                </HeroTable.Cell>
-                <HeroTable.Cell>
+                </VmTable.Cell>
+                <VmTable.Cell>
                   {formatShortDate(row.retentionDate ?? row.issuedAt)}
-                </HeroTable.Cell>
-                <HeroTable.Cell>{formatMoney(row.total)}</HeroTable.Cell>
-                <HeroTable.Cell>{formatMoney(row.itbisTotal)}</HeroTable.Cell>
-                <HeroTable.Cell>
-                  <HeroChip color="default" size="sm" variant="soft">
-                    <HeroChip.Label>{toPreviewText(row.status)}</HeroChip.Label>
-                  </HeroChip>
-                </HeroTable.Cell>
-                <HeroTable.Cell>{resolveExcludedReason(row)}</HeroTable.Cell>
-              </HeroTable.Row>
+                </VmTable.Cell>
+                <VmTable.Cell>{formatMoney(row.total)}</VmTable.Cell>
+                <VmTable.Cell>{formatMoney(row.itbisTotal)}</VmTable.Cell>
+                <VmTable.Cell>
+                  <VmChip color="default" size="sm" variant="soft">
+                    <VmChip.Label>{toPreviewText(row.status)}</VmChip.Label>
+                  </VmChip>
+                </VmTable.Cell>
+                <VmTable.Cell>{resolveExcludedReason(row)}</VmTable.Cell>
+              </VmTable.Row>
             )}
-          </HeroTable.Body>
-        </HeroTable.Content>
-      </HeroTable.ScrollContainer>
-    </HeroTable>
+          </VmTable.Body>
+        </VmTable.Content>
+      </VmTable.ScrollContainer>
+    </VmTable>
   </ExcludedPanel>
 );
 
@@ -1433,15 +1225,15 @@ const SelectedRunDetails = ({ run }: { run: MonthlyComplianceRun }) => {
             Creado {formatMonthlyComplianceRunDate(run.createdAt)}
           </SectionDescription>
         </div>
-        <HeroChip
+        <VmChip
           className="w-fit"
           color={getStatusChipColor(run.status)}
           variant="soft"
         >
-          <HeroChip.Label>
+          <VmChip.Label>
             {resolveMonthlyComplianceStatusLabel(run.status)}
-          </HeroChip.Label>
-        </HeroChip>
+          </VmChip.Label>
+        </VmChip>
       </DetailHeader>
 
       <MiniStats>
@@ -1492,16 +1284,16 @@ const SelectedRunDetails = ({ run }: { run: MonthlyComplianceRun }) => {
 
       {run.validationSummary.pendingGaps.length ? (
         <ComplianceAlert status="warning">
-          <HeroAlert.Content>
-            <HeroAlert.Title>Huecos pendientes del builder</HeroAlert.Title>
-            <HeroAlert.Description>
+          <VmAlert.Content>
+            <VmAlert.Title>Huecos pendientes del builder</VmAlert.Title>
+            <VmAlert.Description>
               <GapList>
                 {run.validationSummary.pendingGaps.map((gap) => (
                   <li key={gap}>{gap}</li>
                 ))}
               </GapList>
-            </HeroAlert.Description>
-          </HeroAlert.Content>
+            </VmAlert.Description>
+          </VmAlert.Content>
         </ComplianceAlert>
       ) : null}
 
@@ -1524,9 +1316,9 @@ const SelectedRunDetails = ({ run }: { run: MonthlyComplianceRun }) => {
                     size="sm"
                     variant="soft"
                   >
-                    <HeroChip.Label>
+                    <VmChip.Label>
                       {translateSeverity(issue.severity)}
-                    </HeroChip.Label>
+                    </VmChip.Label>
                   </IssueSeverityChip>
                   <strong>{translateIssueCode(issue.code)}</strong>
                 </IssueTop>
@@ -1627,7 +1419,7 @@ const WorkspaceWrapper = styled.div`
   margin-top: var(--ds-space-2);
 `;
 
-const ComplianceAlert = styled(HeroAlert)`
+const ComplianceAlert = styled(VmAlert)`
   .alert__title {
     font-weight: var(--ds-font-weight-semibold);
   }
@@ -1637,7 +1429,7 @@ const ComplianceAlert = styled(HeroAlert)`
   }
 `;
 
-const IssueSeverityChip = styled(HeroChip)`
+const IssueSeverityChip = styled(VmChip)`
   font-weight: var(--ds-font-weight-semibold);
   text-transform: uppercase;
 `;
@@ -1733,7 +1525,7 @@ const ExecutiveGrid = styled.div`
   }
 `;
 
-const ExecutiveCard = styled(HeroCard)`
+const ExecutiveCard = styled(VmCard)`
   min-width: 0;
 
   .card__header {
@@ -1831,7 +1623,7 @@ const SmallMeta = styled.span`
   color: var(--ds-color-text-secondary);
 `;
 
-const PreviewPanel = styled(HeroCard)`
+const PreviewPanel = styled(VmCard)`
   .card__header {
     padding: 0;
   }

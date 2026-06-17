@@ -6,7 +6,7 @@ import { resolveCallableAuthUid } from '../../../core/utils/callableSessionAuth.
 import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
-} from '../../../versions/v2/invoice/services/repairTasks.service.js';
+} from '../../../versions/v2/auth/services/userAccess.service.js';
 import { refreshElectronicTaxReceiptStatus as refreshElectronicTaxReceiptStatusService } from '../services/electronicTaxReceiptOutbox.service.js';
 
 const toCleanString = (value) => {
@@ -31,13 +31,20 @@ export const refreshElectronicTaxReceiptStatus = onCall(
       toCleanString(request?.data?.businessId) ||
       toCleanString(request?.data?.businessID);
     const invoiceId = toCleanString(request?.data?.invoiceId);
+    const creditNoteId = toCleanString(request?.data?.creditNoteId);
+    const debitNoteId = toCleanString(request?.data?.debitNoteId);
+    const documentId = toCleanString(request?.data?.documentId);
+    const documentKind = toCleanString(request?.data?.documentKind);
     const refreshRemote = request?.data?.refreshRemote !== false;
 
     if (!businessId) {
       throw new HttpsError('invalid-argument', 'businessId es requerido');
     }
-    if (!invoiceId) {
-      throw new HttpsError('invalid-argument', 'invoiceId es requerido');
+    if (!invoiceId && !creditNoteId && !debitNoteId && !documentId) {
+      throw new HttpsError(
+        'invalid-argument',
+        'invoiceId, creditNoteId, debitNoteId o documentId es requerido',
+      );
     }
 
     await assertUserAccess({
@@ -50,12 +57,20 @@ export const refreshElectronicTaxReceiptStatus = onCall(
       return await refreshElectronicTaxReceiptStatusService({
         businessId,
         invoiceId,
+        creditNoteId,
+        debitNoteId,
+        documentId,
+        documentKind,
         refreshRemote,
       });
     } catch (error) {
       logger.error('[refreshElectronicTaxReceiptStatus] failed', {
         businessId,
         invoiceId,
+        creditNoteId,
+        debitNoteId,
+        documentId,
+        documentKind,
         authUid,
         error,
       });

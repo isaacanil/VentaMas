@@ -1,12 +1,12 @@
-import { getPdfMake } from '@/utils/pdf/pdfMakeLoader.js';
+import { getPdfMake } from '@/utils/pdf/pdfMakeLoader';
 
-import { buildContent } from './builders/content.js';
-import { buildFooter } from './builders/footer.js';
-import { buildHeader } from './builders/header.js';
+import { buildContent } from './builders/content';
+import { buildFooter } from './builders/footer';
+import { buildHeader } from './builders/header';
 import {
   calcFooterHeight,
   calcHeaderHeight,
-} from './utils/documentHeightCalculator.js';
+} from './utils/documentHeightCalculator';
 
 import type { PdfDocDefinition, PdfImageMap, PdfMakeLike } from '@/pdf/types';
 import type {

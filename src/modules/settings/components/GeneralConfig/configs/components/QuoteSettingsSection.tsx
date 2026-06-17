@@ -4,7 +4,7 @@ import {
   EditOutlined,
   FileDoneOutlined,
 } from '@ant-design/icons';
-import { useEffect } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { FocusEvent } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -31,20 +31,85 @@ interface QuoteSettingsFormValues {
   quoteValidity?: number;
 }
 
+const QUOTE_SETTINGS_FIELDS: Array<keyof QuoteSettingsFormValues> = [
+  'quoteEnabled',
+  'quoteDefaultNote',
+  'quoteValidity',
+];
+
+const buildQuoteInitialValues = ({
+  quoteEnabled,
+  quoteDefaultNote,
+  quoteValidity,
+}: QuoteSettingsFormValues): QuoteSettingsFormValues => ({
+  quoteEnabled,
+  quoteDefaultNote,
+  quoteValidity: quoteValidity || 15,
+});
+
+const getQuoteHydrationPatch = (
+  currentValues: QuoteSettingsFormValues,
+  previousValues: QuoteSettingsFormValues,
+  nextValues: QuoteSettingsFormValues,
+): Partial<QuoteSettingsFormValues> =>
+  Object.fromEntries(
+    QUOTE_SETTINGS_FIELDS.flatMap((field) => {
+      const currentValue = currentValues[field];
+      const previousValue = previousValues[field];
+      const nextValue = nextValues[field];
+
+      if (
+        Object.is(currentValue, previousValue) ||
+        Object.is(currentValue, nextValue)
+      ) {
+        return [[field, nextValue]];
+      }
+
+      return [];
+    }),
+  ) as Partial<QuoteSettingsFormValues>;
+
 const QuoteSettingsSection = () => {
   const user = useSelector(selectUser);
   const [form] = Form.useForm<QuoteSettingsFormValues>();
+  const hydratedQuoteValuesRef = useRef<QuoteSettingsFormValues | null>(null);
   const {
     billing: { quoteEnabled, quoteDefaultNote, quoteValidity },
   } = useSelector(SelectSettingCart);
+  const quoteInitialValues = useMemo(
+    () =>
+      buildQuoteInitialValues({
+        quoteEnabled,
+        quoteDefaultNote,
+        quoteValidity,
+      }),
+    [quoteEnabled, quoteDefaultNote, quoteValidity],
+  );
 
   useEffect(() => {
-    form.setFieldsValue({
-      quoteEnabled,
-      quoteDefaultNote,
-      quoteValidity: quoteValidity || 15,
-    });
-  }, [quoteEnabled, quoteDefaultNote, quoteValidity, form]);
+    const previousValues = hydratedQuoteValuesRef.current;
+
+    if (!previousValues) {
+      form.setFieldsValue(quoteInitialValues);
+      hydratedQuoteValuesRef.current = quoteInitialValues;
+      return;
+    }
+
+    const currentValues = form.getFieldsValue(QUOTE_SETTINGS_FIELDS);
+    const hydrationPatch = getQuoteHydrationPatch(
+      currentValues,
+      previousValues,
+      quoteInitialValues,
+    );
+
+    if (Object.keys(hydrationPatch).length > 0) {
+      form.setFieldsValue(hydrationPatch);
+      hydratedQuoteValuesRef.current = {
+        ...previousValues,
+        ...hydrationPatch,
+      };
+    }
+  }, [form, quoteInitialValues]);
 
   const handleQuoteEnabled = (checked: boolean) => {
     void setBillingSettings(user, { quoteEnabled: checked }).then(

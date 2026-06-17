@@ -1,11 +1,10 @@
-import { ListBox } from '@heroui/react';
 import { useCallback, useMemo } from 'react';
 import type { Key } from 'react';
 import styled from 'styled-components';
 
 import { VmDatePicker } from '@/components/common/DatePicker/VmDatePicker';
 import type { DatePickerRangeValue } from '@/components/common/DatePicker/types';
-import { VmSearchField, VmSelect } from '@/components/heroui';
+import { VmListBox, VmSearchField, VmSelect } from '@/components/heroui';
 
 import type { GeneralLedgerAccountOption } from '../../utils/accountingWorkspace';
 
@@ -75,14 +74,14 @@ export const GeneralLedgerToolbar = ({
                 <VmSelect.Indicator />
               </VmSelect.Trigger>
               <VmSelect.Popover>
-                <ListBox items={accountSelectItems}>
+                <VmListBox items={accountSelectItems}>
                   {(option) => (
-                    <ListBox.Item id={option.id} textValue={option.label}>
+                    <VmListBox.Item id={option.id} textValue={option.label}>
                       {option.label}
-                      <ListBox.ItemIndicator />
-                    </ListBox.Item>
+                      <VmListBox.ItemIndicator />
+                    </VmListBox.Item>
                   )}
-                </ListBox>
+                </VmListBox>
               </VmSelect.Popover>
             </VmSelect>
           </SelectWrapper>

@@ -14,7 +14,7 @@ import { formatRNC } from '@/utils/format';
 import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
 import { Button } from '@/components/ui/Button/Button';
 import { Message } from '@/components/ui/message/Message';
-import Typography from '@/components/ui/Typografy/Typografy';
+import Typography from '@/components/ui/Typography/Typography';
 import type { ClientInput } from '@/firebase/client/clientNormalizer';
 import type { UserIdentity } from '@/types/users';
 

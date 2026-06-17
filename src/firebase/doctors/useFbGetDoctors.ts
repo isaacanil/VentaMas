@@ -7,31 +7,28 @@ import { db } from '@/firebase/firebaseconfig';
 import type { DoctorRecord } from '@/types/doctors';
 import type { UserIdentity } from '@/types/users';
 
-export const useFbGetDoctors = () => {
-  const [doctors, setDoctors] = useState<DoctorRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const user = useSelector(selectUser) as UserIdentity | null | undefined;
+type DoctorsSnapshotState = {
+  businessID: string | null;
+  doctors: DoctorRecord[];
+};
 
-  const [prevBusinessID, setPrevBusinessID] = useState(user?.businessID);
-  if (user?.businessID !== prevBusinessID) {
-    setPrevBusinessID(user?.businessID);
-    setDoctors([]);
-    if (user?.businessID) {
-      setLoading(true);
-    } else {
-      setLoading(false);
-    }
-  }
+export const useFbGetDoctors = () => {
+  const [snapshotState, setSnapshotState] = useState<DoctorsSnapshotState>({
+    businessID: null,
+    doctors: [],
+  });
+  const user = useSelector(selectUser) as UserIdentity | null | undefined;
+  const businessID = user?.businessID ?? null;
 
   useEffect(() => {
-    if (!user || !user?.businessID) {
+    if (!businessID) {
       return undefined;
     }
 
     const doctorsRef = collection(
       db,
       'businesses',
-      user.businessID,
+      businessID,
       'doctors',
     );
     const activeQuery = query(doctorsRef, where('status', '==', 'active'));
@@ -43,17 +40,26 @@ export const useFbGetDoctors = () => {
           id: doc.id,
           ...(doc.data() as DoctorRecord),
         }));
-        setDoctors(doctorsArray);
-        setLoading(false);
+        setSnapshotState({
+          businessID,
+          doctors: doctorsArray,
+        });
       },
       (error) => {
         console.error('Error fetching doctors:', error);
-        setLoading(false);
+        setSnapshotState({
+          businessID,
+          doctors: [],
+        });
       },
     );
 
     return unsubscribe;
-  }, [user]);
+  }, [businessID]);
+
+  const isCurrentSnapshot = snapshotState.businessID === businessID;
+  const doctors = businessID && isCurrentSnapshot ? snapshotState.doctors : [];
+  const loading = Boolean(businessID) && !isCurrentSnapshot;
 
   return { doctors, loading };
 };

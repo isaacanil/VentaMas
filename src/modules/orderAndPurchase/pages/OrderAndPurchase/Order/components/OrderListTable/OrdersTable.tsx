@@ -1,5 +1,5 @@
 import { calculateOrderTotals } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/OrderManagement/utils/orderCalculationsUtil';
-import type { Order } from '@/utils/order/types';
+import type { Order } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/orderTypes';
 import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
 import {
   calculatePaymentDate,

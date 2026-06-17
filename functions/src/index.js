@@ -66,10 +66,17 @@ import {
   createCustomerCreditNote,
   updateCustomerCreditNote,
 } from './app/modules/accountReceivable/functions/customerCreditNotes.js';
+import { processCustomerCreditNoteOutbox } from './app/modules/accountReceivable/functions/customerCreditNoteOutbox.worker.js';
+import {
+  createCustomerDebitNote,
+  updateCustomerDebitNote,
+} from './app/modules/accountReceivable/functions/customerDebitNotes.js';
+import { processCustomerDebitNoteOutbox } from './app/modules/accountReceivable/functions/customerDebitNoteOutbox.worker.js';
 import {
   syncCustomerCreditNoteApplicationAccountingEvent,
   syncCustomerCreditNoteIssuedAccountingEvent,
 } from './app/modules/accountReceivable/functions/syncCustomerCreditNoteAccountingEvents.js';
+import { syncCustomerDebitNoteIssuedAccountingEvent } from './app/modules/accountReceivable/functions/syncCustomerDebitNoteAccountingEvents.js';
 import { voidAccountsReceivablePayment } from './app/modules/accountReceivable/functions/voidAccountsReceivablePayment.js';
 import { createInternalTransfer } from './app/modules/treasury/functions/createInternalTransfer.js';
 import {
@@ -241,8 +248,13 @@ export {
   applyCustomerCreditNotes,
   createCustomerCreditNote,
   updateCustomerCreditNote,
+  processCustomerCreditNoteOutbox,
+  createCustomerDebitNote,
+  updateCustomerDebitNote,
+  processCustomerDebitNoteOutbox,
   syncCustomerCreditNoteApplicationAccountingEvent,
   syncCustomerCreditNoteIssuedAccountingEvent,
+  syncCustomerDebitNoteIssuedAccountingEvent,
   voidAccountsReceivablePayment,
   createInternalTransfer,
   createBankReconciliation,

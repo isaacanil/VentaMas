@@ -110,6 +110,8 @@ export const Button = ({
 
 Button.displayName = 'Button';
 
+export { ButtonGroup } from './ButtonGroup';
+
 const styleByDefault = css<ContainerProps>`
   display: flex;
   gap: 0.6em;
@@ -411,9 +413,4 @@ const Container = styled.button<ContainerProps>`
   @media (width <= 800px) {
     display: ${(props: any) => (props.$hidden === true ? 'none' : 'flex')};
   }
-`;
-export const ButtonGroup = styled.div`
-  display: flex;
-  gap: 0.4em;
-  align-items: center;
 `;

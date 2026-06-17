@@ -24,6 +24,17 @@ describe('productSearch', () => {
     );
   });
 
+  it('recorta espacios al normalizar terminos de busqueda y tokens', () => {
+    const searchIndex = buildProductSearchIndex({
+      name: '  Té Verde  ',
+      empty: '   ',
+    });
+
+    expect(searchIndex).toContain('te verde');
+    expect(searchIndex).not.toContain('   ');
+    expect(normalizeProductSearchTerm('  té  ')).toBe('te');
+  });
+
   it('tolera referencias circulares sin lanzar errores', () => {
     const source: Record<string, unknown> = {
       name: 'Producto Circular',

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { icons } from '@/constants/icons/icons';
-import type { DialogType } from '@/Context/Dialog/contextState';
+import type { DialogType } from '@/context/Dialog/contextState';
 
 export interface DialogThemeStyles {
   background: string;

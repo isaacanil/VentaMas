@@ -3,6 +3,7 @@ import { collection, query, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseconfig';
 import type { TaxReceiptData, TaxReceiptDocument } from '@/types/taxReceipt';
 import type { TimestampLike } from '@/utils/date/types';
+import { toMillis } from '@/utils/date/toMillis';
 
 // Valor por defecto de sequence (ajústalo según tu lógica)
 const DEFAULT_SEQUENCE = '0000000000';
@@ -11,19 +12,6 @@ type ReceiptWithMeta = TaxReceiptData & {
   id: string;
   docRef: Parameters<typeof deleteDoc>[0];
   createdAt?: TimestampLike;
-};
-
-const toMillisSafe = (value: TimestampLike): number | null => {
-  if (!value) return null;
-  if (typeof value === 'number') return value;
-  if (value instanceof Date) return value.getTime();
-  if (typeof value === 'object' && typeof value.toMillis === 'function') {
-    return value.toMillis();
-  }
-  if (typeof value === 'object' && typeof value.seconds === 'number') {
-    return value.seconds * 1000;
-  }
-  return null;
 };
 
 export const removeDuplicateTaxReceipts = async (businessID: string) => {
@@ -70,16 +58,16 @@ export const removeDuplicateTaxReceipts = async (businessID: string) => {
             // Si alguno no tiene createdAt, se prioriza el que sí lo tenga
             if (!prev.createdAt) return current;
             if (!current.createdAt) return prev;
-            const prevMillis = toMillisSafe(prev.createdAt) ?? 0;
-            const currentMillis = toMillisSafe(current.createdAt) ?? 0;
+            const prevMillis = toMillis(prev.createdAt) ?? 0;
+            const currentMillis = toMillis(current.createdAt) ?? 0;
             return prevMillis < currentMillis ? prev : current;
           });
         } else {
           // 2. Si ninguno tiene un sequence "consumido", usar la fecha de creación
           if (receipts.every((r) => r.createdAt)) {
             receiptToKeep = receipts.reduce((prev, current) => {
-              const prevMillis = toMillisSafe(prev.createdAt) ?? 0;
-              const currentMillis = toMillisSafe(current.createdAt) ?? 0;
+              const prevMillis = toMillis(prev.createdAt) ?? 0;
+              const currentMillis = toMillis(current.createdAt) ?? 0;
               return prevMillis < currentMillis ? prev : current;
             });
           } else {
@@ -96,27 +84,34 @@ export const removeDuplicateTaxReceipts = async (businessID: string) => {
         );
         if (sameNameDuplicates.length > 1 && receiptToKeep) {
           // En este ejemplo se conserva receiptToKeep y se eliminan los demás
-          sameNameDuplicates.forEach((r) => {
-            if (r.id !== receiptToKeep.id) {
-              deleteDoc(r.docRef)
-                .then(() =>
-                  console.log(`Eliminado duplicado (name) con id: ${r.id}`),
-                )
-                .catch((err) =>
-                  console.error('Error eliminando duplicado:', err),
-                );
-            }
-          });
+          await Promise.all(
+            sameNameDuplicates
+              .filter((r) => r.id !== receiptToKeep.id)
+              .map(async (r) => {
+                try {
+                  await deleteDoc(r.docRef);
+                  console.log(`Eliminado duplicado (name) con id: ${r.id}`);
+                } catch (err) {
+                  console.error('Error eliminando duplicado:', err);
+                }
+              }),
+          );
         } else {
           // Eliminar el resto de los duplicados de esta serie
-          receipts.forEach(async (r) => {
-            if (r.id !== receiptToKeep?.id) {
-              await deleteDoc(r.docRef);
-              console.log(
-                `Eliminado duplicado con id: ${r.id} para la serie: ${serie}`,
-              );
-            }
-          });
+          await Promise.all(
+            receipts
+              .filter((r) => r.id !== receiptToKeep?.id)
+              .map(async (r) => {
+                try {
+                  await deleteDoc(r.docRef);
+                  console.log(
+                    `Eliminado duplicado con id: ${r.id} para la serie: ${serie}`,
+                  );
+                } catch (err) {
+                  console.error('Error eliminando duplicado:', err);
+                }
+              }),
+          );
         }
       }
     }

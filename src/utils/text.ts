@@ -1,9 +1,19 @@
+const DIACRITIC_MARKS_REGEX = /[\u0300-\u036f]/g;
+
+export const stripDiacritics = (text: string): string =>
+  text.normalize('NFD').replace(DIACRITIC_MARKS_REGEX, '');
+
 export const normalizeText = (text: string): string => {
-  return text
-    .normalize('NFD') // Descompone caracteres con diacríticos
-    .replace(/[\u0300-\u036f]/g, '') // Elimina los diacríticos
-    .toLowerCase(); // Convierte todo a minúsculas
+  return stripDiacritics(text).toLowerCase();
 };
+
+export const toCleanString = (value: unknown): string | null => {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length ? trimmed : null;
+};
+
+export const cleanString = toCleanString;
 
 /**
  * Capitaliza la primera letra de una palabra

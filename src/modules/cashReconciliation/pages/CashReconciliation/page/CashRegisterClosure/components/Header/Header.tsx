@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { CashCountStateIndicator } from '@/modules/cashReconciliation/pages/CashReconciliation/resource/CashCountStatusIndicator/CashCountStateIndicator';
-import { UserSection } from './../../../../resource/UserSection/UserSection';
+import { UserSection } from '@/modules/cashReconciliation/pages/CashReconciliation/resource/UserSection/UserSection';
 import type { CashCountState } from '@/utils/cashCount/types';
 
 interface HeaderProps {

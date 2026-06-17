@@ -10,7 +10,7 @@ import {
   getTotalPrice,
   resetAmountToBuyForProduct,
 } from '@/utils/pricing';
-import { convertTimeToSpanish } from '@/components/modals/ProductForm/components/sections/warranty.helpers';
+import { convertTimeToSpanish } from '@/domain/products/productDefaults';
 import type { InvoiceData, InvoiceProduct } from '@/types/invoice';
 
 import { Col } from './Table/Col';

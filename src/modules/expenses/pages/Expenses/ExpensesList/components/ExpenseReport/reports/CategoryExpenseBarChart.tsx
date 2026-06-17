@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
-import type { ChartData, ChartOptions, TooltipItem } from 'chart.js';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
-import Typography from '@/components/ui/Typografy/Typografy';
+import { createCurrencyBarChartOptions } from '@/components/charts/currencyBarChartOptions';
+import { createSingleDatasetBarData } from '@/components/charts/barChartData';
+import Typography from '@/components/ui/Typography/Typography';
 import type { Expense, ExpenseDoc } from '@/utils/expenses/types';
 
 type ExpenseEntry = Expense | ExpenseDoc;
@@ -13,38 +13,10 @@ interface CategoryExpenseBarChartProps {
     expenses?: ExpenseEntry[];
 }
 
-const options: ChartOptions<'bar'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-        y: {
-            beginAtZero: true,
-            title: {
-                display: true,
-                text: 'Monto de Gastos',
-            },
-        },
-        x: {
-            title: {
-                display: true,
-                text: 'Categoría',
-            },
-        },
-    },
-    plugins: {
-        tooltip: {
-            callbacks: {
-                label: (context: TooltipItem<'bar'>) => {
-                    let label = context.dataset.label ?? '';
-                    if (label) {
-                        label += ": " + formatPrice(context.parsed.y ?? 0);
-                    }
-                    return label;
-                },
-            }
-        }
-    }
-};
+const options = createCurrencyBarChartOptions({
+    yAxisTitle: 'Monto de Gastos',
+    xAxisTitle: 'Categoría',
+});
 
 const getExpenseFromEntry = (entry: ExpenseEntry): Expense =>
     'expense' in entry ? (entry.expense as Expense) : entry;
@@ -72,22 +44,17 @@ export const CategoryExpenseBarChart = ({ expenses }: CategoryExpenseBarChartPro
         () => accumulateCategoryData(normalizedExpenses),
         [normalizedExpenses],
     );
-    const data = useMemo<ChartData<'bar', number[], string>>(() => {
+    const data = useMemo(() => {
         const labels = Object.keys(categoryData);
         const dataTotals = labels.map(label => categoryData[label] ?? 0);
 
-        return {
+        return createSingleDatasetBarData({
             labels,
-            datasets: [
-                {
-                    label: 'Gastos',
-                    data: dataTotals,
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 1,
-                },
-            ]
-        };
+            values: dataTotals,
+            datasetLabel: 'Gastos',
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+        });
     }, [categoryData]);
 
     if (!normalizedExpenses.length) {
