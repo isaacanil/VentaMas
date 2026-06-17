@@ -4,7 +4,7 @@ import { getRoleLabelById, userRoles } from '@/abilities/roles';
 import { toMillis as toDateMillis } from '@/utils/date/toMillis';
 import { asRecord } from '@/utils/object/record';
 import { normalizeRoleId } from '@/utils/roles/normalizeRole';
-import { toCleanString } from '@/utils/text';
+import { dedupeStrings, toCleanString, toCleanStringArray } from '@/utils/text';
 
 import type {
   BusinessUserRecord,
@@ -18,21 +18,6 @@ import type {
 
 export { toCleanString };
 
-const toStringArray = (value: unknown): string[] => {
-  if (!Array.isArray(value)) return [];
-  return value
-    .map((item) => toCleanString(item))
-    .filter((item): item is string => Boolean(item));
-};
-
-const dedupeStrings = (
-  values: Array<string | null | undefined>,
-): string[] => {
-  return Array.from(
-    new Set(values.filter((value): value is string => Boolean(value))),
-  );
-};
-
 export const resolveBusinessOwnerCandidates = (rawBusiness: unknown): string[] => {
   const root = asRecord(rawBusiness);
   const businessNode = asRecord(root.business);
@@ -42,9 +27,9 @@ export const resolveBusinessOwnerCandidates = (rawBusiness: unknown): string[] =
     toCleanString(root.ownerUid),
     toCleanString(businessNode.ownerUid),
     toCleanString(nestedBusinessNode.ownerUid),
-    ...toStringArray(root.owners),
-    ...toStringArray(businessNode.owners),
-    ...toStringArray(nestedBusinessNode.owners),
+    ...toCleanStringArray(root.owners),
+    ...toCleanStringArray(businessNode.owners),
+    ...toCleanStringArray(nestedBusinessNode.owners),
   ]);
 };
 

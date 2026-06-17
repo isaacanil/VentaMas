@@ -24,6 +24,8 @@ const modulesRoot = path.join(process.cwd(), 'src', 'modules');
 const sourceRoot = path.join(process.cwd(), 'src');
 const routerRoot = path.join(process.cwd(), 'src', 'router');
 const sourceExtensions = new Set(['.ts', '.tsx', '.js', '.jsx']);
+const importReferencesByFilePath = new Map<string, ImportReference[]>();
+const sourceFilesByDirectory = new Map<string, string[]>();
 
 const allowedLegacyDeepImports = new Set([]);
 
@@ -712,20 +714,28 @@ const listPublicModuleNames = () =>
 
 const isModulePublicEntry = (modulePath: string) => modulePath === 'public';
 
-const listSourceFiles = (directory: string): string[] =>
-  readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const entryPath = path.join(directory, entry.name);
+const listSourceFiles = (directory: string): string[] => {
+  const cachedFiles = sourceFilesByDirectory.get(directory);
+  if (cachedFiles) return cachedFiles;
 
-    if (entry.isDirectory()) {
-      return listSourceFiles(entryPath);
-    }
+  const files = readdirSync(directory, { withFileTypes: true }).flatMap(
+    (entry) => {
+      const entryPath = path.join(directory, entry.name);
 
-    if (sourceExtensions.has(path.extname(entry.name))) {
-      return [entryPath];
-    }
+      if (entry.isDirectory()) {
+        return listSourceFiles(entryPath);
+      }
 
-    return [];
-  });
+      if (sourceExtensions.has(path.extname(entry.name))) {
+        return [entryPath];
+      }
+
+      return [];
+    },
+  );
+  sourceFilesByDirectory.set(directory, files);
+  return files;
+};
 
 const collectImportReferencesFromSource = (
   filePath: string,
@@ -775,8 +785,17 @@ const collectImportReferencesFromSource = (
   return imports;
 };
 
-const collectAllImportReferences = (filePath: string): ImportReference[] =>
-  collectImportReferencesFromSource(filePath, readFileSync(filePath, 'utf8'));
+const collectAllImportReferences = (filePath: string): ImportReference[] => {
+  const cachedImports = importReferencesByFilePath.get(filePath);
+  if (cachedImports) return cachedImports;
+
+  const imports = collectImportReferencesFromSource(
+    filePath,
+    readFileSync(filePath, 'utf8'),
+  );
+  importReferencesByFilePath.set(filePath, imports);
+  return imports;
+};
 
 const collectImportReferences = (filePath: string): ImportReference[] => {
   const source = readFileSync(filePath, 'utf8');
@@ -785,7 +804,7 @@ const collectImportReferences = (filePath: string): ImportReference[] => {
     return [];
   }
 
-  return collectImportReferencesFromSource(filePath, source);
+  return collectAllImportReferences(filePath);
 };
 
 const collectImportReferencesContaining = (
@@ -798,7 +817,7 @@ const collectImportReferencesContaining = (
     return [];
   }
 
-  return collectImportReferencesFromSource(filePath, source);
+  return collectAllImportReferences(filePath);
 };
 
 const findDeepModuleImportViolations = () =>

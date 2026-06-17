@@ -8,10 +8,12 @@ import type {
   UnknownRecord,
 } from '../types';
 import { resolveBusinessFiscalRollout } from '@/utils/fiscal/fiscalRollout';
+import { asRecord } from '@/utils/object/record';
 import {
   normalizedIncludes,
   normalizeTrimmedSearchText,
 } from '@/utils/searchText';
+import { dedupeStrings, toCleanString, toCleanStringArray } from '@/utils/text';
 
 export const EMPTY_BUSINESSES: BusinessDoc[] = [];
 
@@ -34,36 +36,12 @@ export const getInitialBusinessFeedState = (): BusinessFeedState => ({
   resolvedKey: null,
 });
 
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
-
-const asRecord = (value: unknown): UnknownRecord =>
-  value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as UnknownRecord)
-    : {};
-
 const resolveString = (...values: unknown[]): string | null => {
   for (const value of values) {
     const parsed = toCleanString(value);
     if (parsed) return parsed;
   }
   return null;
-};
-
-const toStringArray = (value: unknown): string[] => {
-  if (!Array.isArray(value)) return [];
-
-  return value
-    .map((item) => toCleanString(item))
-    .filter((item): item is string => Boolean(item));
-};
-
-const dedupeStrings = (values: string[]): string[] => {
-  return Array.from(new Set(values));
 };
 
 const normalizeSubscriptionStatus = (value: unknown): string | null => {
@@ -113,9 +91,9 @@ const resolveOwnerData = (
     nestedBusinessNode.ownerUid,
   );
   const owners = dedupeStrings([
-    ...toStringArray(root.owners),
-    ...toStringArray(businessNode.owners),
-    ...toStringArray(nestedBusinessNode.owners),
+    ...toCleanStringArray(root.owners),
+    ...toCleanStringArray(businessNode.owners),
+    ...toCleanStringArray(nestedBusinessNode.owners),
   ]);
 
   if (explicitOwnerUid) {

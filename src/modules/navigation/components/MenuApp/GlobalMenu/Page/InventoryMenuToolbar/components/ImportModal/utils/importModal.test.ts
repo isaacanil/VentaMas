@@ -25,6 +25,7 @@ describe('importModal utils', () => {
       ),
     ).toBe(true);
     expect(isValidImportFile(createFile({ name: 'products.csv' }))).toBe(true);
+    expect(isValidImportFile(createFile({ name: 'products.XLSX' }))).toBe(true);
   });
 
   it('rejects legacy xls files with a dedicated predicate', () => {

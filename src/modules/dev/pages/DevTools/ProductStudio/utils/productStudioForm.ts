@@ -22,14 +22,12 @@ import type {
 } from '@/types/products';
 import type { UserWithBusiness } from '@/types/users';
 import type { ProductFormValues } from '@/modules/dev/pages/DevTools/ProductStudio/components/form/ProductForm';
+import { isRecord } from '@/utils/object/record';
 
 type ProductPatch = Partial<ProductRecord> & Record<string, unknown>;
 import type { ProductSnapshot } from '@/modules/dev/pages/DevTools/ProductStudio/hooks/useProductPreviewMetrics';
 
 type FormErrorField = { name?: (string | number)[]; errors?: string[] };
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
 
 export const hasBusinessId = (value: unknown): value is UserWithBusiness => {
   if (!isRecord(value)) return false;

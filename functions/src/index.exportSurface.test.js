@@ -82,6 +82,10 @@ function getDeployableDefinitions() {
     );
 }
 
+function getDeployableDefinitionNames() {
+  return new Set(getDeployableDefinitions().map(({ name }) => name));
+}
+
 function getPublicIndexExports() {
   const indexSource = fs.readFileSync(indexPath, 'utf8');
   const exportedNames = new Set();
@@ -121,5 +125,14 @@ describe('Cloud Functions export surface', () => {
           leftPath.localeCompare(rightPath),
       ),
     );
+  });
+
+  it('keeps index.js exports limited to deployable definitions', () => {
+    const deployableDefinitionNames = getDeployableDefinitionNames();
+    const nonDeployableExports = [...getPublicIndexExports()]
+      .filter((exportedName) => !deployableDefinitionNames.has(exportedName))
+      .sort();
+
+    expect(nonDeployableExports).toEqual([]);
   });
 });

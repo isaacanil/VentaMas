@@ -1,4 +1,5 @@
 import type { ImportModalUiAction, ImportModalUiState } from '../types';
+import { getFileExtension } from '@/utils/files';
 
 export const PREVIEW_LIMIT = 20;
 
@@ -43,9 +44,6 @@ export const importModalUiReducer = (
       return state;
   }
 };
-
-export const getFileExtension = (fileName: string | undefined): string =>
-  fileName?.split('.').pop()?.toLowerCase() || '';
 
 export const isUnsupportedLegacyExcelFile = (file: File): boolean =>
   getFileExtension(file.name) === 'xls';

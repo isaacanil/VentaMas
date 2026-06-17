@@ -15,6 +15,23 @@ export const toCleanString = (value: unknown): string | null => {
 
 export const cleanString = toCleanString;
 
+export const toCleanStringArray = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((item) => toCleanString(item))
+    .filter((item): item is string => Boolean(item));
+};
+
+export const dedupeStrings = (
+  values: Iterable<string | null | undefined>,
+): string[] =>
+  Array.from(
+    new Set(
+      Array.from(values).filter((value): value is string => Boolean(value)),
+    ),
+  );
+
 /**
  * Capitaliza la primera letra de una palabra
  */

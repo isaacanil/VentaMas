@@ -1,3 +1,4 @@
+import { asRecord } from '@/utils/object/record';
 import { normalizeText, toCleanString } from '@/utils/text';
 
 export const DEFAULT_BANK_INSTITUTION_COUNTRY_CODE = 'DO' as const;
@@ -13,11 +14,6 @@ export interface BankInstitutionCatalogEntry {
   isSystemBuiltin?: boolean | null;
   source?: string | null;
 }
-
-const asRecord = (value: unknown): Record<string, unknown> =>
-  value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
 
 export const normalizeBankInstitutionName = (
   value: unknown,

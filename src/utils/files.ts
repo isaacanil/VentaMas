@@ -17,26 +17,28 @@ export const revokeLocalURL = (url?: string | null): void => {
 };
 
 export function isImageFile(filename?: string | null): boolean {
-  if (!filename) return false;
-  const extension = filename.split('.').pop()?.toLowerCase() ?? '';
-  return ['jpg', 'jpeg', 'png', 'gif'].includes(extension);
+  return ['jpg', 'jpeg', 'png', 'gif'].includes(getFileExtension(filename));
 }
 
 export function isPdfFile(filename?: string | null): boolean {
-  if (!filename) return false;
-  return filename.split('.').pop()?.toLowerCase() === 'pdf';
+  return getFileExtension(filename) === 'pdf';
 }
 
 export const isPDFFile = isPdfFile;
 
-export function getFileExtension(fileNameOrUrl: string): string {
+export function getFileExtension(fileNameOrUrl?: string | null): string {
+  if (!fileNameOrUrl) return '';
+
   if (
     typeof fileNameOrUrl === 'string' &&
     fileNameOrUrl.includes('firebasestorage.googleapis.com')
   ) {
     const decodedUrl = decodeURIComponent(fileNameOrUrl);
-    const match = decodedUrl.match(/[^/]+\.([^?]+)(?=\?|$)/i);
-    return match ? match[1].toLowerCase() : '';
+    const filePath = decodedUrl.split('?')[0] ?? '';
+    const fileName = filePath.split('/').pop() ?? '';
+    return fileName.includes('.')
+      ? (fileName.split('.').pop()?.toLowerCase() ?? '')
+      : '';
   }
 
   return fileNameOrUrl.split('.').pop()?.toLowerCase() ?? '';

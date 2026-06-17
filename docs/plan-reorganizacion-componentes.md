@@ -50,7 +50,7 @@ consolidar en `src/modules/*` y `src/components/*` y dejar una estructura modern
 
 ## Fase 3 — Modals (bloque grande)
 
-1. Consolidar modals compartidos en `components/modals`.
+1. No reabrir `components/modals`; shared UI real va en `components/common` o paquetes UI acotados.
 2. Modals específicos a `modules/<feature>/components/modals`.
 3. Actualizar `ModalManager` y referencias desde `router`/`pages`.
 4. Evitar nuevos barrels.

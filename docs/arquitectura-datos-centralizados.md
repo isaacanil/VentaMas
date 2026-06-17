@@ -111,4 +111,4 @@ Para un dominio ejemplo: **`Invoice`** (Facturación).
 
 ## Mantenimiento
 
-Este documento es la ley. Si se encuentra código que viola estos principios (ej. lógica de impuestos dentro de un botón), se debe refactorizar moviéndolo a `utils/`.
+Este documento resume guardrails vigentes. Si se encuentra código que viola estos principios, refactorizarlo hacia el owner correcto según dependencia: `utils`, `domain`, `repositories`, carpeta local del módulo o `public.ts` cuando sea un contrato entre dominios.

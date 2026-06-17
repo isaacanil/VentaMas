@@ -6,6 +6,9 @@ import { describe, expect, it } from 'vitest';
 
 const srcRoot = path.dirname(fileURLToPath(import.meta.url));
 const indexPath = path.join(srcRoot, 'index.js');
+const importSpecifiersByFilePath = new Map();
+const relativeImportsByFilePath = new Map();
+const resolvedSourceFileByImport = new Map();
 
 const intentionallyUnreachableRuntimeRoots = [
   'app/modules/invoice/controllers/invoice.controller.js',
@@ -46,6 +49,11 @@ function resolveSourceFile(importerPath, specifier) {
     return null;
   }
 
+  const cacheKey = `${importerPath}\0${specifier}`;
+  if (resolvedSourceFileByImport.has(cacheKey)) {
+    return resolvedSourceFileByImport.get(cacheKey);
+  }
+
   const resolvedPath = path.resolve(path.dirname(importerPath), specifier);
   const candidates = [
     resolvedPath,
@@ -63,10 +71,18 @@ function resolveSourceFile(importerPath, specifier) {
     candidates.push(resolvedPath.replace(/\.ts$/, '.js'));
   }
 
-  return candidates.find((candidate) => fs.existsSync(candidate)) ?? null;
+  const resolvedSourceFile =
+    candidates.find((candidate) => fs.existsSync(candidate)) ?? null;
+  resolvedSourceFileByImport.set(cacheKey, resolvedSourceFile);
+  return resolvedSourceFile;
 }
 
 function getImportSpecifiers(filePath) {
+  const cachedSpecifiers = importSpecifiersByFilePath.get(filePath);
+  if (cachedSpecifiers) {
+    return cachedSpecifiers;
+  }
+
   const source = fs.readFileSync(filePath, 'utf8');
   const sourceFile = ts.createSourceFile(
     filePath,
@@ -103,14 +119,22 @@ function getImportSpecifiers(filePath) {
   };
 
   visit(sourceFile);
+  importSpecifiersByFilePath.set(filePath, specifiers);
   return specifiers;
 }
 
 function getRelativeImports(filePath) {
-  return getImportSpecifiers(filePath)
+  const cachedImports = relativeImportsByFilePath.get(filePath);
+  if (cachedImports) {
+    return cachedImports;
+  }
+
+  const relativeImports = getImportSpecifiers(filePath)
     .filter((specifier) => specifier.startsWith('.'))
     .map((specifier) => resolveSourceFile(filePath, specifier))
     .filter(Boolean);
+  relativeImportsByFilePath.set(filePath, relativeImports);
+  return relativeImports;
 }
 
 function getUnresolvedRelativeImports(sourceFiles) {

@@ -42,6 +42,11 @@ const hostingVisibleDevRoutes = [
   ROUTES_NAME.DEV_VIEW_TERM.SUBSCRIPTION_MAINTENANCE_PLANS,
 ].sort();
 
+const allowedDuplicateRoutePaths = new Set([
+  '/account/subscription',
+  '/settings/modules',
+]);
+
 const joinRoutePath = (parentPath: string, routePath?: string) => {
   if (!routePath) return parentPath;
   if (routePath.startsWith('/')) return routePath;
@@ -64,6 +69,19 @@ const collectMountableRoutes = (
       ...collectMountableRoutes(route.children ?? [], path),
     ];
   });
+
+const findDuplicateRoutePaths = (routes: AppRoute[]) => {
+  const seenRoutes = new Map<string, number>();
+
+  for (const { path } of collectMountableRoutes(routes)) {
+    seenRoutes.set(path, (seenRoutes.get(path) ?? 0) + 1);
+  }
+
+  return Array.from(seenRoutes.entries())
+    .filter(([, count]) => count > 1)
+    .map(([path]) => path)
+    .sort();
+};
 
 describe('routeVisibility', () => {
   beforeAll(() => {
@@ -179,5 +197,30 @@ describe('routeVisibility', () => {
       .sort();
 
     expect(devRoutesWithoutDevOnly).toEqual(hostingVisibleDevRoutes);
+  });
+
+  it('keeps route paths unique across registered route groups', () => {
+    const duplicateRoutePaths = findDuplicateRoutePaths([
+      ...basicRoutes,
+      ...devRoutes,
+      ...inventoryRoutes,
+      ...labRoutes,
+      ...settingRoutes,
+      ...changelogRoutes,
+    ]);
+    const unapprovedDuplicateRoutePaths = duplicateRoutePaths.filter(
+      (path) => !allowedDuplicateRoutePaths.has(path),
+    );
+    const staleAllowedDuplicateRoutePaths = [
+      ...allowedDuplicateRoutePaths,
+    ].filter((path) => !duplicateRoutePaths.includes(path));
+
+    expect({
+      staleAllowedDuplicateRoutePaths,
+      unapprovedDuplicateRoutePaths,
+    }).toEqual({
+      staleAllowedDuplicateRoutePaths: [],
+      unapprovedDuplicateRoutePaths: [],
+    });
   });
 });
