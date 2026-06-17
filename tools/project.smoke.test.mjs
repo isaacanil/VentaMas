@@ -76,6 +76,19 @@ test('deploy staging:functions <name> --dry-run allows scoped functions through 
   assert.doesNotMatch(result.output, /--only functions(?:\s|$)/);
 });
 
+test('deploy prod:functions <name> blocks without production confirmation through project wrapper', async () => {
+  const result = await runProject([
+    'deploy',
+    'prod:functions',
+    'reserveCreditNoteNcf',
+  ]);
+
+  assert.equal(result.code, 1, result.output);
+  assert.match(result.output, /Deploy a produccion bloqueado/);
+  assert.match(result.output, /CONFIRM_PROD_DEPLOY=PROD/);
+  assert.doesNotMatch(result.output, /Running: npx/);
+});
+
 test('help renders usage for project wrapper', async () => {
   const result = await runProject(['--help']);
 

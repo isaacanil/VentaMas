@@ -5,6 +5,7 @@ import {
   loadChangelogManageRoute,
 } from '@/modules/controlPanel/public';
 import RoutesName from '@/router/routes/routesName';
+import { ROUTE_STATUS } from '@/router/routes/routeMeta';
 import type { AppRoute } from '@/router/types/routeTypes';
 
 const ChangelogList = lazy(loadChangelogListRoute);
@@ -20,6 +21,7 @@ const Routes: AppRoute[] = [
   {
     path: CHANGELOG_MANAGE,
     requiresDevAccess: true,
+    status: ROUTE_STATUS.BETA,
     element: <ChangelogManage />,
   },
 ];

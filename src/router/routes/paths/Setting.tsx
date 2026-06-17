@@ -35,6 +35,7 @@ import {
   generalConfigRedirectRoutes,
 } from '@/router/routes/paths/Setting/redirectRoutes';
 import ROUTES_NAME from '@/router/routes/routesName';
+import { ROUTE_STATUS } from '@/router/routes/routeMeta';
 import type { AppRoute } from '@/router/types/routeTypes';
 import type { JSX } from 'react';
 
@@ -270,6 +271,7 @@ const Routes: AppRoute[] = [
   {
     path: ROUTES_NAME.DEV_VIEW_TERM.SWITCH_BUSINESS,
     requiresDevAccess: true,
+    status: ROUTE_STATUS.BETA,
     element: <SwitchBusiness />,
   },
 ];

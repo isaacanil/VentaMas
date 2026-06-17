@@ -62,7 +62,7 @@ import { handleCancelShipping } from '@/modules/sales/pages/Sale/components/Cart
 import { CashRegisterAlertModal } from '@/modules/sales/pages/Sale/components/modals/CashRegisterAlertModal';
 import { usePreorderModal } from '@/modules/sales/pages/Sale/components/usePreorderModal';
 import { PreorderModal } from '@/modules/sales/pages/Sale/components/PreorderModal';
-import { AnimatedNumber } from '@/components/ui/AnimatedNumber/AnimatedNumber';
+import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
 import {
   VmButton,
   VmButtonGroup,

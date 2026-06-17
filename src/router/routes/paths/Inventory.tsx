@@ -14,6 +14,7 @@ import {
   loadWarehouseRoute,
 } from '@/modules/inventory/public';
 import ROUTES_NAME from '@/router/routes/routesName';
+import { ROUTE_STATUS } from '@/router/routes/routeMeta';
 import type { AppRoute } from '@/router/types/routeTypes';
 
 const ProductView = lazy(loadProductViewRoute);
@@ -101,6 +102,7 @@ const Routes: AppRoute[] = [
   {
     path: PRODUCT_STUDIO,
     requiresDevAccess: true,
+    status: ROUTE_STATUS.BETA,
     element: <ProductStudio />,
   },
 ];

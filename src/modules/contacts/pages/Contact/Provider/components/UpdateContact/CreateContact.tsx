@@ -7,7 +7,7 @@ import { openModalAddClient as handleModalCreateClient } from '@/features/modals
 import { formatRNC } from '@/utils/format';
 import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
 import { Button } from '@/components/ui/Button';
-import { Message } from '@/components/ui/message/Message';
+import { Message } from '@/components/ui/message';
 
 interface CreateContactProps {
   isOpen?: boolean;

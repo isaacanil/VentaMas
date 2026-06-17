@@ -70,6 +70,19 @@ test('dry-run scopes staging functions to named function targets', async () => {
   assert.doesNotMatch(result.output, /--only functions(?:\s|$)/);
 });
 
+test('dry-run blocks unknown staging function names', async () => {
+  const result = await runDeploy([
+    'staging:functions',
+    'functionThatDoesNotExistInIndex',
+    '--dry-run',
+  ]);
+
+  assert.equal(result.code, 1, result.output);
+  assert.match(result.output, /Funciones no exportadas/);
+  assert.match(result.output, /functionThatDoesNotExistInIndex/);
+  assert.doesNotMatch(result.output, /Command:/);
+});
+
 test('dry-run preserves explicit scoped --only function targets', async () => {
   const result = await runDeploy([
     'staging:functions',
@@ -163,6 +176,15 @@ test('dry-run scopes prod functions to named function targets', async () => {
   assert.equal(result.code, 0, result.output);
   assert.match(result.output, /Build script: \(none\)/);
   assert.match(result.output, /--project prod --only functions:reserveCreditNoteNcf/);
+});
+
+test('prod functions deploy without confirmation is blocked', async () => {
+  const result = await runDeploy(['prod:functions', 'reserveCreditNoteNcf']);
+
+  assert.equal(result.code, 1, result.output);
+  assert.match(result.output, /Deploy a produccion bloqueado/);
+  assert.match(result.output, /CONFIRM_PROD_DEPLOY=PROD/);
+  assert.doesNotMatch(result.output, /Running: npx/);
 });
 
 test('dry-run allows all-functions target only with explicit guard', async () => {

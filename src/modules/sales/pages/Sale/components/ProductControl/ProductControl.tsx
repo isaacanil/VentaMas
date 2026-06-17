@@ -16,7 +16,7 @@ import { Carrusel } from '@/modules/products/public';
 import { CategoriesGrouped } from '@/modules/sales/pages/Sale/components/CategoriesProductsGrouped/CategoriesGrouped';
 import { ShoppingItemsCounter } from '@/modules/sales/pages/Sale/components/ShoppingItemsCounter/ShoppingItemsCounter';
 import { CenteredText } from '@/components/ui/CenteredText';
-import { Grid } from '@/components/ui/Grid/Grid';
+import { Grid } from '@/components/ui/Grid';
 import { Loader } from '@/components/ui/loader';
 import { CustomProduct } from './components/ProductCard/CustomProduct';
 import { Product } from './components/ProductCard/Product/Product';

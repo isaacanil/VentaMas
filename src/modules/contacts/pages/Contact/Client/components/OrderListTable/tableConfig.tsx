@@ -10,7 +10,7 @@ import { fbDeleteClient } from '@/firebase/client/fbDeleteClient';
 import { formatPrice } from '@/utils/format';
 import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
 import { ButtonGroup } from '@/components/ui/Button';
-import { Message } from '@/components/ui/message/Message';
+import { Message } from '@/components/ui/message';
 
 type UserRootState = Parameters<typeof selectUser>[0];
 

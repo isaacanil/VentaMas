@@ -21,7 +21,7 @@ import { getProducts } from '@/utils/pricing';
 import { InventoryFilterAndSort } from '@/modules/inventory/public';
 import { AddProductButton } from '@/modules/products/public';
 import { ButtonGroup } from '@/components/ui/Button';
-import { DropdownMenu } from '@/components/ui/DropdownMenu/DropdownMenu';
+import { DropdownMenu } from '@/components/ui/DropdownMenu';
 import type { ToolbarComponentProps } from '@/modules/navigation/components/MenuApp/GlobalMenu/types';
 import type { UserIdentity, UserWithBusiness } from '@/types/users';
 import type { ProductRecord } from '@/types/products';

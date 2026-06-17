@@ -42,7 +42,7 @@ import { getProductsTax, getTotalItems } from '@/utils/pricing';
 import { Invoice } from '@/modules/invoice/components/Invoice/components/Invoice/Invoice';
 import { VmDropdown } from '@/components/heroui';
 import { AdvancedTable } from '@/components/ui/AdvancedTable';
-import { Tag } from '@/components/ui/Tag/Tag';
+import { Tag } from '@/components/ui/Tag';
 
 import useInvoiceEditAuthorization from '../hooks/useInvoiceEditAuthorization';
 

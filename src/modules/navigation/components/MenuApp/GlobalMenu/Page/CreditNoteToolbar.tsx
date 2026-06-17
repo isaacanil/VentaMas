@@ -19,7 +19,7 @@ import { createProfessionalCreditNoteReportCallback } from '@/utils/export/excel
 import { formatCreditNote } from '@/utils/export/excel/formatCreditNote';
 import exportToExcel from '@/utils/export/excel/useExportToExcel';
 import ROUTES_NAME from '@/router/routes/routesName';
-import { DropdownMenu } from '@/components/ui/DropdownMenu/DropdownMenu';
+import { DropdownMenu } from '@/components/ui/DropdownMenu';
 import type { ToolbarComponentProps } from '@/modules/navigation/components/MenuApp/GlobalMenu/types';
 import type { TaxReceiptItem, TaxReceiptData } from '@/types/taxReceipt';
 

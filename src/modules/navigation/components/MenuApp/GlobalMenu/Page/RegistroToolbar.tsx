@@ -17,7 +17,7 @@ import { formatBill } from '@/utils/export/excel/formatBill';
 import exportToExcel from '@/utils/export/excel/useExportToExcel';
 import useViewportWidth from '@/hooks/useViewportWidth';
 import routesName from '@/router/routes/routesName';
-import { DropdownMenu } from '@/components/ui/DropdownMenu/DropdownMenu';
+import { DropdownMenu } from '@/components/ui/DropdownMenu';
 
 import type { ToolbarComponentProps } from '@/modules/navigation/components/MenuApp/GlobalMenu/types';
 import type { InvoiceData } from '@/types/invoice';

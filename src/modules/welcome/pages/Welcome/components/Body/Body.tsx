@@ -5,7 +5,6 @@ import styled from 'styled-components';
 
 import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import Features from '../Features/Features';
-import { uiImage } from '@/components/ui/FormattedValue/ui/uiImage';
 
 import { CardWelcome } from './CardWelcome/CardWelcome';
 import { welcomeData } from '../../welcomeData';
@@ -58,7 +57,7 @@ const Body = () => {
               </LoadingContainer>
             }
           >
-            <ImageGallery images={uiImage} />
+            <ImageGallery />
           </Suspense>
         </GallerySection>
       </MainContent>

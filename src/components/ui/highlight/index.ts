@@ -1,0 +1,1 @@
+export { highlightSearch } from './Highlight';

@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 
+import basicRoutes from './paths/Basic';
 import changelogRoutes from './paths/Changelogs';
 import devRoutes from './paths/Dev';
 import inventoryRoutes from './paths/Inventory';
@@ -15,6 +16,9 @@ import ROUTES_NAME from './routesName';
 
 import type { AppRoute } from '@/router/types/routeTypes';
 
+const developerHubRoute = basicRoutes.find(
+  (route) => route.path === ROUTES_NAME.BASIC_TERM.DEVELOPER_HUB,
+);
 const switchBusinessRoute = settingRoutes.find(
   (route) => route.path === ROUTES_NAME.DEV_VIEW_TERM.SWITCH_BUSINESS,
 );
@@ -50,6 +54,7 @@ const collectMountableRoutes = (
 
 describe('routeVisibility', () => {
   beforeAll(() => {
+    expect(developerHubRoute).toBeDefined();
     expect(switchBusinessRoute).toBeDefined();
     expect(productStudioRoute).toBeDefined();
     expect(changelogManageRoute).toBeDefined();
@@ -69,9 +74,7 @@ describe('routeVisibility', () => {
           },
         },
       },
-      switchBusinessRoute,
-      productStudioRoute,
-      changelogManageRoute,
+      ...basicRoutes,
       ...devRoutes,
       ...inventoryRoutes,
       ...labRoutes,
@@ -106,19 +109,28 @@ describe('routeVisibility', () => {
     expect(getRouteMeta(ROUTES_NAME.DEV_VIEW_TERM.SWITCH_BUSINESS)).toEqual(
       expect.objectContaining({
         requiresDevAccess: true,
+        status: ROUTE_STATUS.BETA,
       }),
     );
   });
 
-  it('marks developer-owned utility routes as requiring dev access', () => {
+  it('marks developer-owned routes outside Dev.tsx as beta dev routes', () => {
+    expect(getRouteMeta(ROUTES_NAME.BASIC_TERM.DEVELOPER_HUB)).toEqual(
+      expect.objectContaining({
+        requiresDevAccess: true,
+        status: ROUTE_STATUS.BETA,
+      }),
+    );
     expect(getRouteMeta(ROUTES_NAME.INVENTORY_TERM.PRODUCT_STUDIO)).toEqual(
       expect.objectContaining({
         requiresDevAccess: true,
+        status: ROUTE_STATUS.BETA,
       }),
     );
     expect(getRouteMeta(ROUTES_NAME.CHANGELOG_TERM.CHANGELOG_MANAGE)).toEqual(
       expect.objectContaining({
         requiresDevAccess: true,
+        status: ROUTE_STATUS.BETA,
       }),
     );
   });

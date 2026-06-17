@@ -8,7 +8,7 @@ import styled, { css } from 'styled-components';
 import { selectUser } from '@/features/auth/userSlice';
 import { addClient } from '@/features/clientCart/clientCartSlice';
 import { clearAuthData } from '@/features/insurance/insuranceAuthSlice';
-import { highlightSearch } from '@/components/ui/highlight/Highlight';
+import { highlightSearch } from '@/components/ui/highlight';
 
 import { clientGridTemplateWithActions } from '../ClientList.styles';
 

@@ -5,6 +5,7 @@ import { loadDeveloperHubRoute, loadHomeRoute } from '@/modules/home/public';
 import { loadWelcomeRoute, loadWelcomeV2Route } from '@/modules/welcome/public';
 import ROUTES_NAME from '@/router/routes/routesName';
 import { redirectAuthenticatedToDefaultLoader } from '@/router/routes/loaders/accessLoaders';
+import { ROUTE_STATUS } from '@/router/routes/routeMeta';
 import type { AppRoute } from '@/router/types/routeTypes';
 
 const CheckoutRedirect = lazy(loadCheckoutRedirectRoute);
@@ -40,6 +41,7 @@ const Routes: AppRoute[] = [
     path: DEVELOPER_HUB,
     element: <DeveloperHub />,
     requiresDevAccess: true,
+    status: ROUTE_STATUS.BETA,
     title: 'Developer Hub - Ventamax',
     metaDescription:
       'Herramientas internas para desarrolladores y mantenimiento de plataforma.',

@@ -7,7 +7,7 @@ import styled from 'styled-components';
 
 import { SelectTotalShoppingItems } from '@/features/cart/cartSlice';
 import { formatNumber } from '@/utils/format';
-import { AnimatedNumber } from '@/components/ui/AnimatedNumber/AnimatedNumber';
+import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
 
 type ProductCounterProps = {
   productCount?: number;

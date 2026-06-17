@@ -209,6 +209,65 @@ const restrictedSharedImportRules: RestrictedSharedImportRule[] = [
     allowedFilePathPrefixes: ['src/components/ui/FormattedValue/'],
   },
   {
+    importPrefix: '@/components/ui/FormattedValue/ui/uiImage',
+    allowedFilePathPrefixes: ['src/components/ui/FormattedValue/'],
+  },
+  {
+    importPrefix: '@/components/ui/Select/Select',
+    allowedFilePathPrefixes: ['src/components/ui/Select/'],
+  },
+  {
+    importPrefix: '@/components/ui/Select/Select.styles',
+    allowedFilePathPrefixes: ['src/components/ui/Select/'],
+  },
+  {
+    importPrefix: '@/components/ui/Select/Select.utils',
+    allowedFilePathPrefixes: ['src/components/ui/Select/'],
+  },
+  {
+    importPrefix: '@/components/ui/DropdownMenu/DropdownMenu',
+    allowedFilePathPrefixes: ['src/components/ui/DropdownMenu/'],
+  },
+  {
+    importPrefix: '@/components/ui/DropdownMenu/Option',
+    allowedFilePathPrefixes: ['src/components/ui/DropdownMenu/'],
+  },
+  {
+    importPrefix: '@/components/ui/DropdownMenu/types',
+    allowedFilePathPrefixes: ['src/components/ui/DropdownMenu/'],
+  },
+  {
+    importPrefix: '@/components/ui/Tag/Tag',
+    allowedFilePathPrefixes: ['src/components/ui/Tag/'],
+  },
+  {
+    importPrefix: '@/components/ui/Tag/Tag.styles',
+    allowedFilePathPrefixes: ['src/components/ui/Tag/'],
+  },
+  {
+    importPrefix: '@/components/ui/AnimatedNumber/AnimatedNumber',
+    allowedFilePathPrefixes: ['src/components/ui/AnimatedNumber/'],
+  },
+  {
+    importPrefix: '@/components/ui/Grid/Grid',
+    allowedFilePathPrefixes: ['src/components/ui/Grid/'],
+  },
+  {
+    importPrefix: '@/components/ui/message/Message',
+    allowedFilePathPrefixes: ['src/components/ui/message/'],
+  },
+  {
+    importPrefix: '@/components/ui/highlight/Highlight',
+    allowedFilePathPrefixes: ['src/components/ui/highlight/'],
+  },
+  {
+    importPrefix: '@/components/ui/statusDisplay/statusDisplayConfig',
+    allowedFilePathPrefixes: [
+      'src/components/ui/statusDisplay/',
+      'src/components/ui/AdvancedTable/',
+    ],
+  },
+  {
     importPrefix: '@/components/common/Badge/Badge',
     allowedFilePathPrefixes: ['src/components/common/Badge/'],
   },

@@ -56,7 +56,7 @@ Esto significa que **no importa dónde pongas `<MenuApp />` en tu JSX** — siem
 
 ```tsx
 import { PageLayout } from '@/components/layout/PageShell';
-import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import { MenuApp } from '@/modules/navigation/public';
 
 export const MiPagina = () => {
   const [searchTerm, setSearchTerm] = useState('');

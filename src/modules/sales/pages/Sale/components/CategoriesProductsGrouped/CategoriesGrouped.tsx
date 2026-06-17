@@ -2,7 +2,7 @@ import { LazyMotion, domAnimation, m } from 'framer-motion';
 import React from 'react';
 import styled from 'styled-components';
 
-import { Grid } from '@/components/ui/Grid/Grid';
+import { Grid } from '@/components/ui/Grid';
 import { CustomProduct } from '../ProductControl/components/ProductCard/CustomProduct';
 import { Product } from '../ProductControl/components/ProductCard/Product/Product';
 import type { ProductRecord } from '@/types/products';

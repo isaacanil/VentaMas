@@ -1,5 +1,5 @@
 import { getTimeElapsed } from '@/utils/date/formatTime';
-import { Tag } from '@/components/ui/Tag/Tag';
+import { Tag } from '@/components/ui/Tag';
 import { formatPrice } from '@/utils/format';
 
 import { getColorByStatus, getStatusLabel } from '../utils';

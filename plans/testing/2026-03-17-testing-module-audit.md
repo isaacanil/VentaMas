@@ -51,8 +51,9 @@ Cerrar la lista de dominios top-level del repo para que el plan de testing no de
 - `Parcial por familias`: `accountsReceivable`
 - `Parcial`: `accountsReceivable/useCreditLimitRealtime.ts`, `useProductStockData.ts`, `useRncSearch.ts`, `useTaxReceiptsFix.ts`
 - `Pendiente dentro de accountsReceivable`: `accountsReceivable/useCheckAccountReceivable.ts`, `accountsReceivable/useCheckAccountReceivable.tsx`, `accountsReceivable/useDueDatesReceivable.ts`
-- `Pendiente por familias`: `abilities`, `barcode`, `cashCount`, `creditNote`, `date`, `expense`, `exportToExcel`, `image`, `inventory`, `path`, `product`, `products`, `routes`, `search`, `warehouse`, `windows`
-- `Pendiente por hooks raiz`: `useAppNavigation.ts`, `useAuthorizationModules.ts`, `useAuthorizationPin.ts`, `useBusiness.ts`, `useCheckForInternetConnection.ts`, `useClickOutSide.tsx`, `useCompareArrays.ts`, `useDeveloperCommands.ts`, `useElementSize.ts`, `useFiscalReceiptsAlerts.ts`, `useFormatTime.tsx`, `useInsuranceEnabled.ts`, `useInsuranceFormComplete.ts`, `useLoadingStatus.tsx`, `useLocationNames.ts`, `useMediaQuery.ts`, `useOrders.tsx`, `useOverflowCollapse.ts`, `usePersistentDeveloperBusiness.ts`, `usePrefersReducedMotion.ts`, `useProductStock.ts`, `usePurchases.tsx`, `useScroll.tsx`, `useSearchFilter.ts`, `useStockAlertThresholds.ts`, `useTruncate.tsx`, `useWindowWidth.tsx`
+- `Pendiente por familias`: `abilities`, `barcode`, `cashCount`, `creditNote`, `date`, `expense`, `image`, `inventory`, `path`, `product`, `products`, `routes`, `search`, `warehouse`, `windows`
+- `Pendiente por hooks raiz`: `useAppNavigation.ts`, `useAuthorizationModules.ts`, `useAuthorizationPin.ts`, `useBusiness.ts`, `useCheckForInternetConnection.ts`, `useClickOutSide.tsx`, `useCompareArrays.ts`, `useDeveloperCommands.ts`, `useElementSize.ts`, `useFiscalReceiptsAlerts.ts`, `useFormatTime.tsx`, `useInsuranceEnabled.ts`, `useInsuranceFormComplete.ts`, `useLoadingStatus.tsx`, `useMediaQuery.ts`, `useOverflowCollapse.ts`, `usePersistentDeveloperBusiness.ts`, `usePrefersReducedMotion.ts`, `useProductStock.ts`, `useScroll.tsx`, `useSearchFilter.ts`, `useStockAlertThresholds.ts`, `useTruncate.tsx`, `useWindowWidth.tsx`
+- `Retirado/trasladado`: los exportadores Excel de `src/hooks` viven ahora en `src/utils/export/excel`; el hook de ubicaciones vive en `src/modules/inventory/hooks/useLocationNames`; los listeners de ordenes y compras viven en `src/modules/orderAndPurchase/hooks/useOrders.tsx` y `src/modules/orderAndPurchase/hooks/usePurchases.tsx`.
 
 ### `src/utils`
 
@@ -81,7 +82,7 @@ Respecto al barrido anterior, se detectaron dominios que todavia no estaban pues
 - frontend: `app`, `auth`, `checkout`, `dev`, `inventory`, `invoice`, `navigation`, `products`
 - redux/features: casi todo `src/features` salvo `cart`
 - acceso a datos: gran parte de `src/firebase`
-- hooks: familias completas como `abilities`, `creditNote`, `exportToExcel`, `product`, `warehouse`, `windows`
+- hooks: familias completas como `abilities`, `creditNote`, `product`, `warehouse`, `windows`
 - backend legacy: `ai`, `client`, `invoice`, `products`, `provider`
 
 ## Regla Operativa

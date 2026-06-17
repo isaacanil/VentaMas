@@ -372,7 +372,7 @@ Fix recomendado:
 | --- | --- | --- | --- | --- |
 | M-001 | Media | `stockAlertsOnWrite` lee settings por cada cambio de cantidad y puede enviar email/escribir alertas. Tiene guarda contra self-loop porque sale si quantity no cambio. | `functions/src/app/modules/Inventory/functions/stockAlertsOnWrite.js:87`, `:101`, `:230` | Cachear settings por negocio en memoria durante instancia o denormalizar flags minimos. |
 | M-002 | Media | Reporte de actividad de usuario ejecuta 5 queries paralelas con `limit(100)`. Esta acotado, pero puede ser costoso si se abre mucho. | `src/modules/settings/pages/setting/subPage/Users/UserActivity/hooks/useUserRealActivity.ts:92` | Mantener lazy/on-demand y agregar cache por usuario/ventana. |
-| M-003 | Media | `hrCommissionPeriods` esta bastante acotado, pero lineas/entries por periodo no tienen `limit`; un periodo grande puede cargar mucho. | `src/firebase/hrPayroll/useHrCommissionPeriods.ts:1290`, `:1356` | Paginacion dentro del periodo o resumen por corte. |
+| M-003 | Media | `hrCommissionPeriods` esta bastante acotado, pero lineas/entries por periodo no tienen `limit`; un periodo grande puede cargar mucho. | `src/modules/hrPayroll/repositories/useHrCommissionPeriods.ts:1290`, `:1356` | Paginacion dentro del periodo o resumen por corte. |
 | M-004 | Media | Imagen de login usa `listAll` de Storage. Es pequeno hoy, pero `listAll` no es ideal para crecimiento. | `src/modules/auth/repositories/authBackgroundImage.repository.ts:7`, `src/modules/controlPanel/AppConfig/LoginImageConfig.tsx:80` | Guardar URL activa en Firestore/Remote Config y evitar listar. |
 | M-005 | Media | Indice de `productsStock` contiene campo `isDelete`, posiblemente typo de `isDeleted`; puede ser indice inutil y missing intended index. | `firestore.indexes.json:1234` | Confirmar si existe campo real; eliminar o corregir indice. |
 | M-006 | Baja | No se encontro uso de `offset()` de Firestore; el unico `offset(10)` es de UI flotante. | `src/modules/inventory/components/InventoryLocationSelector.tsx` | Sin accion de costo Firestore. |
@@ -397,7 +397,7 @@ Fix recomendado:
 | P1 | Read/write | `src/firebase/warehouse/stockSyncService.ts:201` | Sync all businesses desde cliente | Operacion masiva desde bundle | Mover a admin/callable |
 | P1 | Read/write | `src/modules/inventory/pages/InventoryControl/tools/migrateInventoryCounts.ts:58` | Migracion puede leer todos los negocios | Alto costo accidental | Admin-only script/function |
 | P2 | Read | `src/modules/settings/pages/setting/subPage/Users/UserActivity/hooks/useUserRealActivity.ts:92` | 5 queries `limit(100)` | Costo moderado bajo demanda | Cache por ventana |
-| P2 | Listener | `src/firebase/hrPayroll/useHrCommissionPeriods.ts:1290` | Entries por periodo sin limit | Periodos grandes | Paginacion por corte |
+| P2 | Listener | `src/modules/hrPayroll/repositories/useHrCommissionPeriods.ts:1290` | Entries por periodo sin limit | Periodos grandes | Paginacion por corte |
 
 ## 7. Cloud Functions sospechosas
 
@@ -592,7 +592,7 @@ npm --prefix functions run build
 - `src/modules/inventory/pages/InventoryControl/tools/migrateInventoryCounts.ts`
 - `src/modules/accounting/pages/AccountingWorkspace/hooks/useAccountingWorkspace.ts`
 - `src/modules/treasury/hooks/useTreasuryWorkspace.ts`
-- `src/firebase/hrPayroll/useHrCommissionPeriods.ts`
+- `src/modules/hrPayroll/repositories/useHrCommissionPeriods.ts`
 - `src/modules/settings/pages/setting/subPage/Users/hooks/useUserListData.ts`
 - `src/firebase/users/fbGetUsers.ts`
 - `src/modules/settings/pages/setting/subPage/Users/UserActivity/hooks/useUserRealActivity.ts`

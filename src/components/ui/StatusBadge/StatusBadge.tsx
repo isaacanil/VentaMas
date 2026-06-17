@@ -1,4 +1,4 @@
-import { getStatusConfig } from '@/components/ui/statusDisplay/statusDisplayConfig';
+import { getStatusConfig } from '@/components/ui/statusDisplay';
 
 import { BadgeRoot, Label } from './StatusBadge.styles';
 import type { StatusBadgeProps } from './StatusBadge.types';

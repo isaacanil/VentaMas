@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.join(__dirname, '..');
+const FUNCTIONS_INDEX_PATH = path.join(ROOT_DIR, 'functions', 'src', 'index.js');
 const FIREBASE_CLI_ARGS = ['-y', 'firebase-tools@latest'];
 const ALLOW_ALL_FUNCTIONS_DEPLOY_ENV = 'ALLOW_ALL_FUNCTIONS_DEPLOY';
 const ALLOW_ALL_FUNCTIONS_DEPLOY_VALUE = '1';
@@ -383,6 +384,77 @@ function deployArgsDeployAllFunctions(cfg, deployArgs) {
   return getOnlyArgValues(deployArgs).some(onlyArgDeploysAllFunctions);
 }
 
+function getExplicitFunctionNamesFromOnlyArgs(args) {
+  return getOnlyArgValues(args)
+    .flatMap((value) =>
+      value
+        .split(',')
+        .map((target) => target.trim())
+        .filter((target) => target.startsWith('functions:'))
+        .map((target) => target.slice('functions:'.length).trim())
+        .filter(Boolean),
+    );
+}
+
+function getExportedFunctionNames() {
+  const source = fs.readFileSync(FUNCTIONS_INDEX_PATH, 'utf8');
+  const names = new Set();
+  const namedExportPattern =
+    /export\s*{([\s\S]*?)}(?:\s*from\s*['"][^'"]+['"])?\s*;/g;
+  const declarationExportPattern =
+    /export\s+(?:async\s+)?(?:function|class)\s+([A-Za-z_$][\w$]*)|export\s+(?:const|let|var)\s+([A-Za-z_$][\w$]*)/g;
+
+  for (const match of source.matchAll(namedExportPattern)) {
+    for (const rawSpecifier of match[1].split(',')) {
+      const specifier = rawSpecifier.trim();
+      if (!specifier) continue;
+
+      const aliased = specifier.match(
+        /^([A-Za-z_$][\w$]*)\s+as\s+([A-Za-z_$][\w$]*)$/,
+      );
+      if (aliased) {
+        names.add(aliased[2]);
+        continue;
+      }
+
+      if (/^[A-Za-z_$][\w$]*$/.test(specifier)) {
+        names.add(specifier);
+      }
+    }
+  }
+
+  for (const match of source.matchAll(declarationExportPattern)) {
+    names.add(match[1] ?? match[2]);
+  }
+
+  return names;
+}
+
+function assertKnownFunctionNames(cfg, deployArgs) {
+  if (!cfg.requiresFunctionNames) return;
+
+  const requestedNames = getExplicitFunctionNamesFromOnlyArgs(deployArgs);
+  if (requestedNames.length === 0) return;
+
+  const exportedNames = getExportedFunctionNames();
+  const missingNames = [...new Set(requestedNames)]
+    .filter((name) => !exportedNames.has(name))
+    .sort();
+
+  if (missingNames.length === 0) return;
+
+  consola.error(
+    [
+      'Funciones no exportadas por functions/src/index.js:',
+      `  ${missingNames.join(', ')}`,
+    ].join('\n'),
+  );
+  consola.info(
+    'Los targets staging:functions/prod:functions solo pueden desplegar exports reales de functions/src/index.js.',
+  );
+  process.exit(1);
+}
+
 function assertScopedFunctionsOnlyTargets(passthrough) {
   const invalidOnly = getOnlyArgValues(passthrough).find(
     onlyArgHasNonFunctionTarget,
@@ -570,6 +642,7 @@ async function main() {
 
   const deployArgs = await resolveDeployArgs(cfg, passthrough, canPrompt);
   assertAllFunctionsDeployGuard(env, cfg, deployArgs);
+  assertKnownFunctionNames(cfg, deployArgs);
 
   consola.box({
     title: 'Deploy',

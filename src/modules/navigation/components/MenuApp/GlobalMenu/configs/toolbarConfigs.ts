@@ -32,6 +32,8 @@ const utilityRoutes = [
   UTILITY_TERM.UTILITY_REPORT,
 ].filter(Boolean) as string[];
 
+const usersListRoute = `${SETTING_TERM.USERS}/${SETTING_TERM.USERS_LIST}`;
+
 /**
  * Registry of all toolbar configurations
  * Each entry maps a route pattern to its corresponding toolbar component
@@ -63,7 +65,7 @@ export const toolbarConfigs: ToolbarRegistryEntry[] = [
   }),
   registerToolbar({
     id: 'users-admin-toolbar',
-    routes: '/users/list',
+    routes: usersListRoute,
     importFn: () => import('../Page/UsersAdminToolbar'),
   }),
   registerToolbar({
