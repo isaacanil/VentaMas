@@ -23,7 +23,7 @@ import {
   toggleMenu,
   closeMenu,
   selectMenuOpenStatus,
-} from '@/features/nav/navSlice';
+} from '@/modules/navigation/state/navSlice';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
 import { ButtonIconMenu } from '@/components/ui/Button';
 import { GoBackButton } from '@/components/ui/Button';

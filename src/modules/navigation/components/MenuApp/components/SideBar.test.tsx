@@ -5,8 +5,8 @@ import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import navReducer from '@/features/nav/navSlice';
 import ROUTES_PATH from '@/router/routes/routesName';
+import navReducer from '@/modules/navigation/state/navSlice';
 
 import { SideBar } from './SideBar';
 

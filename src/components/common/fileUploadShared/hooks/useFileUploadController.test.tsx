@@ -199,6 +199,28 @@ describe('useFileUploadController', () => {
     ]);
   });
 
+  it('matches accepted extensions using a leading dot', () => {
+    const { result, onAddFiles, notifyError } = renderController({
+      acceptedFileTypes: '.pdf',
+    });
+    const pdfFile = makeFile('RECIBO.PDF', 'application/pdf');
+
+    act(() => {
+      result.current.addFiles([pdfFile]);
+    });
+
+    expect(notifyError).not.toHaveBeenCalled();
+    expect(onAddFiles).toHaveBeenCalledWith([
+      {
+        id: 'file-1',
+        name: 'RECIBO.PDF',
+        type: 'document',
+        file: pdfFile,
+        isLocal: true,
+      },
+    ]);
+  });
+
   it('blocks additions when maxFiles would be exceeded', () => {
     const existingFile = makeFile('existente.pdf', 'application/pdf');
     const { result, onAddFiles, notifyError } = renderController({

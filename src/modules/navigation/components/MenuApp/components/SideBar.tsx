@@ -16,7 +16,6 @@ import { icons } from '@/constants/icons/icons';
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import { selectUser } from '@/features/auth/userSlice';
 import { SelectSettingCart } from '@/features/cart/cartSlice';
-import { closeMenu } from '@/features/nav/navSlice';
 import { openNotificationCenter } from '@/features/notification/notificationCenterSlice';
 import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import ROUTES_PATH from '@/router/routes/routesName';
@@ -27,6 +26,7 @@ import {
   type MenuSearchItem,
 } from '@/modules/navigation/components/MenuApp/utils/menuSearch';
 import { UserSection } from '@/modules/navigation/components/MenuApp/UserSection';
+import { closeMenu } from '@/modules/navigation/state/navSlice';
 import { ButtonIconMenu } from '@/components/ui/Button';
 
 import { MenuLink } from './MenuLink';

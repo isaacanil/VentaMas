@@ -53,6 +53,16 @@ const forbiddenDomainInfrastructureImportPrefixes = [
   'react-dom',
 ];
 
+const forbiddenDomainInfrastructureSourcePathPrefixes = [
+  'src/components/',
+  'src/features/',
+  'src/firebase/',
+  'src/hooks/',
+  'src/modules/',
+  'src/router/',
+  'src/styles/',
+];
+
 const forbiddenLegacySharedImportPrefixes = [
   '@/ant',
   '@/components/modals',
@@ -740,6 +750,19 @@ const listSourceFiles = (directory: string): string[] => {
   return files;
 };
 
+const isRequireModuleReferenceCall = (node: ts.CallExpression) => {
+  if (ts.isIdentifier(node.expression)) {
+    return node.expression.text === 'require';
+  }
+
+  return (
+    ts.isPropertyAccessExpression(node.expression) &&
+    node.expression.name.text === 'resolve' &&
+    ts.isIdentifier(node.expression.expression) &&
+    node.expression.expression.text === 'require'
+  );
+};
+
 const collectImportReferencesFromSource = (
   filePath: string,
   source: string,
@@ -773,6 +796,14 @@ const collectImportReferencesFromSource = (
       ts.isCallExpression(node) &&
       node.expression.kind === ts.SyntaxKind.ImportKeyword
     ) {
+      const [moduleSpecifier] = node.arguments;
+
+      if (moduleSpecifier && ts.isStringLiteralLike(moduleSpecifier)) {
+        addImport(moduleSpecifier);
+      }
+    }
+
+    if (ts.isCallExpression(node) && isRequireModuleReferenceCall(node)) {
       const [moduleSpecifier] = node.arguments;
 
       if (moduleSpecifier && ts.isStringLiteralLike(moduleSpecifier)) {
@@ -1060,15 +1091,41 @@ const findDirectHeroUiReactImportViolations = () =>
         ),
     );
 
+const resolvesToForbiddenDomainInfrastructurePath = (
+  filePath: string,
+  importSpecifier: string,
+) => {
+  if (!relativeImportPattern.test(importSpecifier)) {
+    return false;
+  }
+
+  const resolvedRepoPath = `${toRepoPath(
+    path.resolve(path.dirname(filePath), importSpecifier),
+  )}/`;
+
+  return forbiddenDomainInfrastructureSourcePathPrefixes.some((prefix) =>
+    resolvedRepoPath.startsWith(prefix),
+  );
+};
+
 const findDomainInfrastructureImportViolations = () => {
   const domainRoot = path.join(sourceRoot, 'domain');
 
   return listSourceFiles(domainRoot).flatMap((filePath) =>
-    collectAllImportReferences(filePath).filter((importReference) =>
-      forbiddenDomainInfrastructureImportPrefixes.some((prefix) =>
-        importMatchesPrefix(importReference.specifier, prefix),
-      ),
-    ),
+    collectAllImportReferences(filePath).filter((importReference) => {
+      const importsForbiddenPrefix =
+        forbiddenDomainInfrastructureImportPrefixes.some((prefix) =>
+          importMatchesPrefix(importReference.specifier, prefix),
+        );
+
+      return (
+        importsForbiddenPrefix ||
+        resolvesToForbiddenDomainInfrastructurePath(
+          filePath,
+          importReference.specifier,
+        )
+      );
+    }),
   );
 };
 
@@ -1150,6 +1207,29 @@ const findModuleDependencyCycles = () => {
 };
 
 describe('module boundaries', () => {
+  it('collects CommonJS require references for boundary checks', () => {
+    const imports = collectImportReferencesFromSource(
+      path.join(process.cwd(), 'src', 'modules', 'sample.ts'),
+      [
+        "const invoice = require('@/modules/invoice/private');",
+        "const productsPath = require.resolve('@/modules/products/public');",
+      ].join('\n'),
+    );
+
+    expect(imports).toEqual([
+      {
+        filePath: 'src/modules/sample.ts',
+        line: 1,
+        specifier: '@/modules/invoice/private',
+      },
+      {
+        filePath: 'src/modules/sample.ts',
+        line: 2,
+        specifier: '@/modules/products/public',
+      },
+    ]);
+  });
+
   it('blocks new deep imports into another module private folders', () => {
     const violations = findDeepModuleImportViolations();
     const violationKeys = new Set(violations.map(createViolationKey));

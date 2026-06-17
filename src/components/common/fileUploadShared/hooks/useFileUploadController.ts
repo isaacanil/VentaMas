@@ -8,6 +8,7 @@ import {
   isPDFFile,
   revokeLocalURL,
 } from '@/utils/fileUtils';
+import { getFileExtension } from '@/utils/files';
 
 import {
   createImageLightboxSlides,
@@ -157,10 +158,8 @@ const getNormalizedAcceptedExtensions = (
         .filter(Boolean)
     : [];
 
-const getFileExtension = (file: File): string => {
-  const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
-  return extension ? `.${extension}` : '';
-};
+const getAcceptedFileExtension = (file: File): string =>
+  getFileExtension(file.name, { includeDot: true });
 
 export const useFileUploadController = <
   TLocalFile,
@@ -227,7 +226,7 @@ export const useFileUploadController = <
 
       if (acceptedExtensions.length > 0) {
         const invalidFiles = filesToAdd.filter(
-          (file) => !acceptedExtensions.includes(getFileExtension(file)),
+          (file) => !acceptedExtensions.includes(getAcceptedFileExtension(file)),
         );
 
         if (invalidFiles.length > 0) {
@@ -239,7 +238,7 @@ export const useFileUploadController = <
           );
 
           filesToAdd = filesToAdd.filter((file) =>
-            acceptedExtensions.includes(getFileExtension(file)),
+            acceptedExtensions.includes(getAcceptedFileExtension(file)),
           );
 
           if (filesToAdd.length === 0) return;

@@ -16,6 +16,18 @@ export const revokeLocalURL = (url?: string | null): void => {
   revokeObjectURL(url);
 };
 
+type GetFileExtensionOptions = {
+  includeDot?: boolean;
+};
+
+const formatFileExtension = (
+  extension: string,
+  options: GetFileExtensionOptions = {},
+): string => {
+  if (!extension) return '';
+  return options.includeDot ? `.${extension}` : extension;
+};
+
 export function isImageFile(filename?: string | null): boolean {
   return ['jpg', 'jpeg', 'png', 'gif'].includes(getFileExtension(filename));
 }
@@ -26,7 +38,10 @@ export function isPdfFile(filename?: string | null): boolean {
 
 export const isPDFFile = isPdfFile;
 
-export function getFileExtension(fileNameOrUrl?: string | null): string {
+export function getFileExtension(
+  fileNameOrUrl?: string | null,
+  options: GetFileExtensionOptions = {},
+): string {
   if (!fileNameOrUrl) return '';
 
   if (
@@ -36,12 +51,14 @@ export function getFileExtension(fileNameOrUrl?: string | null): string {
     const decodedUrl = decodeURIComponent(fileNameOrUrl);
     const filePath = decodedUrl.split('?')[0] ?? '';
     const fileName = filePath.split('/').pop() ?? '';
-    return fileName.includes('.')
+    const extension = fileName.includes('.')
       ? (fileName.split('.').pop()?.toLowerCase() ?? '')
       : '';
+    return formatFileExtension(extension, options);
   }
 
-  return fileNameOrUrl.split('.').pop()?.toLowerCase() ?? '';
+  const extension = fileNameOrUrl.split('.').pop()?.toLowerCase() ?? '';
+  return formatFileExtension(extension, options);
 }
 
 export function getFileTypeFromUrl(url: string): 'image' | 'pdf' | 'other' {

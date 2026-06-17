@@ -29,7 +29,7 @@ Cerrar la lista de dominios top-level del repo para que el plan de testing no de
 ### `src/features`
 
 - `Mapeado`: `cart`
-- `Pendiente`: `abilities`, `accountsReceivable`, `activeIngredients`, `addOrder`, `Alert`, `appModes`, `auth`, `barcodePrintModalSlice`, `business`, `Cancel`, `cashCount`, `category`, `client`, `clientAccountsReceivable`, `clientCart`, `creditNote`, `customProducts`, `display`, `doctors`, `expense`, `files`, `filterProduct`, `Firestore`, `imageViewer`, `insurance`, `invoice`, `loader`, `modals`, `nav`, `navigation`, `noteModal`, `notification`, `productBrands`, `productOutflow`, `productStock`, `productWeightEntryModalSlice`, `purchase`, `search`, `setting`, `taxReceipt`, `theme`, `updateProduct`, `uploadImg`, `UserNotification`, `usersManagement`, `warehouse`
+- `Pendiente`: `abilities`, `accountsReceivable`, `activeIngredients`, `addOrder`, `Alert`, `appModes`, `auth`, `barcodePrintModalSlice`, `business`, `Cancel`, `cashCount`, `category`, `client`, `clientAccountsReceivable`, `clientCart`, `creditNote`, `customProducts`, `display`, `doctors`, `expense`, `files`, `filterProduct`, `Firestore`, `imageViewer`, `insurance`, `invoice`, `modals`, `nav`, `navigation`, `noteModal`, `notification`, `productBrands`, `productOutflow`, `productStock`, `productWeightEntryModalSlice`, `purchase`, `search`, `setting`, `taxReceipt`, `theme`, `updateProduct`, `uploadImg`, `UserNotification`, `usersManagement`, `warehouse`
 
 ### `src/router`
 
@@ -38,7 +38,7 @@ Cerrar la lista de dominios top-level del repo para que el plan de testing no de
 ### `src/firebase`
 
 - `Parcial`: `accountsReceivable`, `billing`, `cashCount`, `warehouse`
-- `Pendiente`: `app`, `AppUpdate`, `Auth`, `authorization`, `authorizations`, `barcode`, `businessInfo`, `categories`, `client`, `creditNotes`, `dev`, `doctors`, `emulator`, `errors`, `expenses`, `firebaseconfig.tsx`, `firebaseOperations.ts`, `functions`, `img`, `insurance`, `inventory`, `inventoryDataCleaner`, `invoices`, `order`, `presence`, `processAccountsReceivablePayments`, `ProductOutflow`, `products`, `provider`, `purchase`, `quotation`, `rnc`, `Settings`, `taxReceipt`, `Tools`, `transfer`, `users`, `utils`
+- `Pendiente`: `app`, `AppUpdate`, `Auth`, `authorization`, `authorizations`, `barcode`, `businessInfo`, `categories`, `client`, `creditNotes`, `dev`, `doctors`, `emulator`, `errors`, `expenses`, `firebaseconfig.tsx`, `firebaseOperations.ts`, `functions`, `img`, `insurance`, `inventory`, `invoices`, `order`, `presence`, `processAccountsReceivablePayments`, `ProductOutflow`, `products`, `provider`, `purchase`, `quotation`, `rnc`, `Settings`, `taxReceipt`, `Tools`, `transfer`, `users`, `utils`
 
 ### `src/services`
 
@@ -50,11 +50,11 @@ Cerrar la lista de dominios top-level del repo para que el plan de testing no de
 ### `src/hooks`
 
 - `Parcial por familias`: `accountsReceivable`
-- `Parcial`: `accountsReceivable/useCreditLimitRealtime.ts`, `useProductStockData.ts`, `useRncSearch.ts`, `useTaxReceiptsFix.ts`
-- `Pendiente dentro de accountsReceivable`: `accountsReceivable/useCheckAccountReceivable.ts`, `accountsReceivable/useCheckAccountReceivable.tsx`, `accountsReceivable/useDueDatesReceivable.ts`
+- `Parcial`: `useProductStockData.ts`, `useTaxReceiptsFix.ts`
+- `Pendiente dentro de accountsReceivable`: `accountsReceivable/useCheckAccountReceivable.tsx`
 - `Pendiente por familias`: `abilities`, `barcode`, `cashCount`, `creditNote`, `date`, `expense`, `image`, `inventory`, `path`, `product`, `products`, `routes`, `search`, `warehouse`, `windows`
-- `Pendiente por hooks raiz`: `useAppNavigation.ts`, `useAuthorizationModules.ts`, `useAuthorizationPin.ts`, `useBusiness.ts`, `useCheckForInternetConnection.ts`, `useClickOutSide.tsx`, `useCompareArrays.ts`, `useDeveloperCommands.ts`, `useElementSize.ts`, `useFiscalReceiptsAlerts.ts`, `useFormatTime.tsx`, `useInsuranceEnabled.ts`, `useInsuranceFormComplete.ts`, `useLoadingStatus.tsx`, `useMediaQuery.ts`, `useOverflowCollapse.ts`, `usePersistentDeveloperBusiness.ts`, `usePrefersReducedMotion.ts`, `useProductStock.ts`, `useScroll.tsx`, `useSearchFilter.ts`, `useStockAlertThresholds.ts`, `useTruncate.tsx`, `useWindowWidth.tsx`
-- `Retirado/trasladado`: los exportadores Excel de `src/hooks` viven ahora en `src/utils/export/excel`; el hook de ubicaciones vive en `src/modules/inventory/hooks/useLocationNames`; los listeners de ordenes y compras viven en `src/modules/orderAndPurchase/hooks/useOrders.tsx` y `src/modules/orderAndPurchase/hooks/usePurchases.tsx`.
+- `Pendiente por hooks raiz`: `useAppNavigation.ts`, `useAuthorizationModules.ts`, `useAuthorizationPin.ts`, `useBusiness.ts`, `useCheckForInternetConnection.ts`, `useClickOutSide.tsx`, `useCompareArrays.ts`, `useDeveloperCommands.ts`, `useElementSize.ts`, `useFiscalReceiptsAlerts.ts`, `useFormatTime.tsx`, `useInsuranceEnabled.ts`, `useInsuranceFormComplete.ts`, `useMediaQuery.ts`, `useOverflowCollapse.ts`, `usePersistentDeveloperBusiness.ts`, `usePrefersReducedMotion.ts`, `useScroll.tsx`, `useSearchFilter.ts`, `useWindowWidth.tsx`
+- `Retirado/trasladado`: los exportadores Excel de `src/hooks` viven ahora en `src/utils/export/excel`; el hook de ubicaciones vive en `src/modules/inventory/hooks/useLocationNames`; los listeners de ordenes y compras viven en `src/modules/orderAndPurchase/hooks/useOrders.tsx` y `src/modules/orderAndPurchase/hooks/usePurchases.tsx`; `useLoadingStatus.tsx` fue retirado; `useTruncate.tsx` vive ahora en `src/components/ui/AdvancedTable/components/Cells/Text/hooks/useTruncate.tsx`; `useProductStock.ts` y `useStockAlertThresholds.ts` viven ahora en `src/modules/inventory/hooks`; `useRncSearch.ts` vive ahora en `src/modules/contacts/hooks`; `useCreditLimitRealtime.ts`, `useCheckAccountReceivable.ts` y `useDueDatesReceivable.ts` viven ahora en `src/modules/accountsReceivable/hooks`.
 
 ### `src/utils`
 

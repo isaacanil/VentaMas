@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import styled from 'styled-components';
 
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { isImageFile, isPdfFile } from '@/utils/files';
 
 import type { PreviewableFile } from '../types';
 
@@ -81,9 +82,9 @@ const PreviewContentInner = <TFile extends PreviewableFile>({
   }, [pdfLoadAttempts]);
 
   const fileName = previewFile?.name ?? 'Archivo';
-  const extension = fileName.split('.').pop()?.toLowerCase() ?? '';
   const fileUrl = previewFile?.url ?? previewFile?.preview ?? '';
-  const isImage = ['jpg', 'jpeg', 'png', 'gif'].includes(extension);
+  const isImage = isImageFile(fileName);
+  const isPdf = isPdfFile(fileName);
   const imageStatus = isLoading
     ? 'Cargando imagen...'
     : error
@@ -114,7 +115,7 @@ const PreviewContentInner = <TFile extends PreviewableFile>({
         }
       />
     </>
-  ) : extension === 'pdf' ? (
+  ) : isPdf ? (
     <PDFContainer>
       <AccessibleStatus role="status" aria-live="polite">
         {pdfStatus}

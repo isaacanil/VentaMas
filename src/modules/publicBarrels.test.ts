@@ -226,6 +226,7 @@ const publicBarrels: PublicBarrelCase[] = [
     exports: {
       MenuApp: 'function',
       MenuAppUI: 'function',
+      navReducer: 'function',
       NotificationButton: 'function',
       useMenuData: 'function',
     },
@@ -462,6 +463,30 @@ const listTypeOnlyExports = (filePath: string) => {
   return sortNames(exportNames);
 };
 
+const listImplicitPublicExports = (filePath: string) => {
+  const sourceText = readFileSync(filePath, 'utf8');
+  const sourceFile = ts.createSourceFile(
+    filePath,
+    sourceText,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  );
+  const implicitExports: string[] = [];
+
+  for (const statement of sourceFile.statements) {
+    if (!ts.isExportDeclaration(statement)) {
+      continue;
+    }
+
+    if (!statement.exportClause || !ts.isNamedExports(statement.exportClause)) {
+      implicitExports.push(statement.getText(sourceFile));
+    }
+  }
+
+  return implicitExports;
+};
+
 const expectRuntimeExport = (
   barrel: Record<string, unknown>,
   exportName: string,
@@ -505,6 +530,18 @@ describe('module public barrels', () => {
         moduleName,
       ).toEqual(sortNames(typeExports));
     }
+  });
+
+  test('keeps public barrel exports explicit', () => {
+    const implicitPublicExports = publicBarrels
+      .flatMap(({ moduleName }) =>
+        listImplicitPublicExports(getPublicBarrelPath(moduleName)).map(
+          (exportDeclaration) => `${moduleName}: ${exportDeclaration}`,
+        ),
+      )
+      .sort();
+
+    expect(implicitPublicExports).toEqual([]);
   });
 
   test.each(publicBarrels)(

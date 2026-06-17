@@ -10,13 +10,21 @@ import {
 describe('file utilities', () => {
   it('resolves file extensions from names, optional values and Firebase URLs', () => {
     expect(getFileExtension('products.CSV')).toBe('csv');
+    expect(getFileExtension('invoice.PDF', { includeDot: true })).toBe('.pdf');
     expect(getFileExtension(null)).toBe('');
+    expect(getFileExtension(null, { includeDot: true })).toBe('');
     expect(getFileExtension(undefined)).toBe('');
     expect(
       getFileExtension(
         'https://firebasestorage.googleapis.com/v0/b/demo/o/uploads%2Ffactura.PDF?alt=media',
       ),
     ).toBe('pdf');
+    expect(
+      getFileExtension(
+        'https://firebasestorage.googleapis.com/v0/b/demo/o/uploads%2Ffactura.PDF?alt=media',
+        { includeDot: true },
+      ),
+    ).toBe('.pdf');
   });
 
   it('classifies common image and pdf file names', () => {

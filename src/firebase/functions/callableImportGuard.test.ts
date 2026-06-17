@@ -37,20 +37,36 @@ const EXISTING_FIREBASE_FUNCTIONS_SDK_IMPORT_FILES = [
   ...EXISTING_DIRECT_HTTPS_CALLABLE_IMPORT_DEBT,
 ] as const;
 
-const FIREBASE_FUNCTIONS_NAMED_IMPORT_PATTERN =
-  /import\s+(?:type\s+)?\{(?<imports>[\s\S]*?)\}\s+from\s*['"]firebase\/functions['"];?/g;
-const FIREBASE_FUNCTIONS_NAMESPACE_IMPORT_PATTERN =
-  /import\s+\*\s+as\s+(?<namespace>[$A-Z_a-z][$\w]*)\s+from\s*['"]firebase\/functions['"];?/g;
-const FIREBASE_FUNCTIONS_DEFAULT_IMPORT_PATTERN =
-  /import\s+(?<namespace>[$A-Z_a-z][$\w]*)\s+from\s*['"]firebase\/functions['"];?/g;
-const FIREBASE_FUNCTIONS_REQUIRE_PATTERN =
-  /(?:const|let|var)\s+(?:(?<destructured>\{[\s\S]*?\})|(?<namespace>[$A-Z_a-z][$\w]*))\s*=\s*require\(\s*['"]firebase\/functions['"]\s*\)/g;
+const FIREBASE_FUNCTIONS_MODULE_PATTERN =
+  String.raw`firebase\/(?:compat\/functions|functions(?:\/[^'"]+)?)`;
+const FIREBASE_FUNCTIONS_NAMED_IMPORT_PATTERN = new RegExp(
+  String.raw`import\s+(?:type\s+)?\{(?<imports>[\s\S]*?)\}\s+from\s*['"]${FIREBASE_FUNCTIONS_MODULE_PATTERN}['"];?`,
+  'g',
+);
+const FIREBASE_FUNCTIONS_NAMESPACE_IMPORT_PATTERN = new RegExp(
+  String.raw`import\s+\*\s+as\s+(?<namespace>[$A-Z_a-z][$\w]*)\s+from\s*['"]${FIREBASE_FUNCTIONS_MODULE_PATTERN}['"];?`,
+  'g',
+);
+const FIREBASE_FUNCTIONS_DEFAULT_IMPORT_PATTERN = new RegExp(
+  String.raw`import\s+(?<namespace>[$A-Z_a-z][$\w]*)\s+from\s*['"]${FIREBASE_FUNCTIONS_MODULE_PATTERN}['"];?`,
+  'g',
+);
+const FIREBASE_FUNCTIONS_REQUIRE_PATTERN = new RegExp(
+  String.raw`(?:const|let|var)\s+(?:(?<destructured>\{[\s\S]*?\})|(?<namespace>[$A-Z_a-z][$\w]*))\s*=\s*require\(\s*['"]${FIREBASE_FUNCTIONS_MODULE_PATTERN}['"]\s*\)`,
+  'g',
+);
 const FIREBASE_FUNCTIONS_DYNAMIC_IMPORT_PATTERN =
-  /import\(\s*['"]firebase\/functions['"]\s*\)/;
-const FIREBASE_FUNCTIONS_SIDE_EFFECT_IMPORT_PATTERN =
-  /import\s*['"]firebase\/functions['"];?/g;
-const FIREBASE_FUNCTIONS_BARE_REQUIRE_PATTERN =
-  /require\(\s*['"]firebase\/functions['"]\s*\)/g;
+  new RegExp(
+    String.raw`import\(\s*['"]${FIREBASE_FUNCTIONS_MODULE_PATTERN}['"]\s*\)`,
+  );
+const FIREBASE_FUNCTIONS_SIDE_EFFECT_IMPORT_PATTERN = new RegExp(
+  String.raw`import\s*['"]${FIREBASE_FUNCTIONS_MODULE_PATTERN}['"];?`,
+  'g',
+);
+const FIREBASE_FUNCTIONS_BARE_REQUIRE_PATTERN = new RegExp(
+  String.raw`require\(\s*['"]${FIREBASE_FUNCTIONS_MODULE_PATTERN}['"]\s*\)`,
+  'g',
+);
 
 const RUNTIME_SOURCE_PATTERN = /\.[cm]?[jt]sx?$/;
 const SKIPPED_SOURCE_PATTERN =
@@ -62,6 +78,11 @@ const normalizeSourcePath = (filePath: string) =>
 const matchesPattern = (pattern: RegExp, text: string) => {
   pattern.lastIndex = 0;
   return pattern.test(text);
+};
+
+const collectMatches = (pattern: RegExp, text: string) => {
+  pattern.lastIndex = 0;
+  return Array.from(text.matchAll(pattern));
 };
 
 const importsFirebaseFunctionsSdk = (text: string) =>
@@ -83,16 +104,18 @@ const hasHttpsCallableMemberAccess = (text: string, namespace: string) => {
 };
 
 const importsHttpsCallableDirectly = (text: string) => {
-  const hasNamedImport = Array.from(
-    text.matchAll(FIREBASE_FUNCTIONS_NAMED_IMPORT_PATTERN),
+  const hasNamedImport = collectMatches(
+    FIREBASE_FUNCTIONS_NAMED_IMPORT_PATTERN,
+    text,
   ).some((match) => /\bhttpsCallable\b/.test(match.groups?.imports ?? ''));
 
   if (hasNamedImport) {
     return true;
   }
 
-  const hasNamespaceImport = Array.from(
-    text.matchAll(FIREBASE_FUNCTIONS_NAMESPACE_IMPORT_PATTERN),
+  const hasNamespaceImport = collectMatches(
+    FIREBASE_FUNCTIONS_NAMESPACE_IMPORT_PATTERN,
+    text,
   ).some((match) =>
     hasHttpsCallableMemberAccess(text, match.groups?.namespace ?? ''),
   );
@@ -101,8 +124,9 @@ const importsHttpsCallableDirectly = (text: string) => {
     return true;
   }
 
-  const hasDefaultImport = Array.from(
-    text.matchAll(FIREBASE_FUNCTIONS_DEFAULT_IMPORT_PATTERN),
+  const hasDefaultImport = collectMatches(
+    FIREBASE_FUNCTIONS_DEFAULT_IMPORT_PATTERN,
+    text,
   ).some((match) =>
     hasHttpsCallableMemberAccess(text, match.groups?.namespace ?? ''),
   );
@@ -111,8 +135,9 @@ const importsHttpsCallableDirectly = (text: string) => {
     return true;
   }
 
-  const hasRequireImport = Array.from(
-    text.matchAll(FIREBASE_FUNCTIONS_REQUIRE_PATTERN),
+  const hasRequireImport = collectMatches(
+    FIREBASE_FUNCTIONS_REQUIRE_PATTERN,
+    text,
   ).some((match) => {
     const { destructured = '', namespace = '' } = match.groups ?? {};
 
@@ -195,6 +220,14 @@ describe('Firebase callable import guard', () => {
       'dynamic import',
       "const firebaseFunctions = await import('firebase/functions');\nfirebaseFunctions.httpsCallable();",
     ],
+    [
+      'compat import',
+      "import { httpsCallable } from 'firebase/compat/functions';",
+    ],
+    [
+      'subpath import',
+      "import { httpsCallable } from 'firebase/functions/internal';",
+    ],
   ])('detects direct httpsCallable through %s', (_name, source) => {
     expect(importsHttpsCallableDirectly(source)).toBe(true);
   });
@@ -234,6 +267,14 @@ describe('Firebase callable import guard', () => {
       "const firebaseFunctions = await import('firebase/functions');",
     ],
     ['side-effect import', "import 'firebase/functions';"],
+    [
+      'compat import',
+      "import { getFunctions } from 'firebase/compat/functions';",
+    ],
+    [
+      'subpath import',
+      "import { getFunctions } from 'firebase/functions/internal';",
+    ],
   ])('detects raw firebase/functions SDK import through %s', (_name, source) => {
     expect(importsFirebaseFunctionsSdk(source)).toBe(true);
   });

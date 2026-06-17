@@ -1,11 +1,28 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 
+import accountReceivableRoutes from './paths/AccountReceivable';
+import accountsPayableRoutes from './paths/AccountsPayable';
+import accountingRoutes from './paths/Accounting';
+import authRoutes from './paths/Auth';
+import authorizationsRoutes from './paths/Authorizations';
 import basicRoutes from './paths/Basic';
+import cashReconciliationRoutes from './paths/CashReconciliation';
 import changelogRoutes from './paths/Changelogs';
+import contactsRoutes from './paths/Contact';
+import creditNoteRoutes from './paths/CreditNote';
+import debitNoteRoutes from './paths/DebitNote';
 import devRoutes from './paths/Dev';
+import expensesRoutes from './paths/Expenses';
+import hrPayrollRoutes from './paths/HrPayroll';
+import insuranceRoutes from './paths/Insurance';
 import inventoryRoutes from './paths/Inventory';
 import labRoutes from './paths/Lab';
+import ordersRoutes from './paths/Orders';
+import purchasesRoutes from './paths/Purchases';
+import salesRoutes from './paths/Sales';
 import settingRoutes from './paths/Setting';
+import treasuryRoutes from './paths/Treasury';
+import utilityRoutes from './paths/Utility';
 import { ROUTE_STATUS } from './routeMeta';
 import {
   getRouteMeta,
@@ -47,6 +64,32 @@ const allowedDuplicateRoutePaths = new Set([
   '/settings/modules',
 ]);
 
+const activeRoutes = [
+  ...basicRoutes,
+  ...authRoutes,
+  ...inventoryRoutes,
+  ...contactsRoutes,
+  ...settingRoutes,
+  ...salesRoutes,
+  ...ordersRoutes,
+  ...purchasesRoutes,
+  ...labRoutes,
+  ...cashReconciliationRoutes,
+  ...treasuryRoutes,
+  ...expensesRoutes,
+  ...accountingRoutes,
+  ...hrPayrollRoutes,
+  ...devRoutes,
+  ...changelogRoutes,
+  ...utilityRoutes,
+  ...accountsPayableRoutes,
+  ...accountReceivableRoutes,
+  ...insuranceRoutes,
+  ...creditNoteRoutes,
+  ...debitNoteRoutes,
+  ...authorizationsRoutes,
+] satisfies AppRoute[];
+
 const joinRoutePath = (parentPath: string, routePath?: string) => {
   if (!routePath) return parentPath;
   if (routePath.startsWith('/')) return routePath;
@@ -83,6 +126,9 @@ const findDuplicateRoutePaths = (routes: AppRoute[]) => {
     .sort();
 };
 
+const isDeveloperRoutePath = (path: string) =>
+  path === '/dev' || path.startsWith('/dev/');
+
 describe('routeVisibility', () => {
   beforeAll(() => {
     expect(developerHubRoute).toBeDefined();
@@ -105,12 +151,7 @@ describe('routeVisibility', () => {
           },
         },
       },
-      ...basicRoutes,
-      ...devRoutes,
-      ...inventoryRoutes,
-      ...labRoutes,
-      ...settingRoutes,
-      ...changelogRoutes,
+      ...activeRoutes,
     ] as never);
   });
 
@@ -190,6 +231,28 @@ describe('routeVisibility', () => {
     expect(devLabRoutesMissingStatus).toEqual([]);
   });
 
+  it('requires developer metadata for every active dev surface route', () => {
+    const developerRoutes = collectMountableRoutes(activeRoutes).filter(
+      ({ path, route }) => route.devOnly === true || isDeveloperRoutePath(path),
+    );
+    const developerRoutesMissingAccess = developerRoutes
+      .filter(({ route }) => route.requiresDevAccess !== true)
+      .map(({ path }) => path)
+      .sort();
+    const developerRoutesMissingStatus = developerRoutes
+      .filter(({ route }) => route.status === undefined)
+      .map(({ path }) => path)
+      .sort();
+
+    expect({
+      developerRoutesMissingAccess,
+      developerRoutesMissingStatus,
+    }).toEqual({
+      developerRoutesMissingAccess: [],
+      developerRoutesMissingStatus: [],
+    });
+  });
+
   it('keeps dev routes without devOnly explicitly allowlisted', () => {
     const devRoutesWithoutDevOnly = collectMountableRoutes(devRoutes)
       .filter(({ route }) => route.devOnly !== true)
@@ -200,14 +263,7 @@ describe('routeVisibility', () => {
   });
 
   it('keeps route paths unique across registered route groups', () => {
-    const duplicateRoutePaths = findDuplicateRoutePaths([
-      ...basicRoutes,
-      ...devRoutes,
-      ...inventoryRoutes,
-      ...labRoutes,
-      ...settingRoutes,
-      ...changelogRoutes,
-    ]);
+    const duplicateRoutePaths = findDuplicateRoutePaths(activeRoutes);
     const unapprovedDuplicateRoutePaths = duplicateRoutePaths.filter(
       (path) => !allowedDuplicateRoutePaths.has(path),
     );
