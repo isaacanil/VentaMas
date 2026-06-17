@@ -16,6 +16,11 @@ import {
   mapHttpsErrorToHttpStatus,
 } from '../../http/httpError.util.js';
 import {
+  canCreateFinancialEffectsForAdjustmentNote,
+  isElectronicAdjustmentNote,
+  resolveElectronicAdjustmentNoteFiscalStatus,
+} from '../../../../modules/accountReceivable/utils/customerAdjustmentNoteFiscalStatus.util.js';
+import {
   expectsAccountsReceivable,
   getReceivableMetadata,
   hasAccountsReceivable,
@@ -27,6 +32,12 @@ const DEFAULT_SAMPLE_LIMIT = 20;
 const MAX_SAMPLE_LIMIT = 50;
 const SCAN_MULTIPLIER = 4;
 const EPSILON = 0.05;
+const INACTIVE_ACCOUNTING_EFFECT_STATUSES = new Set([
+  'voided',
+  'reversed',
+  'cancelled',
+  'canceled',
+]);
 
 const clampNumber = (value, min, max, fallback) => {
   const numeric = Number(value);
@@ -49,6 +60,15 @@ const safeNumber = (value) => {
   const numeric = Number(value);
   return Number.isFinite(numeric) ? numeric : 0;
 };
+
+const toCleanString = (value) => {
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length ? trimmed : null;
+};
+
+const roundToTwoDecimals = (value) => Math.round(safeNumber(value) * 100) / 100;
 
 const timer = () => {
   const started = Date.now();
@@ -572,6 +592,216 @@ async function collectInvoicesWithAnomalies({
   };
 }
 
+const isActiveAccountingEffect = (snap) => {
+  if (!snap?.exists) return false;
+  return !INACTIVE_ACCOUNTING_EFFECT_STATUSES.has(
+    toCleanString(snap.data()?.status),
+  );
+};
+
+const collectByFieldEquals = async ({
+  businessId,
+  collectionName,
+  field,
+  value,
+}) => {
+  if (!value) return [];
+  const snap = await db
+    .collection(`businesses/${businessId}/${collectionName}`)
+    .where(field, '==', value)
+    .get();
+  return snap.docs.map((docSnap) => ({
+    id: docSnap.id,
+    data: docSnap.data() || {},
+  }));
+};
+
+const collectDebitNoteFinancialEffectIssues = async ({
+  businessId,
+  noteId,
+  note,
+}) => {
+  const arId = toCleanString(note.accountsReceivableId);
+  const eventId = `customer_debit_note.issued__${noteId}`;
+  const [arSnap, payments, installmentPayments, eventSnap, entrySnap] =
+    await Promise.all([
+      arId
+        ? db.doc(`businesses/${businessId}/accountsReceivable/${arId}`).get()
+        : null,
+      collectByFieldEquals({
+        businessId,
+        collectionName: 'accountsReceivablePayments',
+        field: 'arId',
+        value: arId,
+      }),
+      collectByFieldEquals({
+        businessId,
+        collectionName: 'accountsReceivableInstallmentPayments',
+        field: 'arId',
+        value: arId,
+      }),
+      db.doc(`businesses/${businessId}/accountingEvents/${eventId}`).get(),
+      db.doc(`businesses/${businessId}/journalEntries/${eventId}`).get(),
+    ]);
+
+  const ar = arSnap?.exists ? arSnap.data() || {} : null;
+  const balance = ar
+    ? roundToTwoDecimals(ar.paymentState?.balance ?? ar.arBalance)
+    : 0;
+  const activeReceivable =
+    Boolean(ar) &&
+    (balance > EPSILON ||
+      ar.isActive === true ||
+      !INACTIVE_ACCOUNTING_EFFECT_STATUSES.has(toCleanString(ar.status)));
+  const activeEvent = isActiveAccountingEffect(eventSnap);
+  const activeEntry = isActiveAccountingEffect(entrySnap);
+  const hasPayments = payments.length > 0 || installmentPayments.length > 0;
+
+  if (!activeReceivable && !activeEvent && !activeEntry && !hasPayments) {
+    return null;
+  }
+
+  return {
+    issueType: 'non_postable_debit_note_has_financial_effects',
+    noteType: 'debitNote',
+    noteId,
+    ncf: note.ncf || note.eNcf || null,
+    fiscalStatus: resolveElectronicAdjustmentNoteFiscalStatus(note),
+    status: note.status || null,
+    accountsReceivable: ar
+      ? {
+          arId,
+          status: ar.status || null,
+          isActive: ar.isActive ?? null,
+          balance,
+          totalReceivable: roundToTwoDecimals(ar.totalReceivable),
+        }
+      : null,
+    payments: payments.length,
+    installmentPayments: installmentPayments.length,
+    accountingEvent: eventSnap?.exists
+      ? { id: eventSnap.id, status: eventSnap.data()?.status || null }
+      : null,
+    journalEntry: entrySnap?.exists
+      ? { id: entrySnap.id, status: entrySnap.data()?.status || null }
+      : null,
+  };
+};
+
+const collectCreditNoteFinancialEffectIssues = async ({
+  businessId,
+  noteId,
+  note,
+}) => {
+  const eventId = `customer_credit_note.issued__${noteId}`;
+  const [applications, eventSnap, entrySnap] = await Promise.all([
+    collectByFieldEquals({
+      businessId,
+      collectionName: 'creditNoteApplications',
+      field: 'creditNoteId',
+      value: noteId,
+    }),
+    db.doc(`businesses/${businessId}/accountingEvents/${eventId}`).get(),
+    db.doc(`businesses/${businessId}/journalEntries/${eventId}`).get(),
+  ]);
+
+  const availableAmount = roundToTwoDecimals(
+    note.availableAmount ?? note.totalAmount,
+  );
+  const activeEvent = isActiveAccountingEffect(eventSnap);
+  const activeEntry = isActiveAccountingEffect(entrySnap);
+  const activeApplications = applications.filter(
+    ({ data }) =>
+      !INACTIVE_ACCOUNTING_EFFECT_STATUSES.has(toCleanString(data.status)),
+  );
+
+  if (
+    availableAmount <= EPSILON &&
+    activeApplications.length === 0 &&
+    !activeEvent &&
+    !activeEntry
+  ) {
+    return null;
+  }
+
+  return {
+    issueType: 'non_postable_credit_note_has_financial_effects',
+    noteType: 'creditNote',
+    noteId,
+    ncf: note.ncf || note.eNcf || null,
+    fiscalStatus: resolveElectronicAdjustmentNoteFiscalStatus(note),
+    status: note.status || null,
+    availableAmount,
+    applications: activeApplications.length,
+    accountingEvent: eventSnap?.exists
+      ? { id: eventSnap.id, status: eventSnap.data()?.status || null }
+      : null,
+    journalEntry: entrySnap?.exists
+      ? { id: entrySnap.id, status: entrySnap.data()?.status || null }
+      : null,
+  };
+};
+
+async function collectAdjustmentNoteFinancialEffectIssues({
+  businessId,
+  sampleLimit,
+}) {
+  const scanLimit = Math.max(sampleLimit * SCAN_MULTIPLIER, sampleLimit);
+  const [debitSnap, creditSnap] = await Promise.all([
+    db
+      .collection(`businesses/${businessId}/debitNotes`)
+      .orderBy('createdAt', 'desc')
+      .limit(scanLimit)
+      .get(),
+    db
+      .collection(`businesses/${businessId}/creditNotes`)
+      .orderBy('createdAt', 'desc')
+      .limit(scanLimit)
+      .get(),
+  ]);
+
+  const issues = [];
+  for (const docSnap of debitSnap.docs) {
+    if (issues.length >= sampleLimit) break;
+    const note = docSnap.data() || {};
+    if (
+      !isElectronicAdjustmentNote(note, { ncfPrefix: 'E33' }) ||
+      canCreateFinancialEffectsForAdjustmentNote(note, { ncfPrefix: 'E33' })
+    ) {
+      continue;
+    }
+    const issue = await collectDebitNoteFinancialEffectIssues({
+      businessId,
+      noteId: docSnap.id,
+      note,
+    });
+    if (issue) issues.push(issue);
+  }
+
+  for (const docSnap of creditSnap.docs) {
+    if (issues.length >= sampleLimit) break;
+    const note = docSnap.data() || {};
+    if (
+      !isElectronicAdjustmentNote(note, { ncfPrefix: 'E34' }) ||
+      canCreateFinancialEffectsForAdjustmentNote(note, { ncfPrefix: 'E34' })
+    ) {
+      continue;
+    }
+    const issue = await collectCreditNoteFinancialEffectIssues({
+      businessId,
+      noteId: docSnap.id,
+      note,
+    });
+    if (issue) issues.push(issue);
+  }
+
+  return {
+    scanned: debitSnap.size + creditSnap.size,
+    sampleLimit,
+    issues,
+  };
+}
+
 export const auditAccountsReceivableHttp = https.onRequest(async (req, res) => {
   const httpGuardHandled = handleHttpCorsPreflightAndMethod(req, res, {
     allowedMethod: 'POST',
@@ -636,6 +866,7 @@ export const auditAccountsReceivableHttp = https.onRequest(async (req, res) => {
       orphanPayments,
       setupOutbox,
       anomalies,
+      adjustmentNoteFinancialEffects,
     ] = await Promise.all([
       collectInvoicesMissingReceivable({
         businessId,
@@ -666,6 +897,10 @@ export const auditAccountsReceivableHttp = https.onRequest(async (req, res) => {
         sinceTs,
         sampleLimit,
       }),
+      collectAdjustmentNoteFinancialEffectIssues({
+        businessId,
+        sampleLimit,
+      }),
     ]);
 
     const payload = {
@@ -684,6 +919,7 @@ export const auditAccountsReceivableHttp = https.onRequest(async (req, res) => {
         orphanInstallmentPayments: orphanPayments,
         receivableOutboxTasks: setupOutbox,
         invoiceAnomalies: anomalies,
+        adjustmentNoteFinancialEffects,
       },
     };
 

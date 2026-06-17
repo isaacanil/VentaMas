@@ -204,6 +204,8 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - `ChangeUserPasswordModal` dejo de sincronizar validez derivada con `setState` dentro de `useEffect`; ahora actualiza el estado de submit desde callbacks del formulario y mantiene el reseteo local al cerrar.
 - Las notas de credito/debito electronicas solo crean efectos financieros cuando DGII/RFCE ya estan en un estado aceptado; el mismo criterio se usa para ocultar notas de credito electronicas rechazadas como medio de pago disponible.
 - Se eliminaron assets scaffold sin referencias (`src/assets/react.svg`, `src/assets/link`) y modelos muertos (`src/models/Products`, `src/models/Sales`), actualizando la referencia de inventario.
+- `auditAccountsReceivableHttp` ahora reporta `adjustmentNoteFinancialEffects` para detectar notas de credito/debito electronicas no posteables que aun conservan CxC, aplicaciones o eventos contables activos.
+- `repairCustomerAdjustmentNoteFinancialEffects` centraliza la reparacion segura de esos efectos financieros: por defecto corre en dry-run, solo auto-repara rechazos fiscales confirmados, revalida dentro de transaccion y devuelve `manual_review` para estados ambiguos o documentos con pagos/aplicaciones/asientos.
 
 ## Guardrails añadidos en esta pasada
 

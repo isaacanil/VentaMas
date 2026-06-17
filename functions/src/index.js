@@ -77,6 +77,7 @@ import {
   syncCustomerCreditNoteIssuedAccountingEvent,
 } from './app/modules/accountReceivable/functions/syncCustomerCreditNoteAccountingEvents.js';
 import { syncCustomerDebitNoteIssuedAccountingEvent } from './app/modules/accountReceivable/functions/syncCustomerDebitNoteAccountingEvents.js';
+import { repairCustomerAdjustmentNoteFinancialEffects } from './app/modules/accountReceivable/functions/repairCustomerAdjustmentNoteFinancialEffects.js';
 import { voidAccountsReceivablePayment } from './app/modules/accountReceivable/functions/voidAccountsReceivablePayment.js';
 import { createInternalTransfer } from './app/modules/treasury/functions/createInternalTransfer.js';
 import {
@@ -255,6 +256,7 @@ export {
   syncCustomerCreditNoteApplicationAccountingEvent,
   syncCustomerCreditNoteIssuedAccountingEvent,
   syncCustomerDebitNoteIssuedAccountingEvent,
+  repairCustomerAdjustmentNoteFinancialEffects,
   voidAccountsReceivablePayment,
   createInternalTransfer,
   createBankReconciliation,
