@@ -1,7 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-import { CONFIG } from '@/constants/appConfig';
-
 interface AppModeState {
   mode: boolean;
   notificationMode: boolean;
@@ -14,7 +12,7 @@ interface AppModeRootState {
 
 const initialState: AppModeState = {
   mode: false, // false = modo producción, true = modo prueba
-  notificationMode: CONFIG.APP_MODE.TEST_MODE,
+  notificationMode: false,
   cashRegisterAlertBypass: false,
 };
 

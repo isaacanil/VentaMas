@@ -43,7 +43,7 @@
 
 ## Versionado / compatibilidad
 
-- El modelo `ProductStock.location` está definido como string con IDs; si se guarda DocumentReference o paths con colecciones, el resolver actual no es compatible.
+- El contrato activo de `productsStock.location` está documentado como string con IDs; si se guarda DocumentReference o paths con colecciones, el resolver actual no es compatible.
 - `getLocationKey` usa `path`/`pathSegments` sin normalizar, rompiendo el contrato esperado por `resolveLocationLabel`.
 
 ## Recursos relacionados
@@ -55,7 +55,6 @@
 - `src/modules/inventory/pages/InventoryControl/components/GroupedLotsModal/GroupedLotsModal.tsx`
 - `src/modules/inventory/pages/InventoryControl/utils/exportInventoryToExcel.ts`
 - `docs/inventory/reference/data-model-es.md`
-- `src/models/Warehouse/ProductStock.ts`
 
 ## 🔜 Seguimiento / Próximos pasos
 

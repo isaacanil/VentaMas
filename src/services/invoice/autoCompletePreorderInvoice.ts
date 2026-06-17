@@ -7,7 +7,7 @@
 import { doc, getDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
-import { checkOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
+import { checkOpenCashReconciliation } from '@/firebase/cashCount/cashReconciliationStatus.repository';
 import { flowTrace } from '@/utils/flowTrace';
 import type { InvoiceData } from '@/types/invoice';
 
@@ -173,13 +173,7 @@ const loadPreorderAsCart = async (
   businessId: string,
   preorderId: string,
 ): Promise<InvoiceData | null> => {
-  const invoiceRef = doc(
-    db,
-    'businesses',
-    businessId,
-    'invoices',
-    preorderId,
-  );
+  const invoiceRef = doc(db, 'businesses', businessId, 'invoices', preorderId);
   const snap = await getDoc(invoiceRef);
   if (!snap.exists()) return null;
 
@@ -189,7 +183,10 @@ const loadPreorderAsCart = async (
   if (!preorderData) return null;
 
   // Ensure products exist
-  if (!Array.isArray(preorderData.products) || preorderData.products.length === 0) {
+  if (
+    !Array.isArray(preorderData.products) ||
+    preorderData.products.length === 0
+  ) {
     return null;
   }
 
@@ -270,8 +267,7 @@ export const autoCompletePreorderInvoice = async (
     } catch (ccError) {
       void flowTrace('PREORDER_AUTO_COMPLETE_CASH_COUNT_ERROR', {
         preorderId,
-        error:
-          ccError instanceof Error ? ccError.message : String(ccError),
+        error: ccError instanceof Error ? ccError.message : String(ccError),
       });
       return {
         success: false,

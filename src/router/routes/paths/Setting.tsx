@@ -269,6 +269,7 @@ const Routes: AppRoute[] = [
   },
   {
     path: ROUTES_NAME.DEV_VIEW_TERM.SWITCH_BUSINESS,
+    requiresDevAccess: true,
     element: <SwitchBusiness />,
   },
 ];

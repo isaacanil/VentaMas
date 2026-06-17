@@ -113,7 +113,7 @@ Ruta: `businesses/{businessID}/productsStock/{productStockId}`
 
 Representa la existencia física de un producto–lote en una ubicación específica.
 
-Campos principales (según `src/models/Warehouse/ProductStock.ts` y `productStockService`):
+Campos principales (según `productStockService` y los tipos activos de inventario):
 
 - `id: string`
 - `productId: string`

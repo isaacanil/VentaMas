@@ -13,7 +13,7 @@ import {
   VmTextArea,
 } from '@/components/heroui';
 import { HrEmployeePhoneField } from './HrEmployeePhoneField/HrEmployeePhoneField';
-import { useBankInstitutionCatalog } from '@/domain/banking/useBankInstitutionCatalog';
+import { useBankInstitutionCatalog } from '@/firebase/banking/useBankInstitutionCatalog';
 import {
   HR_EMPLOYEE_DOCUMENT_TYPE_LABELS as DOCUMENT_TYPE_LABELS,
   HR_EMPLOYEE_GENDER_LABELS as GENDER_LABELS,
@@ -85,12 +85,7 @@ interface HrEmployeeEditorModalProps {
   userOptions: HrLinkedUserOption[];
 }
 
-const ALL_EMPLOYEE_SECTION_KEYS = [
-  'general',
-  'payment',
-  'deductions',
-  'notes',
-];
+const ALL_EMPLOYEE_SECTION_KEYS = ['general', 'payment', 'deductions', 'notes'];
 
 interface EmployeeFormSectionProps {
   children: ReactNode;

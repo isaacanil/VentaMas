@@ -1,6 +1,6 @@
 import { doc, runTransaction, arrayUnion } from 'firebase/firestore';
 
-import { checkOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
+import { checkOpenCashReconciliation } from '@/firebase/cashCount/cashReconciliationStatus.repository';
 import { db } from '@/firebase/firebaseconfig';
 import { fbGetInvoice } from '@/firebase/invoices/fbGetInvoice';
 import type { UserWithBusiness } from '@/types/users';

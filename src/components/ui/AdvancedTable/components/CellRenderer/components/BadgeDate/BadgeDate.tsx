@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 import React from 'react';
 
 import { AppIcon } from '@/components/ui/AppIcon';
-import type { ConfigItem } from '@/config/statusActionConfig';
+import type { ConfigItem } from '@/components/ui/statusDisplay/statusDisplayConfig';
 import { semantic } from '@/design-system/tokens/semantic';
 
 import {

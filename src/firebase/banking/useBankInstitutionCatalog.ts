@@ -8,7 +8,7 @@ import {
   normalizeBankInstitutionCountryCode,
   sortBankInstitutionCatalog,
   type BankInstitutionCatalogEntry,
-} from './bankInstitutionCatalog';
+} from '@/domain/banking/bankInstitutionCatalog';
 
 interface BankInstitutionCatalogState {
   entries: BankInstitutionCatalogEntry[];
@@ -19,7 +19,10 @@ interface BankInstitutionCatalogState {
 const EMPTY_CATALOG_ENTRIES: BankInstitutionCatalogEntry[] = [];
 
 export const useBankInstitutionCatalog = (
-  countryCode: string | null | undefined = DEFAULT_BANK_INSTITUTION_COUNTRY_CODE,
+  countryCode:
+    | string
+    | null
+    | undefined = DEFAULT_BANK_INSTITUTION_COUNTRY_CODE,
   enabled = true,
 ) => {
   const normalizedCountryCode =

@@ -22,7 +22,7 @@ import {
   DEFAULT_BANK_INSTITUTION_COUNTRY_CODE,
   type BankInstitutionCatalogEntry,
 } from '@/domain/banking/bankInstitutionCatalog';
-import { useBankInstitutionCatalog } from '@/domain/banking/useBankInstitutionCatalog';
+import { useBankInstitutionCatalog } from '@/firebase/banking/useBankInstitutionCatalog';
 import { useAccountingRolloutEnabled } from '@/hooks/useAccountingRolloutEnabled';
 import type { BankAccount } from '@/types/accounting';
 import {

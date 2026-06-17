@@ -65,7 +65,9 @@ const CONFIG: Record<'statuses' | 'dates', ConfigSection> = {
     warning: {
       color: semantic.color.state.warningText,
       bgColor: semantic.color.state.warningSubtle,
-      icon: <AppIcon name="triangleExclamation" tone="warning" sizeToken="sm" />,
+      icon: (
+        <AppIcon name="triangleExclamation" tone="warning" sizeToken="sm" />
+      ),
       text: 'Próximo',
     },
     upcoming: {

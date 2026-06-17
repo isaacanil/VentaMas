@@ -1,5 +1,5 @@
 import type { Product } from '@/features/cart/types';
-import { checkOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
+import { checkOpenCashReconciliation } from '@/firebase/cashCount/cashReconciliationStatus.repository';
 import type { ServiceCommissionsBillingSettings } from '@/types/commissions';
 import type { ProductRecord } from '@/types/products';
 import type { UserIdentity } from '@/types/users';

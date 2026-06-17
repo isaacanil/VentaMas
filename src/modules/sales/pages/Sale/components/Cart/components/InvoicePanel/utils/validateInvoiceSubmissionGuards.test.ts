@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { checkOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
+import { checkOpenCashReconciliation } from '@/firebase/cashCount/cashReconciliationStatus.repository';
 import { getProductStockByProductId } from '@/firebase/warehouse/productStockService';
 
 import { validateInvoiceSubmissionGuards } from './validateInvoiceSubmissionGuards';
 
-vi.mock('@/firebase/cashCount/useIsOpenCashReconciliation', () => ({
+vi.mock('@/firebase/cashCount/cashReconciliationStatus.repository', () => ({
   checkOpenCashReconciliation: vi.fn(),
 }));
 

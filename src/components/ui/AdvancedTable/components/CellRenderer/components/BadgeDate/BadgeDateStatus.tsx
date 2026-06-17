@@ -4,12 +4,12 @@ import { DateTime } from 'luxon';
 import {
   getDateStatus,
   getDateStatusConfig,
-} from '@/config/statusActionConfig';
+} from '@/components/ui/statusDisplay/statusDisplayConfig';
 import { toMillis } from '@/utils/date/dateUtils';
 
 import { BadgeDate } from './BadgeDate';
 
-import type { ConfigItem } from '@/config/statusActionConfig';
+import type { ConfigItem } from '@/components/ui/statusDisplay/statusDisplayConfig';
 import type { TimestampLike } from '@/utils/date/types';
 
 interface EnhancedDateDisplayProps {

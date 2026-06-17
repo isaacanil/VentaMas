@@ -37,6 +37,13 @@ const allowedDirectHeroUiReactImportPathPrefixes = [
   'src/modules/dev/',
 ];
 
+const forbiddenDomainInfrastructureImportPrefixes = [
+  '@/firebase',
+  'firebase',
+  'react',
+  'react-dom',
+];
+
 const forbiddenLegacySharedImportPrefixes = [
   '@/ant',
   '@/components/modals',
@@ -73,6 +80,11 @@ const forbiddenLegacySharedImportPrefixes = [
   '@/hooks/useVendorBills',
   '@/hooks/exportToExcel',
   '@/features/uploadImg',
+  '@/config/statusActionConfig',
+  '@/constants/appConfig',
+  '@/domain/banking/useBankInstitutionCatalog',
+  '@/models/Warehouse/ProductStock',
+  '@/models/Warehouse/Sale',
   '@/supabase',
   '@/firebase/Auth/fbAuthV2/fbSignIn/checkSession',
   '@/firebase/Auth/fbAuthV2/fbSignIn/components',
@@ -155,6 +167,11 @@ const retiredLegacySharedSourcePaths = [
   ['src', 'hooks', 'useVendorBills.tsx'],
   ['src', 'hooks', 'exportToExcel'],
   ['src', 'features', 'uploadImg'],
+  ['src', 'config', 'statusActionConfig.tsx'],
+  ['src', 'constants', 'appConfig.ts'],
+  ['src', 'domain', 'banking', 'useBankInstitutionCatalog.ts'],
+  ['src', 'models', 'Warehouse', 'ProductStock.ts'],
+  ['src', 'models', 'Warehouse', 'Sale.ts'],
   ['src', 'supabase'],
   ['src', 'firebase', 'Auth', 'fbAuthV2', 'fbSignIn', 'checkSession.ts'],
   ['src', 'firebase', 'Auth', 'fbAuthV2', 'fbSignIn', 'components'],
@@ -566,6 +583,18 @@ const findDirectHeroUiReactImportViolations = () =>
         ),
     );
 
+const findDomainInfrastructureImportViolations = () => {
+  const domainRoot = path.join(sourceRoot, 'domain');
+
+  return listSourceFiles(domainRoot).flatMap((filePath) =>
+    collectAllImportReferences(filePath).filter((importReference) =>
+      forbiddenDomainInfrastructureImportPrefixes.some((prefix) =>
+        importMatchesPrefix(importReference.specifier, prefix),
+      ),
+    ),
+  );
+};
+
 const collectModuleDependencyGraph = () => {
   const graph = new Map<string, Set<string>>();
   const ensureModule = (moduleName: string) => {
@@ -748,6 +777,17 @@ describe('module boundaries', () => {
       .map(
         ({ filePath, line }) =>
           `${filePath}:${line} imports @heroui/react; use @/components/heroui outside adapter/dev code`,
+      )
+      .sort();
+
+    expect(violations).toEqual([]);
+  }, 30_000);
+
+  it('keeps domain contracts free from React and Firebase infrastructure', () => {
+    const violations = findDomainInfrastructureImportViolations()
+      .map(
+        ({ filePath, line, specifier }) =>
+          `${filePath}:${line} imports ${specifier}; keep src/domain pure and move React/Firebase adapters to hooks, repositories, or modules`,
       )
       .sort();
 

@@ -1,10 +1,9 @@
-import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import type { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
-import { fbGetDocs } from '@/firebase/firebaseOperations';
 import type { UserIdentity } from '@/types/users';
 import type { CashCountRecord, CashCountState } from '@/utils/cashCount/types';
 import { resolveCashCountEmployeeId } from '@/utils/cashCount/resolveEmployeeId';
@@ -58,17 +57,11 @@ export function useIsOpenCashReconciliation() {
         const isSameUser = querySnapshot.docs.some(belongsToCurrentUser);
         const isOpenForUser = querySnapshot.docs.some((docSnap) => {
           const { cashCount } = docSnap.data();
-          return (
-            cashCount.state === 'open' &&
-            belongsToCurrentUser(docSnap)
-          );
+          return cashCount.state === 'open' && belongsToCurrentUser(docSnap);
         });
         const isClosingForUser = querySnapshot.docs.some((docSnap) => {
           const { cashCount } = docSnap.data();
-          return (
-            cashCount.state === 'closing' &&
-            belongsToCurrentUser(docSnap)
-          );
+          return cashCount.state === 'closing' && belongsToCurrentUser(docSnap);
         });
 
         const currentUserCashCountDoc = querySnapshot.docs.find((docSnap) =>
@@ -80,7 +73,8 @@ export function useIsOpenCashReconciliation() {
                 id:
                   (currentUserCashCountDoc.data().cashCount as CashCountRecord)
                     ?.id ?? currentUserCashCountDoc.id,
-                ...(currentUserCashCountDoc.data().cashCount as CashCountRecord),
+                ...(currentUserCashCountDoc.data()
+                  .cashCount as CashCountRecord),
               } satisfies CashCountRecord)
             : null,
         );
@@ -114,74 +108,3 @@ export function useIsOpenCashReconciliation() {
 
   return { status, cashCount };
 }
-
-export async function checkOpenCashReconciliation(
-  user: UserIdentity | null | undefined,
-) {
-  try {
-    const businessId = resolveUserIdentityBusinessId(user);
-    const userId = resolveUserIdentityUid(user);
-    if (!businessId || !userId) {
-      throw new Error('Datos del usuario incompletos');
-    }
-    const employeeRef = doc(db, 'users', userId);
-
-    const cashReconciliationRef = collection(
-      db,
-      'businesses',
-      businessId,
-      'cashCounts',
-    );
-
-    const q = query(
-      cashReconciliationRef,
-      where('cashCount.state', 'in', ['open', 'closing']),
-      where('cashCount.opening.employee', '==', employeeRef),
-    );
-
-    const querySnapshot = await fbGetDocs(q);
-
-    if (querySnapshot.empty) {
-      return { state: 'none' as CashCountState, cashCount: null };
-    }
-    const cashCountOpen = (
-      docSnap: QueryDocumentSnapshot<DocumentData>,
-    ): boolean => {
-      const cashCount = docSnap.data().cashCount as CashCountRecord | undefined;
-      return cashCount?.state === 'open';
-    };
-    const cashCountClosing = (
-      docSnap: QueryDocumentSnapshot<DocumentData>,
-    ): boolean => {
-      const cashCount = docSnap.data().cashCount as CashCountRecord | undefined;
-      return cashCount?.state === 'closing';
-    };
-
-    const cashCountDoc = querySnapshot.docs.find(
-      (docSnap) => cashCountOpen(docSnap) || cashCountClosing(docSnap),
-    );
-
-    if (!cashCountDoc) {
-      return { state: 'closed' as CashCountState, cashCount: null };
-    }
-
-    if (cashCountOpen(cashCountDoc)) {
-      return {
-        state: 'open' as CashCountState,
-        cashCount: cashCountDoc.data().cashCount as CashCountRecord,
-      };
-    }
-    if (cashCountClosing(cashCountDoc)) {
-      return {
-        state: 'closing' as CashCountState,
-        cashCount: cashCountDoc.data().cashCount as CashCountRecord,
-      };
-    }
-
-    return { state: 'closed' as CashCountState, cashCount: null };
-  } catch (error) {
-    console.error('Error al consultar Firestore: ', error);
-    throw error;
-  }
-}
-

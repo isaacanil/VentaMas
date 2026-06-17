@@ -36,7 +36,6 @@ const WEB_LINT_GROUPS = [
   ],
   [
     'src/abilities',
-    'src/ant',
     'src/app',
     'src/assets',
     'src/config',
@@ -47,7 +46,6 @@ const WEB_LINT_GROUPS = [
     'src/i18n',
     'src/layouts',
     'src/models',
-    'src/motion',
     'src/pdf',
     'src/router',
     'src/schema',
