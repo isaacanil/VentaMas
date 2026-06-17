@@ -9,7 +9,7 @@ import { icons } from '@/constants/icons/icons';
 import { selectUser } from '@/features/auth/userSlice';
 import { openWarehouseForm } from '@/features/warehouse/warehouseModalSlice';
 import ROUTES_NAME from '@/router/routes/routesName';
-import { ButtonIconMenu } from '@/components/ui/Button/ButtonIconMenu';
+import { ButtonIconMenu } from '@/components/ui/Button';
 import type { ToolbarComponentProps } from '@/modules/navigation/components/MenuApp/GlobalMenu/types';
 import type { UserIdentity } from '@/types/users';
 import { hasBusinessSettingsManageAccess } from '@/utils/access/businessSettingsAccess';

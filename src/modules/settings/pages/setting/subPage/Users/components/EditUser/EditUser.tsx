@@ -13,7 +13,7 @@ import {
 import { fbUpdateUser } from '@/firebase/Auth/fbAuthV2/fbUpdateUser';
 import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import DynamicPermissionsManager from '@/modules/settings/pages/setting/subPage/Users/components/DynamicPermissionsManager/DynamicPermissionsManager';
-import { Button, ButtonGroup } from '@/components/ui/Button/Button';
+import { Button, ButtonGroup } from '@/components/ui/Button';
 import { InputV4 } from '@/components/ui/Inputs/GeneralInput/InputV4';
 import { Select } from '@/components/ui/Select/Select';
 import type { UserRoleLike } from '@/types/users';

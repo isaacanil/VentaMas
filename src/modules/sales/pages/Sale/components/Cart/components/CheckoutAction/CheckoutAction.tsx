@@ -8,7 +8,7 @@ import { SelectCartData } from '@/features/cart/cartSlice';
 import { normalizeSupportedDocumentCurrency } from '@/utils/accounting/currencies';
 import { formatPriceByCurrency } from '@/utils/format';
 import { Receipt } from '@/modules/checkout/public';
-import { ButtonGroup } from '@/components/ui/Button/Button';
+import { ButtonGroup } from '@/components/ui/Button';
 import type { SupportedDocumentCurrency } from '@/types/products';
 
 const antd = { Button: AntdButton, message };

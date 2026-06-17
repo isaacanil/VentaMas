@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { ComponentType, ReactNode } from 'react';
 import { useSelector } from 'react-redux';
 import { SelectProductSelected } from '@/features/productOutflow/productOutflow';
-import { Button } from '@/components/ui/Button/Button';
+import { Button } from '@/components/ui/Button';
 
 type ProductSummary = {
   stock?: number;

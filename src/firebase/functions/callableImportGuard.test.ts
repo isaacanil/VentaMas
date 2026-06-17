@@ -30,6 +30,13 @@ const EXISTING_DIRECT_HTTPS_CALLABLE_IMPORT_DEBT = [
   'src/services/invoice/invoice.service.ts',
 ] as const;
 
+const EXISTING_FIREBASE_FUNCTIONS_SDK_IMPORT_FILES = [
+  ALLOWED_WRAPPER_FILE,
+  'src/firebase/firebaseconfig.tsx',
+  'src/modules/dev/pages/dev/AiBusinessSeeding/api/aiBusinessSeedingTargetFirebase.ts',
+  ...EXISTING_DIRECT_HTTPS_CALLABLE_IMPORT_DEBT,
+] as const;
+
 const FIREBASE_FUNCTIONS_NAMED_IMPORT_PATTERN =
   /import\s+(?:type\s+)?\{(?<imports>[\s\S]*?)\}\s+from\s*['"]firebase\/functions['"];?/g;
 const FIREBASE_FUNCTIONS_NAMESPACE_IMPORT_PATTERN =
@@ -40,6 +47,10 @@ const FIREBASE_FUNCTIONS_REQUIRE_PATTERN =
   /(?:const|let|var)\s+(?:(?<destructured>\{[\s\S]*?\})|(?<namespace>[$A-Z_a-z][$\w]*))\s*=\s*require\(\s*['"]firebase\/functions['"]\s*\)/g;
 const FIREBASE_FUNCTIONS_DYNAMIC_IMPORT_PATTERN =
   /import\(\s*['"]firebase\/functions['"]\s*\)/;
+const FIREBASE_FUNCTIONS_SIDE_EFFECT_IMPORT_PATTERN =
+  /import\s*['"]firebase\/functions['"];?/g;
+const FIREBASE_FUNCTIONS_BARE_REQUIRE_PATTERN =
+  /require\(\s*['"]firebase\/functions['"]\s*\)/g;
 
 const RUNTIME_SOURCE_PATTERN = /\.[cm]?[jt]sx?$/;
 const SKIPPED_SOURCE_PATTERN =
@@ -47,6 +58,22 @@ const SKIPPED_SOURCE_PATTERN =
 
 const normalizeSourcePath = (filePath: string) =>
   path.relative(process.cwd(), filePath).replaceAll(path.sep, '/');
+
+const matchesPattern = (pattern: RegExp, text: string) => {
+  pattern.lastIndex = 0;
+  return pattern.test(text);
+};
+
+const importsFirebaseFunctionsSdk = (text: string) =>
+  [
+    FIREBASE_FUNCTIONS_NAMED_IMPORT_PATTERN,
+    FIREBASE_FUNCTIONS_NAMESPACE_IMPORT_PATTERN,
+    FIREBASE_FUNCTIONS_DEFAULT_IMPORT_PATTERN,
+    FIREBASE_FUNCTIONS_REQUIRE_PATTERN,
+    FIREBASE_FUNCTIONS_DYNAMIC_IMPORT_PATTERN,
+    FIREBASE_FUNCTIONS_SIDE_EFFECT_IMPORT_PATTERN,
+    FIREBASE_FUNCTIONS_BARE_REQUIRE_PATTERN,
+  ].some((pattern) => matchesPattern(pattern, text));
 
 const hasHttpsCallableMemberAccess = (text: string, namespace: string) => {
   const escapedNamespace = namespace.replaceAll('$', '\\$');
@@ -132,6 +159,16 @@ const listDirectHttpsCallableImports = () =>
     .map(({ sourcePath }) => sourcePath)
     .sort();
 
+const listFirebaseFunctionsSdkImports = () =>
+  listRuntimeSourceFiles(SRC_DIR)
+    .map((filePath) => ({
+      sourcePath: normalizeSourcePath(filePath),
+      text: readFileSync(filePath, 'utf8'),
+    }))
+    .filter(({ text }) => importsFirebaseFunctionsSdk(text))
+    .map(({ sourcePath }) => sourcePath)
+    .sort();
+
 describe('Firebase callable import guard', () => {
   it.each([
     [
@@ -175,6 +212,32 @@ describe('Firebase callable import guard', () => {
     ).toBe(false);
   });
 
+  it.each([
+    ['named import', "import { getFunctions } from 'firebase/functions';"],
+    ['type import', "import type { Functions } from 'firebase/functions';"],
+    [
+      'namespace import',
+      "import * as firebaseFunctions from 'firebase/functions';",
+    ],
+    ['default import', "import firebaseFunctions from 'firebase/functions';"],
+    [
+      'destructured require',
+      "const { getFunctions } = require('firebase/functions');",
+    ],
+    [
+      'namespace require',
+      "const firebaseFunctions = require('firebase/functions');",
+    ],
+    ['bare require', "require('firebase/functions').httpsCallable();"],
+    [
+      'dynamic import',
+      "const firebaseFunctions = await import('firebase/functions');",
+    ],
+    ['side-effect import', "import 'firebase/functions';"],
+  ])('detects raw firebase/functions SDK import through %s', (_name, source) => {
+    expect(importsFirebaseFunctionsSdk(source)).toBe(true);
+  });
+
   it('blocks new direct httpsCallable imports outside the wrapper and known debt', () => {
     const allowedFiles = [
       ALLOWED_WRAPPER_FILE,
@@ -182,5 +245,11 @@ describe('Firebase callable import guard', () => {
     ].sort();
 
     expect(listDirectHttpsCallableImports()).toEqual(allowedFiles);
+  });
+
+  it('blocks new firebase/functions SDK imports outside central wrappers and known debt', () => {
+    expect(listFirebaseFunctionsSdkImports()).toEqual(
+      [...EXISTING_FIREBASE_FUNCTIONS_SDK_IMPORT_FILES].sort(),
+    );
   });
 });

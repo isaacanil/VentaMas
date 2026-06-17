@@ -30,7 +30,7 @@ import { hasDeveloperAccess } from '@/utils/access/developerAccess';
 import { ProductCategoryBar } from '@/modules/products/public';
 import { AdvancedTable } from '@/components/ui/AdvancedTable';
 import { ImgCell } from '@/components/ui/AdvancedTable';
-import { ButtonGroup } from '@/components/ui/Button/Button';
+import { ButtonGroup } from '@/components/ui/Button';
 import StockIndicator from './components/StockIndicator';
 import type { AdvancedTableProps } from '@/components/ui/AdvancedTable';
 import type { ProductRecord } from '@/types/products';

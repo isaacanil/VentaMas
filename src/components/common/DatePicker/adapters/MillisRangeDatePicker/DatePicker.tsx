@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useMemo, useState } from 'react';
 
 import AntDatePicker from '@/components/DatePicker';
-import { Button } from '@/components/ui/Button/Button';
+import { Button } from '@/components/ui/Button';
 
 import { Col, Container, RANGE_PICKER_STYLE } from './DatePicker.styles';
 import {

@@ -9,7 +9,7 @@ import {
   selectCurrentUserNotification,
 } from '@/features/UserNotification/UserNotificationSlice';
 import { useIsOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
-import { Button, ButtonGroup } from '@/components/ui/Button/Button';
+import { Button, ButtonGroup } from '@/components/ui/Button';
 import { FormattedValue } from '@/components/ui/FormattedValue/FormattedValue';
 import { useModalFocusTrap } from '@/hooks/useModalFocusTrap';
 

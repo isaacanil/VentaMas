@@ -12,7 +12,7 @@ import {
 } from '@/features/setting/settingSlice';
 import ROUTES_NAME from '@/router/routes/routesName';
 import { InventoryFilterAndSort } from '@/modules/inventory/public';
-import { ButtonIconMenu } from '@/components/ui/Button/ButtonIconMenu';
+import { ButtonIconMenu } from '@/components/ui/Button';
 import type { ToolbarComponentProps } from '@/modules/navigation/components/MenuApp/GlobalMenu/types';
 import type { UserIdentity } from '@/types/users';
 import { hasBusinessSettingsManageAccess } from '@/utils/access/businessSettingsAccess';

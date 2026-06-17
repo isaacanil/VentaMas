@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
 import { Pagination } from '@/components/ui/AdvancedTable/components/Pagination/Pagination';
-import { Button } from '@/components/ui/Button/Button';
+import { Button } from '@/components/ui/Button';
 
 interface TableFooterProps {
   elementsShown: number;

@@ -6,7 +6,7 @@ import styled from 'styled-components';
 
 import { OPERATION_MODES } from '@/constants/modes';
 import { toggleClientModal } from '@/features/modals/modalSlice';
-import { Button } from '@/components/ui/Button/Button';
+import { Button } from '@/components/ui/Button';
 import { InputV4 } from '@/components/ui/Inputs/GeneralInput/InputV4';
 
 type ToolBarProps = {

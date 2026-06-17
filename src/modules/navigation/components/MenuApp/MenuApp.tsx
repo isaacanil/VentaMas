@@ -25,8 +25,8 @@ import {
   selectMenuOpenStatus,
 } from '@/features/nav/navSlice';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
-import { ButtonIconMenu } from '@/components/ui/Button/ButtonIconMenu';
-import { GoBackButton } from '@/components/ui/Button/GoBackButton';
+import { ButtonIconMenu } from '@/components/ui/Button';
+import { GoBackButton } from '@/components/ui/Button';
 
 import { NotificationButton } from './components/NotificationButton/NotificationButton';
 import { OpenMenuButton } from './components/OpenMenuButton/OpenMenuButton';

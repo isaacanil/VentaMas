@@ -27,7 +27,7 @@ import {
   type MenuSearchItem,
 } from '@/modules/navigation/components/MenuApp/utils/menuSearch';
 import { UserSection } from '@/modules/navigation/components/MenuApp/UserSection';
-import { ButtonIconMenu } from '@/components/ui/Button/ButtonIconMenu';
+import { ButtonIconMenu } from '@/components/ui/Button';
 
 import { MenuLink } from './MenuLink';
 import { OpenMenuButton } from './OpenMenuButton/OpenMenuButton';

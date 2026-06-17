@@ -12,8 +12,8 @@ import {
   type IngredientInput,
 } from '@/firebase/products/customProduct/ingredientTypePizzaService';
 import { fbGetCustomProduct } from '@/firebase/products/customProduct/fbGetCustomProductTypePizza';
-import { Button } from '@/components/ui/Button/Button';
-import { PlusIconButton } from '@/components/ui/Button/PlusIconButton';
+import { Button } from '@/components/ui/Button';
+import { PlusIconButton } from '@/components/ui/Button';
 import { InputV4 } from '@/components/ui/Inputs/GeneralInput/InputV4';
 import { IngredientCard } from './IngredientCard';
 

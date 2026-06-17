@@ -7,7 +7,7 @@ import { OPERATION_MODES } from '@/constants/modes';
 import { selectUser } from '@/features/auth/userSlice';
 import { toggleProviderModal } from '@/features/modals/modalSlice';
 import { fbDeleteProvider } from '@/firebase/provider/fbDeleteProvider';
-import { ButtonGroup } from '@/components/ui/Button/Button';
+import { ButtonGroup } from '@/components/ui/Button';
 
 import type { ProviderTableRow } from '../types';
 

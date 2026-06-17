@@ -6,7 +6,7 @@ import styled from 'styled-components';
 import { openModalAddClient as handleModalCreateClient } from '@/features/modals/modalSlice';
 import { formatRNC } from '@/utils/format';
 import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
-import { Button } from '@/components/ui/Button/Button';
+import { Button } from '@/components/ui/Button';
 import { Message } from '@/components/ui/message/Message';
 import type { ClientInput } from '@/firebase/client/clientNormalizer';
 

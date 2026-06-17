@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
 import routesName from '@/router/routes/routesName';
-import { Tooltip } from '@/components/ui/Button/Tooltip';
+import { Tooltip } from '@/components/ui/Button';
 import type { ToolbarComponentProps } from '@/modules/navigation/components/MenuApp/GlobalMenu/types';
 
 export const OrderToolbar = ({ side = 'left' }: ToolbarComponentProps) => {

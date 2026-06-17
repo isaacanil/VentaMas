@@ -20,7 +20,7 @@ import ROUTES_NAME from '@/router/routes/routesName';
 import { getProducts } from '@/utils/pricing';
 import { InventoryFilterAndSort } from '@/modules/inventory/public';
 import { AddProductButton } from '@/modules/products/public';
-import { ButtonGroup } from '@/components/ui/Button/Button';
+import { ButtonGroup } from '@/components/ui/Button';
 import { DropdownMenu } from '@/components/ui/DropdownMenu/DropdownMenu';
 import type { ToolbarComponentProps } from '@/modules/navigation/components/MenuApp/GlobalMenu/types';
 import type { UserIdentity, UserWithBusiness } from '@/types/users';

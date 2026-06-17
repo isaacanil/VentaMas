@@ -16,7 +16,7 @@ import { fbGetProductOutflow } from '@/modules/inventory/repositories/productOut
 import useScroll from '@/hooks/useScroll';
 import DateUtils from '@/utils/date/dateUtils';
 const { formatDate, toMillis } = DateUtils;
-import { ButtonGroup } from '@/components/ui/Button/ButtonGroup';
+import { ButtonGroup } from '@/components/ui/Button';
 import { CenteredText } from '@/components/ui/CenteredText';
 import { FormattedValue } from '@/components/ui/FormattedValue/FormattedValue';
 import Loader from '@/components/ui/loader/Loader';

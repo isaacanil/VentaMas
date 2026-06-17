@@ -33,7 +33,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:run:architecture": "npm run test:run:architecture:web && npm run test:run:architecture:functions",
-    "test:run:architecture:web": "vitest run src/firebase/functions/callableImportGuard.test.ts src/modules/moduleBoundaries.test.ts src/modules/publicBarrels.test.ts src/router/routes/routePreloaders.test.ts src/router/routes/routeHandle.test.ts src/router/routes/routeVisibility.test.ts src/modules/navigation/components/MenuApp/GlobalMenu/core/createLazyLoader.test.ts",
+    "test:run:architecture:web": "vitest run src/firebase/functions/callableImportGuard.test.ts src/modules/moduleBoundaries.test.ts src/modules/publicBarrels.test.ts src/router/routes/routePreloaders.test.ts src/router/routes/routeHandle.test.ts src/router/routes/routeVisibility.test.ts src/modules/navigation/components/MenuApp/MenuData/menuRouteAccess.test.ts src/modules/navigation/components/MenuApp/GlobalMenu/core/createLazyLoader.test.ts",
     "test:run:architecture:functions": "vitest run --config vitest.functions.config.ts functions/src/index.importGraph.test.js functions/src/index.exportSurface.test.js",
     "test:run:functions": "vitest run --config vitest.functions.config.ts",
     "test:run:functions:scripts": "node --test functions/scripts/data-audit/purchaseRolloutReadiness.shared.test.mjs",

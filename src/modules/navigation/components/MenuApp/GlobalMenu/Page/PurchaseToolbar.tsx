@@ -3,10 +3,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from 'antd';
 import { useMatch, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-// import { Button } from '@/components/ui/Button/Button'
+// import { Button } from '@/components/ui/Button'
 
 import routesName from '@/router/routes/routesName';
-import { ButtonGroup } from '@/components/ui/Button/ButtonGroup';
+import { ButtonGroup } from '@/components/ui/Button';
 import type { ToolbarComponentProps } from '@/modules/navigation/components/MenuApp/GlobalMenu/types';
 
 export const PurchaseToolbar = ({ side = 'left' }: ToolbarComponentProps) => {

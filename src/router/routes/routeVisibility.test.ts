@@ -69,6 +69,11 @@ describe('routeVisibility', () => {
       switchBusinessRoute,
       productStudioRoute,
       changelogManageRoute,
+      ...devRoutes,
+      ...inventoryRoutes,
+      ...labRoutes,
+      ...settingRoutes,
+      ...changelogRoutes,
     ] as never);
   });
 

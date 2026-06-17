@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
-import { Button } from '@/components/ui/Button/Button';
+import { Button } from '@/components/ui/Button';
 import Typography from '@/components/ui/Typography/Typography';
 
 export const Header = () => {

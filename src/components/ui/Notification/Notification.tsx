@@ -14,7 +14,7 @@ import {
   removeNotification,
   selectCurrentNotification,
 } from '@/features/notification/notificationSlice';
-import { Button } from '@/components/ui/Button/Button';
+import { Button } from '@/components/ui/Button';
 
 type NotificationVariant = 'success' | 'error' | 'warning' | 'info';
 

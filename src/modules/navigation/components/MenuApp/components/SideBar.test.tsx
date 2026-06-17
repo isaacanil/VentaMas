@@ -51,7 +51,7 @@ vi.mock('@/modules/navigation/components/MenuApp/MenuData/MenuData', () => ({
   useMenuData: () => mockMenuData,
 }));
 
-vi.mock('@/components/ui/Button/ButtonIconMenu', () => ({
+vi.mock('@/components/ui/Button', () => ({
   ButtonIconMenu: ({
     onClick,
     'aria-label': ariaLabel,

@@ -96,12 +96,25 @@ function collectReachableFiles(entryPaths) {
   return reachable;
 }
 
+function getAllowlistedRootPaths() {
+  return intentionallyUnreachableRuntimeRoots.map((relativePath) =>
+    path.join(srcRoot, relativePath),
+  );
+}
+
 describe('Cloud Functions import graph', () => {
+  it('keeps intentionally unreachable runtime allowlist paths pointing at source files', () => {
+    const staleAllowlistedRoots = getAllowlistedRootPaths()
+      .filter((filePath) => !fs.existsSync(filePath))
+      .map(toRelativeSourcePath)
+      .sort();
+
+    expect(staleAllowlistedRoots).toEqual([]);
+  });
+
   it('keeps runtime source files reachable from index.js or explicitly allowlisted', () => {
     const sourceFiles = listSourceFiles(srcRoot);
-    const allowlistedRootPaths = intentionallyUnreachableRuntimeRoots.map(
-      (relativePath) => path.join(srcRoot, relativePath),
-    );
+    const allowlistedRootPaths = getAllowlistedRootPaths();
     const reachableFiles = collectReachableFiles([
       indexPath,
       ...allowlistedRootPaths,

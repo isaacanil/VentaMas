@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { toggleAddProductOutflow } from '@/features/modals/modalSlice';
-import { Button } from '@/components/ui/Button/Button';
+import { Button } from '@/components/ui/Button';
 import { FormattedValue } from '@/components/ui/FormattedValue/FormattedValue';
 
 export const Header = () => {

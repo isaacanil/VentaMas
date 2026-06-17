@@ -1,9 +1,9 @@
 import styled from 'styled-components';
 
 import { deleteIngredientTypePizza } from '@/firebase/products/customProduct/ingredientTypePizzaService';
-import { ButtonGroup } from '@/components/ui/Button/ButtonGroup';
-import { DeleteButton } from '@/components/ui/Button/DeleteButton';
-import { EditButton } from '@/components/ui/Button/EditButton';
+import { ButtonGroup } from '@/components/ui/Button';
+import { DeleteButton } from '@/components/ui/Button';
+import { EditButton } from '@/components/ui/Button';
 
 type Ingredient = {
   id?: string | number;

@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { openModalAddOrder } from '@/features/modals/modalSlice';
-import { Button } from '@/components/ui/Button/Button';
+import { Button } from '@/components/ui/Button';
 
 export const ToolBar = () => {
   const dispatch = useDispatch();

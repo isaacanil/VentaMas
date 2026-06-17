@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import routesName from '@/router/routes/routesName';
 import { AddProductButton } from '@/modules/products/public';
-import { ButtonGroup } from '@/components/ui/Button/Button';
+import { ButtonGroup } from '@/components/ui/Button';
 import type { ToolbarComponentProps } from '@/modules/navigation/components/MenuApp/GlobalMenu/types';
 
 export const CreateOrderToolbar = ({

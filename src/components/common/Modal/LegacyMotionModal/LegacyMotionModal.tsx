@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
-import { Button, ButtonGroup } from '@/components/ui/Button/Button';
+import { Button, ButtonGroup } from '@/components/ui/Button';
 
 import { MotionWrapper } from './MotionWrapper';
 

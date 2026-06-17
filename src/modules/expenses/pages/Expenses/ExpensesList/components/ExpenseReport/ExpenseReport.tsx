@@ -9,7 +9,7 @@ import {
   toggleExpenseChartModal,
 } from '@/features/expense/expenseUISlice';
 import type { ExpenseDoc } from '@/utils/expenses/types';
-import { Button } from '@/components/ui/Button/Button';
+import { Button } from '@/components/ui/Button';
 import Typography from '@/components/ui/Typography/Typography';
 
 import { CategoryExpenseBarChart } from './reports/CategoryExpenseBarChart';

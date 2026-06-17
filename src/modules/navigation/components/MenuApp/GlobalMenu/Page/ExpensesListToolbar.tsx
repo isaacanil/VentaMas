@@ -12,7 +12,7 @@ import {
   toggleExpenseChartModal,
 } from '@/features/expense/expenseUISlice';
 import ROUTES_NAME from '@/router/routes/routesName';
-import { Button } from '@/components/ui/Button/Button';
+import { Button } from '@/components/ui/Button';
 
 interface ExpensesListToolbarProps {
   side?: 'left' | 'right';

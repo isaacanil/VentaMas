@@ -11,7 +11,7 @@ import {
   toggleImageViewer,
 } from '@/features/imageViewer/imageViewerSlice';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
-import { Button } from '@/components/ui/Button/Button';
+import { Button } from '@/components/ui/Button';
 import { CenteredText } from '@/components/ui/CenteredText';
 import Typography from '@/components/ui/Typography/Typography';
 

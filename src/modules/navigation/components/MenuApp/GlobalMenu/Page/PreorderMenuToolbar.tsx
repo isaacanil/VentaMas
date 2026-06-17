@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
 import ROUTES_NAME from '@/router/routes/routesName';
-import { Button } from '@/components/ui/Button/Button';
+import { Button } from '@/components/ui/Button';
 import type { ToolbarComponentProps } from '@/modules/navigation/components/MenuApp/GlobalMenu/types';
 
 export const PreorderMenuToolbar = ({

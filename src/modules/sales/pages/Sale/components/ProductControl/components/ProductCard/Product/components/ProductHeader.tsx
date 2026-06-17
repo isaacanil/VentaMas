@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
 import { truncateString } from '@/utils/text/truncateString';
-import { Button } from '@/components/ui/Button/Button';
+import { Button } from '@/components/ui/Button';
 import type { ProductRecord } from '@/types/products';
 
 const Header = styled.div`

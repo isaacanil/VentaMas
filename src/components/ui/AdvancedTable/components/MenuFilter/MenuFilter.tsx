@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import type { Dispatch, SetStateAction } from 'react';
 
 import { icons } from '@/constants/icons/icons';
-import { Button } from '@/components/ui/Button/Button';
+import { Button } from '@/components/ui/Button';
 import type {
   FilterConfig,
   FilterState,

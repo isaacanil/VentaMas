@@ -4,8 +4,8 @@ import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { toggleAddPurchaseModal } from '@/features/modals/modalSlice';
-import { Button } from '@/components/ui/Button/Button';
-import { Tooltip } from '@/components/ui/Button/Tooltip';
+import { Button } from '@/components/ui/Button';
+import { Tooltip } from '@/components/ui/Button';
 
 export const ToolBar = () => {
   const dispatch = useDispatch();

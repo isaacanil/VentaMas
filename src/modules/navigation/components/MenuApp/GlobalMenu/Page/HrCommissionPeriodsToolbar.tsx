@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-import { ButtonIconMenu } from '@/components/ui/Button/ButtonIconMenu';
+import { ButtonIconMenu } from '@/components/ui/Button';
 import { icons } from '@/constants/icons/icons';
 import type { ToolbarComponentProps } from '@/modules/navigation/components/MenuApp/GlobalMenu/types';
 

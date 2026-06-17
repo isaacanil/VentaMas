@@ -6,7 +6,7 @@ import { selectUser } from '@/features/auth/userSlice';
 import { selectTotalIngredientPrice } from '@/features/customProducts/customProductSlice';
 import { fbGetCustomProduct } from '@/firebase/products/customProduct/fbGetCustomProductTypePizza';
 import { separator } from '@/utils/number/number';
-import { Button } from '@/components/ui/Button/Button';
+import { Button } from '@/components/ui/Button';
 import { IngredientCard } from './IngredientCard';
 
 interface CustomProductIngredient {

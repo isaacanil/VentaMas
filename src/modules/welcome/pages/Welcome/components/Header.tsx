@@ -6,7 +6,7 @@ import styled from 'styled-components';
 
 import ROUTES_NAME from '@/router/routes/routesName';
 import { isFrontendFeatureEnabled } from '@/utils/runtime/frontendFeatureAccess';
-import { ButtonGroup } from '@/components/ui/Button/ButtonGroup';
+import { ButtonGroup } from '@/components/ui/Button';
 
 import { welcomeData } from '../welcomeData';
 

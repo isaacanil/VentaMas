@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { deleteProduct, recalcTotals } from '@/features/cart/cartSlice';
-import { Button, ButtonGroup } from '@/components/ui/Button/Button';
+import { Button, ButtonGroup } from '@/components/ui/Button';
 
 type DeleteProductAlertProps = {
   isOpen: boolean;

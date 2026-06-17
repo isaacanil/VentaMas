@@ -15,7 +15,7 @@ import { isInvoicePaidInFull } from '@/utils/invoice';
 import { prepareInvoiceForEdit } from '@/utils/invoice';
 import { Receipt } from '@/modules/checkout/public';
 import useInvoiceEditAuthorization from '@/modules/invoice/pages/InvoicesPage/hooks/useInvoiceEditAuthorization';
-import { Button } from '@/components/ui/Button/Button';
+import { Button } from '@/components/ui/Button';
 
 type FooterProps = {
   data: InvoiceData;

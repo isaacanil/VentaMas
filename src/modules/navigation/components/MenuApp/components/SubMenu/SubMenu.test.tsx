@@ -12,7 +12,7 @@ const testTheme = {
   },
 };
 
-vi.mock('@/components/ui/Button/Button', () => ({
+vi.mock('@/components/ui/Button', () => ({
   Button: ({
     title,
     onClick,

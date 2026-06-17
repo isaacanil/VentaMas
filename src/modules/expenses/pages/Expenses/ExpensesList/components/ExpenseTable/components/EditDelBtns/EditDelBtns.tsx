@@ -1,7 +1,7 @@
 import { Button } from 'antd';
 import { useDispatch } from 'react-redux';
 
-import { ButtonGroup } from '@/components/ui/Button/Button';
+import { ButtonGroup } from '@/components/ui/Button';
 import { icons } from '@/constants/icons/icons';
 import { useDialog } from '@/context/Dialog/useDialog';
 import { addNotification } from '@/features/notification/notificationSlice';

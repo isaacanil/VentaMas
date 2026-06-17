@@ -147,6 +147,42 @@ const forbiddenLegacySharedImportPrefixes = [
 
 const restrictedSharedImportRules: RestrictedSharedImportRule[] = [
   {
+    importPrefix: '@/components/ui/Button/Button',
+    allowedFilePathPrefixes: ['src/components/ui/Button/'],
+  },
+  {
+    importPrefix: '@/components/ui/Button/ButtonGroup',
+    allowedFilePathPrefixes: ['src/components/ui/Button/'],
+  },
+  {
+    importPrefix: '@/components/ui/Button/ButtonIconMenu',
+    allowedFilePathPrefixes: ['src/components/ui/Button/'],
+  },
+  {
+    importPrefix: '@/components/ui/Button/DeleteButton',
+    allowedFilePathPrefixes: ['src/components/ui/Button/'],
+  },
+  {
+    importPrefix: '@/components/ui/Button/EditButton',
+    allowedFilePathPrefixes: ['src/components/ui/Button/'],
+  },
+  {
+    importPrefix: '@/components/ui/Button/GoBackButton',
+    allowedFilePathPrefixes: ['src/components/ui/Button/'],
+  },
+  {
+    importPrefix: '@/components/ui/Button/PlusIconButton',
+    allowedFilePathPrefixes: ['src/components/ui/Button/'],
+  },
+  {
+    importPrefix: '@/components/ui/Button/Tooltip',
+    allowedFilePathPrefixes: ['src/components/ui/Button/'],
+  },
+  {
+    importPrefix: '@/components/ui/Button/types',
+    allowedFilePathPrefixes: ['src/components/ui/Button/'],
+  },
+  {
     importPrefix: '@/components/ui/AdvancedTable/AdvancedTable',
     allowedFilePathPrefixes: ['src/components/ui/AdvancedTable/'],
   },
