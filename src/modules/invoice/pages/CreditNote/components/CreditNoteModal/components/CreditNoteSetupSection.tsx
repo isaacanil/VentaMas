@@ -1,6 +1,9 @@
-import { Alert } from 'antd';
+import { Alert, Tag } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
+
+import { AdjustmentNoteFiscalStatusTag } from '@/modules/invoice/components/AdjustmentNoteFiscalStatusTag';
+import { resolveCreditNoteUsageStatusDisplay } from '@/modules/invoice/utils/adjustmentNoteStatusDisplay';
 
 import ClientSelector from './ClientSelector';
 import { CreditNoteFiscalReasonSection } from './CreditNoteFiscalReasonSection';
@@ -58,75 +61,96 @@ export const CreditNoteSetupSection = ({
   modificationCode,
   onReasonChange,
   onModificationCodeChange,
-}: CreditNoteSetupSectionProps) => (
-  <>
-    {!canUseCreditNotes && (
-      <Alert
-        message={
-          !taxReceiptEnabled
-            ? 'Comprobantes Fiscales Deshabilitados'
-            : 'Comprobante de Notas de Crédito no configurado'
-        }
-        description={
-          !taxReceiptEnabled
-            ? 'Los comprobantes fiscales están deshabilitados en la configuración. Para crear o editar notas de crédito, debe habilitar los comprobantes fiscales y configurar el comprobante correspondiente (serie 04 - NOTAS DE CRÉDITO).'
-            : 'Para crear o editar notas de crédito, debe configurar el comprobante fiscal correspondiente (serie 04 - NOTAS DE CRÉDITO).'
-        }
-        type="warning"
-        showIcon
-        style={{ marginBottom: '1rem' }}
-      />
-    )}
+}: CreditNoteSetupSectionProps) => {
+  const usageStatus = creditNoteData
+    ? resolveCreditNoteUsageStatusDisplay(creditNoteData)
+    : null;
 
-    {(effectiveIsView || effectiveIsEdit) && creditNoteData && (
-      <NCFContainer>
-        <NCFLabel>NCF</NCFLabel>
-        <NCFValue>{creditNoteData.ncf || 'N/A'}</NCFValue>
-      </NCFContainer>
-    )}
-
-    {mode === 'create' && (
-      <Description>
-        Complete los detalles para generar una nueva nota de crédito.
-      </Description>
-    )}
-
-    {canUseCreditNotes && (
-      <FormSection>
-        <FormRow>
-          <FormField>
-            <ClientSelector
-              clients={clients}
-              selectedClient={currentClient}
-              onSelectClient={onSelectClient}
-              loading={clientsLoading}
-              disabled={effectiveIsView}
-            />
-          </FormField>
-
-          <FormField>
-            <InvoiceSelector
-              invoices={invoices}
-              selectedInvoice={currentInvoice}
-              onSelectInvoice={onSelectInvoice}
-              loading={invoicesLoading}
-              disabled={!selectedClientId || effectiveIsView}
-              dateRange={dateRange}
-              onDateRangeChange={onDateRangeChange}
-            />
-          </FormField>
-        </FormRow>
-        <CreditNoteFiscalReasonSection
-          reason={reason}
-          modificationCode={modificationCode}
-          disabled={effectiveIsView}
-          onReasonChange={onReasonChange}
-          onModificationCodeChange={onModificationCodeChange}
+  return (
+    <>
+      {!canUseCreditNotes && (
+        <Alert
+          message={
+            !taxReceiptEnabled
+              ? 'Comprobantes Fiscales Deshabilitados'
+              : 'Comprobante de Notas de Crédito no configurado'
+          }
+          description={
+            !taxReceiptEnabled
+              ? 'Los comprobantes fiscales están deshabilitados en la configuración. Para crear o editar notas de crédito, debe habilitar los comprobantes fiscales y configurar el comprobante correspondiente (serie 04 - NOTAS DE CRÉDITO).'
+              : 'Para crear o editar notas de crédito, debe configurar el comprobante fiscal correspondiente (serie 04 - NOTAS DE CRÉDITO).'
+          }
+          type="warning"
+          showIcon
+          style={{ marginBottom: '1rem' }}
         />
-      </FormSection>
-    )}
-  </>
-);
+      )}
+
+      {(effectiveIsView || effectiveIsEdit) && creditNoteData && (
+        <NCFContainer>
+          <NCFItem>
+            <NCFLabel>NCF</NCFLabel>
+            <NCFValue>{creditNoteData.ncf || 'N/A'}</NCFValue>
+          </NCFItem>
+          <NCFItem>
+            <NCFLabel>Uso</NCFLabel>
+            <Tag color={usageStatus?.color || 'default'}>
+              {usageStatus?.label || 'Sin Aplicar'}
+            </Tag>
+          </NCFItem>
+          <NCFItem>
+            <NCFLabel>e-CF/DGII</NCFLabel>
+            <AdjustmentNoteFiscalStatusTag
+              snapshot={creditNoteData.electronicTaxReceipt}
+              fallbackStatus={creditNoteData.status}
+            />
+          </NCFItem>
+        </NCFContainer>
+      )}
+
+      {mode === 'create' && (
+        <Description>
+          Complete los detalles para generar una nueva nota de crédito.
+        </Description>
+      )}
+
+      {canUseCreditNotes && (
+        <FormSection>
+          <FormRow>
+            <FormField>
+              <ClientSelector
+                clients={clients}
+                selectedClient={currentClient}
+                onSelectClient={onSelectClient}
+                loading={clientsLoading}
+                disabled={effectiveIsView}
+              />
+            </FormField>
+
+            <FormField>
+              <InvoiceSelector
+                invoices={invoices}
+                selectedInvoice={currentInvoice}
+                onSelectInvoice={onSelectInvoice}
+                loading={invoicesLoading}
+                disabled={!selectedClientId || effectiveIsView}
+                dateRange={dateRange}
+                onDateRangeChange={onDateRangeChange}
+              />
+            </FormField>
+          </FormRow>
+          <CreditNoteFiscalReasonSection
+            reason={reason}
+            modificationCode={modificationCode}
+            disabled={effectiveIsView}
+            onReasonChange={onReasonChange}
+            onModificationCodeChange={onModificationCodeChange}
+          />
+        </FormSection>
+      )}
+    </>
+  );
+};
 
 const Description = styled.p`
   margin: 0;
@@ -158,9 +182,9 @@ const FormField = styled.div`
 
 const NCFContainer = styled.div`
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 12px 20px;
   align-items: flex-start;
-  max-width: 300px;
   padding: 12px 16px;
   background-color: ${(props) =>
     props.theme?.background?.secondary || '#fafafa'};
@@ -168,8 +192,14 @@ const NCFContainer = styled.div`
   border-radius: 8px;
 `;
 
+const NCFItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 120px;
+`;
+
 const NCFLabel = styled.span`
-  margin-bottom: 4px;
   font-size: 0.75rem;
   color: ${(props) => props.theme?.text?.secondary || '#666'};
 `;

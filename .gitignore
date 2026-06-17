@@ -39,8 +39,10 @@ emulator-data/
 # Local tooling and agent artifacts
 .agents/
 .antigravitycli/
+.gemini/
 .codex-logs/
 .codex-screenshots/
+.codex-temp/
 .github/
 .mcp_screenshot/
 .tools/

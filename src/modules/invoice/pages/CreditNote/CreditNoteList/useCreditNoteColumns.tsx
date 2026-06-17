@@ -7,25 +7,19 @@ import {
 import { Button, Space, Tag, Tooltip } from 'antd';
 import React, { useMemo } from 'react';
 
-import {
-  CREDIT_NOTE_STATUS,
-  CREDIT_NOTE_STATUS_COLOR,
-  CREDIT_NOTE_STATUS_LABEL,
-} from '@/constants/creditNoteStatus';
+import { CREDIT_NOTE_STATUS } from '@/constants/creditNoteStatus';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
 import { formatPrice } from '@/utils/format';
-import {
-  resolveElectronicTaxReceiptStatusColor,
-  resolveElectronicTaxReceiptStatusLabel,
-} from '@/modules/invoice/utils/electronicTaxReceipt';
+import { resolveCreditNoteUsageStatusDisplay } from '@/modules/invoice/utils/adjustmentNoteStatusDisplay';
+import { AdjustmentNoteFiscalStatusTag } from '@/modules/invoice/components/AdjustmentNoteFiscalStatusTag';
 
-import { canEditCreditNoteRecord, toCreditNoteDate } from './creditNoteListUtils';
+import {
+  canEditCreditNoteRecord,
+  toCreditNoteDate,
+} from './creditNoteListUtils';
 
 import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/types/AdvancedTableTypes';
-import type {
-  CreditNoteRecord,
-  CreditNoteStatus,
-} from '@/types/creditNote';
+import type { CreditNoteRecord } from '@/types/creditNote';
 
 type CreditNoteTableRow = CreditNoteRecord & { actions: CreditNoteRecord };
 
@@ -138,58 +132,29 @@ export const useCreditNoteColumns = ({
         },
       },
       {
-        Header: 'Estado de Uso',
+        Header: 'Uso',
         accessor: 'status',
         minWidth: '100px',
         maxWidth: '120px',
         align: 'center',
-        cell: ({ value, row }) => {
-          const status =
-            typeof value === 'string' ? (value as CreditNoteStatus) : undefined;
-          const electronicStatusLabel = resolveElectronicTaxReceiptStatusLabel(
-            row?.electronicTaxReceipt,
-          );
-          const usageStatusTag =
-            status === CREDIT_NOTE_STATUS.ELECTRONIC_PENDING ||
-            status === CREDIT_NOTE_STATUS.ELECTRONIC_FAILED
-              ? (
-                <Tag color={CREDIT_NOTE_STATUS_COLOR[status]}>
-                  {CREDIT_NOTE_STATUS_LABEL[status]}
-                </Tag>
-                )
-              : null;
-          const totalAmount = row?.totalAmount ?? 0;
-          const hasApplications =
-            status === CREDIT_NOTE_STATUS.APPLIED ||
-            status === CREDIT_NOTE_STATUS.FULLY_USED ||
-            (row?.availableAmount !== undefined &&
-              row.availableAmount < totalAmount);
+        cell: ({ row }) => {
+          const usageStatus = resolveCreditNoteUsageStatusDisplay(row);
 
-          const useStatusTag =
-            usageStatusTag ||
-            (hasApplications ? (
-              <Tag color="green">
-                {status === CREDIT_NOTE_STATUS.FULLY_USED
-                  ? 'Totalmente Usada'
-                  : 'Parcialmente Usada'}
-              </Tag>
-            ) : (
-              <Tag color="default">Sin Aplicar</Tag>
-            ));
-
-          if (!electronicStatusLabel) return useStatusTag;
-
+          return <Tag color={usageStatus.color}>{usageStatus.label}</Tag>;
+        },
+      },
+      {
+        Header: 'e-CF/DGII',
+        accessor: 'electronicTaxReceipt',
+        minWidth: '120px',
+        maxWidth: '150px',
+        align: 'center',
+        cell: ({ row }) => {
           return (
-            <Space direction="vertical" size={4}>
-              {useStatusTag}
-              <Tag
-                color={resolveElectronicTaxReceiptStatusColor(
-                  row?.electronicTaxReceipt,
-                )}
-              >
-                {electronicStatusLabel}
-              </Tag>
-            </Space>
+            <AdjustmentNoteFiscalStatusTag
+              snapshot={row?.electronicTaxReceipt}
+              fallbackStatus={row?.status}
+            />
           );
         },
       },
@@ -230,6 +195,20 @@ export const useCreditNoteColumns = ({
           const hasSubmissionId = Boolean(
             record.electronicTaxReceipt?.submissionId,
           );
+          const isAppliedOrUsed =
+            record.status === CREDIT_NOTE_STATUS.APPLIED ||
+            record.status === CREDIT_NOTE_STATUS.FULLY_USED ||
+            (record.availableAmount !== undefined &&
+              record.availableAmount < record.totalAmount);
+          const isFiscalBlocked =
+            record.status === CREDIT_NOTE_STATUS.ELECTRONIC_PENDING ||
+            record.status === CREDIT_NOTE_STATUS.ELECTRONIC_FAILED;
+          const disabledEditReason = isAppliedOrUsed
+            ? 'No se puede editar: nota ya aplicada'
+            : isFiscalBlocked
+              ? 'No se puede editar: e-CF pendiente o fallido'
+              : 'Edición deshabilitada (fuera de plazo)';
+
           return (
             <Space size="small">
               <Tooltip title="Ver">
@@ -252,16 +231,7 @@ export const useCreditNoteColumns = ({
                   />
                 </Tooltip>
               ) : (
-                <Tooltip
-                  title={
-                    record.status === CREDIT_NOTE_STATUS.APPLIED ||
-                    record.status === CREDIT_NOTE_STATUS.FULLY_USED ||
-                    (record.availableAmount !== undefined &&
-                      record.availableAmount < record.totalAmount)
-                      ? 'No se puede editar: nota ya aplicada'
-                      : 'Edicion deshabilitada (fuera de plazo)'
-                  }
-                >
+                <Tooltip title={disabledEditReason}>
                   <Button icon={<LockOutlined />} disabled />
                 </Tooltip>
               )}
@@ -282,5 +252,11 @@ export const useCreditNoteColumns = ({
         },
       },
     ],
-    [creditNotes, onEdit, onRefreshElectronicStatus, onView, refreshingCreditNoteId],
+    [
+      creditNotes,
+      onEdit,
+      onRefreshElectronicStatus,
+      onView,
+      refreshingCreditNoteId,
+    ],
   );

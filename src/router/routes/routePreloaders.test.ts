@@ -1,4 +1,5 @@
 import { renderHook } from '@testing-library/react';
+import { matchRoutes } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { developerShortcuts } from '@/constants/devtools/developerShortcuts';
@@ -28,6 +29,7 @@ import {
 } from '@/modules/orderAndPurchase/public';
 import type { MenuItem } from '@/types/menu';
 import { routePreloaders } from './routePreloaders';
+import { routes } from './routes';
 import ROUTES_NAME from './routesName';
 
 const { useBusinessFeatureEnabledMock, useFilterMenuItemsByAccessMock } =
@@ -53,6 +55,9 @@ type MenuRoute = {
 
 // Legacy/external menu routes without preloaders must be listed here with a reason.
 const MENU_ROUTE_PRELOADER_EXCEPTIONS: Record<string, string> = {};
+
+// Non-mounted route preloaders must be listed here with a reason.
+const ROUTE_PRELOADER_MOUNT_EXCEPTIONS: Record<string, string> = {};
 
 const getMenuItemTitle = (item: MenuItem): string => {
   if (typeof item.title === 'string' && item.title.trim()) {
@@ -86,6 +91,17 @@ const collectMenuRoutes = (
 
     return [...currentRoute, ...submenuRoutes];
   });
+
+const getRoutePathname = (route: string): string =>
+  route.split(/[?#]/)[0].replace(/\/+$/, '') || '/';
+
+const isMountedRoute = (route: string): boolean =>
+  Boolean(
+    matchRoutes(
+      routes as Parameters<typeof matchRoutes>[0],
+      getRoutePathname(route),
+    )?.some((match) => match.route.path !== '*'),
+  );
 
 describe('routePreloaders', () => {
   beforeEach(() => {
@@ -237,6 +253,30 @@ describe('routePreloaders', () => {
       .filter(
         ([route, reason]) =>
           !reason.trim() || !menuRouteSet.has(route) || routePreloaders[route],
+      )
+      .map(([route, reason]) => `${route}: ${reason}`);
+
+    expect(staleOrUndocumentedExceptions).toEqual([]);
+  });
+
+  it('registers preloaders only for mounted routes', () => {
+    const unmountedPreloaders = Object.keys(routePreloaders)
+      .filter(
+        (route) =>
+          !isMountedRoute(route) && !ROUTE_PRELOADER_MOUNT_EXCEPTIONS[route],
+      )
+      .sort();
+
+    expect(unmountedPreloaders).toEqual([]);
+  });
+
+  it('keeps route preloader mount exceptions explicit and current', () => {
+    const staleOrUndocumentedExceptions = Object.entries(
+      ROUTE_PRELOADER_MOUNT_EXCEPTIONS,
+    )
+      .filter(
+        ([route, reason]) =>
+          !reason.trim() || !routePreloaders[route] || isMountedRoute(route),
       )
       .map(([route, reason]) => `${route}: ${reason}`);
 

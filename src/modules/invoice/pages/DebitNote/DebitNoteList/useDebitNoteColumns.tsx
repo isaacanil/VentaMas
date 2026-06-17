@@ -2,25 +2,15 @@ import { EyeOutlined, SyncOutlined } from '@/constants/icons/antd';
 import { Button, Space, Tag, Tooltip } from 'antd';
 import React, { useMemo } from 'react';
 
-import {
-  DEBIT_NOTE_STATUS,
-  DEBIT_NOTE_STATUS_COLOR,
-  DEBIT_NOTE_STATUS_LABEL,
-} from '@/constants/debitNoteStatus';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
 import { formatPrice } from '@/utils/format';
-import {
-  resolveElectronicTaxReceiptStatusColor,
-  resolveElectronicTaxReceiptStatusLabel,
-} from '@/modules/invoice/utils/electronicTaxReceipt';
+import { AdjustmentNoteFiscalStatusTag } from '@/modules/invoice/components/AdjustmentNoteFiscalStatusTag';
+import { resolveDebitNoteOperationalStatusDisplay } from '@/modules/invoice/utils/adjustmentNoteStatusDisplay';
 
 import { toDebitNoteDate } from './debitNoteListUtils';
 
 import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/types/AdvancedTableTypes';
-import type {
-  DebitNoteRecord,
-  DebitNoteStatus,
-} from '@/modules/invoice/types/debitNote';
+import type { DebitNoteRecord } from '@/modules/invoice/types/debitNote';
 
 type DebitNoteTableRow = DebitNoteRecord & { actions: DebitNoteRecord };
 
@@ -123,32 +113,27 @@ export const useDebitNoteColumns = ({
         minWidth: '110px',
         maxWidth: '140px',
         align: 'center',
-        cell: ({ value, row }) => {
-          const status =
-            typeof value === 'string'
-              ? (value as DebitNoteStatus | string)
-              : DEBIT_NOTE_STATUS.ISSUED;
-          const electronicStatusLabel = resolveElectronicTaxReceiptStatusLabel(
-            row?.electronicTaxReceipt,
-          );
+        cell: ({ row }) => {
+          const operationalStatus =
+            resolveDebitNoteOperationalStatusDisplay(row);
+
           return (
-            <Tag
-              color={
-                electronicStatusLabel
-                  ? resolveElectronicTaxReceiptStatusColor(
-                      row?.electronicTaxReceipt,
-                    )
-                  : DEBIT_NOTE_STATUS_COLOR[
-                      status as keyof typeof DEBIT_NOTE_STATUS_COLOR
-                    ] || 'default'
-              }
-            >
-              {electronicStatusLabel ||
-                DEBIT_NOTE_STATUS_LABEL[
-                  status as keyof typeof DEBIT_NOTE_STATUS_LABEL
-                ] ||
-                status}
-            </Tag>
+            <Tag color={operationalStatus.color}>{operationalStatus.label}</Tag>
+          );
+        },
+      },
+      {
+        Header: 'e-CF/DGII',
+        accessor: 'electronicTaxReceipt',
+        minWidth: '120px',
+        maxWidth: '150px',
+        align: 'center',
+        cell: ({ row }) => {
+          return (
+            <AdjustmentNoteFiscalStatusTag
+              snapshot={row?.electronicTaxReceipt}
+              fallbackStatus={row?.status}
+            />
           );
         },
       },

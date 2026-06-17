@@ -18,6 +18,19 @@ const STATUS_LABELS: Record<string, string> = {
   local_failed: 'Error local',
 };
 
+export type ElectronicTaxReceiptStatusDisplay = {
+  label: string;
+  color: string;
+};
+
+const FALLBACK_ELECTRONIC_STATUS_DISPLAY: Record<
+  string,
+  ElectronicTaxReceiptStatusDisplay
+> = {
+  electronic_pending: { label: 'Pendiente e-CF', color: 'gold' },
+  electronic_failed: { label: 'e-CF Fallido', color: 'red' },
+};
+
 const TERMINAL_DGII_STATUSES = new Set([
   'accepted',
   'accepted_conditional',
@@ -38,6 +51,13 @@ const normalizeCode = (value: unknown): string | null => {
   if (typeof value !== 'string' && typeof value !== 'number') return null;
   const normalized = String(value).trim();
   return normalized || null;
+};
+
+const pushUnique = (target: string[], value: unknown) => {
+  const normalized = normalizeCode(value);
+  if (normalized && !target.includes(normalized)) {
+    target.push(normalized);
+  }
 };
 
 export const isRfceElectronicTaxReceipt = (
@@ -68,7 +88,10 @@ const resolveRfceTerminalStatusKey = (
 
   const rfceCode = normalizeCode(snapshot?.rfceDgiiCode);
   const rfceEstado = normalizeStatus(snapshot?.rfceDgiiEstado);
-  if ((rfceCode === '1' || rfceCode === '01') && rfceEstado?.includes('acept')) {
+  if (
+    (rfceCode === '1' || rfceCode === '01') &&
+    rfceEstado?.includes('acept')
+  ) {
     return 'accepted';
   }
 
@@ -211,4 +234,77 @@ export const resolveElectronicTaxReceiptStatusColor = (
   if (label?.toLowerCase().includes('pendiente')) return 'gold';
 
   return statusKey === 'issued' ? 'blue' : 'default';
+};
+
+export const resolveElectronicTaxReceiptStatusDisplay = (
+  snapshot?: ElectronicTaxReceiptSnapshot | null,
+  fallbackStatus?: unknown,
+): ElectronicTaxReceiptStatusDisplay | null => {
+  const label = resolveElectronicTaxReceiptStatusLabel(snapshot);
+  if (label) {
+    return {
+      label,
+      color: resolveElectronicTaxReceiptStatusColor(snapshot),
+    };
+  }
+
+  const normalizedFallback = normalizeStatus(fallbackStatus);
+  if (!normalizedFallback) return null;
+
+  return FALLBACK_ELECTRONIC_STATUS_DISPLAY[normalizedFallback] ?? null;
+};
+
+export const resolveElectronicTaxReceiptDiagnosticText = (
+  snapshot?: ElectronicTaxReceiptSnapshot | null,
+): string | null => {
+  if (!snapshot) return null;
+
+  const diagnostics: string[] = [];
+  const status = resolveElectronicTaxReceiptStatusKey(snapshot);
+  pushUnique(diagnostics, snapshot.dgiiMessage);
+  pushUnique(diagnostics, snapshot.lastError);
+  pushUnique(diagnostics, snapshot.rfceLastErrorMessage);
+  pushUnique(diagnostics, snapshot.rfceError);
+
+  if (Array.isArray(snapshot.dgiiMessages)) {
+    snapshot.dgiiMessages.forEach((entry) => {
+      if (!entry) return;
+      const code = normalizeCode(entry.code);
+      const message = normalizeCode(entry.message);
+      pushUnique(
+        diagnostics,
+        code && message ? `${code}: ${message}` : message || code,
+      );
+    });
+  }
+
+  if (snapshot.resolutionAction) {
+    pushUnique(diagnostics, `Acción sugerida: ${snapshot.resolutionAction}`);
+  }
+  if (snapshot.requiresDataCorrection === true) {
+    pushUnique(diagnostics, 'Requiere corregir datos antes de reenviar.');
+  }
+  if (snapshot.requiresNewENcf === true) {
+    pushUnique(diagnostics, 'Requiere emitir con un e-NCF nuevo.');
+  }
+
+  if (
+    diagnostics.length > 0 ||
+    status === 'rejected' ||
+    status === 'error' ||
+    status === 'failed' ||
+    status === 'local_failed'
+  ) {
+    pushUnique(
+      diagnostics,
+      snapshot.dgiiCode && `Código DGII: ${snapshot.dgiiCode}`,
+    );
+    pushUnique(diagnostics, snapshot.trackId && `TrackID: ${snapshot.trackId}`);
+    pushUnique(
+      diagnostics,
+      snapshot.submissionId && `Submission GISYS: ${snapshot.submissionId}`,
+    );
+  }
+
+  return diagnostics.length ? diagnostics.join(' | ') : null;
 };

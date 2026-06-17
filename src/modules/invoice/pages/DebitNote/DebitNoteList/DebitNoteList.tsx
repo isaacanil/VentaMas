@@ -1,6 +1,6 @@
 import React, { Fragment, useMemo, useState } from 'react';
 import { PlusOutlined } from '@/constants/icons/antd';
-import { Button, Descriptions, Modal, Typography, message } from 'antd';
+import { Button, Descriptions, Modal, Tag, Typography, message } from 'antd';
 import { DateTime } from 'luxon';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +17,8 @@ import ROUTES_NAME from '@/router/routes/routesName';
 import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
 import { resolveBusinessFiscalRollout } from '@/utils/fiscal/fiscalRollout';
 import { formatPrice } from '@/utils/format';
+import { AdjustmentNoteFiscalStatusTag } from '@/modules/invoice/components/AdjustmentNoteFiscalStatusTag';
+import { resolveDebitNoteOperationalStatusDisplay } from '@/modules/invoice/utils/adjustmentNoteStatusDisplay';
 
 import { DebitNoteConfigWarningState } from './DebitNoteConfigWarningState';
 import { DebitNoteCreateModal } from './DebitNoteCreateModal';
@@ -25,7 +27,12 @@ import {
   getDebitNoteWarningContent,
 } from './debitNoteListUtils';
 import { DebitNoteFilters } from './DebitNoteFilters';
-import { Container, HeaderContainer, HeaderTitle, TableContainer } from './styles';
+import {
+  Container,
+  HeaderContainer,
+  HeaderTitle,
+  TableContainer,
+} from './styles';
 import { useDebitNoteColumns } from './useDebitNoteColumns';
 
 import type {
@@ -56,13 +63,14 @@ export const DebitNoteList = () => {
   const [refreshingDebitNoteId, setRefreshingDebitNoteId] = useState<
     string | null
   >(null);
-  const [filters, setFilters] = useState<DebitNoteFiltersState>(
-    () => buildDefaultDebitNoteFilters(),
+  const [filters, setFilters] = useState<DebitNoteFiltersState>(() =>
+    buildDefaultDebitNoteFilters(),
   );
   const user = useSelector<UserRootState, UserIdentity | null>(selectUser);
-  const business = useSelector<BusinessRootState, Record<string, unknown> | null>(
-    selectBusinessData,
-  );
+  const business = useSelector<
+    BusinessRootState,
+    Record<string, unknown> | null
+  >(selectBusinessData);
   const hasBusinessFiscalContext = Boolean(business);
   const electronicModelEnabled =
     resolveBusinessFiscalRollout(business).electronicModelEnabled;
@@ -97,7 +105,8 @@ export const DebitNoteList = () => {
       !taxReceiptLoading &&
       !electronicModelEnabled &&
       (!taxReceiptEnabled ||
-        (taxReceiptEnabled && (!debitNoteReceipt || debitNoteReceipt.data?.disabled))),
+        (taxReceiptEnabled &&
+          (!debitNoteReceipt || debitNoteReceipt.data?.disabled))),
     [
       debitNoteReceipt,
       debitNotesLoading,
@@ -150,6 +159,9 @@ export const DebitNoteList = () => {
     ...record,
     actions: record,
   }));
+  const selectedDebitNoteOperationalStatus = selectedDebitNote
+    ? resolveDebitNoteOperationalStatusDisplay(selectedDebitNote)
+    : null;
 
   const headerComponent = (
     <HeaderContainer>
@@ -221,11 +233,24 @@ export const DebitNoteList = () => {
             <Descriptions.Item label="Monto">
               {formatPrice(selectedDebitNote.totalAmount || 0)}
             </Descriptions.Item>
-            <Descriptions.Item label="Motivo">
-              <Typography.Text>{selectedDebitNote.reason || '-'}</Typography.Text>
+            <Descriptions.Item label="Estado">
+              <Tag
+                color={selectedDebitNoteOperationalStatus?.color || 'default'}
+              >
+                {selectedDebitNoteOperationalStatus?.label || 'Emitida'}
+              </Tag>
             </Descriptions.Item>
-            <Descriptions.Item label="e-CF">
-              {selectedDebitNote.electronicTaxReceipt?.status || 'N/A'}
+            <Descriptions.Item label="e-CF/DGII">
+              <AdjustmentNoteFiscalStatusTag
+                snapshot={selectedDebitNote.electronicTaxReceipt}
+                fallbackStatus={selectedDebitNote.status}
+                diagnosticDisplay="below"
+              />
+            </Descriptions.Item>
+            <Descriptions.Item label="Motivo">
+              <Typography.Text>
+                {selectedDebitNote.reason || '-'}
+              </Typography.Text>
             </Descriptions.Item>
           </Descriptions>
         )}
