@@ -204,9 +204,9 @@ No empezar por snapshots grandes ni por componentes puramente visuales.
 - [ ] [src/hooks/useTaxReceiptsFix.ts](c:\Dev\VentaMas\src\hooks\useTaxReceiptsFix.ts)
 - [x] [src/hooks/accountsReceivable/useCreditLimitRealtime.ts](c:\Dev\VentaMas\src\hooks\accountsReceivable\useCreditLimitRealtime.ts)
 - [ ] [src/hooks/useProductStockData.ts](c:\Dev\VentaMas\src\hooks\useProductStockData.ts)
-- [x] [src/services/functionsApiClient.ts](c:\Dev\VentaMas\src\services\functionsApiClient.ts)
+- [x] [src/firebase/functions/httpClient.ts](c:\Dev\VentaMas\src\firebase\functions\httpClient.ts)
 - [ ] [src/services/invoice/invoice.service.ts](c:\Dev\VentaMas\src\services\invoice\invoice.service.ts)
-- [ ] [src/services/invoice/invoiceV2Admin.service.ts](c:\Dev\VentaMas\src\services\invoice\invoiceV2Admin.service.ts)
+- [ ] [src/modules/dev/pages/DevTools/InvoiceV2Recovery/services/invoiceV2Admin.service.ts](c:\Dev\VentaMas\src\modules\dev\pages\DevTools\InvoiceV2Recovery\services\invoiceV2Admin.service.ts)
 - [ ] Revisar la carpeta [src/firebase](c:\Dev\VentaMas\src\firebase) y priorizar:
   - billing
   - cashCount
@@ -333,7 +333,7 @@ Inventario top-level consolidado en [2026-03-17-testing-module-audit.md](c:\Dev\
 
 ### Servicios Y Hooks Aun No Mapeados Explicitamente
 
-- [ ] [src/services/dynamicPermissions.ts](c:\Dev\VentaMas\src\services\dynamicPermissions.ts)
+- [ ] [src/firebase/permissions/dynamicPermissions.repository.ts](c:\Dev\VentaMas\src\firebase\permissions\dynamicPermissions.repository.ts)
 - [ ] [src/services/invoice/autoCompletePreorderInvoice.ts](c:\Dev\VentaMas\src\services\invoice\autoCompletePreorderInvoice.ts)
 - [ ] [src/services/invoice/logInvoiceAuthorizations.ts](c:\Dev\VentaMas\src\services\invoice\logInvoiceAuthorizations.ts)
 - [ ] [src/services/invoice/useInvoice.ts](c:\Dev\VentaMas\src\services\invoice\useInvoice.ts)

@@ -2,37 +2,26 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '@/features/auth/userSlice';
 import {
   addItem,
   deleteAllItems,
   SelectCategoryList,
   SelectCategoryState,
 } from '@/features/category/categorySlice';
-import { useGetFavoriteProductCategories } from '@/firebase/categories/fbGetFavoriteProductCategories';
-import { fbToggleFavoriteProductCategory } from '@/firebase/categories/fbToggleFavoriteProductCategory';
-import { useFbGetCategories } from '@/firebase/categories/useFbGetCategories';
 import type {
   CategoryDocument,
-  CategoryRecord,
-} from '@/firebase/categories/types';
-import { useListenActiveIngredients } from '@/firebase/products/activeIngredient/activeIngredients';
+} from './hooks/useCategorySelectorMetadata';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
-import type { UserIdentity } from '@/types/users';
 
 import { filterFavoriteProductCategories } from './categoryFilters';
 import { CategoryBar } from './components/CategoryBar/CategoryBar';
 import { DropdownMenu } from './components/DropdownMenu/DropdownMenu';
+import { useCategorySelectorMetadata } from './hooks/useCategorySelectorMetadata';
 
 type CategorySelectionItem = {
   id: string;
   name: string;
   type: 'category' | 'activeIngredient';
-};
-
-type UserWithBusinessAndUid = UserIdentity & {
-  businessID: string;
-  uid: string;
 };
 
 interface CategoryListItem {
@@ -97,30 +86,18 @@ const markSelectedItems = <T extends { id?: string }>(
 
 export const CategorySelector = () => {
   const dispatch = useDispatch();
-  const user = useSelector(selectUser) as UserIdentity | null;
-  const { categories } = useFbGetCategories() as {
-    categories: CategoryDocument[];
-  };
-  const favoriteProductCategoryArray = useGetFavoriteProductCategories();
+  const {
+    activeIngredients,
+    categories,
+    favoriteCategories: favoriteProductCategories,
+    handleToggleCategoryFavorite,
+  } = useCategorySelectorMetadata();
   const categoriesSelected = useSelector(
     SelectCategoryList,
   ) as CategorySelectionItem[];
-  const { data: activeIngredients = [] } =
-    useListenActiveIngredients() as unknown as {
-      data?: CategoryRecord[];
-    };
   const { items } = useSelector(SelectCategoryState) as {
     items: CategorySelectionItem[];
   };
-  const handleToggleCategoryFavorite = useCallback(
-    async (category: CategoryRecord) => {
-      await fbToggleFavoriteProductCategory(
-        user as UserWithBusinessAndUid,
-        category,
-      );
-    },
-    [user],
-  );
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   useClickOutSide(containerRef, open === true, () => setOpen(false));
@@ -129,9 +106,9 @@ export const CategorySelector = () => {
     () =>
       filterFavoriteProductCategories(
         categories,
-        favoriteProductCategoryArray.favoriteCategories,
+        favoriteProductCategories,
       ),
-    [categories, favoriteProductCategoryArray.favoriteCategories],
+    [categories, favoriteProductCategories],
   );
   const { favorites, normals } = useMemo(
     () => separateCategories(categories, favoriteCategories),

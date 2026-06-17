@@ -667,7 +667,7 @@ $keys = $lines[($start)..($end-2)] | Select-String '^[ ]{4}[A-Za-z].*:'
 - Servicios:
   - `src/services/invoice/useInvoice.ts`
   - `src/services/invoice/invoice.service.ts`
-  - `src/services/invoice/invoiceV2Admin.service.ts`
+  - `src/modules/dev/pages/DevTools/InvoiceV2Recovery/services/invoiceV2Admin.service.ts`
   - `src/services/invoice/logInvoiceAuthorizations.ts`
 - Tipos:
   - `src/types/invoice.ts`
@@ -687,8 +687,8 @@ $keys = $lines[($start)..($end-2)] | Select-String '^[ ]{4}[A-Za-z].*:'
   - `src/components/ui/BlockEditor/Toolbar/Toolbar.tsx`
 - Servicios que aún conocen Firebase:
   - `src/services/invoice/invoice.service.ts`
-  - `src/services/functionsApiClient.ts`
-  - `src/services/dynamicPermissions.ts`
+  - `src/firebase/functions/httpClient.ts`
+  - `src/firebase/permissions/dynamicPermissions.repository.ts`
 
 ### 13.5. Evidencia de deuda de tipado
 - Slices con mayor concentración de `any`:

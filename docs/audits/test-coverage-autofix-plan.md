@@ -41,7 +41,7 @@ Subir cobertura contra regresiones sin cambiar comportamiento productivo. Priori
    - `src/modules/accountsReceivable/utils/sortAccountsReceivable.test.ts`
    - `src/domain/accountsReceivable/getMaxInstallments.test.ts`
 2. Agregar test de permisos sin Firestore real:
-   - `src/services/dynamicPermissions.test.ts`
+   - `src/domain/permissions/dynamicPermissionsCatalog.test.ts`
 3. Agregar test functions directo para auditoria de caja:
    - `functions/src/app/versions/v2/cashCount/controllers/runCashCountAudit.controller.test.js`
 4. Ejecutar validaciones enfocadas primero.
@@ -76,7 +76,7 @@ Complejidad esencial baja: tests nuevos observan contratos existentes. Complejid
 - `src/domain/accountsReceivable/getMaxInstallments.test.ts`
   - limites `monthly`, `weekly`
   - fallback para frecuencias desconocidas
-- `src/services/dynamicPermissions.test.ts`
+- `src/domain/permissions/dynamicPermissionsCatalog.test.ts`
   - permisos disponibles por rol
   - roles desconocidos/legacy sin fuga de permisos de cajero
   - resumen de conteos/categorias
@@ -129,7 +129,7 @@ Complejidad esencial baja: tests nuevos observan contratos existentes. Complejid
 ### Pasaron
 
 ```powershell
-npm run test:run -- src/domain/accountsReceivable/getMaxInstallments.test.ts src/utils/import/mapData.test.ts src/utils/import/processMappedData.test.ts src/modules/accountsReceivable/utils/sortAccountsReceivable.test.ts src/services/dynamicPermissions.test.ts
+npm run test:run -- src/domain/accountsReceivable/getMaxInstallments.test.ts src/utils/import/mapData.test.ts src/utils/import/processMappedData.test.ts src/modules/accountsReceivable/utils/sortAccountsReceivable.test.ts src/domain/permissions/dynamicPermissionsCatalog.test.ts
 ```
 
 Resultado: `5 passed files`, `16 passed tests`.

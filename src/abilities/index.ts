@@ -1,4 +1,4 @@
-import { getUserDynamicPermissions } from '@/services/dynamicPermissions';
+import { getUserDynamicPermissions } from '@/firebase/permissions/dynamicPermissions.repository';
 import { normalizeRoleId } from '@/utils/roles/normalizeRole';
 
 import { defineAbilitiesForAdmin } from './roles/admin';

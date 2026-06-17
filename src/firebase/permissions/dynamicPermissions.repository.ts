@@ -10,39 +10,17 @@ import {
 } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
-import {
-  AVAILABLE_PERMISSIONS,
-  AVAILABLE_PERMISSIONS_BY_ROLE,
-  getAvailablePermissionsForRole,
-  getRolePermissionsInfo,
-  ROLE_PERMISSION_KEYS,
-} from '@/domain/permissions/dynamicPermissionsCatalog';
 import type {
   DynamicPermissionsPayload,
   UserDynamicPermissions,
 } from '@/types/permissions';
 import type { UserIdentity } from '@/types/users';
-import type {
-  PermissionCatalogKey,
-  PermissionRoleKey,
-} from '@/domain/permissions/dynamicPermissionsCatalog';
-
-export {
-  AVAILABLE_PERMISSIONS,
-  AVAILABLE_PERMISSIONS_BY_ROLE,
-  getAvailablePermissionsForRole,
-  getRolePermissionsInfo,
-  ROLE_PERMISSION_KEYS,
-};
-
-export type { PermissionCatalogKey, PermissionRoleKey };
 
 /**
- * Servicio para gestionar permisos dinámicos de usuarios
- * Colección: /businesses/{businessID}/userPermissions/{userID}
+ * Repositorio para gestionar permisos dinamicos de usuarios.
+ * Coleccion: /businesses/{businessID}/userPermissions/{userID}
  */
-
-const buildEmptyPermissions = (
+export const buildEmptyPermissions = (
   userId: string,
   businessID: string | null,
 ): UserDynamicPermissions => ({
@@ -57,7 +35,7 @@ const buildEmptyPermissions = (
 });
 
 /**
- * Obtiene permisos dinámicos de un usuario
+ * Obtiene permisos dinamicos de un usuario.
  * @param userId - ID del usuario del cual obtener permisos
  * @param currentUser - Usuario actual para obtener businessID
  * @returns Permisos del usuario
@@ -66,13 +44,10 @@ export const getUserDynamicPermissions = async (
   userId: string,
   currentUser?: UserIdentity | null,
 ): Promise<UserDynamicPermissions> => {
-  // Si no se pasa currentUser, obtenerlo del contexto de auth actual
   if (!currentUser) {
-    // Por ahora, esto requerirá que siempre se pase currentUser
     throw new Error('currentUser es requerido para obtener permisos dinámicos');
   }
 
-  // Validar que currentUser tenga businessID
   if (!currentUser.businessID) {
     console.warn(
       'currentUser no tiene businessID, devolviendo permisos vacíos',
@@ -106,11 +81,11 @@ export const getUserDynamicPermissions = async (
 };
 
 /**
- * Establece los permisos dinámicos de un usuario (versión simplificada)
+ * Establece los permisos dinamicos de un usuario.
  * @param currentUser - Usuario actual (para businessID)
  * @param userId - ID del usuario
  * @param permissions - Objeto con additionalPermissions y restrictedPermissions
- * @returns Éxito de la operación
+ * @returns Exito de la operacion
  */
 export const setUserDynamicPermissions = async (
   currentUser: UserIdentity | null | undefined,
@@ -134,7 +109,6 @@ export const setUserDynamicPermissions = async (
     const now = new Date();
     const updatedBy = currentUser.uid ?? currentUser.id ?? null;
 
-    // Verificar si el documento existe
     const existingDoc = await getDoc(docRef);
 
     const permissionData: UserDynamicPermissions = {
@@ -147,13 +121,11 @@ export const setUserDynamicPermissions = async (
     };
 
     if (existingDoc.exists()) {
-      // Actualizar documento existente
       await updateDoc(
         docRef,
         permissionData as unknown as Record<string, unknown>,
       );
     } else {
-      // Crear nuevo documento
       await setDoc(docRef, {
         ...permissionData,
         createdAt: now,
@@ -169,10 +141,10 @@ export const setUserDynamicPermissions = async (
 };
 
 /**
- * Migra usuarios de cajeros especiales al sistema dinámico
+ * Migra usuarios de cajeros especiales al sistema dinamico.
  * @param businessID - ID del negocio
- * @param currentUserID - ID del usuario que ejecuta la migración
- * @returns Resultado de la migración
+ * @param currentUserID - ID del usuario que ejecuta la migracion
+ * @returns Resultado de la migracion
  */
 export const migrateCashierPermissions = async (
   _businessID: string,
@@ -183,19 +155,12 @@ export const migrateCashierPermissions = async (
   errors: string[];
 }> => {
   try {
-    // Esta función se ejecutará una vez para migrar usuarios existentes
-    // Se podría llamar desde un componente admin o script de migración
-
     const migrationResults = {
       specialCashier1: [],
       specialCashier2: [],
       errors: [],
     };
 
-    // Aquí normalmente buscaríamos en la colección de usuarios
-    // Por ahora, retornamos la estructura para implementación manual
-
-    // Migration completed successfully
     return migrationResults;
   } catch (error) {
     console.error('Error en migración de cajeros:', error);
@@ -208,7 +173,7 @@ export const migrateCashierPermissions = async (
 };
 
 /**
- * Obtiene todos los usuarios con permisos dinámicos en un negocio
+ * Obtiene todos los usuarios con permisos dinamicos en un negocio.
  * @param businessID - ID del negocio
  * @returns Lista de usuarios con permisos
  */
@@ -240,10 +205,10 @@ export const getAllUserPermissions = async (
 };
 
 /**
- * Elimina los permisos dinámicos de un usuario
+ * Elimina los permisos dinamicos de un usuario.
  * @param businessID - ID del negocio
  * @param userID - ID del usuario
- * @returns Éxito de la operación
+ * @returns Exito de la operacion
  */
 export const deleteUserDynamicPermissions = async (
   businessID: string,
@@ -257,13 +222,4 @@ export const deleteUserDynamicPermissions = async (
     console.error('Error al eliminar permisos dinámicos:', error);
     return false;
   }
-};
-
-export default {
-  getUserDynamicPermissions,
-  setUserDynamicPermissions,
-  migrateCashierPermissions,
-  getAllUserPermissions,
-  deleteUserDynamicPermissions,
-  AVAILABLE_PERMISSIONS,
 };

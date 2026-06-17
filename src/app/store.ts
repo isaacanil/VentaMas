@@ -31,7 +31,6 @@ import insuranceReducer from '@/features/insurance/insuranceSlice';
 import invoiceFormReducer from '@/features/invoice/invoiceFormSlice';
 import invoicePreviewReducer from '@/features/invoice/invoicePreviewSlice';
 import invoiceWorkspaceModalReducer from '@/features/invoice/invoiceWorkspaceModalSlice';
-import loaderReducer from '@/features/loader/loaderSlice';
 import modalReducer from '@/features/modals/modalSlice';
 import navReducer from '@/features/nav/navSlice';
 import navigationReducer from '@/features/navigation/navigationSlice';
@@ -67,7 +66,6 @@ export const store = configureStore({
     // Core
     app: appReducer,
     nav: navReducer,
-    loader: loaderReducer,
     alert: alertReducer,
     navigation: navigationReducer,
 

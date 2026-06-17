@@ -224,6 +224,11 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - La pantalla de auditoria CxC consume ese indicador con un panel local de revision, y la llamada HTTP vive en un service owner-local del modulo en vez de reintroducir un cliente global en `src/services`.
 - `repairCustomerAdjustmentNoteFinancialEffects` centraliza la reparacion segura de esos efectos financieros: por defecto corre en dry-run, solo auto-repara rechazos fiscales confirmados, revalida dentro de transaccion y devuelve `manual_review` para estados ambiguos o documentos con pagos/aplicaciones/asientos.
 - Los accesos de lectura con `requiredModule` ya validan entitlement de suscripcion, y la reparacion fiscal de CxC exige acceso al modulo `accountsReceivable` tanto en dry-run como en escritura.
+- `Loader` dejo de depender de un slice Redux sin dispatchers activos; ahora es prop-driven, el mount global muerto salio de `ModalManager` y `src/features/loader` quedo retirado.
+- Los permisos dinamicos separan catalogo puro (`src/domain/permissions/dynamicPermissionsCatalog.ts`) de persistencia Firestore (`src/firebase/permissions/dynamicPermissions.repository.ts`), y los consumidores de usuarios importan solo la capa que necesitan.
+- La metadata de productos de bajo riesgo (categorias, favoritos, ingredientes activos y marcas) se encapsulo en hooks owner-locales de products, sacando imports directos de Firebase de los componentes visuales sin tocar stock, imagenes ni guardados de producto.
+- El modal de pizza personalizada deriva el draft en render con `buildCustomPizzaDraft` y prueba focalizada, en vez de sincronizar estado derivado desde `Header` con `useEffect`.
+- Los paths retirados recientes (`functionsApiClient`, `dynamicPermissions`, `invoiceV2Admin`, `pdfMakeLoader` legacy y `reconcileBatchStatus` bajo functions/inventory) quedaron cubiertos por `moduleBoundaries.test.ts`, y los planes/docs activos apuntan a sus owners actuales.
 
 ## Guardrails añadidos en esta pasada
 

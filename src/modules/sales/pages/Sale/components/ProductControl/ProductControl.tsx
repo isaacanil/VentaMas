@@ -92,7 +92,6 @@ export const ProductControl = ({
         <Container>
           <Wrapper ref={productsContainerRef} isScrolled={isScrolled}>
             <Loader
-              useRedux={false}
               show={productsLoading}
               message={loadingMessage}
               theme={'light'}

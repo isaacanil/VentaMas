@@ -46,7 +46,7 @@ Alcance: Frontend (React) + Backend (Cloud Functions)
 ### 2.2 Posibles Race Conditions al arrancar
 
 1. **Redirect optimista:** `Login` redirige solo por `sessionExpiresAt` local, aun si el token fue revocado/expirado en backend; luego `useAutomaticLogin` puede fallar y hacer logout, causando un rebote a `/login`.
-2. **Llamadas tempranas con token expirado:** `functionsApiClient` usa `X-Session-Token` desde `localStorage` para HTTP calls en `src/services/functionsApiClient.ts`; si el token esta expirado en backend pero aun en storage, estas llamadas pueden fallar con 401 hasta que `useAutomaticLogin` limpie la sesion.
+2. **Llamadas tempranas con token expirado:** `httpClient` usa `X-Session-Token` desde `localStorage` para HTTP calls en `src/firebase/functions/httpClient.ts`; si el token esta expirado en backend pero aun en storage, estas llamadas pueden fallar con 401 hasta que `useAutomaticLogin` limpie la sesion.
 3. **Sesion revocada por login paralelo:** el backend revoca sesiones antiguas cuando hay un nuevo login y `MAX_PARALLEL_ACTIVE_SESSIONS` es 1, lo que puede sentirse como "se les sale el sistema" en el dispositivo anterior en `functions/src/app/versions/v2/auth/controllers/clientAuth.controller.js`.
 
 ## 3. Configuraciones de Tiempo

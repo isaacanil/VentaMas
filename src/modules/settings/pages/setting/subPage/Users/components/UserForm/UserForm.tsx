@@ -23,8 +23,8 @@ import {
 } from '@/features/modals/modalSlice';
 import { fbSignUp } from '@/firebase/Auth/fbAuthV2/fbSignUp';
 import { fbUpdateUser } from '@/firebase/Auth/fbAuthV2/fbUpdateUser';
+import { getAvailablePermissionsForRole } from '@/domain/permissions/dynamicPermissionsCatalog';
 import { useUserAccess } from '@/hooks/abilities/useAbilities';
-import { getAvailablePermissionsForRole } from '@/services/dynamicPermissions';
 import type { UserRoleLike, UserRoleOption } from '@/types/users';
 import { PASSWORD_STRENGTH_RULE } from '@/utils/formRules';
 

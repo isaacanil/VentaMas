@@ -5,15 +5,10 @@ import {
   closeModal,
   selectActiveIngredientModal,
 } from '@/features/activeIngredients/activeIngredientsSlice';
-import { selectUser } from '@/features/auth/userSlice';
 import {
-  fbAddActiveIngredient,
-  fbUpdateActiveIngredient,
-} from '@/firebase/products/activeIngredient/activeIngredients';
-
-interface ActiveIngredientFormValues {
-  name: string;
-}
+  useActiveIngredientSubmit,
+  type ActiveIngredientFormValues,
+} from './hooks/useActiveIngredientSubmit';
 
 const ActiveIngredientModal = () => {
   const dispatch = useDispatch();
@@ -24,10 +19,9 @@ const ActiveIngredientModal = () => {
     (state: ActiveIngredientModalRootState) =>
       selectActiveIngredientModal(state),
   );
-  type UserRootState = Parameters<typeof selectUser>[0];
-  const user = useSelector((state: UserRootState) => selectUser(state));
 
   const [form] = Form.useForm<ActiveIngredientFormValues>();
+  const { hasUser, saveActiveIngredient } = useActiveIngredientSubmit();
 
   // Determinar si es una creación o actualización
   const isUpdate = initialValues !== null;
@@ -58,25 +52,17 @@ const ActiveIngredientModal = () => {
       return;
     }
 
-    if (!user) {
+    if (!hasUser) {
       message.error('No se encontró un usuario válido.');
       return;
     }
 
-    const submitRequest =
-      isUpdate && initialValues
-        ? () =>
-            fbUpdateActiveIngredient(user, {
-              id: initialValues.id,
-              name: values.name,
-            })
-        : () => fbAddActiveIngredient(user, { name: values.name });
     const successMessage = isUpdate
       ? 'Principio activo actualizado con éxito.'
       : 'Principio activo creado con éxito.';
 
     try {
-      await submitRequest();
+      await saveActiveIngredient(values, initialValues);
     } catch (error) {
       console.error('Active ingredient validation failed:', error);
       message.error('Hubo un error al procesar la solicitud.');

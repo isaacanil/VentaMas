@@ -1,41 +1,28 @@
 import type { ReactNode } from 'react';
-import { useSelector } from 'react-redux';
 import styled, { keyframes } from 'styled-components';
-
-import {
-  selectLoaderMessage,
-  selectLoaderShow,
-} from '@/features/loader/loaderSlice';
 
 type LoaderTheme = 'dark' | 'light';
 
 interface LoaderProps {
-  useRedux?: boolean;
   show?: boolean;
   message?: ReactNode;
-  theme?: string;
+  theme?: LoaderTheme;
 }
 
 const Loader = ({
-  useRedux = true,
-  show: propsShow,
-  message: propsMessage,
+  show = false,
+  message,
   theme = 'dark',
 }: LoaderProps) => {
-  const reduxShow = useSelector(selectLoaderShow);
-  const reduxMessage = useSelector(selectLoaderMessage);
-
-  const show = useRedux ? reduxShow : propsShow;
-  const message = useRedux ? reduxMessage : propsMessage;
   const resolvedTheme: LoaderTheme = theme === 'light' ? 'light' : 'dark';
 
   if (!show) return null;
 
   return (
-    <Container show={show} theme={resolvedTheme}>
+    <Container $loaderTheme={resolvedTheme}>
       <LoaderWrapper>
-        <Spinner theme={resolvedTheme} />
-        {message && <Message theme={resolvedTheme}>{message}</Message>}
+        <Spinner $loaderTheme={resolvedTheme} />
+        {message && <Message $loaderTheme={resolvedTheme}>{message}</Message>}
       </LoaderWrapper>
     </Container>
   );
@@ -75,7 +62,7 @@ const SpinnerAnimation = keyframes`
   100% { transform: rotate(360deg); }
 `;
 
-const Container = styled.div<{ show?: boolean; theme?: LoaderTheme }>`
+const Container = styled.div<{ $loaderTheme?: LoaderTheme }>`
   position: absolute;
   top: 0;
   left: 0;
@@ -85,7 +72,8 @@ const Container = styled.div<{ show?: boolean; theme?: LoaderTheme }>`
   justify-content: center;
   width: 100%;
   height: 100%;
-  background-color: ${({ theme }) => getThemeStyles(theme).backgroundColor};
+  background-color: ${({ $loaderTheme }) =>
+    getThemeStyles($loaderTheme).backgroundColor};
 `;
 const LoaderWrapper = styled.div`
   display: flex;
@@ -93,20 +81,21 @@ const LoaderWrapper = styled.div`
   gap: 1em;
   align-items: center;
 `;
-const Spinner = styled.div<{ theme?: LoaderTheme }>`
+const Spinner = styled.div<{ $loaderTheme?: LoaderTheme }>`
   width: 44px;
   height: 44px;
-  border: ${({ theme }) => getThemeStyles(theme).spinnerBorder};
-  border-top-color: ${({ theme }) => getThemeStyles(theme).spinnerTopColor};
+  border: ${({ $loaderTheme }) => getThemeStyles($loaderTheme).spinnerBorder};
+  border-top-color: ${({ $loaderTheme }) =>
+    getThemeStyles($loaderTheme).spinnerTopColor};
   border-radius: 50%;
   animation: ${SpinnerAnimation} 0.8s linear infinite;
 `;
 
-const Message = styled.p<{ theme?: LoaderTheme }>`
+const Message = styled.p<{ $loaderTheme?: LoaderTheme }>`
   font-family: Poppins, sans-serif;
   font-size: 20px;
   font-weight: bold;
-  color: ${({ theme }) => getThemeStyles(theme).textColor};
+  color: ${({ $loaderTheme }) => getThemeStyles($loaderTheme).textColor};
   text-align: center;
-  letter-spacing: 0.5px;
+  letter-spacing: 0;
 `;

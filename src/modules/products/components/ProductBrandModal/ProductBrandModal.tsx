@@ -1,29 +1,19 @@
 import { Form, Input, Modal, message } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { selectUser } from '@/features/auth/userSlice';
 import {
   closeBrandModal,
   selectProductBrandModal,
 } from '@/features/productBrands/productBrandSlice';
 import {
-  fbAddProductBrand,
-  fbUpdateProductBrand,
-} from '@/firebase/products/brands/productBrands';
-import type { UserWithBusiness } from '@/types/users';
-
-type BrandRecord = {
-  id?: string;
-  name?: string;
-};
+  useProductBrandSubmit,
+  type BrandFormValues,
+  type BrandRecord,
+} from './hooks/useProductBrandSubmit';
 
 type BrandModalState = {
   isOpen: boolean;
   initialValues: BrandRecord | null;
-};
-
-type BrandFormValues = {
-  name: string;
 };
 
 const ProductBrandModal = () => {
@@ -31,8 +21,8 @@ const ProductBrandModal = () => {
   const { isOpen, initialValues } = useSelector(
     selectProductBrandModal,
   ) as BrandModalState;
-  const user = useSelector(selectUser) as UserWithBusiness | null;
   const [form] = Form.useForm<BrandFormValues>();
+  const { hasBusiness, saveProductBrand } = useProductBrandSubmit();
 
   const isUpdate = Boolean(initialValues);
 
@@ -65,24 +55,17 @@ const ProductBrandModal = () => {
       return;
     }
 
-    if (!user?.businessID) {
+    if (!hasBusiness) {
       message.error('No se encontró un negocio válido.');
       return;
     }
 
-    const submitRequest = isUpdate
-      ? () =>
-          fbUpdateProductBrand(user, {
-            id: initialValues?.id,
-            name: values.name,
-          })
-      : () => fbAddProductBrand(user, { name: values.name });
     const successMessage = isUpdate
       ? 'Marca actualizada con éxito.'
       : 'Marca creada con éxito.';
 
     try {
-      await submitRequest();
+      await saveProductBrand(values, initialValues);
     } catch (error) {
       console.error('Error al procesar la marca:', error);
       message.error('No se pudo guardar la marca. Intenta nuevamente.');

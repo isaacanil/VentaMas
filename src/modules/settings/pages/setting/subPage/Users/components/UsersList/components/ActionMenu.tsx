@@ -11,7 +11,7 @@ import { Button, Dropdown, type MenuProps } from 'antd';
 import { useMemo } from 'react';
 import styled from 'styled-components';
 
-import { getAvailablePermissionsForRole } from '@/services/dynamicPermissions';
+import { getAvailablePermissionsForRole } from '@/domain/permissions/dynamicPermissionsCatalog';
 
 import type { UserProfile } from '../types';
 import { toCleanString } from '../utils/userList';

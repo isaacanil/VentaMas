@@ -143,7 +143,6 @@ const ExpensesForm = () => {
       mask={{ closable: false }}
     >
       <Loader
-        useRedux={false}
         show={loading.isOpen}
         message={loading.message}
         theme={'light'}

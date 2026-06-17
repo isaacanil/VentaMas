@@ -4,13 +4,15 @@ import { useSelector } from 'react-redux';
 import styled, { type DefaultTheme } from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
-import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import {
   getAvailablePermissionsForRole,
   getRolePermissionsInfo,
+} from '@/domain/permissions/dynamicPermissionsCatalog';
+import {
   getUserDynamicPermissions,
   setUserDynamicPermissions,
-} from '@/services/dynamicPermissions';
+} from '@/firebase/permissions/dynamicPermissions.repository';
+import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import type {
   DynamicPermissionsPayload,
   PermissionDefinition,

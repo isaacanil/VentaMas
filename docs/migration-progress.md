@@ -42,7 +42,7 @@
 
 - **Tipos comunes**: `src/types/users.ts`, `src/types/permissions.ts`.
 - **Roles tipados y textos corregidos**: `src/abilities/roles.ts`.
-- **Servicio tipado de permisos dinámicos**: `src/services/dynamicPermissions.ts`.
+- **Permisos dinámicos tipados**: catálogo puro en `src/domain/permissions/dynamicPermissionsCatalog.ts` y persistencia Firestore en `src/firebase/permissions/dynamicPermissions.repository.ts`.
 
 ### Filtros de facturas y fechas
 
@@ -53,7 +53,7 @@
 
 ### Inventario (estructura y ubicaciones)
 
-- **Tipos centralizados de estructura**: `src/utils/inventory/types.ts` (WarehouseStructureType/Element/Payload/Data + LocationPathParts).
+- **Tipos centralizados de estructura**: `src/domain/warehouse/warehouseStructure.ts` (WarehouseStructureType/Element/Payload/Data). `src/utils/inventory/types.ts` re-exporta esos tipos por compatibilidad junto a LocationPathParts.
 - **Tipos agregados de stock**: `src/utils/inventory/types.ts` (AggregatedProductStock, StockSummary).
 - **Ubicaciones tipadas**: `src/utils/inventory/locations.ts`.
 - **Servicios Firebase tipados**:

@@ -35,7 +35,6 @@ import { selectRowShelfState } from '@/features/warehouse/rowShelfModalSlice';
 import { selectSegmentState } from '@/features/warehouse/segmentModalSlice';
 import { selectShelfState } from '@/features/warehouse/shelfModalSlice';
 import { selectWarehouseModalState } from '@/features/warehouse/warehouseModalSlice';
-import { Loader } from '@/components/ui/loader';
 import {
   loadAccountReceivableSummaryModal,
   loadAccountsReceivablePaymentForm,
@@ -282,7 +281,6 @@ export const ModalManager = () => {
         </AnimatePresence>
 
         {isNoteModalOpen && <NoteModal />}
-        <Loader />
         {isDialogContextOpen && <Dialog />}
         {isActiveIngredientModalOpen && <ActiveIngredientModal />}
         {isARSummaryModalOpen && <ARSummaryModal />}

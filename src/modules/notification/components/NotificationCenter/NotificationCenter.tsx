@@ -62,7 +62,7 @@ const NotificationCenterPanel = ({ isOpen }: { isOpen: boolean }) => {
 
         <TabsContainer>
           {isOpen && (
-            <Suspense fallback={<Loader />}>
+            <Suspense fallback={<Loader show theme="light" />}>
               <ModulesNavigator fiscalReceiptsData={fiscalReceiptsData} />
             </Suspense>
           )}

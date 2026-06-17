@@ -8,8 +8,6 @@ import { openModal } from '@/features/activeIngredients/activeIngredientsSlice';
 import { openBrandModal } from '@/features/productBrands/productBrandSlice';
 import { PRODUCT_ITEM_TYPE_OPTIONS } from '@/domain/products/productDefaults';
 import { matchesSelectOptionText } from '@/domain/products/selectOptionText';
-import { useFbGetCategories } from '@/firebase/categories/useFbGetCategories';
-import { useListenActiveIngredients } from '@/firebase/products/activeIngredient/activeIngredients';
 import { buildBrandOptions } from '@/domain/products/brandSelection';
 import type {
   ActiveIngredient,
@@ -19,6 +17,7 @@ import type {
 
 import { FieldWithAction } from './ProductInfo.styles';
 import { getProductBrandFieldMeta } from './ProductInfo.helpers';
+import { useProductInfoMetadata } from './hooks/useProductInfoMetadata';
 
 type ProductInfoProps = {
   product: ProductRecord;
@@ -27,21 +26,12 @@ type ProductInfoProps = {
 
 const EMPTY_PRODUCT_BRANDS: ProductBrand[] = [];
 
-type CategoryRecord = {
-  category?: { name?: string };
-} & Record<string, unknown>;
-
 export const ProductInfo = ({
   product,
   productBrands = EMPTY_PRODUCT_BRANDS,
 }: ProductInfoProps) => {
   const dispatch = useDispatch();
-  const { categories } = useFbGetCategories() as {
-    categories: CategoryRecord[];
-  };
-  const { data: activeIngredients } = useListenActiveIngredients() as {
-    data: ActiveIngredient[];
-  };
+  const { activeIngredients, categories } = useProductInfoMetadata();
   const { configureAddProductCategoryModal } = useCategoryState();
   const { Option } = Select;
 

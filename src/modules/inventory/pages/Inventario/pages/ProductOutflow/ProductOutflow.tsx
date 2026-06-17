@@ -122,7 +122,6 @@ export const ProductOutflow = () => {
           <TableItems>
             <Loader
               theme="light"
-              useRedux={false}
               show={outflowListLoader}
               message={'Cargando lista de salidas de productos'}
             />
