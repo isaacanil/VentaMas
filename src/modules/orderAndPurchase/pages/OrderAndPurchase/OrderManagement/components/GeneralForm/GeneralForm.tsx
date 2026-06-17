@@ -39,7 +39,7 @@ import {
 import { parseTransactionDate } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/utils/transactionDates';
 import { toMillis } from '@/utils/date/toMillis';
 import type { BackOrder } from '@/models/Warehouse/BackOrder';
-import type { ProviderDataItem, ProviderInfo } from '@/utils/provider/types';
+import type { ProviderDataItem, ProviderInfo } from '@/domain/providers/types';
 import type {
   PurchaseAttachment,
   PurchaseBackOrderRef,

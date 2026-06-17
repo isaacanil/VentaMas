@@ -1,5 +1,5 @@
 import type { Timestamp } from 'firebase/firestore';
-import type { ProviderInfo } from '@/utils/provider/types';
+import type { ProviderInfo } from '@/domain/providers/types';
 
 export type ProviderStatus = 'active' | 'inactive' | (string & {});
 

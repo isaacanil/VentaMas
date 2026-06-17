@@ -8,6 +8,10 @@ import { moveProduct } from '@/firebase/warehouse/productMovementService';
 import { useTransformedWarehouseData } from '@/firebase/warehouse/warehouseNestedService';
 import type { InventoryUser } from '@/utils/inventory/types';
 
+import {
+  buildWarehouseLocationPath,
+  findWarehouseNodePath,
+} from '../../../../../../utils/warehouseTreePaths';
 import Tree from '../../../../../tree/Tree';
 import type { TreeConfig } from '../../../../../tree/types';
 import type { WarehouseNode } from '../../types';
@@ -91,29 +95,6 @@ const QuantityInputWithMax = ({ maxQuantity }: QuantityInputWithMaxProps) => {
   );
 };
 
-const findPathToNode = (
-  nodes: WarehouseNode[],
-  targetId: string,
-  path: WarehouseNode[] = [],
-): WarehouseNode[] | null => {
-  for (const node of nodes) {
-    const newPath = [...path, node];
-    if (node.id === targetId) {
-      return newPath;
-    }
-    if (node.children?.length) {
-      const result = findPathToNode(node.children, targetId, newPath);
-      if (result) {
-        return result;
-      }
-    }
-  }
-  return null;
-};
-
-const getLocationPath = (path: WarehouseNode[]) =>
-  path.map((node) => node.id).join('/');
-
 export const ProductMovementModal = ({
   visible,
   onCancel,
@@ -153,12 +134,9 @@ export const ProductMovementModal = ({
       return;
     }
 
-    const sourcePath = findPathToNode(
-      (warehouseData || []) as WarehouseNode[],
-      currentNode.id,
-    );
-    const destinationPath = findPathToNode(
-      (warehouseData || []) as WarehouseNode[],
+    const sourcePath = findWarehouseNodePath(treeData, currentNode.id);
+    const destinationPath = findWarehouseNodePath(
+      treeData,
       selectedDestination.id,
     );
 
@@ -175,8 +153,8 @@ export const ProductMovementModal = ({
       productStockId: product?.productStockId as any,
       batchId: product?.batchId as any,
       quantityToMove: values.quantity ?? 0,
-      sourceLocation: getLocationPath(sourcePath),
-      destinationLocation: getLocationPath(destinationPath),
+      sourceLocation: buildWarehouseLocationPath(sourcePath),
+      destinationLocation: buildWarehouseLocationPath(destinationPath),
       comment: values.comment,
     };
     const confirmedMovement = {

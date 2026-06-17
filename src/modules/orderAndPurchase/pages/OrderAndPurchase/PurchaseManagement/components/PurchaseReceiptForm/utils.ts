@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 
 import { transactionConditions } from '@/constants/orderAndPurchaseState';
 import type { ProviderDocument } from '@/firebase/provider/types';
-import type { ProviderInfo } from '@/utils/provider/types';
+import type { ProviderInfo } from '@/domain/providers/types';
 import type { Purchase, PurchaseReplenishment } from '@/utils/purchase/types';
 import {
   resolvePurchaseLineQuantities,

@@ -271,13 +271,13 @@ Esto asegura que al completar una compra no se “sobredoble” el stock de unid
 
 | Concepto               | Archivo                                     | Función                                       |
 | ---------------------- | ------------------------------------------- | --------------------------------------------- |
-| Completar compra       | `firebase/purchase/fbCompletePurchase.ts`   | `fbCompletePurchase`                          |
-| Crear batch            | `firebase/warehouse/batchService.ts`        | `createBatch`                                 |
-| Crear productStock     | `firebase/warehouse/productStockService.ts` | `createProductStock`                          |
-| Almacén por defecto    | `firebase/warehouse/warehouseService.ts`    | `getDefaultWarehouse`                         |
-| Backorders (reservar)  | `firebase/purchase/fbAddPurchase.ts`        | `addPurchase`                                 |
-| Backorders (completar) | `firebase/purchase/fbCompletePurchase.ts`   | `updatePurchaseWarehouseStock` (loop interno) |
-| Movimiento inventario  | `firebase/purchase/fbCompletePurchase.ts`   | creación directa con `setDoc`                 |
+| Completar compra       | `src/firebase/purchase/fbCompletePurchase.ts`   | `fbCompletePurchase`                          |
+| Crear batch            | `src/firebase/warehouse/batchService.ts`        | `createBatch`                                 |
+| Crear productStock     | `src/firebase/warehouse/productStockService.ts` | `createProductStock`                          |
+| Almacén por defecto    | `src/firebase/warehouse/warehouseService.ts`    | `getDefaultWarehouse`                         |
+| Backorders (reservar)  | `src/firebase/purchase/fbAddPurchase.ts`        | `addPurchase`                                 |
+| Backorders (completar) | `src/firebase/purchase/fbCompletePurchase.ts`   | `updatePurchaseWarehouseStock` (loop interno) |
+| Movimiento inventario  | `src/firebase/purchase/fbCompletePurchase.ts`   | creación directa con `setDoc`                 |
 
 ---
 

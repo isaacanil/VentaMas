@@ -1,7 +1,7 @@
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
 import { createFirebaseCallable } from '@/firebase/functions/callable';
 import type { UserWithBusiness } from '@/types/users';
-import type { ProviderInfo } from '@/utils/provider/types';
+import type { ProviderInfo } from '@/domain/providers/types';
 
 type CreateProviderPayload = {
   businessId: string;

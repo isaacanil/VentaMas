@@ -6,7 +6,7 @@ import {
   type SetStateAction,
 } from 'react';
 
-import type { ProviderInfo } from '@/utils/provider/types';
+import type { ProviderInfo } from '@/domain/providers/types';
 
 import { getProviderDoc } from './providerRefs';
 

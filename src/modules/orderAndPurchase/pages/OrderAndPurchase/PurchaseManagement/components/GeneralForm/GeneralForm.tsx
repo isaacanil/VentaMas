@@ -45,7 +45,7 @@ import {
 } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/components/TransactionGeneralFormLayout/TransactionGeneralFormLayout.styles';
 import { parseTransactionDate } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/shared/utils/transactionDates';
 import type { BackOrder } from '@/models/Warehouse/BackOrder';
-import type { ProviderDataItem, ProviderInfo } from '@/utils/provider/types';
+import type { ProviderDataItem, ProviderInfo } from '@/domain/providers/types';
 import type {
   Purchase,
   PurchaseAttachment,

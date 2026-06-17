@@ -74,6 +74,12 @@ Puede parecer limpieza, pero afecta lazy imports, gates, preloaders y permisos. 
 
 ### Archivos modificados por esta sesion
 
+Nota de estado actual (2026-06-17): esta seccion conserva el registro
+historico del autofix. Los componentes bajo `SalesAnalyticsPanel/components/Bars`
+ya no existen; el codigo vivo quedo reorganizado en `utils.ts`, `utils.test.ts`
+y componentes nombrados como `OverviewStrip`, `SalesTrendSection`,
+`CategoryPerformanceBoard` y `TopCustomersBoard`.
+
 - `docs/audits/code-quality-autofix-plan.md`
 - `src/modules/invoice/pages/InvoicesPage/SalesAnalyticsPanel/utils.ts`
 - `src/modules/invoice/pages/InvoicesPage/SalesAnalyticsPanel/utils.test.ts`

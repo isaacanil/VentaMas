@@ -13,7 +13,7 @@ import { normalizeText } from '@/utils/text';
 import type {
   ProviderDataItem,
   ProviderInfo as ProviderInfoRecord,
-} from '@/utils/provider/types';
+} from '@/domain/providers/types';
 import { comprobantesOptions } from '@/utils/taxReceipt';
 
 const Wrapper = styled.div`

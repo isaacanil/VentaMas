@@ -35,6 +35,11 @@ import { replacePathParams } from '@/router/routes/replacePathParams';
 import ROUTES_PATH from '@/router/routes/routesName';
 import type { InventoryUser } from '@/utils/inventory/types';
 
+import {
+  collectWarehouseLocationPaths,
+  findWarehouseNodePath,
+  toWarehouseFormPath,
+} from '../../utils/warehouseTreePaths';
 import Tree from '../tree/Tree';
 
 const SidebarContainer = styled.div`
@@ -151,26 +156,6 @@ const getLevelActions = (level: number): LevelActions => {
   return actionsByLevel[level] || actionsByLevel[0];
 };
 
-const findPathToNode = (
-  nodes: SidebarNodeRecord[],
-  targetId: string,
-  path: SidebarNodeRecord[] = EMPTY_SIDEBAR_NODES,
-): SidebarNodeRecord[] | null => {
-  for (const node of nodes) {
-    const newPath = [...path, node];
-    if (node.id === targetId) {
-      return newPath;
-    }
-    if (node.children) {
-      const result = findPathToNode(node.children, targetId, newPath);
-      if (result) {
-        return result;
-      }
-    }
-  }
-  return null;
-};
-
 const addParentIds = (
   nodes: SidebarNodeRecord[],
   parentId: string | null = null,
@@ -202,23 +187,6 @@ const nodeGenderMap: Record<string, 'masculino' | 'femenino'> = {
   Segmento: 'masculino',
 };
 
-const collectLocationPaths = (
-  nodes: SidebarNodeRecord[] = EMPTY_SIDEBAR_NODES,
-  parentPath: string[] = EMPTY_SIDEBAR_PATH,
-): string[] => {
-  const paths: string[] = [];
-  nodes.forEach((node) => {
-    const currentPath = [...parentPath, node.id];
-    if (currentPath.length > 0) {
-      paths.push(currentPath.join('/'));
-    }
-    if (node.children?.length) {
-      paths.push(...collectLocationPaths(node.children, currentPath));
-    }
-  });
-  return paths;
-};
-
 const Sidebar = ({
   onSelectNode: _onSelectNode,
   items = EMPTY_SIDEBAR_NODES,
@@ -246,7 +214,7 @@ const Sidebar = ({
   const itemsWithParentIds = useMemo(() => addParentIds(items), [items]);
   const locationPaths = useMemo(() => {
     if (!items.length) return [];
-    return Array.from(new Set(collectLocationPaths(items)));
+    return Array.from(new Set(collectWarehouseLocationPaths(items)));
   }, [items]);
 
   const stockSummaryRequestKey = useMemo(() => {
@@ -297,7 +265,7 @@ const Sidebar = ({
   const { WAREHOUSE, SHELF, ROW, SEGMENT } = ROUTES_PATH.INVENTORY_TERM;
 
   const handleWarehouseNodeClick = (node: SidebarNodeRecord, level: number) => {
-    const path = findPathToNode(items, node.id);
+    const path = findWarehouseNodePath(items, node.id);
 
     if (node && path) {
       switch (level) {
@@ -348,85 +316,67 @@ const Sidebar = ({
   };
 
   const handleAddShelf = (clickedNode: SidebarNodeRecord) => {
-    const path = findPathToNode(items, clickedNode.id);
+    const path = findWarehouseNodePath(items, clickedNode.id);
     if (!path) return;
     dispatch(
       openShelfForm({
         data: null,
-        path: path.map((pathNode) => ({
-          id: pathNode.id,
-          name: pathNode.name,
-        })),
+        path: toWarehouseFormPath(path),
       }),
     );
   };
 
   const handleAddRowShelf = (parentNode: SidebarNodeRecord) => {
-    const path = findPathToNode(items, parentNode.id);
+    const path = findWarehouseNodePath(items, parentNode.id);
     if (!path) return;
     dispatch(
       openRowShelfForm({
         data: null,
-        path: path.map((pathNode) => ({
-          id: pathNode.id,
-          name: pathNode.name,
-        })),
+        path: toWarehouseFormPath(path),
       }),
     );
   };
 
   const handleAddSegment = (parentNode: SidebarNodeRecord) => {
-    const path = findPathToNode(items, parentNode.id);
+    const path = findWarehouseNodePath(items, parentNode.id);
     if (!path) return;
     dispatch(
       openSegmentForm({
         data: null,
-        path: path.map((pathNode) => ({
-          id: pathNode.id,
-          name: pathNode.name,
-        })),
+        path: toWarehouseFormPath(path),
       }),
     );
   };
 
   const handleUpdateShelf = (node: SidebarNodeRecord) => {
-    const path = findPathToNode(items, node.id);
+    const path = findWarehouseNodePath(items, node.id);
     if (!path) return;
     dispatch(
       openShelfForm({
         data: node?.record as any,
-        path: path.map((pathNode) => ({
-          id: pathNode.id,
-          name: pathNode.name,
-        })),
+        path: toWarehouseFormPath(path),
       }),
     );
   };
 
   const handleUpdateRowShelf = (node: SidebarNodeRecord) => {
-    const path = findPathToNode(items, node.id);
+    const path = findWarehouseNodePath(items, node.id);
     if (!path) return;
     dispatch(
       openRowShelfForm({
         data: node?.record as any,
-        path: path.map((pathNode) => ({
-          id: pathNode.id,
-          name: pathNode.name,
-        })),
+        path: toWarehouseFormPath(path),
       }),
     );
   };
 
   const handleUpdateSegment = (node: SidebarNodeRecord) => {
-    const path = findPathToNode(items, node.id);
+    const path = findWarehouseNodePath(items, node.id);
     if (!path) return;
     dispatch(
       openSegmentForm({
         data: node?.record as any,
-        path: path.map((pathNode) => ({
-          id: pathNode.id,
-          name: pathNode.name,
-        })),
+        path: toWarehouseFormPath(path),
       }),
     );
   };
@@ -489,7 +439,7 @@ const Sidebar = ({
       return;
     }
 
-    const path = findPathToNode(items, node.id);
+    const path = findWarehouseNodePath(items, node.id);
 
     if (!path) {
       message.error('Camino al nodo no encontrado');

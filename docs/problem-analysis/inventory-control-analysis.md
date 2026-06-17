@@ -9,7 +9,7 @@ Este documento detalla los hallazgos tras revisar el código fuente del módulo 
 
 ### 🔴 Escrituras en Serie en Firestore (Crítico)
 
-- **Ubicación:** `hooks/useInventoryCounts.js` (Función `saveCounts`).
+- **Ubicación:** `src/modules/inventory/pages/InventoryControl/hooks/useInventoryCounts.ts` (función `saveCounts`).
 - **El Problema:** El código itera sobre el array de cambios (`countsData`) y ejecuta `await setDoc(...)` de forma secuencial dentro de un bucle `for`.
 - **Impacto:**
   - Latencia Extrema: El tiempo de guardado aumenta linealmente con cada ítem editado ($Tiempo = N 	imes RTT$). Para 50 ítems, pueden ser varios segundos de espera.
@@ -18,7 +18,7 @@ Este documento detalla los hallazgos tras revisar el código fuente del módulo 
 
 ### 🟠 Carga de Datos "Firehose" (Sin Paginación) (Alto)
 
-- **Ubicación:** `hooks/useInventoryStocksProducts.js`.
+- **Ubicación:** `src/modules/inventory/pages/InventoryControl/hooks/useInventoryStocksProducts.ts`.
 - **El Problema:** Se utiliza `onSnapshot` para escuchar **toda** la colección `productsStock` y `products` del negocio sin límites ni filtros de servidor.
 - **Impacto:**
   - Uso excesivo de ancho de banda y memoria en el cliente.
@@ -28,7 +28,7 @@ Este documento detalla los hallazgos tras revisar el código fuente del módulo 
 
 ### 🟡 Resolución de Ubicaciones N+1 (Medio)
 
-- **Ubicación:** `hooks/useLocationNames.js` -> `utils/inventoryHelpers.js`.
+- **Ubicación:** `src/modules/inventory/pages/InventoryControl/hooks/useInventoryLocationNames.ts` -> `src/modules/inventory/pages/InventoryControl/utils/inventoryHelpers.ts`.
 - **El Problema:** `resolveLocationLabel` realiza múltiples llamadas `getDoc` secuenciales (Warehouse -> Shelf -> Row -> Segment) para construir el nombre de _una_ sola ubicación.
 - **Impacto:** Renderizar una tabla con 50 ubicaciones únicas puede disparar cientos de lecturas a la base de datos, saturando la red y ralentizando el renderizado.
 - **Recomendación:** Cargar la topología del almacén en una sola consulta al inicio (caché) o desnormalizar el nombre completo de la ubicación en los documentos de stock.
@@ -43,7 +43,7 @@ Este documento detalla los hallazgos tras revisar el código fuente del módulo 
 
 ### ❌ Lógica de Administración en Bundle de UI
 
-- **Ubicación:** `tools/migrateInventoryCounts.js`.
+- **Ubicación:** `src/modules/inventory/pages/InventoryControl/tools/migrateInventoryCounts.ts`.
 - **El Problema:** Un script de migración masiva de base de datos está incluido en el código fuente de las vistas.
 - **Riesgo:** Aumenta el tamaño de la aplicación y expone lógica sensible de escritura masiva en el cliente.
 - **Acción:** Mover a Cloud Functions o a una carpeta de scripts de administración separada del build de producción.
@@ -78,7 +78,7 @@ Este documento detalla los hallazgos tras revisar el código fuente del módulo 
 
 ## Plan de Acción Sugerido
 
-1.  **Prioridad 1 (Performance/Seguridad):** Refactorizar `useInventoryCounts.js` para usar `batch.commit()` en lugar de escrituras secuenciales.
+1.  **Prioridad 1 (Performance/Seguridad):** Refactorizar `useInventoryCounts.ts` para usar `batch.commit()` en lugar de escrituras secuenciales.
 2.  **Prioridad 2 (Limpieza):** Mantener scripts de migración fuera del bundle cliente y dentro de herramientas/administración.
 3.  **Prioridad 3 (UX/Performance):** Optimizar la resolución de nombres de ubicaciones (evitar N+1 reads).
 4.  **Prioridad 4 (Arquitectura):** Planear la paginación para `productsStock` para soportar inventarios grandes.

@@ -29,6 +29,7 @@ const sourceFilesByDirectory = new Map<string, string[]>();
 
 const allowedLegacyDeepImports = new Set([]);
 
+const moduleRootImportPattern = /^@\/modules\/([^/]+)$/;
 const publicModulePathImportPattern = /^@\/modules\/([^/]+)\/(.+)/;
 const relativeImportPattern = /^\.\.?\//;
 
@@ -141,6 +142,7 @@ const forbiddenLegacySharedImportPrefixes = [
   '@/utils/invoice/electronicTaxReceipt',
   '@/utils/order/totals',
   '@/utils/purchase/receiptHistory',
+  '@/utils/provider/types',
   '@/utils/fiscal/electronicTaxReceiptDocumentTypes',
   '@/utils/fiscal/dgii608ReasonCatalog',
   '@/utils/commissions/collaboratorOptions',
@@ -528,6 +530,7 @@ const retiredLegacySharedSourcePaths = [
   ['src', 'utils', 'order', 'totals.ts'],
   ['src', 'utils', 'purchase', 'receiptHistory.ts'],
   ['src', 'utils', 'purchase', 'receiptHistory.test.ts'],
+  ['src', 'utils', 'provider'],
   ['src', 'utils', 'fiscal', 'electronicTaxReceiptDocumentTypes.ts'],
   ['src', 'utils', 'fiscal', 'electronicTaxReceiptDocumentTypes.test.ts'],
   ['src', 'utils', 'fiscal', 'dgii608ReasonCatalog.ts'],
@@ -957,6 +960,30 @@ const findPrivateModuleImportViolationsAcrossSource = () =>
     });
   });
 
+const findModuleRootImportViolations = () =>
+  listSourceFiles(sourceRoot).flatMap((filePath) =>
+    collectImportReferencesContaining(filePath, '@/modules/').flatMap(
+      (importReference) => {
+        const moduleMatch = moduleRootImportPattern.exec(
+          importReference.specifier,
+        );
+
+        if (!moduleMatch) {
+          return [];
+        }
+
+        const [, targetModule] = moduleMatch;
+
+        return [
+          {
+            ...importReference,
+            targetModule,
+          },
+        ];
+      },
+    ),
+  );
+
 const findRelativeCrossModuleImportViolations = () =>
   listSourceFiles(sourceRoot).flatMap((filePath) => {
     const repoPath = toRepoPath(filePath);
@@ -1174,6 +1201,17 @@ describe('module boundaries', () => {
   it('blocks private module imports from any source area', () => {
     const violations = findPrivateModuleImportViolationsAcrossSource()
       .map(formatViolation)
+      .sort();
+
+    expect(violations).toEqual([]);
+  }, 30_000);
+
+  it('blocks root module imports that bypass public barrels', () => {
+    const violations = findModuleRootImportViolations()
+      .map(
+        ({ filePath, line, specifier, targetModule }) =>
+          `${filePath}:${line} imports ${specifier}; use @/modules/${targetModule}/public or an explicit neutral contract`,
+      )
       .sort();
 
     expect(violations).toEqual([]);
