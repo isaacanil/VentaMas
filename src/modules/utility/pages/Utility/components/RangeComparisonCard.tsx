@@ -6,7 +6,7 @@ import type {
   UtilityComparison,
   UtilityCurrencyFormatter,
   UtilityPercentageFormatter,
-} from '@/modules/utility/pages/Utility/types';
+} from '@/modules/utility/types';
 
 interface RangeComparisonCardProps {
   loading: boolean;

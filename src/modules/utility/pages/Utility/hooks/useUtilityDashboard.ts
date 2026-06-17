@@ -19,7 +19,7 @@ import type {
   UtilityPresetKey,
   UtilityProductBreakdown,
   UtilitySummary,
-} from '@/modules/utility/pages/Utility/types';
+} from '@/modules/utility/types';
 
 import { DISTRIBUTION_COLORS } from '../constants/utilityConstants';
 import {

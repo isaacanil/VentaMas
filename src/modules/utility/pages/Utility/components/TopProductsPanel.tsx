@@ -5,7 +5,7 @@ import { SimpleTypography } from '@/components/ui/Typography/SimpleTypography';
 import type {
   UtilityCurrencyFormatter,
   UtilityProductBreakdown,
-} from '@/modules/utility/pages/Utility/types';
+} from '@/modules/utility/types';
 
 import { EmptyState } from './EmptyState';
 

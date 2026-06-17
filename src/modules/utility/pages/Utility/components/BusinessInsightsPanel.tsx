@@ -12,7 +12,7 @@ import type {
   UtilityCurrencyFormatter,
   UtilityDailyMetric,
   UtilitySummary,
-} from '@/modules/utility/pages/Utility/types';
+} from '@/modules/utility/types';
 
 import { EmptyState } from './EmptyState';
 

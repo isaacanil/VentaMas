@@ -1,4 +1,4 @@
-import type { UtilityInsightType } from '@/modules/utility/pages/Utility/types';
+import type { UtilityInsightType } from '@/modules/utility/types';
 
 import { designSystemV2 } from '@/theme/designSystemV2';
 

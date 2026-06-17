@@ -7,7 +7,7 @@ import { formatPrice } from '@/utils/format';
 import type {
   UtilityExpenseEntry,
   UtilityInvoiceEntry,
-} from '@/modules/utility/pages/Utility/types';
+} from '@/modules/utility/types';
 import Typography from '@/components/ui/Typography/Typography';
 
 import { getTotalSalesPerMonth, getTotalExpensesPerMonth } from './utils';
@@ -108,4 +108,3 @@ const Container = styled.div`
   width: 100%;
   height: 200px;
 `;
-

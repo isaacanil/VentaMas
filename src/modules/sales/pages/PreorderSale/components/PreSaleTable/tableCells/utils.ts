@@ -1,4 +1,8 @@
 import type { Client as ClientCartClient } from '@/features/clientCart/clientCartSlice';
+import {
+  getPreorderStatusLabel,
+  getPreorderStatusTagColor,
+} from '@/modules/sales/utils/preorderStatusDisplay';
 import type { InvoiceData } from '@/types/invoice';
 
 import type { ClientLike, TimestampRecord } from './types';
@@ -48,20 +52,11 @@ export const resolvePreorderTaxReceiptType = (
   preorder?.preorderDetails?.taxReceipt?.type ??
   null;
 
-const statusColors: Record<string, string> = {
-  pending: 'orange',
-  completed: 'green',
-  cancelled: 'red',
-};
-
 export const getColorByStatus = (status: string | null | undefined) =>
-  statusColors[status ?? ''] || 'gray';
+  getPreorderStatusTagColor(status);
 
-export const getStatusLabel = (status: string | null | undefined) => {
-  if (status === 'pending') return 'Pendiente';
-  if (status === 'completed') return 'Completada';
-  return 'Cancelada';
-};
+export const getStatusLabel = (status: string | null | undefined) =>
+  getPreorderStatusLabel(status);
 
 const isTimestampRecord = (value: unknown): value is TimestampRecord =>
   !!value &&

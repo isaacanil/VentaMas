@@ -3,7 +3,7 @@ import type {
   UtilityDailyMetric,
   UtilityTransactionRow,
   UtilityTrend,
-} from '@/modules/utility/pages/Utility/types';
+} from '@/modules/utility/types';
 import { saveXlsxFile } from '@/utils/export/xlsx';
 
 import { DateTime } from 'luxon';

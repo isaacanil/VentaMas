@@ -9,7 +9,7 @@ import { SimpleTypography } from '@/components/ui/Typography/SimpleTypography';
 import type {
   UtilityDateRange,
   UtilityPresetKey,
-} from '@/modules/utility/pages/Utility/types';
+} from '@/modules/utility/types';
 
 const { colors, spacing, radii, shadows, typography } = designSystemV2;
 

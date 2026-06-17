@@ -9,6 +9,12 @@ import {
 import { useState } from 'react';
 import styled from 'styled-components';
 
+import {
+  getPreorderStatusLabel,
+  getPreorderStatusTone,
+  resolvePreorderStatus,
+  type PreorderStatusTone,
+} from '@/modules/sales/utils/preorderStatusDisplay';
 import { formatPrice } from '@/utils/format';
 import type { InvoiceData, InvoiceProduct } from '@/types/invoice';
 
@@ -52,10 +58,7 @@ export const PreorderModal = ({
   onCancel,
 }: PreorderModalProps) => {
   const [isClientExpanded, setIsClientExpanded] = useState(false);
-  const status =
-    typeof preorder?.preorderDetails?.status === 'string'
-      ? preorder.preorderDetails.status
-      : null;
+  const status = resolvePreorderStatus(preorder);
   const products = (preorder?.products ?? []) as InvoiceProduct[];
   const totalPurchaseValue = Number(preorder?.totalPurchase?.value ?? 0);
   const deliveryStatus = Boolean(preorder?.delivery?.status);
@@ -90,33 +93,7 @@ export const PreorderModal = ({
       : 'Sin dirección';
   const hasClientExtra = customerAddress && customerAddress !== 'Sin dirección';
 
-  const getStatusColor = (value: string | null | undefined) => {
-    switch ((value || '').toLowerCase()) {
-      case 'pending':
-        return '#ea580c';
-      case 'completed':
-        return '#15803d';
-      case 'cancelled':
-        return '#dc2626';
-      default:
-        return '#475569';
-    }
-  };
-
-  const getStatusName = (value: string | null | undefined) => {
-    switch ((value || '').toLowerCase()) {
-      case 'pending':
-        return 'Pendiente';
-      case 'completed':
-        return 'Completado';
-      case 'cancelled':
-        return 'Cancelado';
-      default:
-        return 'Desconocido';
-    }
-  };
-
-  const statusTone = getStatusColor(status);
+  const statusTone = getPreorderStatusTone(status);
   const isVisible = typeof open === 'boolean' ? open : visible;
   const shouldRender = !!isVisible && isReady !== false;
 
@@ -149,7 +126,7 @@ export const PreorderModal = ({
             </ModalHeader>
             <ModalBody>
               <StatusBadge $tone={statusTone}>
-                <span>{getStatusName(status)}</span>
+                <span>{getPreorderStatusLabel(status)}</span>
                 {hasCreatedAt && <span>•</span>}
                 <span>
                   {hasCreatedAt ? createdAtLabel : 'Fecha no disponible'}
@@ -328,15 +305,16 @@ const ModalBody = styled.div`
   gap: 20px;
 `;
 
-type StatusBadgeStyleProps = { $tone?: string };
+type StatusBadgeStyleProps = { $tone?: PreorderStatusTone };
 
 const StatusBadge = styled.div<StatusBadgeStyleProps>`
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: ${(props: StatusBadgeStyleProps) => props.$tone || '#475569'};
-  color: white;
+  color: ${(props: StatusBadgeStyleProps) => props.$tone?.text || '#334155'};
+  background: ${(props: StatusBadgeStyleProps) =>
+    props.$tone?.background || '#e2e8f0'};
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;

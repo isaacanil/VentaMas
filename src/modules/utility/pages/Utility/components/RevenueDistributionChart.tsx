@@ -8,7 +8,7 @@ import type {
   UtilityCurrencyFormatter,
   UtilityDistributionDetail,
   UtilityPercentageFormatter,
-} from '@/modules/utility/pages/Utility/types';
+} from '@/modules/utility/types';
 
 import { EmptyState } from './EmptyState';
 
@@ -213,4 +213,3 @@ const LegendDivider = styled.li`
   margin: 0.25rem 0;
   border-top: 1px solid #e2e8f0;
 `;
-

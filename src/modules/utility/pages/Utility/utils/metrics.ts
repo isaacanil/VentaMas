@@ -14,7 +14,7 @@ import type {
   UtilityProductBreakdown,
   UtilityInvoiceEntry,
   UtilityExpenseEntry,
-} from '@/modules/utility/pages/Utility/types';
+} from '@/modules/utility/types';
 
 type PricingLike =
   | ProductPricing

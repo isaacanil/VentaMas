@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import type { ChartData, ChartOptions } from '@/components/charts/chartTypes';
 import { LazyLine } from '@/components/charts/LazyCharts';
 import { formatPrice } from '@/utils/format';
-import type { UtilityInvoiceEntry } from '@/modules/utility/pages/Utility/types';
+import type { UtilityInvoiceEntry } from '@/modules/utility/types';
 import {
   getInvoiceTimestamp,
   getInvoiceTotalValue,
@@ -111,4 +111,3 @@ const Container = styled.div`
   width: 100%;
   height: 200px;
 `;
-

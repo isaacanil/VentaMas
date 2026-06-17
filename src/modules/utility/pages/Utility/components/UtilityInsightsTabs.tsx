@@ -8,7 +8,7 @@ import type {
   UtilityDailyMetric,
   UtilityProductBreakdown,
   UtilitySummary,
-} from '@/modules/utility/pages/Utility/types';
+} from '@/modules/utility/types';
 
 import { BusinessInsightsPanel } from './BusinessInsightsPanel';
 import { TopProductsPanel } from './TopProductsPanel';

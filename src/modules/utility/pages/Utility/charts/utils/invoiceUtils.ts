@@ -1,5 +1,5 @@
 import type { InvoiceData } from '@/types/invoice';
-import type { UtilityInvoiceEntry } from '@/modules/utility/pages/Utility/types';
+import type { UtilityInvoiceEntry } from '@/modules/utility/types';
 
 type InvoiceWithData = { data?: InvoiceData | null } & Record<string, unknown>;
 

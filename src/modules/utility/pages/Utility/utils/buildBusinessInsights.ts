@@ -3,7 +3,7 @@ import type {
   UtilityDailyMetric,
   UtilityInsight,
   UtilitySummary,
-} from '@/modules/utility/pages/Utility/types';
+} from '@/modules/utility/types';
 
 const formatPercent = (value: number | null | undefined): string => {
   if (!Number.isFinite(value)) return '0%';

@@ -3,14 +3,16 @@ import { Modal, Select } from 'antd';
 import styled from 'styled-components';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
 import { formatInvoicePrice } from '@/utils/invoice/documentCurrency';
+import {
+  getPreorderStatusLabel,
+  getPreorderStatusTone,
+  type PreorderStatusTone,
+} from '@/modules/sales/utils/preorderStatusDisplay';
 import type { InvoiceData } from '@/types/invoice';
 
 export type PreorderData = InvoiceData;
 
-export type StatusTone = {
-  text: string;
-  background: string;
-};
+export type StatusTone = PreorderStatusTone;
 
 export type PreorderEntry = {
   key: string;
@@ -198,18 +200,6 @@ const EmptyDescription = styled.span`
   font-size: 0.85rem;
 `;
 
-const STATUS_TONES: Record<string, StatusTone> = {
-  pending: { text: '#b45309', background: '#fef3c7' },
-  completed: { text: '#166534', background: '#dcfce7' },
-  cancelled: { text: '#b91c1c', background: '#fee2e2' },
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  pending: 'Pendiente',
-  completed: 'Completada',
-  cancelled: 'Cancelada',
-};
-
 interface PreorderModalProps {
   isOpen: boolean;
   isLoading: boolean;
@@ -390,9 +380,10 @@ export const PreorderModal = ({
                 <SelectedSummary>
                   <SummaryRow>
                     <ItemTitle>Preventa #{selectedEntry.number}</ItemTitle>
-                    <StatusPill $tone={STATUS_TONES[selectedEntry.status]}>
-                      {STATUS_LABELS[selectedEntry.status] ||
-                        selectedEntry.status}
+                    <StatusPill
+                      $tone={getPreorderStatusTone(selectedEntry.status)}
+                    >
+                      {getPreorderStatusLabel(selectedEntry.status)}
                     </StatusPill>
                   </SummaryRow>
                   <SummaryRow>

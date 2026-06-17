@@ -1,4 +1,4 @@
-import type { UtilityDistributionColors } from '@/modules/utility/pages/Utility/types';
+import type { UtilityDistributionColors } from '@/modules/utility/types';
 
 export const DISTRIBUTION_COLORS = Object.freeze({
   cost: '#818cf8',

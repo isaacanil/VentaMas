@@ -1,7 +1,7 @@
 import type {
   UtilityDateRange,
   UtilityPresetKey,
-} from '@/modules/utility/pages/Utility/types';
+} from '@/modules/utility/types';
 
 import { DateTime } from 'luxon';
 

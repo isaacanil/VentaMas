@@ -17,7 +17,7 @@ import type {
   UtilityCurrencyFormatter,
   UtilityPercentageFormatter,
   UtilityTrend,
-} from '@/modules/utility/pages/Utility/types';
+} from '@/modules/utility/types';
 
 const { colors, spacing, radii, shadows } = designSystemV2;
 const MotionDiv = m.div as any;

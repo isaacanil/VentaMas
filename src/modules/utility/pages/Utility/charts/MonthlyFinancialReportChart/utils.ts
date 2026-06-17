@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 import type {
   UtilityExpenseEntry,
   UtilityInvoiceEntry,
-} from '@/modules/utility/pages/Utility/types';
+} from '@/modules/utility/types';
 import {
   getInvoiceTimestamp,
   getInvoiceTotalValue,

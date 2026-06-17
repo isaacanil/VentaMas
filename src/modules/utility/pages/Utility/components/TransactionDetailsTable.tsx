@@ -12,7 +12,7 @@ import type {
   UtilityCurrencyFormatter,
   UtilityDailyMetric,
   UtilityTrend,
-} from '@/modules/utility/pages/Utility/types';
+} from '@/modules/utility/types';
 
 import { buildTransactionRows } from '../utils/transactionRows';
 
