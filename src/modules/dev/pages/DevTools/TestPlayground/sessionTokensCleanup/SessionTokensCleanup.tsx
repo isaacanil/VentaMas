@@ -7,7 +7,7 @@ import {
   PageStack,
   WarningParagraph,
 } from './SessionTokensCleanup.styles';
-import { SessionTokensCleanupResults } from './components/SessionTokensCleanupResults';
+import { SessionTokensCleanupResults } from './SessionTokensCleanupResults';
 import {
   deleteSessionTokens,
   FETCH_LIMIT,

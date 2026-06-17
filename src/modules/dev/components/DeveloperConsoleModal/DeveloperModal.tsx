@@ -1,8 +1,8 @@
 import styled from 'styled-components';
 
 import Console from './components/Console';
-import { Header } from './components/Header';
-import { Modal } from './components/Modal';
+import { DeveloperConsoleFrame } from './components/DeveloperConsoleFrame';
+import { DeveloperConsoleHeader } from './components/DeveloperConsoleHeader';
 import SelectionMode from './components/SelectionMode';
 import { useDeveloperModalController } from './hooks/useDeveloperModalController';
 
@@ -32,8 +32,8 @@ export const DeveloperModal = () => {
   if (!isDeveloper) return null;
 
   return (
-    <Modal visible={isOpen} onClose={handleClose}>
-      <Header title="Consola de Desarrollador" />
+    <DeveloperConsoleFrame visible={isOpen} onClose={handleClose}>
+      <DeveloperConsoleHeader title="Consola de Desarrollador" />
       <ConsoleContainer>
         {selectionMode.active ? (
           <SelectionMode
@@ -66,7 +66,7 @@ export const DeveloperModal = () => {
           onFilterSelection={handleFilterSelection}
         />
       </ConsoleContainer>
-    </Modal>
+    </DeveloperConsoleFrame>
   );
 };
 

@@ -11,11 +11,11 @@ import {
 import type { TableColumnsType as ColumnsType } from 'antd';
 import React from 'react';
 
-import type { AuditRow, DomainAuditResult } from '../types';
+import type { AuditRow, DomainAuditResult } from './types';
 import {
   formatAuditAmount,
   formatAuditDate,
-} from '../utils/accountingAuditFormatters';
+} from './utils/accountingAuditFormatters';
 
 const { Text } = Typography;
 

@@ -2,8 +2,8 @@ import {
   ProgressFill,
   ProgressHeader,
   ProgressTrack,
-} from '../BusinessMissingCreatedAt.styles';
-import type { ScanProgress } from '../types';
+} from './BusinessMissingCreatedAt.styles';
+import type { ScanProgress } from './types';
 
 export function ProgressBar({ progress }: { progress: ScanProgress }) {
   const pct = progress.total

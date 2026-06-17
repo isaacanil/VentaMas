@@ -18,7 +18,7 @@ import {
   TableFrame,
   Toolbar,
 } from './BusinessMissingCreatedAt.styles';
-import { ProgressBar } from './components/ProgressBar';
+import { ProgressBar } from './ProgressBar';
 import {
   fixBusinessCreatedAt,
   fixMissingBusinessesCreatedAt,

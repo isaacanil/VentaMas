@@ -2,13 +2,17 @@ import { AnimatePresence, m } from 'framer-motion';
 import React from 'react';
 import styled from 'styled-components';
 
-interface ModalProps {
+interface DeveloperConsoleFrameProps {
   visible: boolean;
   onClose: () => void;
   children: React.ReactNode;
 }
 
-export const Modal = ({ visible, onClose, children }: ModalProps) => {
+export const DeveloperConsoleFrame = ({
+  visible,
+  onClose,
+  children,
+}: DeveloperConsoleFrameProps) => {
   if (!visible) return null;
 
   return (
@@ -20,13 +24,18 @@ export const Modal = ({ visible, onClose, children }: ModalProps) => {
         onClick={onClose}
       >
         <ModalContainer
+          aria-label="Consola de desarrollador"
+          aria-modal="true"
+          role="dialog"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
           transition={{ duration: 0.2 }}
           onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
         >
-          <CloseButton onClick={onClose}>×</CloseButton>
+          <CloseButton aria-label="Cerrar consola de desarrollador" onClick={onClose}>
+            ×
+          </CloseButton>
           {children}
         </ModalContainer>
       </Overlay>

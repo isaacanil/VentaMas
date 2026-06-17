@@ -247,6 +247,10 @@ Este documento define reglas practicas para continuar refactors pequenos sin cam
 - `MiniClientSelector` vive en `src/modules/contacts/components/ClientControl/MiniClientSelector` y se expone por `contacts/public`, porque ventas y preventas compartian un selector de cliente escondido bajo una validacion profunda de CxC en POS.
 - `SyncDiagnostics` quedo como carpeta owner-local (`SyncDiagnostics/SyncDiagnostics.tsx` + `index.ts`), eliminando el patron archivo+carpeta con el mismo basename en DevTools sin cambiar el lazy loader publico.
 - Los estados vacio/carga/error de `NotificationCenter` usan `PanelStateCard` directamente en sus paneles, retirando wrappers locales de CxC y autorizaciones que no agregaban comportamiento.
+- Se retiraron huerfanos confirmados sin consumidores: `BusinessInfoCard`, `PreventaList`, `BackorderCard` y `BillingSection`.
+- DevTools redujo carpetas `components/` de un solo archivo moviendo `DomainTable`, `SessionTokensCleanupResults`, `ProgressBar` y `CatalogCard` junto al owner que los consume.
+- `DeveloperConsoleModal` reemplazo nombres genericos (`Header`, `Modal`) por `DeveloperConsoleHeader` y `DeveloperConsoleFrame`, quitando nodos vacios y agregando semantica basica de dialog al frame.
+- `InventoryMigrationTool/index.tsx` quedo como re-export directo de `InventoryMigration`, sin wrapper de ruta que solo renderizaba un componente.
 
 ## Guardrails añadidos en esta pasada
 

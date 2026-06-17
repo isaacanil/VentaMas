@@ -72,7 +72,7 @@ import {
 } from '@heroui/react';
 import { getLocalTimeZone, parseTime, today } from '@internationalized/date';
 
-import CatalogCard from './components/CatalogCard';
+import CatalogCard from './CatalogCard';
 import {
   heroUiCategories,
   heroUiComponentCount,

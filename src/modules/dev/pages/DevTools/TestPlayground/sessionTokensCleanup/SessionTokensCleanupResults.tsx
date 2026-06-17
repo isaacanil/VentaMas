@@ -1,6 +1,6 @@
 import { List, Space, Typography } from 'antd';
 
-import type { TokenResultItem } from '../types';
+import type { TokenResultItem } from './types';
 
 const { Text } = Typography;
 

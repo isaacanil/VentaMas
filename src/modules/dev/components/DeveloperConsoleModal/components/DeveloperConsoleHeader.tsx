@@ -1,16 +1,16 @@
 import React from 'react';
 import styled from 'styled-components';
 
-type HeaderProps = {
+type DeveloperConsoleHeaderProps = {
   title?: React.ReactNode;
 };
 
-export const Header = ({ title }: HeaderProps) => {
+export const DeveloperConsoleHeader = ({
+  title,
+}: DeveloperConsoleHeaderProps) => {
   return (
     <HeaderContainer>
       <Title>{title}</Title>
-      {<Subtitle></Subtitle>}
-      <DevBadge></DevBadge>
     </HeaderContainer>
   );
 };
@@ -30,11 +30,3 @@ const Title = styled.h2`
   font-weight: 600;
   color: #fff;
 `;
-
-const Subtitle = styled.p`
-  margin: 2px 0 0;
-  font-size: 13px;
-  color: #999;
-`;
-
-const DevBadge = styled.div``;
