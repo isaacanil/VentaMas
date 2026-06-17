@@ -18,7 +18,7 @@ import {
   toCreditNoteDate,
 } from './creditNoteListUtils';
 
-import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/types/AdvancedTableTypes';
+import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/AdvancedTable';
 import type { CreditNoteRecord } from '@/types/creditNote';
 
 type CreditNoteTableRow = CreditNoteRecord & { actions: CreditNoteRecord };

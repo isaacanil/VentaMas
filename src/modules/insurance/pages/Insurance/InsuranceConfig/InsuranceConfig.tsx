@@ -10,11 +10,13 @@ import {
 import { formatDateTime } from '@/utils/date/dateUtils';
 import InsuranceConfigForm from '@/modules/insurance/pages/Insurance/InsuranceConfigForm/InsuranceConfigForm';
 import { MenuApp } from '@/modules/navigation/public';
-import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
+import {
+  AdvancedTable,
+  type ColumnConfig,
+} from '@/components/ui/AdvancedTable/AdvancedTable';
 
 import { InsuranceTypesDisplay } from './components/InsuranceTypesDisplay';
 
-import type { ColumnConfig } from '@/components/ui/AdvancedTable/types/ColumnTypes';
 
 interface InsuranceTableRow extends Record<string, unknown> {
   insuranceName?: string;

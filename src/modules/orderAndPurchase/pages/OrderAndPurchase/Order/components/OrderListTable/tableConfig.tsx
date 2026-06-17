@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { ColumnConfig } from '@/components/ui/AdvancedTable/types/ColumnTypes';
+import type { ColumnConfig } from '@/components/ui/AdvancedTable/AdvancedTable';
 import { OrderActionButtons } from './tableCells';
 
 type CellRenderer = (args: { value: unknown }) => ReactElement | null;

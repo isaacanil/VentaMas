@@ -7,8 +7,10 @@ import {
   ShoppingCartOutlined,
 } from '@/constants/icons/antd';
 import { DollarCircleOutlined, HistoryOutlined } from '@ant-design/icons';
-import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
-import type { ColumnConfig } from '@/components/ui/AdvancedTable/types/ColumnTypes';
+import {
+  AdvancedTable,
+  type ColumnConfig,
+} from '@/components/ui/AdvancedTable/AdvancedTable';
 import { formatPrice } from '@/utils/format/formatPrice';
 
 import type {

@@ -18,7 +18,7 @@ import { ChangeProductData } from '@/features/updateProduct/updateProductSlice';
 import { formatPrice } from '@/utils/format';
 import { formatNumber } from '@/utils/format';
 import { getTax, getTotalPrice } from '@/utils/pricing';
-import { ImgCell } from '@/components/ui/AdvancedTable/components/Cells';
+import { ImgCell } from '@/components/ui/AdvancedTable/AdvancedTable';
 import type { ProductRecord } from '@/types/products';
 
 type ProductItemProps = {

@@ -9,7 +9,7 @@ import { resolveDebitNoteOperationalStatusDisplay } from '@/modules/invoice/util
 
 import { toDebitNoteDate } from './debitNoteListUtils';
 
-import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/types/AdvancedTableTypes';
+import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/AdvancedTable';
 import type { DebitNoteRecord } from '@/modules/invoice/types/debitNote';
 
 type DebitNoteTableRow = DebitNoteRecord & { actions: DebitNoteRecord };

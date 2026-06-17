@@ -1,5 +1,5 @@
 import { getTimeElapsed } from '@/utils/date/formatTime';
-import type { ColumnConfig } from '@/components/ui/AdvancedTable/types/ColumnTypes';
+import type { ColumnConfig } from '@/components/ui/AdvancedTable/AdvancedTable';
 
 import { PriceCell, StatusCell } from './tableCells/components/BasicCells';
 import { PreorderActionsCell } from './tableCells/TableCells';

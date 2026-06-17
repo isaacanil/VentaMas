@@ -504,12 +504,14 @@ export type {
   AdvancedTableScrollMetrics,
   ScrollMetrics,
 } from './types/AdvancedTableTypes';
+export type { CellType, ColumnConfig, TableRow } from './types/ColumnTypes';
 
 export {
   ExpandedRow,
   ExpanderButton,
   Row,
 } from './components/Table/TableRow.styles';
+export { ImgCell, TextCell } from './components/Cells';
 
 const FilterBar = styled.div`
   display: flex;
