@@ -20,6 +20,7 @@ const FIELDS_TO_EXTRACT = [
   'pendingBalance',
   'personalID',
   'province',
+  'municipality',
   'sector',
   'tel',
   'tel2',

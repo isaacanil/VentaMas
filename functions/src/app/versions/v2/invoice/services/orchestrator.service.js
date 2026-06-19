@@ -29,6 +29,8 @@ const safeNumber = (value) => {
 
 import { auditTx } from './audit.service.js';
 import { getIdempotencyRef } from './idempotency.service.js';
+import { buildInvoiceTimingSeed } from './invoiceTiming.service.js';
+import { upsertInvoiceTimelineEventInTransaction } from './invoiceTimeline.service.js';
 import { reserveNcf } from './ncf.service.js';
 
 const STRICT_LIMIT_PLANS = new Set(['demo', 'plus']);
@@ -362,6 +364,7 @@ export async function createPendingInvoice({
       };
     }
 
+    const pendingAt = Timestamp.now();
     const baseDoc = {
       version: 2,
       status: 'pending',
@@ -372,7 +375,14 @@ export async function createPendingInvoice({
       idempotencyKey,
       requestHash,
       cartHash,
-      statusTimeline: [{ status: 'pending', at: Timestamp.now() }],
+      statusTimeline: [{ status: 'pending', at: pendingAt }],
+      ...buildInvoiceTimingSeed({
+        at: pendingAt,
+        metadata: {
+          source: 'createPendingInvoice',
+          idempotencyKey,
+        },
+      }),
       snapshot: {
         ncf: payload?.ncf || null,
         client: payload?.client || null,
@@ -546,6 +556,27 @@ export async function createPendingInvoice({
     }
 
     tx.set(invoiceRef, baseDoc);
+    for (const entry of baseDoc.statusTimeline) {
+      const eventId = `init__${entry.status}`;
+      upsertInvoiceTimelineEventInTransaction({
+        transaction: tx,
+        timelineEventRef: db.doc(
+          `businesses/${businessId}/invoicesV2/${newInvoiceId}/timeline/${eventId}`,
+        ),
+        businessId,
+        invoiceId: newInvoiceId,
+        eventId,
+        status: entry.status,
+        at: entry.at,
+        source: 'createPendingInvoice',
+        metadata: {
+          idempotencyKey,
+          ncfReserved: entry.status === 'ncf_reserved' || undefined,
+          electronicPrepared:
+            entry.status === 'electronic_tax_receipt_pending' || undefined,
+        },
+      });
+    }
     auditTx(tx, {
       businessId,
       invoiceId: newInvoiceId,

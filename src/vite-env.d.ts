@@ -11,6 +11,10 @@ interface ImportMetaEnv {
   readonly VITE_FIREBASE_APPCHECK_DEBUG_TOKEN?: string;
   readonly VITE_FIREBASE_APPCHECK_DISABLED?: string;
   readonly VITE_FIREBASE_APPCHECK_SITE_KEY?: string;
+  readonly VITE_RNC_LOOKUP_REMOTE_CONFIG?: string;
+  readonly VITE_RNC_LOOKUP_SOURCE_REMOTE_KEY?: string;
+  readonly VITE_RNC_LOOKUP_SOURCE?: string;
+  readonly VITE_SUPABASE_KEY?: string;
   readonly VITE_ENABLE_DEV_ROUTES?: string;
   readonly VITE_ENABLE_REACT_SCAN?: string;
   readonly VITE_ENABLE_LAZY_ROUTE_WARMUP?: string;

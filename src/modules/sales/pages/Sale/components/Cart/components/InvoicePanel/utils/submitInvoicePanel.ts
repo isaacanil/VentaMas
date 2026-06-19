@@ -57,6 +57,32 @@ const INVOICE_PROGRESS_MESSAGES: Record<InvoiceProgressStage, string> = {
   'preparing-receipt': 'Preparando comprobante/impresión',
 };
 
+const INVOICE_STATUS_MESSAGES: Record<
+  string,
+  { message: string; description: string }
+> = {
+  frontend_ready: {
+    message: 'Factura lista para imprimir',
+    description:
+      'La factura está lista para imprimir mientras se completan tareas finales en segundo plano.',
+  },
+  print_ready: {
+    message: 'Factura lista para imprimir',
+    description:
+      'La factura está lista para imprimir mientras se completan tareas finales en segundo plano.',
+  },
+  print_ready_with_review: {
+    message: 'Factura lista para imprimir con revisión pendiente',
+    description:
+      'Puedes imprimir la factura, pero quedó marcada para revisión operativa en el historial.',
+  },
+  'test-preview': {
+    message: 'Modo prueba activo',
+    description:
+      'Generamos una vista previa de la factura, pero no se guardó en la base de datos.',
+  },
+};
+
 type InvoiceSubmissionGuardFailure = Extract<
   InvoiceSubmissionGuardsResult,
   { ok: false }
@@ -204,14 +230,20 @@ interface SubmitInvoicePanelArgs {
   handleAfterPrint: () => void;
   handleInvoicePrinting: (invoice: InvoiceData) => Promise<void>;
   hasDueDate: boolean;
-  idempotencyKey: string;
+  idempotencyKey?: string;
   insuranceAR: unknown;
   insuranceAuth: unknown;
   insuranceEnabled: boolean;
   invoiceComment: string | null;
   isTestMode: boolean;
+  buildIdempotencyKey?: (payload: {
+    dueDate: number | null;
+    effectiveAccountsReceivable: unknown;
+    effectiveCart: unknown;
+  }) => string;
   monetaryContext?: DocumentCurrencyContext | null;
   ncfType: string | null;
+  onIdempotencyConflict?: () => void;
   resolvedBusinessId: string | null;
   runInvoice: (params: InvoiceProcessParams) => Promise<InvoiceAttemptResult>;
   setInvoice: (invoice: InvoiceData | null) => void;
@@ -242,8 +274,10 @@ export const submitInvoicePanel = async ({
   insuranceEnabled,
   invoiceComment,
   isTestMode,
+  buildIdempotencyKey,
   monetaryContext,
   ncfType,
+  onIdempotencyConflict,
   resolvedBusinessId,
   runInvoice,
   setInvoice,
@@ -285,6 +319,21 @@ export const submitInvoicePanel = async ({
 
     traceInvoiceSubmitPhase('inicio', 'started', traceContext);
     traceInvoiceSubmitPhase('validaciones previas', 'started', traceContext);
+
+    if (!Array.isArray(cart?.products) || cart.products.length === 0) {
+      notification.warning({
+        message: 'Venta sin productos',
+        description:
+          'Agrega al menos un producto al carrito antes de completar la factura.',
+        duration: 5,
+      });
+      dispatch(unlockTaxReceiptType());
+      clearProgress();
+      traceInvoiceSubmitPhase('validaciones previas', 'blocked', traceContext, {
+        reason: 'empty-cart',
+      });
+      return;
+    }
 
     if (effectiveTaxReceiptEnabled) {
       if (!selectedNcfType) {
@@ -429,6 +478,16 @@ export const submitInvoicePanel = async ({
           cart,
         })
       : accountsReceivable;
+    const resolvedIdempotencyKey =
+      buildIdempotencyKey?.({
+        dueDate,
+        effectiveAccountsReceivable,
+        effectiveCart,
+      }) || idempotencyKey;
+
+    if (!resolvedIdempotencyKey) {
+      throw new Error('No se pudo preparar la llave segura de facturación.');
+    }
 
     setProgress('registering-sale');
 
@@ -447,7 +506,7 @@ export const submitInvoicePanel = async ({
       isTestMode,
       businessId,
       business,
-      idempotencyKey,
+      idempotencyKey: resolvedIdempotencyKey,
       onProgress: setProgress,
       onPhaseTrace: (trace) => traceInvoiceProcessPhase(trace, traceContext),
     })) as InvoiceAttemptResult;
@@ -503,20 +562,7 @@ export const submitInvoicePanel = async ({
     }
 
     if (invoiceStatus && invoiceStatus !== 'committed') {
-      const statusMessages = {
-        frontend_ready: {
-          message: 'Factura en proceso',
-          description:
-            'Seguimos finalizando la factura en segundo plano. Los totales se actualizarán en breve.',
-        },
-        'test-preview': {
-          message: 'Modo prueba activo',
-          description:
-            'Generamos una vista previa de la factura, pero no se guardó en la base de datos.',
-        },
-      };
-
-      const info = statusMessages[invoiceStatus];
+      const info = INVOICE_STATUS_MESSAGES[invoiceStatus];
       notification.info({
         message: info?.message ?? 'Estado de factura',
         description:
@@ -550,6 +596,14 @@ export const submitInvoicePanel = async ({
   } catch (error) {
     const typedError = error as InvoiceServiceError;
     const taxReceiptDepleted = isTaxReceiptDepletedError(typedError);
+    const normalizedErrorCode =
+      typeof typedError?.code === 'string'
+        ? typedError.code.replace(/^functions\//, '')
+        : null;
+
+    if (normalizedErrorCode === 'already-exists') {
+      onIdempotencyConflict?.();
+    }
 
     if (!taxReceiptDepleted) {
       const errorNotification = getInvoiceErrorNotification(typedError);

@@ -543,6 +543,11 @@ service cloud.firestore {
       allow read: if hasBusinessAccess(businessId);
       allow create, update, delete: if false;
 
+      match /timeline/{eventId} {
+        allow read: if hasBusinessAccess(businessId);
+        allow write: if false;
+      }
+
       match /{document=**} {
         allow read: if hasBusinessAccess(businessId);
         allow write: if false;
@@ -655,6 +660,16 @@ service cloud.firestore {
     }
 
     match /businesses/{businessId}/cashCounts/{cashCountId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+
+      match /sales/{invoiceId} {
+        allow read: if hasBusinessAccess(businessId);
+        allow write: if false;
+      }
+    }
+
+    match /businesses/{businessId}/cashCountSales/{saleId} {
       allow read: if hasBusinessAccess(businessId);
       allow create, update, delete: if false;
     }

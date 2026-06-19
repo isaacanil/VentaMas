@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   isPreorderDocument,
   resolveDocumentIdentity,
+  resolveDocumentNumberLine,
 } from '@/utils/invoice/documentIdentity';
 
 describe('isPreorderDocument', () => {
@@ -60,5 +61,69 @@ describe('isPreorderDocument', () => {
       value: null,
       type: 'fiscal-credit',
     });
+  });
+
+  it('resolves electronic adjustment note identities from document type', () => {
+    expect(
+      resolveDocumentIdentity({
+        electronicTaxReceipt: { documentType: 'E33' },
+      }),
+    ).toMatchObject({
+      title: 'NOTA DE DÉBITO ELECTRÓNICA',
+      label: 'e-NCF',
+      value: null,
+      type: 'fiscal-debit-note',
+    });
+
+    expect(
+      resolveDocumentIdentity({
+        electronicTaxReceipt: { documentType: 'E34' },
+      }),
+    ).toMatchObject({
+      title: 'NOTA DE CRÉDITO ELECTRÓNICA',
+      label: 'e-NCF',
+      value: null,
+      type: 'fiscal-credit-note',
+    });
+  });
+
+  it('resolves governmental e-CF identity', () => {
+    expect(
+      resolveDocumentIdentity({
+        electronicTaxReceipt: {
+          eNcf: 'E450000000001',
+          documentType: 'E45',
+        },
+      }),
+    ).toMatchObject({
+      title: 'COMPROBANTE GUBERNAMENTAL ELECTRÓNICO',
+      label: 'e-NCF',
+      value: 'E450000000001',
+      type: 'fiscal-government',
+    });
+  });
+
+  it('uses adjustment note labels for the visible document number line', () => {
+    const creditNoteIdentity = resolveDocumentIdentity({
+      numberID: 704,
+      electronicTaxReceipt: {
+        eNcf: 'E340000000001',
+        documentType: 'E34',
+      },
+    });
+    const debitNoteIdentity = resolveDocumentIdentity({
+      numberID: 705,
+      electronicTaxReceipt: {
+        eNcf: 'E330000000001',
+        documentType: 'E33',
+      },
+    });
+
+    expect(
+      resolveDocumentNumberLine(creditNoteIdentity, { numberID: 704 }),
+    ).toBe('Nota de crédito #704');
+    expect(
+      resolveDocumentNumberLine(debitNoteIdentity, { numberID: 705 }),
+    ).toBe('Nota de débito #705');
   });
 });

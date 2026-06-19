@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  isElectronicTaxReceiptAcceptedByProvider,
   isElectronicTaxReceiptAcceptedForFinancialUse,
   resolveElectronicTaxReceiptDiagnosticText,
   resolveElectronicTaxReceiptFilterStatus,
@@ -37,6 +38,23 @@ describe('electronicTaxReceipt status helpers', () => {
       dgiiValidationStatus: 'accepted',
     };
 
+    expect(resolveElectronicTaxReceiptStatusKey(snapshot)).toBe('accepted');
+    expect(resolveElectronicTaxReceiptStatusLabel(snapshot)).toBe('Aceptado');
+  });
+
+  it('promotes accepted GISYS resolution metadata over stale local status', () => {
+    const snapshot = {
+      status: 'issued',
+      requestStatus: 'accepted',
+      dgiiValidationStatus: 'not_checked',
+      dgiiStatus: 'submitted',
+      dgiiCode: '01',
+      dgiiCategory: 'approved',
+      resolutionAction: 'MARK_ACCEPTED',
+      dgiiMessage: 'Aceptado',
+    };
+
+    expect(isElectronicTaxReceiptAcceptedByProvider(snapshot)).toBe(true);
     expect(resolveElectronicTaxReceiptStatusKey(snapshot)).toBe('accepted');
     expect(resolveElectronicTaxReceiptStatusLabel(snapshot)).toBe('Aceptado');
   });
@@ -209,6 +227,21 @@ describe('electronicTaxReceipt status helpers', () => {
     expect(resolveElectronicTaxReceiptDiagnosticText(snapshot)).toBe(
       'Documento rechazado | E001: RNC inválido | Acción sugerida: data_correction | Requiere corregir datos antes de reenviar. | Requiere emitir con un e-NCF nuevo. | Código DGII: E99 | TrackID: track-1 | Submission GISYS: sub-1',
     );
+  });
+
+  it('clears stale rejection diagnostics when GISYS resolved the submission as accepted', () => {
+    const snapshot = {
+      status: 'issued',
+      dgiiStatus: 'accepted',
+      dgiiCode: '01',
+      dgiiCategory: 'approved',
+      resolutionAction: 'MARK_ACCEPTED',
+      dgiiMessage: 'Aceptado',
+      lastError: 'Submission no aceptada',
+      dgiiMessages: [{ code: '01', message: 'Aceptado' }],
+    };
+
+    expect(resolveElectronicTaxReceiptDiagnosticText(snapshot)).toBeNull();
   });
 
   it('shows trace identifiers for rejected legacy snapshots without messages', () => {

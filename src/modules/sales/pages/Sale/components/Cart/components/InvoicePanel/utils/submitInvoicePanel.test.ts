@@ -107,6 +107,25 @@ describe('submitInvoicePanel', () => {
     expect(args.runInvoice).not.toHaveBeenCalled();
   });
 
+  it('bloquea el envio cuando el modal queda abierto con carrito vacio', async () => {
+    const args = baseArgs();
+    args.cart = {
+      ...args.cart,
+      products: [],
+      totalPurchase: { value: 0 },
+      payment: { value: 0 },
+    };
+
+    await submitInvoicePanel(args as never);
+
+    expect(notificationMock.warning).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Venta sin productos',
+      }),
+    );
+    expect(args.runInvoice).not.toHaveBeenCalled();
+  });
+
   it('no bloquea por disponibilidad Bxx cuando el modelo e-CF esta activo', async () => {
     const args = baseArgs();
     args.business = {
@@ -247,6 +266,34 @@ describe('submitInvoicePanel', () => {
       status: false,
       message: '',
     });
+  });
+
+  it('muestra mensaje especifico cuando la factura queda print_ready_with_review', async () => {
+    const args = baseArgs();
+    args.business = {
+      id: 'business-1',
+      features: {
+        fiscal: {
+          electronicModelEnabled: true,
+          electronicTransportEnabled: true,
+        },
+      },
+    };
+    args.runInvoice = vi.fn().mockResolvedValue({
+      invoice: { id: 'invoice-review', products: [] },
+      status: 'print_ready_with_review',
+    });
+
+    await submitInvoicePanel(args as never);
+
+    expect(notificationMock.info).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Factura lista para imprimir con revisión pendiente',
+        description:
+          'Puedes imprimir la factura, pero quedó marcada para revisión operativa en el historial.',
+      }),
+    );
+    expect(args.handleAfterPrint).toHaveBeenCalled();
   });
 
   it('normaliza la CxC efectiva antes de procesar una venta a credito', async () => {
@@ -393,5 +440,43 @@ describe('submitInvoicePanel', () => {
       }),
     );
     expect(args.runInvoice).not.toHaveBeenCalled();
+  });
+
+  it('muestra una recuperacion clara cuando la llave de idempotencia choca con otro payload', async () => {
+    const args = baseArgs();
+    const onIdempotencyConflict = vi.fn();
+    args.business = {
+      id: 'business-1',
+      features: {
+        fiscal: {
+          electronicModelEnabled: true,
+          electronicTransportEnabled: true,
+        },
+      },
+    };
+    args.runInvoice = vi.fn().mockRejectedValue(
+      Object.assign(
+        new Error('La llave de idempotencia ya fue utilizada con otro payload.'),
+        {
+          code: 'already-exists',
+        },
+      ),
+    );
+
+    await submitInvoicePanel({
+      ...args,
+      onIdempotencyConflict,
+    } as never);
+
+    expect(onIdempotencyConflict).toHaveBeenCalledTimes(1);
+    expect(notificationMock.error).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Venta enviada con cambios',
+        description: expect.stringContaining('Revisa el historial'),
+      }),
+    );
+    expect(JSON.stringify(notificationMock.error.mock.calls)).not.toContain(
+      'idempotencia',
+    );
   });
 });

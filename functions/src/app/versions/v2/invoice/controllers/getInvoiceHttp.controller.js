@@ -86,6 +86,19 @@ const mapCashCountDoc = (docSnap) => {
   };
 };
 
+const mapTimelineEventDoc = (docSnap) => {
+  const data = docSnap.data() || {};
+  return {
+    id: docSnap.id,
+    status: data.status || null,
+    at: data.at || data.createdAt || null,
+    type: data.type || null,
+    source: data.source || null,
+    taskId: data.taskId || null,
+    metadata: data.metadata || null,
+  };
+};
+
 export const getInvoiceV2Http = https.onRequest(async (req, res) => {
   const httpGuardHandled = handleHttpCorsPreflightAndMethod(req, res, {
     allowedMethod: 'GET',
@@ -142,6 +155,25 @@ export const getInvoiceV2Http = https.onRequest(async (req, res) => {
       return res.status(404).json({ error: 'Factura V2 no encontrada' });
 
     const inv = invSnap.data();
+    let statusTimeline = Array.isArray(inv.statusTimeline)
+      ? inv.statusTimeline
+      : [];
+    try {
+      const timelineSnap = await invoiceRef
+        .collection('timeline')
+        .orderBy('at', 'asc')
+        .limit(200)
+        .get();
+      if (!timelineSnap.empty) {
+        statusTimeline = timelineSnap.docs.map(mapTimelineEventDoc);
+      }
+    } catch (timelineError) {
+      logger.warn('No se pudo obtener timeline granular de factura', {
+        businessId,
+        invoiceId,
+        error: timelineError?.message || timelineError,
+      });
+    }
 
     // Contar tareas por estado
     const outboxCol = invoiceRef.collection('outbox');
@@ -190,27 +222,8 @@ export const getInvoiceV2Http = https.onRequest(async (req, res) => {
     const metaCashCount = snapshot?.meta?.cashCount || {};
     const invoiceDocRef = canonRef;
     const invoiceDocPath = invoiceDocRef.path;
-    let cashCounts = [];
+    const cashCounts = [];
     const seenCashCountIds = new Set();
-    try {
-      const cashCountsSnap = await db
-        .collection(`businesses/${businessId}/cashCounts`)
-        .where('cashCount.sales', 'array-contains', invoiceDocRef)
-        .limit(5)
-        .get();
-
-      cashCounts = cashCountsSnap.docs.map(mapCashCountDoc);
-      cashCounts.forEach((item) => {
-        if (item?.id) seenCashCountIds.add(item.id);
-      });
-    } catch (cashCountError) {
-      logger.warn('No se pudieron obtener cuadres vinculados', {
-        businessId,
-        invoiceId,
-        error: cashCountError?.message || cashCountError,
-      });
-    }
-
     const appendCashCountDoc = (docSnap) => {
       const mapped = mapCashCountDoc(docSnap);
       cashCounts.push(mapped);
@@ -219,7 +232,10 @@ export const getInvoiceV2Http = https.onRequest(async (req, res) => {
       }
     };
 
-    const tryAppendCashCountById = async (candidate) => {
+    const tryAppendCashCountById = async (
+      candidate,
+      { requireLegacyLink = true } = {},
+    ) => {
       const normalized = normalizeCashCountCandidate(candidate);
       if (!normalized || seenCashCountIds.has(normalized)) return;
       try {
@@ -230,7 +246,10 @@ export const getInvoiceV2Http = https.onRequest(async (req, res) => {
         const data = docSnap.data() || {};
         const cc = data.cashCount || {};
         const sales = cc.sales || data.sales || [];
-        if (!hasInvoiceInSales(sales, invoiceDocPath, invoiceId)) {
+        if (
+          requireLegacyLink &&
+          !hasInvoiceInSales(sales, invoiceDocPath, invoiceId)
+        ) {
           return;
         }
         appendCashCountDoc(docSnap);
@@ -243,6 +262,44 @@ export const getInvoiceV2Http = https.onRequest(async (req, res) => {
         });
       }
     };
+
+    try {
+      const cashCountSalesSnap = await db
+        .collection(`businesses/${businessId}/cashCountSales`)
+        .where('invoiceId', '==', invoiceId)
+        .limit(10)
+        .get();
+      for (const saleDoc of cashCountSalesSnap.docs) {
+        const sale = saleDoc.data() || {};
+        await tryAppendCashCountById(sale.cashCountId || sale.cashCountRef, {
+          requireLegacyLink: false,
+        });
+      }
+    } catch (cashCountSalesError) {
+      logger.warn('No se pudieron obtener vínculos cashCountSales', {
+        businessId,
+        invoiceId,
+        error: cashCountSalesError?.message || cashCountSalesError,
+      });
+    }
+
+    if (cashCounts.length === 0) {
+      try {
+        const cashCountsSnap = await db
+          .collection(`businesses/${businessId}/cashCounts`)
+          .where('cashCount.sales', 'array-contains', invoiceDocRef)
+          .limit(5)
+          .get();
+
+        cashCountsSnap.docs.forEach(appendCashCountDoc);
+      } catch (cashCountError) {
+        logger.warn('No se pudieron obtener cuadres vinculados', {
+          businessId,
+          invoiceId,
+          error: cashCountError?.message || cashCountError,
+        });
+      }
+    }
 
     const fallbackCandidates = [
       metaCashCount?.resolvedCashCountId,
@@ -294,7 +351,7 @@ export const getInvoiceV2Http = https.onRequest(async (req, res) => {
       status: inv.status,
       createdAt: inv.createdAt || null,
       updatedAt: inv.updatedAt || null,
-      statusTimeline: inv.statusTimeline || [],
+      statusTimeline,
       committedAt: inv.committedAt || null,
       snapshot: snapshot,
       summary,

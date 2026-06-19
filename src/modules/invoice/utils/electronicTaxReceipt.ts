@@ -87,6 +87,9 @@ const FINANCIAL_ACCEPTED_STATUSES = new Set([
 ]);
 const RFCE_ERROR_STATUSES = new Set(['error', 'failed', 'rejected']);
 const ERROR_STATUSES = new Set(['error', 'failed', 'local_failed']);
+const ACCEPTED_DGII_CODES = new Set(['1', '01']);
+const ACCEPTED_DGII_CATEGORIES = new Set(['approved']);
+const ACCEPTED_RESOLUTION_ACTIONS = new Set(['mark_accepted']);
 
 const normalizeStatus = (value: unknown): string | null => {
   if (typeof value !== 'string') return null;
@@ -105,6 +108,63 @@ const pushUnique = (target: string[], value: unknown) => {
   if (normalized && !target.includes(normalized)) {
     target.push(normalized);
   }
+};
+
+export const isElectronicTaxReceiptAcceptedByProvider = (
+  snapshot?: ElectronicTaxReceiptSnapshot | null,
+): boolean => {
+  if (!snapshot) return false;
+
+  const statuses = [
+    snapshot.dgiiValidationStatus,
+    snapshot.dgiiStatus,
+    snapshot.requestStatus,
+    snapshot.status,
+    snapshot.rfceStatus,
+    snapshot.rfceSubmissionStatus,
+  ].map(normalizeStatus);
+  if (
+    statuses.some(
+      (status) => status && RFCE_ACCEPTED_STATUSES.has(status),
+    )
+  ) {
+    return true;
+  }
+
+  const codes = [
+    snapshot.dgiiCode,
+    snapshot.dgiiStatusCode,
+    snapshot.rfceDgiiCode,
+  ].map(normalizeCode);
+  if (codes.some((code) => code && ACCEPTED_DGII_CODES.has(code))) {
+    return true;
+  }
+
+  const category = normalizeStatus(snapshot.dgiiCategory);
+  if (category && ACCEPTED_DGII_CATEGORIES.has(category)) {
+    return true;
+  }
+
+  const resolutionAction = normalizeStatus(snapshot.resolutionAction);
+  if (
+    resolutionAction &&
+    ACCEPTED_RESOLUTION_ACTIONS.has(resolutionAction)
+  ) {
+    return true;
+  }
+
+  if (Array.isArray(snapshot.dgiiMessages)) {
+    return snapshot.dgiiMessages.some((entry) => {
+      const code = normalizeCode(entry?.code);
+      const message = normalizeStatus(entry?.message);
+      return (
+        (code && ACCEPTED_DGII_CODES.has(code)) ||
+        Boolean(message?.includes('acept'))
+      );
+    });
+  }
+
+  return false;
 };
 
 export const isRfceElectronicTaxReceipt = (
@@ -201,6 +261,10 @@ export const resolveElectronicTaxReceiptStatusKey = (
 
   const rfceStatus = resolveRfceTerminalStatusKey(snapshot);
   if (rfceStatus) return rfceStatus;
+
+  if (isElectronicTaxReceiptAcceptedByProvider(snapshot)) {
+    return 'accepted';
+  }
 
   const lifecycleStatus = normalizeStatus(snapshot?.status);
   if (lifecycleStatus && !PENDING_STATUSES.has(lifecycleStatus)) {
@@ -351,6 +415,7 @@ export const resolveElectronicTaxReceiptDiagnosticText = (
   snapshot?: ElectronicTaxReceiptSnapshot | null,
 ): string | null => {
   if (!snapshot) return null;
+  if (isElectronicTaxReceiptAcceptedByProvider(snapshot)) return null;
 
   const diagnostics: string[] = [];
   const status = resolveElectronicTaxReceiptStatusKey(snapshot);

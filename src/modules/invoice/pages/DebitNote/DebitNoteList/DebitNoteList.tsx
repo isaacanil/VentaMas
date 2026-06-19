@@ -1,9 +1,10 @@
-import React, { Fragment, useMemo, useState } from 'react';
-import { PlusOutlined } from '@/constants/icons/antd';
+import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { PlusOutlined, PrinterOutlined } from '@/constants/icons/antd';
 import { Button, Descriptions, Modal, Tag, Typography, message } from 'antd';
 import { DateTime } from 'luxon';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useReactToPrint } from 'react-to-print';
 
 import { AdvancedTable } from '@/components/ui/AdvancedTable';
 import { selectBusinessData } from '@/features/auth/businessSlice';
@@ -11,6 +12,11 @@ import { selectUser } from '@/features/auth/userSlice';
 import { fbRefreshElectronicTaxReceiptStatus } from '@/firebase/electronicTaxReceipts/fbRefreshElectronicTaxReceiptStatus';
 import { useFbGetDebitNotes } from '@/modules/invoice/firebase/debitNotes/useFbGetDebitNotes';
 import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt';
+import { Invoice } from '@/modules/invoice/components/Invoice/components/Invoice/Invoice';
+import {
+  HiddenInvoicePrintContainer,
+  INVOICE_LETTER_PRINT_PAGE_STYLE,
+} from '@/modules/invoice/components/Invoice/components/HiddenInvoicePrintContainer/HiddenInvoicePrintContainer';
 import { useBusinessDataConfig } from '@/modules/auth/public';
 import { MenuApp } from '@/modules/navigation/public';
 import ROUTES_NAME from '@/router/routes/routesName';
@@ -27,6 +33,7 @@ import {
   resolveElectronicTaxReceiptFilterStatus,
   type ElectronicTaxReceiptFilterStatus,
 } from '@/modules/invoice/utils/electronicTaxReceipt';
+import { debitNoteToInvoicePrintData } from '@/modules/invoice/utils/adjustmentNotePrintData';
 
 import { DebitNoteConfigWarningState } from './DebitNoteConfigWarningState';
 import { DebitNoteCreateModal } from './DebitNoteCreateModal';
@@ -73,6 +80,11 @@ export const DebitNoteList = () => {
   const [refreshingDebitNoteId, setRefreshingDebitNoteId] = useState<
     string | null
   >(null);
+  const debitNotePrintRef = useRef<HTMLDivElement | null>(null);
+  const pendingDebitNotePrintRef = useRef(false);
+  const [debitNotePrintTarget, setDebitNotePrintTarget] =
+    useState<DebitNoteRecord | null>(null);
+  const [debitNotePrintLoading, setDebitNotePrintLoading] = useState(false);
   const [filters, setFilters] = useState<DebitNoteFiltersState>(() =>
     buildDefaultDebitNoteFilters(),
   );
@@ -200,6 +212,54 @@ export const DebitNoteList = () => {
   const selectedDebitNoteOperationalStatus = selectedDebitNote
     ? resolveDebitNoteOperationalStatusDisplay(selectedDebitNote)
     : null;
+  const debitNotePrintData = useMemo(
+    () =>
+      debitNotePrintTarget
+        ? debitNoteToInvoicePrintData(debitNotePrintTarget)
+        : null,
+    [debitNotePrintTarget],
+  );
+  const triggerDebitNotePrint = useReactToPrint({
+    contentRef: debitNotePrintRef,
+    pageStyle: INVOICE_LETTER_PRINT_PAGE_STYLE,
+    onAfterPrint: () => {
+      setDebitNotePrintLoading(false);
+      setDebitNotePrintTarget(null);
+    },
+  });
+
+  const handlePrintDebitNote = (note: DebitNoteRecord | null | undefined) => {
+    if (!note) {
+      message.error('No hay datos de la nota de debito.');
+      return;
+    }
+
+    pendingDebitNotePrintRef.current = true;
+    setDebitNotePrintLoading(true);
+    setDebitNotePrintTarget(note);
+  };
+
+  useEffect(() => {
+    if (!debitNotePrintData || !pendingDebitNotePrintRef.current) return;
+
+    pendingDebitNotePrintRef.current = false;
+    const timeoutId = window.setTimeout(() => {
+      try {
+        const printResult = triggerDebitNotePrint?.();
+        void Promise.resolve(printResult).catch((error) => {
+          console.error('Error al imprimir la nota de debito:', error);
+          message.error('No se pudo imprimir la nota de debito.');
+          setDebitNotePrintLoading(false);
+        });
+      } catch (error) {
+        console.error('Error al imprimir la nota de debito:', error);
+        message.error('No se pudo imprimir la nota de debito.');
+        setDebitNotePrintLoading(false);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [debitNotePrintData, triggerDebitNotePrint]);
 
   const headerComponent = (
     <HeaderContainer>
@@ -255,7 +315,21 @@ export const DebitNoteList = () => {
         title="Detalle de nota de debito"
         open={Boolean(selectedDebitNote)}
         onCancel={() => setSelectedDebitNote(null)}
-        footer={null}
+        footer={[
+          <Button key="close" onClick={() => setSelectedDebitNote(null)}>
+            Cerrar
+          </Button>,
+          <Button
+            key="print"
+            type="primary"
+            icon={<PrinterOutlined />}
+            loading={debitNotePrintLoading}
+            disabled={!selectedDebitNote}
+            onClick={() => handlePrintDebitNote(selectedDebitNote)}
+          >
+            Imprimir
+          </Button>,
+        ]}
       >
         {selectedDebitNote && (
           <Descriptions column={1} size="small" bordered>
@@ -297,6 +371,16 @@ export const DebitNoteList = () => {
         open={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
       />
+      <HiddenInvoicePrintContainer aria-hidden="true">
+        {debitNotePrintData ? (
+          <Invoice
+            ref={debitNotePrintRef}
+            data={debitNotePrintData}
+            template="template2_v3_1"
+            ignoreHidden
+          />
+        ) : null}
+      </HiddenInvoicePrintContainer>
     </Fragment>
   );
 };

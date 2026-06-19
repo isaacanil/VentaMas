@@ -16,7 +16,9 @@ import type {
   InvoiceData,
 } from '@/types/invoice';
 import {
+  isElectronicTaxReceiptAcceptedByProvider,
   isRfceElectronicTaxReceipt,
+  resolveElectronicTaxReceiptDiagnosticText,
   resolveElectronicTaxReceiptSnapshot,
   resolveElectronicTaxReceiptStatusKey,
   resolveElectronicTaxReceiptStatusLabel,
@@ -162,18 +164,23 @@ export const ElectronicTaxReceiptInfoCard = ({
         : 'RFCE pendiente'
       : 'DGII pendiente');
   const securityCode = cleanString(snapshot.securityCode);
-  const diagnosticMessage =
-    cleanString(snapshot.lastError) ||
-    cleanString(snapshot.rfceLastErrorMessage) ||
-    cleanString(snapshot.rfceError) ||
-    cleanString(snapshot.dgiiMessage);
+  const acceptedByProvider = isElectronicTaxReceiptAcceptedByProvider(snapshot);
+  const currentStatusColor = statusColor(snapshot);
+  const diagnosticText = resolveElectronicTaxReceiptDiagnosticText(snapshot);
   const shouldShowDiagnostic =
-    Boolean(diagnosticMessage) ||
-    statusColor(snapshot) === 'danger' ||
-    Boolean(snapshot.manualReviewRequired);
-  const diagnosticDescription = isRfceFlow
+    !acceptedByProvider &&
+    (Boolean(diagnosticText) ||
+      currentStatusColor === 'danger' ||
+      Boolean(snapshot.manualReviewRequired));
+  const diagnosticTitle =
+    statusKey.includes('reject') || currentStatusColor === 'danger'
+      ? 'Diagnóstico GISYS · Submission no aceptada'
+      : 'Diagnóstico GISYS · Requiere atención';
+  const fallbackDiagnosticDescription = isRfceFlow
     ? 'GISYS marcó esta submission como no aceptada. El QR fue generado pero no es válido fiscalmente hasta que DGII acepte el RFCE.'
     : 'GISYS marcó esta submission como no aceptada. El QR fue generado pero no es válido fiscalmente hasta que DGII acepte el e-CF.';
+  const diagnosticDescription =
+    diagnosticText || fallbackDiagnosticDescription;
 
   const actions: MenuAction[] = [];
   const addCopyAction = (key: string, label: string, value?: string | null) => {
@@ -250,8 +257,6 @@ export const ElectronicTaxReceiptInfoCard = ({
     }
   };
 
-  const currentStatusColor = statusColor(snapshot);
-
   return (
     <Card
       className={className}
@@ -320,9 +325,7 @@ export const ElectronicTaxReceiptInfoCard = ({
         <DiagnosticBlock>
           {shouldShowDiagnostic ? (
             <DiagnosticCopy>
-              <DiagnosticTitle>
-                Diagnóstico GISYS · Submission no aceptada
-              </DiagnosticTitle>
+              <DiagnosticTitle>{diagnosticTitle}</DiagnosticTitle>
               <DiagnosticDescription>
                 {diagnosticDescription}
               </DiagnosticDescription>

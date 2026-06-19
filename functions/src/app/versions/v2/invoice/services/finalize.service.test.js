@@ -3,7 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 let docMock = vi.fn();
 let runTransactionMock = vi.fn();
 const serverTimestampMock = vi.fn(() => ({ __op: 'serverTimestamp' }));
-const arrayUnionMock = vi.fn((value) => ({ __op: 'arrayUnion', value }));
+const arrayUnionMock = vi.fn((...values) => ({
+  __op: 'arrayUnion',
+  value: values[0],
+  values,
+}));
 const timestampNowMock = vi.fn(() => ({ __op: 'timestampNow' }));
 
 const auditTxMock = vi.fn();
@@ -38,6 +42,7 @@ vi.mock('./compensation.service.js', () => ({
 }));
 
 vi.mock('./failurePolicy.service.js', () => ({
+  NON_BLOCKING_FAILURE_REVIEW_STATUS: 'committed',
   areOnlyNonBlockingFailures: (...args) =>
     areOnlyNonBlockingFailuresMock(...args),
   buildNonBlockingFailureSummary: (...args) =>
@@ -209,13 +214,18 @@ describe('finalize.service', () => {
       if (path === 'businesses/business-1/ncfUsage/usage-1') {
         return usageRef;
       }
+      if (
+        path.startsWith('businesses/business-1/invoicesV2/invoice-1/timeline/')
+      ) {
+        return { kind: 'timelineEvent', path };
+      }
       throw new Error(`Unexpected doc path: ${path}`);
     });
 
     runTransactionMock = vi.fn(async (callback) => callback(tx));
   });
 
-  it('records non-blocking failures without marking the invoice as failed', async () => {
+  it('commits non-blocking cash count failures with review fields', async () => {
     const summary = {
       taskTypes: ['attachToCashCount'],
       taskErrors: [{ type: 'attachToCashCount', lastError: 'cash count locked' }],
@@ -236,6 +246,35 @@ describe('finalize.service', () => {
       if (ref === invoiceRef) return invoiceSnapshot;
       if (ref === pendingQuery) return { empty: true };
       if (ref === failedQuery) return { empty: false, docs: failedDocs };
+      if (ref === accountingSettingsRef) {
+        return {
+          exists: true,
+          data: () => ({
+            generalAccountingEnabled: true,
+            functionalCurrency: 'DOP',
+          }),
+        };
+      }
+      if (ref === canonicalInvoiceRef) {
+        return {
+          exists: true,
+          data: () => ({
+            data: {
+              id: 'invoice-1',
+              status: 'completed',
+              numberID: 101,
+              client: { id: 'client-1' },
+              paymentMethod: [{ method: 'cash', value: 118 }],
+              monetary: {
+                documentCurrency: { code: 'DOP' },
+                functionalCurrency: { code: 'DOP' },
+                totals: { total: 118, taxes: 18 },
+                functionalTotals: { total: 118, taxes: 18 },
+              },
+            },
+          }),
+        };
+      }
       throw new Error('Unexpected ref/query in tx.get');
     });
 
@@ -266,27 +305,154 @@ describe('finalize.service', () => {
         data: summary,
       }),
     );
-    expect(tx.set).toHaveBeenNthCalledWith(
-      1,
+    expect(tx.update).toHaveBeenCalledWith(
       invoiceRef,
       expect.objectContaining({
+        status: 'committed',
+        committedAt: { __op: 'serverTimestamp' },
         nonBlockingFailures: expect.objectContaining(summary),
+        requiresCashCountReview: true,
+        updatedAt: { __op: 'serverTimestamp' },
+      }),
+    );
+    expect(tx.update).toHaveBeenCalledWith(
+      invoiceRef,
+      expect.objectContaining({
+        nonBlockingFailures: expect.objectContaining({
+          finalStatus: 'committed',
+        }),
+      }),
+    );
+    expect(tx.set).toHaveBeenCalledWith(
+      accountingEventRef,
+      expect.objectContaining({
+        id: 'invoice.committed__invoice-1',
+        eventType: 'invoice.committed',
+      }),
+    );
+    expect(tx.set).toHaveBeenCalledWith(
+      idemRef,
+      expect.objectContaining({
+        status: 'committed',
         updatedAt: { __op: 'serverTimestamp' },
       }),
       { merge: true },
     );
-    expect(tx.set).toHaveBeenNthCalledWith(
-      2,
-      idemRef,
+    expect(tx.set).toHaveBeenCalledWith(
       expect.objectContaining({
-        status: 'pending',
-        updatedAt: { __op: 'serverTimestamp' },
+        path: 'businesses/business-1/invoicesV2/invoice-1/timeline/finalize__committed',
+      }),
+      expect.objectContaining({
+        status: 'committed',
+        source: 'attemptFinalizeInvoice',
       }),
       { merge: true },
     );
     expect(tx.update).not.toHaveBeenCalledWith(
       invoiceRef,
       expect.objectContaining({ status: 'failed' }),
+    );
+    expect(auditTxMock).toHaveBeenCalledWith(
+      tx,
+      expect.objectContaining({
+        event: 'finalize_committed',
+        data: expect.objectContaining({
+          committed: true,
+          accountingEventCreated: true,
+          nonBlockingFailures: ['attachToCashCount'],
+          requiresCashCountReview: true,
+        }),
+      }),
+    );
+  });
+
+  it('marks the invoice as failed when failed tasks include blocking work', async () => {
+    const failedDocs = [
+      {
+        id: 'task-1',
+        data: () => ({
+          type: 'attachToCashCount',
+          status: 'failed',
+          lastError: 'cash count locked',
+        }),
+      },
+      {
+        id: 'task-2',
+        data: () => ({
+          type: 'updateInventory',
+          status: 'failed',
+          lastError: 'inventory locked',
+        }),
+      },
+    ];
+
+    tx.get.mockImplementation(async (ref) => {
+      if (ref === invoiceRef) return invoiceSnapshot;
+      if (ref === pendingQuery) return { empty: true };
+      if (ref === failedQuery) return { empty: false, docs: failedDocs };
+      throw new Error('Unexpected ref/query in tx.get');
+    });
+
+    summarizeOutboxTasksMock.mockReturnValue([
+      {
+        id: 'task-1',
+        type: 'attachToCashCount',
+        status: 'failed',
+        lastError: 'cash count locked',
+      },
+      {
+        id: 'task-2',
+        type: 'updateInventory',
+        status: 'failed',
+        lastError: 'inventory locked',
+      },
+    ]);
+    areOnlyNonBlockingFailuresMock.mockReturnValue(false);
+
+    await attemptFinalizeInvoice({
+      businessId: 'business-1',
+      invoiceId: 'invoice-1',
+    });
+
+    expect(scheduleCompensationsInTxMock).toHaveBeenCalledWith(tx, {
+      businessId: 'business-1',
+      invoiceId: 'invoice-1',
+    });
+    expect(buildAccountingEventMock).not.toHaveBeenCalled();
+    expect(tx.update).toHaveBeenCalledWith(
+      invoiceRef,
+      expect.objectContaining({
+        status: 'failed',
+        updatedAt: { __op: 'serverTimestamp' },
+      }),
+    );
+    expect(tx.set).toHaveBeenCalledWith(
+      idemRef,
+      expect.objectContaining({
+        status: 'failed',
+        updatedAt: { __op: 'serverTimestamp' },
+      }),
+      { merge: true },
+    );
+    expect(tx.set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/invoicesV2/invoice-1/timeline/finalize__failed',
+      }),
+      expect.objectContaining({
+        status: 'failed',
+        source: 'attemptFinalizeInvoice',
+      }),
+      { merge: true },
+    );
+    expect(auditTxMock).toHaveBeenCalledWith(
+      tx,
+      expect.objectContaining({
+        event: 'finalize_failed',
+        data: {
+          failed: true,
+          failedTaskTypes: ['attachToCashCount', 'updateInventory'],
+        },
+      }),
     );
   });
 
@@ -344,6 +510,16 @@ describe('finalize.service', () => {
       expect.objectContaining({
         status: 'committed',
         updatedAt: { __op: 'serverTimestamp' },
+      }),
+      { merge: true },
+    );
+    expect(tx.set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/invoicesV2/invoice-1/timeline/finalize__committed',
+      }),
+      expect.objectContaining({
+        status: 'committed',
+        source: 'attemptFinalizeInvoice',
       }),
       { merge: true },
     );

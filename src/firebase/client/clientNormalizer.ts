@@ -26,6 +26,7 @@ export interface ClientInput {
   pendingBalance?: number | string;
   delivery?: ClientDeliveryInput;
   province?: string;
+  municipality?: string;
   sector?: string;
   createdAt?: unknown;
   updatedAt?: unknown;
@@ -74,6 +75,7 @@ const FIELDS_TO_EXTRACT = [
   'pendingBalance',
   'personalID',
   'province',
+  'municipality',
   'sector',
   'tel',
   'tel2',

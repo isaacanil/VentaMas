@@ -1,4 +1,5 @@
 const NON_BLOCKING_FAILED_TASK_TYPES = new Set(['attachToCashCount']);
+export const NON_BLOCKING_FAILURE_REVIEW_STATUS = 'committed';
 
 const toCleanString = (value) => {
   if (typeof value !== 'string') return null;

@@ -1,12 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  NON_BLOCKING_FAILURE_REVIEW_STATUS,
   areOnlyNonBlockingFailures,
   buildNonBlockingFailureSummary,
   summarizeOutboxTasks,
 } from './failurePolicy.service.js';
 
 describe('failurePolicy.service', () => {
+  it('declara committed como estado compatible para fallas no bloqueantes', () => {
+    expect(NON_BLOCKING_FAILURE_REVIEW_STATUS).toBe('committed');
+  });
+
   it('normaliza docs de outbox, recorta strings y descarta tareas sin tipo', () => {
     expect(
       summarizeOutboxTasks([

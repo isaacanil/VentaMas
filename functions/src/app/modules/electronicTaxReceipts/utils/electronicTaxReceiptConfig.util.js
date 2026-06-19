@@ -1,4 +1,5 @@
 import {
+  GISYS_FACT_DEFAULT_TIMEOUT_MS,
   GISYS_FACT_DEFAULT_TOKEN_ENV,
   getGisysFactConfigIssues,
   resolveGisysFactConfig,
@@ -23,7 +24,7 @@ export const normalizeTimeoutMs = (value) => {
   const numeric = Number(value);
   return Number.isFinite(numeric) && numeric >= 5000 && numeric <= 120000
     ? Math.round(numeric)
-    : 20000;
+    : GISYS_FACT_DEFAULT_TIMEOUT_MS;
 };
 
 export const buildGisysFactConfigSummaryFromInput = (data) => {

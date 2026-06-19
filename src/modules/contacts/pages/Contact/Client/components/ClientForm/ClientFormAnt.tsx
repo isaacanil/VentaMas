@@ -43,6 +43,9 @@ const mapClientToCart = (client: NormalizedClient): ClientCartClient => ({
   tel: (client.tel as string | undefined) ?? '',
   address: (client.address as string | undefined) ?? '',
   personalID: (client.personalID as string | undefined) ?? '',
+  province: (client.province as string | undefined) ?? '',
+  municipality: (client.municipality as string | undefined) ?? '',
+  sector: (client.sector as string | undefined) ?? '',
   delivery: client.delivery ?? { status: false, value: 0 },
 });
 
@@ -67,7 +70,9 @@ const ClientFormAnt = ({
   const isUpdating = mode === update;
   const [form] = Form.useForm<ClientInput>();
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'general' | 'financial'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'financial'>(
+    'general',
+  );
   const clientData = form.getFieldsValue() as Partial<ClientInput>;
   const dispatch = useDispatch();
   const user = useSelector<UserRootState, UserIdentity | null>(selectUser);
@@ -91,6 +96,7 @@ const ClientFormAnt = ({
     tel2: '',
     numberId: 0,
     province: '',
+    municipality: '',
     sector: '',
     delivery: {
       status: false,
@@ -157,9 +163,9 @@ const ClientFormAnt = ({
     }
 
     if (addClientToCart && result.clientForCart) {
-        dispatch(setClientMode(CLIENT_MODE_BAR.UPDATE.id));
-        dispatch(addClient(mapClientToCart(result.clientForCart)));
-      }
+      dispatch(setClientMode(CLIENT_MODE_BAR.UPDATE.id));
+      dispatch(addClient(mapClientToCart(result.clientForCart)));
+    }
 
     notification.success({
       message: result.successMessage,
@@ -207,7 +213,8 @@ const ClientFormAnt = ({
       </>
     );
 
-  const modalWidth = activeTab === 'financial' ? 1000 : (hasRncPanel ? 1000 : 500);
+  const modalWidth =
+    activeTab === 'financial' ? 1000 : hasRncPanel ? 1000 : 500;
 
   return (
     <AppModal
@@ -226,7 +233,11 @@ const ClientFormAnt = ({
           onChange={(val) => setActiveTab(val as 'general' | 'financial')}
           options={[
             { label: 'Info. General', value: 'general' },
-            { label: 'Info. Financiera', value: 'financial', disabled: !isUpdating },
+            {
+              label: 'Info. Financiera',
+              value: 'financial',
+              disabled: !isUpdating,
+            },
           ]}
         />
       </TabBar>

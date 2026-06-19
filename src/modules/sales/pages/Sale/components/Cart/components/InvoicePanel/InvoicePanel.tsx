@@ -43,6 +43,7 @@ export const InvoicePanel = () => {
     handleInvoicePanel,
     handleMonetaryContextChange,
     handleSubmit,
+    hasCartProducts,
     invoice,
     invoicePanel,
     isAddedToReceivables,
@@ -61,6 +62,7 @@ export const InvoicePanel = () => {
   } = useInvoicePanelController();
   const isSubmittingDisabled =
     submitted ||
+    !hasCartProducts ||
     !isAnyPaymentEnabled ||
     (isChangeNegative && !isAddedToReceivables);
   const isSecondaryActionDisabled = loading.status || submitted;

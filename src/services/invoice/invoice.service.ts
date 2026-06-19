@@ -44,9 +44,18 @@ const createInvoiceCallable = httpsCallable<
 
 const DEFAULT_POLL_INTERVAL_MS = 700;
 const DEFAULT_TIMEOUT_MS = 45000;
+const PRINTABLE_INVOICE_STATUSES = new Set([
+  'committed',
+  'frontend_ready',
+  'print_ready',
+  'print_ready_with_review',
+]);
 
 const delay = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
+
+const isPrintableInvoiceStatus = (status: unknown): boolean =>
+  typeof status === 'string' && PRINTABLE_INVOICE_STATUSES.has(status);
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> => {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
@@ -639,9 +648,7 @@ const resolveInvoiceWaitResult = async ({
     throw await createInvoiceFailedError({ businessId, invoiceId, invoiceData });
   }
 
-  const isFrontendReady = invoiceStatus === 'frontend_ready';
-  const isCommitted = invoiceStatus === 'committed';
-  if (!isFrontendReady && !isCommitted) {
+  if (!isPrintableInvoiceStatus(invoiceStatus)) {
     return null;
   }
 
@@ -855,10 +862,9 @@ const waitForInvoiceResultByPolling = async ({
     if (invoiceData) {
       lastSnapshot = invoiceData;
       const invoiceStatus = invoiceData.status;
-      const isFrontendReady = invoiceStatus === 'frontend_ready';
-      const isCommitted = invoiceStatus === 'committed';
-      const canonicalSnap =
-        isFrontendReady || isCommitted ? await getDoc(canonicalRef) : null;
+      const canonicalSnap = isPrintableInvoiceStatus(invoiceStatus)
+        ? await getDoc(canonicalRef)
+        : null;
       const canonicalData = canonicalSnap?.exists()
         ? (canonicalSnap.data() as CanonicalInvoiceRecord)
         : null;

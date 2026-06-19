@@ -1,18 +1,24 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const {
+  attemptMarkInvoicePrintReadyMock,
   docMock,
+  loadedDependencyModules,
   loggerInfoMock,
   loggerWarnMock,
   runTransactionMock,
 } = vi.hoisted(() => {
+  const hoistedAttemptMarkInvoicePrintReadyMock = vi.fn();
   const hoistedDocMock = vi.fn();
+  const hoistedLoadedDependencyModules = [];
   const hoistedLoggerInfoMock = vi.fn();
   const hoistedLoggerWarnMock = vi.fn();
   const hoistedRunTransactionMock = vi.fn();
 
   return {
+    attemptMarkInvoicePrintReadyMock: hoistedAttemptMarkInvoicePrintReadyMock,
     docMock: hoistedDocMock,
+    loadedDependencyModules: hoistedLoadedDependencyModules,
     loggerInfoMock: hoistedLoggerInfoMock,
     loggerWarnMock: hoistedLoggerWarnMock,
     runTransactionMock: hoistedRunTransactionMock,
@@ -50,86 +56,136 @@ vi.mock('../../../../core/config/firebase.js', () => ({
 
 vi.mock(
   '../../../../modules/Inventory/services/getInventory.service.js',
-  () => ({
-    collectInventoryPrereqs: vi.fn(),
-  }),
+  () => {
+    loadedDependencyModules.push('inventoryPrereqs');
+    return {
+      collectInventoryPrereqs: vi.fn(),
+    };
+  },
 );
 
-vi.mock('../../../../modules/Inventory/services/Inventory.service.js', () => ({
-  adjustProductInventory: vi.fn(),
-}));
+vi.mock('../../../../modules/Inventory/services/Inventory.service.js', () => {
+  loadedDependencyModules.push('inventoryService');
+  return {
+    adjustProductInventory: vi.fn(),
+  };
+});
 
 vi.mock(
   '../../../../modules/accountReceivable/services/getAccountReceivable.service.js',
-  () => ({
-    collectReceivablePrereqs: vi.fn(),
-  }),
+  () => {
+    loadedDependencyModules.push('receivablePrereqs');
+    return {
+      collectReceivablePrereqs: vi.fn(),
+    };
+  },
 );
 
 vi.mock(
   '../../../../modules/accountReceivable/services/addAccountReceivable.js',
-  () => ({
-    addAccountReceivable: vi.fn(),
-  }),
+  () => {
+    loadedDependencyModules.push('addAccountReceivable');
+    return {
+      addAccountReceivable: vi.fn(),
+    };
+  },
 );
 
 vi.mock(
   '../../../../modules/accountReceivable/services/addInstallmentsAccountReceivable.js',
-  () => ({
-    addInstallmentReceivable: vi.fn(),
-  }),
+  () => {
+    loadedDependencyModules.push('addInstallmentReceivable');
+    return {
+      addInstallmentReceivable: vi.fn(),
+    };
+  },
 );
 
-vi.mock('../services/creditNotes.service.js', () => ({
-  consumeCreditNotesTx: vi.fn(),
-}));
+vi.mock('../services/creditNotes.service.js', () => {
+  loadedDependencyModules.push('creditNotes');
+  return {
+    consumeCreditNotesTx: vi.fn(),
+  };
+});
 
-vi.mock('../services/finalize.service.js', () => ({
-  attemptFinalizeInvoice: vi.fn(),
-}));
+vi.mock('../services/finalize.service.js', () => {
+  loadedDependencyModules.push('finalize');
+  return {
+    attemptFinalizeInvoice: vi.fn(),
+  };
+});
 
-vi.mock('../../../../modules/cashCount/utils/cashCountQueries.js', () => ({
-  default: {
-    getOpenCashCountDocFromTx: vi.fn(),
-    getCashCountDocByIdFromTx: vi.fn(),
-  },
-}));
+vi.mock('../../../../modules/cashCount/utils/cashCountQueries.js', () => {
+  loadedDependencyModules.push('cashCountQueries');
+  return {
+    default: {
+      getOpenCashCountDocFromTx: vi.fn(),
+      getCashCountDocByIdFromTx: vi.fn(),
+    },
+  };
+});
 
-vi.mock('../../../../modules/cashCount/utils/cashCountCheck.js', () => ({
-  checkOpenCashCount: vi.fn(),
-}));
+vi.mock('../../../../modules/cashCount/utils/cashCountCheck.js', () => {
+  loadedDependencyModules.push('cashCountCheck');
+  return {
+    checkOpenCashCount: vi.fn(),
+  };
+});
 
-vi.mock('../../../../core/utils/getNextID.js', () => ({
-  getNextIDTransactionalSnap: vi.fn(),
-  applyNextIDTransactional: vi.fn(),
-}));
+vi.mock('../../../../core/utils/getNextID.js', () => {
+  loadedDependencyModules.push('nextId');
+  return {
+    getNextIDTransactionalSnap: vi.fn(),
+    applyNextIDTransactional: vi.fn(),
+  };
+});
 
-vi.mock('../../../../modules/insurance/services/insurance.service.js', () => ({
-  getInsurance: vi.fn(),
-}));
+vi.mock('../../../../modules/insurance/services/insurance.service.js', () => {
+  loadedDependencyModules.push('insurance');
+  return {
+    getInsurance: vi.fn(),
+  };
+});
 
-vi.mock('../../../../modules/accountReceivable/services/insuranceAuth.js', () => ({
-  addInsuranceAuth: vi.fn(),
-}));
+vi.mock('../../../../modules/accountReceivable/services/insuranceAuth.js', () => {
+  loadedDependencyModules.push('insuranceAuth');
+  return {
+    addInsuranceAuth: vi.fn(),
+  };
+});
 
-vi.mock('../services/audit.service.js', () => ({
-  auditSafe: vi.fn(),
-  auditTx: vi.fn(),
-}));
+vi.mock('../services/audit.service.js', () => {
+  loadedDependencyModules.push('audit');
+  return {
+    auditSafe: vi.fn(),
+    auditTx: vi.fn(),
+  };
+});
 
 vi.mock(
   '../../../../modules/electronicTaxReceipts/services/electronicTaxReceiptOutbox.service.js',
-  () => ({
-    processElectronicTaxReceiptOutboxTask: vi.fn(),
-  }),
+  () => {
+    loadedDependencyModules.push('electronicTaxReceiptOutbox');
+    return {
+      processElectronicTaxReceiptOutboxTask: vi.fn(),
+    };
+  },
 );
 
 vi.mock(
   '../../../../modules/commissions/services/serviceCommissions.service.js',
-  () => ({
-    syncServiceCommissionsTx: vi.fn(),
-  }),
+  () => {
+    loadedDependencyModules.push('serviceCommissions');
+    return {
+      syncServiceCommissionsTx: vi.fn(),
+    };
+  },
 );
+
+vi.mock('../services/printReady.service.js', () => ({
+  attemptMarkInvoicePrintReady: (...args) =>
+    attemptMarkInvoicePrintReadyMock(...args),
+}));
 
 import { processInvoiceOutbox } from './outbox.worker.js';
 
@@ -141,6 +197,8 @@ const refForPath = (path) => ({
 describe('processInvoiceOutbox', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    loadedDependencyModules.length = 0;
+    attemptMarkInvoicePrintReadyMock.mockResolvedValue({ status: 'skipped' });
     runTransactionMock.mockReset();
     docMock.mockReset();
     docMock.mockImplementation((path) => refForPath(path));
@@ -173,6 +231,34 @@ describe('processInvoiceOutbox', () => {
         taskId: 'task-1',
         status: 'done',
       }),
+    );
+    expect(loadedDependencyModules).toEqual([]);
+  });
+
+  it('loads only electronic receipt dependencies for electronic outbox tasks', async () => {
+    const taskRef = refForPath(
+      'businesses/business-1/invoicesV2/invoice-ecf/outbox/task-electronic',
+    );
+
+    const result = await processInvoiceOutbox({
+      params: {
+        businessId: 'business-1',
+        invoiceId: 'invoice-ecf',
+        taskId: 'task-electronic',
+      },
+      data: {
+        data: () => ({
+          type: 'issueElectronicTaxReceipt',
+          status: 'pending',
+        }),
+        ref: taskRef,
+      },
+    });
+
+    expect(result).toBeNull();
+    expect(runTransactionMock).not.toHaveBeenCalled();
+    expect([...new Set(loadedDependencyModules)].sort()).toEqual(
+      ['audit', 'electronicTaxReceiptOutbox', 'finalize'].sort(),
     );
   });
 
@@ -420,9 +506,10 @@ describe('processInvoiceOutbox', () => {
       (entry) =>
         entry.op === 'update' &&
         entry.path === 'businesses/business-1/invoicesV2/invoice-ecf' &&
-        entry.data.status === 'frontend_ready',
+        entry.data.canonicalReadyAt,
     );
     expect(invoiceUpdate).toBeTruthy();
+    expect(invoiceUpdate.data.status).toBeUndefined();
   });
 
   it('uses the parent invoice actor when task payload userId differs', async () => {

@@ -1,9 +1,13 @@
 import styled from 'styled-components';
 
+import { resolveDocumentNumberLine } from '@/utils/invoice/documentIdentity';
 import type { InvoiceBusinessInfo, InvoiceData } from '@/types/invoice';
 
 import {
   formatInvoiceDate,
+  resolveBusinessFiscalLines,
+  resolveClientFiscalLines,
+  resolveElectronicPrintInfo,
   resolveInvoiceIdentity,
 } from '../../utils';
 
@@ -14,15 +18,18 @@ interface HeaderProps {
 
 export default function Header({ business, data }: HeaderProps) {
   const identity = resolveInvoiceIdentity(data);
+  const electronicPrintInfo = resolveElectronicPrintInfo(data);
+  const businessFiscalLines = resolveBusinessFiscalLines(business);
+  const clientFiscalLines = resolveClientFiscalLines(data?.client);
   const hasClientContent = Boolean(
     data?.client?.name ||
-      data?.client?.address ||
-      data?.client?.tel ||
-      data?.client?.rnc ||
-      data?.client?.personalID ||
-      data?.seller?.name ||
-      data?.NCF ||
-      data?.preorderDetails?.date,
+    data?.client?.address ||
+    data?.client?.tel ||
+    data?.client?.rnc ||
+    data?.client?.personalID ||
+    clientFiscalLines.length ||
+    data?.seller?.name ||
+    data?.preorderDetails?.date,
   );
 
   return (
@@ -36,12 +43,17 @@ export default function Header({ business, data }: HeaderProps) {
 
         <BusinessColumn>
           <BusinessName>{business?.name || 'Empresa'}</BusinessName>
-          {business?.address ? <HeaderText>{business.address}</HeaderText> : null}
-          {business?.tel ? <HeaderText>Tel: {business.tel}</HeaderText> : null}
-          {business?.email ? (
-            <HeaderText>{business.email}</HeaderText>
+          {business?.address ? (
+            <HeaderText>{business.address}</HeaderText>
           ) : null}
-          {business?.rnc ? <HeaderStrong>RNC: {business.rnc}</HeaderStrong> : null}
+          {business?.tel ? <HeaderText>Tel: {business.tel}</HeaderText> : null}
+          {business?.email ? <HeaderText>{business.email}</HeaderText> : null}
+          {businessFiscalLines.map((line) => (
+            <HeaderText key={`business-fiscal-${line}`}>{line}</HeaderText>
+          ))}
+          {business?.rnc ? (
+            <HeaderStrong>RNC: {business.rnc}</HeaderStrong>
+          ) : null}
         </BusinessColumn>
 
         <MetaColumn>
@@ -54,15 +66,18 @@ export default function Header({ business, data }: HeaderProps) {
               {identity.label}: {identity.value || '-'}
             </HeaderText>
           ) : null}
+          {electronicPrintInfo?.sequenceExpirationDate ? (
+            <HeaderText>
+              Fecha venc. e-NCF: {electronicPrintInfo.sequenceExpirationDate}
+            </HeaderText>
+          ) : null}
           <HeaderStrong>
-            {identity.type === 'preorder'
-              ? `${identity.title || 'Factura'} # ${identity.value || data?.preorderDetails?.numberID || data?.numberID || '-'}`
-              : identity.type === 'receipt'
-                ? `Recibo # ${identity.value || data?.numberID || '-'}`
-                : `${identity.title || 'Factura'} # ${data?.numberID || '-'} `}
+            {resolveDocumentNumberLine(identity, data)}
           </HeaderStrong>
           {data?.dueDate ? (
-            <HeaderText>Vence: {formatInvoiceDate(data.dueDate)}</HeaderText>
+            <HeaderText>
+              Vence pago: {formatInvoiceDate(data.dueDate)}
+            </HeaderText>
           ) : null}
         </MetaColumn>
       </HeaderRow>
@@ -81,6 +96,9 @@ export default function Header({ business, data }: HeaderProps) {
               {data?.client?.tel ? (
                 <HeaderText>Tel: {data.client.tel}</HeaderText>
               ) : null}
+              {clientFiscalLines.map((line) => (
+                <HeaderText key={`client-fiscal-${line}`}>{line}</HeaderText>
+              ))}
             </ClientColumn>
 
             <ClientColumnRight>
@@ -92,7 +110,6 @@ export default function Header({ business, data }: HeaderProps) {
               {data?.seller?.name ? (
                 <HeaderText>Vendedor: {data.seller.name}</HeaderText>
               ) : null}
-              {data?.NCF ? <HeaderText>NCF: {data.NCF}</HeaderText> : null}
               {data?.preorderDetails?.date ? (
                 <HeaderText>
                   Fecha pedido: {formatInvoiceDate(data.preorderDetails.date)}

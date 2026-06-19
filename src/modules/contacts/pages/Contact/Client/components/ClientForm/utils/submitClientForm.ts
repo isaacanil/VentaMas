@@ -6,7 +6,10 @@ import type {
   ClientInput,
   NormalizedClient,
 } from '@/firebase/client/clientNormalizer';
-import { normalizeBusinessSubdivisionForStorage } from '@/shared/location/businessLocations';
+import {
+  normalizeBusinessMunicipalityForStorage,
+  normalizeBusinessSubdivisionForStorage,
+} from '@/shared/location/businessLocations';
 import type { UserWithBusiness } from '@/types/users';
 
 const isFormValidationError = (
@@ -74,11 +77,17 @@ export const submitClientForm = async ({
     const values = await form.validateFields();
     let clientForCart: NormalizedClient | null = null;
 
+    const normalizedProvince = normalizeBusinessSubdivisionForStorage(
+      businessCountry,
+      (values as ClientInput).province,
+    );
     const sanitizedValues = {
       ...(values as ClientInput & { clear?: unknown }),
-      province: normalizeBusinessSubdivisionForStorage(
+      province: normalizedProvince,
+      municipality: normalizeBusinessMunicipalityForStorage(
         businessCountry,
-        (values as ClientInput).province,
+        normalizedProvince,
+        (values as ClientInput).municipality,
       ),
     };
     delete sanitizedValues.clear;

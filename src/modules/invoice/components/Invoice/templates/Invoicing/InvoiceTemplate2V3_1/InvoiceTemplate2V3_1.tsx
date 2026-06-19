@@ -12,7 +12,11 @@ import { resolveInvoiceDocumentCurrency } from '@/utils/invoice/documentCurrency
 import Content from './components/Content';
 import Footer from './components/Footer';
 import Header from './components/Header';
-import { buildPreviewProducts, paginatePreviewProducts } from './utils';
+import {
+  buildPreviewProducts,
+  paginatePreviewProducts,
+  resolvePageSummary,
+} from './utils';
 
 const Container = styled.div<{ $visible?: boolean }>`
   --invoice-v3-text: #1f2933;
@@ -89,13 +93,14 @@ export const InvoiceTemplate2V3_1 = React.forwardRef<
   const previewProducts = buildPreviewProducts(sourceProducts);
   const productPages = paginatePreviewProducts(previewProducts);
   const documentCurrency = resolveInvoiceDocumentCurrency(data);
+  const totalPages = productPages.length;
 
   return data ? (
     <Container $visible={Boolean(ignoreHidden)} ref={ref}>
       {productPages.map((products, pageIndex) => (
         <Page
           key={`invoice-template-2-v3-1-page-${pageIndex}`}
-          $last={pageIndex === productPages.length - 1}
+          $last={pageIndex === totalPages - 1}
         >
           <Section>
             <Header business={business} data={data} />
@@ -107,7 +112,11 @@ export const InvoiceTemplate2V3_1 = React.forwardRef<
             <Footer
               business={business}
               data={data}
+              isLastPage={pageIndex === totalPages - 1}
+              pageNumber={pageIndex + 1}
+              pageSummary={resolvePageSummary(products, documentCurrency)}
               previewSignatureAssets={previewSignatureAssets}
+              totalPages={totalPages}
             />
           </FooterSection>
         </Page>

@@ -7,7 +7,8 @@ import {
   VmModal,
   VmSelect,
 } from '@/components/heroui';
-import type { TaxReceiptData, TaxReceiptItem } from '@/types/taxReceipt';
+import type { TaxReceiptItem } from '@/types/taxReceipt';
+import { getSelectableTaxReceiptData } from '@/utils/taxReceipt';
 
 type ReceiptOption = {
   id: string;
@@ -27,16 +28,6 @@ type TaxReceiptDepletedModalProps = {
 
 const EMPTY_TAX_RECEIPT_ITEMS: TaxReceiptItem[] = [];
 
-const resolveReceiptData = (
-  receipt: TaxReceiptItem | null | undefined,
-): TaxReceiptData | null => {
-  if (!receipt) return null;
-  if (typeof receipt === 'object' && 'data' in receipt) {
-    return receipt.data ?? null;
-  }
-  return receipt ?? null;
-};
-
 const isReceiptOption = (
   option: ReceiptOption | null,
 ): option is ReceiptOption => option !== null;
@@ -44,37 +35,12 @@ const isReceiptOption = (
 const buildOptions = (receipts: TaxReceiptItem[]): ReceiptOption[] => {
   if (!Array.isArray(receipts)) return [];
 
-  return receipts
-    .filter((receipt) => {
-      const data = resolveReceiptData(receipt);
-      return data && !data.disabled;
-    })
-    .filter((receipt) => {
-      const data = resolveReceiptData(receipt);
-      const rawName = data?.name || '';
-      const name = rawName
-        .normalize('NFD')
-        .replace(/\p{Diacritic}/gu, '')
-        .toLowerCase();
-      const serie = (data?.serie || '').toString().padStart(2, '0');
-      const containsNota = name.includes('nota');
-      const containsCredito = name.includes('credito');
-      const isCreditNoteBySerie = serie === '04';
-      const isCreditNoteByName = containsNota && containsCredito;
-      return !(isCreditNoteBySerie || isCreditNoteByName);
-    })
-    .filter((receipt) => {
-      const data = resolveReceiptData(receipt);
-      const quantity = Number(data?.quantity);
-      const increase = Number(data?.increase);
-      const normalizedIncrease =
-        Number.isFinite(increase) && increase > 0 ? increase : 1;
-      const normalizedQuantity = Number.isFinite(quantity) ? quantity : 0;
-      return normalizedQuantity >= normalizedIncrease;
-    })
-    .map((receipt) => {
-      const data = resolveReceiptData(receipt);
-      const name = data?.name?.trim();
+  return getSelectableTaxReceiptData(receipts, {
+    excludeCreditNotes: true,
+    requireAvailable: true,
+  })
+    .map((data) => {
+      const name = data.name?.trim();
 
       if (!name) return null;
 

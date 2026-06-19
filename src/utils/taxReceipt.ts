@@ -6,6 +6,7 @@ import type {
   TaxReceiptSequenceInput,
 } from '@/types/taxReceipt';
 import { TAX_RECEIPT_NUMERIC_FIELDS } from '@/types/taxReceipt';
+import { stripDiacritics } from '@/utils/text';
 
 export interface ComprobanteOption {
   value: string;
@@ -16,6 +17,12 @@ export interface ComprobanteOption {
 export type TaxReceiptAvailability = {
   receipt: TaxReceiptItem | null;
   depleted: boolean;
+};
+
+export type SelectableTaxReceiptOptions = {
+  excludeCreditNotes?: boolean;
+  preferredDocumentFormat?: TaxReceiptDocumentFormat;
+  requireAvailable?: boolean;
 };
 
 export const comprobantesOptions: ComprobanteOption[] = [
@@ -137,6 +144,95 @@ const normalizeDocumentFormat = (
 export const getTaxReceiptData = (item: TaxReceiptItem): TaxReceiptData => {
   if (isTaxReceiptDocument(item)) return hydrateTaxReceiptData(item.data);
   return hydrateTaxReceiptData(item);
+};
+
+const normalizeTaxReceiptNameKey = (value: unknown): string | null => {
+  const name = normalizeString(value);
+  return name ? stripDiacritics(name).toUpperCase() : null;
+};
+
+export const isCreditNoteTaxReceiptData = (
+  data: TaxReceiptData | null | undefined,
+): boolean => {
+  if (!data) return false;
+
+  const name = normalizeTaxReceiptNameKey(data.name) ?? '';
+  const serie = normalizeString(data.serie ?? data.series ?? data.fiscalSeries)
+    ?.padStart(2, '0')
+    .toUpperCase();
+  const fiscalType = normalizeString(data.fiscalType)?.toUpperCase();
+  const containsNota = name.includes('NOTA');
+  const containsCredito = name.includes('CREDITO');
+
+  return (
+    serie === '04' ||
+    fiscalType === 'E34' ||
+    (containsNota && containsCredito)
+  );
+};
+
+const hasTaxReceiptAvailableQuantity = (data: TaxReceiptData): boolean => {
+  const quantity = Number(data.quantity);
+  const increase = Number(data.increase);
+  const normalizedIncrease =
+    Number.isFinite(increase) && increase > 0 ? increase : 1;
+  const normalizedQuantity = Number.isFinite(quantity) ? quantity : 0;
+
+  return normalizedQuantity >= normalizedIncrease;
+};
+
+const getSelectableTaxReceiptRank = (
+  data: TaxReceiptData,
+  preferredDocumentFormat?: TaxReceiptDocumentFormat,
+): number => {
+  if (!preferredDocumentFormat) return 0;
+  return data.documentFormat === preferredDocumentFormat ? 0 : 1;
+};
+
+const shouldReplaceSelectableTaxReceipt = ({
+  current,
+  next,
+  preferredDocumentFormat,
+}: {
+  current: TaxReceiptData;
+  next: TaxReceiptData;
+  preferredDocumentFormat?: TaxReceiptDocumentFormat;
+}) =>
+  getSelectableTaxReceiptRank(next, preferredDocumentFormat) <
+  getSelectableTaxReceiptRank(current, preferredDocumentFormat);
+
+export const getSelectableTaxReceiptData = (
+  receipts: TaxReceiptItem[] | null | undefined,
+  options: SelectableTaxReceiptOptions = {},
+): TaxReceiptData[] => {
+  if (!Array.isArray(receipts)) return [];
+
+  const { excludeCreditNotes, preferredDocumentFormat, requireAvailable } =
+    options;
+  const selectedByName = new Map<string, TaxReceiptData>();
+
+  receipts.forEach((receipt) => {
+    const data = getTaxReceiptData(receipt);
+    const nameKey = normalizeTaxReceiptNameKey(data.name);
+
+    if (!nameKey || data.disabled) return;
+    if (excludeCreditNotes && isCreditNoteTaxReceiptData(data)) return;
+    if (requireAvailable && !hasTaxReceiptAvailableQuantity(data)) return;
+
+    const current = selectedByName.get(nameKey);
+    if (
+      !current ||
+      shouldReplaceSelectableTaxReceipt({
+        current,
+        next: data,
+        preferredDocumentFormat,
+      })
+    ) {
+      selectedByName.set(nameKey, data);
+    }
+  });
+
+  return Array.from(selectedByName.values());
 };
 
 const resolveReceiptData = (

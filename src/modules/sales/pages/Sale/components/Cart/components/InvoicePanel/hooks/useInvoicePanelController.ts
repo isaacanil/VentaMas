@@ -40,6 +40,7 @@ import type { DocumentCurrencyContext } from '../components/Body/components/Docu
 import { handleCancelShipping } from '../handleCancelShipping';
 import { useInvoicePanelFormSync } from './useInvoicePanelFormSync';
 import { useInvoicePanelPaymentBootstrap } from './useInvoicePanelPaymentBootstrap';
+import { buildInvoiceSubmissionIdempotencyKey } from '../utils/invoiceSubmissionIdempotency';
 import { processInvoicePrint } from '../utils/processInvoicePrint';
 import { submitInvoicePanel } from '../utils/submitInvoicePanel';
 
@@ -132,7 +133,7 @@ export const useInvoicePanelController = () => {
   const { invoice, pendingPrint, submitted, taxReceiptModalOpen, loading } =
     uiState;
 
-  const [fallbackIdempotencyKey, setFallbackIdempotencyKey] = useReducer(
+  const [idempotencySeed, resetIdempotencySeed] = useReducer(
     () => `gen:${nanoid()}`,
     `gen:${nanoid()}`,
   );
@@ -206,6 +207,7 @@ export const useInvoicePanelController = () => {
   const cartProducts = Array.isArray(cart?.products)
     ? cart.products
     : EMPTY_CART_PRODUCTS;
+  const hasCartProducts = cartProducts.length > 0;
   const invoiceComment = (() => {
     const comments = cartProducts
       .filter((product) => product.comment)
@@ -224,11 +226,52 @@ export const useInvoicePanelController = () => {
     );
   }, [business, user]);
 
-  const idempotencyKey =
-    (cart?.id && `cart:${cart.id}`) ||
-    (cart?.cartId && `cart:${cart.cartId}`) ||
-    (cart?.cartIdRef && `cart:${cart.cartIdRef}`) ||
-    fallbackIdempotencyKey;
+  const buildIdempotencyKey = useCallback(
+    ({
+      dueDate,
+      effectiveAccountsReceivable,
+      effectiveCart,
+    }: {
+      dueDate: number | null;
+      effectiveAccountsReceivable: unknown;
+      effectiveCart: unknown;
+    }) =>
+      buildInvoiceSubmissionIdempotencyKey({
+        accountsReceivable: effectiveAccountsReceivable,
+        businessId:
+          typeof resolvedBusinessId === 'string' ? resolvedBusinessId : null,
+        cart: effectiveCart,
+        client,
+        dueDate,
+        hasDueDate,
+        insuranceAR,
+        insuranceAuth,
+        insuranceEnabled,
+        invoiceComment,
+        isTestMode,
+        monetaryContext: monetaryContextRef.current,
+        ncfType,
+        seed: idempotencySeed,
+        serviceCommissions: billing?.serviceCommissions,
+        taxReceiptEnabled,
+        userId: user?.uid ?? null,
+      }),
+    [
+      billing?.serviceCommissions,
+      client,
+      hasDueDate,
+      idempotencySeed,
+      insuranceAR,
+      insuranceAuth,
+      insuranceEnabled,
+      invoiceComment,
+      isTestMode,
+      ncfType,
+      resolvedBusinessId,
+      taxReceiptEnabled,
+      user?.uid,
+    ],
+  );
 
   const clearPrintCompletionFallback = useCallback(() => {
     if (printCompletionFallbackRef.current === null) return;
@@ -394,12 +437,13 @@ export const useInvoicePanelController = () => {
       handleAfterPrint,
       handleInvoicePrinting,
       hasDueDate,
-      idempotencyKey,
       insuranceAR,
       insuranceAuth,
       insuranceEnabled,
       invoiceComment,
       isTestMode,
+      buildIdempotencyKey,
+      onIdempotencyConflict: resetIdempotencySeed,
       ncfType,
       resolvedBusinessId,
       runInvoice,
@@ -419,8 +463,8 @@ export const useInvoicePanelController = () => {
     resetCompletionState();
     dispatchUi({ type: 'resetPanelUiState' });
     monetaryContextRef.current = null;
-    setFallbackIdempotencyKey();
-  }, [resetCompletionState, setFallbackIdempotencyKey]);
+    resetIdempotencySeed();
+  }, [resetCompletionState, resetIdempotencySeed]);
 
   useInvoicePanelFormSync({
     accountsReceivable,
@@ -448,6 +492,7 @@ export const useInvoicePanelController = () => {
     handleInvoicePanel,
     handleMonetaryContextChange,
     handleSubmit,
+    hasCartProducts,
     invoice,
     invoicePanel,
     isAddedToReceivables,

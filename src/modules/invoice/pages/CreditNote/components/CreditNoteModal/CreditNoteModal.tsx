@@ -1,7 +1,8 @@
 import { message, Grid, Skeleton, Tabs } from 'antd';
 import { DateTime } from 'luxon';
-import React, { useEffect, useMemo, useReducer } from 'react';
+import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useReactToPrint } from 'react-to-print';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { selectBusinessData } from '@/features/auth/businessSlice';
@@ -18,8 +19,13 @@ import { fbUpdateCreditNote } from '@/firebase/creditNotes/fbUpdateCreditNote';
 import { useFbGetCreditNotesByInvoice } from '@/firebase/creditNotes/useFbGetCreditNotesByInvoice';
 import { useFbGetInvoicesByClient } from '@/firebase/invoices/useFbGetInvoicesByClient';
 import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt';
-import { useCreditNotePDF } from '@/modules/invoice/hooks/creditNote/useCreditNotePDF';
+import { Invoice } from '@/modules/invoice/components/Invoice/components/Invoice/Invoice';
+import {
+  HiddenInvoicePrintContainer,
+  INVOICE_LETTER_PRINT_PAGE_STYLE,
+} from '@/modules/invoice/components/Invoice/components/HiddenInvoicePrintContainer/HiddenInvoicePrintContainer';
 import { useFbGetCreditNoteApplications } from '@/modules/invoice/hooks/creditNote/useFbGetCreditNoteApplications';
+import { creditNoteToInvoicePrintData } from '@/modules/invoice/utils/adjustmentNotePrintData';
 import { formatPrice } from '@/utils/format';
 import { resolveBusinessFiscalRollout } from '@/utils/fiscal/fiscalRollout';
 import { getTotalPrice, getTax } from '@/utils/pricing';
@@ -33,6 +39,10 @@ import { RelatedNotesTab } from './components/RelatedNotesTab';
 import { ResponsiveContainer } from './components/ResponsiveContainer';
 import { useCreditNoteColumns } from './hooks/useCreditNoteColumns';
 import { useCreditNoteSelection } from './hooks/useCreditNoteSelection';
+import {
+  CREDIT_NOTE_TEXT_CORRECTION_AMOUNT_MESSAGE,
+  isCreditNoteTextCorrectionWithAmount,
+} from './utils/modificationCode';
 import { resolveQuantity } from './utils/quantity';
 
 import type { CreditNoteRecord } from '@/types/creditNote';
@@ -95,10 +105,7 @@ type CreditNoteModalLocalStateUpdate =
 const initialCreditNoteModalLocalState: CreditNoteModalLocalState = {
   loading: false,
   selectedClientId: undefined,
-  dateRange: [
-    DateTime.now().startOf('month'),
-    DateTime.now().endOf('month'),
-  ],
+  dateRange: [DateTime.now().startOf('month'), DateTime.now().endOf('month')],
   selectedInvoiceId: undefined,
   reason: undefined,
   modificationCode: undefined,
@@ -154,9 +161,10 @@ export const CreditNoteModal = () => {
       selectCreditNoteModal,
     ) as CreditNoteModalTypedState;
   const user = useSelector<UserRootState, UserIdentity | null>(selectUser);
-  const business = useSelector<BusinessRootState, Record<string, unknown> | null>(
-    selectBusinessData,
-  );
+  const business = useSelector<
+    BusinessRootState,
+    Record<string, unknown> | null
+  >(selectBusinessData);
   const electronicModelEnabled =
     resolveBusinessFiscalRollout(business).electronicModelEnabled;
   const { clients: fetchedClients, loading: clientsLoading } =
@@ -164,7 +172,6 @@ export const CreditNoteModal = () => {
       clients: ClientWrapper[];
       loading: boolean;
     };
-  const { pdfLoading, handlePrintPdf } = useCreditNotePDF();
   const { taxReceipt } = useFbGetTaxReceipt() as {
     taxReceipt: TaxReceiptDocument[];
   };
@@ -213,16 +220,15 @@ export const CreditNoteModal = () => {
     selectedInvoiceId === undefined
       ? initialSelectedInvoiceId
       : selectedInvoiceId;
-  const { creditNotes: invoiceCreditNotes } =
-    useFbGetCreditNotesByInvoice(effectiveSelectedInvoiceId);
+  const { creditNotes: invoiceCreditNotes } = useFbGetCreditNotesByInvoice(
+    effectiveSelectedInvoiceId,
+  );
   const initialReason = mode !== 'create' ? creditNoteData?.reason || '' : '';
   const creditNoteReason = reason === undefined ? initialReason : reason;
   const initialModificationCode =
     mode !== 'create' ? creditNoteData?.modificationCode || '3' : '3';
   const creditNoteModificationCode =
-    modificationCode === undefined
-      ? initialModificationCode
-      : modificationCode;
+    modificationCode === undefined ? initialModificationCode : modificationCode;
 
   // Obtener aplicaciones de la nota de crédito actual
   const { applications: creditNoteApplications, loading: applicationsLoading } =
@@ -243,7 +249,8 @@ export const CreditNoteModal = () => {
 
   // Verificar si se pueden crear/editar notas de crédito
   const canUseCreditNotes =
-    electronicModelEnabled || (taxReceiptEnabled && isCreditNoteReceiptConfigured);
+    electronicModelEnabled ||
+    (taxReceiptEnabled && isCreditNoteReceiptConfigured);
 
   const otherCreditNotes = useMemo(
     () => invoiceCreditNotes.filter((cn) => cn.id !== creditNoteData?.id),
@@ -337,6 +344,26 @@ export const CreditNoteModal = () => {
 
   const screens = useBreakpoint();
   const isMobile = !screens.md;
+  const creditNotePrintRef = useRef<HTMLDivElement | null>(null);
+  const pendingCreditNotePrintRef = useRef(false);
+  const [creditNotePrintTarget, setCreditNotePrintTarget] =
+    useState<CreditNoteRecord | null>(null);
+  const [creditNotePrintLoading, setCreditNotePrintLoading] = useState(false);
+  const creditNotePrintData = useMemo(
+    () =>
+      creditNotePrintTarget
+        ? creditNoteToInvoicePrintData(creditNotePrintTarget)
+        : null,
+    [creditNotePrintTarget],
+  );
+  const triggerCreditNotePrint = useReactToPrint({
+    contentRef: creditNotePrintRef,
+    pageStyle: INVOICE_LETTER_PRINT_PAGE_STYLE,
+    onAfterPrint: () => {
+      setCreditNotePrintLoading(false);
+      setCreditNotePrintTarget(null);
+    },
+  });
 
   const memoizedFormatPrice = useMemo(() => formatPrice, []);
 
@@ -375,8 +402,43 @@ export const CreditNoteModal = () => {
     });
   };
 
+  const handlePrintCreditNote = (note: CreditNoteRecord | null | undefined) => {
+    if (!note) {
+      message.error('No hay datos de la nota de crédito.');
+      return;
+    }
+
+    pendingCreditNotePrintRef.current = true;
+    setCreditNotePrintLoading(true);
+    setCreditNotePrintTarget(note);
+  };
+
+  useEffect(() => {
+    if (!creditNotePrintData || !pendingCreditNotePrintRef.current) return;
+
+    pendingCreditNotePrintRef.current = false;
+    const timeoutId = window.setTimeout(() => {
+      try {
+        const printResult = triggerCreditNotePrint?.();
+        void Promise.resolve(printResult).catch((error) => {
+          console.error('Error al imprimir la nota de crédito:', error);
+          message.error('No se pudo imprimir la nota de crédito.');
+          setCreditNotePrintLoading(false);
+        });
+      } catch (error) {
+        console.error('Error al imprimir la nota de crédito:', error);
+        message.error('No se pudo imprimir la nota de crédito.');
+        setCreditNotePrintLoading(false);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [creditNotePrintData, triggerCreditNotePrint]);
+
   const handleClientChange = (client: InvoiceClient | null) => {
-    setLocalState({ selectedClientId: client?.id != null ? String(client.id) : null });
+    setLocalState({
+      selectedClientId: client?.id != null ? String(client.id) : null,
+    });
     resetSelection();
     setLocalState({ selectedInvoiceId: null });
   };
@@ -405,7 +467,9 @@ export const CreditNoteModal = () => {
 
     // Validación final: verificar que ninguna cantidad exceda lo disponible
     const invalidItems = selectedProducts.filter((item) => {
-      const availableItem = availableInvoiceItems.find((ai) => ai.id === item.id);
+      const availableItem = availableInvoiceItems.find(
+        (ai) => ai.id === item.id,
+      );
       return availableItem && item.amountToBuy > availableItem.maxAvailableQty;
     });
 
@@ -414,6 +478,16 @@ export const CreditNoteModal = () => {
       message.error(
         `Las siguientes cantidades exceden lo disponible: ${itemNames}`,
       );
+      finishSubmit();
+      return;
+    }
+    if (
+      isCreditNoteTextCorrectionWithAmount({
+        modificationCode: creditNoteModificationCode,
+        totalAmount,
+      })
+    ) {
+      message.error(CREDIT_NOTE_TEXT_CORRECTION_AMOUNT_MESSAGE);
       finishSubmit();
       return;
     }
@@ -473,7 +547,7 @@ export const CreditNoteModal = () => {
 
     if (!effectiveIsEdit) {
       setTimeout(() => {
-        handlePrintPdf(saveResult.note);
+        handlePrintCreditNote(saveResult.note);
       }, 500);
     }
 
@@ -500,6 +574,10 @@ export const CreditNoteModal = () => {
 
   // Calcular subtotal (total sin impuestos)
   const subtotal = totalAmount - totalItbis;
+  const hasTextCorrectionAmountConflict = isCreditNoteTextCorrectionWithAmount({
+    modificationCode: creditNoteModificationCode,
+    totalAmount,
+  });
 
   const handleNavigateNote = (
     note: CreditNoteRecord | null | undefined,
@@ -572,136 +650,150 @@ export const CreditNoteModal = () => {
   }
 
   return (
-    <ResponsiveContainer
-      isMobile={isMobile}
-      isOpen={isOpen}
-      onClose={handleClose}
-      title={
-        <TitleRow>
-          {effectiveIsView
-            ? 'Detalle Nota de Crédito'
-            : effectiveIsEdit
-              ? 'Editar Nota de Crédito'
-              : 'Crear Nueva Nota de Crédito'}
-        </TitleRow>
-      }
-    >
-      <Container isMobile={isMobile}>
-        <CreditNoteSetupSection
-          canUseCreditNotes={canUseCreditNotes}
-          taxReceiptEnabled={taxReceiptEnabled}
-          effectiveIsView={effectiveIsView}
-          effectiveIsEdit={effectiveIsEdit}
-          creditNoteData={creditNoteData}
-          mode={mode}
-          clients={clients}
-          currentClient={currentClient}
-          onSelectClient={handleClientChange}
-          clientsLoading={clientsLoading}
-          invoices={invoices}
-          currentInvoice={currentInvoice}
-          onSelectInvoice={handleInvoiceChange}
-          invoicesLoading={invoicesLoading}
-          selectedClientId={effectiveSelectedClientId}
-          dateRange={dateRange}
-          onDateRangeChange={handleDateRangeChange}
-          reason={creditNoteReason}
-          modificationCode={creditNoteModificationCode}
-          onReasonChange={(value) => setLocalState({ reason: value })}
-          onModificationCodeChange={(value) =>
-            setLocalState({ modificationCode: value })
-          }
-        />
-
-        {canUseCreditNotes && (
-          <Tabs
-            defaultActiveKey="productos"
-            type="card"
-            size={isMobile ? 'small' : 'middle'}
-            items={[
-              {
-                key: 'productos',
-                label: 'Productos',
-                children: (
-                  <ProductsTab
-                    currentInvoice={currentInvoice}
-                    hasAvailableProducts={hasAvailableProducts}
-                    selectAll={selectAll}
-                    effectiveIsView={effectiveIsView}
-                    onSelectAll={handleSelectAll}
-                    searchText={searchText}
-                    onSearchTextChange={handleSearchTextChange}
-                    isMobile={isMobile}
-                    filteredProducts={filteredProducts}
-                    columns={columns}
-                    selectedInvoiceId={effectiveSelectedInvoiceId}
-                    selectedItems={selectedItems}
-                    itemQuantities={itemQuantities}
-                    existingItemQuantities={existingItemQuantities}
-                    creditedQuantities={creditedQuantities}
-                    currentPage={currentPage}
-                    pageSize={pageSize}
-                    onPageChange={(page) => setCurrentPage(page)}
-                    onItemChange={handleItemChange}
-                    onQuantityChange={handleQuantityChange}
-                    subtotal={subtotal}
-                    totalItbis={totalItbis}
-                    totalAmount={totalAmount}
-                    formatPrice={memoizedFormatPrice}
-                  />
-                ),
-              },
-              ...((effectiveIsView || effectiveIsEdit) &&
-              creditNoteApplications?.length > 0
-                ? [
-                    {
-                      key: 'historial',
-                      label: `Historial (${creditNoteApplications?.length || 0})`,
-                      children: (
-                        <ApplicationHistoryTab
-                          creditNoteApplications={creditNoteApplications}
-                          applicationsLoading={applicationsLoading}
-                          formatPrice={memoizedFormatPrice}
-                          creditNoteData={creditNoteData}
-                        />
-                      ),
-                    },
-                  ]
-                : []),
-              {
-                key: 'relacionadas',
-                label: `Notas Relacionadas (${relatedCreditNotes.length})`,
-                children: (
-                  <RelatedNotesTab
-                    relatedCreditNotes={relatedCreditNotes}
-                    onNavigateNote={handleNavigateNote}
-                    isMobile={isMobile}
-                  />
-                ),
-              },
-            ]}
+    <>
+      <ResponsiveContainer
+        isMobile={isMobile}
+        isOpen={isOpen}
+        onClose={handleClose}
+        title={
+          <TitleRow>
+            {effectiveIsView
+              ? 'Detalle Nota de Crédito'
+              : effectiveIsEdit
+                ? 'Editar Nota de Crédito'
+                : 'Crear Nueva Nota de Crédito'}
+          </TitleRow>
+        }
+      >
+        <Container isMobile={isMobile}>
+          <CreditNoteSetupSection
+            canUseCreditNotes={canUseCreditNotes}
+            taxReceiptEnabled={taxReceiptEnabled}
+            effectiveIsView={effectiveIsView}
+            effectiveIsEdit={effectiveIsEdit}
+            creditNoteData={creditNoteData}
+            mode={mode}
+            clients={clients}
+            currentClient={currentClient}
+            onSelectClient={handleClientChange}
+            clientsLoading={clientsLoading}
+            invoices={invoices}
+            currentInvoice={currentInvoice}
+            onSelectInvoice={handleInvoiceChange}
+            invoicesLoading={invoicesLoading}
+            selectedClientId={effectiveSelectedClientId}
+            dateRange={dateRange}
+            onDateRangeChange={handleDateRangeChange}
+            reason={creditNoteReason}
+            modificationCode={creditNoteModificationCode}
+            totalAmount={totalAmount}
+            onReasonChange={(value) => setLocalState({ reason: value })}
+            onModificationCodeChange={(value) =>
+              setLocalState({ modificationCode: value })
+            }
           />
-        )}
 
-        <CreditNoteActions
-          onClose={handleClose}
-          effectiveIsView={effectiveIsView}
-          effectiveIsEdit={effectiveIsEdit}
-          canUseCreditNotes={canUseCreditNotes}
-          onPrint={handlePrintPdf}
-          pdfLoading={pdfLoading}
-          creditNoteData={creditNoteData}
-          onSubmit={handleSubmit}
-          selectedInvoiceId={effectiveSelectedInvoiceId}
-          selectedItems={selectedItems}
-          loading={loading}
-          isTimeAllowed={isTimeAllowed}
-          hasApplications={hasApplications}
-          createdAtDate={createdAtDate}
-          allowedEditMs={ALLOWED_EDIT_MS}
-        />
-      </Container>
-    </ResponsiveContainer>
+          {canUseCreditNotes && (
+            <Tabs
+              defaultActiveKey="productos"
+              type="card"
+              size={isMobile ? 'small' : 'middle'}
+              items={[
+                {
+                  key: 'productos',
+                  label: 'Productos',
+                  children: (
+                    <ProductsTab
+                      currentInvoice={currentInvoice}
+                      hasAvailableProducts={hasAvailableProducts}
+                      selectAll={selectAll}
+                      effectiveIsView={effectiveIsView}
+                      onSelectAll={handleSelectAll}
+                      searchText={searchText}
+                      onSearchTextChange={handleSearchTextChange}
+                      isMobile={isMobile}
+                      filteredProducts={filteredProducts}
+                      columns={columns}
+                      selectedInvoiceId={effectiveSelectedInvoiceId}
+                      selectedItems={selectedItems}
+                      itemQuantities={itemQuantities}
+                      existingItemQuantities={existingItemQuantities}
+                      creditedQuantities={creditedQuantities}
+                      currentPage={currentPage}
+                      pageSize={pageSize}
+                      onPageChange={(page) => setCurrentPage(page)}
+                      onItemChange={handleItemChange}
+                      onQuantityChange={handleQuantityChange}
+                      subtotal={subtotal}
+                      totalItbis={totalItbis}
+                      totalAmount={totalAmount}
+                      formatPrice={memoizedFormatPrice}
+                    />
+                  ),
+                },
+                ...((effectiveIsView || effectiveIsEdit) &&
+                creditNoteApplications?.length > 0
+                  ? [
+                      {
+                        key: 'historial',
+                        label: `Historial (${creditNoteApplications?.length || 0})`,
+                        children: (
+                          <ApplicationHistoryTab
+                            creditNoteApplications={creditNoteApplications}
+                            applicationsLoading={applicationsLoading}
+                            formatPrice={memoizedFormatPrice}
+                            creditNoteData={creditNoteData}
+                          />
+                        ),
+                      },
+                    ]
+                  : []),
+                {
+                  key: 'relacionadas',
+                  label: `Notas Relacionadas (${relatedCreditNotes.length})`,
+                  children: (
+                    <RelatedNotesTab
+                      relatedCreditNotes={relatedCreditNotes}
+                      onNavigateNote={handleNavigateNote}
+                      isMobile={isMobile}
+                    />
+                  ),
+                },
+              ]}
+            />
+          )}
+
+          <CreditNoteActions
+            onClose={handleClose}
+            effectiveIsView={effectiveIsView}
+            effectiveIsEdit={effectiveIsEdit}
+            canUseCreditNotes={canUseCreditNotes}
+            onPrint={handlePrintCreditNote}
+            pdfLoading={creditNotePrintLoading}
+            creditNoteData={creditNoteData}
+            onSubmit={handleSubmit}
+            selectedInvoiceId={effectiveSelectedInvoiceId}
+            selectedItems={selectedItems}
+            submitBlocked={hasTextCorrectionAmountConflict}
+            loading={loading}
+            isTimeAllowed={isTimeAllowed}
+            hasApplications={hasApplications}
+            createdAtDate={createdAtDate}
+            allowedEditMs={ALLOWED_EDIT_MS}
+          />
+        </Container>
+      </ResponsiveContainer>
+      <HiddenInvoicePrintContainer aria-hidden="true">
+        {creditNotePrintData ? (
+          <Invoice
+            ref={creditNotePrintRef}
+            data={creditNotePrintData}
+            template="template2_v3_1"
+            ignoreHidden
+          />
+        ) : null}
+      </HiddenInvoicePrintContainer>
+    </>
   );
 };
 

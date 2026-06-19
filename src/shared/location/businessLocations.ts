@@ -1,5 +1,11 @@
+import {
+  DOMINICAN_MUNICIPALITY_OPTIONS,
+  DOMINICAN_PROVINCE_OPTIONS,
+} from './dominicanLocationCodes';
+
 export type BusinessCountryCode = 'do' | 've';
 export type BusinessCountryPhoneCode = 'DO' | 'VE';
+export type BusinessMunicipalityInputMode = 'none' | 'select' | 'text';
 
 export interface BusinessLocationOption {
   label: string;
@@ -12,47 +18,16 @@ export interface BusinessCountryLocationConfig {
   phoneCountryCode: BusinessCountryPhoneCode;
   subdivisionLabel: string;
   subdivisions: readonly BusinessLocationOption[];
+  municipalityLabel?: string;
+  municipalityInputMode?: BusinessMunicipalityInputMode;
 }
 
 export const DEFAULT_BUSINESS_COUNTRY_CODE: BusinessCountryCode = 'do';
 
-const toOptions = (names: readonly string[]): readonly BusinessLocationOption[] =>
+const toOptions = (
+  names: readonly string[],
+): readonly BusinessLocationOption[] =>
   names.map((name) => ({ label: name, value: name }));
-
-const DOMINICAN_PROVINCES = toOptions([
-  'Distrito Nacional',
-  'Azua',
-  'Baoruco',
-  'Barahona',
-  'Dajabón',
-  'Duarte',
-  'Elías Piña',
-  'El Seibo',
-  'Espaillat',
-  'Independencia',
-  'La Altagracia',
-  'La Romana',
-  'La Vega',
-  'María Trinidad Sánchez',
-  'Monte Cristi',
-  'Pedernales',
-  'Peravia',
-  'Puerto Plata',
-  'Hermanas Mirabal',
-  'Samaná',
-  'San Cristóbal',
-  'San Juan',
-  'San Pedro de Macorís',
-  'Sánchez Ramírez',
-  'Santiago',
-  'Santiago Rodríguez',
-  'Valverde',
-  'Monseñor Nouel',
-  'Monte Plata',
-  'Hato Mayor',
-  'San José de Ocoa',
-  'Santo Domingo',
-]);
 
 const VENEZUELAN_STATES = toOptions([
   'Distrito Capital',
@@ -88,7 +63,9 @@ export const BUSINESS_LOCATION_COUNTRIES = [
     name: 'República Dominicana',
     phoneCountryCode: 'DO',
     subdivisionLabel: 'Provincia',
-    subdivisions: DOMINICAN_PROVINCES,
+    subdivisions: DOMINICAN_PROVINCE_OPTIONS,
+    municipalityLabel: 'Municipio',
+    municipalityInputMode: 'select',
   },
   {
     code: 've',
@@ -96,12 +73,15 @@ export const BUSINESS_LOCATION_COUNTRIES = [
     phoneCountryCode: 'VE',
     subdivisionLabel: 'Estado',
     subdivisions: VENEZUELAN_STATES,
+    municipalityLabel: 'Municipio',
+    municipalityInputMode: 'text',
   },
 ] as const satisfies readonly BusinessCountryLocationConfig[];
 
-const CONFIG_BY_COUNTRY = new Map<BusinessCountryCode, BusinessCountryLocationConfig>(
-  BUSINESS_LOCATION_COUNTRIES.map((country) => [country.code, country]),
-);
+const CONFIG_BY_COUNTRY = new Map<
+  BusinessCountryCode,
+  BusinessCountryLocationConfig
+>(BUSINESS_LOCATION_COUNTRIES.map((country) => [country.code, country]));
 
 const COUNTRY_ALIASES = new Map<string, BusinessCountryCode>([
   ['do', 'do'],
@@ -158,11 +138,37 @@ export const getBusinessSubdivisionLabel = (country: unknown): string =>
 
 export const getBusinessSubdivisionOptions = (
   country: unknown,
-): BusinessLocationOption[] => [...getBusinessLocationConfig(country).subdivisions];
+): BusinessLocationOption[] => [
+  ...getBusinessLocationConfig(country).subdivisions,
+];
+
+export const getBusinessMunicipalityOptions = (
+  country: unknown,
+  subdivision: unknown,
+): BusinessLocationOption[] => {
+  if (getBusinessMunicipalityInputMode(country) !== 'select') return [];
+  if (normalizeBusinessCountryCode(country) !== 'do') return [];
+
+  const provinceCode = getDominicanProvinceCode(subdivision);
+  if (!provinceCode) return [];
+
+  return DOMINICAN_MUNICIPALITY_OPTIONS.filter(
+    (option) => option.provinceCode === provinceCode,
+  ).map(({ label, value }) => ({ label, value }));
+};
+
+export const getBusinessMunicipalityInputMode = (
+  country: unknown,
+): BusinessMunicipalityInputMode =>
+  getBusinessLocationConfig(country).municipalityInputMode ?? 'none';
+
+export const getBusinessMunicipalityLabel = (country: unknown): string =>
+  getBusinessLocationConfig(country).municipalityLabel ?? 'Municipio';
 
 export const getBusinessCountryPhoneCode = (
   country: unknown,
-): BusinessCountryPhoneCode => getBusinessLocationConfig(country).phoneCountryCode;
+): BusinessCountryPhoneCode =>
+  getBusinessLocationConfig(country).phoneCountryCode;
 
 export const getCanonicalBusinessSubdivision = (
   country: unknown,
@@ -195,4 +201,64 @@ export const normalizeBusinessSubdivisionForStorage = (
   const rawValue = String(value ?? '').trim();
   if (!rawValue) return '';
   return getCanonicalBusinessSubdivision(country, rawValue) ?? rawValue;
+};
+
+export const getDominicanProvinceCode = (value: unknown): string | null => {
+  const canonicalProvince = getCanonicalBusinessSubdivision('do', value);
+  if (!canonicalProvince) return null;
+
+  return (
+    DOMINICAN_PROVINCE_OPTIONS.find(
+      (option) => option.value === canonicalProvince,
+    )?.code ?? null
+  );
+};
+
+export const getCanonicalBusinessMunicipality = (
+  country: unknown,
+  subdivision: unknown,
+  value: unknown,
+): string | null => {
+  if (normalizeBusinessCountryCode(country) !== 'do') return null;
+
+  const rawValue = String(value ?? '').trim();
+  if (!rawValue) return null;
+
+  const provinceCode = getDominicanProvinceCode(subdivision);
+  const candidates = provinceCode
+    ? DOMINICAN_MUNICIPALITY_OPTIONS.filter(
+        (option) => option.provinceCode === provinceCode,
+      )
+    : DOMINICAN_MUNICIPALITY_OPTIONS;
+  const normalizedValue = normalizeLookupKey(rawValue);
+
+  const municipality = candidates.find(
+    (option) =>
+      option.value === rawValue ||
+      normalizeLookupKey(option.label) === normalizedValue,
+  );
+
+  return municipality?.value ?? null;
+};
+
+export const isBusinessMunicipalityValueSupported = (
+  country: unknown,
+  subdivision: unknown,
+  value: unknown,
+): boolean => {
+  if (!String(value ?? '').trim()) return true;
+  if (normalizeBusinessCountryCode(country) !== 'do') return true;
+  return Boolean(getCanonicalBusinessMunicipality(country, subdivision, value));
+};
+
+export const normalizeBusinessMunicipalityForStorage = (
+  country: unknown,
+  subdivision: unknown,
+  value: unknown,
+): string => {
+  const rawValue = String(value ?? '').trim();
+  if (!rawValue) return '';
+  return (
+    getCanonicalBusinessMunicipality(country, subdivision, rawValue) ?? rawValue
+  );
 };

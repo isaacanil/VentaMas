@@ -23,6 +23,7 @@ describe('firestore financial hardening rules', () => {
     expectCollectionLocked('payments');
     expectCollectionLocked('cashMovements', 'movementId');
     expectCollectionLocked('cashCounts', 'cashCountId');
+    expectCollectionLocked('cashCountSales', 'saleId');
     expectCollectionLocked('vendorBills', 'vendorBillId');
   });
 
@@ -103,6 +104,15 @@ describe('firestore financial hardening rules', () => {
   it('keeps the business catch-all read-only', () => {
     expect(rules).toMatch(
       /match \/businesses\/\{businessId\}\/\{document=\*\*\} \{[\s\S]*?allow read: if hasBusinessAccess\(businessId\);[\s\S]*?allow write: if false;/,
+    );
+  });
+
+  it('locks invoice timeline and cash count sale subcollections to backend writes', () => {
+    expect(rules).toMatch(
+      /match \/businesses\/\{businessId\}\/invoicesV2\/\{invoiceId\} \{[\s\S]*?match \/timeline\/\{eventId\} \{[\s\S]*?allow read: if hasBusinessAccess\(businessId\);[\s\S]*?allow write: if false;/,
+    );
+    expect(rules).toMatch(
+      /match \/businesses\/\{businessId\}\/cashCounts\/\{cashCountId\} \{[\s\S]*?match \/sales\/\{invoiceId\} \{[\s\S]*?allow read: if hasBusinessAccess\(businessId\);[\s\S]*?allow write: if false;/,
     );
   });
 });

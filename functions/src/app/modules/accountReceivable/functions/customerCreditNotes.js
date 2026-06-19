@@ -35,6 +35,7 @@ const CREDIT_NOTE_ELECTRONIC_DOCUMENT_TYPE = 'E34';
 const DEFAULT_CREDIT_NOTE_MODIFICATION_CODE = '3';
 const DEFAULT_CREDIT_NOTE_REASON = 'Correccion de montos';
 const DGII_ADJUSTMENT_MODIFICATION_CODES = new Set(['1', '2', '3', '4', '5']);
+const TEXT_CORRECTION_MODIFICATION_CODE = '2';
 const VOID_CREDIT_NOTE_STATUSES = new Set([
   'cancelled',
   'canceled',
@@ -75,13 +76,31 @@ const normalizeModificationCode = (value) => {
   const clean = toCleanString(value);
   if (!clean) return null;
   const normalized = /^\d+$/.test(clean) ? String(Number(clean)) : clean;
-  return DGII_ADJUSTMENT_MODIFICATION_CODES.has(normalized)
-    ? normalized
-    : null;
+  return DGII_ADJUSTMENT_MODIFICATION_CODES.has(normalized) ? normalized : null;
 };
 
 const resolveCreditNoteReason = (value) =>
   toCleanString(value) || DEFAULT_CREDIT_NOTE_REASON;
+
+const assertCreditNoteModificationCodeSupportsAmount = ({
+  modificationCode,
+  totalAmount,
+}) => {
+  if (modificationCode !== TEXT_CORRECTION_MODIFICATION_CODE) return;
+
+  const requestedTotalAmount = roundToTwoDecimals(totalAmount);
+  if (requestedTotalAmount <= MONEY_EPSILON) return;
+
+  throw new HttpsError(
+    'failed-precondition',
+    'El código DGII 2 corrige texto y solo permite notas de crédito con monto en 0. Para una nota con importe, use el código 3 - Corrige montos.',
+    {
+      reason: 'credit-note-text-correction-requires-zero-amount',
+      modificationCode,
+      totalAmount: requestedTotalAmount,
+    },
+  );
+};
 
 const resolveInvoiceRecord = (invoiceSnap) =>
   asRecord(asRecord(invoiceSnap?.data()).data);
@@ -119,7 +138,10 @@ const resolveClientRecordId = (client) => {
   return toCleanString(record.id) || toCleanString(record.clientId);
 };
 
-const assertCreditNoteClientMatchesInvoice = ({ creditNoteClient, invoiceClient }) => {
+const assertCreditNoteClientMatchesInvoice = ({
+  creditNoteClient,
+  invoiceClient,
+}) => {
   const noteFiscalId = resolveClientFiscalId(creditNoteClient);
   const invoiceFiscalId = resolveClientFiscalId(invoiceClient);
   if (noteFiscalId && invoiceFiscalId && noteFiscalId !== invoiceFiscalId) {
@@ -173,8 +195,13 @@ const buildQuantityMap = (items) =>
   (Array.isArray(items) ? items : []).reduce((accumulator, item) => {
     const itemId = resolveLineItemId(item);
     if (!itemId) return accumulator;
-    const quantity = resolveQuantity(item.amountToBuy ?? item.quantity ?? item.qty);
-    accumulator.set(itemId, roundToTwoDecimals((accumulator.get(itemId) || 0) + quantity));
+    const quantity = resolveQuantity(
+      item.amountToBuy ?? item.quantity ?? item.qty,
+    );
+    accumulator.set(
+      itemId,
+      roundToTwoDecimals((accumulator.get(itemId) || 0) + quantity),
+    );
     return accumulator;
   }, new Map());
 
@@ -208,14 +235,16 @@ const validateCreditNoteAgainstInvoice = ({
     .filter(shouldIncludeCreditNoteInReferenceTotals);
   const existingTotalAmount = roundToTwoDecimals(
     relevantExistingCreditNotes.reduce(
-      (total, note) => total + safeNumber(note.totalAmount ?? note.amount ?? note.total),
+      (total, note) =>
+        total + safeNumber(note.totalAmount ?? note.amount ?? note.total),
       0,
     ),
   );
   const requestedTotalAmount = roundToTwoDecimals(creditNoteData.totalAmount);
   if (
     invoiceTotalAmount > 0 &&
-    existingTotalAmount + requestedTotalAmount > invoiceTotalAmount + MONEY_EPSILON
+    existingTotalAmount + requestedTotalAmount >
+      invoiceTotalAmount + MONEY_EPSILON
   ) {
     throw new HttpsError(
       'failed-precondition',
@@ -232,22 +261,26 @@ const validateCreditNoteAgainstInvoice = ({
   const invoiceQuantities = buildQuantityMap(invoice.products);
   if (invoiceQuantities.size === 0) return;
 
-  const creditedQuantities = relevantExistingCreditNotes.reduce((accumulator, note) => {
-    for (const [itemId, quantity] of buildQuantityMap(note.items).entries()) {
-      accumulator.set(
-        itemId,
-        roundToTwoDecimals((accumulator.get(itemId) || 0) + quantity),
-      );
-    }
-    return accumulator;
-  }, new Map());
+  const creditedQuantities = relevantExistingCreditNotes.reduce(
+    (accumulator, note) => {
+      for (const [itemId, quantity] of buildQuantityMap(note.items).entries()) {
+        accumulator.set(
+          itemId,
+          roundToTwoDecimals((accumulator.get(itemId) || 0) + quantity),
+        );
+      }
+      return accumulator;
+    },
+    new Map(),
+  );
   const requestedQuantities = buildQuantityMap(creditNoteData.items);
   for (const [itemId, requestedQuantity] of requestedQuantities.entries()) {
     const originalQuantity = invoiceQuantities.get(itemId) || 0;
     const alreadyCreditedQuantity = creditedQuantities.get(itemId) || 0;
     if (
       originalQuantity > 0 &&
-      alreadyCreditedQuantity + requestedQuantity > originalQuantity + MONEY_EPSILON
+      alreadyCreditedQuantity + requestedQuantity >
+        originalQuantity + MONEY_EPSILON
     ) {
       throw new HttpsError(
         'failed-precondition',
@@ -372,15 +405,16 @@ export const createCustomerCreditNote = onCall(
       const existingCreditNotesQuery = db
         .collection(`businesses/${businessId}/creditNotes`)
         .where('invoiceId', '==', invoiceId);
-      const [nextIdSnap, invoiceSnap, existingCreditNotesSnap] = await Promise.all([
-        getNextIDTransactionalSnap(
-          tx,
-          { businessID: businessId, uid: authUid },
-          'lastCreditNoteId',
-        ),
-        tx.get(db.doc(`businesses/${businessId}/invoices/${invoiceId}`)),
-        tx.get(existingCreditNotesQuery),
-      ]);
+      const [nextIdSnap, invoiceSnap, existingCreditNotesSnap] =
+        await Promise.all([
+          getNextIDTransactionalSnap(
+            tx,
+            { businessID: businessId, uid: authUid },
+            'lastCreditNoteId',
+          ),
+          tx.get(db.doc(`businesses/${businessId}/invoices/${invoiceId}`)),
+          tx.get(existingCreditNotesQuery),
+        ]);
       if (!invoiceSnap?.exists) {
         throw new HttpsError(
           'not-found',
@@ -403,25 +437,37 @@ export const createCustomerCreditNote = onCall(
         creditNoteClient: creditNoteData.client,
         invoiceClient: invoice.client,
       });
-      validateCreditNoteAgainstInvoice({
-        creditNoteData,
-        invoice,
-        invoiceTotalAmount,
-        existingCreditNotesSnap,
-      });
-      const rawModificationCode = toCleanString(creditNoteData.modificationCode);
+      const rawModificationCode = toCleanString(
+        creditNoteData.modificationCode,
+      );
       const modificationCode =
         normalizeModificationCode(rawModificationCode) ||
         DEFAULT_CREDIT_NOTE_MODIFICATION_CODE;
       const reason = resolveCreditNoteReason(creditNoteData.reason);
-      if (rawModificationCode && !normalizeModificationCode(rawModificationCode)) {
+      if (
+        rawModificationCode &&
+        !normalizeModificationCode(rawModificationCode)
+      ) {
         throw new HttpsError(
           'invalid-argument',
           'Código de modificación DGII inválido para la nota de crédito.',
           { reason: 'invalid-credit-note-modification-code' },
         );
       }
-      if (fiscalContext.electronicModelEnabled && (!invoiceNcf || !invoiceDate)) {
+      assertCreditNoteModificationCodeSupportsAmount({
+        modificationCode,
+        totalAmount: creditNoteData.totalAmount,
+      });
+      validateCreditNoteAgainstInvoice({
+        creditNoteData,
+        invoice,
+        invoiceTotalAmount,
+        existingCreditNotesSnap,
+      });
+      if (
+        fiscalContext.electronicModelEnabled &&
+        (!invoiceNcf || !invoiceDate)
+      ) {
         throw new HttpsError(
           'failed-precondition',
           'La nota de crédito electrónica requiere NCF y fecha de la factura modificada.',
@@ -432,10 +478,7 @@ export const createCustomerCreditNote = onCall(
         );
       }
 
-      const numberID = applyNextIDTransactional(
-        tx,
-        nextIdSnap,
-      );
+      const numberID = applyNextIDTransactional(tx, nextIdSnap);
       let reservation = null;
       if (!fiscalContext.electronicModelEnabled) {
         reservation = await reserveNcf(tx, {
@@ -559,7 +602,8 @@ export const updateCustomerCreditNote = onCall(
 
     const payload = asRecord(request?.data);
     const businessId = resolveBusinessId(payload);
-    const creditNoteId = toCleanString(payload.creditNoteId) || toCleanString(payload.id);
+    const creditNoteId =
+      toCleanString(payload.creditNoteId) || toCleanString(payload.id);
     const updates = asRecord(payload.updates);
     if (!businessId || !creditNoteId) {
       throw new HttpsError(
@@ -575,7 +619,9 @@ export const updateCustomerCreditNote = onCall(
     });
 
     await db.runTransaction(async (tx) => {
-      const noteRef = db.doc(`businesses/${businessId}/creditNotes/${creditNoteId}`);
+      const noteRef = db.doc(
+        `businesses/${businessId}/creditNotes/${creditNoteId}`,
+      );
       const noteSnap = await tx.get(noteRef);
       if (!noteSnap.exists) {
         throw new HttpsError('not-found', 'La nota de crédito ya no existe.');

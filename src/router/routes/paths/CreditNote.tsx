@@ -15,7 +15,7 @@ const Routes: AppRoute[] = [
     element: <CreditNoteList />,
     title: 'Notas de Crédito',
     metaDescription: 'Listado de notas de crédito.',
-    status: ROUTE_STATUS.WIP,
+    status: ROUTE_STATUS.STABLE,
   },
 ];
 

@@ -115,6 +115,15 @@ export const getInvoiceErrorNotification = (
     };
   }
 
+  if (normalizedCode === 'already-exists') {
+    return {
+      message: 'Venta enviada con cambios',
+      description:
+        'Detectamos un intento anterior de esta operación con datos distintos. No se creó una factura nueva. Revisa el historial de facturas; si no aparece, vuelve a presionar Facturar.',
+      duration: 10,
+    };
+  }
+
   if (normalizedCode && normalizedCode.startsWith('cashCount')) {
     return {
       message: 'Cuadre de caja requerido',

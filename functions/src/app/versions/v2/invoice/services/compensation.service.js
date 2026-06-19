@@ -1,4 +1,5 @@
-import { db, FieldValue } from '../../../../core/config/firebase.js';
+import { db } from '../../../../core/config/firebase.js';
+import { unlinkSaleFromCashCountInTransaction } from '../../../../modules/cashCount/services/cashCountSales.service.js';
 
 export async function scheduleCompensationsInTx(tx, { businessId, invoiceId }) {
   const invoiceRef = db.doc(`businesses/${businessId}/invoicesV2/${invoiceId}`);
@@ -129,22 +130,51 @@ export async function detachFromCashCount(
   tx,
   { businessId, invoiceId, userId },
 ) {
-  // Find open or closing cash count for the user and remove invoice ref from sales array if present
-  // We cannot query with tx for both open/closing removal, so best-effort: remove from any doc matching
+  // Find linked cash counts through the new read model first, then legacy array fallback.
   const cashCountsCol = db.collection(`businesses/${businessId}/cashCounts`);
+  const cashCountSalesCol = db.collection(
+    `businesses/${businessId}/cashCountSales`,
+  );
   const userRef = db.doc(`users/${userId}`);
-  const snap = await cashCountsCol
-    .where('cashCount.opening.employee', '==', userRef)
-    .where('cashCount.sales', 'array-contains-any', [
-      db.doc(`businesses/${businessId}/invoices/${invoiceId}`),
-    ])
-    .get();
   const invoiceDocRef = db.doc(
     `businesses/${businessId}/invoices/${invoiceId}`,
   );
+  const seenCashCountIds = new Set();
+
+  const salesSnap = await cashCountSalesCol
+    .where('invoiceId', '==', invoiceId)
+    .get();
+  salesSnap.forEach((doc) => {
+    const data = doc.data() || {};
+    const cashCountId = data.cashCountId || data.cashCountRef?.id || null;
+    if (!cashCountId || seenCashCountIds.has(cashCountId)) return;
+    seenCashCountIds.add(cashCountId);
+    unlinkSaleFromCashCountInTransaction({
+      tx,
+      businessId,
+      cashCountId,
+      invoiceId,
+      invoiceRef: invoiceDocRef,
+    });
+  });
+
+  // Legacy fallback: still remove from cashCount.sales for historical docs.
+  const snap = await cashCountsCol
+    .where('cashCount.opening.employee', '==', userRef)
+    .where('cashCount.sales', 'array-contains-any', [
+      invoiceDocRef,
+    ])
+    .get();
   snap.forEach((doc) => {
-    tx.update(doc.ref, {
-      'cashCount.sales': FieldValue.arrayRemove(invoiceDocRef),
+    if (seenCashCountIds.has(doc.id)) return;
+    seenCashCountIds.add(doc.id);
+    unlinkSaleFromCashCountInTransaction({
+      tx,
+      businessId,
+      cashCountId: doc.id,
+      invoiceId,
+      cashCountRef: doc.ref,
+      invoiceRef: invoiceDocRef,
     });
   });
 }

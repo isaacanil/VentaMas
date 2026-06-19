@@ -10,8 +10,12 @@ import { DgiiSyncAlert } from '@/modules/contacts/components/Rnc/DgiiSyncAlert/D
 import { RncPanel } from '@/modules/contacts/components/Rnc/RncPanel/RncPanel';
 import type { ClientInput } from '@/firebase/client/clientNormalizer';
 import {
+  getBusinessMunicipalityInputMode,
+  getBusinessMunicipalityLabel,
+  getBusinessMunicipalityOptions,
   getBusinessSubdivisionLabel,
   getBusinessSubdivisionOptions,
+  isBusinessMunicipalityValueSupported,
   isBusinessSubdivisionValueSupported,
 } from '@/shared/location/businessLocations';
 
@@ -22,7 +26,7 @@ const Wrapper = styled.div<{ $hasRnc?: boolean }>`
 `;
 
 type ClientGeneralInfoProps = {
-  form: FormInstance;
+  form: FormInstance<ClientInput>;
   customerData: ClientInput;
   businessCountry?: string | null;
   onRncPanelChange?: (hasPanel: boolean) => void;
@@ -47,6 +51,19 @@ export const ClientGeneralInfo = ({
   const hasRncPanel = !!(loading || rncInfo);
   const subdivisionLabel = getBusinessSubdivisionLabel(businessCountry);
   const subdivisionOptions = getBusinessSubdivisionOptions(businessCountry);
+  const municipalityInputMode =
+    getBusinessMunicipalityInputMode(businessCountry);
+  const municipalityLabel = getBusinessMunicipalityLabel(businessCountry);
+  const usesMunicipalitySelect = municipalityInputMode === 'select';
+  const selectedSubdivision = Form.useWatch('province', form);
+  const municipalityOptions = getBusinessMunicipalityOptions(
+    businessCountry,
+    selectedSubdivision,
+  );
+  const municipalitySelectOptions = municipalityOptions.map((option) => ({
+    label: `${option.label} (${option.value})`,
+    value: option.value,
+  }));
 
   useEffect(() => {
     onRncPanelChange?.(hasRncPanel);
@@ -83,6 +100,19 @@ export const ClientGeneralInfo = ({
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.stopPropagation(); // Previene que el evento llegue al document
+    }
+  };
+
+  const handleSubdivisionChange = (nextSubdivision: string | undefined) => {
+    const currentMunicipality = form.getFieldValue('municipality');
+    if (
+      !isBusinessMunicipalityValueSupported(
+        businessCountry,
+        nextSubdivision,
+        currentMunicipality,
+      )
+    ) {
+      form.setFieldsValue({ municipality: undefined });
     }
   };
 
@@ -193,17 +223,64 @@ export const ClientGeneralInfo = ({
                   isBusinessSubdivisionValueSupported(businessCountry, value)
                     ? Promise.resolve()
                     : Promise.reject(
-                        new Error(`Seleccione un ${subdivisionLabel.toLowerCase()} válido.`),
+                        new Error(
+                          `Seleccione un ${subdivisionLabel.toLowerCase()} válido.`,
+                        ),
                       ),
               },
             ]}
           >
             <Select
               allowClear
+              showSearch
+              optionFilterProp="label"
               placeholder={`Seleccione ${subdivisionLabel.toLowerCase()}`}
               options={subdivisionOptions}
+              onChange={handleSubdivisionChange}
             />
           </Form.Item>
+          {municipalityInputMode !== 'none' && (
+            <Form.Item
+              name="municipality"
+              label={municipalityLabel}
+              dependencies={['province']}
+              rules={[
+                {
+                  validator: (_, value) =>
+                    isBusinessMunicipalityValueSupported(
+                      businessCountry,
+                      form.getFieldValue('province'),
+                      value,
+                    )
+                      ? Promise.resolve()
+                      : Promise.reject(
+                          new Error(
+                            `Seleccione un ${municipalityLabel.toLowerCase()} válido.`,
+                          ),
+                        ),
+                },
+              ]}
+            >
+              {usesMunicipalitySelect ? (
+                <Select
+                  allowClear
+                  showSearch
+                  disabled={!municipalitySelectOptions.length}
+                  optionFilterProp="label"
+                  placeholder={
+                    selectedSubdivision
+                      ? `Seleccione ${municipalityLabel.toLowerCase()}`
+                      : `Seleccione ${subdivisionLabel.toLowerCase()} primero`
+                  }
+                  options={municipalitySelectOptions}
+                />
+              ) : (
+                <Input
+                  placeholder={`Ingrese ${municipalityLabel.toLowerCase()}`}
+                />
+              )}
+            </Form.Item>
+          )}
         </Form>
       </m.div>
       <AnimatePresence>

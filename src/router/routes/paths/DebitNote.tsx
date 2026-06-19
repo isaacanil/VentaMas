@@ -15,7 +15,7 @@ const Routes: AppRoute[] = [
     element: <DebitNoteList />,
     title: 'Notas de Débito',
     metaDescription: 'Listado de notas de débito.',
-    status: ROUTE_STATUS.WIP,
+    status: ROUTE_STATUS.STABLE,
   },
 ];
 

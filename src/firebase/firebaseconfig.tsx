@@ -55,7 +55,8 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+export const app =
+  getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 const useFirebaseEmulators = shouldUseFirebaseEmulators();
 const useMemoryFirestoreCache = import.meta.env.DEV || useFirebaseEmulators;

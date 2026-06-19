@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildTaxReceiptDocument,
   comprobantesOptions,
+  getSelectableTaxReceiptData,
   getTaxReceiptAvailability,
   hydrateTaxReceiptData,
   normalizeTaxReceiptData,
@@ -137,6 +138,94 @@ describe('taxReceipt availability', () => {
       receipt: null,
       depleted: true,
     });
+  });
+});
+
+describe('selectable taxReceipt data', () => {
+  it('deduplicates legacy and electronic receipts by logical name', () => {
+    const selectable = getSelectableTaxReceiptData(
+      [
+        {
+          data: {
+            name: 'CREDITO FISCAL',
+            type: 'B',
+            serie: '01',
+            documentFormat: 'traditional',
+            fiscalType: 'B01',
+            quantity: 10,
+            increase: 1,
+          },
+        },
+        {
+          data: {
+            name: 'CREDITO FISCAL',
+            type: 'E',
+            serie: '31',
+            documentFormat: 'electronic',
+            fiscalType: 'E31',
+            quantity: 10,
+            increase: 1,
+          },
+        },
+      ],
+      {
+        preferredDocumentFormat: 'electronic',
+      },
+    );
+
+    expect(selectable).toHaveLength(1);
+    expect(selectable[0]).toMatchObject({
+      name: 'CREDITO FISCAL',
+      documentFormat: 'electronic',
+      fiscalType: 'E31',
+    });
+  });
+
+  it('excludes credit notes and depleted receipts from sale selections', () => {
+    const selectable = getSelectableTaxReceiptData(
+      [
+        {
+          data: {
+            name: 'CONSUMIDOR FINAL',
+            type: 'E',
+            serie: '32',
+            documentFormat: 'electronic',
+            fiscalType: 'E32',
+            quantity: 0,
+            increase: 1,
+          },
+        },
+        {
+          data: {
+            name: 'NOTA DE CREDITO',
+            type: 'E',
+            serie: '34',
+            documentFormat: 'electronic',
+            fiscalType: 'E34',
+            quantity: 10,
+            increase: 1,
+          },
+        },
+        {
+          data: {
+            name: 'CREDITO FISCAL',
+            type: 'E',
+            serie: '31',
+            documentFormat: 'electronic',
+            fiscalType: 'E31',
+            quantity: 10,
+            increase: 1,
+          },
+        },
+      ],
+      {
+        excludeCreditNotes: true,
+        preferredDocumentFormat: 'electronic',
+        requireAvailable: true,
+      },
+    );
+
+    expect(selectable.map((item) => item.name)).toEqual(['CREDITO FISCAL']);
   });
 });
 

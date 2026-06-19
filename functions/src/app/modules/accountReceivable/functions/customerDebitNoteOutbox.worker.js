@@ -117,6 +117,7 @@ export const processCustomerDebitNoteOutbox = onDocumentCreated(
   {
     document: 'businesses/{businessId}/debitNotes/{debitNoteId}/outbox/{taskId}',
     region: 'us-central1',
+    timeoutSeconds: 120,
     secrets: GISYS_FACT_SECRETS,
   },
   async (event) => {

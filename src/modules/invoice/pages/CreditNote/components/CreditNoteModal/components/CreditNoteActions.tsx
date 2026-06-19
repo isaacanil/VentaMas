@@ -17,6 +17,7 @@ interface CreditNoteActionsProps {
   onSubmit: () => void | Promise<void>;
   selectedInvoiceId: string | null | undefined;
   selectedItems: Array<string | undefined>;
+  submitBlocked?: boolean;
   loading: boolean;
   isTimeAllowed: boolean;
   hasApplications: boolean;
@@ -35,6 +36,7 @@ export const CreditNoteActions = ({
   onSubmit,
   selectedInvoiceId,
   selectedItems,
+  submitBlocked = false,
   loading,
   isTimeAllowed,
   hasApplications,
@@ -75,7 +77,9 @@ export const CreditNoteActions = ({
           <Button
             type="primary"
             onClick={onSubmit}
-            disabled={!selectedInvoiceId || selectedItems.length === 0}
+            disabled={
+              !selectedInvoiceId || selectedItems.length === 0 || submitBlocked
+            }
             loading={loading}
           >
             {effectiveIsEdit ? 'Guardar Cambios' : 'Crear Nota de Crédito'}

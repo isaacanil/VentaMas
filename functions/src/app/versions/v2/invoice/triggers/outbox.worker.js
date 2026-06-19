@@ -3,18 +3,39 @@ import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 
 import { db, FieldValue, Timestamp } from '../../../../core/config/firebase.js';
 import { GISYS_FACT_SECRETS } from '../../../../core/config/secrets.js';
+import { linkSaleToCashCountInTransaction } from '../../../../modules/cashCount/services/cashCountSales.service.js';
 import {
   isAccountingRolloutEnabledForBusiness,
   normalizePilotMonetarySnapshot,
 } from '../../accounting/utils/accountingRollout.util.js';
 import { buildInvoicePosCashMovements } from '../../accounting/utils/cashMovement.util.js';
 import { upsertClientTx } from '../services/client.service.js';
+import { markInvoiceTimingStage } from '../services/invoiceTiming.service.js';
+import { upsertInvoiceTimelineEventInTransaction } from '../services/invoiceTimeline.service.js';
+import { attemptMarkInvoicePrintReady } from '../services/printReady.service.js';
 import { resolveInvoiceTriggerActorUid } from './invoiceTriggerActor.util.js';
 
-let depsPromise;
-async function loadDeps() {
-  if (!depsPromise) {
-    depsPromise = Promise.all([
+let electronicDepsPromise;
+async function loadElectronicDeps() {
+  if (!electronicDepsPromise) {
+    electronicDepsPromise = Promise.all([
+      import('../services/finalize.service.js'),
+      import('../services/audit.service.js'),
+      import('../../../../modules/electronicTaxReceipts/services/electronicTaxReceiptOutbox.service.js'),
+    ]).then(([finalizeService, auditService, electronicTaxReceiptOutbox]) => ({
+      attemptFinalizeInvoice: finalizeService.attemptFinalizeInvoice,
+      auditSafe: auditService.auditSafe,
+      processElectronicTaxReceiptOutboxTask:
+        electronicTaxReceiptOutbox.processElectronicTaxReceiptOutboxTask,
+    }));
+  }
+  return electronicDepsPromise;
+}
+
+let workflowDepsPromise;
+async function loadWorkflowDeps() {
+  if (!workflowDepsPromise) {
+    workflowDepsPromise = Promise.all([
       import('../../../../modules/Inventory/services/getInventory.service.js'),
       import('../../../../modules/Inventory/services/Inventory.service.js'),
       import('../../../../modules/accountReceivable/services/getAccountReceivable.service.js'),
@@ -28,7 +49,6 @@ async function loadDeps() {
       import('../../../../modules/insurance/services/insurance.service.js'),
       import('../../../../modules/accountReceivable/services/insuranceAuth.js'),
       import('../services/audit.service.js'),
-      import('../../../../modules/electronicTaxReceipts/services/electronicTaxReceiptOutbox.service.js'),
       import('../../../../modules/commissions/services/serviceCommissions.service.js'),
     ]).then(
       ([
@@ -45,7 +65,6 @@ async function loadDeps() {
         insuranceService,
         insuranceAuthMod,
         auditService,
-        electronicTaxReceiptOutbox,
         serviceCommissionsService,
       ]) => {
         const cashCountHelpers = cashCountQueries?.default ?? cashCountQueries;
@@ -65,15 +84,13 @@ async function loadDeps() {
           addInsuranceAuth: insuranceAuthMod.addInsuranceAuth,
           auditTx: auditService.auditTx,
           auditSafe: auditService.auditSafe,
-          processElectronicTaxReceiptOutboxTask:
-            electronicTaxReceiptOutbox.processElectronicTaxReceiptOutboxTask,
           syncServiceCommissionsTx:
             serviceCommissionsService.syncServiceCommissionsTx,
         };
       },
     );
   }
-  return depsPromise;
+  return workflowDepsPromise;
 }
 
 const normalizeTimestamp = (value) => {
@@ -119,6 +136,45 @@ const normalizeTimestamp = (value) => {
     }
   }
   return null;
+};
+
+const normalizeTimelineEventId = (...parts) =>
+  parts
+    .filter((part) => part !== undefined && part !== null && part !== '')
+    .map((part) =>
+      String(part)
+        .trim()
+        .replace(/[^A-Za-z0-9_-]+/g, '_')
+        .replace(/^_+|_+$/g, ''),
+    )
+    .filter(Boolean)
+    .join('__')
+    .slice(0, 180);
+
+const writeInvoiceTimelineEvent = (
+  tx,
+  { businessId, invoiceId, taskId, taskType, status, at, metadata },
+) => {
+  const eventId = normalizeTimelineEventId('outbox', taskId, status);
+  if (!eventId) return;
+
+  upsertInvoiceTimelineEventInTransaction({
+    transaction: tx,
+    timelineEventRef: db.doc(
+      `businesses/${businessId}/invoicesV2/${invoiceId}/timeline/${eventId}`,
+    ),
+    businessId,
+    invoiceId,
+    eventId,
+    status,
+    at,
+    source: 'processInvoiceOutbox',
+    taskId,
+    metadata: {
+      taskType,
+      ...metadata,
+    },
+  });
 };
 
 const resolveNumberCandidate = (value) => {
@@ -178,6 +234,7 @@ export const processInvoiceOutbox = onDocumentCreated(
   {
     document: 'businesses/{businessId}/invoicesV2/{invoiceId}/outbox/{taskId}',
     region: 'us-central1',
+    timeoutSeconds: 120,
     secrets: GISYS_FACT_SECRETS,
   },
   async (event) => {
@@ -205,27 +262,33 @@ export const processInvoiceOutbox = onDocumentCreated(
       return null;
     }
 
-    const {
-      collectInventoryPrereqs,
-      adjustProductInventory,
-      collectReceivablePrereqs,
-      addAccountReceivable,
-      addInstallmentReceivable,
-      consumeCreditNotesTx,
-      attemptFinalizeInvoice,
-      getCashCount,
-      checkOpenCashCount,
-      getNextIDTransactionalSnap,
-      applyNextIDTransactional,
-      getInsurance,
-      addInsuranceAuth,
-      auditTx,
-      auditSafe,
-      processElectronicTaxReceiptOutboxTask,
-      syncServiceCommissionsTx,
-    } = await loadDeps();
+    const runPostTaskChecks = async ({ attemptFinalizeInvoice }) => {
+      try {
+        await attemptMarkInvoicePrintReady({ businessId, invoiceId });
+      } catch (e) {
+        logger.error('attemptMarkInvoicePrintReady error', {
+          invoiceId,
+          taskId,
+          error: e,
+        });
+      }
+      try {
+        await attemptFinalizeInvoice({ businessId, invoiceId });
+      } catch (e) {
+        logger.error('attemptFinalizeInvoice error', {
+          invoiceId,
+          taskId,
+          error: e,
+        });
+      }
+    };
 
     if (type === 'issueElectronicTaxReceipt') {
+      const {
+        attemptFinalizeInvoice,
+        auditSafe,
+        processElectronicTaxReceiptOutboxTask,
+      } = await loadElectronicDeps();
       try {
         await processElectronicTaxReceiptOutboxTask({
           businessId,
@@ -236,14 +299,26 @@ export const processInvoiceOutbox = onDocumentCreated(
           task,
         });
         try {
-          await attemptFinalizeInvoice({ businessId, invoiceId });
-        } catch (e) {
-          logger.error('attemptFinalizeInvoice error', {
+          const invoiceSnap = await invoiceRef.get();
+          await markInvoiceTimingStage({
+            invoiceRef,
+            invoice: invoiceSnap,
+            stage: 'fiscal_done',
+            at: Timestamp.now(),
+            metadata: {
+              source: 'processInvoiceOutbox',
+              taskId,
+            },
+          });
+        } catch (timingError) {
+          logger.warn('mark fiscal invoice timing failed', {
+            businessId,
             invoiceId,
             taskId,
-            error: e,
+            error: timingError?.message || timingError,
           });
         }
+        await runPostTaskChecks({ attemptFinalizeInvoice });
       } catch (err) {
         logger.error('processInvoiceOutbox electronic tax receipt error', {
           invoiceId,
@@ -273,18 +348,29 @@ export const processInvoiceOutbox = onDocumentCreated(
         } catch {
           /* suppress audit failure to keep worker running */
         }
-        try {
-          await attemptFinalizeInvoice({ businessId, invoiceId });
-        } catch (e) {
-          logger.error('attemptFinalizeInvoice error', {
-            invoiceId,
-            taskId,
-            error: e,
-          });
-        }
+        await runPostTaskChecks({ attemptFinalizeInvoice });
       }
       return null;
     }
+
+    const {
+      collectInventoryPrereqs,
+      adjustProductInventory,
+      collectReceivablePrereqs,
+      addAccountReceivable,
+      addInstallmentReceivable,
+      consumeCreditNotesTx,
+      attemptFinalizeInvoice,
+      getCashCount,
+      checkOpenCashCount,
+      getNextIDTransactionalSnap,
+      applyNextIDTransactional,
+      getInsurance,
+      addInsuranceAuth,
+      auditTx,
+      auditSafe,
+      syncServiceCommissionsTx,
+    } = await loadWorkflowDeps();
 
     try {
       await db.runTransaction(async (tx) => {
@@ -334,13 +420,22 @@ export const processInvoiceOutbox = onDocumentCreated(
               data: { taskId, type, attempts: t.attempts || 0 },
             });
             if (invoiceStatus === 'pending') {
+              const committingAt = Timestamp.now();
               tx.update(invoiceRef, {
                 status: 'committing',
                 statusTimeline: FieldValue.arrayUnion({
                   status: 'committing',
-                  at: Timestamp.now(),
+                  at: committingAt,
                 }),
                 updatedAt: FieldValue.serverTimestamp(),
+              });
+              writeInvoiceTimelineEvent(tx, {
+                businessId,
+                invoiceId,
+                taskId,
+                taskType: type,
+                status: 'committing',
+                at: committingAt,
               });
               invoiceStatus = 'committing';
             }
@@ -380,12 +475,36 @@ export const processInvoiceOutbox = onDocumentCreated(
               accountingSettings,
             });
           }
+          const inventoryDoneAt = Timestamp.now();
           tx.update(invoiceRef, {
             statusTimeline: FieldValue.arrayUnion({
               status: 'inventory_done',
-              at: Timestamp.now(),
+              at: inventoryDoneAt,
             }),
             updatedAt: FieldValue.serverTimestamp(),
+          });
+          writeInvoiceTimelineEvent(tx, {
+            businessId,
+            invoiceId,
+            taskId,
+            taskType: type,
+            status: 'inventory_done',
+            at: inventoryDoneAt,
+            metadata: {
+              productCount: products.length,
+            },
+          });
+          await markInvoiceTimingStage({
+            invoiceRef,
+            transaction: tx,
+            invoice,
+            stage: 'inventory_done',
+            at: inventoryDoneAt,
+            metadata: {
+              source: 'processInvoiceOutbox',
+              taskId,
+              productCount: products.length,
+            },
           });
           auditTx(tx, {
             businessId,
@@ -419,9 +538,12 @@ export const processInvoiceOutbox = onDocumentCreated(
             existingCanon?.NCF ||
             null;
 
-          const alreadyFrontendReady =
+          const alreadyCanonicalReady =
             invoiceStatus === 'frontend_ready' ||
-            Boolean(invoice?.frontendReadyAt);
+            invoiceStatus === 'print_ready' ||
+            invoiceStatus === 'print_ready_with_review' ||
+            Boolean(invoice?.frontendReadyAt) ||
+            Boolean(invoice?.canonicalReadyAt);
 
           let clientSnap = null;
           if (client?.id) {
@@ -665,13 +787,15 @@ export const processInvoiceOutbox = onDocumentCreated(
             userId: user.uid,
           });
 
+          const invoiceDocDoneAt = Timestamp.now();
           const timelineEntries = [
-            { status: 'invoice_doc_done', at: Timestamp.now() },
+            { status: 'invoice_doc_done', at: invoiceDocDoneAt },
           ];
-          if (!alreadyFrontendReady) {
+          if (!alreadyCanonicalReady) {
+            const canonicalReadyAt = Timestamp.now();
             timelineEntries.push({
-              status: 'frontend_ready',
-              at: Timestamp.now(),
+              status: 'canonical_ready',
+              at: canonicalReadyAt,
             });
           }
 
@@ -680,30 +804,37 @@ export const processInvoiceOutbox = onDocumentCreated(
             updatedAt: FieldValue.serverTimestamp(),
           };
 
-          if (!alreadyFrontendReady) {
-            updatePayload.status = 'frontend_ready';
-            updatePayload.frontendReadyAt = FieldValue.serverTimestamp();
+          if (!alreadyCanonicalReady) {
+            updatePayload.canonicalReadyAt = FieldValue.serverTimestamp();
           }
 
           tx.update(invoiceRef, updatePayload);
+          for (const entry of timelineEntries) {
+            writeInvoiceTimelineEvent(tx, {
+              businessId,
+              invoiceId,
+              taskId,
+              taskType: type,
+              status: entry.status,
+              at: entry.at,
+            });
+          }
+          await markInvoiceTimingStage({
+            invoiceRef,
+            transaction: tx,
+            invoice,
+            stage: 'canonical_done',
+            at: invoiceDocDoneAt,
+            metadata: {
+              source: 'processInvoiceOutbox',
+              taskId,
+            },
+          });
 
-          if (!alreadyFrontendReady) {
-            invoiceStatus = 'frontend_ready';
+          if (!alreadyCanonicalReady && invoiceStatus === 'pending') {
+            invoiceStatus = 'committing';
           }
 
-          if (!alreadyFrontendReady && invoice?.idempotencyKey) {
-            const idemRef = db.doc(
-              `businesses/${businessId}/idempotency/${invoice.idempotencyKey}`,
-            );
-            tx.set(
-              idemRef,
-              {
-                status: 'frontend_ready',
-                updatedAt: FieldValue.serverTimestamp(),
-              },
-              { merge: true },
-            );
-          }
           auditTx(tx, {
             businessId,
             invoiceId,
@@ -731,12 +862,21 @@ export const processInvoiceOutbox = onDocumentCreated(
             },
             { merge: true },
           );
+          const preorderClosedAt = Timestamp.now();
           tx.update(invoiceRef, {
             statusTimeline: FieldValue.arrayUnion({
               status: 'preorder_closed',
-              at: Timestamp.now(),
+              at: preorderClosedAt,
             }),
             updatedAt: FieldValue.serverTimestamp(),
+          });
+          writeInvoiceTimelineEvent(tx, {
+            businessId,
+            invoiceId,
+            taskId,
+            taskType: type,
+            status: 'preorder_closed',
+            at: preorderClosedAt,
           });
           auditTx(tx, {
             businessId,
@@ -770,24 +910,66 @@ export const processInvoiceOutbox = onDocumentCreated(
           const cashCountsCol = db.collection(
             `businesses/${businessId}/cashCounts`,
           );
+          const cashCountSalesCol = db.collection(
+            `businesses/${businessId}/cashCountSales`,
+          );
           let ccSnap = null;
           let usedPreferred = false;
           const candidateLookupTrace = [];
           let fallbackFailureReason = null;
 
           try {
-            const existingLinkSnap = await tx.get(
-              cashCountsCol
-                .where('cashCount.sales', 'array-contains', invoiceDocRef)
+            const existingReadModelSnap = await tx.get(
+              cashCountSalesCol
+                .where('invoiceId', '==', invoiceId)
                 .limit(1),
             );
-            if (!existingLinkSnap.empty) {
-              ccSnap = existingLinkSnap.docs[0];
-              logger.info('Invoice already linked to cash count', {
-                businessId,
-                invoiceId,
-                cashCountId: ccSnap.id,
-              });
+            if (!existingReadModelSnap.empty) {
+              const linkedSale = existingReadModelSnap.docs[0].data() || {};
+              const linkedCashCountId = normalizeCashCountId(
+                linkedSale.cashCountId || linkedSale.cashCountRef,
+              );
+              if (linkedCashCountId) {
+                const linkedCashCountSnap = await tx.get(
+                  db.doc(
+                    `businesses/${businessId}/cashCounts/${linkedCashCountId}`,
+                  ),
+                );
+                if (linkedCashCountSnap.exists) {
+                  ccSnap = linkedCashCountSnap;
+                  logger.info('Invoice already linked to cash count read model', {
+                    businessId,
+                    invoiceId,
+                    cashCountId: ccSnap.id,
+                  });
+                }
+              }
+            }
+          } catch (existingReadModelError) {
+            logger.error('Failed to verify existing cash count read model', {
+              businessId,
+              invoiceId,
+              error:
+                existingReadModelError?.message ||
+                String(existingReadModelError),
+            });
+          }
+
+          try {
+            if (!ccSnap) {
+              const existingLinkSnap = await tx.get(
+                cashCountsCol
+                  .where('cashCount.sales', 'array-contains', invoiceDocRef)
+                  .limit(1),
+              );
+              if (!existingLinkSnap.empty) {
+                ccSnap = existingLinkSnap.docs[0];
+                logger.info('Invoice already linked to cash count', {
+                  businessId,
+                  invoiceId,
+                  cashCountId: ccSnap.id,
+                });
+              }
             }
           } catch (existingLinkError) {
             logger.error('Failed to verify existing cash count link', {
@@ -914,22 +1096,28 @@ export const processInvoiceOutbox = onDocumentCreated(
             );
           }
 
-          ensureTaskStart();
           const ccRef = ccSnap.ref;
           const ccData = ccSnap.data();
           const ccPayload = ccData?.cashCount || {};
           const ccState = ccPayload?.state || null;
           const resolvedCashCountId =
             ccRef.id || ccPayload?.id || ccPayload?.cashCountId;
-          const sales = ccPayload?.sales || [];
-          const already =
-            Array.isArray(sales) &&
-            sales.some((r) => r.path === invoiceDocRef.path);
-          if (!already) {
-            tx.update(ccRef, {
-              'cashCount.sales': FieldValue.arrayUnion(invoiceDocRef),
-            });
-          }
+          const cashCountSalesResult = await linkSaleToCashCountInTransaction({
+            tx,
+            businessId,
+            cashCountId: resolvedCashCountId,
+            invoiceId,
+            cashCountRef: ccRef,
+            invoiceRef: invoiceDocRef,
+            cashCountSnap: ccSnap,
+            createdBy: user.uid,
+            source: {
+              type: 'invoice-outbox',
+              taskId,
+            },
+          });
+
+          ensureTaskStart();
 
           if (isAccountingRolloutEnabledForBusiness(businessId)) {
             const fallbackInvoiceSource =
@@ -964,16 +1152,18 @@ export const processInvoiceOutbox = onDocumentCreated(
             });
           }
 
+          const cashCountDoneAt = Timestamp.now();
           const timelineEntries = [
             {
               status: 'cash_count_done',
-              at: Timestamp.now(),
+              at: cashCountDoneAt,
             },
           ];
           if (usedPreferred && ccState && ccState !== 'open') {
+            const cashCountRelinkedAt = Timestamp.now();
             timelineEntries.push({
               status: 'cash_count_relinked',
-              at: Timestamp.now(),
+              at: cashCountRelinkedAt,
             });
           }
           const cashCountUpdate = {
@@ -988,6 +1178,39 @@ export const processInvoiceOutbox = onDocumentCreated(
               FieldValue.serverTimestamp();
           }
           tx.update(invoiceRef, cashCountUpdate);
+          for (const entry of timelineEntries) {
+            writeInvoiceTimelineEvent(tx, {
+              businessId,
+              invoiceId,
+              taskId,
+              taskType: type,
+              status: entry.status,
+              at: entry.at,
+              metadata: {
+                cashCountId: resolvedCashCountId,
+                cashCountState: ccState,
+                salePath: cashCountSalesResult.salePath,
+                readModelPath: cashCountSalesResult.readModelPath,
+                relinked: entry.status === 'cash_count_relinked' || undefined,
+              },
+            });
+          }
+          await markInvoiceTimingStage({
+            invoiceRef,
+            transaction: tx,
+            invoice,
+            stage: 'cash_count_done',
+            at: cashCountDoneAt,
+            metadata: {
+              source: 'processInvoiceOutbox',
+              taskId,
+              cashCountId: resolvedCashCountId,
+              relinked:
+                timelineEntries.some(
+                  (entry) => entry.status === 'cash_count_relinked',
+                ) || undefined,
+            },
+          });
           auditTx(tx, {
             businessId,
             invoiceId,
@@ -1072,12 +1295,21 @@ export const processInvoiceOutbox = onDocumentCreated(
           } else {
             ensureTaskStart();
           }
+          const arDoneAt = Timestamp.now();
           tx.update(invoiceRef, {
             statusTimeline: FieldValue.arrayUnion({
               status: 'ar_done',
-              at: Timestamp.now(),
+              at: arDoneAt,
             }),
             updatedAt: FieldValue.serverTimestamp(),
+          });
+          writeInvoiceTimelineEvent(tx, {
+            businessId,
+            invoiceId,
+            taskId,
+            taskType: type,
+            status: 'ar_done',
+            at: arDoneAt,
           });
           auditTx(tx, {
             businessId,
@@ -1106,12 +1338,24 @@ export const processInvoiceOutbox = onDocumentCreated(
               { merge: true },
             );
           }
+          const creditNotesDoneAt = Timestamp.now();
           tx.update(invoiceRef, {
             statusTimeline: FieldValue.arrayUnion({
               status: 'credit_notes_done',
-              at: Timestamp.now(),
+              at: creditNotesDoneAt,
             }),
             updatedAt: FieldValue.serverTimestamp(),
+          });
+          writeInvoiceTimelineEvent(tx, {
+            businessId,
+            invoiceId,
+            taskId,
+            taskType: type,
+            status: 'credit_notes_done',
+            at: creditNotesDoneAt,
+            metadata: {
+              applicationIds: consumeResult?.applicationIds || undefined,
+            },
           });
           auditTx(tx, {
             businessId,
@@ -1192,12 +1436,21 @@ export const processInvoiceOutbox = onDocumentCreated(
           } else {
             ensureTaskStart();
           }
+          const insuranceArDoneAt = Timestamp.now();
           tx.update(invoiceRef, {
             statusTimeline: FieldValue.arrayUnion({
               status: 'insurance_ar_done',
-              at: Timestamp.now(),
+              at: insuranceArDoneAt,
             }),
             updatedAt: FieldValue.serverTimestamp(),
+          });
+          writeInvoiceTimelineEvent(tx, {
+            businessId,
+            invoiceId,
+            taskId,
+            taskType: type,
+            status: 'insurance_ar_done',
+            at: insuranceArDoneAt,
           });
           auditTx(tx, {
             businessId,
@@ -1225,15 +1478,7 @@ export const processInvoiceOutbox = onDocumentCreated(
           { merge: true },
         );
       });
-      try {
-        await attemptFinalizeInvoice({ businessId, invoiceId });
-      } catch (e) {
-        logger.error('attemptFinalizeInvoice error', {
-          invoiceId,
-          taskId,
-          error: e,
-        });
-      }
+      await runPostTaskChecks({ attemptFinalizeInvoice });
     } catch (err) {
       logger.error('processInvoiceOutbox error', {
         invoiceId,
@@ -1260,6 +1505,7 @@ export const processInvoiceOutbox = onDocumentCreated(
       } catch {
         /* suppress audit failure to keep worker running */
       }
+      await runPostTaskChecks({ attemptFinalizeInvoice });
     }
     return null;
   },

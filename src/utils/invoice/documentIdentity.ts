@@ -10,7 +10,10 @@ export interface DocumentIdentity {
   type:
     | 'fiscal-credit'
     | 'fiscal-consumer'
+    | 'fiscal-credit-note'
+    | 'fiscal-debit-note'
     | 'fiscal-generic'
+    | 'fiscal-government'
     | 'preorder'
     | 'receipt';
 }
@@ -31,6 +34,7 @@ interface InvoiceLike {
   };
   type?: string;
   status?: string;
+  number?: string | number;
   numberID?: string | number;
   id?: string;
   preorderDetails?: {
@@ -57,6 +61,24 @@ const RECEIPT_MAP: Record<string, Omit<DocumentIdentity, 'value'>> = {
     description: 'FACTURA PARA CONSUMIDOR FINAL',
     type: 'fiscal-consumer',
   },
+  B03: {
+    title: 'NOTA DE DÉBITO',
+    label: 'NCF',
+    description: 'NOTA DE DÉBITO',
+    type: 'fiscal-debit-note',
+  },
+  B04: {
+    title: 'NOTA DE CRÉDITO',
+    label: 'NCF',
+    description: 'NOTA DE CRÉDITO',
+    type: 'fiscal-credit-note',
+  },
+  B15: {
+    title: 'COMPROBANTE GUBERNAMENTAL',
+    label: 'NCF',
+    description: 'COMPROBANTE GUBERNAMENTAL',
+    type: 'fiscal-government',
+  },
   E31: {
     title: 'FACTURA DE CRÉDITO FISCAL ELECTRÓNICA',
     label: 'e-NCF',
@@ -68,6 +90,24 @@ const RECEIPT_MAP: Record<string, Omit<DocumentIdentity, 'value'>> = {
     label: 'e-NCF',
     description: 'FACTURA ELECTRÓNICA PARA CONSUMIDOR FINAL',
     type: 'fiscal-consumer',
+  },
+  E33: {
+    title: 'NOTA DE DÉBITO ELECTRÓNICA',
+    label: 'e-NCF',
+    description: 'NOTA DE DÉBITO ELECTRÓNICA',
+    type: 'fiscal-debit-note',
+  },
+  E34: {
+    title: 'NOTA DE CRÉDITO ELECTRÓNICA',
+    label: 'e-NCF',
+    description: 'NOTA DE CRÉDITO ELECTRÓNICA',
+    type: 'fiscal-credit-note',
+  },
+  E45: {
+    title: 'COMPROBANTE GUBERNAMENTAL ELECTRÓNICO',
+    label: 'e-NCF',
+    description: 'COMPROBANTE GUBERNAMENTAL ELECTRÓNICO',
+    type: 'fiscal-government',
   },
 };
 
@@ -126,9 +166,7 @@ export function resolveDocumentIdentity(
 ): DocumentIdentity {
   const electronicSnapshot =
     invoice?.electronicTaxReceipt ?? invoice?.fiscal?.electronic ?? null;
-  const electronicNcf =
-    electronicSnapshot?.eNcf ??
-    invoice?.eNcf;
+  const electronicNcf = electronicSnapshot?.eNcf ?? invoice?.eNcf;
   const electronicDocumentType = toCleanUpperString(
     electronicSnapshot?.documentType,
   );
@@ -171,4 +209,40 @@ export function resolveDocumentIdentity(
     ...match,
     value: rawNcf ? upperNcf : null,
   };
+}
+
+const resolveOperationalDocumentNumber = (
+  invoice: InvoiceLike | null | undefined = {},
+): string | number | null =>
+  invoice?.numberID ??
+  invoice?.number ??
+  invoice?.preorderDetails?.numberID ??
+  invoice?.id ??
+  null;
+
+export function resolveDocumentNumberLine(
+  identity: DocumentIdentity,
+  invoice: InvoiceLike | null | undefined = {},
+): string {
+  const operationalNumber = resolveOperationalDocumentNumber(invoice);
+
+  if (identity.type === 'preorder') {
+    return `${identity.title || 'PREVENTA'} #${
+      identity.value ?? operationalNumber ?? '-'
+    }`;
+  }
+
+  if (identity.type === 'receipt') {
+    return `Recibo #${identity.value ?? operationalNumber ?? '-'}`;
+  }
+
+  if (identity.type === 'fiscal-credit-note') {
+    return `Nota de crédito #${operationalNumber ?? identity.value ?? '-'}`;
+  }
+
+  if (identity.type === 'fiscal-debit-note') {
+    return `Nota de débito #${operationalNumber ?? identity.value ?? '-'}`;
+  }
+
+  return `Factura #${operationalNumber ?? '-'}`;
 }

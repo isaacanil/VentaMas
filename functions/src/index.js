@@ -56,6 +56,7 @@ import { voidSupplierPayment } from './app/modules/purchase/functions/voidSuppli
 import { createWarehouse } from './app/modules/warehouse/functions/createWarehouse.js';
 import { syncExpenseAccountingEvent } from './app/modules/expenses/functions/syncExpenseAccountingEvent.js';
 import { syncExpenseCashMovement } from './app/modules/expenses/functions/syncExpenseCashMovement.js';
+import { addInvoiceToOpenCashCount } from './app/modules/cashCount/functions/addInvoiceToOpenCashCount.js';
 import { openCashCount } from './app/modules/cashCount/functions/openCashCount.js';
 import { changeCashCountState } from './app/modules/cashCount/functions/changeCashCountState.js';
 import { closeCashCount } from './app/modules/cashCount/functions/closeCashCount.js';
@@ -89,6 +90,8 @@ import { resolveBankStatementLineMatch } from './app/modules/treasury/functions/
 
 import { quotationPdf } from './app/modules/quotation/quotationGenerate/quotationGenerate.js';
 import { keepSupabaseAlive } from './app/modules/supabase/controllers/keepSupabaseAlive.controller.js';
+import { lookupRnc } from './app/modules/rnc/functions/lookupRnc.js';
+import { refreshRncSnapshotWeekly } from './app/modules/rnc/functions/refreshRncSnapshotWeekly.js';
 import { updatePendingBalance } from './app/versions/v1/modules/accountsReceivable/triggers/updatePendingBalance.js';
 import { expireAuthorizationRequests } from './app/scheduled/expireAuthorizationRequests.js';
 
@@ -203,6 +206,8 @@ export {
   manageHrPayrollPayment,
   recalculateHrCommissionEntries,
   reserveCreditNoteNcf,
+  lookupRnc,
+  refreshRncSnapshotWeekly,
   refreshElectronicTaxReceiptStatus,
   updateElectronicTaxReceiptConfig,
   validateElectronicTaxReceiptConfig,
@@ -241,6 +246,7 @@ export {
   createWarehouse,
   syncExpenseAccountingEvent,
   syncExpenseCashMovement,
+  addInvoiceToOpenCashCount,
   openCashCount,
   changeCashCountState,
   closeCashCount,

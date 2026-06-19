@@ -162,7 +162,7 @@ describe('updateElectronicTaxReceiptPlatformConfig', () => {
       electronicModelEnabled: false,
       electronicTransportEnabled: false,
       mode: 'shadow',
-      timeoutMs: 20000,
+      timeoutMs: 90000,
     });
   });
 

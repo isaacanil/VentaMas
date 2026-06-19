@@ -124,13 +124,16 @@ vi.mock('../../taxReceipt/utils/fiscalRollout.util.js', () => ({
     resolveBusinessFiscalRolloutMock(...args),
 }));
 
-vi.mock('../../electronicTaxReceipts/config/gisysFactPlatform.config.js', () => ({
-  getGisysFactPlatformConfig: vi.fn(async () => ({
-    enabled: true,
-    mode: 'pilot',
-    integrationInstanceCode: 'gisys-instance',
-  })),
-}));
+vi.mock(
+  '../../electronicTaxReceipts/config/gisysFactPlatform.config.js',
+  () => ({
+    getGisysFactPlatformConfig: vi.fn(async () => ({
+      enabled: true,
+      mode: 'pilot',
+      integrationInstanceCode: 'gisys-instance',
+    })),
+  }),
+);
 
 vi.mock('../../electronicTaxReceipts/config/gisysFact.config.js', () => ({
   getGisysFactConfigIssues: vi.fn(() => []),
@@ -250,7 +253,9 @@ describe('customerCreditNotes hardening', () => {
         creditNote: {
           invoiceId: 'invoice-1',
           client: { id: 'client-1', name: 'GI SYS SRL' },
-          items: [{ id: 'product-1', name: 'Servicio', price: 100, amountToBuy: 1 }],
+          items: [
+            { id: 'product-1', name: 'Servicio', price: 100, amountToBuy: 1 },
+          ],
           totalAmount: 118,
           reason: 'Devolucion parcial',
         },
@@ -283,6 +288,56 @@ describe('customerCreditNotes hardening', () => {
         }),
       }),
     );
+  });
+
+  it('rechaza codigo DGII 2 cuando la nota de credito tiene monto', async () => {
+    docSnapshots.set('businesses/business-1', {
+      fiscal: {
+        sequenceEngineV2Enabled: true,
+      },
+    });
+    docSnapshots.set('businesses/business-1/invoices/invoice-1', {
+      data: {
+        id: 'invoice-1',
+        NCF: 'B0100000001',
+        numberID: 714,
+        date: '2026-06-16T18:40:42.000Z',
+        client: { id: 'client-1', personalID: '132619201' },
+        totalPurchase: { value: 100 },
+        products: [{ id: 'product-1', amountToBuy: 1 }],
+      },
+    });
+    docSnapshots.set('businesses/business-1/creditNotes', []);
+
+    await expect(
+      createCustomerCreditNote({
+        data: {
+          businessId: 'business-1',
+          creditNote: {
+            invoiceId: 'invoice-1',
+            client: {
+              id: 'client-1',
+              name: 'GI SYS SRL',
+              personalID: '132619201',
+            },
+            items: [{ id: 'product-1', name: 'Servicio', amountToBuy: 1 }],
+            totalAmount: 100,
+            reason: 'Texto mal formado',
+            modificationCode: '2',
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      details: expect.objectContaining({
+        reason: 'credit-note-text-correction-requires-zero-amount',
+        modificationCode: '2',
+        totalAmount: 100,
+      }),
+    });
+
+    expect(reserveNcfMock).not.toHaveBeenCalled();
+    expect(transactionSetMock).not.toHaveBeenCalled();
   });
 
   it('rechaza NC cuando la suma excede el total de la factura afectada', async () => {
@@ -370,7 +425,11 @@ describe('customerCreditNotes hardening', () => {
         businessId: 'business-1',
         creditNote: {
           invoiceId: 'invoice-1',
-          client: { id: 'client-1', name: 'GI SYS SRL', personalID: '132619201' },
+          client: {
+            id: 'client-1',
+            name: 'GI SYS SRL',
+            personalID: '132619201',
+          },
           items: [{ id: 'product-1', name: 'Servicio', amountToBuy: 0.25 }],
           totalAmount: 30,
           reason: 'Devolucion parcial',
@@ -421,7 +480,11 @@ describe('customerCreditNotes hardening', () => {
           businessId: 'business-1',
           creditNote: {
             invoiceId: 'invoice-1',
-            client: { id: 'client-1', name: 'GI SYS SRL', personalID: '132619201' },
+            client: {
+              id: 'client-1',
+              name: 'GI SYS SRL',
+              personalID: '132619201',
+            },
             items: [{ id: 'product-1', name: 'Servicio', amountToBuy: 0.25 }],
             totalAmount: 30,
             reason: 'Devolucion parcial',
@@ -463,7 +526,11 @@ describe('customerCreditNotes hardening', () => {
           businessId: 'business-1',
           creditNote: {
             invoiceId: 'invoice-1',
-            client: { id: 'client-2', name: 'OTRO CLIENTE', personalID: '999999999' },
+            client: {
+              id: 'client-2',
+              name: 'OTRO CLIENTE',
+              personalID: '999999999',
+            },
             items: [{ id: 'product-1', name: 'Servicio', amountToBuy: 0.25 }],
             totalAmount: 30,
             reason: 'Devolucion parcial',

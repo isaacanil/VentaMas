@@ -41,6 +41,7 @@ import {
 } from '@/domain/fiscal/electronicTaxReceiptDocumentTypes';
 import { resolveBusinessFiscalRollout } from '@/utils/fiscal/fiscalRollout';
 import type { TaxReceiptDocument } from '@/types/taxReceipt';
+import { getSelectableTaxReceiptData } from '@/utils/taxReceipt';
 
 import { ClientDetails } from './ClientDetails/ClientDetails';
 
@@ -255,30 +256,14 @@ export const ClientControl = () => {
   const clientInputValue =
     mode === CLIENT_MODE_BAR.SEARCH.id ? searchTerm : client.name;
   const fiscalReceiptOptions = useMemo(() => {
-    const receipts = Array.isArray(taxReceiptData.taxReceipt)
-      ? taxReceiptData.taxReceipt
-      : [];
+    const preferredDocumentFormat = electronicTaxReceiptModelEnabled
+      ? 'electronic'
+      : 'traditional';
 
-    return receipts
-      .filter((receipt) => !receipt.data?.disabled)
-      .filter((receipt) => {
-        const rawName = receipt?.data?.name || '';
-        // Normalizar acentos
-        const name = rawName
-          .normalize('NFD')
-          .replace(/\p{Diacritic}/gu, '')
-          .toLowerCase();
-        const serie = (receipt?.data?.serie || '')
-          .toString()
-          .padStart(2, '0');
-        // Regla principal: excluir serie 04 (Notas de Crédito en RD) o nombres que contengan ambos tokens
-        const containsNota = name.includes('nota');
-        const containsCredito = name.includes('credito');
-        const isCreditNoteBySerie = serie === '04';
-        const isCreditNoteByName = containsNota && containsCredito;
-        return !(isCreditNoteBySerie || isCreditNoteByName);
-      })
-      .map(({ data }) => ({
+    return getSelectableTaxReceiptData(taxReceiptData.taxReceipt, {
+      excludeCreditNotes: true,
+      preferredDocumentFormat,
+    }).map((data) => ({
         value: data.name,
         label: formatElectronicTaxReceiptLabel(data.name, {
           electronicModelEnabled: electronicTaxReceiptModelEnabled,

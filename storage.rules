@@ -121,6 +121,15 @@ service firebase.storage {
       allow read, write: if hasGlobalRole();
     }
 
+    // Snapshots RNC backend-only. El cliente nunca debe leer SQLite/manifests.
+    match /rnc/{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    match /rnc.sqlite.gz {
+      allow read, write: if false;
+    }
+
     match /{allPaths=**} {
       allow read, write: if false;
     }

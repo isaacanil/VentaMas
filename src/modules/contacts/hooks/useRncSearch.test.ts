@@ -59,4 +59,5 @@ describe('useRncSearch helpers', () => {
       name: 'Empresa Demo',
     });
   });
+
 });

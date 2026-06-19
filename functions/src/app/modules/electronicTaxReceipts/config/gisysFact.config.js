@@ -1,5 +1,6 @@
 export const GISYS_FACT_PROVIDER_ID = 'gisys_fact';
 export const GISYS_FACT_DEFAULT_TOKEN_ENV = 'GISYS_FACT_CLIENT_TOKEN';
+export const GISYS_FACT_DEFAULT_TIMEOUT_MS = 90000;
 
 const CONFIG_NODE_KEYS = [
   'gisysFact',
@@ -122,7 +123,7 @@ export const resolveGisysFactConfig = (businessDoc, platformDoc = {}) => {
       platformNode.timeoutMs ??
         process.env.GISYS_FACT_TIMEOUT_MS ??
         providerNode.timeoutMs,
-      20000,
+      GISYS_FACT_DEFAULT_TIMEOUT_MS,
     ),
   };
 };

@@ -9,6 +9,8 @@ import {
 import {
   buildDescriptionLines,
   formatInvoiceMoney,
+  resolveBillingIndicator,
+  resolveProductLineDiscount,
   resolveQuantity,
   type PreviewInvoiceProduct,
 } from '../../utils';
@@ -27,7 +29,9 @@ export default function Content({ products, documentCurrency }: ContentProps) {
             <HeaderCell className="qty">CANT</HeaderCell>
             <HeaderCell className="code">CODIGO</HeaderCell>
             <HeaderCell className="description">DESCRIPCION</HeaderCell>
+            <HeaderCell className="indicator">IND.</HeaderCell>
             <HeaderCell className="money">PRECIO</HeaderCell>
+            <HeaderCell className="money discount">DESC.</HeaderCell>
             <HeaderCell className="money">ITBIS</HeaderCell>
             <HeaderCell className="money">TOTAL</HeaderCell>
           </tr>
@@ -46,6 +50,11 @@ export default function Content({ products, documentCurrency }: ContentProps) {
                   documentCurrency,
                 );
                 const rowTotal = resolveDisplayTotalForCurrency(
+                  product,
+                  documentCurrency,
+                );
+                const billingIndicator = resolveBillingIndicator(product);
+                const discount = resolveProductLineDiscount(
                   product,
                   documentCurrency,
                 );
@@ -79,8 +88,12 @@ export default function Content({ products, documentCurrency }: ContentProps) {
                         </DescriptionLine>
                       ))}
                     </DescriptionCell>
+                    <BodyCell className="indicator">{billingIndicator}</BodyCell>
                     <BodyCell className="money">
                       {formatInvoiceMoney(unitPrice, documentCurrency)}
+                    </BodyCell>
+                    <BodyCell className="money discount">
+                      {discount ? `-${discount}` : '-'}
                     </BodyCell>
                     <BodyCell className="money">
                       {formatInvoiceMoney(taxPerUnit, documentCurrency)}
@@ -94,7 +107,7 @@ export default function Content({ products, documentCurrency }: ContentProps) {
             </>
           ) : (
             <ProductRow>
-              <EmptyCell colSpan={6}>
+              <EmptyCell colSpan={8}>
                 No hay productos disponibles para renderizar esta factura.
               </EmptyCell>
             </ProductRow>
@@ -138,21 +151,30 @@ const HeaderCell = styled.th`
   line-height: 1.3;
 
   &.qty {
-    width: 10%;
+    width: 8%;
     text-align: center;
   }
 
   &.code {
-    width: 16%;
+    width: 13%;
   }
 
   &.description {
-    width: 34%;
+    width: 31%;
+  }
+
+  &.indicator {
+    width: 7%;
+    text-align: center;
   }
 
   &.money {
-    width: 13.33%;
+    width: 10.25%;
     text-align: right;
+  }
+
+  &.discount {
+    width: 10%;
   }
 `;
 
@@ -173,6 +195,11 @@ const BodyCell = styled.td`
 
   &.qty {
     text-align: center;
+  }
+
+  &.indicator {
+    text-align: center;
+    font-weight: 700;
   }
 
   &.money {

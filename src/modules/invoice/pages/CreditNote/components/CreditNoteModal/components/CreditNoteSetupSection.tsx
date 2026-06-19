@@ -35,6 +35,7 @@ interface CreditNoteSetupSectionProps {
   onDateRangeChange: (range: DatePickerRangeValue) => void;
   reason: string;
   modificationCode: string;
+  totalAmount: number;
   onReasonChange: (value: string) => void;
   onModificationCodeChange: (value: string) => void;
 }
@@ -59,6 +60,7 @@ export const CreditNoteSetupSection = ({
   onDateRangeChange,
   reason,
   modificationCode,
+  totalAmount,
   onReasonChange,
   onModificationCodeChange,
 }: CreditNoteSetupSectionProps) => {
@@ -142,6 +144,7 @@ export const CreditNoteSetupSection = ({
           <CreditNoteFiscalReasonSection
             reason={reason}
             modificationCode={modificationCode}
+            totalAmount={totalAmount}
             disabled={effectiveIsView}
             onReasonChange={onReasonChange}
             onModificationCodeChange={onModificationCodeChange}

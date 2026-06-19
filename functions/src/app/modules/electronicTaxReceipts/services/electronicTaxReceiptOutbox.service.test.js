@@ -525,6 +525,102 @@ describe('electronicTaxReceiptOutbox.service', () => {
     );
   });
 
+  it('persists diagnostic aliases when an E33 debit note is rejected by DGII', async () => {
+    const debitNoteDoc = {
+      status: 'electronic_pending',
+      ncf: 'E330000000003',
+      electronicTaxReceipt: {
+        status: 'issued',
+        mode: 'required',
+        documentType: 'E33',
+        requestHash: 'request-hash',
+        submissionId: 'sub-33-rejected',
+        eNcf: 'E330000000003',
+      },
+    };
+    const debitNoteRef = {
+      path: 'businesses/business-1/debitNotes/debit-note-rejected',
+      collection: vi.fn(() => ({
+        doc: vi.fn(() => ({
+          path: 'debit-note-rejected/fiscalAttempts/sub-33-rejected',
+        })),
+      })),
+      get: vi.fn(async () => ({
+        exists: true,
+        data: () => debitNoteDoc,
+      })),
+    };
+    const businessRef = {
+      get: vi.fn(async () => ({
+        exists: true,
+        data: () => ({}),
+      })),
+    };
+    const tx = {
+      get: vi.fn(async () => ({
+        data: () => debitNoteDoc,
+      })),
+      set: vi.fn(),
+      update: vi.fn(),
+    };
+
+    db.doc.mockImplementation((path) => {
+      if (path === 'businesses/business-1/debitNotes/debit-note-rejected') {
+        return debitNoteRef;
+      }
+      if (
+        path ===
+        'businesses/business-1/debitNotes/debit-note-rejected/fiscalAttempts/sub-33-rejected'
+      ) {
+        return { path };
+      }
+      if (path === 'businesses/business-1') {
+        return businessRef;
+      }
+      throw new Error(`Unexpected doc path: ${path}`);
+    });
+    db.runTransaction.mockImplementation(async (callback) => callback(tx));
+    refreshGisysFactDocumentStatus.mockResolvedValue({
+      eNcf: 'E330000000003',
+      status: 'rejected',
+      code: 'RFCE-VAL-001',
+      message: 'El comprobante modificado no es valido para esta nota.',
+      diagnostics: [
+        {
+          code: 'DGII-REF',
+          message: 'La referencia del e-CF modificado no fue aceptada.',
+        },
+      ],
+    });
+
+    const result = await refreshElectronicTaxReceiptStatus({
+      businessId: 'business-1',
+      debitNoteId: 'debit-note-rejected',
+      documentKind: 'debitNote',
+    });
+
+    expect(result.electronicTaxReceipt.status).toBe('rejected');
+    expect(tx.update).toHaveBeenCalledWith(
+      debitNoteRef,
+      expect.objectContaining({
+        status: 'electronic_failed',
+      }),
+    );
+    expect(tx.update.mock.calls[0][1].electronicTaxReceipt).toEqual(
+      expect.objectContaining({
+        dgiiCode: 'RFCE-VAL-001',
+        dgiiMessage: 'La referencia del e-CF modificado no fue aceptada.',
+        dgiiMessages: [
+          {
+            code: 'DGII-REF',
+            message: 'La referencia del e-CF modificado no fue aceptada.',
+          },
+        ],
+        lastError: 'La referencia del e-CF modificado no fue aceptada.',
+      }),
+    );
+  });
+
   it('preserves credit note usage status while refreshing an accepted E34', async () => {
     const creditNoteDoc = {
       status: 'applied',

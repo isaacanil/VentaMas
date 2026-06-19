@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { QRCode } from 'antd';
 
 import type {
   InvoiceBusinessInfo,
@@ -7,7 +8,9 @@ import type {
 } from '@/types/invoice';
 
 import {
+  type InvoicePrintPageSummary,
   resolveCreditNoteLines,
+  resolveElectronicPrintInfo,
   resolveInvoiceNotes,
   resolveInvoiceTotals,
   resolvePaymentLines,
@@ -16,7 +19,11 @@ import {
 interface FooterProps {
   business?: InvoiceBusinessInfo | null;
   data?: InvoiceData | null;
+  isLastPage?: boolean;
+  pageNumber?: number;
+  pageSummary?: InvoicePrintPageSummary;
   previewSignatureAssets?: InvoiceSignatureAssets;
+  totalPages?: number;
 }
 
 const SIGNATURE_CANVAS_WIDTH = 158;
@@ -28,10 +35,15 @@ const DEFAULT_STAMP_OPACITY = 0.92;
 export default function Footer({
   business,
   data,
+  isLastPage = true,
+  pageNumber = 1,
+  pageSummary,
   previewSignatureAssets,
+  totalPages = 1,
 }: FooterProps) {
   const paymentLines = resolvePaymentLines(data);
   const creditNoteLines = resolveCreditNoteLines(data);
+  const electronicPrintInfo = resolveElectronicPrintInfo(data);
   const totals = resolveInvoiceTotals(data);
   const notes = resolveInvoiceNotes(business, data);
   const signatureAssets =
@@ -78,97 +90,154 @@ export default function Footer({
   };
   const showSignatureCanvas =
     Boolean(signatureAssets?.enabled) && Boolean(signatureUrl || stampUrl);
+  const showPageSummary = totalPages > 1 && pageSummary;
 
   return (
     <FooterRoot>
       <FooterDivider>
         <FooterTopRow>
           <span>{data?.copyType || 'COPIA'}</span>
-          <span>Plantilla HTML Beta</span>
+          {totalPages > 1 ? (
+            <span>
+              Página {pageNumber} de {totalPages}
+            </span>
+          ) : null}
         </FooterTopRow>
 
-        <FooterContent>
-          <SignatureColumns>
-            <LeftColumn>
-              <SignatureBlock>
-                {showSignatureCanvas ? (
-                  <SignatureCanvas>
-                    {signatureUrl ? (
-                      <SignatureImage
-                        src={signatureUrl}
-                        alt="Firma del negocio"
-                        $offsetX={signatureTransform.offsetX}
-                        $offsetY={signatureTransform.offsetY}
-                        $scale={signatureTransform.scale}
+        {showPageSummary ? (
+          <PageSummaryRow>
+            <span>Subtotal página: {pageSummary.subtotal}</span>
+            <span>ITBIS página: {pageSummary.tax}</span>
+            <strong>Total página: {pageSummary.total}</strong>
+          </PageSummaryRow>
+        ) : null}
+
+        {isLastPage ? (
+          <FooterContent>
+            <SignatureColumns>
+              <LeftColumn>
+                <SignatureBlock>
+                  {showSignatureCanvas ? (
+                    <SignatureCanvas>
+                      {signatureUrl ? (
+                        <SignatureImage
+                          src={signatureUrl}
+                          alt="Firma del negocio"
+                          $offsetX={signatureTransform.offsetX}
+                          $offsetY={signatureTransform.offsetY}
+                          $scale={signatureTransform.scale}
+                        />
+                      ) : null}
+                      {stampUrl ? (
+                        <StampImage
+                          src={stampUrl}
+                          alt="Sello del negocio"
+                          $offsetX={stampTransform.offsetX}
+                          $offsetY={stampTransform.offsetY}
+                          $scale={stampTransform.scale}
+                          $opacity={stampTransform.opacity}
+                        />
+                      ) : null}
+                      <SignatureCanvasLine />
+                    </SignatureCanvas>
+                  ) : (
+                    <SignatureLine />
+                  )}
+                  <SignatureLabel>Despachado Por:</SignatureLabel>
+                </SignatureBlock>
+
+                {paymentLines.length ? (
+                  <SummaryBlock>
+                    <SummaryTitle>Metodos de Pago:</SummaryTitle>
+                    {paymentLines.map((line) => (
+                      <SummaryItem key={`payment-${line}`}>{line}</SummaryItem>
+                    ))}
+                  </SummaryBlock>
+                ) : null}
+
+                {creditNoteLines.length ? (
+                  <SummaryBlock>
+                    <SummaryTitle>Notas de Credito Aplicadas:</SummaryTitle>
+                    {creditNoteLines.map((line) => (
+                      <SummaryItem key={`credit-note-${line}`}>
+                        {line}
+                      </SummaryItem>
+                    ))}
+                  </SummaryBlock>
+                ) : null}
+              </LeftColumn>
+
+              <CenterColumn>
+                <SignatureBlock>
+                  {showSignatureCanvas ? (
+                    <SignatureCanvas aria-hidden="true">
+                      <SignatureCanvasLine />
+                    </SignatureCanvas>
+                  ) : (
+                    <SignatureLine />
+                  )}
+                  <SignatureLabel>Recibido Conforme:</SignatureLabel>
+                  <CopyTypeLabel>{data?.copyType || 'COPIA'}</CopyTypeLabel>
+                </SignatureBlock>
+              </CenterColumn>
+
+              <RightColumn>
+                {totals.map(([label, value], index) => {
+                  const isTotalRow = index === totals.length - 1;
+
+                  return (
+                    <TotalRow key={label} $strong={isTotalRow}>
+                      <span>{label}:</span>
+                      <span>{value}</span>
+                    </TotalRow>
+                  );
+                })}
+              </RightColumn>
+            </SignatureColumns>
+
+            {electronicPrintInfo ? (
+              <ElectronicFiscalBlock $withNotes={Boolean(notes)}>
+                <ElectronicQrColumn>
+                  {electronicPrintInfo.qrUrl ? (
+                    <QrFrame>
+                      <QRCode
+                        value={electronicPrintInfo.qrUrl}
+                        type="svg"
+                        size={100}
+                        bgColor="#ffffff"
+                        color="#111827"
+                        bordered={false}
                       />
+                    </QrFrame>
+                  ) : (
+                    <QrPlaceholder>QR</QrPlaceholder>
+                  )}
+                </ElectronicQrColumn>
+
+                <ElectronicDataColumn>
+                  <ElectronicMetaGrid>
+                    {electronicPrintInfo.signatureDate ? (
+                      <ElectronicMetaItem>
+                        <span>Fecha Firma Digital</span>
+                        <strong>{electronicPrintInfo.signatureDate}</strong>
+                      </ElectronicMetaItem>
                     ) : null}
-                    {stampUrl ? (
-                      <StampImage
-                        src={stampUrl}
-                        alt="Sello del negocio"
-                        $offsetX={stampTransform.offsetX}
-                        $offsetY={stampTransform.offsetY}
-                        $scale={stampTransform.scale}
-                        $opacity={stampTransform.opacity}
-                      />
+                    {electronicPrintInfo.securityCode ? (
+                      <ElectronicMetaItem>
+                        <span>Código de Seguridad</span>
+                        <strong>{electronicPrintInfo.securityCode}</strong>
+                      </ElectronicMetaItem>
                     ) : null}
-                    <SignatureCanvasLine />
-                  </SignatureCanvas>
-                ) : (
-                  <SignatureLine />
-                )}
-                <SignatureLabel>Despachado Por:</SignatureLabel>
-              </SignatureBlock>
+                  </ElectronicMetaGrid>
+                </ElectronicDataColumn>
 
-              {paymentLines.length ? (
-                <SummaryBlock>
-                  <SummaryTitle>Metodos de Pago:</SummaryTitle>
-                  {paymentLines.map((line) => (
-                    <SummaryItem key={`payment-${line}`}>{line}</SummaryItem>
-                  ))}
-                </SummaryBlock>
-              ) : null}
-
-              {creditNoteLines.length ? (
-                <SummaryBlock>
-                  <SummaryTitle>Notas de Credito Aplicadas:</SummaryTitle>
-                  {creditNoteLines.map((line) => (
-                    <SummaryItem key={`credit-note-${line}`}>{line}</SummaryItem>
-                  ))}
-                </SummaryBlock>
-              ) : null}
-            </LeftColumn>
-
-            <CenterColumn>
-              <SignatureBlock>
-                {showSignatureCanvas ? (
-                  <SignatureCanvas aria-hidden="true">
-                    <SignatureCanvasLine />
-                  </SignatureCanvas>
-                ) : (
-                  <SignatureLine />
-                )}
-                <SignatureLabel>Recibido Conforme:</SignatureLabel>
-                <CopyTypeLabel>{data?.copyType || 'COPIA'}</CopyTypeLabel>
-              </SignatureBlock>
-            </CenterColumn>
-
-            <RightColumn>
-              {totals.map(([label, value], index) => {
-                const isTotalRow = index === totals.length - 1;
-
-                return (
-                  <TotalRow key={label} $strong={isTotalRow}>
-                    <span>{label}:</span>
-                    <span>{value}</span>
-                  </TotalRow>
-                );
-              })}
-            </RightColumn>
-          </SignatureColumns>
-
-          {notes ? <Notes>{notes}</Notes> : null}
-        </FooterContent>
+                {notes ? <ElectronicNotes>{notes}</ElectronicNotes> : null}
+              </ElectronicFiscalBlock>
+            ) : notes ? (
+              <Notes>{notes}</Notes>
+            ) : null}
+          </FooterContent>
+        ) : null}
       </FooterDivider>
     </FooterRoot>
   );
@@ -192,6 +261,109 @@ const FooterTopRow = styled.div`
   align-items: center;
   font-size: var(--invoice-v3-font-caption, 9px);
   color: var(--invoice-v3-muted, #52606d);
+`;
+
+const PageSummaryRow = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 8px;
+  font-size: var(--invoice-v3-font-caption-strong, 9.5px);
+  color: var(--invoice-v3-text, #1f2933);
+  white-space: nowrap;
+`;
+
+const ElectronicFiscalBlock = styled.section<{ $withNotes?: boolean }>`
+  display: grid;
+  grid-template-columns: ${({ $withNotes }) =>
+    $withNotes ? '34mm 38mm minmax(0, 1fr)' : '34mm 38mm'};
+  gap: 12px;
+  align-items: center;
+  margin: 4px 0 12px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+`;
+
+const ElectronicQrColumn = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+`;
+
+const QrFrame = styled.div`
+  inline-size: 34mm;
+  block-size: 34mm;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  padding: 3mm;
+  background: #fff;
+  overflow: visible;
+
+  .ant-qrcode {
+    display: block;
+    flex: none;
+    overflow: visible;
+  }
+
+  canvas,
+  svg {
+    display: block;
+    overflow: visible;
+  }
+`;
+
+const QrPlaceholder = styled.div`
+  inline-size: 34mm;
+  block-size: 34mm;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--invoice-v3-border, #d6dde5);
+  color: var(--invoice-v3-muted, #52606d);
+  font-size: var(--invoice-v3-font-caption, 9px);
+  font-weight: 700;
+`;
+
+const ElectronicDataColumn = styled.div`
+  min-width: 0;
+  display: grid;
+  align-content: center;
+`;
+
+const ElectronicMetaGrid = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+`;
+
+const ElectronicMetaItem = styled.p`
+  margin: 0;
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+  line-height: 1.25;
+
+  span {
+    color: var(--invoice-v3-muted, #52606d);
+    font-size: var(--invoice-v3-font-caption, 9px);
+  }
+
+  strong {
+    color: var(--invoice-v3-text, #1f2933);
+    font-size: var(--invoice-v3-font-caption-strong, 9.5px);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+`;
+
+const ElectronicNotes = styled.p`
+  margin: 0;
+  min-width: 0;
+  font-size: var(--invoice-v3-font-caption-strong, 9.5px);
+  line-height: var(--invoice-v3-line-height, 1.45);
+  color: #364152;
+  white-space: pre-line;
 `;
 
 const FooterContent = styled.div`

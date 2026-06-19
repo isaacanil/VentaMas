@@ -6,6 +6,10 @@ import {
 } from './gisysFact.config.js';
 
 describe('gisysFact.config', () => {
+  it('uses a production-safe default timeout for GISYS issue calls', () => {
+    expect(resolveGisysFactConfig({}).timeoutMs).toBe(90000);
+  });
+
   it('does not require transport fields while preparing shadow payloads', () => {
     expect(
       getGisysFactConfigIssues(

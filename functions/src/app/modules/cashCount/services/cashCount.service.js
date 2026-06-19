@@ -1,6 +1,7 @@
 import { https, logger } from 'firebase-functions';
 
-import { db, arrayUnion } from '../../../core/config/firebase.js';
+import { db } from '../../../core/config/firebase.js';
+import { upsertSaleToCashCountInTransaction } from './cashCountSales.service.js';
 
 /**
  * Añade la referencia de una factura al cuadre de caja abierto del cajero.
@@ -33,13 +34,18 @@ export async function addBillToOpenCashCount(user, invoiceRef) {
     // 2. Actualiza en transacción para evitar colisiones
     await db.runTransaction(async (tx) => {
       const docSnap = await tx.get(cashCountDoc.ref);
-      const current = docSnap.get('cashCount.sales') || [];
-
-      const alreadyExists = current.some((ref) => ref.path === invoiceRef.path);
-      if (alreadyExists) return; // la factura ya estaba registrada
-
-      tx.update(cashCountDoc.ref, {
-        'cashCount.sales': arrayUnion(invoiceRef),
+      upsertSaleToCashCountInTransaction({
+        tx,
+        businessId: user.businessID,
+        cashCountId: cashCountDoc.id,
+        cashCountRef: cashCountDoc.ref,
+        invoiceId: invoiceRef.id,
+        invoiceRef,
+        cashCountSnap: docSnap,
+        createdBy: user.uid,
+        source: {
+          type: 'cashCount.service',
+        },
       });
     });
 
@@ -98,8 +104,18 @@ export async function addBillToCashCountById(
       `Factura ya registrada en el cuadre de caja ${cashCountId}`,
     );
   }
-  tx.update(cashCountRef, {
-    'cashCount.sales': arrayUnion(invoiceRef),
+  upsertSaleToCashCountInTransaction({
+    tx,
+    businessId: user.businessID,
+    cashCountId,
+    cashCountRef,
+    invoiceId: invoiceRef.id,
+    invoiceRef,
+    cashCountSnap,
+    createdBy: user.uid,
+    source: {
+      type: 'cashCount.service',
+    },
   });
 
   logger.info(

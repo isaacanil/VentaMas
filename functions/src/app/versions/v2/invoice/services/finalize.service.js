@@ -2,7 +2,10 @@ import { db, FieldValue, Timestamp } from '../../../../core/config/firebase.js';
 
 import { auditTx } from './audit.service.js';
 import { scheduleCompensationsInTx } from './compensation.service.js';
+import { markInvoiceTimingStage } from './invoiceTiming.service.js';
+import { upsertInvoiceTimelineEventInTransaction } from './invoiceTimeline.service.js';
 import {
+  NON_BLOCKING_FAILURE_REVIEW_STATUS,
   areOnlyNonBlockingFailures,
   buildNonBlockingFailureSummary,
   summarizeOutboxTasks,
@@ -189,11 +192,13 @@ export async function attemptFinalizeInvoice({ businessId, invoiceId }) {
     );
     if (!pendingSnap.empty) return; // aun pendientes
 
+    let nonBlockingFailureSummary = null;
     const failedSnap = await tx.get(outboxCol.where('status', '==', 'failed'));
     if (!failedSnap.empty) {
       const failedTasks = summarizeOutboxTasks(failedSnap.docs);
       if (areOnlyNonBlockingFailures(failedTasks)) {
         const summary = buildNonBlockingFailureSummary(failedTasks);
+        nonBlockingFailureSummary = summary;
         auditTx(tx, {
           businessId,
           invoiceId,
@@ -201,73 +206,59 @@ export async function attemptFinalizeInvoice({ businessId, invoiceId }) {
           level: 'warn',
           data: summary,
         });
-        tx.set(
-          invoiceRef,
-          {
-            nonBlockingFailures: {
-              ...summary,
-              detectedAt: FieldValue.serverTimestamp(),
-            },
-            statusTimeline: FieldValue.arrayUnion({
-              status: 'non_blocking_failure',
-              at: Timestamp.now(),
-              taskTypes: summary.taskTypes,
-            }),
-            updatedAt: FieldValue.serverTimestamp(),
+      } else {
+        // Programar compensaciones para tareas completadas
+        await scheduleCompensationsInTx(tx, { businessId, invoiceId });
+        auditTx(tx, {
+          businessId,
+          invoiceId,
+          event: 'finalize_failed',
+          level: 'warn',
+          data: {
+            failed: true,
+            failedTaskTypes: failedTasks.map((task) => task.type),
           },
-          { merge: true },
-        );
+        });
+        const failedAt = Timestamp.now();
+        tx.update(invoiceRef, {
+          status: 'failed',
+          statusTimeline: FieldValue.arrayUnion({
+            status: 'failed',
+            at: failedAt,
+          }),
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+        upsertInvoiceTimelineEventInTransaction({
+          transaction: tx,
+          timelineEventRef: db.doc(
+            `businesses/${businessId}/invoicesV2/${invoiceId}/timeline/finalize__failed`,
+          ),
+          businessId,
+          invoiceId,
+          eventId: 'finalize__failed',
+          status: 'failed',
+          at: failedAt,
+          source: 'attemptFinalizeInvoice',
+          metadata: {
+            failedTaskTypes: failedTasks.map((task) => task.type),
+          },
+        });
+        // Opcional: marcar idempotency como failed
         if (inv.idempotencyKey) {
           const idemRef = db.doc(
             `businesses/${businessId}/idempotency/${inv.idempotencyKey}`,
           );
           tx.set(
             idemRef,
-            {
-              status: inv.frontendReadyAt ? 'frontend_ready' : inv.status || 'pending',
-              updatedAt: FieldValue.serverTimestamp(),
-            },
+            { status: 'failed', updatedAt: FieldValue.serverTimestamp() },
             { merge: true },
           );
         }
         return;
       }
-
-      // Programar compensaciones para tareas completadas
-      await scheduleCompensationsInTx(tx, { businessId, invoiceId });
-      auditTx(tx, {
-        businessId,
-        invoiceId,
-        event: 'finalize_failed',
-        level: 'warn',
-        data: {
-          failed: true,
-          failedTaskTypes: failedTasks.map((task) => task.type),
-        },
-      });
-      tx.update(invoiceRef, {
-        status: 'failed',
-        statusTimeline: FieldValue.arrayUnion({
-          status: 'failed',
-          at: Timestamp.now(),
-        }),
-        updatedAt: FieldValue.serverTimestamp(),
-      });
-      // Opcional: marcar idempotency como failed
-      if (inv.idempotencyKey) {
-        const idemRef = db.doc(
-          `businesses/${businessId}/idempotency/${inv.idempotencyKey}`,
-        );
-        tx.set(
-          idemRef,
-          { status: 'failed', updatedAt: FieldValue.serverTimestamp() },
-          { merge: true },
-        );
-      }
-      return;
     }
 
-    // Todas las tareas finalizadas -> consumir NCF (si reservado) y marcar committed
+    // Todas las tareas criticas finalizaron; las no bloqueantes quedan para revision.
     const accountingSettingsSnap = await tx.get(accountingSettingsRef);
     const accountingSettings = accountingSettingsSnap.exists
       ? accountingSettingsSnap.data() || {}
@@ -299,23 +290,91 @@ export async function attemptFinalizeInvoice({ businessId, invoiceId }) {
       tx.set(accountingEventRef, accountingEvent);
     }
 
-    tx.update(invoiceRef, {
-      status: 'committed',
-      committedAt: FieldValue.serverTimestamp(),
-      statusTimeline: FieldValue.arrayUnion({
-        status: 'committed',
-        at: Timestamp.now(),
-      }),
-      updatedAt: FieldValue.serverTimestamp(),
+    const finalStatus = nonBlockingFailureSummary
+      ? NON_BLOCKING_FAILURE_REVIEW_STATUS
+      : 'committed';
+    const timelineEntries = [];
+    if (nonBlockingFailureSummary) {
+      timelineEntries.push({
+        status: 'non_blocking_failure',
+        at: now,
+        taskTypes: nonBlockingFailureSummary.taskTypes,
+      });
+    }
+    timelineEntries.push({
+      status: finalStatus,
+      at: now,
+      ...(nonBlockingFailureSummary
+        ? {
+            reviewRequired: true,
+            taskTypes: nonBlockingFailureSummary.taskTypes,
+          }
+        : {}),
     });
+
+    const invoiceUpdate = {
+      status: finalStatus,
+      committedAt: FieldValue.serverTimestamp(),
+      statusTimeline: FieldValue.arrayUnion(...timelineEntries),
+      updatedAt: FieldValue.serverTimestamp(),
+    };
+    if (nonBlockingFailureSummary) {
+      invoiceUpdate.nonBlockingFailures = {
+        ...nonBlockingFailureSummary,
+        finalStatus,
+        detectedAt: FieldValue.serverTimestamp(),
+      };
+      invoiceUpdate.requiresCashCountReview =
+        nonBlockingFailureSummary.requiresCashCountReview === true;
+    }
+    tx.update(invoiceRef, invoiceUpdate);
+    for (const entry of timelineEntries) {
+      const eventId = `finalize__${entry.status}`;
+      upsertInvoiceTimelineEventInTransaction({
+        transaction: tx,
+        timelineEventRef: db.doc(
+          `businesses/${businessId}/invoicesV2/${invoiceId}/timeline/${eventId}`,
+        ),
+        businessId,
+        invoiceId,
+        eventId,
+        status: entry.status,
+        at: entry.at,
+        source: 'attemptFinalizeInvoice',
+        metadata: {
+          reviewRequired: entry.reviewRequired || undefined,
+          taskTypes: entry.taskTypes || undefined,
+          accountingEventCreated: accountingEnabled,
+        },
+      });
+    }
+    await markInvoiceTimingStage({
+      invoiceRef,
+      transaction: tx,
+      invoice: inv,
+      stage: 'committed',
+      at: now,
+      metadata: {
+        source: 'attemptFinalizeInvoice',
+        status: finalStatus,
+        accountingEventCreated: accountingEnabled,
+        reviewRequired: Boolean(nonBlockingFailureSummary) || undefined,
+      },
+    });
+    const auditData = {
+      committed: true,
+      accountingEventCreated: accountingEnabled,
+    };
+    if (nonBlockingFailureSummary) {
+      auditData.nonBlockingFailures = nonBlockingFailureSummary.taskTypes;
+      auditData.requiresCashCountReview =
+        nonBlockingFailureSummary.requiresCashCountReview === true;
+    }
     auditTx(tx, {
       businessId,
       invoiceId,
       event: 'finalize_committed',
-      data: {
-        committed: true,
-        accountingEventCreated: accountingEnabled,
-      },
+      data: auditData,
     });
 
     if (inv.idempotencyKey) {
@@ -324,7 +383,7 @@ export async function attemptFinalizeInvoice({ businessId, invoiceId }) {
       );
       tx.set(
         idemRef,
-        { status: 'committed', updatedAt: FieldValue.serverTimestamp() },
+        { status: finalStatus, updatedAt: FieldValue.serverTimestamp() },
         { merge: true },
       );
     }

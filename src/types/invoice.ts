@@ -104,6 +104,7 @@ export interface ElectronicTaxReceiptSnapshot {
   documentType?: string | null;
   submissionId?: string | null;
   eNcf?: string | null;
+  issuedAt?: InvoiceTimestamp;
   requestStatus?: string | null;
   localStatus?: string | null;
   dgiiSubmissionStatus?: string | null;
@@ -130,6 +131,7 @@ export interface ElectronicTaxReceiptSnapshot {
   securityCode?: string | null;
   qr?: { url?: string | null; profile?: string | null } | string | null;
   officialVerifyUrl?: string | null;
+  printData?: Record<string, unknown> | null;
   printStatus?: string | null;
   routing?: {
     channel?: string | null;

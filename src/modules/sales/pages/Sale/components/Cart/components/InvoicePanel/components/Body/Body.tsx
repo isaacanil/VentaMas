@@ -32,6 +32,7 @@ import { PrintControl } from './components/PrintControl/PrintControl';
 type CartData = {
   change: { value?: number };
   totalPurchase: { value?: number };
+  products?: unknown[];
   paymentMethod?: Array<{ status?: boolean; method?: string; value?: number }>;
   isAddedToReceivables?: boolean;
 };
@@ -74,6 +75,8 @@ export const Body = ({ form, businessId, onMonetaryContextChange }: BodyProps) =
   );
 
   const isAddedToReceivables = cartData?.isAddedToReceivables;
+  const hasCartProducts =
+    Array.isArray(cartData?.products) && cartData.products.length > 0;
   const receivableStatus = Boolean(isAddedToReceivables && isWithinCreditLimit);
 
   const hasAccountReceivablePermission = abilities.can(
@@ -87,12 +90,25 @@ export const Body = ({ form, businessId, onMonetaryContextChange }: BodyProps) =
     dispatch(setCreditNotePayment(creditNoteSelections));
   };
 
+  if (!hasCartProducts) {
+    return (
+      <EmptySaleState role="status">
+        <strong>No hay productos en la venta.</strong>
+        <span>Agrega productos al carrito o cierra este panel.</span>
+      </EmptySaleState>
+    );
+  }
+
   if (isLoading) {
-    return <div>Loading…</div>;
+    return <LoadingState role="status">Cargando datos del cliente...</LoadingState>;
   }
 
   if (error) {
-    return <div>Error loading credit limit</div>;
+    return (
+      <LoadingState role="alert">
+        No se pudo cargar el límite de crédito del cliente.
+      </LoadingState>
+    );
   }
 
   return (
@@ -140,6 +156,32 @@ export const Body = ({ form, businessId, onMonetaryContextChange }: BodyProps) =
 const Container = styled.div`
   display: grid;
   gap: 0.8em;
+`;
+
+const EmptySaleState = styled.div`
+  display: grid;
+  gap: 6px;
+  min-height: 220px;
+  align-content: center;
+  justify-items: center;
+  padding: 24px;
+  text-align: center;
+  color: #4b5563;
+
+  strong {
+    color: #111827;
+    font-size: 16px;
+  }
+
+  span {
+    max-width: 300px;
+    font-size: 14px;
+  }
+`;
+
+const LoadingState = styled.div`
+  padding: 16px 0;
+  color: #4b5563;
 `;
 
 const PaymentCard = styled.div`
