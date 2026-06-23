@@ -11,6 +11,8 @@ import { db } from '@/firebase/firebaseconfig';
 import type { TaxReceiptDocument } from '@/types/taxReceipt';
 import { serializeFirestoreDocuments } from '@/utils/serialization/serializeFirestoreData';
 
+import { dedupeTaxReceiptDocuments } from './removeDuplicateTaxReceipts';
+
 // NOTE: This function uses React hooks; keep the `use*` prefix so tools like
 // React Compiler and hook linting can reliably treat it as a hook.
 export const useFbGetTaxReceipt = () => {
@@ -51,10 +53,15 @@ export const useFbGetTaxReceipt = () => {
       taxReceiptsRef,
       (snapshot) => {
         const taxReceiptsArray = snapshot.docs.map(
-          (item) => item.data() as TaxReceiptDocument,
+          (item) =>
+            ({
+              ...(item.data() as TaxReceiptDocument),
+              id: item.id,
+            }) as TaxReceiptDocument,
         );
+        const dedupedTaxReceipts = dedupeTaxReceiptDocuments(taxReceiptsArray);
         const serializedTaxReceipts = serializeFirestoreDocuments(
-          taxReceiptsArray,
+          dedupedTaxReceipts,
         ) as TaxReceiptDocument[];
         setTaxReceipt(serializedTaxReceipts);
         setLoading(false);
