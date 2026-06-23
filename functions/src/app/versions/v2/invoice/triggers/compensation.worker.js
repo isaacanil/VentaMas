@@ -9,6 +9,9 @@ import {
 } from '../services/failurePolicy.service.js';
 import { resolveInvoiceTriggerActorUid } from './invoiceTriggerActor.util.js';
 
+const INVENTORY_COMPENSATION_MANUAL_ERROR =
+  'Inventory compensation requires manual stock review because the completed outbox task does not include reversible stock deltas.';
+
 let depsPromise;
 async function loadDeps() {
   if (!depsPromise) {
@@ -103,6 +106,18 @@ export const processInvoiceCompensation = onDocumentCreated(
             });
           };
         })();
+        const voidPendingNcfUsage = () => {
+          if (!usageSnap || !usageSnap.exists) return false;
+          const usageData = usageSnap.data() || {};
+          if (usageData.status !== 'pending') return false;
+          ensureCompStart();
+          tx.update(usageSnap.ref, {
+            status: 'voided',
+            voidedAt: FieldValue.serverTimestamp(),
+            updatedAt: FieldValue.serverTimestamp(),
+          });
+          return true;
+        };
 
         if (type === 'setupAR') {
           const arId = cData?.result?.arId || null;
@@ -121,6 +136,32 @@ export const processInvoiceCompensation = onDocumentCreated(
             invoiceId,
             compId,
           });
+          ensureCompStart();
+          voidPendingNcfUsage();
+          tx.set(
+            compRef,
+            {
+              status: 'manual_required',
+              attempts: (cData.attempts || 0) + 1,
+              lastError: INVENTORY_COMPENSATION_MANUAL_ERROR,
+              requiresManualReview: true,
+              manualRequiredAt: FieldValue.serverTimestamp(),
+              updatedAt: FieldValue.serverTimestamp(),
+            },
+            { merge: true },
+          );
+          auditTx(tx, {
+            businessId,
+            invoiceId,
+            event: 'compensation_manual_required',
+            level: 'warn',
+            data: {
+              compId,
+              type,
+              error: INVENTORY_COMPENSATION_MANUAL_ERROR,
+            },
+          });
+          return;
         } else if (type === 'setupInsuranceAR') {
           const arId = cData?.result?.arId || null;
           await compensateAR(tx, { businessId, arId });
@@ -185,17 +226,7 @@ export const processInvoiceCompensation = onDocumentCreated(
           }
         }
 
-        if (usageSnap && usageSnap.exists) {
-          const usageData = usageSnap.data() || {};
-          if (usageData.status === 'pending') {
-            ensureCompStart();
-            tx.update(usageSnap.ref, {
-              status: 'voided',
-              voidedAt: FieldValue.serverTimestamp(),
-              updatedAt: FieldValue.serverTimestamp(),
-            });
-          }
-        }
+        voidPendingNcfUsage();
 
         ensureCompStart();
         tx.set(

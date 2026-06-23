@@ -77,4 +77,20 @@ describe('resolveInvoiceAccountsReceivable', () => {
       totalReceivable: 12.34,
     });
   });
+
+  it('no usa totalAmount legacy para calcular el saldo activo de CxC', () => {
+    const resolved = resolveInvoiceAccountsReceivable({
+      accountsReceivable: {
+        paymentFrequency: 'monthly',
+        totalInstallments: 1,
+      },
+      cart: {
+        payment: { value: 0 },
+        totalAmount: 100,
+      } as never,
+    });
+
+    expect(resolved.totalReceivable).toBe(0);
+    expect(resolved.installmentAmount).toBe(0);
+  });
 });

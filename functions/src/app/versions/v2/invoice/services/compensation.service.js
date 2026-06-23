@@ -1,4 +1,4 @@
-import { db } from '../../../../core/config/firebase.js';
+import { db, FieldValue } from '../../../../core/config/firebase.js';
 import { unlinkSaleFromCashCountInTransaction } from '../../../../modules/cashCount/services/cashCountSales.service.js';
 
 export async function scheduleCompensationsInTx(tx, { businessId, invoiceId }) {

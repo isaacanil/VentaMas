@@ -27,6 +27,7 @@ export const loadInventoryMigrationToolRoute: LazyRouteLoader;
 export const loadInvoiceV2RecoveryRoute: LazyRouteLoader;
 export const loadProductFormV2TestBenchRoute: LazyRouteLoader;
 export const loadProductPriceAuditRoute: LazyRouteLoader;
+export const loadPrintPaginationLabRoute: LazyRouteLoader;
 export const loadProductStudioRoute: LazyRouteLoader;
 export const loadSwitchBusinessRoute: LazyRouteLoader;
 export const loadSyncDiagnosticsRoute: LazyRouteLoader;

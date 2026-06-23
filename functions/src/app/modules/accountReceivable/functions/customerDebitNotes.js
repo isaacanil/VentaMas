@@ -82,8 +82,7 @@ const resolveInvoiceTotalAmount = (invoice, fallbackValue) =>
   roundToTwoDecimals(
     safeNumber(fallbackValue) ||
       safeNumber(invoice?.totalPurchase?.value) ||
-      safeNumber(invoice?.total) ||
-      safeNumber(invoice?.payment?.value),
+      safeNumber(invoice?.total),
   );
 
 const normalizeFiscalId = (value) => {
@@ -359,7 +358,11 @@ export const createCustomerDebitNote = onCall(
       let invoiceNumber = toCleanString(debitNoteData.invoiceNumber);
       let invoiceDate = debitNoteData.invoiceDate || null;
       const invoice = resolveInvoiceRecord(invoiceSnap);
-      invoiceNcf = invoiceNcf || toCleanString(invoice.NCF);
+      invoiceNcf =
+        invoiceNcf ||
+        toCleanString(invoice.eNcf) ||
+        toCleanString(invoice.ncf) ||
+        toCleanString(invoice.NCF);
       invoiceNumber = invoiceNumber || toCleanString(invoice.numberID);
       invoiceDate = invoiceDate || invoice.date || invoice.createdAt || null;
       const invoiceTotalAmount = resolveInvoiceTotalAmount(

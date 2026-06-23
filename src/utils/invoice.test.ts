@@ -37,6 +37,15 @@ describe('calculateInvoiceChange', () => {
 
     expect(change).toBe(0);
   });
+
+  it('does not use totalAmount legacy when recalculating active change', () => {
+    const change = calculateInvoiceChange({
+      payment: { value: 0 },
+      totalAmount: 100,
+    });
+
+    expect(change).toBe(0);
+  });
 });
 
 describe('getInvoicePaymentInfo', () => {

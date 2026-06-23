@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildIssueSummary,
   isRecord,
+  resolveFiscalDocumentNumber,
   resolveMonthlyPeriodRange,
   toCleanString,
   toDate,
@@ -31,6 +32,23 @@ describe('dgiiMonthlyReportShared.util', () => {
     expect(toFiniteNumber('')).toBeNull();
     expect(toFiniteNumber('no-number')).toBeNull();
     expect(toFiniteNumber(Number.NaN)).toBeNull();
+  });
+
+  it('resuelve el número fiscal desde e-CF, legacy NCF y snapshots canónicos', () => {
+    expect(
+      resolveFiscalDocumentNumber({
+        electronicTaxReceipt: { eNcf: 'E310000000123' },
+        NCF: 'B0100000001',
+      }),
+    ).toBe('E310000000123');
+    expect(
+      resolveFiscalDocumentNumber({
+        snapshot: { ncf: { code: 'E330000000007' } },
+      }),
+    ).toBe('E330000000007');
+    expect(resolveFiscalDocumentNumber({ NCF: 'B0100000001' })).toBe(
+      'B0100000001',
+    );
   });
 
   it('normaliza fechas desde los formatos usados por Firestore y fixtures', () => {

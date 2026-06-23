@@ -2,8 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { protectedRouteLoader } from './accessLoaders';
 import devRoutes from '../paths/Dev';
+import labRoutes from '../paths/Lab';
 import { registerRoutes } from '../routeVisibility';
 import ROUTES_NAME from '../routesName';
+
+const PRINT_PAGINATION_LAB_PATH = '/lab/print-pagination';
 
 let mockState: {
   user: {
@@ -28,7 +31,7 @@ const createLoaderArgs = (pathname: string) =>
 
 describe('protectedRouteLoader', () => {
   beforeEach(() => {
-    registerRoutes(devRoutes);
+    registerRoutes([...devRoutes, ...labRoutes]);
     mockState = {
       user: {
         authReady: true,
@@ -86,6 +89,46 @@ describe('protectedRouteLoader', () => {
 
     const result = protectedRouteLoader(
       createLoaderArgs(ROUTES_NAME.DEV_VIEW_TERM.PRICE_LIST_AUDIT),
+    );
+
+    expect(result).toBeNull();
+  });
+
+  it('redirects non-dev users away from print pagination lab', () => {
+    const result = protectedRouteLoader(
+      createLoaderArgs(PRINT_PAGINATION_LAB_PATH),
+    );
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        status: 302,
+      }),
+    );
+    expect((result as Response).headers.get('Location')).toBe(
+      ROUTES_NAME.BASIC_TERM.HOME,
+    );
+  });
+
+  it('allows developer users through print pagination lab', () => {
+    mockState.user.user = {
+      ...mockState.user.user,
+      platformRoles: { dev: true },
+      role: 'dev',
+      activeRole: 'dev',
+    };
+
+    const result = protectedRouteLoader(
+      createLoaderArgs(PRINT_PAGINATION_LAB_PATH),
+    );
+
+    expect(result).toBeNull();
+  });
+
+  it('waits for auth readiness before redirecting print pagination lab', () => {
+    mockState.user.authReady = false;
+
+    const result = protectedRouteLoader(
+      createLoaderArgs(PRINT_PAGINATION_LAB_PATH),
     );
 
     expect(result).toBeNull();

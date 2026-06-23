@@ -80,9 +80,14 @@ export const assertHrPayrollLinePayable = (lineLike) => {
 
 const normalizePaymentAmount = ({ line, payload }) => {
   const lineAmount = roundMoney(line.netAmount ?? line.commissionAmount);
-  const requestedAmount = roundMoney(
-    payload.amount ?? payload.value ?? payload.totalAmount ?? lineAmount,
-  );
+  if (!Object.prototype.hasOwnProperty.call(payload, 'amount')) {
+    return {
+      ok: false,
+      error: 'El monto del pago de nómina es requerido.',
+    };
+  }
+
+  const requestedAmount = roundMoney(payload.amount);
   if (Math.abs(requestedAmount - lineAmount) > THRESHOLD) {
     return {
       ok: false,
@@ -104,7 +109,6 @@ const buildPaymentMethods = ({
   withoutUndefined({
     method,
     amount,
-    value: amount,
     bankAccountId,
     cashAccountId,
     cashCountId,
@@ -143,7 +147,7 @@ export const buildHrPayrollPaymentCashMovements = ({
     .map((entry, index) => {
       const method = asRecord(entry);
       const methodCode = normalizeHrPayrollPaymentMethodCode(method.method);
-      const amount = roundMoney(method.amount ?? method.value);
+      const amount = roundMoney(method.amount);
       if (!SUPPORTED_MOVEMENT_METHODS.has(methodCode) || amount <= THRESHOLD) {
         return null;
       }

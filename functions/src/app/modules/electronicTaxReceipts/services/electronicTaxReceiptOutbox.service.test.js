@@ -26,6 +26,14 @@ vi.mock('./gisysFactClient.service.js', () => ({
   refreshGisysFactDocumentStatus: vi.fn(),
 }));
 
+vi.mock('../mappers/gisysIssuePayload.mapper.js', () => ({
+  buildGisysIssuePayload: vi.fn(() => ({
+    payload: { document: 'payload' },
+    documentType: 'E32',
+    requestHash: 'request-hash',
+  })),
+}));
+
 vi.mock('../config/gisysFact.config.js', () => ({
   getGisysFactConfigIssues: vi.fn(() => []),
   resolveGisysFactConfig: vi.fn(() => ({ mode: 'required' })),
@@ -37,9 +45,13 @@ vi.mock('../config/gisysFactPlatform.config.js', () => ({
 
 import { db, FieldValue, Timestamp } from '../../../core/config/firebase.js';
 
-import { refreshGisysFactDocumentStatus } from './gisysFactClient.service.js';
+import {
+  issueGisysFactDocument,
+  refreshGisysFactDocumentStatus,
+} from './gisysFactClient.service.js';
 import {
   buildGisysFactIdempotencyKey,
+  processElectronicTaxReceiptOutboxTask,
   refreshElectronicTaxReceiptStatus,
   resolveElectronicTaxReceiptLifecycleStatus,
 } from './electronicTaxReceiptOutbox.service.js';
@@ -162,6 +174,122 @@ describe('electronicTaxReceiptOutbox.service', () => {
         },
       }),
     ).toBe('rejected');
+  });
+
+  it('fails a required invoice e-CF task when GISYS returns a rejected lifecycle', async () => {
+    const invoiceDoc = {
+      snapshot: {
+        ncf: {
+          documentType: 'E32',
+        },
+      },
+    };
+    const invoiceRef = {
+      get: vi.fn(async () => ({
+        exists: true,
+        data: () => invoiceDoc,
+      })),
+    };
+    const taskRef = {
+      path: 'businesses/business-1/invoicesV2/invoice-1/outbox/task-1',
+    };
+    const businessRef = {
+      get: vi.fn(async () => ({
+        exists: true,
+        data: () => ({}),
+      })),
+    };
+    const tx = {
+      get: vi.fn(async (ref) => {
+        if (ref === taskRef) {
+          return {
+            data: () => ({
+              status: 'pending',
+              attempts: 0,
+              payload: {
+                mode: 'required',
+                transportEnabled: true,
+              },
+            }),
+          };
+        }
+        if (ref === invoiceRef) {
+          return {
+            data: () => invoiceDoc,
+          };
+        }
+        throw new Error(`Unexpected tx ref: ${ref.path || ref}`);
+      }),
+      set: vi.fn(),
+      update: vi.fn(),
+    };
+
+    db.doc.mockImplementation((path) => {
+      if (path === 'businesses/business-1') {
+        return businessRef;
+      }
+      throw new Error(`Unexpected doc path: ${path}`);
+    });
+    db.runTransaction.mockImplementation(async (callback) => callback(tx));
+    issueGisysFactDocument.mockResolvedValue({
+      eNcf: 'E320000000001',
+      dgiiStatus: 'rejected',
+      messages: [
+        {
+          code: '145',
+          message: 'Fecha de vencimiento de secuencia inválida.',
+        },
+      ],
+    });
+
+    await expect(
+      processElectronicTaxReceiptOutboxTask({
+        businessId: 'business-1',
+        invoiceId: 'invoice-1',
+        taskId: 'task-1',
+        taskRef,
+        invoiceRef,
+        task: {
+          payload: {
+            mode: 'required',
+            transportEnabled: true,
+          },
+        },
+      }),
+    ).rejects.toThrow('Fecha de vencimiento de secuencia inválida.');
+
+    expect(tx.set).toHaveBeenCalledWith(
+      taskRef,
+      expect.objectContaining({
+        status: 'failed',
+        attempts: 1,
+        lastError: 'Fecha de vencimiento de secuencia inválida.',
+      }),
+      { merge: true },
+    );
+    expect(tx.update).toHaveBeenCalledWith(
+      invoiceRef,
+      expect.objectContaining({
+        'snapshot.electronicTaxReceipt': expect.objectContaining({
+          mode: 'required',
+          status: 'rejected',
+          dgiiCode: '145',
+          dgiiMessage: 'Fecha de vencimiento de secuencia inválida.',
+          lastError: 'Fecha de vencimiento de secuencia inválida.',
+        }),
+        'snapshot.ncf': expect.objectContaining({
+          status: 'failed',
+          documentFormat: 'electronic',
+          provider: 'gisys_fact',
+          documentType: 'E32',
+        }),
+      }),
+    );
+    expect(tx.set).not.toHaveBeenCalledWith(
+      taskRef,
+      expect.objectContaining({ status: 'done' }),
+      { merge: true },
+    );
   });
 
   it('does not preserve a stale refresh transport error when GISYS returns current status', async () => {

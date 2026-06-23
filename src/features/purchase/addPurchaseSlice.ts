@@ -167,18 +167,13 @@ export const addPurchaseSlice = createSlice({
         name: product.name,
         expirationDate: product.expirationDate ?? null, // Use null for empty date
         quantity: product.quantity ?? 1,
-        purchaseQuantity: product.purchaseQuantity ?? product.quantity ?? 1, // Use existing purchaseQuantity or default to quantity, then 1
-        orderedQuantity:
-          product.orderedQuantity ??
-          product.purchaseQuantity ??
-          product.quantity ??
-          1,
+        purchaseQuantity: product.purchaseQuantity ?? 1,
+        orderedQuantity: product.orderedQuantity ?? product.purchaseQuantity ?? 1,
         receivedQuantity: product.receivedQuantity ?? 0,
         pendingQuantity:
           product.pendingQuantity ??
           product.orderedQuantity ??
           product.purchaseQuantity ??
-          product.quantity ??
           1,
         selectedBackOrders: [], // BackOrders seleccionados
         unitMeasurement: product.unitMeasurement ?? '',

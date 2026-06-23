@@ -1,4 +1,6 @@
+import type { ReactNode } from 'react';
 import styled from 'styled-components';
+
 import type { SupportedDocumentCurrency } from '@/types/products';
 import {
   resolveDisplayTaxForCurrency,
@@ -18,9 +20,14 @@ import {
 interface ContentProps {
   products: PreviewInvoiceProduct[];
   documentCurrency: SupportedDocumentCurrency;
+  footer?: ReactNode;
 }
 
-export default function Content({ products, documentCurrency }: ContentProps) {
+export default function Content({
+  products,
+  documentCurrency,
+  footer,
+}: ContentProps) {
   return (
     <ContentRoot>
       <ProductsTable>
@@ -36,6 +43,13 @@ export default function Content({ products, documentCurrency }: ContentProps) {
             <HeaderCell className="money">TOTAL</HeaderCell>
           </tr>
         </thead>
+        {footer ? (
+          <ProductsFooter>
+            <tr>
+              <FooterCell colSpan={8}>{footer}</FooterCell>
+            </tr>
+          </ProductsFooter>
+        ) : null}
         <tbody>
           {products.length ? (
             <>
@@ -125,12 +139,11 @@ const ContentRoot = styled.div`
 const ProductsTable = styled.table`
   width: 100%;
   table-layout: fixed;
-  border-collapse: separate;
+  border-collapse: collapse;
   border-spacing: 0;
   border: 1px solid var(--invoice-v3-border-soft, #dfe7ef);
-  border-radius: 4px;
-  overflow: hidden;
   font-size: var(--invoice-v3-font-body-compact, 10px);
+  break-inside: auto;
 
   thead {
     display: table-header-group;
@@ -146,7 +159,7 @@ const HeaderCell = styled.th`
   color: #fff;
   font-weight: 700;
   text-align: left;
-  padding: 8px 8px;
+  padding: 8px;
   font-size: var(--invoice-v3-font-caption-strong, 9.5px);
   line-height: 1.3;
 
@@ -180,7 +193,6 @@ const HeaderCell = styled.th`
 
 const ProductRow = styled.tr`
   break-inside: avoid;
-  page-break-inside: avoid;
 
   &:not(:first-child) td {
     border-top: 1px solid #eef2f6;
@@ -188,10 +200,10 @@ const ProductRow = styled.tr`
 `;
 
 const BodyCell = styled.td`
-  padding: 8px 8px;
+  padding: 8px;
   vertical-align: top;
   line-height: var(--invoice-v3-line-height, 1.45);
-  word-break: break-word;
+  overflow-wrap: anywhere;
 
   &.qty {
     text-align: center;
@@ -225,4 +237,17 @@ const EmptyCell = styled.td`
   padding: 14px 12px;
   color: var(--invoice-v3-muted, #52606d);
   text-align: center;
+`;
+
+const ProductsFooter = styled.tfoot`
+  display: none;
+
+  @media print {
+    display: table-footer-group;
+  }
+`;
+
+const FooterCell = styled.td`
+  padding: 10px 0 0;
+  border-top: 0;
 `;

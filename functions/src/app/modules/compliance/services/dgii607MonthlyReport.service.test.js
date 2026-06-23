@@ -128,6 +128,47 @@ describe('dgii607MonthlyReport.service', () => {
     });
   });
 
+  it('usa eNcf como número fiscal de facturas electrónicas en 607', () => {
+    const result = mapInvoiceDocToDgii607Record({
+      businessId: 'business-1',
+      invoiceId: 'invoice-ecf-1',
+      invoiceDoc: {
+        data: {
+          id: 'invoice-ecf-1',
+          numberID: 16,
+          eNcf: 'E310000000016',
+          date: {
+            toDate: () => new Date('2026-04-05T13:20:00.000Z'),
+          },
+          totalPurchase: { value: 1180 },
+          totalTaxes: { value: 180 },
+          status: 'completed',
+        },
+      },
+    });
+
+    expect(result.data.NCF).toBe('E310000000016');
+  });
+
+  it('usa eNcf como número fiscal de notas de crédito electrónicas en 607', () => {
+    const result = mapCreditNoteDocToDgii607Record({
+      businessId: 'business-1',
+      creditNoteId: 'credit-note-ecf-1',
+      creditNoteDoc: {
+        id: 'credit-note-ecf-1',
+        eNcf: 'E340000000016',
+        totalAmount: 350,
+        createdAt: {
+          toDate: () => new Date('2026-04-11T09:30:00.000Z'),
+        },
+        status: 'issued',
+      },
+    });
+
+    expect(result.data.NCF).toBe('E340000000016');
+    expect(result.ncf).toBe('E340000000016');
+  });
+
   it('normaliza una nota de credito real al shape del validador 607', () => {
     const result = mapCreditNoteDocToDgii607Record({
       businessId: 'business-1',

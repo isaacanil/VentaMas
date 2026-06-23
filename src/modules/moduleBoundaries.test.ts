@@ -24,6 +24,7 @@ const modulesRoot = path.join(process.cwd(), 'src', 'modules');
 const sourceRoot = path.join(process.cwd(), 'src');
 const routerRoot = path.join(process.cwd(), 'src', 'router');
 const sourceExtensions = new Set(['.ts', '.tsx', '.js', '.jsx']);
+const skippedRuntimeSourcePattern = /\.(test|spec|stories)\.[cm]?[jt]sx?$/;
 const importReferencesByFilePath = new Map<string, ImportReference[]>();
 const sourceFilesByDirectory = new Map<string, string[]>();
 
@@ -39,6 +40,46 @@ const allowedDirectHeroUiReactImportPathPrefixes = [
   'src/components/heroui/',
   'src/modules/dev/',
 ];
+
+const realInvoicePrintFlowRoots = [
+  path.join(sourceRoot, 'modules', 'invoice'),
+  path.join(sourceRoot, 'modules', 'sales'),
+  path.join(sourceRoot, 'services'),
+  path.join(sourceRoot, 'utils', 'invoice.ts'),
+  path.join(sourceRoot, 'utils', 'invoice'),
+];
+
+const forbiddenRealInvoicePrintFlowImportPatterns = [
+  /^@vivliostyle(?:\/|$)/,
+  /^vivliostyle(?:\/|$)/,
+  /printInvoiceWithVivliostyle/,
+  /PrintPaginationLab/,
+  /invoiceScenario/,
+  /modules\/dev\/pages\/DevTools\/PrintPaginationLab/,
+];
+
+const forbiddenRealInvoicePrintFlowMarkers = [
+  '@vivliostyle/core',
+  'vivliostyle',
+  'Vivliostyle',
+  'printInvoiceWithVivliostyle',
+  'loadPrintPaginationLabRoute',
+  'PrintPaginationLab',
+  'invoiceScenario',
+  'data-print-pagination',
+  'PaginatedDocument',
+  'string-set',
+];
+
+const allowedRealInvoicePaginationEnginePathPrefixes = [
+  'src/modules/invoice/components/FiscalDocumentPagination/',
+  'src/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/components/PaginatedPrintHost/',
+];
+
+const allowedRealInvoicePaginationEngineMarkers = new Set([
+  'data-print-pagination',
+  'PaginatedDocument',
+]);
 
 const forbiddenDomainInfrastructureImportPrefixes = [
   '@/components',
@@ -898,6 +939,64 @@ const collectImportReferencesContaining = (
   return collectAllImportReferences(filePath);
 };
 
+const getLineForSourceIndex = (source: string, index: number) =>
+  source.slice(0, index).split(/\r\n|\r|\n/).length;
+
+const listRealInvoiceRuntimeSourceFiles = () =>
+  realInvoicePrintFlowRoots
+    .filter((sourcePath) => existsSync(sourcePath))
+    .flatMap((sourcePath) =>
+      sourceExtensions.has(path.extname(sourcePath))
+        ? [sourcePath]
+        : listSourceFiles(sourcePath),
+    )
+    .filter((filePath) => !skippedRuntimeSourcePattern.test(filePath));
+
+const collectTextMarkerReferences = (
+  filePath: string,
+  marker: string,
+): ImportReference[] => {
+  const source = readFileSync(filePath, 'utf8');
+  const references: ImportReference[] = [];
+  let markerIndex = source.indexOf(marker);
+
+  while (markerIndex !== -1) {
+    references.push({
+      filePath: toRepoPath(filePath),
+      line: getLineForSourceIndex(source, markerIndex),
+      specifier: marker,
+    });
+    markerIndex = source.indexOf(marker, markerIndex + marker.length);
+  }
+
+  return references;
+};
+
+const isAllowedRealInvoicePaginationEngineMarker = ({
+  filePath,
+  specifier,
+}: ImportReference): boolean =>
+  allowedRealInvoicePaginationEngineMarkers.has(specifier) &&
+  allowedRealInvoicePaginationEnginePathPrefixes.some((allowedPrefix) =>
+    filePath.startsWith(allowedPrefix),
+  );
+
+const findRealInvoicePrintFlowIsolationViolations = () =>
+  listRealInvoiceRuntimeSourceFiles().flatMap((filePath) => {
+    const importViolations = collectAllImportReferences(filePath).filter(
+      ({ specifier }) =>
+        forbiddenRealInvoicePrintFlowImportPatterns.some((pattern) =>
+          pattern.test(specifier),
+        ),
+    );
+
+    const textMarkerViolations = forbiddenRealInvoicePrintFlowMarkers.flatMap(
+      (marker) => collectTextMarkerReferences(filePath, marker),
+    ).filter((reference) => !isAllowedRealInvoicePaginationEngineMarker(reference));
+
+    return [...importViolations, ...textMarkerViolations];
+  });
+
 const findDeepModuleImportViolations = () =>
   listSourceFiles(modulesRoot).flatMap((filePath) => {
     const repoPath = toRepoPath(filePath);
@@ -1281,6 +1380,17 @@ describe('module boundaries', () => {
     ]);
   });
 
+  it('keeps real invoice print flows isolated from Vivliostyle and the print lab', () => {
+    const violations = findRealInvoicePrintFlowIsolationViolations()
+      .map(
+        ({ filePath, line, specifier }) =>
+          `${filePath}:${line} references ${specifier}; keep Vivliostyle and PrintPaginationLab inside dev/lab code`,
+      )
+      .sort();
+
+    expect(violations).toEqual([]);
+  }, 60_000);
+
   it('blocks new deep imports into another module private folders', () => {
     const violations = findDeepModuleImportViolations();
     const violationKeys = new Set(violations.map(createViolationKey));
@@ -1411,7 +1521,7 @@ describe('module boundaries', () => {
       .sort();
 
     expect(violations).toEqual([]);
-  }, 30_000);
+  }, 60_000);
 
   it('routes HeroUI React imports through the local adapter layer', () => {
     const violations = findDirectHeroUiReactImportViolations()

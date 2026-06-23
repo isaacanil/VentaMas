@@ -14,7 +14,7 @@ export const calculateReplenishmentTotals = (
 ): ReplenishmentTotals => {
   return items.reduce<ReplenishmentTotals>(
     (acc, item) => {
-      const quantity = Number(item.purchaseQuantity ?? item.quantity ?? 0);
+      const quantity = Number(item.purchaseQuantity ?? 0);
       const baseCost = Number(item.baseCost) || 0;
       const baseCostTotal = baseCost * quantity;
       const taxPercentage = Number(item.taxPercentage) || 0;

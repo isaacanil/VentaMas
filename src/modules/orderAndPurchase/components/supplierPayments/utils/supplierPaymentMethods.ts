@@ -228,7 +228,6 @@ export const getSupplierPaymentSubmissionMethods = (
             method: 'supplierCreditNote',
             status: true,
             value: allocation.amount,
-            amount: allocation.amount,
             reference: null,
             bankAccountId: null,
             cashCountId: null,
@@ -242,7 +241,6 @@ export const getSupplierPaymentSubmissionMethods = (
         method: method.method,
         status: true,
         value,
-        amount: value,
         reference: toCleanString(method.reference),
         bankAccountId:
           includeBankAccount && paymentMethodRequiresBankAccount(method.method)

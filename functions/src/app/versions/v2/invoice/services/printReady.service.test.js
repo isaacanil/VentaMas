@@ -188,7 +188,7 @@ describe('printReady.service', () => {
     ]);
   });
 
-  it('bloquea e-CF requerido fallido y manda a revision el fallo local no requerido', () => {
+  it('bloquea e-CF requerido rechazado y manda a revision el fallo local no requerido', () => {
     const requiredDecision = resolveInvoicePrintReadyDecision({
       invoice: {
         status: 'frontend_ready',
@@ -196,7 +196,7 @@ describe('printReady.service', () => {
           fiscalMode: 'electronic_ecf',
           electronicTaxReceipt: {
             mode: 'required',
-            status: 'local_failed',
+            status: 'rejected',
           },
         },
       },
@@ -208,6 +208,7 @@ describe('printReady.service', () => {
       expect.objectContaining({
         type: 'issueElectronicTaxReceipt',
         code: 'electronic_tax_receipt_failed',
+        status: 'rejected',
       }),
     ]);
 

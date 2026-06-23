@@ -4,6 +4,7 @@ const {
   assertBusinessSubscriptionAccessMock,
   assertUserAccessMock,
   collectionMock,
+  consumeCreditNotesTxMock,
   documentRefs,
   documentSnapshots,
   getDocRef,
@@ -18,6 +19,7 @@ const {
   transactionGetMock,
   transactionSetMock,
   transactionSnapshots,
+  transactionUpdateMock,
 } = vi.hoisted(() => {
   const hoistedDocumentSnapshots = new Map();
   const hoistedTransactionSnapshots = new Map();
@@ -29,10 +31,12 @@ const {
   const hoistedGetPilotAccountingSettingsForBusinessMock = vi.fn();
   const hoistedIsAccountingRolloutEnabledForBusinessMock = vi.fn();
   const hoistedResolvePilotMonetarySnapshotForBusinessMock = vi.fn();
+  const hoistedConsumeCreditNotesTxMock = vi.fn();
   const hoistedCollectionMock = vi.fn();
   const hoistedRunTransactionMock = vi.fn();
   const hoistedTransactionGetMock = vi.fn();
   const hoistedTransactionSetMock = vi.fn();
+  const hoistedTransactionUpdateMock = vi.fn();
 
   class HoistedHttpsError extends Error {
     constructor(code, message, details) {
@@ -92,6 +96,7 @@ const {
       hoistedAssertBusinessSubscriptionAccessMock,
     assertUserAccessMock: hoistedAssertUserAccessMock,
     collectionMock: hoistedCollectionMock,
+    consumeCreditNotesTxMock: hoistedConsumeCreditNotesTxMock,
     documentRefs: hoistedDocumentRefs,
     documentSnapshots: hoistedDocumentSnapshots,
     getDocRef: hoistedGetDocRef,
@@ -109,6 +114,7 @@ const {
     transactionGetMock: hoistedTransactionGetMock,
     transactionSetMock: hoistedTransactionSetMock,
     transactionSnapshots: hoistedTransactionSnapshots,
+    transactionUpdateMock: hoistedTransactionUpdateMock,
   };
 });
 
@@ -168,6 +174,10 @@ vi.mock('../../../versions/v2/accounting/utils/accountingEvent.util.js', () => (
 
 vi.mock('../../../versions/v2/accounting/utils/cashMovement.util.js', () => ({
   buildReceivablePaymentCashMovements: vi.fn(() => []),
+}));
+
+vi.mock('../../../versions/v2/invoice/services/creditNotes.service.js', () => ({
+  consumeCreditNotesTx: (...args) => consumeCreditNotesTxMock(...args),
 }));
 
 vi.mock('../utils/clientPendingBalance.util.js', () => ({
@@ -230,6 +240,9 @@ describe('processAccountsReceivablePayment', () => {
     });
     isAccountingRolloutEnabledForBusinessMock.mockReturnValue(true);
     resolvePilotMonetarySnapshotForBusinessMock.mockResolvedValue(null);
+    consumeCreditNotesTxMock.mockResolvedValue({
+      applicationIds: ['credit-note-application-1'],
+    });
     receivablePaymentPlanUtil.applyReceivablePaymentToContext.mockReturnValue({
       remainingAmount: 0,
       accountUpdate: null,
@@ -295,7 +308,7 @@ describe('processAccountsReceivablePayment', () => {
       callback({
         get: transactionGetMock,
         set: transactionSetMock,
-        update: vi.fn(),
+        update: transactionUpdateMock,
       }),
     );
   });
@@ -509,6 +522,297 @@ describe('processAccountsReceivablePayment', () => {
         fxGainLossAmount: -100,
       }),
     );
+  });
+
+  it('applies customer credit notes inside the AR payment transaction', async () => {
+    documentSnapshots.set('users/user-1', {
+      displayName: 'Usuario Demo',
+    });
+    documentSnapshots.set('businesses/business-1/clients/client-1', {
+      client: {
+        id: 'client-1',
+        name: 'Cliente Demo',
+      },
+    });
+    transactionSnapshots.set('businesses/business-1/settings/accounting', {
+      generalAccountingEnabled: true,
+    });
+    transactionSnapshots.set(
+      'businesses/business-1/accountsReceivable/ar-1',
+      {
+        id: 'ar-1',
+        clientId: 'client-1',
+        invoiceId: 'invoice-1',
+        arBalance: 100,
+        isClosed: false,
+        paymentState: {
+          balance: 100,
+        },
+      },
+    );
+    transactionSnapshots.set('installments:ar-1', [
+      {
+        id: 'installment-1',
+        installmentBalance: 100,
+      },
+    ]);
+    const invoice = {
+      id: 'invoice-1',
+      totalAmount: 100,
+      accumulatedPaid: 0,
+      balanceDue: 100,
+    };
+    transactionSnapshots.set(
+      'businesses/business-1/invoices/invoice-1',
+      invoice,
+    );
+    transactionSnapshots.set('businesses/business-1/clients/client-1', {
+      client: {
+        id: 'client-1',
+      },
+    });
+    receivablePaymentPlanUtil.applyReceivablePaymentToContext.mockReturnValue({
+      remainingAmount: 0,
+      accountUpdate: {
+        arId: 'ar-1',
+        payload: { arBalance: 0 },
+      },
+      installmentUpdates: [],
+      installmentPaymentWrites: [],
+      invoiceAggregate: {
+        invoiceId: 'invoice-1',
+        invoice,
+        amountPaid: 100,
+      },
+      accountEntry: {
+        arId: 'ar-1',
+        invoiceId: 'invoice-1',
+        accountType: 'normal',
+        totalPaid: 100,
+        historicalFunctionalSettled: 100,
+        monetaryBefore: null,
+        monetaryAfter: null,
+      },
+    });
+
+    const result = await processAccountsReceivablePayment({
+      data: {
+        businessId: 'business-1',
+        idempotencyKey: 'idem-credit-note-1',
+        paymentDetails: {
+          paymentScope: 'account',
+          paymentOption: 'partial',
+          clientId: 'client-1',
+          arId: 'ar-1',
+          totalPaid: 100,
+          paymentMethods: [
+            {
+              method: 'creditNote',
+              value: 100,
+              status: true,
+            },
+          ],
+          creditNotePayment: [
+            {
+              id: 'credit-note-1',
+              amountUsed: 100,
+              ncf: 'B0400000001',
+            },
+          ],
+        },
+      },
+    });
+
+    expect(consumeCreditNotesTxMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        get: transactionGetMock,
+        set: transactionSetMock,
+        update: transactionUpdateMock,
+      }),
+      expect.objectContaining({
+        businessId: 'business-1',
+        userId: 'user-1',
+        invoiceId: 'invoice-1',
+        creditNotes: [
+          {
+            id: 'credit-note-1',
+            amountUsed: 100,
+            ncf: 'B0400000001',
+          },
+        ],
+      }),
+    );
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: true,
+        creditNoteApplicationIds: ['credit-note-application-1'],
+      }),
+    );
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/accountsReceivablePayments/payment-1',
+      }),
+      expect.objectContaining({
+        creditNotePayment: [
+          {
+            id: 'credit-note-1',
+            amountUsed: 100,
+            ncf: 'B0400000001',
+          },
+        ],
+        creditNoteApplicationIds: ['credit-note-application-1'],
+      }),
+    );
+  });
+
+  it('rejects credit note payment payloads that omit canonical amountUsed', async () => {
+    await expect(
+      processAccountsReceivablePayment({
+        data: {
+          businessId: 'business-1',
+          idempotencyKey: 'idem-credit-note-alias',
+          paymentDetails: {
+            paymentScope: 'account',
+            paymentOption: 'partial',
+            clientId: 'client-1',
+            arId: 'ar-1',
+            totalPaid: 100,
+            paymentMethods: [
+              {
+                method: 'creditNote',
+                value: 100,
+                status: true,
+              },
+            ],
+            creditNotePayment: [
+              {
+                id: 'credit-note-1',
+                amountToUse: 100,
+                ncf: 'B0400000001',
+              },
+            ],
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'invalid-argument',
+      message:
+        'Debe indicar las notas de crédito que respaldan el método de pago Nota de crédito.',
+    });
+
+    expect(consumeCreditNotesTxMock).not.toHaveBeenCalled();
+    expect(transactionSetMock).not.toHaveBeenCalled();
+  });
+
+  it('does not write the AR payment when credit note consumption fails', async () => {
+    documentSnapshots.set('users/user-1', {
+      displayName: 'Usuario Demo',
+    });
+    documentSnapshots.set('businesses/business-1/clients/client-1', {
+      client: {
+        id: 'client-1',
+        name: 'Cliente Demo',
+      },
+    });
+    transactionSnapshots.set('businesses/business-1/settings/accounting', {
+      generalAccountingEnabled: true,
+    });
+    transactionSnapshots.set(
+      'businesses/business-1/accountsReceivable/ar-1',
+      {
+        id: 'ar-1',
+        clientId: 'client-1',
+        invoiceId: 'invoice-1',
+        arBalance: 100,
+        isClosed: false,
+        paymentState: {
+          balance: 100,
+        },
+      },
+    );
+    transactionSnapshots.set('installments:ar-1', [
+      {
+        id: 'installment-1',
+        installmentBalance: 100,
+      },
+    ]);
+    const invoice = {
+      id: 'invoice-1',
+      totalAmount: 100,
+      accumulatedPaid: 0,
+      balanceDue: 100,
+    };
+    transactionSnapshots.set(
+      'businesses/business-1/invoices/invoice-1',
+      invoice,
+    );
+    transactionSnapshots.set('businesses/business-1/clients/client-1', {
+      client: {
+        id: 'client-1',
+      },
+    });
+    receivablePaymentPlanUtil.applyReceivablePaymentToContext.mockReturnValue({
+      remainingAmount: 0,
+      accountUpdate: {
+        arId: 'ar-1',
+        payload: { arBalance: 0 },
+      },
+      installmentUpdates: [],
+      installmentPaymentWrites: [],
+      invoiceAggregate: {
+        invoiceId: 'invoice-1',
+        invoice,
+        amountPaid: 100,
+      },
+      accountEntry: {
+        arId: 'ar-1',
+        invoiceId: 'invoice-1',
+        accountType: 'normal',
+        totalPaid: 100,
+        historicalFunctionalSettled: 100,
+        monetaryBefore: null,
+        monetaryAfter: null,
+      },
+    });
+    consumeCreditNotesTxMock.mockRejectedValueOnce(
+      new Error('Saldo insuficiente en nota de crédito B0400000001'),
+    );
+
+    await expect(
+      processAccountsReceivablePayment({
+        data: {
+          businessId: 'business-1',
+          idempotencyKey: 'idem-credit-note-2',
+          paymentDetails: {
+            paymentScope: 'account',
+            paymentOption: 'partial',
+            clientId: 'client-1',
+            arId: 'ar-1',
+            totalPaid: 100,
+            paymentMethods: [
+              {
+                method: 'creditNote',
+                value: 100,
+                status: true,
+              },
+            ],
+            creditNotePayment: [
+              {
+                id: 'credit-note-1',
+                amountUsed: 100,
+                ncf: 'B0400000001',
+              },
+            ],
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      message: 'Saldo insuficiente en nota de crédito B0400000001',
+    });
+
+    expect(transactionSetMock).not.toHaveBeenCalled();
+    expect(transactionUpdateMock).not.toHaveBeenCalled();
   });
 
   it('reuses an idempotent accounts receivable payment before rebuilding the flow', async () => {

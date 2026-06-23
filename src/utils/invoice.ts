@@ -141,9 +141,7 @@ export const calculateInvoiceChange = (
   }
 
   const payment = Number(invoice?.payment?.value ?? 0);
-  const totalPurchase = Number(
-    invoice?.totalPurchase?.value ?? invoice?.totalAmount ?? 0,
-  );
+  const totalPurchase = Number(invoice?.totalPurchase?.value ?? 0);
 
   return normalizeInvoiceChange(payment - totalPurchase);
 };

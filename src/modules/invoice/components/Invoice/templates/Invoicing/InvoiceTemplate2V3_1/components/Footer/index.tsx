@@ -23,6 +23,7 @@ interface FooterProps {
   pageNumber?: number;
   pageSummary?: InvoicePrintPageSummary;
   previewSignatureAssets?: InvoiceSignatureAssets;
+  showPageChrome?: boolean;
   totalPages?: number;
 }
 
@@ -39,6 +40,7 @@ export default function Footer({
   pageNumber = 1,
   pageSummary,
   previewSignatureAssets,
+  showPageChrome = true,
   totalPages = 1,
 }: FooterProps) {
   const paymentLines = resolvePaymentLines(data);
@@ -95,16 +97,18 @@ export default function Footer({
   return (
     <FooterRoot>
       <FooterDivider>
-        <FooterTopRow>
-          <span>{data?.copyType || 'COPIA'}</span>
-          {totalPages > 1 ? (
-            <span>
-              Página {pageNumber} de {totalPages}
-            </span>
-          ) : null}
-        </FooterTopRow>
+        {showPageChrome ? (
+          <FooterTopRow>
+            <span>{data?.copyType || 'COPIA'}</span>
+            {totalPages > 1 ? (
+              <span>
+                Página {pageNumber} de {totalPages}
+              </span>
+            ) : null}
+          </FooterTopRow>
+        ) : null}
 
-        {showPageSummary ? (
+        {showPageChrome && showPageSummary ? (
           <PageSummaryRow>
             <span>Subtotal página: {pageSummary.subtotal}</span>
             <span>ITBIS página: {pageSummary.tax}</span>
@@ -247,7 +251,6 @@ const FooterRoot = styled.div`
   color: var(--invoice-v3-text, #1f2933);
   font-size: var(--invoice-v3-font-body-compact, 10px);
   break-inside: avoid;
-  page-break-inside: avoid;
 `;
 
 const FooterDivider = styled.div`
@@ -281,7 +284,6 @@ const ElectronicFiscalBlock = styled.section<{ $withNotes?: boolean }>`
   align-items: center;
   margin: 4px 0 12px;
   break-inside: avoid;
-  page-break-inside: avoid;
 `;
 
 const ElectronicQrColumn = styled.div`

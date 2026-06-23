@@ -159,16 +159,6 @@ const ensureNumber = (
   return 0;
 };
 
-const resolvePriceValue = (price: CartItem['price']): number | string => {
-  if (typeof price === 'number' || typeof price === 'string') {
-    return price;
-  }
-  if (price && typeof price === 'object') {
-    return price.unit ?? price.total ?? 0;
-  }
-  return 0;
-};
-
 const normalizeExpirationDate = (value: unknown): number | null => {
   if (!value) return null;
   if (typeof value === 'number') return value;
@@ -363,11 +353,13 @@ export const ProductCardForCart = ({
   const hasActions = Boolean(
     requiresPhysicalSelection || item.comment || item.discount || hasBatchInfo,
   );
+  const activePricing =
+    (item.selectedSaleUnit?.pricing as typeof item.pricing | undefined) ??
+    item.pricing;
   const finalPrice = getTotalPrice(item as InvoiceProduct, taxReceiptEnabled);
-  const originalPriceValue =
-    item.pricing?.price ?? resolvePriceValue(item.price);
+  const originalPriceValue = activePricing?.price ?? 0;
   const originalPrice = ensureNumber(originalPriceValue);
-  const taxPercentage = ensureNumber(item.pricing?.tax);
+  const taxPercentage = ensureNumber(activePricing?.tax);
   const quantity = item.amountToBuy ?? 1;
   const badgeColor = item.comment
     ? '#1890ff'
@@ -428,7 +420,7 @@ export const ProductCardForCart = ({
 
   const priceEditableItem: PriceEditorItem = {
     id: lineId,
-    pricing: item.pricing,
+    pricing: activePricing,
     price: originalPriceValue,
     weightDetail: item.weightDetail,
   };
@@ -441,8 +433,7 @@ export const ProductCardForCart = ({
     id: lineId,
     cid: item.cid,
     insurance: item.insurance,
-    pricing: item.pricing,
-    price: originalPriceValue,
+    pricing: activePricing,
   };
 
   const saleUnitItem: SaleUnitItem = {

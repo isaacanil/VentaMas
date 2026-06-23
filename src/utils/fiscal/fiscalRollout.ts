@@ -7,6 +7,7 @@ export type BusinessFiscalRollout = {
   monthlyComplianceEnabled: boolean;
   electronicModelEnabled: boolean;
   electronicTransportEnabled: boolean;
+  printPaginationEnabled: boolean;
   taxationEnabled: boolean;
 };
 
@@ -20,6 +21,7 @@ export const DEFAULT_BUSINESS_FISCAL_ROLLOUT: BusinessFiscalRollout =
     monthlyComplianceEnabled: false,
     electronicModelEnabled: false,
     electronicTransportEnabled: false,
+    printPaginationEnabled: false,
     taxationEnabled: true,
   });
 
@@ -79,6 +81,10 @@ export const resolveBusinessFiscalRollout = (
     electronicTransportEnabled: toBoolean(
       fiscalNode?.electronicTransportEnabled,
       DEFAULT_BUSINESS_FISCAL_ROLLOUT.electronicTransportEnabled,
+    ),
+    printPaginationEnabled: toBoolean(
+      fiscalNode?.printPaginationEnabled,
+      DEFAULT_BUSINESS_FISCAL_ROLLOUT.printPaginationEnabled,
     ),
     taxationEnabled: toBoolean(
       fiscalNode?.taxationEnabled,

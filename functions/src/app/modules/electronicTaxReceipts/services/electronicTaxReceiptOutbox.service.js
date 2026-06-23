@@ -50,6 +50,12 @@ const TERMINAL_DGII_STATUSES = new Set([
 const NON_LIFECYCLE_STATUSES = new Set(['not_checked', 'pending', 'queued']);
 const RFCE_ACCEPTED_STATUSES = new Set(['accepted', 'accepted_conditional']);
 const RFCE_ERROR_STATUSES = new Set(['error', 'failed', 'rejected']);
+const REQUIRED_FISCAL_FAILURE_STATUSES = new Set([
+  'rejected',
+  'error',
+  'failed',
+  'local_failed',
+]);
 const ADJUSTMENT_ACCEPTED_LIFECYCLE_STATUSES = new Set([
   'accepted',
   'accepted_conditional',
@@ -89,6 +95,23 @@ const pickCleanString = (...values) => {
   }
   return null;
 };
+
+const isRequiredFiscalFailure = ({ mode, status }) =>
+  normalizeProviderMode(mode) === 'required' &&
+  REQUIRED_FISCAL_FAILURE_STATUSES.has(normalizeStatus(status));
+
+const buildRequiredFiscalFailureError = ({ electronicSnapshot, status }) =>
+  new Error(
+    pickCleanString(
+      electronicSnapshot?.lastError,
+      electronicSnapshot?.dgiiMessage,
+      electronicSnapshot?.rfceLastErrorMessage,
+      electronicSnapshot?.rfceError,
+    ) ||
+      `GISYS FACT returned a failed required fiscal lifecycle status: ${
+        status || 'unknown'
+      }`,
+  );
 
 const normalizeDgiiMessageEntry = (entry) => {
   if (typeof entry === 'string') {
@@ -705,6 +728,36 @@ export const processElectronicTaxReceiptOutboxTask = async ({
       requestHash,
       response,
     });
+    if (isRequiredFiscalFailure({ mode, status: nextStatus })) {
+      const fiscalFailureError = buildRequiredFiscalFailureError({
+        electronicSnapshot,
+        status: nextStatus,
+      });
+      await db.runTransaction(async (tx) => {
+        const currentTask = await tx.get(taskRef);
+        const currentTaskData = currentTask.data() || {};
+        if (currentTaskData.status !== 'pending') return;
+        const currentInvoice = (await tx.get(invoiceRef)).data() || invoice;
+        updateTaskFailedTx({
+          tx,
+          taskRef,
+          task: currentTaskData,
+          invoiceRef,
+          invoice: currentInvoice,
+          electronicSnapshot,
+          error: fiscalFailureError,
+        });
+      });
+      logger.error('GISYS FACT issue returned failed required lifecycle', {
+        businessId,
+        invoiceId,
+        taskId,
+        mode,
+        status: nextStatus,
+        error: fiscalFailureError.message,
+      });
+      throw fiscalFailureError;
+    }
 
     await db.runTransaction(async (tx) => {
       const currentTask = await tx.get(taskRef);

@@ -15,8 +15,33 @@ describe('fiscalRollout', () => {
       monthlyComplianceEnabled: false,
       electronicModelEnabled: false,
       electronicTransportEnabled: false,
+      printPaginationEnabled: false,
       taxationEnabled: true,
     });
+  });
+
+  it('habilita la paginacion fiscal solo desde el rollout fiscal explicito', () => {
+    expect(
+      resolveBusinessFiscalRollout({
+        features: {
+          fiscal: {
+            printPaginationEnabled: true,
+          },
+        },
+      }).printPaginationEnabled,
+    ).toBe(true);
+
+    expect(
+      resolveBusinessFiscalRollout({
+        business: {
+          features: {
+            fiscal: {
+              printPaginationEnabled: true,
+            },
+          },
+        },
+      }).printPaginationEnabled,
+    ).toBe(true);
   });
 
   it('mantiene el comportamiento legacy de impuestos cuando domainV2 esta apagado', () => {

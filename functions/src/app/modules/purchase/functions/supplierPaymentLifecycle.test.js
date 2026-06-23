@@ -286,7 +286,7 @@ describe('supplier payment lifecycle', () => {
         paymentMethods: [
           {
             method: 'cash',
-            amount: 40,
+            value: 40,
             cashCountId: 'cash-1',
           },
         ],
@@ -371,7 +371,7 @@ describe('supplier payment lifecycle', () => {
         paymentMethods: [
           {
             method: 'supplierCreditNote',
-            amount: 40,
+            value: 40,
             supplierCreditNoteId: 'scn-1',
           },
         ],
@@ -422,6 +422,29 @@ describe('supplier payment lifecycle', () => {
         }),
       }),
     );
+  });
+
+  it('rejects amount-only supplier payment method payloads on new writes', async () => {
+    await expect(
+      addSupplierPayment({
+        data: {
+          businessId: 'business-1',
+          purchaseId: 'purchase-1',
+          idempotencyKey: 'idem-amount-only',
+          occurredAt: '2026-04-12T12:00:00.000Z',
+          paymentMethods: [
+            {
+              method: 'cash',
+              amount: 40,
+              cashCountId: 'cash-1',
+            },
+          ],
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'invalid-argument',
+      message: 'Debe indicar al menos un método de pago con monto válido.',
+    });
   });
 
   it('voids a posted supplier payment and recalculates the vendor bill balance', async () => {
@@ -680,7 +703,7 @@ describe('supplier payment lifecycle', () => {
           paymentMethods: [
             {
               method: 'cash',
-              amount: 10,
+              value: 10,
               cashCountId: 'cash-1',
             },
           ],
@@ -704,7 +727,7 @@ describe('supplier payment lifecycle', () => {
           paymentMethods: [
             {
               method: 'cash',
-              amount: 10,
+              value: 10,
               cashCountId: 'cash-1',
             },
           ],

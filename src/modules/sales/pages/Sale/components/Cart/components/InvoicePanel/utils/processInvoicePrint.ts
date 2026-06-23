@@ -2,21 +2,19 @@ import { notification } from 'antd';
 
 import { downloadInvoicePdf } from '@/firebase/quotation/downloadQuotationPDF';
 import type { InvoiceData } from '@/types/invoice';
-import { isProgrammaticLetterPdfTemplate } from '@/utils/invoice/template';
 import { measure } from '@/utils/perf/measure';
 
-type BusinessLike = {
-  id?: string | null;
-  businessID?: string | null;
-  businessId?: string | null;
-  [key: string]: unknown;
-};
+import {
+  resolveInvoicePrintStrategy,
+  type BusinessLike,
+} from './resolveInvoicePrintStrategy';
 
 interface ProcessInvoicePrintArgs {
   business: BusinessLike;
   handleAfterPrint: () => void;
   invoice: InvoiceData;
   invoiceType: string;
+  setPendingPaginatedPrint?: (value: boolean) => void;
   setPendingPrint: (value: boolean) => void;
 }
 
@@ -25,9 +23,12 @@ export const processInvoicePrint = async ({
   handleAfterPrint,
   invoice,
   invoiceType,
+  setPendingPaginatedPrint,
   setPendingPrint,
 }: ProcessInvoicePrintArgs) => {
-  if (isProgrammaticLetterPdfTemplate(invoiceType)) {
+  const strategy = resolveInvoicePrintStrategy({ business, invoiceType });
+
+  if (strategy === 'programmatic-pdf') {
     try {
       await measure('downloadInvoicePdf', () =>
         downloadInvoicePdf({
@@ -48,6 +49,11 @@ export const processInvoicePrint = async ({
       });
       handleAfterPrint();
     }
+    return;
+  }
+
+  if (strategy === 'paginated-dom' && setPendingPaginatedPrint) {
+    setPendingPaginatedPrint(true);
     return;
   }
 

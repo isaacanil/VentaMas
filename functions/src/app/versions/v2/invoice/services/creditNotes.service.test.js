@@ -46,11 +46,20 @@ const creditNoteDoc = (overrides = {}) => ({
   ...overrides,
 });
 
-const txWithDocs = ({ invoice = defaultInvoiceDoc(), creditNote }) => {
+const txWithDocs = ({
+  invoice = defaultInvoiceDoc(),
+  invoiceV2 = null,
+  creditNote,
+  creditNotes = [],
+}) => {
   const docs = new Map([
     ['businesses/business-1/invoices/invoice-1', invoice],
+    ['businesses/business-1/invoicesV2/invoice-1', invoiceV2],
     ['businesses/business-1/creditNotes/credit-note-1', creditNote],
   ]);
+  creditNotes.forEach((note) => {
+    docs.set(`businesses/business-1/creditNotes/${note.id}`, note);
+  });
 
   return {
     get: vi.fn(async (ref) => snapshot(docs.get(ref.path) ?? null)),
@@ -158,6 +167,44 @@ describe('creditNotes.service', () => {
     expect(tx.update).not.toHaveBeenCalled();
   });
 
+  it('lee todas las notas antes de escribir aplicaciones en la transaccion', async () => {
+    const tx = txWithDocs({
+      creditNote: creditNoteDoc({
+        status: 'issued',
+        ncf: 'B0400000001',
+        totalAmount: 118,
+        availableAmount: 118,
+      }),
+      creditNotes: [
+        creditNoteDoc({
+          id: 'credit-note-2',
+          status: 'issued',
+          ncf: 'B0400000002',
+          totalAmount: 80,
+          availableAmount: 80,
+        }),
+      ],
+    });
+
+    const result = await consumeCreditNotesTx(tx, {
+      businessId: 'business-1',
+      userId: 'user-1',
+      invoiceId: 'invoice-1',
+      creditNotes: [
+        { id: 'credit-note-1', amountUsed: 50 },
+        { id: 'credit-note-2', amountUsed: 30 },
+      ],
+    });
+
+    const lastReadOrder = Math.max(...tx.get.mock.invocationCallOrder);
+    const firstUpdateOrder = Math.min(...tx.update.mock.invocationCallOrder);
+
+    expect(result.applicationIds).toEqual(['application-1', 'application-1']);
+    expect(tx.update).toHaveBeenCalledTimes(2);
+    expect(tx.set).toHaveBeenCalledTimes(2);
+    expect(lastReadOrder).toBeLessThan(firstUpdateOrder);
+  });
+
   it('permite consumir una nota electronica aceptada fiscalmente', async () => {
     const tx = txWithDocs({
       creditNote: creditNoteDoc({
@@ -206,6 +253,49 @@ describe('creditNotes.service', () => {
         invoiceNumber: '701',
         clientId: 'client-1',
         amountApplied: 50,
+      }),
+    );
+  });
+
+  it('usa la factura V2 como respaldo si la canonica aun no existe', async () => {
+    const tx = txWithDocs({
+      invoice: null,
+      invoiceV2: {
+        id: 'invoice-1',
+        snapshot: {
+          ncf: { code: 'E310000000777' },
+          client: { id: 'client-1', personalID: '132619201' },
+          monetary: { documentCurrency: { code: 'DOP' } },
+        },
+      },
+      creditNote: creditNoteDoc({
+        status: 'issued',
+        ncf: 'E340000000001',
+        documentFormat: 'electronic',
+        totalAmount: 118,
+        availableAmount: 118,
+        electronicTaxReceipt: {
+          status: 'accepted',
+          dgiiValidationStatus: 'accepted',
+        },
+      }),
+    });
+
+    const result = await consumeCreditNotesTx(tx, {
+      businessId: 'business-1',
+      userId: 'user-1',
+      invoiceId: 'invoice-1',
+      creditNotes: [{ id: 'credit-note-1', amountUsed: 50 }],
+    });
+
+    expect(result.applicationIds).toEqual(['application-1']);
+    expect(tx.set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/creditNoteApplications/application-1',
+      }),
+      expect.objectContaining({
+        invoiceNcf: 'E310000000777',
+        clientId: 'client-1',
       }),
     );
   });

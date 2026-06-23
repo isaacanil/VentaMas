@@ -15,6 +15,7 @@ import { ProductList } from './components/ProductList';
 import { Row } from './components/Table/Row';
 import { ThankYouMessage } from '@/components/common/ThankYouMessage';
 import { WarrantySignature } from '@/components/common/WarrantySignature';
+import { CompactElectronicFiscalBlock } from '@/modules/invoice/components/Invoice/templates/Invoicing/shared/CompactElectronicFiscalBlock';
 import { Container, HiddenPrintWrapper } from './Style';
 
 export const InvoiceTemplate1 = React.forwardRef<
@@ -81,6 +82,7 @@ export const InvoiceTemplate1 = React.forwardRef<
           </CommentSection>
         )}
         <WarrantySignature data={data} />
+        <CompactElectronicFiscalBlock data={data} variant="thermal" />
         <ThankYouMessage message={business?.invoice?.invoiceMessage} />
       </Container>
     </HiddenPrintWrapper>

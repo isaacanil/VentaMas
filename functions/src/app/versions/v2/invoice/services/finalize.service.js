@@ -34,6 +34,46 @@ const safeNumber = (value) => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
+const ELECTRONIC_TAX_RECEIPT_TASK_TYPE = 'issueElectronicTaxReceipt';
+const REQUIRED_FISCAL_FAILURE_STATUSES = new Set([
+  'rejected',
+  'error',
+  'failed',
+  'local_failed',
+]);
+
+const normalizeToken = (value) => toCleanString(value)?.toLowerCase() || null;
+
+const hasRecordData = (value) => Object.keys(asRecord(value)).length > 0;
+
+const resolveElectronicTaxReceiptSnapshot = (invoice) => {
+  const invoiceRecord = asRecord(invoice);
+  const snapshot = asRecord(invoiceRecord.snapshot);
+  const fiscal = asRecord(invoiceRecord.fiscal ?? snapshot.fiscal);
+  return (
+    [
+      asRecord(snapshot.electronicTaxReceipt),
+      asRecord(invoiceRecord.electronicTaxReceipt),
+      asRecord(fiscal.electronic),
+    ].find(hasRecordData) || {}
+  );
+};
+
+const resolveRequiredFiscalFailure = (invoice) => {
+  const electronicSnapshot = resolveElectronicTaxReceiptSnapshot(invoice);
+  const mode = normalizeToken(electronicSnapshot.mode);
+  const status = normalizeToken(electronicSnapshot.status);
+  if (mode !== 'required' || !REQUIRED_FISCAL_FAILURE_STATUSES.has(status)) {
+    return null;
+  }
+
+  return {
+    type: ELECTRONIC_TAX_RECEIPT_TASK_TYPE,
+    status,
+    lastError: toCleanString(electronicSnapshot.lastError),
+  };
+};
+
 const resolveInvoicePaymentMethods = (invoiceRecord, invoiceSnapshot) => {
   const canonicalInvoice = asRecord(invoiceRecord);
   const snapshot = asRecord(invoiceSnapshot);
@@ -58,7 +98,7 @@ const resolveInvoicePaymentMethods = (invoiceRecord, invoiceSnapshot) => {
 
 const normalizeInvoiceAccountingPaymentMethods = (paymentMethods) =>
   (Array.isArray(paymentMethods) ? paymentMethods : []).filter((method) => {
-    const amount = safeNumber(method?.value ?? method?.amount);
+    const amount = safeNumber(method?.value);
     return amount != null && amount > 0;
   });
 
@@ -89,8 +129,7 @@ const buildInvoiceCommittedAccountingEvent = ({
   const paymentTerm = canonical.isAddedToReceivables === true ? 'credit' : 'cash';
   const totalAmount =
     monetary?.totals?.total ??
-    safeNumber(canonical?.totalPurchase?.value) ??
-    safeNumber(canonical?.totalAmount);
+    safeNumber(canonical?.totalPurchase?.value);
   const paidAmount =
     monetary?.totals?.paid ?? safeNumber(canonical?.payment?.value) ?? 0;
   const receivableBalance =
@@ -137,7 +176,7 @@ const buildInvoiceCommittedAccountingEvent = ({
       paymentMethods: (Array.isArray(paymentMethods) ? paymentMethods : []).map(
         (method) => ({
           method: toCleanString(method?.method) || null,
-          value: safeNumber(method?.value ?? method?.amount),
+          value: safeNumber(method?.value),
           bankAccountId: toCleanString(method?.bankAccountId),
         }),
       ),
@@ -171,6 +210,59 @@ async function consumeNcfIfReserved(tx, { businessId, invoice, invoiceId }) {
     invoiceId: invoiceId || invoice.id || null,
     updatedAt: FieldValue.serverTimestamp(),
   });
+}
+
+async function failFinalizeInTx(
+  tx,
+  { businessId, invoiceId, invoiceRef, invoice, failedTaskTypes, metadata = {} },
+) {
+  await scheduleCompensationsInTx(tx, { businessId, invoiceId });
+  auditTx(tx, {
+    businessId,
+    invoiceId,
+    event: 'finalize_failed',
+    level: 'warn',
+    data: {
+      failed: true,
+      failedTaskTypes,
+      ...metadata,
+    },
+  });
+  const failedAt = Timestamp.now();
+  tx.update(invoiceRef, {
+    status: 'failed',
+    statusTimeline: FieldValue.arrayUnion({
+      status: 'failed',
+      at: failedAt,
+    }),
+    updatedAt: FieldValue.serverTimestamp(),
+  });
+  upsertInvoiceTimelineEventInTransaction({
+    transaction: tx,
+    timelineEventRef: db.doc(
+      `businesses/${businessId}/invoicesV2/${invoiceId}/timeline/finalize__failed`,
+    ),
+    businessId,
+    invoiceId,
+    eventId: 'finalize__failed',
+    status: 'failed',
+    at: failedAt,
+    source: 'attemptFinalizeInvoice',
+    metadata: {
+      failedTaskTypes,
+      ...metadata,
+    },
+  });
+  if (invoice.idempotencyKey) {
+    const idemRef = db.doc(
+      `businesses/${businessId}/idempotency/${invoice.idempotencyKey}`,
+    );
+    tx.set(
+      idemRef,
+      { status: 'failed', updatedAt: FieldValue.serverTimestamp() },
+      { merge: true },
+    );
+  }
 }
 
 export async function attemptFinalizeInvoice({ businessId, invoiceId }) {
@@ -207,55 +299,31 @@ export async function attemptFinalizeInvoice({ businessId, invoiceId }) {
           data: summary,
         });
       } else {
-        // Programar compensaciones para tareas completadas
-        await scheduleCompensationsInTx(tx, { businessId, invoiceId });
-        auditTx(tx, {
+        await failFinalizeInTx(tx, {
           businessId,
           invoiceId,
-          event: 'finalize_failed',
-          level: 'warn',
-          data: {
-            failed: true,
-            failedTaskTypes: failedTasks.map((task) => task.type),
-          },
+          invoiceRef,
+          invoice: inv,
+          failedTaskTypes: failedTasks.map((task) => task.type),
         });
-        const failedAt = Timestamp.now();
-        tx.update(invoiceRef, {
-          status: 'failed',
-          statusTimeline: FieldValue.arrayUnion({
-            status: 'failed',
-            at: failedAt,
-          }),
-          updatedAt: FieldValue.serverTimestamp(),
-        });
-        upsertInvoiceTimelineEventInTransaction({
-          transaction: tx,
-          timelineEventRef: db.doc(
-            `businesses/${businessId}/invoicesV2/${invoiceId}/timeline/finalize__failed`,
-          ),
-          businessId,
-          invoiceId,
-          eventId: 'finalize__failed',
-          status: 'failed',
-          at: failedAt,
-          source: 'attemptFinalizeInvoice',
-          metadata: {
-            failedTaskTypes: failedTasks.map((task) => task.type),
-          },
-        });
-        // Opcional: marcar idempotency como failed
-        if (inv.idempotencyKey) {
-          const idemRef = db.doc(
-            `businesses/${businessId}/idempotency/${inv.idempotencyKey}`,
-          );
-          tx.set(
-            idemRef,
-            { status: 'failed', updatedAt: FieldValue.serverTimestamp() },
-            { merge: true },
-          );
-        }
         return;
       }
+    }
+
+    const requiredFiscalFailure = resolveRequiredFiscalFailure(inv);
+    if (requiredFiscalFailure) {
+      await failFinalizeInTx(tx, {
+        businessId,
+        invoiceId,
+        invoiceRef,
+        invoice: inv,
+        failedTaskTypes: [requiredFiscalFailure.type],
+        metadata: {
+          fiscalStatus: requiredFiscalFailure.status,
+          fiscalLastError: requiredFiscalFailure.lastError || undefined,
+        },
+      });
+      return;
     }
 
     // Todas las tareas criticas finalizaron; las no bloqueantes quedan para revision.

@@ -109,8 +109,7 @@ const resolveInvoiceTotalAmount = (invoice, fallbackValue) =>
   roundToTwoDecimals(
     safeNumber(fallbackValue) ||
       safeNumber(invoice?.totalPurchase?.value) ||
-      safeNumber(invoice?.total) ||
-      safeNumber(invoice?.payment?.value),
+      safeNumber(invoice?.total),
   );
 
 const normalizeFiscalId = (value) => {
@@ -241,6 +240,17 @@ const validateCreditNoteAgainstInvoice = ({
     ),
   );
   const requestedTotalAmount = roundToTwoDecimals(creditNoteData.totalAmount);
+  if (requestedTotalAmount > MONEY_EPSILON && invoiceTotalAmount <= 0) {
+    throw new HttpsError(
+      'failed-precondition',
+      'La factura afectada debe tener un total verificable para emitir una nota de crédito con monto.',
+      {
+        reason: 'credit-note-missing-invoice-total',
+        requestedCreditNoteAmount: requestedTotalAmount,
+      },
+    );
+  }
+
   if (
     invoiceTotalAmount > 0 &&
     existingTotalAmount + requestedTotalAmount >
@@ -426,7 +436,11 @@ export const createCustomerCreditNote = onCall(
       let invoiceNumber = toCleanString(creditNoteData.invoiceNumber);
       let invoiceDate = creditNoteData.invoiceDate || null;
       const invoice = resolveInvoiceRecord(invoiceSnap);
-      invoiceNcf = invoiceNcf || toCleanString(invoice.NCF);
+      invoiceNcf =
+        invoiceNcf ||
+        toCleanString(invoice.eNcf) ||
+        toCleanString(invoice.ncf) ||
+        toCleanString(invoice.NCF);
       invoiceNumber = invoiceNumber || toCleanString(invoice.numberID);
       invoiceDate = invoiceDate || invoice.date || invoice.createdAt || null;
       const invoiceTotalAmount = resolveInvoiceTotalAmount(

@@ -60,6 +60,8 @@ const hostingVisibleDevRoutes = [
   ROUTES_NAME.DEV_VIEW_TERM.SUBSCRIPTION_MAINTENANCE_PLANS,
 ].sort();
 
+const PRINT_PAGINATION_LAB_PATH = '/lab/print-pagination';
+
 const allowedDuplicateRoutePaths = new Set([
   '/account/subscription',
 ]);
@@ -244,6 +246,22 @@ describe('routeVisibility', () => {
       developerRoutesMissingAccess: [],
       developerRoutesMissingStatus: [],
     });
+  });
+
+  it('keeps print pagination lab protected behind developer access', () => {
+    const printPaginationRoute = collectMountableRoutes(labRoutes).find(
+      ({ path }) => path === PRINT_PAGINATION_LAB_PATH,
+    )?.route;
+
+    expect(printPaginationRoute).toEqual(
+      expect.objectContaining({
+        devOnly: true,
+        hideInMenu: true,
+        requiresDevAccess: true,
+        status: ROUTE_STATUS.WIP,
+      }),
+    );
+    expect(printPaginationRoute?.isPublic).not.toBe(true);
   });
 
   it('keeps dev routes without devOnly explicitly allowlisted', () => {

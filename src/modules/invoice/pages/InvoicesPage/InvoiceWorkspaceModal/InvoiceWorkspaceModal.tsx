@@ -16,13 +16,17 @@ import { SelectSettingCart } from '@/features/cart/cartSlice';
 import { VmButton, VmModal, VmTabs } from '@/components/heroui';
 import { downloadInvoicePdf } from '@/firebase/quotation/downloadQuotationPDF';
 import { ElectronicTaxReceiptInfoCard } from '@/modules/invoice/components/InvoiceDetailCards/ElectronicTaxReceiptInfoCard';
+import { FiscalDocumentPaginatedPrintHost } from '@/modules/invoice/components/FiscalDocumentPagination/FiscalDocumentPaginatedPrintHost';
 import { Invoice } from '@/modules/invoice/components/Invoice/components/Invoice/Invoice';
 import { useAccountingRolloutEnabled } from '@/hooks/useAccountingRolloutEnabled';
 import { useOpenAccountingEntry } from '@/modules/accounting/public';
 import type { InvoiceData } from '@/types/invoice';
 import type { UserIdentity } from '@/types/users';
 import { getInvoicePaymentInfo } from '@/utils/invoice';
-import { isProgrammaticLetterPdfTemplate } from '@/utils/invoice/template';
+import {
+  isPaginatedDomInvoiceTemplate,
+  isProgrammaticLetterPdfTemplate,
+} from '@/utils/invoice/template';
 import { InvoiceWorkspaceHeader } from './components/InvoiceWorkspaceHeader';
 import { InvoiceWorkspaceOverview } from './components/InvoiceWorkspaceOverview';
 import { InvoiceWorkspacePayments } from './components/InvoiceWorkspacePayments';
@@ -112,6 +116,8 @@ export const InvoiceWorkspaceModal = () => {
   );
   const [isEditing, setIsEditing] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [isPaginatedPrintPending, setIsPaginatedPrintPending] =
+    useState(false);
   const [now, setNow] = useState(() => Date.now());
 
   const invoiceType = cartSettings?.billing?.invoiceType ?? null;
@@ -286,8 +292,30 @@ export const InvoiceWorkspaceModal = () => {
     contentRef: componentToPrintRef,
   });
 
+  const handlePaginatedPrintBlocked = useCallback(
+    (reason: string) => {
+      setIsPaginatedPrintPending(false);
+      console.warn('[InvoiceWorkspace] paginated print blocked', reason);
+      notification.error({
+        message: 'Impresión paginada bloqueada',
+        description: `No se imprimió la factura ni se usó la plantilla clásica. Diagnóstico: ${reason}`,
+        duration: 0,
+      });
+    },
+    [],
+  );
+
+  const handlePaginatedPrinted = useCallback(() => {
+    setIsPaginatedPrintPending(false);
+  }, []);
+
   const handlePrintInvoice = useCallback(async () => {
-    if (!invoice || isPrinting) return;
+    if (!invoice || isPrinting || isPaginatedPrintPending) return;
+
+    if (isPaginatedDomInvoiceTemplate(invoiceType)) {
+      setIsPaginatedPrintPending(true);
+      return;
+    }
 
     if (!isProgrammaticLetterPdfTemplate(invoiceType)) {
       handleRePrint();
@@ -331,7 +359,14 @@ export const InvoiceWorkspaceModal = () => {
     } finally {
       setIsPrinting(false);
     }
-  }, [business, handleRePrint, invoice, invoiceType, isPrinting]);
+  }, [
+    business,
+    handleRePrint,
+    invoice,
+    invoiceType,
+    isPaginatedPrintPending,
+    isPrinting,
+  ]);
 
   const handleSavedInvoice = useCallback(
     (savedInvoice: InvoiceData) => {
@@ -412,7 +447,7 @@ export const InvoiceWorkspaceModal = () => {
             isEditLocked={isEditLocked}
             isEditing={isEditing}
             isProcessingEdit={false}
-            isProcessingPrint={isPrinting}
+            isProcessingPrint={isPrinting || isPaginatedPrintPending}
             currentTimeMs={now}
             onEdit={handleToggleEditing}
             onPrint={handlePrintInvoice}
@@ -524,6 +559,13 @@ export const InvoiceWorkspaceModal = () => {
           template={invoiceType || undefined}
         />
       </HiddenPrintArea>
+      <FiscalDocumentPaginatedPrintHost
+        business={business}
+        invoice={invoice}
+        pending={isPaginatedPrintPending}
+        onPrintBlocked={handlePaginatedPrintBlocked}
+        onPrinted={handlePaginatedPrinted}
+      />
 
       <VmModal
         ariaLabel="Anular factura"

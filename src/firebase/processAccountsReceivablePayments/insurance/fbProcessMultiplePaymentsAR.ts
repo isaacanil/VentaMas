@@ -153,6 +153,23 @@ export const fbProcessMultiplePaymentsAR = async (
 
     // Usaremos un batch en lugar de una transacción para evitar el error
     const batch = writeBatch(db);
+    const accountClientIds = Array.from(
+      new Set(
+        accounts
+          .map((account) => account.accountData?.client?.id)
+          .filter(
+            (accountClientId): accountClientId is string =>
+              typeof accountClientId === 'string' &&
+              accountClientId.trim() !== '',
+          ),
+      ),
+    );
+    const resolvedReceiptClientId =
+      typeof clientId === 'string' && clientId.trim() !== ''
+        ? clientId
+        : accountClientIds.length === 1
+          ? accountClientIds[0]
+          : null;
 
     // 1. Crear el registro de pago principal
     const paymentsRef = doc(
@@ -176,36 +193,15 @@ export const fbProcessMultiplePaymentsAR = async (
       isActive: true,
       isInsurancePayment: true,
       insuranceId,
-      clientId,
+      clientId: resolvedReceiptClientId,
     };
     batch.set(paymentsRef, paymentData);
-
-    // Inicializar el clientId con el valor por defecto
-    let extractedClientId = clientId;
-
-    // Solo buscar en la ubicación específica: account.accountData.client.id
-    if (accounts && accounts.length > 0) {
-      for (const account of accounts) {
-        // Buscar directamente en la ubicación específica
-        if (
-          account.accountData &&
-          account.accountData.client &&
-          account.accountData.client.id
-        ) {
-          const accountClientId = account.accountData.client.id;
-
-          // Usar el cliente de cada cuenta individual
-          extractedClientId = accountClientId;
-          // No hacemos break porque queremos usar el clientId de la última cuenta procesada
-        }
-      }
-    }
 
     // 2. Preparar información para el recibo con el ID de cliente correcto
     const paymentReceipt: InsurancePaymentReceipt = {
       receiptId: nanoid(),
       paymentId,
-      clientId: extractedClientId, // Usar el ID extraído en lugar del original
+      clientId: resolvedReceiptClientId,
       insuranceId,
       businessId: user.businessID,
       createdAt: Timestamp.now(),
@@ -485,12 +481,12 @@ export const fbProcessMultiplePaymentsAR = async (
 
     // Solo incluir el clientId si es una cadena válida
     if (
-      extractedClientId &&
-      typeof extractedClientId === 'string' &&
-      extractedClientId.trim() !== ''
+      resolvedReceiptClientId &&
+      typeof resolvedReceiptClientId === 'string' &&
+      resolvedReceiptClientId.trim() !== ''
     ) {
       // Cliente válido encontrado para el recibo
-      receiptParams.clientId = extractedClientId;
+      receiptParams.clientId = resolvedReceiptClientId;
     } else {
       // No se pudo obtener un clientId válido para el recibo
     }

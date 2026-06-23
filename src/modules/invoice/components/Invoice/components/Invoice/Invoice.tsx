@@ -11,7 +11,7 @@ import { InvoiceTemplate3 } from '@/modules/invoice/components/Invoice/templates
 import InvoiceTemplate4 from '@/modules/invoice/components/Invoice/templates/Invoicing/InvoiceTemplate4/InvoiceTemplate4';
 import type { InvoiceData, InvoiceSignatureAssets } from '@/types/invoice';
 import {
-  resolveInvoiceSelectionTemplate,
+  resolveInvoiceReactPrintTemplate,
 } from '@/utils/invoice/template';
 
 const InvoiceWrapper = styled.div<{ $template: string }>`
@@ -62,7 +62,7 @@ export const Invoice = React.forwardRef(
     const {
       billing: { invoiceType },
     } = useSelector(SelectSettingCart);
-    const selectedTemplate = resolveInvoiceSelectionTemplate(
+    const selectedTemplate = resolveInvoiceReactPrintTemplate(
       template || invoiceType,
     );
     let templateContent;

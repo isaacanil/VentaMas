@@ -24,6 +24,7 @@ const createArgs = () => ({
   handleAfterPrint: vi.fn(),
   invoice: { id: 'invoice-1', products: [] },
   invoiceType: 'template1',
+  setPendingPaginatedPrint: vi.fn(),
   setPendingPrint: vi.fn(),
 });
 
@@ -33,13 +34,54 @@ describe('processInvoicePrint', () => {
   });
 
   it('delegates HTML templates to react-to-print', async () => {
-    const args = createArgs();
+    const baseArgs = createArgs();
+    const args = {
+      business: baseArgs.business,
+      handleAfterPrint: baseArgs.handleAfterPrint,
+      invoice: baseArgs.invoice,
+      invoiceType: baseArgs.invoiceType,
+      setPendingPrint: baseArgs.setPendingPrint,
+    };
 
     await processInvoicePrint(args);
 
     expect(args.setPendingPrint).toHaveBeenCalledWith(true);
     expect(args.handleAfterPrint).not.toHaveBeenCalled();
     expect(downloadInvoicePdf).not.toHaveBeenCalled();
+  });
+
+  it('delegates eligible HTML templates to the paginated DOM print host when the feature is enabled', async () => {
+    const args = {
+      ...createArgs(),
+      business: {
+        features: {
+          fiscal: { printPaginationEnabled: true },
+        },
+      },
+    };
+
+    await processInvoicePrint(args);
+
+    expect(args.setPendingPaginatedPrint).toHaveBeenCalledWith(true);
+    expect(args.setPendingPrint).not.toHaveBeenCalled();
+    expect(args.handleAfterPrint).not.toHaveBeenCalled();
+    expect(downloadInvoicePdf).not.toHaveBeenCalled();
+  });
+
+  it('falls back to react-to-print when the paginated DOM handler is not mounted', async () => {
+    const { setPendingPaginatedPrint, ...args } = {
+      ...createArgs(),
+      business: {
+        features: {
+          fiscal: { printPaginationEnabled: true },
+        },
+      },
+    };
+
+    await processInvoicePrint(args);
+
+    expect(setPendingPaginatedPrint).not.toHaveBeenCalled();
+    expect(args.setPendingPrint).toHaveBeenCalledWith(true);
   });
 
   it('finalizes the sale UI after dispatching a PDF print', async () => {
@@ -57,6 +99,7 @@ describe('processInvoicePrint', () => {
       }),
     );
     expect(args.setPendingPrint).not.toHaveBeenCalled();
+    expect(args.setPendingPaginatedPrint).not.toHaveBeenCalled();
     expect(args.handleAfterPrint).toHaveBeenCalledTimes(1);
   });
 

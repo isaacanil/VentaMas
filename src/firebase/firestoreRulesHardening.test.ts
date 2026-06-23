@@ -64,13 +64,28 @@ describe('firestore financial hardening rules', () => {
 
   it('only lets legacy invoice writes create/update/delete drafts without posted footprint', () => {
     expect(rules).toMatch(
-      /allow create: if hasBusinessWriteAccess\(businessId\)[\s\S]*?isSafeInvoiceDraftCreate\(request\.resource\.data\);/,
+      /allow create: if hasBusinessWriteAccess\(businessId\)[\s\S]*?isSafeInvoiceDraftCreate\(request\.resource\.data\)[\s\S]*?\|\| isSafePreorderCreate\(request\.resource\.data\)/,
     );
     expect(rules).toMatch(
-      /match \/businesses\/\{businessId\}\/invoices\/\{invoiceId\} \{[\s\S]*?allow update: if hasBusinessWriteAccess\(businessId\)[\s\S]*?isDraftFinancialDocument\(resource\.data\)[\s\S]*?isDraftFinancialDocument\(request\.resource\.data\)[\s\S]*?!isLockedInvoiceDocument\(resource\.data\)[\s\S]*?!isLockedInvoiceDocument\(request\.resource\.data\);/,
+      /match \/businesses\/\{businessId\}\/invoices\/\{invoiceId\} \{[\s\S]*?allow update: if hasBusinessWriteAccess\(businessId\)[\s\S]*?isDraftFinancialDocument\(resource\.data\)[\s\S]*?isDraftFinancialDocument\(request\.resource\.data\)[\s\S]*?!isLockedInvoiceDocument\(resource\.data\)[\s\S]*?!isLockedInvoiceDocument\(request\.resource\.data\)[\s\S]*?\|\| isSafePreorderUpdate\(resource\.data, request\.resource\.data\)/,
     );
     expect(rules).toMatch(
       /allow delete: if hasBusinessWriteAccess\(businessId\)[\s\S]*?isDraftFinancialDocument\(resource\.data\)[\s\S]*?!isLockedInvoiceDocument\(resource\.data\);/,
+    );
+  });
+
+  it('allows only safe preorder create/update paths without posted invoice footprint', () => {
+    expect(rules).toMatch(
+      /function isSafePreorderCreate\(data\) \{[\s\S]*?isPreorderFinancialDocument\(data\)[\s\S]*?documentStatus\(data\) == 'pending'[\s\S]*?!hasPostedPreorderFootprint\(data\)[\s\S]*?!hasInvalidPreorderCancelFootprint\(data\);/,
+    );
+    expect(rules).toMatch(
+      /function isSafePreorderUpdate\(before, after\) \{[\s\S]*?documentStatus\(before\) == 'pending'[\s\S]*?documentStatus\(after\) in \['pending', 'cancelled'\][\s\S]*?!hasPostedPreorderFootprint\(after\)[\s\S]*?!hasInvalidPreorderCancelFootprint\(after\);/,
+    );
+    expect(rules).toMatch(
+      /function hasPostedPreorderFootprint\(data\) \{[\s\S]*?'NCF'[\s\S]*?'cashCountId'[\s\S]*?'accountingEventId'/,
+    );
+    expect(rules).toMatch(
+      /function hasInvalidPreorderCancelFootprint\(data\) \{[\s\S]*?'cancel'[\s\S]*?documentStatus\(data\) != 'cancelled';/,
     );
   });
 

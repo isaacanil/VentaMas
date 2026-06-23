@@ -175,6 +175,7 @@ const publicBarrels: PublicBarrelCase[] = [
     load: () => import('@/modules/invoice/public'),
     exports: {
       CreditSelector: 'function',
+      FiscalDocumentPagination: 'function',
       Invoice: 'object',
       InvoiceTemplates: 'function',
       loadCreditNoteListRoute: 'function',
@@ -312,6 +313,7 @@ const publicBarrels: PublicBarrelCase[] = [
       loadHeroUiPlaygroundRoute: 'function',
       loadInventoryMigrationToolRoute: 'function',
       loadInvoiceV2RecoveryRoute: 'function',
+      loadPrintPaginationLabRoute: 'function',
       loadProductFormV2TestBenchRoute: 'function',
       loadProductPriceAuditRoute: 'function',
       loadProductStudioRoute: 'function',

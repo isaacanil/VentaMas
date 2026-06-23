@@ -23,6 +23,31 @@ export const toFiniteNumber = (value) => {
   return null;
 };
 
+export const resolveFiscalDocumentNumber = (value) => {
+  if (!isRecord(value)) return null;
+
+  const electronicSnapshot = isRecord(value.electronicTaxReceipt)
+    ? value.electronicTaxReceipt
+    : {};
+  const fiscal = isRecord(value.fiscal) ? value.fiscal : {};
+  const fiscalElectronic = isRecord(fiscal.electronic)
+    ? fiscal.electronic
+    : {};
+  const snapshot = isRecord(value.snapshot) ? value.snapshot : {};
+  const snapshotNcf = isRecord(snapshot.ncf) ? snapshot.ncf : {};
+
+  return (
+    toCleanString(electronicSnapshot.eNcf) ??
+    toCleanString(fiscalElectronic.eNcf) ??
+    toCleanString(value.eNcf) ??
+    toCleanString(value.ncf) ??
+    toCleanString(value.NCF) ??
+    toCleanString(value.comprobante) ??
+    toCleanString(snapshotNcf.code) ??
+    null
+  );
+};
+
 export const toDate = (value) => {
   if (!value) return null;
 

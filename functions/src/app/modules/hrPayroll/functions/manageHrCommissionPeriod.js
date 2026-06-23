@@ -84,8 +84,7 @@ const requireLineId = (payload) => {
 const requireCutRuleId = (payload) => {
   const ruleId =
     toCleanString(payload.cutRuleId) ||
-    toCleanString(payload.ruleId) ||
-    toCleanString(payload.id);
+    toCleanString(payload.ruleId);
   if (!ruleId) {
     throw new HttpsError('invalid-argument', 'ruleId es requerido.');
   }
@@ -1534,7 +1533,7 @@ const adjustHrCommissionPeriodLine = async ({
       ? { id: periodSnap.id, ...periodSnap.data() }
       : null;
     const periodStatus = normalizeHrCommissionPeriodStatus(
-      period?.status ?? line.status,
+      period?.status,
     );
     if (!['draft', 'closed'].includes(periodStatus)) {
       throw new HttpsError(
@@ -1560,10 +1559,7 @@ const adjustHrCommissionPeriodLine = async ({
       line,
       timestamp,
       totalToPay:
-        payload.totalToPay ??
-        payload.totalPayableAmount ??
-        payload.netAmount ??
-        payload.amount,
+        payload.totalToPay,
       userId: authUid,
     });
     if (!adjustment.ok) {

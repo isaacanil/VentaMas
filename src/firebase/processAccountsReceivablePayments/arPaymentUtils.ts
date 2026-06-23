@@ -85,7 +85,7 @@ export interface AccountsReceivableAccount extends FirestoreData {
   isClosed?: boolean;
 }
 
-export type CreditNotePayment = InvoiceCreditNote & { amountToUse?: number };
+export type CreditNotePayment = InvoiceCreditNote;
 
 export interface PaymentDetails {
   totalPaid: number | string;
@@ -510,8 +510,7 @@ export const validatePaymentAmounts = (
 
   // Calcular el total de notas de crédito aplicadas
   const creditNoteTotal = creditNotePayment.reduce(
-    (sum, note) =>
-      sum + parseFloat(String(note.amountUsed || note.amountToUse || 0)),
+    (sum, note) => sum + parseFloat(String(note.amountUsed || 0)),
     0,
   );
 
@@ -1345,11 +1344,11 @@ export const extractCreditNoteInfo = (
   }
 
   const validCreditNotes = creditNotePayment.filter(
-    (note) => note && (note.amountUsed > 0 || note.amountToUse > 0),
+    (note) => note && note.amountUsed > 0,
   );
 
   const totalCreditAmount = validCreditNotes.reduce(
-    (sum, note) => sum + (note.amountUsed || note.amountToUse || 0),
+    (sum, note) => sum + (note.amountUsed || 0),
     0,
   );
 

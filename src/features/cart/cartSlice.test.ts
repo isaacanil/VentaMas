@@ -7,6 +7,7 @@ import reducer, {
   loadCart,
   setAccountingContext,
   setCreditNotePayment,
+  selectTotalIndividualDiscounts,
   updateInsuranceStatus,
   updateProductFields,
 } from './cartSlice';
@@ -121,6 +122,34 @@ describe('cartSlice', () => {
     expect(state.data.products[0]?.comment).toBeUndefined();
     expect(state.data.products[1]?.pricing?.price).toBe(18);
     expect(state.data.products[1]?.comment).toBe('Linea B');
+  });
+
+  it('calcula descuentos individuales solo con el precio activo canonico', () => {
+    const state = reducer(
+      undefined,
+      addProduct(
+        createCartProduct({
+          price: { unit: 999 },
+          pricing: {
+            currency: 'DOP',
+            listPrice: 0,
+            price: 0,
+            tax: 18,
+          },
+          discount: {
+            type: 'percentage',
+            value: 10,
+          },
+        }),
+      ),
+    );
+
+    expect(
+      selectTotalIndividualDiscounts({
+        cart: state,
+        taxReceipt: { enabled: true },
+      }),
+    ).toBe(0);
   });
 
   it('normaliza el cid al cargar lineas antiguas con existencia fisica', () => {

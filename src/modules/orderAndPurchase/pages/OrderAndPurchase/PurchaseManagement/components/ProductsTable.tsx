@@ -575,8 +575,7 @@ const ProductsTable = ({
               purchaseQuantity,
             } = record;
             const displayQty = Number(quantity) || 0;
-            const qtyForMoney =
-              Number(quantity) || Number(purchaseQuantity) || 0;
+            const qtyForMoney = Number(purchaseQuantity ?? 0);
             const b = Number(baseCost) || 0;
             const tPct = Number(taxPercentage) || 0;
             const f = Number(freight) || 0;

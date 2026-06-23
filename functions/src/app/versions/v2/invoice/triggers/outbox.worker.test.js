@@ -607,4 +607,81 @@ describe('processInvoiceOutbox', () => {
       }),
     );
   });
+
+  it('marks unsupported pending task types as failed instead of done', async () => {
+    const operations = [];
+    const taskRef = refForPath(
+      'businesses/business-1/invoicesV2/invoice-unknown/outbox/task-unknown',
+    );
+    const taskData = {
+      type: 'unsupportedType',
+      status: 'pending',
+      attempts: 0,
+      payload: {
+        userId: 'trusted-user',
+      },
+    };
+    const tx = {
+      get: vi.fn(async (ref) => {
+        operations.push({ op: 'get', path: ref.path });
+        if (ref.path === taskRef.path) {
+          return { data: () => taskData };
+        }
+        if (ref.path === 'businesses/business-1/invoicesV2/invoice-unknown') {
+          return {
+            exists: true,
+            data: () => ({
+              status: 'pending',
+              userId: 'trusted-user',
+              snapshot: {},
+            }),
+          };
+        }
+        throw new Error(`unexpected_read:${ref.path}`);
+      }),
+      set: vi.fn((ref, data, options) => {
+        operations.push({ op: 'set', path: ref.path, data, options });
+      }),
+      update: vi.fn((ref, data) => {
+        operations.push({ op: 'update', path: ref.path, data });
+      }),
+    };
+    runTransactionMock.mockImplementation(async (callback) => callback(tx));
+
+    const result = await processInvoiceOutbox({
+      params: {
+        businessId: 'business-1',
+        invoiceId: 'invoice-unknown',
+        taskId: 'task-unknown',
+      },
+      data: {
+        data: () => taskData,
+        ref: taskRef,
+      },
+    });
+
+    expect(result).toBeNull();
+    const taskWrites = operations.filter(
+      (entry) => entry.op === 'set' && entry.path === taskRef.path,
+    );
+    expect(taskWrites).toHaveLength(1);
+    expect(taskWrites[0].data).toEqual(
+      expect.objectContaining({
+        status: 'failed',
+        attempts: 1,
+        lastError: 'Unsupported outbox task type: unsupportedType',
+      }),
+    );
+    expect(taskWrites.some((entry) => entry.data?.status === 'done')).toBe(
+      false,
+    );
+    expect(loggerWarnMock).toHaveBeenCalledWith(
+      'Unsupported outbox type, marking failed',
+      expect.objectContaining({
+        taskId: 'task-unknown',
+        type: 'unsupportedType',
+        lastError: 'Unsupported outbox task type: unsupportedType',
+      }),
+    );
+  });
 });

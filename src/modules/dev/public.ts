@@ -57,6 +57,9 @@ export const loadProductFormV2TestBenchRoute = () =>
 export const loadProductPriceAuditRoute = () =>
   import('./pages/DevTools/CheckProductPriceAudit/CheckProductPriceAudit');
 
+export const loadPrintPaginationLabRoute = () =>
+  import('./pages/DevTools/PrintPaginationLab/PrintPaginationLab');
+
 export const loadProductStudioRoute = () =>
   import('./pages/DevTools/ProductStudio/ProductStudio');
 

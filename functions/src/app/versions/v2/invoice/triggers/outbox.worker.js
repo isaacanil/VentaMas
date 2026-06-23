@@ -688,11 +688,8 @@ export const processInvoiceOutbox = onDocumentCreated(
               )
               : null;
 
-          // Logic: payment.value (cart payment) -> totalPaid (explicit) -> 0 (default)
           // We avoid falling back to totalPurchase.value to correctly handle credit sales where paid < total.
-          const rawTotalPaid = Number(
-            cart?.payment?.value ?? cart?.totalPaid ?? 0,
-          );
+          const rawTotalPaid = Number(cart?.payment?.value ?? 0);
           const initialTotalPaid = Number.isFinite(rawTotalPaid)
             ? rawTotalPaid
             : 0;
@@ -1459,11 +1456,32 @@ export const processInvoiceOutbox = onDocumentCreated(
             data: { taskId, type },
           });
         } else {
+          const unsupportedType = type || 'unknown';
+          const lastError = `Unsupported outbox task type: ${unsupportedType}`;
           ensureTaskStart();
-          logger.info('Unsupported outbox type, marking done', {
+          logger.warn('Unsupported outbox type, marking failed', {
             taskId,
             type,
+            lastError,
           });
+          tx.set(
+            taskRef,
+            {
+              status: 'failed',
+              attempts: (t.attempts || 0) + 1,
+              lastError,
+              updatedAt: FieldValue.serverTimestamp(),
+            },
+            { merge: true },
+          );
+          auditTx(tx, {
+            businessId,
+            invoiceId,
+            event: 'task_failed',
+            level: 'error',
+            data: { taskId, type, error: lastError },
+          });
+          return;
         }
 
         tx.set(

@@ -58,6 +58,7 @@ type LoadingState = {
 
 type InvoicePanelUiState = {
   invoice: InvoiceData | null;
+  pendingPaginatedPrint: boolean;
   pendingPrint: boolean;
   submitted: boolean;
   taxReceiptModalOpen: boolean;
@@ -66,6 +67,7 @@ type InvoicePanelUiState = {
 
 type InvoicePanelUiAction =
   | { type: 'setInvoice'; payload: InvoiceData | null }
+  | { type: 'setPendingPaginatedPrint'; payload: boolean }
   | { type: 'setPendingPrint'; payload: boolean }
   | { type: 'setSubmitted'; payload: boolean }
   | { type: 'setTaxReceiptModalOpen'; payload: boolean }
@@ -74,6 +76,7 @@ type InvoicePanelUiAction =
 
 const initialInvoicePanelUiState: InvoicePanelUiState = {
   invoice: null,
+  pendingPaginatedPrint: false,
   pendingPrint: false,
   submitted: false,
   taxReceiptModalOpen: false,
@@ -90,6 +93,8 @@ const invoicePanelUiReducer = (
   switch (action.type) {
     case 'setInvoice':
       return { ...state, invoice: action.payload };
+    case 'setPendingPaginatedPrint':
+      return { ...state, pendingPaginatedPrint: action.payload };
     case 'setPendingPrint':
       return { ...state, pendingPrint: action.payload };
     case 'setSubmitted':
@@ -132,6 +137,7 @@ export const useInvoicePanelController = () => {
   );
   const { invoice, pendingPrint, submitted, taxReceiptModalOpen, loading } =
     uiState;
+  const { pendingPaginatedPrint } = uiState;
 
   const [idempotencySeed, resetIdempotencySeed] = useReducer(
     () => `gen:${nanoid()}`,
@@ -290,6 +296,8 @@ export const useInvoicePanelController = () => {
     clearPrintCompletionFallback();
 
     dispatchUi({ type: 'setInvoice', payload: null });
+    dispatchUi({ type: 'setPendingPaginatedPrint', payload: false });
+    dispatchUi({ type: 'setPendingPrint', payload: false });
     handleCancelShipping({ dispatch, viewport, clearTaxReceipt: true });
 
     const defaultReceipt =
@@ -352,6 +360,10 @@ export const useInvoicePanelController = () => {
     dispatchUi({ type: 'setPendingPrint', payload: value });
   }, []);
 
+  const setPanelPendingPaginatedPrint = useCallback((value: boolean) => {
+    dispatchUi({ type: 'setPendingPaginatedPrint', payload: value });
+  }, []);
+
   const setPanelSubmitted = useCallback((value: boolean) => {
     dispatchUi({ type: 'setSubmitted', payload: value });
   }, []);
@@ -395,6 +407,26 @@ export const useInvoicePanelController = () => {
     [clearPrintCompletionFallback],
   );
 
+  const handlePaginatedPrintComplete = useCallback(() => {
+    dispatchUi({ type: 'setPendingPaginatedPrint', payload: false });
+    handleAfterPrint();
+  }, [handleAfterPrint]);
+
+  const handlePaginatedPrintBlocked = useCallback((reason: string) => {
+    console.warn('[InvoicePanel] paginated invoice print blocked', reason);
+    dispatchUi({ type: 'setPendingPaginatedPrint', payload: false });
+    dispatchUi({
+      type: 'setLoading',
+      payload: { status: false, message: '' },
+    });
+    dispatch(unlockTaxReceiptType());
+    notification.error({
+      message: 'Impresión paginada bloqueada',
+      description: `No se imprimió la factura ni se usó la plantilla clásica. Diagnóstico: ${reason}`,
+      duration: 0,
+    });
+  }, [dispatch]);
+
   const showCancelSaleConfirm = () => {
     AntdModal.confirm({
       title: '¿Cancelar Venta?',
@@ -420,6 +452,7 @@ export const useInvoicePanelController = () => {
       handleAfterPrint,
       invoice: nextInvoice,
       invoiceType,
+      setPendingPaginatedPrint: setPanelPendingPaginatedPrint,
       setPendingPrint: setPanelPendingPrint,
     });
 
@@ -491,16 +524,20 @@ export const useInvoicePanelController = () => {
     form,
     handleInvoicePanel,
     handleMonetaryContextChange,
+    handlePaginatedPrintComplete,
+    handlePaginatedPrintBlocked,
     handleSubmit,
     hasCartProducts,
     invoice,
     invoicePanel,
+    business,
     isAddedToReceivables,
     isAnyPaymentEnabled,
     isChangeNegative,
     loading,
     ncfType,
     resolvedBusinessId,
+    pendingPaginatedPrint,
     retryWithTaxReceipt,
     showCancelSaleConfirm,
     submitted,

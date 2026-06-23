@@ -4,6 +4,7 @@ import { resolveDgii608Reason } from './dgii608ReasonCatalog.service.js';
 import {
   buildIssueSummary,
   isRecord,
+  resolveFiscalDocumentNumber,
   resolveMonthlyPeriodRange,
   toCleanString,
   toDate,
@@ -35,7 +36,8 @@ const buildSourceRecordsSnapshot = (records = []) =>
     recordId: record?.metadata?.recordId ?? null,
     sourcePath: record?.metadata?.sourcePath ?? null,
     documentNumber: record?.documentNumber ?? null,
-    documentFiscalNumber: record?.data?.NCF ?? record?.ncf ?? null,
+    documentFiscalNumber:
+      resolveFiscalDocumentNumber(record?.data) ?? record?.ncf ?? null,
     invoiceId: record?.invoiceId ?? null,
     voidedAt: record?.voidedAt ?? null,
     issuedAt: record?.voidedAt ?? record?.issuedAt ?? null,
@@ -88,7 +90,7 @@ const enrichIssues = (issues, datasets) =>
       sourcePath: metadata.sourcePath ?? null,
       documentNumber: record?.documentNumber ?? null,
       documentFiscalNumber:
-        record?.data?.NCF ?? record?.ncf ?? null,
+        resolveFiscalDocumentNumber(record?.data) ?? record?.ncf ?? null,
     };
   });
 
@@ -138,10 +140,7 @@ export const mapInvoiceDocToDgii608Record = ({
 
   return {
     data: {
-      NCF:
-        toCleanString(invoiceData?.NCF) ??
-        toCleanString(invoiceData?.comprobante) ??
-        null,
+      NCF: resolveFiscalDocumentNumber(invoiceData),
     },
     voidedAt: voidedAt?.toISOString() ?? null,
     voidReason: reason.rawReason ?? null,
@@ -223,7 +222,7 @@ export const mapCreditNoteDocToDgii608Record = ({
       toCleanString(creditNoteData?.invoiceId) ??
       toCleanString(creditNoteData?.sourceInvoiceId) ??
       null,
-    ncf: toCleanString(creditNoteData?.ncf) ?? null,
+    ncf: resolveFiscalDocumentNumber(creditNoteData),
     voidedAt: voidedAt?.toISOString() ?? null,
     createdAt: createdAt?.toISOString() ?? null,
     status,

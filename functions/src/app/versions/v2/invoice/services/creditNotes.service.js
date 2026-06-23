@@ -19,9 +19,26 @@ const isElectronicCreditNote = (creditNote) => {
   return isElectronicAdjustmentNote(creditNote, { ncfPrefix: 'E34' });
 };
 
-const resolveInvoiceRecord = (invoiceSnap) => {
+const resolveCanonicalInvoiceRecord = (invoiceSnap) => {
   const raw = asRecord(invoiceSnap?.data?.());
   return asRecord(raw.data ?? raw);
+};
+
+const resolveV2InvoiceRecord = (invoiceSnap) => {
+  const raw = asRecord(invoiceSnap?.data?.());
+  const snapshot = asRecord(raw.snapshot);
+  const cart = asRecord(snapshot.cart ?? raw.cart);
+  return {
+    ...cart,
+    ...snapshot,
+    id: toCleanString(raw.id) || toCleanString(cart.id),
+    client: snapshot.client ?? cart.client ?? null,
+    ncf: snapshot.ncf ?? cart.ncf ?? cart.NCF ?? null,
+    monetary: snapshot.monetary ?? cart.monetary ?? null,
+    numberID: snapshot.numberID ?? cart.numberID ?? null,
+    number: snapshot.number ?? cart.number ?? null,
+    invoiceNumber: snapshot.invoiceNumber ?? cart.invoiceNumber ?? null,
+  };
 };
 
 const normalizeFiscalId = (value) => {
@@ -168,17 +185,32 @@ export async function consumeCreditNotesTx(
   if (!Array.isArray(creditNotes) || creditNotes.length === 0)
     return { applicationIds: [] };
 
-  const invoiceRef = db.doc(`businesses/${businessId}/invoices/${invoiceId}`);
-  const invoiceSnap = await tx.get(invoiceRef);
-  if (!invoiceSnap.exists) {
+  const canonicalInvoiceRef = db.doc(
+    `businesses/${businessId}/invoices/${invoiceId}`,
+  );
+  const canonicalInvoiceSnap = await tx.get(canonicalInvoiceRef);
+  let invoiceRecord = null;
+  if (canonicalInvoiceSnap.exists) {
+    invoiceRecord = resolveCanonicalInvoiceRecord(canonicalInvoiceSnap);
+  } else {
+    const v2InvoiceRef = db.doc(
+      `businesses/${businessId}/invoicesV2/${invoiceId}`,
+    );
+    const v2InvoiceSnap = await tx.get(v2InvoiceRef);
+    if (v2InvoiceSnap.exists) {
+      invoiceRecord = resolveV2InvoiceRecord(v2InvoiceSnap);
+    }
+  }
+  if (!invoiceRecord) {
     throw new Error(`Factura ${invoiceId} no encontrada`);
   }
-  const invoiceRecord = resolveInvoiceRecord(invoiceSnap);
   const invoiceClient = resolveClientRecord(invoiceRecord);
   const invoiceNcf = resolveInvoiceNcf(invoiceRecord);
   const invoiceNumber = resolveInvoiceNumber(invoiceRecord);
 
   const createdApplicationIds = [];
+  const applicationWrites = [];
+  const creditNoteWrites = [];
 
   for (const note of creditNotes) {
     if (!note?.id || !(Number(note?.amountUsed) > 0)) continue;
@@ -225,14 +257,15 @@ export async function consumeCreditNotesTx(
     }
     const newAvailable = currentAvailable - amountToConsume;
 
-    // Update credit note balance and status
-    tx.update(cnRef, {
-      availableAmount: newAvailable,
-      status: newAvailable === 0 ? 'fully_used' : 'applied',
-      updatedAt: FieldValue.serverTimestamp(),
+    creditNoteWrites.push({
+      ref: cnRef,
+      payload: {
+        availableAmount: newAvailable,
+        status: newAvailable === 0 ? 'fully_used' : 'applied',
+        updatedAt: FieldValue.serverTimestamp(),
+      },
     });
 
-    // Create application record
     const appRef = db
       .collection('businesses')
       .doc(businessId)
@@ -255,8 +288,16 @@ export async function consumeCreditNotesTx(
       appliedBy: { uid: userId },
       createdAt: FieldValue.serverTimestamp(),
     };
-    tx.set(appRef, application);
+    applicationWrites.push({ ref: appRef, payload: application });
     createdApplicationIds.push(appRef.id);
   }
+
+  creditNoteWrites.forEach(({ ref, payload }) => {
+    tx.update(ref, payload);
+  });
+  applicationWrites.forEach(({ ref, payload }) => {
+    tx.set(ref, payload);
+  });
+
   return { applicationIds: createdApplicationIds };
 }

@@ -186,7 +186,7 @@ describe('customerDebitNotes', () => {
     docSnapshots.set('businesses/business-1/invoices/invoice-1', {
       data: {
         id: 'invoice-1',
-        NCF: 'E310000000008',
+        eNcf: 'E310000000008',
         numberID: 715,
         date: '2026-06-16T18:47:42.000Z',
         totalPurchase: { value: 10457.16 },

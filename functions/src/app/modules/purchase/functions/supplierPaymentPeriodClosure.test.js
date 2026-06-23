@@ -206,7 +206,7 @@ describe('supplier payment accounting period validation', () => {
           paymentMethods: [
             {
               method: 'cash',
-              amount: 50,
+              value: 50,
               cashCountId: 'cash-1',
             },
           ],
@@ -240,7 +240,7 @@ describe('supplier payment accounting period validation', () => {
           paymentMethods: [
             {
               method: 'cash',
-              amount: 50,
+              value: 50,
               cashCountId: 'cash-1',
             },
           ],
@@ -298,7 +298,7 @@ describe('supplier payment accounting period validation', () => {
           paymentMethods: [
             {
               method: 'cash',
-              amount: 50,
+              value: 50,
               cashCountId: 'cash-1',
             },
           ],

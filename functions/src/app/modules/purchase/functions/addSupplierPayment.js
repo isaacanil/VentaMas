@@ -63,9 +63,7 @@ const normalizeRequestedPaymentMethods = (paymentMethods) => {
     .map((entry) => {
       const methodRecord = asRecord(entry);
       const method = normalizeSupplierPaymentMethodCode(methodRecord.method);
-      const amount = roundToTwoDecimals(
-        methodRecord.value ?? methodRecord.amount,
-      );
+      const amount = roundToTwoDecimals(methodRecord.value);
       if (!method || !SUPPORTED_PAYMENT_METHODS.has(method)) {
         throw new HttpsError(
           'invalid-argument',
@@ -80,7 +78,6 @@ const normalizeRequestedPaymentMethods = (paymentMethods) => {
         method,
         status: methodRecord.status !== false,
         value: amount,
-        amount,
         reference: toCleanString(methodRecord.reference),
         bankAccountId: paymentMethodRequiresBankAccount(method)
           ? toCleanString(methodRecord.bankAccountId)
@@ -178,7 +175,7 @@ const aggregateCreditNoteRequests = (paymentMethods) =>
 
     accumulator.set(
       noteId,
-      roundToTwoDecimals((accumulator.get(noteId) || 0) + method.amount),
+      roundToTwoDecimals((accumulator.get(noteId) || 0) + method.value),
     );
     return accumulator;
   }, new Map());
@@ -361,7 +358,7 @@ export const addSupplierPayment = onCall(async (request) => {
     payload.paymentMethods,
   );
   const totalAmount = roundToTwoDecimals(
-    paymentMethods.reduce((sum, method) => sum + method.amount, 0),
+    paymentMethods.reduce((sum, method) => sum + method.value, 0),
   );
   if (totalAmount <= THRESHOLD) {
     throw new HttpsError(

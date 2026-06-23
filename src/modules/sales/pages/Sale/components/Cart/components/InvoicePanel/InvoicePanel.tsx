@@ -16,6 +16,7 @@ import {
 } from '@/components/heroui';
 
 import { Body } from './components/Body/Body';
+import { PaginatedInvoicePrintHost } from './components/PaginatedPrintHost/PaginatedInvoicePrintHost';
 import { InvoiceProgress } from './components/Progress/InvoiceProgress';
 import { useInvoicePanelController } from './hooks/useInvoicePanelController';
 import useViewportWidth from '@/hooks/useViewportWidth';
@@ -42,15 +43,19 @@ export const InvoicePanel = () => {
     form,
     handleInvoicePanel,
     handleMonetaryContextChange,
+    handlePaginatedPrintComplete,
+    handlePaginatedPrintBlocked,
     handleSubmit,
     hasCartProducts,
     invoice,
     invoicePanel,
+    business,
     isAddedToReceivables,
     isAnyPaymentEnabled,
     isChangeNegative,
     loading,
     ncfType,
+    pendingPaginatedPrint,
     resolvedBusinessId,
     retryWithTaxReceipt,
     showCancelSaleConfirm,
@@ -175,6 +180,13 @@ export const InvoicePanel = () => {
 
   return (
     <>
+      <PaginatedInvoicePrintHost
+        business={business}
+        invoice={invoice}
+        pending={pendingPaginatedPrint}
+        onPrintBlocked={handlePaginatedPrintBlocked}
+        onPrinted={handlePaginatedPrintComplete}
+      />
       {isMobilePanel ? (
         <VmDrawer.Primitive>
           <VmDrawer.Backdrop

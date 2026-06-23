@@ -14,18 +14,19 @@ describe('calculateReplenishmentTotals', () => {
           otherCosts: 5,
         },
         {
+          purchaseQuantity: 0,
           quantity: 3,
           baseCost: 50,
           taxPercentage: 0.1,
         },
       ]),
     ).toEqual({
-      totalProducts: 5,
-      totalBaseCost: 350,
-      totalItbis: 51,
+      totalProducts: 2,
+      totalBaseCost: 200,
+      totalItbis: 36,
       totalShipping: 10,
       totalOtherCosts: 5,
-      grandTotal: 416,
+      grandTotal: 251,
     });
   });
 

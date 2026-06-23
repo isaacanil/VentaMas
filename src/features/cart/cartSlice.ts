@@ -70,6 +70,13 @@ const normalizeExchangeRate = (value: unknown): number | null => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 };
 
+const resolveActiveProductPricing = (
+  product?: Product | null,
+): Product['pricing'] | null =>
+  (product?.selectedSaleUnit?.pricing as Product['pricing'] | undefined) ??
+  product?.pricing ??
+  null;
+
 const normalizeRateEffectiveAt = (
   value: unknown,
 ): number | string | Date | null => {
@@ -995,12 +1002,17 @@ export const selectTotalIndividualDiscounts = createSelector(
   ],
   (discountedProducts, taxationEnabled) =>
     discountedProducts.reduce((total, product) => {
-      const rawPrice = product.pricing?.price || product.price || 0;
-      const productPrice =
-        typeof rawPrice === 'number' ? rawPrice : Number(rawPrice?.unit || 0);
+      const activePricing = resolveActiveProductPricing(product);
+      const parsedProductPrice = Number(activePricing?.price ?? 0);
+      const productPrice = Number.isFinite(parsedProductPrice)
+        ? parsedProductPrice
+        : 0;
 
-      const taxPercentage = product.pricing?.tax
-        ? Number(product.pricing.tax)
+      const parsedTaxPercentage = activePricing?.tax
+        ? Number(activePricing.tax)
+        : 0;
+      const taxPercentage = Number.isFinite(parsedTaxPercentage)
+        ? parsedTaxPercentage
         : 0;
       const quantity = product.amountToBuy || 1;
 

@@ -2,7 +2,7 @@ import { calculateAmountPerInstallment } from '@/utils/accountsReceivable/accoun
 import { calculatePaymentDates } from '@/domain/accountsReceivable/paymentDates';
 import type { AccountsReceivablePaymentFrequency } from '@/utils/accountsReceivable/types';
 import { toMillis } from '@/utils/date/dateUtils';
-import { calculateInvoiceChange } from '@/utils/invoice';
+import { normalizeInvoiceChange } from '@/utils/invoice';
 import { setNumPrecision } from '@/utils/pricing';
 
 type AccountsReceivableDraft = Record<string, unknown>;
@@ -10,7 +10,6 @@ type AccountsReceivableDraft = Record<string, unknown>;
 type CartLike = {
   change?: { value?: unknown } | null;
   payment?: { value?: unknown } | null;
-  totalAmount?: unknown;
   totalPurchase?: { value?: unknown } | null;
 };
 
@@ -49,6 +48,17 @@ const resolvePaymentDate = (
     .nextPaymentDate;
 };
 
+const resolveCartReceivableBalance = (cart: CartLike | null | undefined) => {
+  const snapshotChange = Number(cart?.change?.value);
+  if (Number.isFinite(snapshotChange)) {
+    return normalizeInvoiceChange(snapshotChange);
+  }
+
+  const payment = Number(cart?.payment?.value ?? 0);
+  const totalPurchase = Number(cart?.totalPurchase?.value ?? 0);
+  return normalizeInvoiceChange(payment - totalPurchase);
+};
+
 export const resolveInvoiceAccountsReceivable = ({
   accountsReceivable,
   cart,
@@ -59,7 +69,7 @@ export const resolveInvoiceAccountsReceivable = ({
   const totalInstallments = normalizeInstallments(
     accountsReceivable.totalInstallments,
   );
-  const totalReceivable = getPositive(calculateInvoiceChange(cart));
+  const totalReceivable = getPositive(resolveCartReceivableBalance(cart));
   const installmentAmount = getPositive(
     setNumPrecision(
       calculateAmountPerInstallment(totalReceivable, totalInstallments),

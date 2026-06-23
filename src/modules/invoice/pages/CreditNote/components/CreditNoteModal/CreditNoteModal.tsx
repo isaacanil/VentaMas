@@ -1,8 +1,13 @@
 import { message, Grid, Skeleton, Tabs } from 'antd';
 import { DateTime } from 'luxon';
-import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useState,
+} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useReactToPrint } from 'react-to-print';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { selectBusinessData } from '@/features/auth/businessSlice';
@@ -19,11 +24,7 @@ import { fbUpdateCreditNote } from '@/firebase/creditNotes/fbUpdateCreditNote';
 import { useFbGetCreditNotesByInvoice } from '@/firebase/creditNotes/useFbGetCreditNotesByInvoice';
 import { useFbGetInvoicesByClient } from '@/firebase/invoices/useFbGetInvoicesByClient';
 import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt';
-import { Invoice } from '@/modules/invoice/components/Invoice/components/Invoice/Invoice';
-import {
-  HiddenInvoicePrintContainer,
-  INVOICE_LETTER_PRINT_PAGE_STYLE,
-} from '@/modules/invoice/components/Invoice/components/HiddenInvoicePrintContainer/HiddenInvoicePrintContainer';
+import { FiscalDocumentPaginatedPrintHost } from '@/modules/invoice/components/FiscalDocumentPagination/FiscalDocumentPaginatedPrintHost';
 import { useFbGetCreditNoteApplications } from '@/modules/invoice/hooks/creditNote/useFbGetCreditNoteApplications';
 import { creditNoteToInvoicePrintData } from '@/modules/invoice/utils/adjustmentNotePrintData';
 import { formatPrice } from '@/utils/format';
@@ -47,6 +48,7 @@ import { resolveQuantity } from './utils/quantity';
 
 import type { CreditNoteRecord } from '@/types/creditNote';
 import type {
+  InvoiceBusinessInfo,
   InvoiceClient,
   InvoiceData,
   InvoiceProduct,
@@ -344,8 +346,6 @@ export const CreditNoteModal = () => {
 
   const screens = useBreakpoint();
   const isMobile = !screens.md;
-  const creditNotePrintRef = useRef<HTMLDivElement | null>(null);
-  const pendingCreditNotePrintRef = useRef(false);
   const [creditNotePrintTarget, setCreditNotePrintTarget] =
     useState<CreditNoteRecord | null>(null);
   const [creditNotePrintLoading, setCreditNotePrintLoading] = useState(false);
@@ -356,14 +356,19 @@ export const CreditNoteModal = () => {
         : null,
     [creditNotePrintTarget],
   );
-  const triggerCreditNotePrint = useReactToPrint({
-    contentRef: creditNotePrintRef,
-    pageStyle: INVOICE_LETTER_PRINT_PAGE_STYLE,
-    onAfterPrint: () => {
-      setCreditNotePrintLoading(false);
-      setCreditNotePrintTarget(null);
-    },
-  });
+  const handleCreditNotePrinted = useCallback(() => {
+    setCreditNotePrintLoading(false);
+    setCreditNotePrintTarget(null);
+  }, []);
+
+  const handleCreditNotePrintBlocked = useCallback((reason: string) => {
+    console.warn('[CreditNoteModal] paginated print blocked', reason);
+    message.error(
+      `No se pudo imprimir la nota de crédito. Diagnóstico: ${reason}`,
+    );
+    setCreditNotePrintLoading(false);
+    setCreditNotePrintTarget(null);
+  }, []);
 
   const memoizedFormatPrice = useMemo(() => formatPrice, []);
 
@@ -408,32 +413,9 @@ export const CreditNoteModal = () => {
       return;
     }
 
-    pendingCreditNotePrintRef.current = true;
     setCreditNotePrintLoading(true);
     setCreditNotePrintTarget(note);
   };
-
-  useEffect(() => {
-    if (!creditNotePrintData || !pendingCreditNotePrintRef.current) return;
-
-    pendingCreditNotePrintRef.current = false;
-    const timeoutId = window.setTimeout(() => {
-      try {
-        const printResult = triggerCreditNotePrint?.();
-        void Promise.resolve(printResult).catch((error) => {
-          console.error('Error al imprimir la nota de crédito:', error);
-          message.error('No se pudo imprimir la nota de crédito.');
-          setCreditNotePrintLoading(false);
-        });
-      } catch (error) {
-        console.error('Error al imprimir la nota de crédito:', error);
-        message.error('No se pudo imprimir la nota de crédito.');
-        setCreditNotePrintLoading(false);
-      }
-    }, 0);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [creditNotePrintData, triggerCreditNotePrint]);
 
   const handleClientChange = (client: InvoiceClient | null) => {
     setLocalState({
@@ -783,16 +765,13 @@ export const CreditNoteModal = () => {
           />
         </Container>
       </ResponsiveContainer>
-      <HiddenInvoicePrintContainer aria-hidden="true">
-        {creditNotePrintData ? (
-          <Invoice
-            ref={creditNotePrintRef}
-            data={creditNotePrintData}
-            template="template2_v3_1"
-            ignoreHidden
-          />
-        ) : null}
-      </HiddenInvoicePrintContainer>
+      <FiscalDocumentPaginatedPrintHost
+        business={business as InvoiceBusinessInfo | null}
+        invoice={creditNotePrintData}
+        pending={creditNotePrintLoading}
+        onPrintBlocked={handleCreditNotePrintBlocked}
+        onPrinted={handleCreditNotePrinted}
+      />
     </>
   );
 };

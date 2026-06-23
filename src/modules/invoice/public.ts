@@ -1,4 +1,5 @@
 export { default as CreditSelector } from './components/CreditSelector/CreditSelector';
+export { FiscalDocumentPagination } from './components/FiscalDocumentPagination';
 export { Invoice } from './components/Invoice/components/Invoice/Invoice';
 export { default as InvoiceTemplates } from './components/Invoice/components/InvoiceTemplates/InvoiceTemplates';
 export { TaxReceiptDepletedModal } from './components/TaxReceiptDepletedModal';

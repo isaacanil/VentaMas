@@ -456,6 +456,62 @@ describe('finalize.service', () => {
     );
   });
 
+  it('fails finalize when a required e-CF snapshot is rejected even if the task is done', async () => {
+    invoiceSnapshot = {
+      exists: true,
+      data: () => ({
+        id: 'invoice-1',
+        status: 'pending',
+        idempotencyKey: 'idem-1',
+        snapshot: {
+          electronicTaxReceipt: {
+            mode: 'required',
+            status: 'rejected',
+            lastError: 'DGII rechazo el e-CF.',
+          },
+        },
+      }),
+    };
+
+    await attemptFinalizeInvoice({
+      businessId: 'business-1',
+      invoiceId: 'invoice-1',
+    });
+
+    expect(scheduleCompensationsInTxMock).toHaveBeenCalledWith(tx, {
+      businessId: 'business-1',
+      invoiceId: 'invoice-1',
+    });
+    expect(buildAccountingEventMock).not.toHaveBeenCalled();
+    expect(tx.update).toHaveBeenCalledWith(
+      invoiceRef,
+      expect.objectContaining({
+        status: 'failed',
+        updatedAt: { __op: 'serverTimestamp' },
+      }),
+    );
+    expect(tx.set).toHaveBeenCalledWith(
+      idemRef,
+      expect.objectContaining({
+        status: 'failed',
+        updatedAt: { __op: 'serverTimestamp' },
+      }),
+      { merge: true },
+    );
+    expect(auditTxMock).toHaveBeenCalledWith(
+      tx,
+      expect.objectContaining({
+        event: 'finalize_failed',
+        data: expect.objectContaining({
+          failed: true,
+          failedTaskTypes: ['issueElectronicTaxReceipt'],
+          fiscalStatus: 'rejected',
+          fiscalLastError: 'DGII rechazo el e-CF.',
+        }),
+      }),
+    );
+  });
+
   it('marks the invoice as committed and consumes the reserved NCF when all outbox work is done', async () => {
     invoiceSnapshot = {
       exists: true,

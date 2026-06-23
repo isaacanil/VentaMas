@@ -32,6 +32,8 @@ import { routePreloaders } from './routePreloaders';
 import { routes } from './routes';
 import ROUTES_NAME from './routesName';
 
+const PRINT_PAGINATION_LAB_PATH = '/lab/print-pagination';
+
 const { useBusinessFeatureEnabledMock, useFilterMenuItemsByAccessMock } =
   vi.hoisted(() => ({
     useBusinessFeatureEnabledMock: vi.fn(),
@@ -208,6 +210,12 @@ describe('routePreloaders', () => {
       .map(({ title, route }) => `${title} (${route})`);
 
     expect(routesWithoutPreloaders).toEqual([]);
+  });
+
+  it('registers print pagination lab through its public route loader', () => {
+    expect(routePreloaders[PRINT_PAGINATION_LAB_PATH]).toEqual(
+      expect.any(Function),
+    );
   });
 
   it('registers only active subscription maintenance routes for developer prefetching', () => {

@@ -37,9 +37,13 @@ import {
   resolveElectronicTaxReceiptStatusLabel,
   resolveFiscalDocumentNumber,
 } from '@/modules/invoice/utils/electronicTaxReceipt';
-import { isProgrammaticLetterPdfTemplate } from '@/utils/invoice/template';
+import {
+  isPaginatedDomInvoiceTemplate,
+  isProgrammaticLetterPdfTemplate,
+} from '@/utils/invoice/template';
 import { getProductsTax, getTotalItems } from '@/utils/pricing';
 import { Invoice } from '@/modules/invoice/components/Invoice/components/Invoice/Invoice';
+import { FiscalDocumentPaginatedPrintHost } from '@/modules/invoice/components/FiscalDocumentPagination/FiscalDocumentPaginatedPrintHost';
 import { VmDropdown } from '@/components/heroui';
 import { AdvancedTable } from '@/components/ui/AdvancedTable';
 import { Tag } from '@/components/ui/Tag';
@@ -122,6 +126,8 @@ const ActionsMenu = ({ value }: ActionsMenuProps) => {
   const cartSettings = useSelector(SelectSettingCart) as CartSettings | null;
   const invoiceType = cartSettings?.billing?.invoiceType;
   const [refreshingElectronic, setRefreshingElectronic] = useState(false);
+  const [isPaginatedPrintPending, setIsPaginatedPrintPending] =
+    useState(false);
   const electronicSnapshot = resolveElectronicTaxReceiptSnapshot(data);
 
   const isEditDisabled = useMemo(() => {
@@ -162,7 +168,30 @@ const ActionsMenu = ({ value }: ActionsMenuProps) => {
     contentRef: componentToPrintRef,
   });
 
+  const handlePaginatedPrintBlocked = useCallback(
+    (reason: string) => {
+      setIsPaginatedPrintPending(false);
+      console.warn('[SaleReportTable] paginated print blocked', reason);
+      notification.error({
+        message: 'Impresión paginada bloqueada',
+        description: `No se imprimió la factura ni se usó la plantilla clásica. Diagnóstico: ${reason}`,
+        duration: 0,
+      });
+    },
+    [],
+  );
+
+  const handlePaginatedPrinted = useCallback(() => {
+    setIsPaginatedPrintPending(false);
+  }, []);
+
   const handleInvoicePrinting = async () => {
+    if (isPaginatedDomInvoiceTemplate(invoiceType)) {
+      if (isPaginatedPrintPending) return;
+      setIsPaginatedPrintPending(true);
+      return;
+    }
+
     if (isProgrammaticLetterPdfTemplate(invoiceType)) {
       try {
         if (business) {
@@ -336,7 +365,7 @@ const ActionsMenu = ({ value }: ActionsMenuProps) => {
         key: 'print',
         label: 'Imprimir factura',
         icon: <FontAwesomeIcon icon={faPrint} />,
-        disabled: false,
+        disabled: isPaginatedPrintPending,
       },
     ];
 
@@ -364,6 +393,7 @@ const ActionsMenu = ({ value }: ActionsMenuProps) => {
     isEditDisabled,
     isProcessing,
     isReceivableInvoice,
+    isPaginatedPrintPending,
     receivableAccount,
     receivableLoading,
     refreshingElectronic,
@@ -403,6 +433,13 @@ const ActionsMenu = ({ value }: ActionsMenuProps) => {
           template={invoiceType || undefined}
         />
       </HiddenPrintArea>
+      <FiscalDocumentPaginatedPrintHost
+        business={business}
+        invoice={data}
+        pending={isPaginatedPrintPending}
+        onPrintBlocked={handlePaginatedPrintBlocked}
+        onPrinted={handlePaginatedPrinted}
+      />
       <ActionMenuRoot
         title={
           isEditDisabled

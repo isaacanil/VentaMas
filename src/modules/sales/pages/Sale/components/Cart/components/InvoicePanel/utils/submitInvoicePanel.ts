@@ -147,15 +147,11 @@ const resolveFiscalDocumentType = (value: unknown): string | null => {
 };
 
 const resolveNumberFromValue = (value: unknown): number | null => {
-  const direct = safeNumber(value);
-  if (direct !== null) return direct;
   return safeNumber(asRecord(value).value);
 };
 
 const resolveCartTotal = (cart: Record<string, unknown>): number | null =>
-  resolveNumberFromValue(cart.totalPurchase) ??
-  resolveNumberFromValue(cart.totalAmount) ??
-  resolveNumberFromValue(cart.payment);
+  resolveNumberFromValue(cart.totalPurchase);
 
 const resolveClientIdentificationNumber = (
   client: Record<string, unknown> | null,

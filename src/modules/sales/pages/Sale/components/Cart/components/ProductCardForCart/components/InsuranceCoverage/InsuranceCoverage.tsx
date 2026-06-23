@@ -22,7 +22,6 @@ type InsuranceItem = {
   cid?: string | number;
   insurance?: InsuranceInfo | null;
   pricing?: { price?: number | string };
-  price?: number | string;
 };
 
 type InsuranceCoverageProps = {
@@ -130,10 +129,8 @@ export const InsuranceCoverage = ({ item }: InsuranceCoverageProps) => {
 
   const productPrice = useMemo(() => {
     const pricingPrice = Number(item?.pricing?.price);
-    if (Number.isFinite(pricingPrice)) return pricingPrice;
-    const fallbackPrice = Number(item?.price);
-    return Number.isFinite(fallbackPrice) ? fallbackPrice : 0;
-  }, [item?.price, item?.pricing?.price]);
+    return Number.isFinite(pricingPrice) ? pricingPrice : 0;
+  }, [item?.pricing?.price]);
 
   const dispatchInsurance = useCallback(
     (mode: InsuranceMode, rawValue: string | null | undefined) => {

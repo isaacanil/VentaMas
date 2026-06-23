@@ -239,7 +239,7 @@ describe('customerCreditNotes hardening', () => {
     docSnapshots.set('businesses/business-1/invoices/invoice-1', {
       data: {
         id: 'invoice-1',
-        NCF: 'E310000000007',
+        eNcf: 'E310000000007',
         numberID: 714,
         date: '2026-06-16T18:40:42.000Z',
         totalPurchase: { value: 10457.16 },
@@ -337,6 +337,47 @@ describe('customerCreditNotes hardening', () => {
     });
 
     expect(reserveNcfMock).not.toHaveBeenCalled();
+    expect(transactionSetMock).not.toHaveBeenCalled();
+  });
+
+  it('no usa payment.value como total verificable de la factura afectada', async () => {
+    docSnapshots.set('businesses/business-1', {
+      fiscal: {
+        sequenceEngineV2Enabled: true,
+      },
+    });
+    docSnapshots.set('businesses/business-1/invoices/invoice-1', {
+      data: {
+        id: 'invoice-1',
+        NCF: 'B0100000001',
+        numberID: 714,
+        date: '2026-06-16T18:40:42.000Z',
+        payment: { value: 20 },
+        products: [{ id: 'product-1', amountToBuy: 1 }],
+      },
+    });
+    docSnapshots.set('businesses/business-1/creditNotes', []);
+
+    await expect(
+      createCustomerCreditNote({
+        data: {
+          businessId: 'business-1',
+          creditNote: {
+            invoiceId: 'invoice-1',
+            client: { id: 'client-1', name: 'GI SYS SRL' },
+            items: [{ id: 'product-1', name: 'Servicio', amountToBuy: 1 }],
+            totalAmount: 10,
+            reason: 'Devolucion parcial',
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      details: expect.objectContaining({
+        reason: 'credit-note-missing-invoice-total',
+      }),
+    });
+
     expect(transactionSetMock).not.toHaveBeenCalled();
   });
 

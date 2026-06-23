@@ -24,6 +24,7 @@ import {
 } from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
 import { assertAccountingPeriodOpenInTransaction } from '../../../versions/v2/accounting/utils/periodClosure.util.js';
 import { buildReceivablePaymentCashMovements } from '../../../versions/v2/accounting/utils/cashMovement.util.js';
+import { consumeCreditNotesTx } from '../../../versions/v2/invoice/services/creditNotes.service.js';
 import { buildClientPendingBalanceUpdate } from '../utils/clientPendingBalance.util.js';
 import {
   allocateFunctionalAmountsByDocument,
@@ -192,11 +193,116 @@ const normalizeActivePaymentMethods = (paymentMethods) =>
       .filter((method) => method.status)
     : [];
 
+const normalizeCreditNotePayments = (creditNotePayment) => {
+  if (!Array.isArray(creditNotePayment)) return [];
+
+  return creditNotePayment
+    .map((note) => {
+      const id = toCleanString(note?.id) || null;
+      const amountUsed = roundToTwoDecimals(note?.amountUsed);
+      if (!id || amountUsed <= THRESHOLD) return null;
+
+      return {
+        id,
+        amountUsed,
+        ...(toCleanString(note?.ncf)
+          ? { ncf: toCleanString(note.ncf) }
+          : {}),
+        ...(roundToTwoDecimals(note?.originalAmount) > THRESHOLD
+          ? { originalAmount: roundToTwoDecimals(note.originalAmount) }
+          : {}),
+      };
+    })
+    .filter(Boolean);
+};
+
+const isCreditNotePaymentMethod = (method) => {
+  const methodCode = toCleanString(method?.method)?.toLowerCase() || null;
+  return methodCode === 'creditnote' || methodCode === 'credit_note';
+};
+
+const sumCreditNotePaymentMethods = (paymentMethods) =>
+  roundToTwoDecimals(
+    (Array.isArray(paymentMethods) ? paymentMethods : []).reduce(
+      (sum, method) =>
+        isCreditNotePaymentMethod(method)
+          ? sum + roundToTwoDecimals(method?.value)
+          : sum,
+      0,
+    ),
+  );
+
+const validateCreditNotePaymentRequest = ({
+  creditNotePayments,
+  paymentMethods,
+}) => {
+  const creditNoteTotal = roundToTwoDecimals(
+    creditNotePayments.reduce((sum, note) => sum + note.amountUsed, 0),
+  );
+  const creditNoteMethodTotal = sumCreditNotePaymentMethods(paymentMethods);
+
+  if (creditNoteMethodTotal > THRESHOLD && creditNoteTotal <= THRESHOLD) {
+    throw new HttpsError(
+      'invalid-argument',
+      'Debe indicar las notas de crédito que respaldan el método de pago Nota de crédito.',
+    );
+  }
+
+  if (
+    creditNoteTotal > THRESHOLD &&
+    Math.abs(creditNoteTotal - creditNoteMethodTotal) > THRESHOLD
+  ) {
+    throw new HttpsError(
+      'invalid-argument',
+      'El total de notas de crédito no coincide con el método de pago Nota de crédito.',
+      {
+        creditNoteTotal,
+        creditNoteMethodTotal,
+      },
+    );
+  }
+};
+
 const paymentMethodsRequireCashCount = (paymentMethods) =>
   (Array.isArray(paymentMethods) ? paymentMethods : []).some((method) => {
     const methodCode = toCleanString(method?.method)?.toLowerCase() || null;
     return methodCode === 'cash' || methodCode === 'open_cash';
   });
+
+const resolveSingleInvoiceIdForCreditNoteApplications = ({
+  accountEntries,
+  invoiceAggregates,
+}) => {
+  const invoiceIds = new Set();
+
+  invoiceAggregates.forEach((_value, invoiceId) => {
+    const cleanInvoiceId = toCleanString(invoiceId);
+    if (cleanInvoiceId) invoiceIds.add(cleanInvoiceId);
+  });
+  accountEntries.forEach((entry) => {
+    const cleanInvoiceId = toCleanString(entry?.invoiceId);
+    if (cleanInvoiceId) invoiceIds.add(cleanInvoiceId);
+  });
+
+  if (invoiceIds.size !== 1) {
+    throw new HttpsError(
+      'failed-precondition',
+      'Las notas de crédito en CxC solo se pueden aplicar cuando el cobro impacta una sola factura.',
+      { invoiceCount: invoiceIds.size },
+    );
+  }
+
+  return Array.from(invoiceIds)[0];
+};
+
+const wrapCreditNoteApplicationError = (error) => {
+  if (error instanceof HttpsError) return error;
+
+  const message =
+    toCleanString(error?.message) ||
+    'No se pudieron aplicar las notas de crédito al cobro.';
+  return new HttpsError('failed-precondition', message);
+};
 
 const validatePaymentMethods = ({ expectedAmount, paymentMethods }) => {
   const normalizedMethods = normalizeActivePaymentMethods(paymentMethods);
@@ -742,6 +848,9 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
   const paymentMethods = normalizeActivePaymentMethods(
     paymentDetails.paymentMethods,
   );
+  const creditNotePayments = normalizeCreditNotePayments(
+    paymentDetails.creditNotePayment,
+  );
   const pilotMonetarySnapshot = accountingRolloutEnabled
     ? await resolvePilotMonetarySnapshotForBusiness({
       businessId,
@@ -793,6 +902,10 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
     expectedAmount: collectedFunctionalAmount,
     paymentMethods,
   });
+  validateCreditNotePaymentRequest({
+    creditNotePayments,
+    paymentMethods,
+  });
   const requestHash = buildIdempotencyRequestHash({
     businessId,
     clientId,
@@ -815,6 +928,12 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
           incomeTaxWithheld: thirdPartyWithholding.incomeTaxWithheld,
         }
       : null,
+    creditNotePayment: creditNotePayments.map((note) => ({
+      id: note.id,
+      amountUsed: note.amountUsed,
+      ncf: toCleanString(note.ncf) || null,
+      originalAmount: roundToTwoDecimals(note.originalAmount),
+    })),
     paymentMethods: paymentMethods.map((method) => ({
       method: toCleanString(method?.method)?.toLowerCase() || null,
       value: roundToTwoDecimals(method?.value),
@@ -906,6 +1025,9 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
   if (pilotMonetarySnapshot) {
     basePayment.monetary = pilotMonetarySnapshot;
   }
+  if (creditNotePayments.length) {
+    basePayment.creditNotePayment = creditNotePayments;
+  }
 
   let result = null;
 
@@ -966,6 +1088,11 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
         ok: true,
         businessId,
         paymentId: existingPaymentId,
+        creditNoteApplicationIds: Array.isArray(
+          existingPaymentRecord.creditNoteApplicationIds,
+        )
+          ? existingPaymentRecord.creditNoteApplicationIds
+          : [],
         receipt: sanitizeForResponse({
           id: existingReceiptSnap.id,
           ...existingReceiptSnap.data(),
@@ -1036,6 +1163,9 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
     let remainingAmount = appliedDocumentAmount;
     const accountEntries = [];
     const invoiceAggregates = new Map();
+    const accountUpdateWrites = [];
+    const installmentUpdateWrites = [];
+    const installmentPaymentWrites = [];
 
     contexts.forEach((context) => {
       const plan = applyReceivablePaymentToContext({
@@ -1050,30 +1180,30 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
       remainingAmount = plan.remainingAmount;
 
       if (plan.accountUpdate) {
-        transaction.update(
-          db.doc(
+        accountUpdateWrites.push({
+          ref: db.doc(
             `businesses/${businessId}/accountsReceivable/${plan.accountUpdate.arId}`,
           ),
-          plan.accountUpdate.payload,
-        );
+          payload: plan.accountUpdate.payload,
+        });
       }
 
       plan.installmentUpdates.forEach((entry) => {
-        transaction.update(
-          db.doc(
+        installmentUpdateWrites.push({
+          ref: db.doc(
             `businesses/${businessId}/accountsReceivableInstallments/${entry.installmentId}`,
           ),
-          entry.payload,
-        );
+          payload: entry.payload,
+        });
       });
 
       plan.installmentPaymentWrites.forEach((entry) => {
-        transaction.set(
-          db.doc(
+        installmentPaymentWrites.push({
+          ref: db.doc(
             `businesses/${businessId}/accountsReceivableInstallmentPayments/${entry.installmentPaymentId}`,
           ),
-          entry.payload,
-        );
+          payload: entry.payload,
+        });
       });
 
       if (plan.invoiceAggregate) {
@@ -1097,6 +1227,33 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
         'failed-precondition',
         'No se pudo aplicar el pago a ninguna cuenta con balance pendiente.',
       );
+    }
+
+    let creditNoteApplicationIds = [];
+    if (creditNotePayments.length) {
+      const creditNoteInvoiceId = resolveSingleInvoiceIdForCreditNoteApplications({
+        accountEntries,
+        invoiceAggregates,
+      });
+
+      try {
+        const creditNoteApplicationResult = await consumeCreditNotesTx(
+          transaction,
+          {
+            businessId,
+            userId: authUid,
+            invoiceId: creditNoteInvoiceId,
+            creditNotes: creditNotePayments,
+          },
+        );
+        creditNoteApplicationIds = Array.isArray(
+          creditNoteApplicationResult?.applicationIds,
+        )
+          ? creditNoteApplicationResult.applicationIds
+          : [];
+      } catch (error) {
+        throw wrapCreditNoteApplicationError(error);
+      }
     }
 
     const withholdingDoc = thirdPartyWithholding
@@ -1208,6 +1365,7 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
       functionalCollectedAmount: collectedFunctionalAmount,
       functionalWithholdingAmount,
       unappliedAmount: change,
+      creditNoteApplicationIds,
       accountEntries: enrichedAccountEntries,
       fxSettlementSummary: fxSettlements.length ? {
         settlementCount: fxSettlements.length,
@@ -1221,6 +1379,16 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
           pilotMonetarySnapshot?.functionalCurrency?.code ?? null,
       } : null,
     };
+
+    accountUpdateWrites.forEach((entry) => {
+      transaction.update(entry.ref, entry.payload);
+    });
+    installmentUpdateWrites.forEach((entry) => {
+      transaction.update(entry.ref, entry.payload);
+    });
+    installmentPaymentWrites.forEach((entry) => {
+      transaction.set(entry.ref, entry.payload);
+    });
 
     transaction.set(
       db.doc(`businesses/${businessId}/accountsReceivablePayments/${paymentId}`),
@@ -1410,6 +1578,7 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
       ok: true,
       businessId,
       paymentId,
+      creditNoteApplicationIds,
       receipt: sanitizeForResponse(receipt),
     };
   });

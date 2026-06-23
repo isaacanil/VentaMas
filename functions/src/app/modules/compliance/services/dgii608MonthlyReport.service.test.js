@@ -77,6 +77,44 @@ describe('dgii608MonthlyReport.service', () => {
     });
   });
 
+  it('usa eNcf como número fiscal de facturas electrónicas anuladas en 608', () => {
+    const result = mapInvoiceDocToDgii608Record({
+      businessId: 'business-1',
+      invoiceId: 'invoice-ecf-1',
+      invoiceDoc: {
+        data: {
+          id: 'invoice-ecf-1',
+          numberID: 16,
+          eNcf: 'E310000000016',
+          voidedAt: {
+            toDate: () => new Date('2026-04-20T13:20:00.000Z'),
+          },
+          voidReason: 'Cliente desistió',
+          status: 'voided',
+        },
+      },
+    });
+
+    expect(result.data.NCF).toBe('E310000000016');
+  });
+
+  it('usa eNcf como número fiscal de notas de crédito electrónicas anuladas en 608', () => {
+    const result = mapCreditNoteDocToDgii608Record({
+      businessId: 'business-1',
+      creditNoteId: 'credit-note-ecf-1',
+      creditNoteDoc: {
+        id: 'credit-note-ecf-1',
+        eNcf: 'E340000000016',
+        createdAt: {
+          toDate: () => new Date('2026-04-11T09:30:00.000Z'),
+        },
+        status: 'cancelled',
+      },
+    });
+
+    expect(result.ncf).toBe('E340000000016');
+  });
+
   it('normaliza nota de crédito anulada al shape del validador 608', () => {
     const result = mapCreditNoteDocToDgii608Record({
       businessId: 'business-1',

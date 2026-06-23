@@ -20,11 +20,14 @@ import styled from 'styled-components';
 
 import { SelectSettingCart } from '@/features/cart/cartSlice';
 import { useElementSize } from '@/hooks/useElementSize';
+import { FiscalDocumentPagination } from '../../../FiscalDocumentPagination/FiscalDocumentPagination';
 import { Invoice } from '../Invoice/Invoice';
 import InvoiceTemplateSelector from '../InvoiceTemplateSelector/InvoiceTemplateSelector';
 import {
   LETTER_INVOICE_TEMPLATE_V3_1_KEY,
   LETTER_INVOICE_TEMPLATE_V3_KEY,
+  PAGINATED_DOM_INVOICE_TEMPLATE_KEY,
+  isPaginatedDomInvoiceTemplate,
   resolveInvoicePreviewTemplate,
   resolveInvoiceSelectionTemplate,
   type InvoicePreviewTemplateKey,
@@ -181,16 +184,19 @@ const InvoicePaper = styled.div<{
 }>`
   width: ${({ $template }) => TEMPLATES_CONFIG[$template].width};
   height: ${({ $template, $selectionTemplate }) =>
-    $selectionTemplate === LETTER_INVOICE_TEMPLATE_V3_1_KEY
+    $selectionTemplate === LETTER_INVOICE_TEMPLATE_V3_1_KEY ||
+    $selectionTemplate === PAGINATED_DOM_INVOICE_TEMPLATE_KEY
       ? 'auto'
       : TEMPLATES_CONFIG[$template].height};
   min-height: ${({ $template, $selectionTemplate }) =>
-    $selectionTemplate === LETTER_INVOICE_TEMPLATE_V3_1_KEY
+    $selectionTemplate === LETTER_INVOICE_TEMPLATE_V3_1_KEY ||
+    $selectionTemplate === PAGINATED_DOM_INVOICE_TEMPLATE_KEY
       ? '297mm'
       : TEMPLATES_CONFIG[$template].minHeight || 'auto'};
   padding: ${({ $template, $selectionTemplate }) =>
     $selectionTemplate === LETTER_INVOICE_TEMPLATE_V3_KEY ||
-    $selectionTemplate === LETTER_INVOICE_TEMPLATE_V3_1_KEY
+    $selectionTemplate === LETTER_INVOICE_TEMPLATE_V3_1_KEY ||
+    $selectionTemplate === PAGINATED_DOM_INVOICE_TEMPLATE_KEY
       ? '0'
       : TEMPLATES_CONFIG[$template].padding};
   background: white;
@@ -198,7 +204,8 @@ const InvoicePaper = styled.div<{
   margin: 0 auto;
   position: relative;
   overflow: ${({ $selectionTemplate }) =>
-    $selectionTemplate === LETTER_INVOICE_TEMPLATE_V3_1_KEY
+    $selectionTemplate === LETTER_INVOICE_TEMPLATE_V3_1_KEY ||
+    $selectionTemplate === PAGINATED_DOM_INVOICE_TEMPLATE_KEY
       ? 'visible'
       : 'hidden'};
   box-sizing: border-box;
@@ -296,6 +303,17 @@ const StableInvoiceDocument = memo(function StableInvoiceDocument({
   template: InvoiceTemplateStorageKey;
   previewSignatureAssets?: InvoiceSignatureAssets;
 }) {
+  if (isPaginatedDomInvoiceTemplate(template)) {
+    return (
+      <div ref={componentRef}>
+        <FiscalDocumentPagination
+          data={{}}
+          previewSignatureAssets={previewSignatureAssets}
+        />
+      </div>
+    );
+  }
+
   return (
     <Invoice
       ref={componentRef}
@@ -516,7 +534,8 @@ export default function InvoiceTemplates({
   const pageStyle = useMemo(
     () =>
       effectiveTemplate === LETTER_INVOICE_TEMPLATE_V3_KEY ||
-      effectiveTemplate === LETTER_INVOICE_TEMPLATE_V3_1_KEY
+      effectiveTemplate === LETTER_INVOICE_TEMPLATE_V3_1_KEY ||
+      effectiveTemplate === PAGINATED_DOM_INVOICE_TEMPLATE_KEY
         ? '@page { size: A4 portrait; margin: 0; } html, body { margin: 0 !important; }'
         : undefined,
     [effectiveTemplate],

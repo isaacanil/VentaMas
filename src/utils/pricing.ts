@@ -50,7 +50,7 @@ function toFiniteNumber(value: unknown, fallback = 0): number {
 
 function resolveAmount(value: AmountInput, fallback = 1): number {
   if (value && typeof value === 'object') {
-    return toFiniteNumber(value.total ?? value.unit ?? value.value, fallback);
+    return toFiniteNumber(value.total ?? value.unit, fallback);
   }
   return toFiniteNumber(value, fallback);
 }

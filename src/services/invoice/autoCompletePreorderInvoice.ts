@@ -11,11 +11,7 @@ import { checkOpenCashReconciliation } from '@/firebase/cashCount/cashReconcilia
 import { flowTrace } from '@/utils/flowTrace';
 import type { InvoiceData } from '@/types/invoice';
 
-import {
-  submitInvoice,
-  waitForInvoiceResult,
-  generateIdempotencyKey,
-} from './invoice.service';
+import { submitInvoice, waitForInvoiceResult } from './invoice.service';
 
 type AutoCompleteClient = {
   id?: string | null;
@@ -49,6 +45,31 @@ type CallableErrorDetails = {
   traceId?: unknown;
   reason?: unknown;
 };
+
+const sanitizeIdempotencySegment = (
+  value: string | null | undefined,
+  fallback: string,
+): string => {
+  const rawValue = typeof value === 'string' ? value.trim() : '';
+  const normalizedValue = rawValue || fallback;
+  return (
+    normalizedValue.replace(/[^A-Za-z0-9:_-]/g, '_').slice(0, 96) || fallback
+  );
+};
+
+export const buildPreorderAutoCompleteIdempotencyKey = ({
+  businessId,
+  preorderId,
+}: {
+  businessId: string;
+  preorderId: string;
+}): string =>
+  [
+    'auto-complete',
+    'v1',
+    sanitizeIdempotencySegment(businessId, 'unknown-business'),
+    sanitizeIdempotencySegment(preorderId, 'unknown-preorder'),
+  ].join(':');
 
 const extractCallableErrorDetails = (
   error: unknown,
@@ -210,6 +231,40 @@ const loadPreorderAsCart = async (
   };
 };
 
+const waitForExistingPreorderInvoiceAttempt = async (
+  businessId: string,
+  preorderId: string,
+): Promise<AutoCompleteResult | null> => {
+  const invoiceV2Ref = doc(
+    db,
+    'businesses',
+    businessId,
+    'invoicesV2',
+    preorderId,
+  );
+  const snap = await getDoc(invoiceV2Ref);
+  if (!snap.exists()) return null;
+
+  const invoiceMeta = snap.data() as { status?: unknown };
+  void flowTrace('PREORDER_AUTO_COMPLETE_EXISTING_V2', {
+    preorderId,
+    businessId,
+    status:
+      typeof invoiceMeta?.status === 'string' ? invoiceMeta.status : null,
+  });
+
+  const result = await waitForInvoiceResult({
+    businessId,
+    invoiceId: preorderId,
+  });
+
+  return {
+    success: true,
+    invoice: result?.invoice ?? null,
+    invoiceId: preorderId,
+  };
+};
+
 /**
  * Auto-completes a preorder invoice without opening InvoicePanel.
  *
@@ -234,6 +289,14 @@ export const autoCompletePreorderInvoice = async (
 
   try {
     void flowTrace('PREORDER_AUTO_COMPLETE_START', { preorderId, businessId });
+
+    const existingAttempt = await waitForExistingPreorderInvoiceAttempt(
+      businessId,
+      preorderId,
+    );
+    if (existingAttempt) {
+      return existingAttempt;
+    }
 
     // 1. Load preorder from Firestore
     const cart = await loadPreorderAsCart(businessId, preorderId);
@@ -284,8 +347,11 @@ export const autoCompletePreorderInvoice = async (
     // 3. Resolve client
     const client = resolveClientFallback(cart, clientFallback);
 
-    // 4. Build idempotency key from the preorder id to prevent duplicates
-    const idempotencyKey = `auto-complete:${preorderId}:${generateIdempotencyKey()}`;
+    // 4. Build a stable idempotency key for retries of this preorder conversion.
+    const idempotencyKey = buildPreorderAutoCompleteIdempotencyKey({
+      businessId,
+      preorderId,
+    });
 
     // 5. Build preorder details for the CF
     const preorder = cart.preorderDetails

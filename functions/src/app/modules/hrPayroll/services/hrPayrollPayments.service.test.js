@@ -52,6 +52,7 @@ describe('hrPayrollPayments.service', () => {
       businessId: 'business-1',
       line: approvedLine,
       payload: {
+        amount: 125,
         paymentMethod: 'cash',
         reference: 'REC-001',
         cashCountId: 'cash-count-1',
@@ -80,6 +81,7 @@ describe('hrPayrollPayments.service', () => {
       accountingEventId: 'hr_payroll.payment.recorded__hrpay_line-1',
       cashMovementIds: ['hrp_hrpay_line-1_cash_1'],
     });
+    expect(result.payment.paymentMethods[0]).not.toHaveProperty('value');
     expect(result.accountingEvent).toMatchObject({
       id: 'hr_payroll.payment.recorded__hrpay_line-1',
       eventType: 'hr_payroll.payment.recorded',
@@ -143,6 +145,7 @@ describe('hrPayrollPayments.service', () => {
       businessId: 'business-1',
       line: approvedLine,
       payload: {
+        amount: 125,
         paymentMethod: 'bank_transfer',
         bankAccountId: 'bank-origin-1',
         transferReference: 'TRX-001',
@@ -177,6 +180,7 @@ describe('hrPayrollPayments.service', () => {
         paymentDestination: 'Banco legacy cuenta 9999',
       },
       payload: {
+        amount: 125,
         paymentMethod: 'bank_transfer',
         bankAccountId: 'bank-origin-1',
       },
@@ -194,7 +198,7 @@ describe('hrPayrollPayments.service', () => {
       buildHrPayrollPaymentDocuments({
         businessId: 'business-1',
         line: approvedLine,
-        payload: { paymentMethod: 'other' },
+        payload: { amount: 125, paymentMethod: 'other' },
       }),
     ).toMatchObject({
       ok: false,
@@ -206,7 +210,7 @@ describe('hrPayrollPayments.service', () => {
       buildHrPayrollPaymentDocuments({
         businessId: 'business-1',
         line: approvedLine,
-        payload: { paymentMethod: 'bank_transfer' },
+        payload: { amount: 125, paymentMethod: 'bank_transfer' },
       }),
     ).toMatchObject({
       ok: false,
@@ -217,7 +221,11 @@ describe('hrPayrollPayments.service', () => {
       buildHrPayrollPaymentDocuments({
         businessId: 'business-1',
         line: approvedLine,
-        payload: { paymentMethod: 'cash', cashAccountId: 'cash-account-1' },
+        payload: {
+          amount: 125,
+          paymentMethod: 'cash',
+          cashAccountId: 'cash-account-1',
+        },
       }),
     ).toMatchObject({
       ok: false,
@@ -247,6 +255,25 @@ describe('hrPayrollPayments.service', () => {
       ok: false,
       error:
         'Por ahora el MVP solo permite pagar el neto completo de la linea.',
+    });
+  });
+
+  it('rejects legacy amount aliases for new payroll payments', () => {
+    expect(
+      buildHrPayrollPaymentDocuments({
+        businessId: 'business-1',
+        line: approvedLine,
+        payload: {
+          value: 125,
+          totalAmount: 125,
+          paymentMethod: 'cash',
+          cashAccountId: 'cash-account-1',
+          cashCountId: 'cash-count-1',
+        },
+      }),
+    ).toMatchObject({
+      ok: false,
+      error: 'El monto del pago de nómina es requerido.',
     });
   });
 

@@ -13,8 +13,7 @@ export const resolveInvoiceProductUnitPrice = (
   product?: InvoiceProduct | null,
 ): number => {
   const pricing = resolvePricing(product);
-  if (pricing?.price !== undefined) return toNumber(pricing.price);
-  return toNumber(product?.price?.unit ?? 0);
+  return toNumber(pricing?.price ?? 0);
 };
 
 export const resolveInvoiceProductTaxRate = (

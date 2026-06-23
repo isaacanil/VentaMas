@@ -8,6 +8,7 @@ import {
 import {
   buildIssueSummary,
   isRecord,
+  resolveFiscalDocumentNumber,
   resolveMonthlyPeriodRange,
   toCleanString,
   toDate,
@@ -41,7 +42,7 @@ const shouldExcludeFromDgii607 = (status) => {
 };
 
 const shouldExcludeConsumerFinalFromDgii607 = (record) => {
-  const ncf = toCleanString(record?.data?.NCF);
+  const ncf = resolveFiscalDocumentNumber(record?.data) ?? toCleanString(record?.ncf);
   if (!isConsumerFinalNcf(ncf)) return false;
 
   const total = toFiniteNumber(record?.totals?.total);
@@ -62,7 +63,7 @@ const splitDgii607Records = (records = []) =>
       // Records without an NCF are non-fiscal transactions (e.g. walk-in sales
       // where no comprobante was issued). DGII 607 only covers NCF-bearing sales,
       // so exclude them rather than raising validation errors.
-      if (!toCleanString(record?.data?.NCF)) {
+      if (!resolveFiscalDocumentNumber(record?.data) && !toCleanString(record?.ncf)) {
         acc.excluded.push(record);
         return acc;
       }
@@ -114,18 +115,16 @@ const resolveAdjustmentNoteInvoiceNcf = (adjustmentNoteData) =>
   toCleanString(adjustmentNoteData?.modifiedNcf) ??
   toCleanString(adjustmentNoteData?.modifiedNCF) ??
   toCleanString(adjustmentNoteData?.invoice?.ncf) ??
+  toCleanString(adjustmentNoteData?.invoice?.eNcf) ??
   toCleanString(adjustmentNoteData?.invoice?.NCF) ??
   toCleanString(adjustmentNoteData?.sourceInvoice?.ncf) ??
+  toCleanString(adjustmentNoteData?.sourceInvoice?.eNcf) ??
   toCleanString(adjustmentNoteData?.sourceInvoice?.NCF) ??
   null;
 
 const resolveInvoiceNcfFromPayload = (invoiceDoc) => {
   const invoiceData = resolveInvoicePayload(invoiceDoc);
-  return (
-    toCleanString(invoiceData?.NCF) ??
-    toCleanString(invoiceData?.comprobante) ??
-    null
-  );
+  return resolveFiscalDocumentNumber(invoiceData);
 };
 
 const toRecordPeriodKey = (record) => {
@@ -150,10 +149,7 @@ export const mapInvoiceDocToDgii607Record = ({
     toCleanString(client.personalID) ??
     toCleanString(client.personalId) ??
     null;
-  const ncf =
-    toCleanString(invoiceData?.NCF) ??
-    toCleanString(invoiceData?.comprobante) ??
-    null;
+  const ncf = resolveFiscalDocumentNumber(invoiceData);
   const total =
     toFiniteNumber(invoiceData?.totalPurchase?.value) ??
     toFiniteNumber(invoiceData?.totalPurchase);
@@ -212,7 +208,7 @@ export const mapCreditNoteDocToDgii607Record = ({
     toCleanString(client.personalID) ??
     toCleanString(client.personalId) ??
     null;
-  const ncf = toCleanString(creditNoteData?.ncf) ?? null;
+  const ncf = resolveFiscalDocumentNumber(creditNoteData);
   const total = resolveCreditNoteTotalAmount(creditNoteData);
   const tax = resolveCreditNoteTaxAmount(creditNoteData);
   const documentNumber =
@@ -273,10 +269,7 @@ export const mapDebitNoteDocToDgii607Record = ({
     toCleanString(client.personalID) ??
     toCleanString(client.personalId) ??
     null;
-  const ncf =
-    toCleanString(debitNoteData?.ncf) ??
-    toCleanString(debitNoteData?.eNcf) ??
-    null;
+  const ncf = resolveFiscalDocumentNumber(debitNoteData);
   const total = resolveCreditNoteTotalAmount(debitNoteData);
   const tax = resolveCreditNoteTaxAmount(debitNoteData);
   const documentNumber =
@@ -401,7 +394,8 @@ const buildSourceRecordsSnapshot = (records = []) =>
     recordId: record?.metadata?.recordId ?? null,
     sourcePath: record?.metadata?.sourcePath ?? null,
     documentNumber: record?.documentNumber ?? null,
-    documentFiscalNumber: record?.data?.NCF ?? record?.ncf ?? null,
+    documentFiscalNumber:
+      resolveFiscalDocumentNumber(record?.data) ?? record?.ncf ?? null,
     counterpartyIdentificationNumber:
       record?.counterparty?.identification?.number ?? null,
     invoiceId: record?.invoiceId ?? record?.metadata?.invoiceId ?? null,
@@ -460,7 +454,7 @@ const mergeDgii607InvoicesWithWithholdings = ({
       },
     };
     const invoiceId = toCleanString(copy?.metadata?.recordId);
-    const ncf = toCleanString(copy?.data?.NCF);
+    const ncf = resolveFiscalDocumentNumber(copy?.data);
 
     if (invoiceId) invoicesById.set(invoiceId, copy);
     if (ncf) invoicesByNcf.set(ncf, copy);
@@ -473,7 +467,7 @@ const mergeDgii607InvoicesWithWithholdings = ({
     const invoiceId =
       toCleanString(withholding?.invoiceId) ??
       toCleanString(withholding?.metadata?.invoiceId);
-    const withholdingNcf = toCleanString(withholding?.data?.NCF);
+    const withholdingNcf = resolveFiscalDocumentNumber(withholding?.data);
     const matchingInvoice =
       (invoiceId ? invoicesById.get(invoiceId) : null) ??
       (withholdingNcf ? invoicesByNcf.get(withholdingNcf) : null);
@@ -843,7 +837,9 @@ const buildAdjustmentNoteCrossReferenceIssues = ({
     const adjustmentNoteInvoiceNcf = toCleanString(
       adjustmentNote?.metadata?.invoiceNcf,
     );
-    const linkedInvoiceNcf = toCleanString(linkedRecord?.data?.NCF);
+    const linkedInvoiceNcf =
+      resolveFiscalDocumentNumber(linkedRecord?.data) ??
+      toCleanString(linkedRecord?.ncf);
 
     if (!adjustmentNoteInvoiceNcf) {
       issues.push({

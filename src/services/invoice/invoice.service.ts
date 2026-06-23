@@ -150,11 +150,10 @@ const normalizePilotBankPaymentMethods = async (
       method?: unknown;
       status?: unknown;
       value?: unknown;
-      amount?: unknown;
       bankAccountId?: unknown;
     };
     const active = method.status === true;
-    const amount = safeNumber(method.value ?? method.amount) ?? 0;
+    const amount = safeNumber(method.value) ?? 0;
     const bankAccountId =
       typeof method.bankAccountId === 'string'
         ? method.bankAccountId.trim()
@@ -458,10 +457,8 @@ export const buildInvoiceRequestPayload = async ({
     const payment = isPlainObject(payload.cart.payment)
       ? payload.cart.payment
       : {};
-    const total =
-      safeNumber(totalPurchase.value) ?? safeNumber(payload.cart.totalAmount);
-    const paid =
-      safeNumber(payment.value) ?? safeNumber(payload.cart.totalPaid);
+    const total = safeNumber(totalPurchase.value);
+    const paid = safeNumber(payment.value);
     const monetarySnapshot = await resolveMonetarySnapshotForBusiness({
       businessId: resolvedBusinessId,
       monetary: payload.cart.monetary,

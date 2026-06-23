@@ -26,13 +26,11 @@ import {
   loadAiBusinessSeedingRoute,
   loadBSeriesInvoicesRoute,
   loadCashCountAuditRoute,
-  loadCustomHeroUiPlaygroundRoute,
   loadElectronicTaxReceiptProviderConfigRoute,
   loadErrorReportsRoute,
   loadErrorScreenPreviewRoute,
   loadFinanceReadinessAuditRoute,
   loadFiscalReceiptsAuditRoute,
-  loadHeroUiPlaygroundRoute,
   loadInventoryMigrationToolRoute,
   loadInvoiceV2RecoveryRoute,
   loadProductFormV2TestBenchRoute,
@@ -100,12 +98,21 @@ import { loadWelcomeRoute, loadWelcomeV2Route } from '@/modules/welcome/public';
 import ROUTES_NAME from './routesName';
 
 type RoutePreloader = () => Promise<unknown>;
+type DevPublicRouteLoaderName =
+  | 'loadCustomHeroUiPlaygroundRoute'
+  | 'loadHeroUiPlaygroundRoute'
+  | 'loadPrintPaginationLabRoute';
 
 const mapRoutesToPreloader = (
   routes: readonly string[],
   preloader: RoutePreloader,
 ): Record<string, RoutePreloader> =>
   Object.fromEntries(routes.map((route) => [route, preloader]));
+
+const loadDevPublicRoute = async (loaderName: DevPublicRouteLoaderName) => {
+  const devPublic = await import('@/modules/dev/public');
+  return devPublic[loaderName]();
+};
 
 const {
   BASIC_TERM,
@@ -202,6 +209,19 @@ const hrCommissionPeriodPreloaders = mapRoutesToPreloader(
   ],
   loadHrCommissionPeriodsRoute,
 );
+
+const buildLabRoutePreloaders = (): Record<string, RoutePreloader> => ({
+  [LAB_TERM.HEROUI]: () => loadDevPublicRoute('loadHeroUiPlaygroundRoute'),
+  [LAB_TERM.HEROUI_CUSTOM]: () =>
+    loadDevPublicRoute('loadCustomHeroUiPlaygroundRoute'),
+  [`${LAB_TERM.LAB}/print-pagination`]: () =>
+    loadDevPublicRoute('loadPrintPaginationLabRoute'),
+});
+
+const labRoutePreloaders: Record<string, RoutePreloader> =
+  import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEV_ROUTES === 'true'
+    ? buildLabRoutePreloaders()
+    : {};
 
 export const routePreloaders: Record<string, RoutePreloader> = {
   [BASIC_TERM.HOME]: loadHomeRoute,
@@ -323,8 +343,7 @@ export const routePreloaders: Record<string, RoutePreloader> = {
   [DEV_VIEW_TERM.PRUEBA]: loadTestPlaygroundRoute,
   [DEV_VIEW_TERM.ERROR_SCREEN_PREVIEW]: loadErrorScreenPreviewRoute,
   [DEV_VIEW_TERM.ERROR_REPORTS]: loadErrorReportsRoute,
-  [LAB_TERM.HEROUI]: loadHeroUiPlaygroundRoute,
-  [LAB_TERM.HEROUI_CUSTOM]: loadCustomHeroUiPlaygroundRoute,
+  ...labRoutePreloaders,
   [SUBSCRIPTION_MAINTENANCE]: loadDeveloperSubscriptionMaintenanceRoute,
   [SUBSCRIPTION_MAINTENANCE_PLANS]: async () => {
     await Promise.all([

@@ -1,7 +1,6 @@
 import { httpsCallable } from 'firebase/functions';
 import { nanoid } from 'nanoid';
 
-import { fbConsumeCreditNotes } from '@/firebase/creditNotes/fbConsumeCreditNotes';
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
 import { functions } from '@/firebase/firebaseconfig';
 import type { CreditNotePayment as CreditNotePaymentInput } from '@/types/creditNote';
@@ -17,6 +16,23 @@ type PaymentReceipt = {
     arBalance?: number;
   }>;
   [key: string]: unknown;
+};
+
+type ProcessAccountsReceivablePaymentDetails = Omit<
+  PaymentDetails,
+  'creditNotePayment'
+> & {
+  paymentScope: 'balance' | 'account';
+  paymentOption?: 'installment' | 'balance' | 'partial';
+  clientId: string;
+  totalAmount?: number | string;
+  creditNotePayment?: CreditNotePaymentInput[];
+};
+
+type ProcessAccountsReceivablePaymentResponse = {
+  ok?: boolean;
+  receipt?: PaymentReceipt;
+  creditNoteApplicationIds?: string[];
 };
 
 type ProcessClientPaymentOptions = {
@@ -72,25 +88,6 @@ const resolveTotalAmount = (details: PaymentDetails): number | string => {
   return details.totalPaid;
 };
 
-const resolveInvoiceIdFromReceipt = (
-  receipt: PaymentReceipt,
-): string | null => {
-  const accounts = receipt?.accounts;
-  if (!Array.isArray(accounts)) return null;
-
-  for (const account of accounts) {
-    const rawInvoiceId = (account as { invoiceId?: unknown }).invoiceId;
-    if (typeof rawInvoiceId === 'string' && rawInvoiceId.trim()) {
-      return rawInvoiceId;
-    }
-    if (typeof rawInvoiceId === 'number' && Number.isFinite(rawInvoiceId)) {
-      return String(rawInvoiceId);
-    }
-  }
-
-  return null;
-};
-
 const normalizeCreditNotePayments = (
   creditNotes: PaymentDetails['creditNotePayment'],
 ): CreditNotePaymentInput[] => {
@@ -105,12 +102,7 @@ const normalizeCreditNotePayments = (
           : '';
       if (!id) return null;
 
-      const amountCandidate =
-        typeof note.amountUsed === 'number'
-          ? note.amountUsed
-          : typeof note.amountToUse === 'number'
-            ? note.amountToUse
-            : Number(note.amountUsed ?? note.amountToUse ?? 0);
+      const amountCandidate = Number(note.amountUsed);
 
       const payment: CreditNotePaymentInput = {
         id,
@@ -119,12 +111,40 @@ const normalizeCreditNotePayments = (
       if (typeof note.ncf === 'string') {
         payment.ncf = note.ncf;
       }
-      if (typeof (note as { originalAmount?: unknown }).originalAmount === 'number') {
+      if (
+        typeof (note as { originalAmount?: unknown }).originalAmount ===
+        'number'
+      ) {
         payment.originalAmount = (note as { originalAmount: number }).originalAmount;
       }
       return payment;
     })
     .filter((note): note is CreditNotePaymentInput => note !== null);
+};
+
+const assertBackendConfirmedCreditNoteApplications = ({
+  requestedCreditNotes,
+  applicationIds,
+}: {
+  requestedCreditNotes: CreditNotePaymentInput[];
+  applicationIds: unknown;
+}) => {
+  if (!requestedCreditNotes.length) return;
+
+  const confirmedApplicationIds = Array.isArray(applicationIds)
+    ? applicationIds.filter(
+        (applicationId): applicationId is string =>
+          typeof applicationId === 'string' && applicationId.trim().length > 0,
+      )
+    : [];
+
+  if (confirmedApplicationIds.length >= requestedCreditNotes.length) {
+    return;
+  }
+
+  throw new Error(
+    'El cobro fue confirmado, pero no se pudo verificar la aplicación de las notas de crédito. Reabra la cuenta y confirme si la nota quedó aplicada antes de registrar otro cobro; si no aparece aplicada, escale el pago para conciliación manual.',
+  );
 };
 
 export const fbProcessClientPaymentAR = async (
@@ -173,24 +193,19 @@ export const fbProcessClientPaymentAR = async (
       },
       capturedBy: hasUserUid(user) ? user.uid : null,
     });
+    const creditNotesToApply = normalizeCreditNotePayments(
+      paymentDetails.creditNotePayment,
+    );
 
     const { sessionToken } = getStoredSession();
     const processAccountsReceivablePaymentCallable = httpsCallable<
       {
         businessId: string;
         idempotencyKey: string;
-        paymentDetails: PaymentDetails & {
-          paymentScope: 'balance' | 'account';
-          paymentOption?: 'installment' | 'balance' | 'partial';
-          clientId: string;
-          totalAmount?: number | string;
-        };
+        paymentDetails: ProcessAccountsReceivablePaymentDetails;
         sessionToken?: string;
       },
-      {
-        ok?: boolean;
-        receipt?: PaymentReceipt;
-      }
+      ProcessAccountsReceivablePaymentResponse
     >(functions, 'processAccountsReceivablePayment');
 
     const response = await processAccountsReceivablePaymentCallable({
@@ -199,6 +214,7 @@ export const fbProcessClientPaymentAR = async (
       paymentDetails: {
         ...paymentDetails,
         monetary: resolvedMonetary,
+        creditNotePayment: creditNotesToApply,
         ...(paymentScope === 'account'
           ? {
               arId: resolveArId(paymentDetails),
@@ -213,33 +229,10 @@ export const fbProcessClientPaymentAR = async (
       throw new Error('No se recibio comprobante del backend.');
     }
 
-    // Consumir notas de crédito si se aplicaron
-    if (paymentDetails?.creditNotePayment?.length > 0) {
-      try {
-        // Para AR payments quizás no haya una sola factura; usaremos el primer invoiceId del receipt si existe
-        const firstInvoiceId = resolveInvoiceIdFromReceipt(receipt);
-        const creditNotesToConsume = normalizeCreditNotePayments(
-          paymentDetails.creditNotePayment,
-        );
-
-        if (!firstInvoiceId) {
-          console.warn(
-            'No invoiceId disponible para consumir notas de crédito en AR payment.',
-          );
-        } else if (creditNotesToConsume.length > 0) {
-          await fbConsumeCreditNotes(
-            user,
-            creditNotesToConsume,
-            firstInvoiceId,
-            {
-              source: 'AR_PAYMENT',
-            },
-          );
-        }
-      } catch (e) {
-        console.error('Error consuming credit notes in AR payment:', e);
-      }
-    }
+    assertBackendConfirmedCreditNoteApplications({
+      requestedCreditNotes: creditNotesToApply,
+      applicationIds: response.data?.creditNoteApplicationIds,
+    });
 
     callback(receipt);
     return receipt;

@@ -275,6 +275,52 @@ service cloud.firestore {
         && !isLockedInvoiceDocument(data);
     }
 
+    function isPreorderFinancialDocument(data) {
+      return documentPayload(data).type == 'preorder'
+        && documentPayload(data).preorderDetails is map
+        && documentPayload(data).preorderDetails.isOrWasPreorder == true;
+    }
+
+    function hasPostedPreorderFootprint(data) {
+      return documentPayload(data).keys().hasAny([
+        'NCF',
+        'ncf',
+        'comprobante',
+        'numberID',
+        'receivableState',
+        'accumulatedPaid',
+        'balanceDue',
+        'paymentHistory',
+        'cashCountId',
+        'voidedAt'
+      ]) || data.keys().hasAny([
+        'accountingEventId',
+        'journalEntryId'
+      ]);
+    }
+
+    function hasInvalidPreorderCancelFootprint(data) {
+      return documentPayload(data).keys().hasAny(['cancel'])
+        && documentStatus(data) != 'cancelled';
+    }
+
+    function isSafePreorderCreate(data) {
+      return isPreorderFinancialDocument(data)
+        && documentStatus(data) == 'pending'
+        && !hasPostedPreorderFootprint(data)
+        && !hasInvalidPreorderCancelFootprint(data);
+    }
+
+    function isSafePreorderUpdate(before, after) {
+      return isPreorderFinancialDocument(before)
+        && documentStatus(before) == 'pending'
+        && isPreorderFinancialDocument(after)
+        && documentStatus(after) in ['pending', 'cancelled']
+        && !hasPostedPreorderFootprint(before)
+        && !hasPostedPreorderFootprint(after)
+        && !hasInvalidPreorderCancelFootprint(after);
+    }
+
     function isLockedPurchaseStatus(data) {
       return documentStatus(data) in [
         'completed',
@@ -523,12 +569,20 @@ service cloud.firestore {
       // Creación directa solo queda abierta para borradores sin huella
       // fiscal/contable. La emisión/finalización pasa por createInvoiceV2.
       allow create: if hasBusinessWriteAccess(businessId)
-        && isSafeInvoiceDraftCreate(request.resource.data);
+        && (
+          isSafeInvoiceDraftCreate(request.resource.data)
+          || isSafePreorderCreate(request.resource.data)
+        );
       allow update: if hasBusinessWriteAccess(businessId)
-        && isDraftFinancialDocument(resource.data)
-        && isDraftFinancialDocument(request.resource.data)
-        && !isLockedInvoiceDocument(resource.data)
-        && !isLockedInvoiceDocument(request.resource.data);
+        && (
+          (
+            isDraftFinancialDocument(resource.data)
+            && isDraftFinancialDocument(request.resource.data)
+            && !isLockedInvoiceDocument(resource.data)
+            && !isLockedInvoiceDocument(request.resource.data)
+          )
+          || isSafePreorderUpdate(resource.data, request.resource.data)
+        );
       allow delete: if hasBusinessWriteAccess(businessId)
         && isDraftFinancialDocument(resource.data)
         && !isLockedInvoiceDocument(resource.data);

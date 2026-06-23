@@ -14,20 +14,22 @@ import {
   InfoCircleOutlined,
 } from '@ant-design/icons';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
-import { setBillingSettings } from '@/firebase/billing/billingSetting';
+import {
+  SelectSettingCart,
+  setBillingSettings as setCartBillingSettings,
+} from '@/features/cart/cartSlice';
+import { setBillingSettings as saveBillingSettings } from '@/firebase/billing/billingSetting';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
 import type { UserIdentity } from '@/types/users';
 import { hasDeveloperAccess } from '@/utils/access/developerAccess';
 import { isFrontendFeatureEnabled } from '@/utils/runtime/frontendFeatureAccess';
 import {
-  LETTER_INVOICE_TEMPLATE_V2_KEY,
-  LETTER_INVOICE_TEMPLATE_V3_1_KEY,
-  LETTER_INVOICE_TEMPLATE_V3_KEY,
-  LETTER_INVOICE_TEMPLATE_V4_KEY,
+  PAGINATED_DOM_INVOICE_TEMPLATE_KEY,
+  isDeprecatedInvoiceTemplate,
   type InvoiceTemplateStorageKey,
 } from '@/utils/invoice/template';
 
@@ -137,11 +139,13 @@ const PreviewButton = styled(Button)`
   border-radius: 8px;
 `;
 
-const BASE_INVOICE_TEMPLATES: Array<{
+type InvoiceTemplateOption = {
   id: InvoiceTemplateStorageKey;
   name: string;
   description: string;
-}> = [
+};
+
+const BASE_INVOICE_TEMPLATES: InvoiceTemplateOption[] = [
   {
     id: 'template1',
     name: 'Plantilla Compacta 1',
@@ -156,6 +160,14 @@ const BASE_INVOICE_TEMPLATES: Array<{
     id: 'template2',
     name: 'Plantilla Carta',
     description: 'Impresora Regular / PDF',
+  },
+];
+
+const LETTER_INVOICE_TEMPLATE_OPTIONS: InvoiceTemplateOption[] = [
+  {
+    id: PAGINATED_DOM_INVOICE_TEMPLATE_KEY,
+    name: 'Plantilla Carta Paginada',
+    description: 'Motor DOM propio con header y footer por página',
   },
 ];
 
@@ -174,7 +186,9 @@ const InvoiceTemplateSelector = ({
 }: InvoiceTemplateSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const dispatch = useDispatch();
   const user = useSelector(selectUser) as UserIdentity | null;
+  const currentBillingSettings = useSelector(SelectSettingCart).billing;
   const { refs, floatingStyles } = useFloating({
     placement: 'bottom-start',
     whileElementsMounted: autoUpdate,
@@ -194,41 +208,19 @@ const InvoiceTemplateSelector = ({
   const isTemplateV2Enabled =
     isFrontendFeatureEnabled('invoiceTemplateV2Beta') ||
     hasDeveloperAccess(user);
+  const isHiddenLetterTemplate = isDeprecatedInvoiceTemplate(template);
   const selectedTemplate =
     !isTemplateV2Enabled &&
-    (template === LETTER_INVOICE_TEMPLATE_V2_KEY ||
-      template === LETTER_INVOICE_TEMPLATE_V3_KEY ||
-      template === LETTER_INVOICE_TEMPLATE_V3_1_KEY ||
-      template === LETTER_INVOICE_TEMPLATE_V4_KEY)
+    (isHiddenLetterTemplate || template === PAGINATED_DOM_INVOICE_TEMPLATE_KEY)
       ? 'template2'
-      : template;
+      : isTemplateV2Enabled && isHiddenLetterTemplate
+        ? PAGINATED_DOM_INVOICE_TEMPLATE_KEY
+        : template;
 
   const invoiceTemplates = useMemo(
     () =>
       isTemplateV2Enabled
-        ? [
-            ...BASE_INVOICE_TEMPLATES,
-            {
-              id: LETTER_INVOICE_TEMPLATE_V2_KEY,
-              name: 'Plantilla Carta V2',
-              description: 'Beta para pruebas internas en dev/staging',
-            },
-            {
-              id: LETTER_INVOICE_TEMPLATE_V3_KEY,
-              name: 'Plantilla Carta V3 HTML',
-              description: 'Beta HTML/CSS con impresión del navegador',
-            },
-            {
-              id: LETTER_INVOICE_TEMPLATE_V3_1_KEY,
-              name: 'Plantilla Carta V3.1 HTML',
-              description: 'Beta HTML/CSS con header y footer por página',
-            },
-            {
-              id: LETTER_INVOICE_TEMPLATE_V4_KEY,
-              name: 'Plantilla Carta V4 PDFMake',
-              description: 'Beta PDF programático con tabla multi-página',
-            },
-          ]
+        ? [...BASE_INVOICE_TEMPLATES, ...LETTER_INVOICE_TEMPLATE_OPTIONS]
         : BASE_INVOICE_TEMPLATES,
     [isTemplateV2Enabled],
   );
@@ -250,8 +242,16 @@ const InvoiceTemplateSelector = ({
   useClickOutSide(containerRef, isOpen, () => setIsOpen(false));
 
   const handleTemplateChange = (value: InvoiceTemplateStorageKey) => {
-    void setBillingSettings(user, { invoiceType: value }).then(
+    void saveBillingSettings(user, { invoiceType: value }).then(
       () => {
+        dispatch(
+          setCartBillingSettings({
+            ...currentBillingSettings,
+            invoiceType: value,
+            isError: false,
+            isLoading: false,
+          }),
+        );
         onSave?.(value);
         message.success('Plantilla de factura actualizada');
         setIsOpen(false);
@@ -263,13 +263,11 @@ const InvoiceTemplateSelector = ({
   };
 
   const formatTag =
-    selectedTemplateMeta?.id === 'template2' ||
-    selectedTemplateMeta?.id === LETTER_INVOICE_TEMPLATE_V2_KEY ||
-    selectedTemplateMeta?.id === LETTER_INVOICE_TEMPLATE_V3_KEY ||
-    selectedTemplateMeta?.id === LETTER_INVOICE_TEMPLATE_V3_1_KEY ||
-    selectedTemplateMeta?.id === LETTER_INVOICE_TEMPLATE_V4_KEY
-      ? 'Carta'
-      : 'Compacta';
+    selectedTemplateMeta?.id === PAGINATED_DOM_INVOICE_TEMPLATE_KEY
+      ? 'Paginada'
+      : selectedTemplateMeta?.id === 'template2'
+        ? 'Carta'
+        : 'Compacta';
 
   return (
     <StyledContainer ref={containerRef}>
@@ -304,7 +302,9 @@ const InvoiceTemplateSelector = ({
         <SummaryFooter>
           {selectedTemplateMeta ? (
             <Tooltip title={selectedTemplateMeta.description}>
-              <SummaryTemplateName>{selectedTemplateMeta.name}</SummaryTemplateName>
+              <SummaryTemplateName>
+                {selectedTemplateMeta.name}
+              </SummaryTemplateName>
             </Tooltip>
           ) : (
             <Text type="secondary">
@@ -315,10 +315,7 @@ const InvoiceTemplateSelector = ({
       </SummaryButton>
 
       {isOpen && (
-        <FloatingPanel
-          ref={setFloating}
-          style={floatingStyles}
-        >
+        <FloatingPanel ref={setFloating} style={floatingStyles}>
           <OptionList>
             {invoiceTemplates.map((item) => (
               <OptionItem

@@ -68,14 +68,7 @@ const normalizeClientToken = (value) =>
     .toUpperCase()
     .replace(/[^A-Z0-9]+/g, ' ');
 
-const resolveCartTotal = (cart) =>
-  safeNumber(cart?.totalPurchase?.value) ??
-  safeNumber(cart?.totalPurchase) ??
-  safeNumber(cart?.totalAmount?.value) ??
-  safeNumber(cart?.totalAmount) ??
-  safeNumber(cart?.payment?.value) ??
-  safeNumber(cart?.payment) ??
-  null;
+const resolveCartTotal = (cart) => safeNumber(cart?.totalPurchase?.value);
 
 const resolveClientIdentificationNumber = (client) => {
   const clientRecord = asRecord(client);
@@ -332,12 +325,8 @@ export async function createPendingInvoice({
               payload?.cart?.totalPurchaseWithoutTaxes?.value,
             ),
             taxes: safeNumber(payload?.cart?.totalTaxes?.value),
-            total:
-              safeNumber(payload?.cart?.totalPurchase?.value) ??
-              safeNumber(payload?.cart?.totalAmount),
-            paid:
-              safeNumber(payload?.cart?.payment?.value) ??
-              safeNumber(payload?.cart?.totalPaid),
+            total: safeNumber(payload?.cart?.totalPurchase?.value),
+            paid: safeNumber(payload?.cart?.payment?.value),
           },
           capturedBy: userId,
         })

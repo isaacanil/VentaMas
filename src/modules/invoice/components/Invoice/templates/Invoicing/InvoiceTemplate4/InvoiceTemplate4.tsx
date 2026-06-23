@@ -27,6 +27,7 @@ import {
   getProductIndividualDiscount,
   getProductsIndividualDiscounts,
 } from '@/utils/pricing';
+import { CompactElectronicFiscalBlock } from '@/modules/invoice/components/Invoice/templates/Invoicing/shared/CompactElectronicFiscalBlock';
 import type {
   InvoiceBusinessInfo,
   InvoiceClient,
@@ -523,6 +524,7 @@ export const InvoiceTemplate4 = React.forwardRef<
     <HiddenPrintWrapper $visible={Boolean(ignoreHidden)}>
       <ReceiptPaper ref={ref}>
         <ReceiptText>{factura}</ReceiptText>
+        <CompactElectronicFiscalBlock data={data} variant="matrix" />
       </ReceiptPaper>
     </HiddenPrintWrapper>
   );
