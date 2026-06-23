@@ -16,7 +16,7 @@ import type { TaxReceiptDocument } from '@/types/taxReceipt';
 import { serializeFirestoreDocuments } from '@/utils/serialization/serializeFirestoreData';
 import { validateUser } from '@/utils/userValidation';
 
-import { removeDuplicateTaxReceipts } from './removeDuplicateTaxReceipts';
+import { dedupeTaxReceiptDocuments } from './removeDuplicateTaxReceipts';
 import { taxReceiptDefault } from './taxReceiptsDefault';
 
 export const useAutoCreateDefaultTaxReceipt = () => {
@@ -34,13 +34,7 @@ export const useAutoCreateDefaultTaxReceipt = () => {
     );
 
     const unsubscribe = onSnapshot(taxReceiptsRef, async (snapshot) => {
-      if (!snapshot.empty) {
-        try {
-          await removeDuplicateTaxReceipts(user.businessID);
-        } catch (err) {
-          console.error('Error al eliminar duplicados:', err);
-        }
-      } else {
+      if (snapshot.empty) {
         try {
           const existingReceipts = new Set<string>();
           const existingSnapshot = await getDocs(taxReceiptsRef);
@@ -97,10 +91,15 @@ export const useAutoCreateDefaultTaxReceipt = () => {
       }
 
       const taxReceiptsArray = snapshot.docs.map(
-        (docItem) => docItem.data() as TaxReceiptDocument,
+        (docItem) =>
+          ({
+            ...(docItem.data() as TaxReceiptDocument),
+            id: docItem.id,
+          }) as TaxReceiptDocument,
       );
+      const dedupedTaxReceipts = dedupeTaxReceiptDocuments(taxReceiptsArray);
       const serializedTaxReceipts = serializeFirestoreDocuments(
-        taxReceiptsArray,
+        dedupedTaxReceipts,
       ) as TaxReceiptDocument[];
       dispatch(getTaxReceiptData(serializedTaxReceipts));
     });

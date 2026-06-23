@@ -1,126 +1,88 @@
-import { collection, query, getDocs, deleteDoc } from 'firebase/firestore';
-
-import { db } from '@/firebase/firebaseconfig';
 import type { TaxReceiptData, TaxReceiptDocument } from '@/types/taxReceipt';
 import type { TimestampLike } from '@/utils/date/types';
+import { toMillis } from '@/utils/date/toMillis';
 
-// Valor por defecto de sequence (ajústalo según tu lógica)
 const DEFAULT_SEQUENCE = '0000000000';
 
 type ReceiptWithMeta = TaxReceiptData & {
   id: string;
-  docRef: Parameters<typeof deleteDoc>[0];
+  document: TaxReceiptDocument;
   createdAt?: TimestampLike;
+  originalIndex: number;
 };
 
-const toMillisSafe = (value: TimestampLike): number | null => {
-  if (!value) return null;
-  if (typeof value === 'number') return value;
-  if (value instanceof Date) return value.getTime();
-  if (typeof value === 'object' && typeof value.toMillis === 'function') {
-    return value.toMillis();
+const resolveReceiptSerie = (data: TaxReceiptData): string =>
+  data.serie || data.series || 'unknown';
+
+const hasConsumedSequence = (sequence: TaxReceiptData['sequence']): boolean => {
+  if (sequence === null || sequence === undefined || sequence === '') {
+    return false;
   }
-  if (typeof value === 'object' && typeof value.seconds === 'number') {
-    return value.seconds * 1000;
+
+  const sequenceText = String(sequence).trim();
+  if (!sequenceText || sequenceText === DEFAULT_SEQUENCE) {
+    return false;
   }
-  return null;
+
+  const numericSequence = Number(sequenceText);
+  if (Number.isFinite(numericSequence)) {
+    return numericSequence > 0;
+  }
+
+  return true;
 };
 
-export const removeDuplicateTaxReceipts = async (businessID: string) => {
-  try {
-    const taxReceiptsRef = collection(
-      db,
-      'businesses',
-      businessID,
-      'taxReceipts',
-    );
-    const q = query(taxReceiptsRef);
-    const querySnapshot = await getDocs(q);
+const getCreatedAtMillis = (value: TimestampLike | undefined): number | null =>
+  toMillis(value) ?? null;
 
-    // Agrupar recibos por serie
-    const receiptsBySeries: Record<string, ReceiptWithMeta[]> = {};
-    querySnapshot.forEach((docSnap) => {
-      const data = (docSnap.data() as TaxReceiptDocument)?.data;
-      const serie = data?.serie || data?.series || 'unknown';
-      if (!receiptsBySeries[serie]) {
-        receiptsBySeries[serie] = [];
-      }
-      receiptsBySeries[serie].push({
-        id: docSnap.id,
-        ...data,
-        docRef: docSnap.ref as Parameters<typeof deleteDoc>[0],
-      });
-    });
+const shouldPreferReceipt = (
+  current: ReceiptWithMeta,
+  candidate: ReceiptWithMeta,
+): boolean => {
+  const currentConsumed = hasConsumedSequence(current.sequence);
+  const candidateConsumed = hasConsumedSequence(candidate.sequence);
 
-    // Iterar sobre cada grupo de la misma serie
-    for (const serie in receiptsBySeries) {
-      const receipts = receiptsBySeries[serie];
+  if (currentConsumed !== candidateConsumed) {
+    return candidateConsumed;
+  }
 
-      // Si hay más de un documento con la misma serie, se procede a revisar duplicados
-      if (receipts.length > 1) {
-        let receiptToKeep: ReceiptWithMeta | null = null;
+  const currentCreatedAt = getCreatedAtMillis(current.createdAt);
+  const candidateCreatedAt = getCreatedAtMillis(candidate.createdAt);
 
-        // 1. Priorizar recibos con sequence "consumido" (diferente al default)
-        const consumedReceipts = receipts.filter(
-          (r) => r.sequence !== DEFAULT_SEQUENCE,
-        );
-        if (consumedReceipts.length > 0) {
-          // Por ejemplo, conservar el que tenga el createdAt más antiguo (o el más reciente, según necesidad)
-          receiptToKeep = consumedReceipts.reduce((prev, current) => {
-            // Si alguno no tiene createdAt, se prioriza el que sí lo tenga
-            if (!prev.createdAt) return current;
-            if (!current.createdAt) return prev;
-            const prevMillis = toMillisSafe(prev.createdAt) ?? 0;
-            const currentMillis = toMillisSafe(current.createdAt) ?? 0;
-            return prevMillis < currentMillis ? prev : current;
-          });
-        } else {
-          // 2. Si ninguno tiene un sequence "consumido", usar la fecha de creación
-          if (receipts.every((r) => r.createdAt)) {
-            receiptToKeep = receipts.reduce((prev, current) => {
-              const prevMillis = toMillisSafe(prev.createdAt) ?? 0;
-              const currentMillis = toMillisSafe(current.createdAt) ?? 0;
-              return prevMillis < currentMillis ? prev : current;
-            });
-          } else {
-            // 3. Fallback: usar el primer documento
-            receiptToKeep = receipts[0];
-          }
-        }
+  if (currentCreatedAt === null && candidateCreatedAt !== null) {
+    return true;
+  }
 
-        // 4. (Opcional) Verificar que no se repita el name de forma secundaria.
-        // Si existen varios con el mismo name y serie, podrías filtrar para quedarte con uno.
-        // Por ejemplo, si hay otros con name igual a receiptToKeep.name, se eliminarán.
-        const sameNameDuplicates = receipts.filter(
-          (r) => r.name === receiptToKeep?.name,
-        );
-        if (sameNameDuplicates.length > 1 && receiptToKeep) {
-          // En este ejemplo se conserva receiptToKeep y se eliminan los demás
-          sameNameDuplicates.forEach((r) => {
-            if (r.id !== receiptToKeep.id) {
-              deleteDoc(r.docRef)
-                .then(() =>
-                  console.log(`Eliminado duplicado (name) con id: ${r.id}`),
-                )
-                .catch((err) =>
-                  console.error('Error eliminando duplicado:', err),
-                );
-            }
-          });
-        } else {
-          // Eliminar el resto de los duplicados de esta serie
-          receipts.forEach(async (r) => {
-            if (r.id !== receiptToKeep?.id) {
-              await deleteDoc(r.docRef);
-              console.log(
-                `Eliminado duplicado con id: ${r.id} para la serie: ${serie}`,
-              );
-            }
-          });
-        }
-      }
+  if (currentCreatedAt !== null && candidateCreatedAt !== null) {
+    return candidateCreatedAt < currentCreatedAt;
+  }
+
+  return candidate.originalIndex < current.originalIndex;
+};
+
+export const dedupeTaxReceiptDocuments = (
+  receipts: TaxReceiptDocument[],
+): TaxReceiptDocument[] => {
+  const selectedBySerie = new Map<string, ReceiptWithMeta>();
+
+  receipts.forEach((receipt, originalIndex) => {
+    const data = receipt.data;
+    const serie = resolveReceiptSerie(data);
+    const candidate: ReceiptWithMeta = {
+      ...data,
+      id: receipt.id ?? data.id ?? serie,
+      document: receipt,
+      createdAt: data.createdAt as TimestampLike | undefined,
+      originalIndex,
+    };
+    const current = selectedBySerie.get(serie);
+
+    if (!current || shouldPreferReceipt(current, candidate)) {
+      selectedBySerie.set(serie, candidate);
     }
-  } catch (err) {
-    console.error('Error al eliminar duplicados:', err);
-  }
+  });
+
+  return Array.from(selectedBySerie.values())
+    .sort((left, right) => left.originalIndex - right.originalIndex)
+    .map((receipt) => receipt.document);
 };
