@@ -1,4 +1,5 @@
 import type { Product } from '@/features/cart/types';
+import { isSupportedWeightUnit } from '@/domain/products/weightUnits';
 import { checkOpenCashReconciliation } from '@/firebase/cashCount/cashReconciliationStatus.repository';
 import type { ServiceCommissionsBillingSettings } from '@/domain/commissions/types';
 import type { ProductRecord } from '@/types/products';
@@ -37,6 +38,13 @@ type GuardFailure =
       availableStocks?: InventoryStockItem[];
     }
   | {
+      code: 'weight-unit';
+      description: string;
+      message: string;
+      ok: false;
+      product: Product;
+    }
+  | {
       code: 'service-commission-collaborator';
       description: string;
       message: string;
@@ -72,6 +80,25 @@ const isProductMissingPhysicalSelection = (
     product?.restrictSaleWithoutStock &&
     (!product?.productStockId || !product?.batchId),
   );
+
+const isWeightedProductWithUnsupportedUnit = (
+  product: Product | null | undefined,
+): boolean =>
+  Boolean(
+    product?.weightDetail?.isSoldByWeight === true &&
+      !isSupportedWeightUnit(product.weightDetail.weightUnit),
+  );
+
+const resolveProductName = (product: Product | ProductRecord): string => {
+  const name =
+    typeof product.name === 'string' && product.name.trim().length > 0
+      ? product.name.trim()
+      : typeof product.productName === 'string' &&
+          product.productName.trim().length > 0
+        ? product.productName.trim()
+        : null;
+  return name ?? 'este producto';
+};
 
 const isServiceMissingCommissionCollaborator = (
   product: Product | null | undefined,
@@ -136,6 +163,20 @@ export const validateInvoiceSubmissionGuards = async ({
   const invalidProduct = (
     Array.isArray(cart?.products) ? cart.products : []
   ).find(isProductMissingPhysicalSelection);
+
+  const productWithUnsupportedWeightUnit = (
+    Array.isArray(cart?.products) ? cart.products : []
+  ).find(isWeightedProductWithUnsupportedUnit);
+
+  if (productWithUnsupportedWeightUnit) {
+    return {
+      ok: false,
+      code: 'weight-unit',
+      message: 'Unidad de peso no soportada',
+      description: `Configura una unidad de peso válida para "${resolveProductName(productWithUnsupportedWeightUnit)}" antes de facturar. Unidades permitidas: kg, lb, oz, g o mg.`,
+      product: productWithUnsupportedWeightUnit,
+    };
+  }
 
   if (!invalidProduct) {
     const commissionSettings =

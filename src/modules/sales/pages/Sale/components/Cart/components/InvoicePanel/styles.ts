@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-import { VmDrawer, VmModal } from '@/components/heroui';
+import { VmAlertDialog, VmDrawer, VmModal } from '@/components/heroui';
 
 export const InvoicePanelDialog = styled(VmModal.Primitive.Dialog)`
   display: flex;
@@ -85,6 +85,27 @@ export const ScrollableBody = styled.div`
   padding: 0 var(--ds-space-5, 20px) var(--ds-space-3, 12px);
 `;
 
+export const PrintRecoveryNotice = styled.div`
+  display: grid;
+  gap: 4px;
+  margin: 0 0 var(--ds-space-4, 16px);
+  padding: var(--ds-space-3, 12px) var(--ds-space-4, 16px);
+  border: 1px solid rgb(251 191 36 / 0.45);
+  border-radius: 8px;
+  background: rgb(255 251 235);
+  color: rgb(120 53 15);
+
+  strong {
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  span {
+    font-size: 13px;
+    line-height: 1.4;
+  }
+`;
+
 export const PrintToggleItem = styled.div`
   display: flex;
   align-items: center;
@@ -97,4 +118,13 @@ export const PrintToggleItem = styled.div`
     font-size: 13px;
     color: var(--ds-color-text-primary, rgb(17 24 39));
   }
+`;
+
+export const InvoiceFiscalAlertBackdrop = styled(VmAlertDialog.Backdrop)`
+  z-index: 1000000000000;
+`;
+
+export const InvoiceFiscalAlertDialog = styled(VmAlertDialog.Dialog)`
+  width: min(520px, calc(100vw - var(--ds-space-8, 32px)));
+  max-width: min(520px, calc(100vw - var(--ds-space-8, 32px)));
 `;

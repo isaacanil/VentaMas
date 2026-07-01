@@ -131,7 +131,9 @@ describe('provisionBusinessCoreInTransaction', () => {
 
   it('writes the core business provisioning documents when missing', async () => {
     const tx = {
-      get: vi.fn(async () => ({ exists: false })),
+      get: vi.fn(async (ref) =>
+        ref?.doc ? { docs: [] } : { exists: false },
+      ),
       set: vi.fn(),
     };
 
@@ -151,7 +153,7 @@ describe('provisionBusinessCoreInTransaction', () => {
     });
 
     expect(result.businessRef).toMatchObject({ path: 'businesses/business-1' });
-    expect(tx.get).toHaveBeenCalledTimes(5);
+    expect(tx.get).toHaveBeenCalledTimes(4);
     expect(tx.set).toHaveBeenCalledWith(
       expect.objectContaining({ path: 'businesses/business-1' }),
       expect.objectContaining({

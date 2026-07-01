@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import reducer, {
   DEFAULT_FILTERS,
+  loadFilterPreferences,
+  resetFilters,
   resetInventoryDerivedFilters,
   setInventariable,
   setStockAlertLevel,
@@ -60,5 +62,40 @@ describe('filterProductsSlice', () => {
       stockRequirement: DEFAULT_FILTERS.stockRequirement,
       stockLocations: DEFAULT_FILTERS.stockLocations,
     });
+  });
+
+  it('does not restore remote sales stock locations over a local reset', () => {
+    const context = 'sales';
+    const stateWithRemoteLocation = reducer(
+      undefined,
+      setStockLocations({ context, value: ['warehouse-a'] }),
+    );
+    const locallyResetState = reducer(
+      stateWithRemoteLocation,
+      resetFilters({ context }),
+    );
+
+    const state = reducer(
+      locallyResetState,
+      loadFilterPreferences.fulfilled(
+        {
+          contexts: {
+            sales: {
+              ...DEFAULT_FILTERS,
+              stockLocations: ['warehouse-b'],
+            },
+          },
+          userId: 'user-1',
+        },
+        'request-1',
+        { userId: 'user-1' },
+      ),
+    );
+
+    expect(state.contexts.sales.stockLocations).toEqual(
+      DEFAULT_FILTERS.stockLocations,
+    );
+    expect(state.meta.hydratedContexts.sales).toBe(true);
+    expect(state.meta.dirtyContexts.sales).toBe(true);
   });
 });

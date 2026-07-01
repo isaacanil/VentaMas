@@ -126,7 +126,7 @@ export const TableCurrencyNote = styled.p`
 
 export const ColumnHeader = styled.div`
   display: grid;
-  grid-template-columns: 7% 13% minmax(0, 1fr) 7% 10% 10% 10% 11%;
+  grid-template-columns: 7% 13% minmax(0, 1fr) 10% 10% 10% 11%;
   color: #fff;
   background: #3c424d;
   border-radius: 4px;
@@ -147,7 +147,7 @@ export const BlockShell = styled.div`
 
 export const ProductRow = styled(BlockShell)<{ $tone?: 'plain' | 'soft' }>`
   display: grid;
-  grid-template-columns: 7% 13% minmax(0, 1fr) 7% 10% 10% 10% 11%;
+  grid-template-columns: 7% 13% minmax(0, 1fr) 10% 10% 10% 11%;
   min-height: 35px;
   background: ${({ $tone }) => ($tone === 'soft' ? '#f8fafc' : '#fff')};
   border: 1px solid var(--fiscal-print-border-soft);

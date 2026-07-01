@@ -8,6 +8,7 @@ import {
   createCreditNoteSelectionTargetKey,
   createEmptyCreditNoteSelection,
   getCreditNoteItemInitialQuantity,
+  getCreditNoteLineKey,
 } from './useCreditNoteSelection.helpers';
 import type {
   CreditNoteMode,
@@ -163,7 +164,9 @@ export const useCreditNoteSelection = ({
 
   const handleItemChange = (itemId: string | undefined, checked: boolean) => {
     if (checked) {
-      const item = availableInvoiceItems.find((it) => it.id === itemId);
+      const item = availableInvoiceItems.find(
+        (it) => getCreditNoteLineKey(it) === itemId,
+      );
       const defaultQty = getCreditNoteItemInitialQuantity(
         itemId,
         item,

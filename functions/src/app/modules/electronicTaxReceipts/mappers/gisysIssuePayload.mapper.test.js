@@ -198,6 +198,60 @@ describe('gisysIssuePayload.mapper', () => {
     });
   });
 
+  it('omits invalid buyer RNC or cedula for low-value E32 documents', () => {
+    const input = buildBaseInput('invoice-e32-invalid-optional-buyer-id');
+    input.invoice.snapshot.client = {
+      id: '0zuSiyyv',
+      name: 'Alanna Perez  2',
+      personalID: '00201660332',
+    };
+    input.taskPayload = {
+      ncfType: 'CONSUMIDOR FINAL',
+      client: {
+        id: '0zuSiyyv',
+        name: 'Alanna Perez  2',
+        personalID: '00201660332',
+      },
+    };
+
+    const { documentType, payload } = buildGisysIssuePayload(input);
+
+    expect(documentType).toBe('E32');
+    expect(payload.totals.grandTotal).toBeLessThan(250000);
+    expect(payload.buyer).toMatchObject({
+      internalCode: '0zuSiyyv',
+      name: 'Alanna Perez  2',
+    });
+    expect(payload.buyer).not.toHaveProperty('rncCedula');
+  });
+
+  it('keeps valid cedula values for low-value E32 documents when supplied', () => {
+    const input = buildBaseInput('invoice-e32-valid-optional-buyer-id');
+    input.invoice.snapshot.client = {
+      id: '0zuSiyyv',
+      name: 'Alanna Perez 2',
+      personalID: '00201660339',
+    };
+    input.taskPayload = {
+      ncfType: 'CONSUMIDOR FINAL',
+      client: {
+        id: '0zuSiyyv',
+        name: 'Alanna Perez 2',
+        personalID: '00201660339',
+      },
+    };
+
+    const { documentType, payload } = buildGisysIssuePayload(input);
+
+    expect(documentType).toBe('E32');
+    expect(payload.totals.grandTotal).toBeLessThan(250000);
+    expect(payload.buyer).toMatchObject({
+      internalCode: '0zuSiyyv',
+      name: 'Alanna Perez 2',
+      rncCedula: '00201660339',
+    });
+  });
+
   it('sends the net taxed amount indicator for taxable E31 documents', () => {
     const input = buildBaseInput('invoice-e31-taxed-amount-indicator');
     input.invoice.snapshot.ncf = {
@@ -217,6 +271,56 @@ describe('gisysIssuePayload.mapper', () => {
 
     expect(documentType).toBe('E31');
     expect(payload.taxedAmountIndicator).toBe('0');
+  });
+
+  it('sends the net taxed amount indicator for taxable E32 documents', () => {
+    const input = buildBaseInput('invoice-e32-taxed-amount-indicator');
+    input.invoice.snapshot.ncf = {
+      type: 'CONSUMIDOR FINAL',
+      documentType: 'E32',
+      code: null,
+    };
+    input.invoice.snapshot.client = {
+      name: 'YAJAIRA CONTRERAS CONTRERAS',
+      personalID: '00201441797',
+    };
+    input.invoice.snapshot.cart.products = [
+      {
+        id: 'product-exempt',
+        name: 'Producto exento',
+        pricing: { price: 36757, tax: { label: 'Exento', value: 0 } },
+        amountToBuy: 1,
+      },
+      {
+        id: 'product-itbis-18',
+        name: 'Producto ITBIS 18',
+        pricing: { price: 162488, tax: 18 },
+        amountToBuy: 1,
+      },
+      {
+        id: 'product-itbis-16',
+        name: 'Producto ITBIS 16',
+        pricing: { price: 103647, tax: 16 },
+        amountToBuy: 1,
+      },
+    ];
+    input.taskPayload = {
+      ncfType: 'CONSUMIDOR FINAL',
+      client: input.invoice.snapshot.client,
+    };
+
+    const { documentType, payload } = buildGisysIssuePayload(input);
+
+    expect(documentType).toBe('E32');
+    expect(payload.taxedAmountIndicator).toBe('0');
+    expect(payload.totals).toMatchObject({
+      taxableAmountTotal: 266135,
+      taxableAmount1: 162488,
+      taxableAmount2: 103647,
+      exemptAmount: 36757,
+      taxAmount: 45831.36,
+      grandTotal: 348723.36,
+    });
   });
 
   it('sends DGII reference data for E34 credit notes', () => {
@@ -572,6 +676,43 @@ describe('gisysIssuePayload.mapper', () => {
       payableAmount: 500,
     });
     expect(payload.totals.taxableAmountTotal).toBeUndefined();
+  });
+
+  it('uses the real weight as fiscal quantity for products sold by weight', () => {
+    const input = buildBaseInput('invoice-weighted-product');
+    input.invoice.snapshot.cart.products = [
+      {
+        id: 'weighted-1',
+        name: 'Queso vendido por peso',
+        amountToBuy: 1,
+        weightDetail: {
+          isSoldByWeight: true,
+          weight: 2.5,
+          weightUnit: 'lb',
+        },
+        pricing: {
+          price: 30,
+          tax: 18,
+        },
+      },
+    ];
+
+    const payload = buildGisysIssuePayload(input).payload;
+
+    expect(payload.items[0]).toMatchObject({
+      quantity: 2.5,
+      unitPrice: 30,
+      taxAmount: 13.5,
+      lineAmount: 75,
+    });
+    expect(payload.totals).toMatchObject({
+      netAmount: 75,
+      taxableAmountTotal: 75,
+      taxableAmount1: 75,
+      taxAmount: 13.5,
+      grandTotal: 88.5,
+      payableAmount: 88.5,
+    });
   });
 
   it('uses explicit DGII tax type values before falling back to tax rate', () => {

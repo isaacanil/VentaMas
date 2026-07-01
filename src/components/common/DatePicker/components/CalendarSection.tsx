@@ -69,11 +69,18 @@ const buildRangeSegments = ({
   return segments;
 };
 
-const CalendarContainer = styled.div`
+const CalendarContainer = styled.div<{ $isMobile?: boolean }>`
+  --date-picker-day-size: ${({ $isMobile }) =>
+    $isMobile ? 'clamp(38px, 11vw, 44px)' : '38px'};
+  --date-picker-day-number-size: ${({ $isMobile }) =>
+    $isMobile ? 'clamp(32px, 9vw, 38px)' : '32px'};
+
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: ${({ $isMobile }) => ($isMobile ? '8px' : '4px')};
   width: fit-content;
+  max-width: 100%;
+  margin: ${({ $isMobile }) => ($isMobile ? '0 auto' : '0')};
 `;
 
 const CalendarHeader = styled.div`
@@ -81,15 +88,15 @@ const CalendarHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 0 4px;
-  width: calc(7 * 38px);
+  width: 100%;
 `;
 
 const NavButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  min-width: 28px;
+  min-height: 28px;
   color: #595959;
   cursor: pointer;
   background: transparent;
@@ -104,7 +111,7 @@ const NavButton = styled.button`
 `;
 
 const MonthYear = styled.div`
-  font-size: 14px;
+  font-size: 0.95rem;
   font-weight: 500;
   color: #262626;
   text-transform: capitalize;
@@ -112,7 +119,7 @@ const MonthYear = styled.div`
 
 const WeekDaysHeader = styled.div`
   display: grid;
-  grid-template-columns: repeat(7, 38px);
+  grid-template-columns: repeat(7, var(--date-picker-day-size));
 `;
 
 const WeekDay = styled.div`
@@ -127,7 +134,7 @@ const CalendarGrid = styled.div`
   position: relative;
   isolation: isolate;
   display: grid;
-  grid-template-columns: repeat(7, 38px);
+  grid-template-columns: repeat(7, var(--date-picker-day-size));
   gap: 0;
 `;
 
@@ -159,7 +166,7 @@ const CalendarDay = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 38px;
+  height: var(--date-picker-day-size);
   font-size: 13px;
   cursor: pointer;
 `;
@@ -168,8 +175,8 @@ const DayNumber = styled.span<CalendarDayProps>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: var(--date-picker-day-number-size);
+  height: var(--date-picker-day-number-size);
   border: 1px solid transparent;
   border-radius: 999px;
   color: ${(props: CalendarDayProps) => {
@@ -230,6 +237,7 @@ interface CalendarSectionProps {
   currentRangeStart: DateTime | null;
   currentRangeEnd: DateTime | null;
   hoverDate: DateTime | null;
+  isMobile?: boolean;
 }
 
 export const CalendarSection = ({
@@ -242,6 +250,7 @@ export const CalendarSection = ({
   currentRangeStart,
   currentRangeEnd,
   hoverDate,
+  isMobile,
 }: CalendarSectionProps) => {
   const days = renderCalendarGrid(currentDate);
   const rowCount = Math.ceil(days.length / DAYS_PER_WEEK);
@@ -268,7 +277,7 @@ export const CalendarSection = ({
   };
 
   return (
-    <CalendarContainer>
+    <CalendarContainer $isMobile={isMobile}>
       <CalendarHeader>
         <NavButton
           onClick={() => onNavigateMonth('prev')}

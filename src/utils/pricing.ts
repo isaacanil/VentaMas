@@ -8,6 +8,7 @@ type AmountInput =
       total?: NumericInput;
       unit?: NumericInput;
       value?: NumericInput;
+      quantity?: NumericInput;
     }
   | null;
 type PriceKey =
@@ -24,6 +25,7 @@ type ProductDiscount = {
 type PricingProduct = {
   selectedSaleUnit?: { pricing?: ProductPricing | null } | null;
   pricing?: ProductPricing | null;
+  price?: NumericInput | { unit?: NumericInput; total?: NumericInput };
   weightDetail?: {
     isSoldByWeight?: boolean;
     weight?: NumericInput;
@@ -50,7 +52,10 @@ function toFiniteNumber(value: unknown, fallback = 0): number {
 
 function resolveAmount(value: AmountInput, fallback = 1): number {
   if (value && typeof value === 'object') {
-    return toFiniteNumber(value.total ?? value.unit, fallback);
+    return toFiniteNumber(
+      value.total ?? value.unit ?? value.value ?? value.quantity,
+      fallback,
+    );
   }
   return toFiniteNumber(value, fallback);
 }
@@ -78,14 +83,36 @@ function isValidNumber(value: unknown): boolean {
   return Number.isFinite(numeric);
 }
 
+export function getActiveProductPricing(
+  product: PricingProduct | null | undefined,
+): ProductPricing | null {
+  return product?.selectedSaleUnit?.pricing || product?.pricing || null;
+}
+
+export function getActiveUnitPrice(
+  product: PricingProduct | null | undefined,
+): number {
+  const activePricing = getActiveProductPricing(product);
+  if (isValidNumber(activePricing?.price)) {
+    return toFiniteNumber(activePricing?.price);
+  }
+
+  const legacyPrice =
+    product?.price && typeof product.price === 'object'
+      ? product.price.unit ?? product.price.total
+      : product?.price;
+  return toFiniteNumber(legacyPrice);
+}
+
 export function getTax(
   product: PricingProduct | null | undefined,
   taxReceiptEnabled = true,
+  useAmountToBuy = true,
 ): number {
   if (!taxReceiptEnabled) return 0;
 
-  const { isSoldByWeight, taxPercentage } = getPricingDetails(product);
-  const result = isSoldByWeight ? getWeight(product) : getTotal(product);
+  const { taxPercentage } = getPricingDetails(product, useAmountToBuy);
+  const result = getTotal(product, useAmountToBuy);
 
   const tax = result * (taxPercentage / 100);
   return limit(tax);
@@ -124,10 +151,13 @@ export function getPriceWithoutTax(
   return toFiniteNumber(priceWithTax) / (1 + effectiveTaxPercentage / 100);
 }
 
-export function getDiscount(product: PricingProduct | null | undefined): number {
+export function getDiscount(
+  product: PricingProduct | null | undefined,
+  useAmountToBuy = true,
+): number {
   if (!product) return 0;
-  const { discountPercentage, isSoldByWeight } = getPricingDetails(product);
-  const result = isSoldByWeight ? getWeight(product) : getTotal(product);
+  const { discountPercentage } = getPricingDetails(product, useAmountToBuy);
+  const result = getTotal(product, useAmountToBuy);
   return limit(result * (discountPercentage / 100));
 }
 
@@ -137,14 +167,12 @@ export function getTotalPrice(
   useAmountToBuy = true,
 ): number {
   if (!product) return 0;
-  const { price, isSoldByWeight } = getPricingDetails(product, useAmountToBuy);
+  const { price } = getPricingDetails(product, useAmountToBuy);
   if (!isValidNumber(price)) return 0;
 
-  const result = isSoldByWeight
-    ? getWeight(product, useAmountToBuy)
-    : getTotal(product, useAmountToBuy);
-  const tax = getTax(product, taxReceiptEnabled);
-  const discount = getDiscount(product);
+  const result = getTotal(product, useAmountToBuy);
+  const tax = getTax(product, taxReceiptEnabled, useAmountToBuy);
+  const discount = getDiscount(product, useAmountToBuy);
 
   const total = result + tax - discount;
   return limit(total);
@@ -189,8 +217,11 @@ export function getTotal(
   useAmountToBuy = true,
 ): number {
   if (!product) return 0;
-  const { price, amountToBuy } = getPricingDetails(product, useAmountToBuy);
-  const quantity = useAmountToBuy ? amountToBuy : 1;
+  const { price, isSoldByWeight, weight, amountToBuy } = getPricingDetails(
+    product,
+    useAmountToBuy,
+  );
+  const quantity = isSoldByWeight ? weight : useAmountToBuy ? amountToBuy : 1;
 
   // Aplicar descuento individual si existe
   let finalPrice = price * quantity;
@@ -252,25 +283,7 @@ export function getOfferPriceTotal(
 export function getProductsPrice(
   products: ReadonlyArray<PricingProduct> = [],
 ): number {
-  return products.reduce((acc, product) => {
-    const { isSoldByWeight, weight, amountToBuy, price } =
-      getPricingDetails(product);
-    const quantity = isSoldByWeight ? weight : amountToBuy;
-
-    // Aplicar descuento individual si existe
-    let finalPrice = price * quantity;
-    const discountValue = toFiniteNumber(product.discount?.value);
-    if (product.discount && discountValue > 0) {
-      if (product.discount.type === 'percentage') {
-        finalPrice = finalPrice * (1 - discountValue / 100);
-      } else {
-        // Para monto fijo, se aplica al total sin impuestos
-        finalPrice = Math.max(0, finalPrice - discountValue);
-      }
-    }
-
-    return acc + finalPrice;
-  }, 0);
+  return products.reduce((acc, product) => acc + getTotal(product), 0);
 }
 
 export function getProductsTax(
@@ -292,44 +305,35 @@ export function getProductsDiscount(
 export function getProductsIndividualDiscounts(
   products: ReadonlyArray<PricingProduct> = [],
 ): number {
-  return products.reduce((acc, product) => {
-    const discountValue = toFiniteNumber(product.discount?.value);
-    if (!product.discount || discountValue <= 0) return acc;
-
-    const { price, isSoldByWeight, weight, amountToBuy } =
-      getPricingDetails(product);
-    const quantity = isSoldByWeight ? weight : amountToBuy;
-    const subtotalBeforeDiscount = price * quantity;
-
-    let discountAmount = 0;
-    if (product.discount.type === 'percentage') {
-      discountAmount = subtotalBeforeDiscount * (discountValue / 100);
-    } else {
-      // Para monto fijo
-      discountAmount = Math.min(discountValue, subtotalBeforeDiscount);
-    }
-
-    return acc + discountAmount;
-  }, 0);
+  return products.reduce(
+    (acc, product) => acc + getProductIndividualDiscount(product),
+    0,
+  );
 }
 
 export function getProductIndividualDiscount(
   product: PricingProduct | null | undefined,
+  taxReceiptEnabled = false,
 ): number {
   const discountValue = toFiniteNumber(product?.discount?.value);
   if (!product?.discount || discountValue <= 0) return 0;
 
-  const { price, isSoldByWeight, weight, amountToBuy } =
+  const { price, isSoldByWeight, weight, amountToBuy, taxPercentage } =
     getPricingDetails(product);
   const quantity = isSoldByWeight ? weight : amountToBuy;
   const subtotalBeforeDiscount = price * quantity;
 
+  let discountAmount = 0;
   if (product.discount.type === 'percentage') {
-    return subtotalBeforeDiscount * (discountValue / 100);
+    discountAmount = subtotalBeforeDiscount * (discountValue / 100);
   } else {
     // Para monto fijo
-    return Math.min(discountValue, subtotalBeforeDiscount);
+    discountAmount = Math.min(discountValue, subtotalBeforeDiscount);
   }
+
+  return taxReceiptEnabled
+    ? limit(discountAmount * (1 + taxPercentage / 100))
+    : discountAmount;
 }
 
 export function getTotalItems(

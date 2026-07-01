@@ -36,6 +36,7 @@ import {
 import {
   buildCanonicalVendorBillIdFromPurchaseId,
   buildVendorBillProjection,
+  preserveVendorBillControlDetails,
 } from '../src/app/modules/purchase/functions/vendorBill.shared.js';
 
 const REQUIRED_CHART_OF_ACCOUNTS = [
@@ -1139,6 +1140,8 @@ const syncVendorBillsFromPurchases = async (db, businessId, { dryRun }) => {
   let materialized = 0;
   let plannedDeleted = 0;
   let deleted = 0;
+  let plannedSkipped = 0;
+  let skipped = 0;
 
   for (const purchaseSnap of purchasesSnap.docs) {
     const purchaseId = toCleanString(purchaseSnap.id);
@@ -1176,22 +1179,36 @@ const syncVendorBillsFromPurchases = async (db, businessId, { dryRun }) => {
     );
 
     if (!vendorBillProjection) {
-      plannedDeleted += 1;
-      if (!dryRun) {
-        await vendorBillRef.delete().catch(() => null);
-        deleted += 1;
-      }
+      plannedSkipped += 1;
+      skipped += dryRun ? 0 : 1;
       continue;
     }
 
     plannedMaterialized += 1;
     if (!dryRun) {
-      await vendorBillRef.set(vendorBillProjection, { merge: true });
+      const existingVendorBillSnap = await vendorBillRef.get();
+      const existingVendorBill = existingVendorBillSnap.exists
+        ? asRecord(existingVendorBillSnap.data())
+        : {};
+      await vendorBillRef.set(
+        preserveVendorBillControlDetails({
+          existingVendorBill,
+          vendorBillProjection,
+        }),
+        { merge: true },
+      );
       materialized += 1;
     }
   }
 
-  return { plannedMaterialized, materialized, plannedDeleted, deleted };
+  return {
+    plannedMaterialized,
+    materialized,
+    plannedDeleted,
+    deleted,
+    plannedSkipped,
+    skipped,
+  };
 };
 
 const main = async () => {
@@ -1291,6 +1308,8 @@ const main = async () => {
         materializedVendorBills: vendorBills.materialized,
         plannedDeletedVendorBills: vendorBills.plannedDeleted,
         deletedVendorBills: vendorBills.deleted,
+        plannedSkippedVendorBills: vendorBills.plannedSkipped,
+        skippedVendorBills: vendorBills.skipped,
       }),
     );
   }

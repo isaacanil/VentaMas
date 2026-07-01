@@ -11,7 +11,11 @@ import {
   resolvePostingProfileForEvent,
   validateProjectedLines,
 } from './utils/accountingProjection.util.js';
-import { isJournalEntryBalanced } from './utils/journalEntry.util.js';
+import {
+  buildJournalEntry,
+  isJournalEntryBalanced,
+  normalizeJournalEntryLine,
+} from './utils/journalEntry.util.js';
 import { buildAccountingPeriodKey } from './utils/periodClosure.util.js';
 
 export const PROJECTOR_VERSION = 1;
@@ -116,8 +120,9 @@ const buildProjectionUpdate = ({
       replayCount:
         safeInteger(currentProjection.replayCount, 0) +
         (replayRequestedBy ? 1 : 0),
-      lastReplayRequestedAt:
-        replayRequestedBy ? now : currentProjection.lastReplayRequestedAt ?? null,
+      lastReplayRequestedAt: replayRequestedBy
+        ? now
+        : (currentProjection.lastReplayRequestedAt ?? null),
       lastReplayRequestedBy:
         toCleanString(replayRequestedBy) ??
         toCleanString(currentProjection.lastReplayRequestedBy) ??
@@ -301,6 +306,189 @@ const buildExistingJournalEntryValidationError = ({
   return null;
 };
 
+const resolveExistingReversalEntryId = (entry) => {
+  const metadata = asRecord(entry.metadata);
+  return (
+    toCleanString(metadata.reversedByEntryId) ||
+    toCleanString(metadata.reversalEntryId) ||
+    null
+  );
+};
+
+const resolveJournalEntryPeriodKey = (entry, fallbackDate) =>
+  toCleanString(entry?.periodKey) ||
+  buildAccountingPeriodKey(
+    entry?.entryDate ?? entry?.createdAt ?? fallbackDate,
+    fallbackDate,
+  );
+
+const resolveVoidReversalPeriodKey = ({ eventRecord, reversalEntry, now }) =>
+  toCleanString(reversalEntry?.periodKey) ||
+  buildAccountingPeriodKey(
+    eventRecord?.voidedAt ??
+      eventRecord?.recordedAt ??
+      eventRecord?.occurredAt ??
+      now,
+    now,
+  );
+
+const buildClosedVoidReversalPeriodError = ({
+  eventId,
+  now,
+  periodKey,
+  periodRole,
+}) =>
+  buildProjectionError({
+    code: 'accounting-period-closed',
+    message:
+      'El periodo contable requerido para anular el evento esta cerrado; reabre el periodo o registra un ajuste posterior.',
+    now,
+    details: {
+      eventId,
+      periodKey,
+      periodRole,
+    },
+  });
+
+const findClosedVoidReversalPeriodError = async ({
+  businessId,
+  eventId,
+  eventRecord,
+  originalEntry,
+  reversalEntry,
+  settingsRef,
+  now,
+}) => {
+  const settingsSnap = await settingsRef.get();
+  const rawSettings = settingsSnap.exists ? settingsSnap.data() || {} : {};
+  const accountingSettings = await getPilotAccountingSettingsForBusiness(
+    businessId,
+    { settings: rawSettings },
+  );
+
+  if (
+    !accountingSettings ||
+    rawSettings.generalAccountingEnabled !== true ||
+    !isAccountingRolloutEnabledForBusiness(businessId, rawSettings)
+  ) {
+    return null;
+  }
+
+  const checks = [
+    {
+      periodKey: resolveJournalEntryPeriodKey(originalEntry, now),
+      periodRole: 'original_entry',
+    },
+  ];
+
+  if (reversalEntry) {
+    checks.push({
+      periodKey: resolveVoidReversalPeriodKey({
+        eventRecord,
+        reversalEntry,
+        now,
+      }),
+      periodRole: 'void_reversal',
+    });
+  }
+
+  const checkedPeriodKeys = new Set();
+  for (const { periodKey, periodRole } of checks) {
+    if (!periodKey || checkedPeriodKeys.has(periodKey)) {
+      continue;
+    }
+    checkedPeriodKeys.add(periodKey);
+
+    const closureSnap = await db
+      .doc(`businesses/${businessId}/accountingPeriodClosures/${periodKey}`)
+      .get();
+    if (closureSnap.exists) {
+      return buildClosedVoidReversalPeriodError({
+        eventId,
+        now,
+        periodKey,
+        periodRole,
+      });
+    }
+  }
+
+  return null;
+};
+
+const buildAutomaticVoidReversalEntry = ({
+  businessId,
+  eventId,
+  eventRecord,
+  originalEntry,
+  reversalEntryId,
+  now,
+}) => {
+  const originalLines = Array.isArray(originalEntry.lines)
+    ? originalEntry.lines.map((line, index) =>
+        normalizeJournalEntryLine(line, index),
+      )
+    : [];
+  if (!originalLines.length) {
+    return null;
+  }
+
+  const reversalLines = originalLines.map((line, index) => ({
+    ...line,
+    lineNumber: index + 1,
+    debit: safeNumber(line.credit),
+    credit: safeNumber(line.debit),
+    description:
+      toCleanString(line.description) ||
+      `Reverso automatico linea ${index + 1}`,
+    reference: 'Evento contable anulado',
+  }));
+
+  return buildJournalEntry({
+    businessId,
+    entryId: reversalEntryId,
+    event: {
+      id: `${eventId}:void-reversal`,
+      businessId,
+      eventType: toCleanString(eventRecord.eventType),
+      eventVersion: Number(eventRecord.eventVersion) || 1,
+      reversalOfEventId: eventId,
+    },
+    entryDate:
+      eventRecord.voidedAt ??
+      eventRecord.recordedAt ??
+      eventRecord.occurredAt ??
+      now,
+    description: `Reverso automatico de ${
+      toCleanString(originalEntry.description) || eventId
+    }`,
+    currency:
+      toCleanString(originalEntry.currency) ||
+      toCleanString(eventRecord.currency),
+    functionalCurrency:
+      toCleanString(originalEntry.functionalCurrency) ||
+      toCleanString(eventRecord.functionalCurrency),
+    sourceType: 'accounting_event_void',
+    sourceId: eventId,
+    reversalOfEntryId: toCleanString(originalEntry.id) || eventId,
+    reversalOfEventId: eventId,
+    lines: reversalLines,
+    createdAt: now,
+    createdBy:
+      toCleanString(eventRecord.voidedBy) ||
+      toCleanString(eventRecord.updatedBy) ||
+      toCleanString(eventRecord.createdBy) ||
+      'system:accounting-event-projection',
+    metadata: {
+      entryOrigin: 'automatic_void_reversal',
+      reversedEntryId: toCleanString(originalEntry.id) || eventId,
+      reversedEventId: eventId,
+      originalSourceType: toCleanString(originalEntry.sourceType),
+      originalSourceId: toCleanString(originalEntry.sourceId),
+      sourceEventStatus: 'voided',
+    },
+  });
+};
+
 export const runAccountingEventProjection = async ({
   businessId,
   eventId,
@@ -314,7 +502,11 @@ export const runAccountingEventProjection = async ({
     ...asRecord(accountingEvent),
   };
 
-  if (!normalizedBusinessId || !normalizedEventId || !Object.keys(eventRecord).length) {
+  if (
+    !normalizedBusinessId ||
+    !normalizedEventId ||
+    !Object.keys(eventRecord).length
+  ) {
     return {
       ok: false,
       status: 'failed',
@@ -351,7 +543,111 @@ export const runAccountingEventProjection = async ({
       projectorVersion: PROJECTOR_VERSION,
       replayRequestedBy,
     });
-    await eventRef.update(projectionUpdate);
+    const entrySnap = await entryRef.get();
+    const entryRecord = entrySnap.exists
+      ? {
+          id: entrySnap.id,
+          ...asRecord(entrySnap.data()),
+        }
+      : null;
+    const entryStatus = toCleanString(entryRecord?.status) ?? null;
+    const existingReversalEntryId = entryRecord
+      ? resolveExistingReversalEntryId(entryRecord)
+      : null;
+    const reversalEntryId =
+      existingReversalEntryId || `${normalizedEventId}__void_reversal`;
+    const reversalEntryRef =
+      entryRecord && entryStatus !== 'reversed'
+        ? db.doc(
+            `businesses/${normalizedBusinessId}/journalEntries/${reversalEntryId}`,
+          )
+        : null;
+    const reversalEntry =
+      entryRecord && entryStatus !== 'reversed'
+        ? buildAutomaticVoidReversalEntry({
+            businessId: normalizedBusinessId,
+            eventId: normalizedEventId,
+            eventRecord,
+            originalEntry: entryRecord,
+            reversalEntryId,
+            now,
+          })
+        : null;
+
+    if (entryRecord && entryStatus !== 'reversed') {
+      const closedPeriodError = await findClosedVoidReversalPeriodError({
+        businessId: normalizedBusinessId,
+        eventId: normalizedEventId,
+        eventRecord,
+        originalEntry: entryRecord,
+        reversalEntry,
+        settingsRef,
+        now,
+      });
+      if (closedPeriodError) {
+        const failedProjectionUpdate = buildProjectionUpdate({
+          accountingEvent: eventRecord,
+          status: 'failed',
+          now,
+          projectorVersion: PROJECTOR_VERSION,
+          journalEntryId: toCleanString(entryRecord.id) ?? normalizedEventId,
+          lastError: closedPeriodError,
+          replayRequestedBy,
+        });
+        await eventRef.update(failedProjectionUpdate);
+        await persistDeadLetter({
+          deadLetterRef,
+          businessId: normalizedBusinessId,
+          eventId: normalizedEventId,
+          accountingEvent: eventRecord,
+          projectionUpdate: failedProjectionUpdate,
+          lastError: closedPeriodError,
+          replayRequestedBy,
+          now,
+        });
+
+        return {
+          ok: false,
+          status: 'failed',
+          journalEntryId: toCleanString(entryRecord.id) ?? normalizedEventId,
+          reusedExistingEntry: false,
+          deadLetterId: normalizedEventId,
+          lastError: closedPeriodError,
+        };
+      }
+
+      const originalMetadata = asRecord(entryRecord.metadata);
+      if (reversalEntry) {
+        const reversalEntrySnap = await reversalEntryRef.get();
+        if (!reversalEntrySnap.exists) {
+          await reversalEntryRef.set(reversalEntry);
+        }
+      }
+      await entryRef.update({
+        status: 'reversed',
+        metadata: {
+          ...originalMetadata,
+          reversedAt: now,
+          reversedBy:
+            toCleanString(eventRecord.voidedBy) ||
+            toCleanString(eventRecord.updatedBy) ||
+            'system:accounting-event-projection',
+          reversedByEntryId: reversalEntry ? reversalEntryId : null,
+          reversalReason: 'Evento contable anulado',
+          reversedByEventId: normalizedEventId,
+        },
+      });
+    }
+
+    await eventRef.update({
+      ...projectionUpdate,
+      'metadata.journalEntryId': null,
+      'metadata.voidedJournalEntryId': entryRecord?.id ?? null,
+      'metadata.voidedJournalEntryReversalId':
+        entryRecord && (existingReversalEntryId || reversalEntry)
+          ? reversalEntryId
+          : null,
+    });
     await deadLetterRef.delete().catch(() => undefined);
 
     return {
@@ -372,15 +668,17 @@ export const runAccountingEventProjection = async ({
     bankAccountsSnap,
     cashAccountsSnap,
   ] = await Promise.all([
-      settingsRef.get(),
-      entryRef.get(),
-      db
-        .collection(`businesses/${normalizedBusinessId}/accountingPostingProfiles`)
-        .get(),
-      db.collection(`businesses/${normalizedBusinessId}/chartOfAccounts`).get(),
-      db.collection(`businesses/${normalizedBusinessId}/bankAccounts`).get(),
-      db.collection(`businesses/${normalizedBusinessId}/cashAccounts`).get(),
-    ]);
+    settingsRef.get(),
+    entryRef.get(),
+    db
+      .collection(
+        `businesses/${normalizedBusinessId}/accountingPostingProfiles`,
+      )
+      .get(),
+    db.collection(`businesses/${normalizedBusinessId}/chartOfAccounts`).get(),
+    db.collection(`businesses/${normalizedBusinessId}/bankAccounts`).get(),
+    db.collection(`businesses/${normalizedBusinessId}/cashAccounts`).get(),
+  ]);
 
   if (entrySnap.exists) {
     const existingEntry = {

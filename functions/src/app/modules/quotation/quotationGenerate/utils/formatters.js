@@ -1,6 +1,12 @@
 import { format as formatDateFns } from 'date-fns';
 
-export { getDiscount } from '../../../../core/utils/pdfDiscount.util.js';
+import { getActiveUnitPrice } from '../../../../core/utils/pdfDiscount.util.js';
+
+export {
+  getActiveProductPricing,
+  getActiveUnitPrice,
+  getDiscount,
+} from '../../../../core/utils/pdfDiscount.util.js';
 
 export function money(n) {
   const num = Number(n) || 0;
@@ -26,7 +32,7 @@ export function formatDate(ts) {
 export function getProductIndividualDiscount(product) {
   if (!product.discount || product.discount.value <= 0) return 0;
 
-  const price = +product.pricing?.price || 0;
+  const price = getActiveUnitPrice(product);
   const quantity = +product.amountToBuy || 1;
   const subtotalBeforeDiscount = price * quantity;
 

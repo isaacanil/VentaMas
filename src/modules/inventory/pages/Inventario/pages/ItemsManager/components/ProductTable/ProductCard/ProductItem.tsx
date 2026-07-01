@@ -17,6 +17,7 @@ import { ChangeProductData } from '@/features/updateProduct/updateProductSlice';
 import { formatPrice } from '@/utils/format';
 import { formatNumber } from '@/utils/format';
 import { getTax, getTotalPrice } from '@/utils/pricing';
+import { getWeightedUnitPriceForDisplay } from '@/domain/products/weightPriceDisplay';
 import { toggleBarcodeModal } from '@/modules/inventory/state/barcodePrintModalSlice';
 import { ImgCell } from '@/components/ui/AdvancedTable';
 import type { ProductRecord } from '@/types/products';
@@ -39,12 +40,14 @@ export const ProductItem = ({ data, taxReceiptEnabled }: ProductItemProps) => {
   const stock = data?.stock;
   const trackInventory = data?.trackInventory;
   const cost = data?.pricing?.cost;
-  const price = getTotalPrice(data, taxReceiptEnabled);
   const tax = getTax(data);
   const category = data?.category;
   const isVisible = data?.isVisible;
   const unit = data?.weightDetail?.weightUnit;
   const isSoldByWeight = data?.weightDetail?.isSoldByWeight;
+  const price = isSoldByWeight
+    ? getWeightedUnitPriceForDisplay(data, taxReceiptEnabled)
+    : getTotalPrice(data, taxReceiptEnabled);
 
   const handleEdit = () => {
     dispatch(openModalUpdateProd());

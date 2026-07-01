@@ -6,6 +6,8 @@ export const Bar = styled.div`
   gap: 1rem;
   align-items: flex-end;
   justify-content: flex-start;
+  width: 100%;
+  min-width: 0;
   padding: 0.4rem 1rem;
   background: var(--white);
   border-bottom: 1px solid var(--gray);
@@ -30,14 +32,14 @@ export const Bar = styled.div`
 
 export const DesktopMain = styled.div`
   position: relative;
-  flex: 0 1 auto;
+  flex: 1 1 0;
   min-width: 0;
 `;
 
 export const DesktopForm = styled(Form)`
   display: flex;
   gap: 1rem;
-  align-items: flex-end;
+  align-items: stretch;
   flex-wrap: nowrap;
   min-width: 0;
   overflow: visible;
@@ -93,13 +95,10 @@ export const DrawerContent = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  padding: 1.5rem;
-
-  .ant-form {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 1.25rem !important;
-  }
+  min-width: 0;
+  padding: 0.25rem 0 1rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 
   .ant-select,
   .ant-picker,
@@ -137,6 +136,13 @@ export const DrawerContent = styled.div`
       color: #333 !important;
     }
   }
+`;
+
+export const MobileFilterForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
 `;
 
 export const ModalContent = styled.div`

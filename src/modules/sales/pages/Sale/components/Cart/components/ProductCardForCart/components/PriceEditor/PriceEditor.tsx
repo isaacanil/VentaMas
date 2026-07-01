@@ -97,6 +97,7 @@ export const PriceEditor = ({ item, onModalOpen }: PriceEditorProps) => {
         changeProductPrice({
           id: item.id,
           price: priceWithoutTax,
+          manualOverride: true,
         }),
       );
     }

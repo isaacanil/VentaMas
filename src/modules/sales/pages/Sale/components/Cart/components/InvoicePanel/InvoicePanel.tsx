@@ -8,6 +8,7 @@ import {
 } from '@/features/cart/cartSlice';
 import { Invoice, TaxReceiptDepletedModal } from '@/modules/invoice/public';
 import {
+  VmAlertDialog,
   VmButton,
   VmButtonGroup,
   VmDrawer,
@@ -27,7 +28,10 @@ import {
   InvoicePanelDrawerDialog,
   InvoicePanelDrawerFooter,
   InvoicePanelFooter,
+  InvoiceFiscalAlertBackdrop,
+  InvoiceFiscalAlertDialog,
   InvoicePanelModalContainer,
+  PrintRecoveryNotice,
   PrintToggleItem,
   ScrollableBody,
 } from './styles';
@@ -56,25 +60,34 @@ export const InvoicePanel = () => {
     loading,
     ncfType,
     pendingPaginatedPrint,
+    printRecoveryReason,
     resolvedBusinessId,
+    retryPaginatedPrint,
     retryWithTaxReceipt,
     showCancelSaleConfirm,
     submitted,
     taxReceiptModalOpen,
     taxReceiptState,
     closeTaxReceiptModal,
+    clientFiscalDataAction,
+    closeClientFiscalDataAction,
+    handleEditClientFiscalData,
     handleSelectTaxReceiptFromModal,
   } = useInvoicePanelController();
+  const isPrintRecoveryPending = Boolean(printRecoveryReason && invoice);
   const isSubmittingDisabled =
+    isPrintRecoveryPending ||
     submitted ||
     !hasCartProducts ||
     !isAnyPaymentEnabled ||
     (isChangeNegative && !isAddedToReceivables);
-  const isSecondaryActionDisabled = loading.status || submitted;
+  const isSecondaryActionDisabled =
+    loading.status || submitted || isPrintRecoveryPending;
   const isMobilePanel = viewportWidth <= 768;
   const isPanelBusy = loading.status;
+  const isPanelLocked = isPanelBusy || isPrintRecoveryPending;
   const handleOpenChange = (isOpen: boolean) => {
-    if (!isOpen && isPanelBusy) {
+    if (!isOpen && isPanelLocked) {
       return;
     }
     if (!isOpen) {
@@ -92,6 +105,15 @@ export const InvoicePanel = () => {
         <InvoiceProgress visible={isPanelBusy} message={loading.message} />
       ) : (
         <ScrollableBody aria-busy={isPanelBusy}>
+          {isPrintRecoveryPending ? (
+            <PrintRecoveryNotice role="status">
+              <strong>Impresión paginada pendiente</strong>
+              <span>
+                La factura ya fue creada. Reintenta la impresión paginada para
+                completar el cierre.
+              </span>
+            </PrintRecoveryNotice>
+          ) : null}
           <Body
             form={form}
             businessId={resolvedBusinessId}
@@ -102,69 +124,79 @@ export const InvoicePanel = () => {
     </>
   );
   const panelFooter = (
-    <>
+    isPrintRecoveryPending ? (
       <VmButton
-        variant="outline"
-        isDisabled={isSecondaryActionDisabled}
-        onPress={handleInvoicePanel}
+        variant="primary"
+        isPending={pendingPaginatedPrint}
+        onPress={retryPaginatedPrint}
       >
-        Atrás
+        Reintentar impresión
       </VmButton>
-      <VmButtonGroup>
+    ) : (
+      <>
         <VmButton
-          variant="primary"
-          isPending={loading.status}
-          isDisabled={isSubmittingDisabled}
-          onPress={() => void handleSubmit()}
+          variant="outline"
+          isDisabled={isSecondaryActionDisabled}
+          onPress={handleInvoicePanel}
         >
-          Facturar
+          Atrás
         </VmButton>
-        <VmDropdown>
+        <VmButtonGroup>
           <VmButton
             variant="primary"
-            isIconOnly
-            aria-label="Más opciones"
-            isDisabled={isSecondaryActionDisabled}
+            isPending={loading.status}
+            isDisabled={isSubmittingDisabled}
+            onPress={() => void handleSubmit()}
           >
-            <VmButtonGroup.Separator />
-            <FontAwesomeIcon icon={faChevronDown} />
+            Facturar
           </VmButton>
-          <VmDropdown.Popover placement="top end">
-            <VmDropdown.Menu
-              onAction={(key) => {
-                if (key === 'cancel-sale') {
-                  showCancelSaleConfirm();
-                }
-              }}
+          <VmDropdown>
+            <VmButton
+              variant="primary"
+              isIconOnly
+              aria-label="Más opciones"
+              isDisabled={isSecondaryActionDisabled}
             >
-              <VmDropdown.Item
-                key="print-invoice"
-                id="print-invoice"
-                textValue="Imprimir Factura"
+              <VmButtonGroup.Separator />
+              <FontAwesomeIcon icon={faChevronDown} />
+            </VmButton>
+            <VmDropdown.Popover placement="top end">
+              <VmDropdown.Menu
+                onAction={(key) => {
+                  if (key === 'cancel-sale') {
+                    showCancelSaleConfirm();
+                  }
+                }}
               >
-                <PrintToggleItem onClick={(e) => e.stopPropagation()}>
-                  <Switch
-                    size="small"
-                    checked={printInvoice}
-                    onChange={() => dispatch(togglePrintInvoice())}
-                  />
-                  <span>Imprimir Factura</span>
-                </PrintToggleItem>
-              </VmDropdown.Item>
-              <VmDropdown.Item
-                key="cancel-sale"
-                id="cancel-sale"
-                textValue="Cancelar venta"
-                variant="danger"
-                isDisabled={isSecondaryActionDisabled}
-              >
-                Cancelar venta
-              </VmDropdown.Item>
-            </VmDropdown.Menu>
-          </VmDropdown.Popover>
-        </VmDropdown>
-      </VmButtonGroup>
-    </>
+                <VmDropdown.Item
+                  key="print-invoice"
+                  id="print-invoice"
+                  textValue="Imprimir Factura"
+                >
+                  <PrintToggleItem onClick={(e) => e.stopPropagation()}>
+                    <Switch
+                      size="small"
+                      checked={printInvoice}
+                      onChange={() => dispatch(togglePrintInvoice())}
+                    />
+                    <span>Imprimir Factura</span>
+                  </PrintToggleItem>
+                </VmDropdown.Item>
+                <VmDropdown.Item
+                  key="cancel-sale"
+                  id="cancel-sale"
+                  textValue="Cancelar venta"
+                  variant="danger"
+                  isDisabled={isSecondaryActionDisabled}
+                >
+                  Cancelar venta
+                </VmDropdown.Item>
+              </VmDropdown.Menu>
+            </VmDropdown.Popover>
+          </VmDropdown>
+        </VmButtonGroup>
+      </>
+    )
   );
   const taxReceiptDialog = (
     <TaxReceiptDepletedModal
@@ -177,6 +209,39 @@ export const InvoicePanel = () => {
       onCancel={closeTaxReceiptModal}
     />
   );
+  const clientFiscalDataDialog = clientFiscalDataAction ? (
+    <InvoiceFiscalAlertBackdrop
+      isOpen
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          closeClientFiscalDataAction();
+        }
+      }}
+      isDismissable={false}
+    >
+      <VmAlertDialog.Container placement="center" size="sm">
+        <InvoiceFiscalAlertDialog aria-label="Datos fiscales del cliente">
+          <VmAlertDialog.Header>
+            <VmAlertDialog.Icon status="warning" />
+            <VmAlertDialog.Heading>
+              {clientFiscalDataAction.title}
+            </VmAlertDialog.Heading>
+          </VmAlertDialog.Header>
+          <VmAlertDialog.Body>
+            <p>{clientFiscalDataAction.description}</p>
+          </VmAlertDialog.Body>
+          <VmAlertDialog.Footer>
+            <VmButton slot="close" variant="secondary">
+              Entendido
+            </VmButton>
+            <VmButton variant="primary" onPress={handleEditClientFiscalData}>
+              Editar cliente
+            </VmButton>
+          </VmAlertDialog.Footer>
+        </InvoiceFiscalAlertDialog>
+      </VmAlertDialog.Container>
+    </InvoiceFiscalAlertBackdrop>
+  ) : null;
 
   return (
     <>
@@ -192,11 +257,12 @@ export const InvoicePanel = () => {
           <VmDrawer.Backdrop
             isOpen={invoicePanel}
             onOpenChange={handleOpenChange}
+            isDismissable={false}
           >
             <VmDrawer.Content placement="bottom">
               <InvoicePanelDrawerDialog>
                 <VmDrawer.Handle />
-                {!isPanelBusy && <VmDrawer.CloseTrigger />}
+                {!isPanelLocked && <VmDrawer.CloseTrigger />}
                 <VmDrawer.Header>
                   <VmDrawer.Heading>Pago de Factura</VmDrawer.Heading>
                 </VmDrawer.Header>
@@ -218,10 +284,11 @@ export const InvoicePanel = () => {
           <VmModal.Backdrop
             isOpen={invoicePanel}
             onOpenChange={handleOpenChange}
+            isDismissable={false}
           >
             <InvoicePanelModalContainer placement="center" scroll="inside">
               <InvoicePanelDialog>
-                {!isPanelBusy && <VmModal.CloseTrigger />}
+                {!isPanelLocked && <VmModal.CloseTrigger />}
                 <VmModal.Header>
                   <VmModal.Heading>Pago de Factura</VmModal.Heading>
                 </VmModal.Header>
@@ -237,6 +304,7 @@ export const InvoicePanel = () => {
           </VmModal.Backdrop>
         </VmModal.Primitive>
       )}
+      {clientFiscalDataDialog}
     </>
   );
 };

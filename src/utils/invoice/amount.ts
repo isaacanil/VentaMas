@@ -6,7 +6,8 @@ export const resolveInvoiceAmount = (
 ): number => {
   if (typeof amount === 'number') return toNumber(amount);
   if (amount && typeof amount === 'object') {
-    const candidate = amount.total ?? amount.unit ?? 0;
+    const candidate =
+      amount.total ?? amount.unit ?? amount.value ?? amount.quantity ?? 0;
     return toNumber(candidate);
   }
   return 0;

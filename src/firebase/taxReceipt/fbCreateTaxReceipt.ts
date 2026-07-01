@@ -1,40 +1,17 @@
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { nanoid } from 'nanoid';
-
 import type { TaxReceiptData, TaxReceiptUser } from '@/types/taxReceipt';
-import { db } from '@/firebase/firebaseconfig';
-import { normalizeTaxReceiptData } from '@/utils/taxReceipt';
 import { validateUser } from '@/utils/userValidation';
+
+import { addTaxReceipt } from './addTaxReceipt';
 
 export const fbCreateTaxReceipt = async (
   taxReceipt: TaxReceiptData,
   user: TaxReceiptUser,
 ) => {
-  const taxReceiptWithId: TaxReceiptData = normalizeTaxReceiptData({
-    ...taxReceipt,
-    id: nanoid(),
-  }) as TaxReceiptData;
-
   try {
     validateUser(user);
-    const { businessID } = user;
-    const taxReceiptRef = doc(
-      db,
-      'businesses',
-      businessID,
-      'taxReceipts',
-      taxReceiptWithId.id as string,
-    );
-
-    const docSnap = await getDoc(taxReceiptRef);
-
-    if (docSnap.exists()) {
-      console.info('Tax receipt already exists:', taxReceiptWithId.id);
-      return;
-    }
-
-    await setDoc(taxReceiptRef, { data: taxReceiptWithId });
+    return await addTaxReceipt(user, taxReceipt);
   } catch (err) {
     console.error('Error creating tax receipt:', err);
+    return undefined;
   }
 };

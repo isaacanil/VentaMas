@@ -40,6 +40,7 @@ export interface DatePickerProps extends Omit<
   format?: string;
   allowClear?: boolean;
   presets?: DatePickerPreset[];
+  showPresets?: boolean;
 }
 
 export interface UseDatePickerArgs {

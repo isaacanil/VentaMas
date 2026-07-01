@@ -5,8 +5,10 @@ import styled from 'styled-components';
 import { AppIcon } from '@/components/ui/AppIcon';
 import type { ChartOfAccount } from '@/types/accounting';
 import {
+  CHART_OF_ACCOUNTS_MAX_LEVEL,
   CHART_OF_ACCOUNT_CURRENCY_MODE_LABELS,
   CHART_OF_ACCOUNT_TYPE_LABELS,
+  buildChartOfAccountClassificationLabel,
   buildChartOfAccountLabel,
 } from '@/utils/accounting/chartOfAccounts';
 
@@ -25,12 +27,6 @@ interface ChartOfAccountInspectorProps {
     status: ChartOfAccount['status'],
   ) => void;
 }
-
-const getLevelLabel = (depth: number, account: ChartOfAccount) => {
-  if (depth === 0) return 'Clase';
-  if (!account.postingAllowed) return 'Subgrupo';
-  return 'Mayor';
-};
 
 const getNormalSideLabel = (account: ChartOfAccount) =>
   account.normalSide === 'debit' ? 'Deudora' : 'Acreedora';
@@ -119,8 +115,16 @@ export const ChartOfAccountInspector = ({
             <DefinitionValue>{getNormalSideLabel(account)}</DefinitionValue>
           </DefinitionRow>
           <DefinitionRow>
+            <DefinitionLabel>Clasificación</DefinitionLabel>
+            <DefinitionValue>
+              {buildChartOfAccountClassificationLabel(account, childCount)}
+            </DefinitionValue>
+          </DefinitionRow>
+          <DefinitionRow>
             <DefinitionLabel>Nivel</DefinitionLabel>
-            <DefinitionValue>{getLevelLabel(depth, account)}</DefinitionValue>
+            <DefinitionValue>
+              Nivel {depth + 1} de {CHART_OF_ACCOUNTS_MAX_LEVEL}
+            </DefinitionValue>
           </DefinitionRow>
           <DefinitionRow>
             <DefinitionLabel>Moneda</DefinitionLabel>

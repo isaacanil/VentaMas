@@ -12,6 +12,8 @@ const toCleanString = (value: unknown): string | null => {
 export interface VoidAccountsPayablePaymentInput {
   paymentId: string;
   reason?: string | null;
+  evidenceNote?: string | null;
+  evidenceUrls?: string[] | null;
   businessId?: string | null;
 }
 
@@ -32,6 +34,8 @@ export interface VoidAccountsPayablePaymentResult {
 
 type VoidAccountsPayablePaymentPayload = {
   businessId: string;
+  evidenceNote?: string | null;
+  evidenceUrls?: string[];
   paymentId: string;
   reason?: string | null;
   sessionToken?: string;
@@ -53,6 +57,13 @@ export const fbVoidAccountsPayablePayment = async (
     user?.activeBusinessId ??
     null;
   const paymentId = toCleanString(input.paymentId);
+  const reason = toCleanString(input.reason);
+  const evidenceNote = toCleanString(input.evidenceNote);
+  const evidenceUrls = (
+    Array.isArray(input.evidenceUrls) ? input.evidenceUrls : []
+  )
+    .map((entry) => toCleanString(entry))
+    .filter(Boolean) as string[];
 
   if (!businessId) {
     throw new Error('No hay negocio activo para anular el pago al proveedor.');
@@ -60,12 +71,24 @@ export const fbVoidAccountsPayablePayment = async (
   if (!paymentId) {
     throw new Error('Debe indicar un pago válido para anular.');
   }
+  if (!reason || reason.length < 5) {
+    throw new Error(
+      'Debe indicar un motivo de anulación con al menos 5 caracteres.',
+    );
+  }
+  if (!evidenceNote && evidenceUrls.length === 0) {
+    throw new Error(
+      'Debe indicar una evidencia o referencia para anular el pago al proveedor.',
+    );
+  }
 
   const { sessionToken } = getStoredSession();
   const result = await voidSupplierPaymentCallable({
     businessId,
+    evidenceNote: evidenceNote ?? null,
+    evidenceUrls,
     paymentId,
-    reason: input.reason ?? null,
+    reason,
     ...(sessionToken ? { sessionToken } : {}),
   });
 

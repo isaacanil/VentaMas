@@ -27,6 +27,14 @@ import {
   getFunctionalProductTotal,
   resolveProductLineCurrency,
 } from '@/utils/accounting/lineMonetary';
+import {
+  normalizeSaleUnitForCart,
+  resolveProductBaseQuantity,
+  resolveSaleUnitConversionFactor,
+  resolveSaleUnitLabel,
+} from '@/domain/products/saleUnits';
+import { getWeightedUnitPriceForDisplay } from '@/domain/products/weightPriceDisplay';
+import { resolveAvailableBaseStockForLine } from '@/modules/sales/pages/Sale/utils/cartPhysicalStockUsage';
 import { formatPriceByCurrency } from '@/utils/format';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
 import { getTotalPrice } from '@/utils/pricing';
@@ -130,6 +138,7 @@ type ProductActionMenuItem = {
 };
 
 interface ProductCardForCartProps {
+  cartProducts?: CartProduct[];
   item: CartItem;
   onOpenCommentModal: (item: CartItem) => void;
   onOpenDeleteModal: (item: CartItem) => void;
@@ -194,6 +203,7 @@ const getBatchIdentifier = (value: unknown): string | null => {
 };
 
 export const ProductCardForCart = ({
+  cartProducts,
   item,
   onOpenCommentModal,
   onOpenDeleteModal,
@@ -236,6 +246,17 @@ export const ProductCardForCart = ({
   const requiresPhysicalSelection = Boolean(
     item?.restrictSaleWithoutStock && (!item?.productStockId || !item?.batchId),
   );
+  const editableBaseStock = resolveAvailableBaseStockForLine({
+    cartProducts,
+    line: item,
+  });
+  const weightInputItem =
+    editableBaseStock === null
+      ? item
+      : {
+          ...item,
+          stock: editableBaseStock,
+        };
   const expirationTooltip = !showExpirationIndicator
     ? ''
     : `${isExpired ? 'Lote vencido' : 'Lote vigente'}${formattedExpirationDate ? ` · ${formattedExpirationDate}` : ''}`;
@@ -261,7 +282,10 @@ export const ProductCardForCart = ({
     updatePricing(unit?.pricing);
   };
 
-  const handleSelectPrice = (price: PriceOption) => {
+  const handleSelectPrice = (
+    price: PriceOption,
+    saleUnit?: SaleUnitRecord | null,
+  ) => {
     const nextPricing = price.pricing ?? item.pricing ?? null;
     updatePricing(nextPricing);
 
@@ -297,9 +321,14 @@ export const ProductCardForCart = ({
     }
 
     if (numericPrice !== null) {
+      const selectedSaleUnit = saleUnit
+        ? normalizeSaleUnitForCart(saleUnit as ProductSaleUnit, numericPrice)
+        : null;
       dispatch(
         changeProductPrice({
           id: lineId,
+          pricing: selectedSaleUnit ? undefined : nextPricing || undefined,
+          saleUnit: selectedSaleUnit,
           price: numericPrice,
         }),
       );
@@ -394,6 +423,13 @@ export const ProductCardForCart = ({
   const showServiceCommissionControl = Boolean(
     serviceCommissionSettings.enabled && isServiceCommissionEligible(item),
   );
+  const saleUnitLabel = resolveSaleUnitLabel(item.selectedSaleUnit);
+  const baseQuantity = resolveProductBaseQuantity(item);
+  const effectiveSelectedUnit =
+    selectedUnit ??
+    (item.selectedSaleUnit?.id
+      ? (item.selectedSaleUnit as SaleUnitRecord)
+      : null);
 
   const handleBatchInfoKeyDown = (event: KeyboardEvent<HTMLSpanElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -417,6 +453,23 @@ export const ProductCardForCart = ({
   const displayedOriginalPrice = usesConvertedDocumentPrice
     ? Number((basePriceWithTax * exchangeRate).toFixed(2))
     : basePriceWithTax;
+  const weightedUnitPrice =
+    item.weightDetail?.isSoldByWeight === true
+      ? getWeightedUnitPriceForDisplay(item as ProductRecord, taxReceiptEnabled)
+      : null;
+  const displayedWeightedUnitPrice =
+    weightedUnitPrice !== null
+      ? usesConvertedDocumentPrice
+        ? Number((weightedUnitPrice * exchangeRate).toFixed(2))
+        : weightedUnitPrice
+      : null;
+  const weightedUnitPriceLabel =
+    displayedWeightedUnitPrice !== null
+      ? `Precio unitario ${formatPriceByCurrency(
+          displayedWeightedUnitPrice,
+          documentCurrency,
+        )} / ${item.weightDetail?.weightUnit ?? 'unidad'}`
+      : null;
 
   const priceEditableItem: PriceEditorItem = {
     id: lineId,
@@ -427,6 +480,10 @@ export const ProductCardForCart = ({
 
   const counterItem: CartQuantityCounterItem = {
     restrictSaleWithoutStock: item.restrictSaleWithoutStock,
+    saleUnitConversionFactor: resolveSaleUnitConversionFactor(
+      item.selectedSaleUnit,
+    ),
+    allowFractional: item.selectedSaleUnit?.allowFractional === true,
   };
 
   const insuranceItem: InsuranceItem = {
@@ -500,6 +557,11 @@ export const ProductCardForCart = ({
                       {item.comment}
                     </CommentPreview>
                   )}
+                  {weightedUnitPriceLabel && (
+                    <CommentPreview title={weightedUnitPriceLabel}>
+                      {weightedUnitPriceLabel}
+                    </CommentPreview>
+                  )}
                   {requiresPhysicalSelection && (
                     <SelectionWarning>
                       Selecciona ubicación o lote antes de facturar
@@ -524,6 +586,18 @@ export const ProductCardForCart = ({
                 {item.comment && (
                   <CommentPreview title={item.comment}>
                     {item.comment}
+                  </CommentPreview>
+                )}
+                {saleUnitLabel && (
+                  <CommentPreview
+                    title={`${saleUnitLabel} · descuenta ${baseQuantity}`}
+                  >
+                    {saleUnitLabel} · descuenta {baseQuantity}
+                  </CommentPreview>
+                )}
+                {weightedUnitPriceLabel && (
+                  <CommentPreview title={weightedUnitPriceLabel}>
+                    {weightedUnitPriceLabel}
                   </CommentPreview>
                 )}
                 {requiresPhysicalSelection && (
@@ -631,6 +705,18 @@ export const ProductCardForCart = ({
                 {item.comment}
               </CommentPreview>
             )}
+            {saleUnitLabel && (
+              <CommentPreview
+                title={`${saleUnitLabel} · descuenta ${baseQuantity}`}
+              >
+                {saleUnitLabel} · descuenta {baseQuantity}
+              </CommentPreview>
+            )}
+            {weightedUnitPriceLabel && (
+              <CommentPreview title={weightedUnitPriceLabel}>
+                {weightedUnitPriceLabel}
+              </CommentPreview>
+            )}
             {requiresPhysicalSelection && (
               <SelectionWarning>
                 Selecciona ubicación o lote antes de facturar
@@ -646,7 +732,7 @@ export const ProductCardForCart = ({
             onModalOpen={() => setModalVisible(true)}
           />
           {item?.weightDetail?.isSoldByWeight ? (
-            <WeightInput item={item} />
+            <WeightInput item={weightInputItem} />
           ) : (
             <CartQuantityCounter
               item={counterItem}
@@ -673,7 +759,7 @@ export const ProductCardForCart = ({
         isVisible={isModalVisible}
         onClose={() => setModalVisible(false)}
         prices={precios}
-        selectedUnit={selectedUnit}
+        selectedUnit={effectiveSelectedUnit}
         onSelectDefaultUnit={handleSelectDefaultUnit}
         item={saleUnitItem}
         onSelectPrice={handleSelectPrice}

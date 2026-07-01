@@ -7,6 +7,7 @@ import {
   resolveInvoiceDisplayedUnitPrice,
 } from '@/utils/accounting/lineMonetary';
 import { getServiceCommissionCollaboratorLabel } from '@/utils/commissions/serviceCommissions';
+import { resolveInvoiceProductQuantity } from '@/utils/invoice/product';
 
 import { formatInvoicePrice } from '@/utils/invoice/documentCurrency';
 type ProductsProps = {
@@ -55,11 +56,9 @@ const ProductTable = ({ products, invoiceData = null }: ProductTableProps) => {
       title: 'Cantidad',
       dataIndex: 'amountToBuy',
       key: 'amountToBuy',
-      render: (text: InvoiceProduct['amountToBuy']) => {
-        if (typeof text === 'number') return text;
-        if (typeof text?.total === 'number') return text.total;
-        if (typeof text?.unit === 'number') return text.unit;
-        return 'N/A';
+      render: (_text: InvoiceProduct['amountToBuy'], record: InvoiceProduct) => {
+        const quantity = resolveInvoiceProductQuantity(record);
+        return quantity > 0 ? quantity : 'N/A';
       },
     },
     ...(products.some((product) =>

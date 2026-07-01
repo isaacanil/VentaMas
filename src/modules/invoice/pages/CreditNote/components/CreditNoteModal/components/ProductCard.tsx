@@ -5,6 +5,10 @@ import { getTotalPrice } from '@/utils/pricing';
 import type { InvoiceProduct } from '@/types/invoice';
 import { CreditNoteQuantityControl } from './CreditNoteQuantityControl';
 import {
+  applyCreditNoteLineQuantity,
+  getCreditNoteQuantityInputConfig,
+} from '../utils/quantity';
+import {
   CardBody,
   CardHeader,
   CheckboxContainer,
@@ -52,9 +56,10 @@ export const ProductCard = ({
   creditedByOthers = 0,
 }: ProductCardProps) => {
   const unitPrice = getTotalPrice(product, true, false);
-  const tempItem = { ...product, amountToBuy: quantity };
+  const tempItem = applyCreditNoteLineQuantity(product, quantity);
   const total = getTotalPrice(tempItem);
   const itbis = total - total / 1.18;
+  const quantityInputConfig = getCreditNoteQuantityInputConfig(product);
 
   return (
     <StyledCard size="small">
@@ -84,6 +89,8 @@ export const ProductCard = ({
               originalQuantity={originalQuantity}
               creditedByOthers={creditedByOthers}
               maxQuantity={maxQuantity}
+              minQuantity={quantityInputConfig.min}
+              step={quantityInputConfig.step}
               isEditable={!isView && isSelected}
               onQuantityChange={onQuantityChange}
               compact

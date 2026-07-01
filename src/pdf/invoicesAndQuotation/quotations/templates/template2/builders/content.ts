@@ -2,6 +2,8 @@ import { money, getProductIndividualDiscount } from '../utils/formatters';
 
 import type { PdfContent, PdfTableBody, PdfTableRow } from '@/pdf/types';
 import type { QuotationData } from '@/pdf/invoicesAndQuotation/types';
+import { getActiveUnitPrice } from '@/utils/pricing';
+import { resolveInvoiceProductQuantity } from '@/utils/invoice/product';
 
 export function buildContent(d: QuotationData): PdfContent[] {
   const headerRow: PdfTableRow = [
@@ -22,14 +24,14 @@ export function buildContent(d: QuotationData): PdfContent[] {
   const body: PdfTableBody = [
     headerRow,
     ...products.flatMap((p) => {
-      const price = Number(p.pricing?.price ?? 0);
+      const price = getActiveUnitPrice(p);
       const taxRate = Number(
         typeof p.pricing?.tax === 'object' && p.pricing?.tax
           ? (p.pricing.tax as { tax?: number | string }).tax
           : p.pricing?.tax ?? 0,
       );
       const tax = price * (taxRate / 100);
-      const quantity = Number(p.amountToBuy ?? 0);
+      const quantity = resolveInvoiceProductQuantity(p);
       const tot = (price + tax) * quantity;
 
       const productRow = [

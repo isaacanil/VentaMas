@@ -554,8 +554,29 @@ const buildAccountBalances = ({ accounts, periodKey, records, mode }) => {
   return Array.from(balances.values());
 };
 
+const buildAccountChildrenByParentId = (accounts = []) => {
+  const childrenByParentId = new Map();
+
+  (Array.isArray(accounts) ? accounts : []).forEach((account) => {
+    const parentId = toCleanString(account.parentId);
+    if (!parentId) return;
+
+    const children = childrenByParentId.get(parentId) || [];
+    children.push(account);
+    childrenByParentId.set(parentId, children);
+  });
+
+  return childrenByParentId;
+};
+
+const isAccountPostingAllowedForEntries = (account, childCount = 0) =>
+  account?.status === 'active' &&
+  account.postingAllowed === true &&
+  childCount === 0;
+
 export const buildGeneralLedgerAccountOptions = ({ accounts, records }) => {
   const movementCounts = new Map();
+  const childCountByParentId = buildAccountChildrenByParentId(accounts);
 
   records.forEach((record) => {
     record.lines.forEach((line) => {
@@ -567,7 +588,12 @@ export const buildGeneralLedgerAccountOptions = ({ accounts, records }) => {
   });
 
   return (Array.isArray(accounts) ? accounts : [])
-    .filter((account) => account.status === 'active' && account.postingAllowed)
+    .filter((account) =>
+      isAccountPostingAllowedForEntries(
+        account,
+        childCountByParentId.get(account.id)?.length || 0,
+      ),
+    )
     .map((account) => ({
       id: account.id,
       code: account.code,

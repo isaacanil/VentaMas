@@ -330,7 +330,25 @@ describe('invoiceLifecycle hardening', () => {
         numberID: 'F-001',
         totalPurchase: { value: 2360 },
         totalTaxes: { value: 360 },
-        products: [{ id: 'product-1', amountToBuy: 1 }],
+        products: [
+          { id: 'product-1', amountToBuy: 1 },
+          {
+            id: 'product-2',
+            amountToBuy: 1,
+            selectedSaleUnit: {
+              id: 'box-12',
+              conversionFactorToBase: 12,
+            },
+          },
+          {
+            id: 'product-3',
+            amountToBuy: 1,
+            weightDetail: {
+              isSoldByWeight: true,
+              weight: 2.5,
+            },
+          },
+        ],
       },
     });
     docSnapshots.set(
@@ -365,6 +383,22 @@ describe('invoiceLifecycle hardening', () => {
               quantity: 1,
               unitCost: 1200,
               totalCost: 1200,
+            },
+            {
+              productId: 'product-2',
+              productStockId: 'stock-2',
+              batchId: 'batch-2',
+              quantity: 12,
+              unitCost: 100,
+              totalCost: 1200,
+            },
+            {
+              productId: 'product-3',
+              productStockId: 'stock-3',
+              batchId: 'batch-3',
+              quantity: 2.5,
+              unitCost: 100,
+              totalCost: 250,
             },
           ],
         },
@@ -444,6 +478,7 @@ describe('invoiceLifecycle hardening', () => {
       }),
       expect.objectContaining({
         quantity: { __op: 'increment', value: 1 },
+        stock: { __op: 'increment', value: 1 },
         status: 'active',
       }),
       { merge: true },
@@ -462,8 +497,52 @@ describe('invoiceLifecycle hardening', () => {
       expect.objectContaining({
         path: 'businesses/business-1/products/product-1',
       }),
-      { 'product.stock': { __op: 'increment', value: 1 } },
+      expect.objectContaining({
+        stock: { __op: 'increment', value: 1 },
+      }),
     );
+    expect(transactionUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/products/product-2',
+      }),
+      expect.objectContaining({
+        stock: { __op: 'increment', value: 12 },
+      }),
+    );
+    expect(transactionUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/products/product-3',
+      }),
+      expect.objectContaining({
+        stock: { __op: 'increment', value: 2.5 },
+      }),
+    );
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/productsStock/stock-2',
+      }),
+      expect.objectContaining({
+        quantity: { __op: 'increment', value: 12 },
+        stock: { __op: 'increment', value: 12 },
+        status: 'active',
+      }),
+      { merge: true },
+    );
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/batches/batch-3',
+      }),
+      expect.objectContaining({
+        quantity: { __op: 'increment', value: 2.5 },
+        status: 'active',
+      }),
+      { merge: true },
+    );
+    expect(
+      transactionUpdateMock.mock.calls.some(([, payload]) =>
+        Object.prototype.hasOwnProperty.call(payload, 'product.stock'),
+      ),
+    ).toBe(false);
     expect(
       transactionSetMock.mock.calls.filter(
         ([ref]) => ref.path === 'businesses/business-1/productsStock/stock-1',
@@ -479,6 +558,131 @@ describe('invoiceLifecycle hardening', () => {
         ([ref]) => ref.path === 'businesses/business-1/products/product-1',
       ),
     ).toHaveLength(1);
+  });
+
+  it('bloquea anular factura con inventario fisico sin detalle COGS para restaurar stock', async () => {
+    docSnapshots.set('businesses/business-1/invoices/invoice-1', {
+      data: {
+        id: 'invoice-1',
+        status: 'committed',
+        numberID: 'F-001',
+        totalPurchase: { value: 118 },
+        totalTaxes: { value: 18 },
+        products: [
+          {
+            id: 'product-1',
+            amountToBuy: 1,
+            trackInventory: true,
+            productStockId: 'stock-1',
+            batchId: 'batch-1',
+          },
+        ],
+      },
+    });
+
+    await expect(
+      voidInvoiceFinancialDocument({
+        data: {
+          businessId: 'business-1',
+          invoiceId: 'invoice-1',
+          cancellation: {
+            reasonCode: '1',
+            reasonLabel: 'Deterioro de factura pre-impresa',
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      message: expect.stringContaining('detalle COGS suficiente'),
+    });
+
+    expect(transactionSetMock).not.toHaveBeenCalled();
+    expect(transactionUpdateMock).not.toHaveBeenCalled();
+    expect(buildAccountingEventMock).not.toHaveBeenCalled();
+    expect(buildJournalEntryMock).not.toHaveBeenCalled();
+    expect(auditTxMock).not.toHaveBeenCalled();
+  });
+
+  it('bloquea anular factura si COGS no trae productsStock y batch para restauracion detallada', async () => {
+    docSnapshots.set('businesses/business-1/invoices/invoice-1', {
+      data: {
+        id: 'invoice-1',
+        status: 'committed',
+        numberID: 'F-001',
+        totalPurchase: { value: 118 },
+        totalTaxes: { value: 18 },
+        products: [
+          {
+            id: 'product-1',
+            amountToBuy: 1,
+            trackInventory: true,
+            productStockId: 'stock-1',
+            batchId: 'batch-1',
+          },
+        ],
+      },
+    });
+    docSnapshots.set(
+      'businesses/business-1/accountingEvents/inventory.cogs.recorded__invoice-1',
+      {
+        id: 'inventory.cogs.recorded__invoice-1',
+        payload: {
+          lines: [
+            {
+              productId: 'product-1',
+              quantity: 1,
+              totalCost: 1200,
+            },
+          ],
+        },
+      },
+    );
+    docSnapshots.set(
+      'businesses/business-1/journalEntries/inventory.cogs.recorded__invoice-1',
+      {
+        id: 'inventory.cogs.recorded__invoice-1',
+        eventId: 'inventory.cogs.recorded__invoice-1',
+        currency: 'DOP',
+        functionalCurrency: 'DOP',
+        totals: { debit: 1200, credit: 1200 },
+        lines: [
+          {
+            accountId: '5101',
+            accountSystemKey: 'cost_of_goods_sold',
+            debit: 1200,
+            credit: 0,
+          },
+          {
+            accountId: '1130',
+            accountSystemKey: 'inventory',
+            debit: 0,
+            credit: 1200,
+          },
+        ],
+      },
+    );
+
+    await expect(
+      voidInvoiceFinancialDocument({
+        data: {
+          businessId: 'business-1',
+          invoiceId: 'invoice-1',
+          cancellation: {
+            reasonCode: '1',
+            reasonLabel: 'Deterioro de factura pre-impresa',
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      message: expect.stringContaining('detalle COGS suficiente'),
+    });
+
+    expect(transactionSetMock).not.toHaveBeenCalled();
+    expect(transactionUpdateMock).not.toHaveBeenCalled();
+    expect(buildAccountingEventMock).not.toHaveBeenCalled();
+    expect(buildJournalEntryMock).not.toHaveBeenCalled();
+    expect(auditTxMock).not.toHaveBeenCalled();
   });
 
   it('no restaura stock ni duplica COGS cuando se reintenta anular una factura ya cancelada', async () => {

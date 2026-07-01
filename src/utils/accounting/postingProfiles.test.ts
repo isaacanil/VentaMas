@@ -203,6 +203,16 @@ describe('postingProfiles', () => {
       ),
     ).toBe('accounts_payable_credit_note_applied');
     expect(
+      normalizeAccountingPostingAmountSource(
+        'accounts_payable_withholding_itbis',
+      ),
+    ).toBe('accounts_payable_withholding_itbis');
+    expect(
+      normalizeAccountingPostingAmountSource(
+        'accounts_payable_withholding_isr',
+      ),
+    ).toBe('accounts_payable_withholding_isr');
+    expect(
       normalizeAccountingPostingAmountSource('payroll_accrual_amount'),
     ).toBe('payroll_accrual_amount');
     expect(
@@ -240,7 +250,9 @@ describe('postingProfiles', () => {
     ).toBe(true);
     expect(
       result
-        .find((profile) => profile.metadata?.seedKey === 'inventory_cogs_voided')
+        .find(
+          (profile) => profile.metadata?.seedKey === 'inventory_cogs_voided',
+        )
         ?.linesTemplate.some(
           (line) =>
             line.accountSystemKey === 'cost_of_sales' &&
@@ -369,23 +381,58 @@ describe('postingProfiles', () => {
     ).toBe(true);
   });
 
-  it('mantiene los pagos CxP sin cuentas de retencion ya registradas en el documento', () => {
+  it('incluye retenciones fiscales en pagos y anulaciones CxP', () => {
     const result =
       buildDefaultAccountingPostingProfileTemplates(chartOfAccounts);
-    const payablePaymentProfiles = result.filter(
-      (profile) => profile.eventType === 'accounts_payable.payment.recorded',
+    const payablePaymentProfiles = result.filter((profile) =>
+      [
+        'accounts_payable.payment.recorded',
+        'accounts_payable.payment.voided',
+      ].includes(profile.eventType),
     );
-    const payablePaymentAccountKeys = payablePaymentProfiles.flatMap(
-      (profile) =>
-        profile.linesTemplate.map((line) => line.accountSystemKey ?? ''),
+    const payablePaymentLines = payablePaymentProfiles.flatMap(
+      (profile) => profile.linesTemplate,
+    );
+    const bankPaymentProfile = result.find(
+      (profile) => profile.metadata?.seedKey === 'ap_payment_bank',
     );
 
     expect(payablePaymentProfiles.length).toBeGreaterThan(0);
-    expect(payablePaymentAccountKeys).not.toContain(
-      'withholding_itbis_payable',
+    expect(payablePaymentLines).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          accountSystemKey: 'withholding_itbis_payable',
+          amountSource: 'accounts_payable_withholding_itbis',
+        }),
+        expect.objectContaining({
+          accountSystemKey: 'withholding_isr_payable',
+          amountSource: 'accounts_payable_withholding_isr',
+        }),
+      ]),
     );
-    expect(payablePaymentAccountKeys).not.toContain(
-      'withholding_isr_payable',
+    expect(bankPaymentProfile?.linesTemplate).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          accountSystemKey: 'bank',
+          amountSource: 'accounts_payable_bank_paid',
+        }),
+      ]),
+    );
+  });
+
+  it('no crea templates base que apunten a cuentas mayor', () => {
+    const result = buildDefaultAccountingPostingProfileTemplates([
+      ...chartOfAccounts,
+      normalizeChartOfAccountRecord('cash-child-id', 'business-1', {
+        code: '1101',
+        name: 'Caja secundaria',
+        type: 'asset',
+        parentId: 'cash-id',
+      }),
+    ]);
+
+    expect(result.some((profile) => profile.name === 'Venta al contado')).toBe(
+      false,
     );
   });
 });

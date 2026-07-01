@@ -5,6 +5,7 @@ import {
   getPilotAccountingSettingsForBusiness,
   isAccountingRolloutEnabledForBusiness,
 } from '../../../versions/v2/accounting/utils/accountingRollout.util.js';
+import { runAccountingEventProjection } from '../../../versions/v2/accounting/accountingEventProjection.service.js';
 import { buildAccountingEvent } from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
 import {
   THRESHOLD,
@@ -164,15 +165,23 @@ export const syncPurchaseSupplierCreditNote = onDocumentWritten(
     };
 
     const writes = [noteRef.set(payload, { merge: true })];
+    let accountingEventToProject = null;
 
-    if (shouldProjectAccountingEvents && nextTotalAmount > THRESHOLD) {
+    const shouldWriteAccountingEvent =
+      shouldProjectAccountingEvents &&
+      (nextTotalAmount > THRESHOLD || (noteSnap.exists && nextStatus === 'void'));
+
+    if (shouldWriteAccountingEvent) {
+      const accountingEventAmount =
+        nextStatus === 'void' ? 0 : nextTotalAmount;
       const creditNoteMonetary = resolveSupplierCreditNoteMonetarySnapshot({
-        amount: nextTotalAmount,
+        amount: accountingEventAmount,
         purchaseRecord,
       });
       const accountingEvent = buildAccountingEvent({
         businessId,
         eventType: 'supplier_credit_note.issued',
+        status: nextStatus === 'void' ? 'voided' : 'recorded',
         sourceType: 'supplierCreditNote',
         sourceId: noteId,
         sourceDocumentType: 'supplierCreditNote',
@@ -187,7 +196,7 @@ export const syncPurchaseSupplierCreditNote = onDocumentWritten(
           purchaseId,
           purchaseNumber: payload.metadata.purchaseNumber,
           originType: payload.originType,
-          totalAmount: nextTotalAmount,
+          totalAmount: accountingEventAmount,
           appliedAmount,
           remainingAmount: nextRemainingAmount,
           status: nextStatus,
@@ -195,12 +204,15 @@ export const syncPurchaseSupplierCreditNote = onDocumentWritten(
         occurredAt:
           purchaseRecord.completedAt ??
           purchaseRecord.updatedAt ??
-          payload.createdAt,
-        recordedAt: payload.createdAt,
-        createdAt: payload.createdAt,
+          payload.updatedAt,
+        recordedAt:
+          nextStatus === 'void' ? payload.updatedAt : payload.createdAt,
+        createdAt:
+          nextStatus === 'void' ? payload.updatedAt : payload.createdAt,
         createdBy: SUPPLIER_CREDIT_NOTE_SYNC_ACTOR,
         metadata: buildPurchaseSourceAuditMetadata(purchaseRecord),
       });
+      accountingEventToProject = accountingEvent;
 
       writes.push(
         db
@@ -210,6 +222,13 @@ export const syncPurchaseSupplierCreditNote = onDocumentWritten(
     }
 
     await Promise.all(writes);
+    if (accountingEventToProject?.status === 'voided') {
+      await runAccountingEventProjection({
+        businessId,
+        eventId: accountingEventToProject.id,
+        accountingEvent: accountingEventToProject,
+      });
+    }
     return null;
   },
 );

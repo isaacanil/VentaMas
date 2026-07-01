@@ -618,8 +618,6 @@ export const getProductStockById = async (
   }
 };
 
-
-
 const EMPTY_AGGREGATE: StockAggregateSummary = {
   totalUnits: 0,
   totalLots: 0,
@@ -639,8 +637,8 @@ const fetchAggregateSnapshot = async (
       totalLots: data?.totalLots ?? 0,
     };
   } catch (error) {
-    console.error(
-      'Error al obtener agregados de stock para la ubicación:',
+    console.warn(
+      'No se pudieron obtener agregados de stock para la ubicación; se usará el resumen vacío:',
       error,
     );
     return EMPTY_AGGREGATE;

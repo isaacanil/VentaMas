@@ -61,6 +61,44 @@ const DEFAULT_FISCAL_FEATURES = Object.freeze({
   taxationEnabled: true,
 });
 
+const normalizeTaxReceiptLabel = (value) => {
+  if (typeof value !== 'string' && typeof value !== 'number') return '';
+  return String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toUpperCase();
+};
+
+const normalizeTaxReceiptCode = (value) => {
+  const normalized = normalizeTaxReceiptLabel(value).replace(/[^A-Z0-9]/g, '');
+  if (/^\d$/.test(normalized)) return normalized.padStart(2, '0');
+  return normalized;
+};
+
+const getTaxReceiptIdentity = (receipt) => {
+  const type = normalizeTaxReceiptCode(receipt?.type);
+  const serie = normalizeTaxReceiptCode(receipt?.serie ?? receipt?.series);
+  const name = normalizeTaxReceiptLabel(receipt?.name);
+
+  return {
+    name,
+    serie,
+    fiscalKey: `${type}${serie}`,
+  };
+};
+
+const hasMatchingTaxReceiptIdentity = (left, right) => {
+  const leftIdentity = getTaxReceiptIdentity(left);
+  const rightIdentity = getTaxReceiptIdentity(right);
+  return (
+    (!!leftIdentity.fiscalKey &&
+      leftIdentity.fiscalKey === rightIdentity.fiscalKey) ||
+    (!!leftIdentity.name && leftIdentity.name === rightIdentity.name)
+  );
+};
+
 const STRICT_LIMIT_PLANS = new Set(['demo', 'plus']);
 
 const readMaxBusinessesLimit = (subscription) => {
@@ -155,13 +193,7 @@ export const provisionBusinessCoreInTransaction = async ({
   const billingSnap = await tx.get(billingRef);
   const taxReceiptSettingsSnap = await tx.get(taxReceiptSettingsRef);
 
-  const receiptRefs = DEFAULT_TAX_RECEIPTS.map((r) =>
-    taxReceiptsCol.doc(r.serie),
-  );
-  const receiptSnaps = [];
-  for (const receiptRef of receiptRefs) {
-    receiptSnaps.push(await tx.get(receiptRef));
-  }
+  const taxReceiptsSnap = await tx.get(taxReceiptsCol);
 
   if (requireNewBusiness && businessSnap.exists) {
     throw new HttpsError(
@@ -214,11 +246,18 @@ export const provisionBusinessCoreInTransaction = async ({
     tx.set(taxReceiptSettingsRef, { taxReceiptEnabled: false });
   }
 
-  receiptSnaps.forEach((receiptSnap, idx) => {
-    if (receiptSnap.exists) return;
+  const existingTaxReceiptDocs = Array.isArray(taxReceiptsSnap?.docs)
+    ? taxReceiptsSnap.docs
+    : [];
 
-    const receipt = DEFAULT_TAX_RECEIPTS[idx];
-    const receiptRef = receiptRefs[idx];
+  DEFAULT_TAX_RECEIPTS.forEach((receipt) => {
+    const receiptRef = taxReceiptsCol.doc(receipt.serie);
+    const alreadyExists = existingTaxReceiptDocs.some((receiptSnap) => {
+      if (receiptSnap.id === receipt.serie) return true;
+      return hasMatchingTaxReceiptIdentity(receiptSnap.data()?.data, receipt);
+    });
+
+    if (alreadyExists) return;
 
     tx.set(receiptRef, {
       data: {

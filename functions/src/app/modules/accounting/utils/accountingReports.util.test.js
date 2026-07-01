@@ -109,6 +109,37 @@ describe('accountingReports.util', () => {
     expect(buildAvailablePeriods(records)).toContain('2026-03');
   });
 
+  it('excluye cuentas mayor con subcuentas de las opciones del mayor', () => {
+    const accountOptions = buildGeneralLedgerAccountOptions({
+      accounts: [
+        {
+          id: 'cash-root',
+          code: '1.1.00',
+          name: 'Caja',
+          type: 'asset',
+          normalSide: 'debit',
+          status: 'active',
+          postingAllowed: true,
+        },
+        {
+          id: 'cash-detail',
+          code: '1.1.01',
+          name: 'Caja principal',
+          parentId: 'cash-root',
+          type: 'asset',
+          normalSide: 'debit',
+          status: 'active',
+          postingAllowed: true,
+        },
+      ],
+      records: [],
+    });
+
+    expect(accountOptions.map((account) => account.id)).toEqual([
+      'cash-detail',
+    ]);
+  });
+
   it('construye snapshot del libro mayor con saldo acumulado', () => {
     const snapshot = buildGeneralLedgerSnapshot({
       account: accounts[0],

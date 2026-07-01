@@ -161,6 +161,48 @@ describe('validateInvoiceSubmissionGuards', () => {
     expect(getProductStockByProductId).not.toHaveBeenCalled();
   });
 
+  it('bloquea el submit cuando un producto por peso tiene unidad no soportada', async () => {
+    vi.mocked(checkOpenCashReconciliation).mockResolvedValue({
+      state: 'open',
+      cashCount: {} as never,
+    });
+
+    const result = await validateInvoiceSubmissionGuards({
+      cart: {
+        products: [
+          {
+            id: 'product-weight',
+            cid: 'line-weight',
+            name: 'Queso fresco',
+            amountToBuy: 1,
+            cost: { total: 0 },
+            weightDetail: {
+              isSoldByWeight: true,
+              weight: 2.5,
+              weightUnit: 'unidad',
+            },
+            restrictSaleWithoutStock: true,
+          },
+        ],
+      },
+      user: user as never,
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: false,
+        code: 'weight-unit',
+        message: 'Unidad de peso no soportada',
+      }),
+    );
+    if (result.ok) {
+      throw new Error('Se esperaba una falla de unidad de peso');
+    }
+    expect(result.description).toContain('Queso fresco');
+    expect(result.description).toContain('kg, lb, oz, g o mg');
+    expect(getProductStockByProductId).not.toHaveBeenCalled();
+  });
+
   it('permite el submit cuando no hay productos con selección física pendiente', async () => {
     vi.mocked(checkOpenCashReconciliation).mockResolvedValue({
       state: 'open',

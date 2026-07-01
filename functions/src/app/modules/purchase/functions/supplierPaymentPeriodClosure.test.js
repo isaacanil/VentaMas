@@ -121,24 +121,32 @@ vi.mock('../../../core/utils/callableSessionAuth.util.js', () => ({
 vi.mock('../../../versions/v2/auth/services/userAccess.service.js', () => ({
   MEMBERSHIP_ROLE_GROUPS: {
     AUDIT: ['audit'],
+    FINANCIAL_DOCUMENT_VOID: ['financial-document-void'],
     INVOICE_OPERATOR: ['invoice-operator'],
+    TREASURY_OPERATOR: ['treasury-operator'],
   },
   assertUserAccess: (...args) => assertUserAccessMock(...args),
 }));
 
-vi.mock('../../../versions/v2/billing/utils/subscriptionAccess.util.js', () => ({
-  assertBusinessSubscriptionAccess: (...args) =>
-    assertBusinessSubscriptionAccessMock(...args),
-}));
+vi.mock(
+  '../../../versions/v2/billing/utils/subscriptionAccess.util.js',
+  () => ({
+    assertBusinessSubscriptionAccess: (...args) =>
+      assertBusinessSubscriptionAccessMock(...args),
+  }),
+);
 
-vi.mock('../../../versions/v2/accounting/utils/accountingRollout.util.js', () => ({
-  getPilotAccountingSettingsForBusiness: (...args) =>
-    getPilotAccountingSettingsForBusinessMock(...args),
-  isAccountingRolloutEnabledForBusiness: (...args) =>
-    isAccountingRolloutEnabledForBusinessMock(...args),
-  resolvePilotMonetarySnapshotForBusiness: (...args) =>
-    resolvePilotMonetarySnapshotForBusinessMock(...args),
-}));
+vi.mock(
+  '../../../versions/v2/accounting/utils/accountingRollout.util.js',
+  () => ({
+    getPilotAccountingSettingsForBusiness: (...args) =>
+      getPilotAccountingSettingsForBusinessMock(...args),
+    isAccountingRolloutEnabledForBusiness: (...args) =>
+      isAccountingRolloutEnabledForBusinessMock(...args),
+    resolvePilotMonetarySnapshotForBusiness: (...args) =>
+      resolvePilotMonetarySnapshotForBusinessMock(...args),
+  }),
+);
 
 vi.mock('nanoid', () => ({
   nanoid: () => 'payment-12345678',
@@ -167,7 +175,12 @@ describe('supplier payment accounting period validation', () => {
       throw new Error('Unexpected collection lookup in this test.');
     });
     transactionGetMock.mockImplementation(async (ref) =>
-      toSnapshot(ref.path, transactionSnapshots.get(ref.path)),
+      toSnapshot(
+        ref.path,
+        transactionSnapshots.has(ref.path)
+          ? transactionSnapshots.get(ref.path)
+          : documentSnapshots.get(ref.path),
+      ),
     );
     runTransactionMock.mockImplementation(async (callback) =>
       callback({
@@ -311,7 +324,7 @@ describe('supplier payment accounting period validation', () => {
     });
   });
 
-  it('rejects voiding a supplier payment that belongs to a closed accounting period', async () => {
+  it('rejects voiding a supplier payment when the reversal accounting period is closed', async () => {
     transactionSnapshots.set(
       'businesses/business-1/accountsPayablePayments/payment-1',
       {
@@ -328,14 +341,15 @@ describe('supplier payment accounting period validation', () => {
       },
     });
     transactionSnapshots.set(
-      'businesses/business-1/accountingPeriodClosures/2026-03',
-      { closedAt: '2026-03-31T23:59:59.000Z' },
+      'businesses/business-1/accountingPeriodClosures/2026-04',
+      { closedAt: '2026-04-30T23:59:59.000Z' },
     );
 
     await expect(
       voidSupplierPayment({
         data: {
           businessId: 'business-1',
+          evidenceNote: 'Ticket AP-201',
           paymentId: 'payment-1',
           reason: 'error de captura',
         },
@@ -343,9 +357,14 @@ describe('supplier payment accounting period validation', () => {
     ).rejects.toMatchObject({
       code: 'failed-precondition',
       message:
-        'No puedes anular este pago a suplidor con fecha de marzo de 2026 porque ese periodo contable esta cerrado. Usa otra fecha o solicita reabrir el periodo.',
+        'No puedes anular este pago a suplidor con fecha de abril de 2026 porque ese periodo contable esta cerrado. Usa otra fecha o solicita reabrir el periodo.',
     });
 
+    expect(transactionGetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/accountingPeriodClosures/2026-04',
+      }),
+    );
     expect(collectionMock).not.toHaveBeenCalled();
   });
 
@@ -375,6 +394,7 @@ describe('supplier payment accounting period validation', () => {
       voidSupplierPayment({
         data: {
           businessId: 'business-1',
+          evidenceNote: 'Ticket AP-202',
           paymentId: 'payment-1',
           reason: 'ya estaba anulado',
         },

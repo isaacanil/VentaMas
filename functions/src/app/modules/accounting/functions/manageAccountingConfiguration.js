@@ -17,6 +17,7 @@ const CHART_ACCOUNT_TYPES = new Set([
 const NORMAL_SIDES = new Set(['debit', 'credit']);
 const CURRENCY_MODES = new Set(['functional_only', 'multi_currency_reference']);
 const PROFILE_STATUSES = new Set(['active', 'inactive']);
+const CHART_OF_ACCOUNTS_MAX_LEVEL = 6;
 const BANK_ACCOUNT_TYPES = new Set([
   'checking',
   'savings',
@@ -91,6 +92,8 @@ const AMOUNT_SOURCES = new Set([
   'accounts_payable_cash_paid',
   'accounts_payable_bank_paid',
   'accounts_payable_credit_note_applied',
+  'accounts_payable_withholding_itbis',
+  'accounts_payable_withholding_isr',
   'payroll_accrual_amount',
   'payroll_net_payable_amount',
   'payroll_tax_deductions_amount',
@@ -475,7 +478,53 @@ const assertUniqueAccountCode = ({ accounts, accountId, code }) => {
   }
 };
 
-const assertValidAccountParent = ({ accountsById, accountId, draft }) => {
+const buildAccountChildrenByParentId = (accounts = []) =>
+  accounts.reduce((accumulator, account) => {
+    const parentId = toCleanString(account.parentId);
+    if (!parentId) return accumulator;
+
+    const children = accumulator.get(parentId) || [];
+    children.push(account);
+    accumulator.set(parentId, children);
+    return accumulator;
+  }, new Map());
+
+const getAccountLevel = (account, accountsById) => {
+  let level = 1;
+  let currentParentId = toCleanString(account.parentId);
+  const visitedIds = new Set([account.id]);
+
+  while (currentParentId) {
+    if (visitedIds.has(currentParentId)) break;
+    const parent = accountsById.get(currentParentId);
+    if (!parent) break;
+
+    visitedIds.add(currentParentId);
+    level += 1;
+    currentParentId = toCleanString(parent.parentId);
+  }
+
+  return level;
+};
+
+const getMaxDescendantDepth = (accountId, childrenByParentId) => {
+  const children = childrenByParentId.get(accountId) || [];
+  if (!children.length) return 0;
+
+  return Math.max(
+    ...children.map(
+      (childAccount) =>
+        1 + getMaxDescendantDepth(childAccount.id, childrenByParentId),
+    ),
+  );
+};
+
+const assertValidAccountParent = ({
+  accounts = [],
+  accountsById,
+  accountId,
+  draft,
+}) => {
   if (!draft.parentId) return;
   if (draft.parentId === accountId) {
     throw new HttpsError(
@@ -513,6 +562,29 @@ const assertValidAccountParent = ({ accountsById, accountId, draft }) => {
       );
     }
     currentParentId = accountsById.get(currentParentId)?.parentId ?? null;
+  }
+
+  const childrenByParentId = buildAccountChildrenByParentId(accounts);
+  const nextLevel = getAccountLevel(parent, accountsById) + 1;
+  const maxDescendantDepth = getMaxDescendantDepth(
+    accountId,
+    childrenByParentId,
+  );
+  if (nextLevel + maxDescendantDepth > CHART_OF_ACCOUNTS_MAX_LEVEL) {
+    throw new HttpsError(
+      'failed-precondition',
+      `El catálogo solo permite subcuentas hasta el nivel ${CHART_OF_ACCOUNTS_MAX_LEVEL}.`,
+    );
+  }
+};
+
+const assertAccountPostingClassification = ({ accounts, accountId, draft }) => {
+  const hasChildren = accounts.some((account) => account.parentId === accountId);
+  if (hasChildren && draft.postingAllowed !== false) {
+    throw new HttpsError(
+      'failed-precondition',
+      'Una Cuenta Mayor con subcuentas no puede recibir asientos directos.',
+    );
   }
 };
 
@@ -698,6 +770,10 @@ const assertPostingProfileDraft = ({
     );
   }
 
+  const childCountByParentId = buildAccountChildrenByParentId(
+    Array.from(accountsById.values()),
+  );
+
   draft.linesTemplate.forEach((line) => {
     if (!line.accountId) {
       throw new HttpsError(
@@ -718,10 +794,13 @@ const assertPostingProfileDraft = ({
         'Todas las cuentas usadas por el perfil deben estar activas.',
       );
     }
-    if (account.postingAllowed === false) {
+    if (
+      account.postingAllowed === false ||
+      (childCountByParentId.get(account.id)?.length || 0) > 0
+    ) {
       throw new HttpsError(
         'failed-precondition',
-        'Todas las cuentas usadas por el perfil deben permitir asientos directos.',
+        'Todas las cuentas usadas por el perfil deben ser Cuentas Detalle.',
       );
     }
   });
@@ -874,6 +953,7 @@ export const createBankAccount = onCall(
         code: ledgerDraft.code,
       });
       assertValidAccountParent({
+        accounts,
         accountsById,
         accountId: ledgerAccountRef.id,
         draft: ledgerDraft,
@@ -1003,6 +1083,7 @@ export const backfillBankAccountChartLinks = onCall(
           code: ledgerDraft.code,
         });
         assertValidAccountParent({
+          accounts: workingAccounts,
           accountsById: accountContext.accountsById,
           accountId: ledgerAccountRef.id,
           draft: ledgerDraft,
@@ -1090,6 +1171,7 @@ export const createChartOfAccount = onCall(
         code: draft.code,
       });
       assertValidAccountParent({
+        accounts,
         accountsById,
         accountId: accountRef.id,
         draft,
@@ -1159,7 +1241,13 @@ export const updateChartOfAccount = onCall(
         code: draft.code,
       });
       assertValidAccountParent({
+        accounts: accountContext.accounts,
         accountsById: accountContext.accountsById,
+        accountId,
+        draft,
+      });
+      assertAccountPostingClassification({
+        accounts: accountContext.accounts,
         accountId,
         draft,
       });

@@ -776,6 +776,83 @@ describe('closeAccountingPeriod', () => {
     expect(transactionSetMock).not.toHaveBeenCalled();
   });
 
+  it('does not use parent retained earnings accounts for fiscal year close', async () => {
+    collectionSnapshots.set('businesses/business-1/accountingEvents', []);
+    collectionSnapshots.set('businesses/business-1/chartOfAccounts', [
+      {
+        id: 'sales',
+        data: {
+          id: 'sales',
+          code: '4000',
+          name: 'Ventas',
+          type: 'income',
+          status: 'active',
+          postingAllowed: true,
+        },
+      },
+      {
+        id: 'retained',
+        data: {
+          id: 'retained',
+          code: '3200',
+          name: 'Resultados acumulados',
+          type: 'equity',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'retained_earnings',
+        },
+      },
+      {
+        id: 'retained-child',
+        data: {
+          id: 'retained-child',
+          code: '3201',
+          name: 'Resultados acumulados detalle',
+          type: 'equity',
+          status: 'active',
+          postingAllowed: true,
+          parentId: 'retained',
+        },
+      },
+    ]);
+    collectionSnapshots.set('businesses/business-1/journalEntries', [
+      {
+        id: 'sale-entry',
+        data: {
+          id: 'sale-entry',
+          periodKey: '2026-02',
+          status: 'posted',
+          lines: [
+            { accountId: 'ar', debit: 1000, credit: 0 },
+            { accountId: 'sales', debit: 0, credit: 1000 },
+          ],
+        },
+      },
+    ]);
+    transactionSnapshots.set(
+      'businesses/business-1/accountingPeriodClosures/2026-12',
+      null,
+    );
+    transactionSnapshots.set(
+      'businesses/business-1/journalEntries/fiscal_year_close__2026',
+      null,
+    );
+
+    await expect(
+      closeAccountingPeriod({
+        data: {
+          businessId: 'business-1',
+          confirmFiscalYearClose: true,
+          periodKey: '2026-12',
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      message:
+        'No se encontró una cuenta activa de resultados acumulados para cerrar el ejercicio.',
+    });
+  });
+
   it('creates a fiscal year close entry for a net loss', async () => {
     collectionSnapshots.set('businesses/business-1/accountingEvents', []);
     setFiscalChartOfAccounts();

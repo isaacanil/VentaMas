@@ -1,7 +1,24 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { docGetMock, MockHttpsError } = vi.hoisted(() => {
+const {
+  docGetMock,
+  failedTasksGetMock,
+  failedTaskSetMock,
+  pendingTasksGetMock,
+  repairTaskSetMock,
+  MockHttpsError,
+} = vi.hoisted(() => {
   const hoistedDocGetMock = vi.fn();
+  const hoistedFailedTasksGetMock = vi.fn(async () => ({
+    empty: true,
+    docs: [],
+  }));
+  const hoistedFailedTaskSetMock = vi.fn();
+  const hoistedPendingTasksGetMock = vi.fn(async () => ({
+    empty: true,
+    docs: [],
+  }));
+  const hoistedRepairTaskSetMock = vi.fn();
 
   class HoistedHttpsError extends Error {
     constructor(code, message, details) {
@@ -13,6 +30,10 @@ const { docGetMock, MockHttpsError } = vi.hoisted(() => {
 
   return {
     docGetMock: hoistedDocGetMock,
+    failedTasksGetMock: hoistedFailedTasksGetMock,
+    failedTaskSetMock: hoistedFailedTaskSetMock,
+    pendingTasksGetMock: hoistedPendingTasksGetMock,
+    repairTaskSetMock: hoistedRepairTaskSetMock,
     MockHttpsError: HoistedHttpsError,
   };
 });
@@ -35,22 +56,35 @@ vi.mock('../../../../core/config/firebase.js', () => ({
       path,
       get: (...args) => docGetMock(path, ...args),
     }),
-    collection: vi.fn(() => ({
-      doc: vi.fn(() => ({
-        id: 'task-1',
-        set: vi.fn(),
-      })),
-      where: vi.fn(() => ({
-        where: vi.fn(() => ({
-          limit: vi.fn(() => ({
-            get: vi.fn(async () => ({ empty: true })),
-          })),
-        })),
+    collection: vi.fn(() => {
+      const resolveGet = (filters) => {
+        const statusFilter = filters.find((filter) => filter.field === 'status');
+        if (statusFilter?.value === 'pending') {
+          return pendingTasksGetMock(filters);
+        }
+        if (statusFilter?.value === 'failed') {
+          return failedTasksGetMock(filters);
+        }
+        return { empty: true, docs: [] };
+      };
+      const buildQuery = (filters = []) => ({
+        where: vi.fn((field, operator, value) =>
+          buildQuery([...filters, { field, operator, value }]),
+        ),
         limit: vi.fn(() => ({
-          get: vi.fn(async () => ({ empty: true })),
+          get: vi.fn(async () => resolveGet(filters)),
         })),
-      })),
-    })),
+        get: vi.fn(async () => resolveGet(filters)),
+      });
+
+      return {
+        doc: vi.fn(() => ({
+          id: 'task-1',
+          set: repairTaskSetMock,
+        })),
+        where: buildQuery().where,
+      };
+    }),
   },
   FieldValue: {
     serverTimestamp: vi.fn(() => 'SERVER_TIMESTAMP'),
@@ -64,7 +98,71 @@ vi.mock('./audit.service.js', () => ({
 import {
   MEMBERSHIP_ROLE_GROUPS,
   assertUserAccess,
+  enqueueRepairTask,
+  sanitizeTasks,
 } from './repairTasks.service.js';
+
+describe('repairTasks.service sanitizeTasks', () => {
+  it('permite reprogramar la emision fiscal electronica', () => {
+    expect(sanitizeTasks(['issueElectronicTaxReceipt'])).toEqual([
+      'issueElectronicTaxReceipt',
+    ]);
+  });
+});
+
+describe('repairTasks.service enqueueRepairTask', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    pendingTasksGetMock.mockResolvedValue({ empty: true, docs: [] });
+    failedTasksGetMock.mockResolvedValue({ empty: true, docs: [] });
+  });
+
+  it('marca las tareas fallidas previas del mismo tipo como reemplazadas', async () => {
+    failedTasksGetMock.mockResolvedValue({
+      empty: false,
+      docs: [
+        {
+          id: 'failed-task-1',
+          ref: {
+            set: failedTaskSetMock,
+          },
+        },
+      ],
+    });
+
+    const result = await enqueueRepairTask({
+      businessId: 'business-1',
+      invoiceId: 'invoice-1',
+      type: 'issueElectronicTaxReceipt',
+      payload: { businessId: 'business-1', invoiceId: 'invoice-1' },
+      authUid: 'user-1',
+      reason: 'retry after GISYS payload fix',
+      invoice: { userId: 'seller-1' },
+    });
+
+    expect(result).toMatchObject({
+      status: 'scheduled',
+      taskId: 'task-1',
+      supersededFailedTasks: 1,
+    });
+    expect(repairTaskSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'issueElectronicTaxReceipt',
+        status: 'pending',
+        manualRetry: true,
+      }),
+    );
+    expect(failedTaskSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'superseded',
+        supersededBy: 'task-1',
+        supersededByUser: 'user-1',
+        supersededReason: 'retry after GISYS payload fix',
+      }),
+      { merge: true },
+    );
+  });
+});
 
 describe('repairTasks.service assertUserAccess', () => {
   beforeEach(() => {

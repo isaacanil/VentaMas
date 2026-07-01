@@ -6,9 +6,16 @@ import {
   buildLocationPath,
   normalizeLocationId,
 } from '@/utils/inventory/locations';
-import type { InventoryStockItem, InventoryUser } from '@/utils/inventory/types';
+import type {
+  InventoryStockItem,
+  InventoryUser,
+} from '@/utils/inventory/types';
 import { resolveProductDisplayName } from '@/domain/products/display';
 import { shouldResolveProductPhysicalStock } from '@/domain/products/productInventoryLogic';
+import {
+  resolveProductBaseQuantity,
+  resolveSaleUnitLabel,
+} from '@/domain/products/saleUnits';
 
 export const shouldResolveProductStockSelection = (
   product?: ProductRecord | null,
@@ -20,12 +27,18 @@ type ProductStockSelectionSummary = {
   availableLocationCount: number;
   availableStockCount: number;
   availableStocks: InventoryStockItem[];
+  totalPhysicalStockQuantity: number;
+};
+
+type ProductStockSelectionOptions = {
+  minQuantity?: number;
 };
 
 type BaseSelectionResult = {
   availableLocationCount: number;
   availableStockCount: number;
   availableStocks: InventoryStockItem[];
+  totalPhysicalStockQuantity: number;
 };
 
 export type ProductStockSelectionResult =
@@ -49,35 +62,64 @@ const resolveProductName = (product?: ProductRecord | null): string => {
 
 export const analyzeAvailableProductStocks = (
   stocks: InventoryStockItem[] | null | undefined,
+  options: ProductStockSelectionOptions = {},
 ): ProductStockSelectionSummary => {
+  const minQuantity =
+    Number.isFinite(options.minQuantity) && Number(options.minQuantity) > 0
+      ? Number(options.minQuantity)
+      : 0;
   const availableStocks = Array.isArray(stocks)
     ? stocks.filter((stock) => (Number(stock?.quantity) || 0) > 0)
     : [];
+  const totalPhysicalStockQuantity = availableStocks.reduce(
+    (total, stock) => total + (Number(stock?.quantity) || 0),
+    0,
+  );
+  const eligibleStocks = availableStocks.filter(
+    (stock) => (Number(stock?.quantity) || 0) >= minQuantity,
+  );
   const locationIds = new Set(
-    availableStocks
+    eligibleStocks
       .map((stock) => normalizeLocationId(stock?.location))
       .filter((locationId): locationId is string => Boolean(locationId)),
   );
 
   return {
-    availableStocks,
-    availableStockCount: availableStocks.length,
+    availableStocks: eligibleStocks,
+    availableStockCount: eligibleStocks.length,
     availableLocationCount: locationIds.size,
+    totalPhysicalStockQuantity,
   };
 };
 
 export const buildMissingPhysicalSelectionMessage = ({
   availableLocationCount,
   availableStockCount,
+  minQuantity,
   product,
+  totalPhysicalStockQuantity,
 }: {
   availableLocationCount: number;
   availableStockCount: number;
+  minQuantity?: number;
   product?: ProductRecord | null;
+  totalPhysicalStockQuantity?: number;
 }): string => {
   const productName = resolveProductName(product);
+  const selectedUnitLabel = resolveSaleUnitLabel(product?.selectedSaleUnit);
+  const hasRequiredQuantity =
+    Number.isFinite(minQuantity) && Number(minQuantity) > 1;
 
   if (availableStockCount <= 0) {
+    if (hasRequiredQuantity && selectedUnitLabel) {
+      if (
+        Number.isFinite(totalPhysicalStockQuantity) &&
+        Number(totalPhysicalStockQuantity) > 0
+      ) {
+        return `El producto "${productName}" tiene ${totalPhysicalStockQuantity} unidades en total, pero ninguna ubicación o lote tiene ${minQuantity} unidades juntas para ${selectedUnitLabel}.`;
+      }
+      return `El producto "${productName}" no tiene una existencia física con al menos ${minQuantity} unidades disponibles para ${selectedUnitLabel}.`;
+    }
     return `El producto "${productName}" no tiene existencias físicas disponibles.`;
   }
 
@@ -145,7 +187,10 @@ export const resolveProductStockSelection = async ({
   const stocks = Array.isArray(rawStocks)
     ? (rawStocks as InventoryStockItem[])
     : [];
-  const summary = analyzeAvailableProductStocks(stocks);
+  const requiredBaseQuantity = resolveProductBaseQuantity(product);
+  const summary = analyzeAvailableProductStocks(stocks, {
+    minQuantity: requiredBaseQuantity,
+  });
 
   if (summary.availableStockCount <= 0) {
     if (product?.restrictSaleWithoutStock) {
@@ -154,7 +199,9 @@ export const resolveProductStockSelection = async ({
         message: buildMissingPhysicalSelectionMessage({
           availableLocationCount: summary.availableLocationCount,
           availableStockCount: summary.availableStockCount,
+          minQuantity: requiredBaseQuantity,
           product,
+          totalPhysicalStockQuantity: summary.totalPhysicalStockQuantity,
         }),
         ...summary,
       };
@@ -167,17 +214,16 @@ export const resolveProductStockSelection = async ({
     };
   }
 
-  if (
-    summary.availableStockCount > 1 ||
-    summary.availableLocationCount > 1
-  ) {
+  if (summary.availableStockCount > 1 || summary.availableLocationCount > 1) {
     return {
       kind: 'needs-selection',
       reason: 'multiple-options',
       message: buildMissingPhysicalSelectionMessage({
         availableLocationCount: summary.availableLocationCount,
         availableStockCount: summary.availableStockCount,
+        minQuantity: requiredBaseQuantity,
         product,
+        totalPhysicalStockQuantity: summary.totalPhysicalStockQuantity,
       }),
       ...summary,
     };
@@ -188,8 +234,7 @@ export const resolveProductStockSelection = async ({
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const isExpired =
-    expirationTimestamp !== undefined &&
-    expirationTimestamp < today.getTime();
+    expirationTimestamp !== undefined && expirationTimestamp < today.getTime();
 
   if (isExpired) {
     return {

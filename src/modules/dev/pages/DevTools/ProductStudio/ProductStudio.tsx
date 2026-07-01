@@ -93,6 +93,7 @@ export default function ProductStudio() {
                   activeIngredients={activeIngredients}
                   sectionDomIds={sectionDomIds}
                   product={product}
+                  isUpdateMode={isUpdateMode}
                   onOpenBrandModal={handleOpenBrandModal}
                   onAddCategory={configureAddProductCategoryModal}
                   onAddActiveIngredient={handleAddActiveIngredient}

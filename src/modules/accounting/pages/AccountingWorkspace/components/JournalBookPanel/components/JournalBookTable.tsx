@@ -2,7 +2,8 @@ import { Empty } from 'antd';
 import type { Dispatch, SetStateAction } from 'react';
 import styled from 'styled-components';
 
-import { VmPagination, VmTable } from '@/components/heroui';
+import { VmButton, VmPagination, VmTable } from '@/components/heroui';
+import { EyeOutlined } from '@/constants/icons/antd';
 import { formatAccountingDate } from '../../../utils/accountingWorkspace';
 import { JOURNAL_BOOK_PAGE_SIZE } from '../constants';
 import {
@@ -65,6 +66,7 @@ export const JournalBookTable = ({
                 <VmTable.Column>Usuario</VmTable.Column>
                 <VmTable.Column>Debito</VmTable.Column>
                 <VmTable.Column>Credito</VmTable.Column>
+                <VmTable.Column>Accion</VmTable.Column>
               </JournalTableHeader>
               <VmTable.Body>
                 {pagedRecords.flatMap((record) => {
@@ -77,9 +79,8 @@ export const JournalBookTable = ({
                       className={
                         selected
                           ? 'bg-[var(--ds-color-state-info-subtle)]'
-                          : 'cursor-pointer hover:bg-[var(--ds-color-bg-surface-hover)]'
+                          : 'hover:bg-[var(--ds-color-bg-surface-hover)]'
                       }
-                      onClick={() => onSelectRecord(record)}
                     >
                       <VmTable.Cell>
                         <DateCell>
@@ -135,6 +136,19 @@ export const JournalBookTable = ({
                           {formatJournalAmount(primaryLine?.credit ?? 0)}
                         </AmountCell>
                       </VmTable.Cell>
+                      <VmTable.Cell>
+                        <ActionCell>
+                          <VmButton
+                            aria-label={`Ver detalle de ${formatEntryFolio(record)}`}
+                            size="sm"
+                            variant={selected ? 'primary' : 'tertiary'}
+                            onPress={() => onSelectRecord(record)}
+                          >
+                            <EyeOutlined />
+                            Ver
+                          </VmButton>
+                        </ActionCell>
+                      </VmTable.Cell>
                     </VmTable.Row>,
                   ];
 
@@ -145,9 +159,8 @@ export const JournalBookTable = ({
                         className={
                           selected
                             ? 'bg-[var(--ds-color-state-info-subtle)]'
-                            : 'cursor-pointer hover:bg-[var(--ds-color-bg-surface-hover)]'
+                            : 'hover:bg-[var(--ds-color-bg-surface-hover)]'
                         }
-                        onClick={() => onSelectRecord(record)}
                       >
                         <VmTable.Cell>
                           <DerivedMarkerCell>↳</DerivedMarkerCell>
@@ -174,6 +187,7 @@ export const JournalBookTable = ({
                             {formatJournalAmount(line.credit)}
                           </AmountCell>
                         </VmTable.Cell>
+                        <VmTable.Cell>-</VmTable.Cell>
                       </VmTable.Row>,
                     );
                   });
@@ -581,6 +595,12 @@ const AmountCell = styled.div<{ $tone: 'debit' | 'credit' }>`
         ? 'var(--ds-color-state-success-text, #166534)'
         : 'var(--ds-color-state-danger-text, #b42318)'};
   }
+`;
+
+const ActionCell = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  min-width: 88px;
 `;
 
 const EmptyState = styled.div`

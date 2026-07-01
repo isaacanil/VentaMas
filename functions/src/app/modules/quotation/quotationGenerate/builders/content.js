@@ -1,4 +1,9 @@
-import { money, getProductIndividualDiscount } from '../utils/formatters.js';
+import {
+  money,
+  getActiveProductPricing,
+  getActiveUnitPrice,
+  getProductIndividualDiscount,
+} from '../utils/formatters.js';
 
 export function buildContent(d) {
   /* cabecera de la tabla */
@@ -21,8 +26,9 @@ export function buildContent(d) {
   const body = [
     headerRow,
     ...(d && Array.isArray(d.products) ? d.products : []).flatMap((p) => {
-      const price = +p.pricing?.price || 0;
-      const taxP = +p.pricing?.tax || 0; // porcentaje
+      const activePricing = getActiveProductPricing(p);
+      const price = getActiveUnitPrice(p);
+      const taxP = +activePricing?.tax || 0; // porcentaje
       const tax = price * (taxP / 100);
       const tot = (price + tax) * (+p.amountToBuy || 0);
 

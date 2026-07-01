@@ -152,6 +152,7 @@ describe('buildAccountsPayablePaymentAccountingEvents', () => {
       afterPayment: {
         status: 'posted',
         purchaseId: 'purchase-1',
+        paymentRunId: 'payment-run-1',
         supplierId: 'supplier-1',
         receiptNumber: 'CPP-0001',
         createdBy: 'user-1',
@@ -180,6 +181,12 @@ describe('buildAccountsPayablePaymentAccountingEvents', () => {
         metadata: {
           purchaseNumber: 'PC-001',
           idempotencyKey: 'idem-1',
+          paymentRunStatusSnapshot: {
+            id: 'payment-run-1',
+            approvalStatus: 'approved',
+            executionStatus: 'not_started',
+            status: 'approved',
+          },
           appliedCreditNotes: [{ id: 'scn-1', appliedAmount: 40 }],
         },
       },
@@ -209,11 +216,28 @@ describe('buildAccountsPayablePaymentAccountingEvents', () => {
           cashAccountId: null,
         }),
         idempotencyKey: 'idem-1',
+        metadata: {
+          paymentRunId: 'payment-run-1',
+          paymentRunStatusSnapshot: {
+            id: 'payment-run-1',
+            approvalStatus: 'approved',
+            executionStatus: 'not_started',
+            status: 'approved',
+          },
+        },
         payload: expect.objectContaining({
           purchaseId: 'purchase-1',
           vendorBillId: 'purchase:purchase-1',
+          paymentRunId: 'payment-run-1',
+          paymentRunStatusSnapshot: {
+            id: 'payment-run-1',
+            approvalStatus: 'approved',
+            executionStatus: 'not_started',
+            status: 'approved',
+          },
           purchaseNumber: 'PC-001',
           receiptNumber: 'CPP-0001',
+          settlementAmount: 100,
           appliedCreditNotes: [{ id: 'scn-1', appliedAmount: 40 }],
           paymentMethods: [
             expect.objectContaining({
@@ -289,6 +313,65 @@ describe('buildAccountsPayablePaymentAccountingEvents', () => {
         createdBy: 'auditor-1',
       }),
     );
+  });
+
+  it.each(['voided', 'canceled', 'cancelled'])(
+    'emits a reversal event when an active payment becomes %s',
+    (nextStatus) => {
+      const events = buildAccountsPayablePaymentAccountingEvents({
+        businessId: 'business-1',
+        paymentId: 'payment-1',
+        beforePayment: {
+          status: 'posted',
+        },
+        afterPayment: {
+          status: nextStatus,
+          purchaseId: 'purchase-1',
+          supplierId: 'supplier-1',
+          totalAmount: 80,
+          paymentMethods: [
+            {
+              method: 'cash',
+              value: 80,
+              cashCountId: 'cash-1',
+            },
+          ],
+          cancelReason: 'Pago cancelado por control interno',
+          voidedAt: {
+            toMillis: () => Date.parse('2026-04-05T12:00:00.000Z'),
+          },
+          voidedBy: 'auditor-1',
+        },
+      });
+
+      expect(events).toHaveLength(1);
+      expect(buildAccountingEventMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventType: 'accounts_payable.payment.voided',
+          reversalOfEventId: 'accounts_payable.payment.recorded__payment-1',
+          payload: expect.objectContaining({
+            reason: 'Pago cancelado por control interno',
+          }),
+        }),
+      );
+    },
+  );
+
+  it('does not emit a reversal for a newly-created inactive payment record', () => {
+    const events = buildAccountsPayablePaymentAccountingEvents({
+      businessId: 'business-1',
+      paymentId: 'payment-1',
+      beforePayment: null,
+      afterPayment: {
+        status: 'voided',
+        purchaseId: 'purchase-1',
+        supplierId: 'supplier-1',
+        totalAmount: 80,
+      },
+    });
+
+    expect(events).toEqual([]);
+    expect(buildAccountingEventMock).not.toHaveBeenCalled();
   });
 
   it('does not emit when the payment was already active before the write', () => {
@@ -475,6 +558,19 @@ describe('syncAccountsPayablePayment', () => {
         },
       },
     });
+    documentSnapshots.set(
+      'businesses/business-1/vendorBills/purchase:purchase-1',
+      {
+        id: 'purchase:purchase-1',
+        sourceDocumentType: 'purchase',
+        sourceDocumentId: 'purchase-1',
+        status: 'approved',
+        approvalStatus: 'approved',
+        approvalReason: 'Aprobación protegida',
+        approvalEvidenceNote: 'Soporte de aprobación protegido',
+        approvalEvidenceUrls: ['https://files.example/ap-protected.pdf'],
+      },
+    );
     collectionEntries.set('businesses/business-1/accountsPayablePayments', [
       {
         id: 'payment-1',
@@ -546,6 +642,257 @@ describe('syncAccountsPayablePayment', () => {
           balance: 60,
         }),
         approvalStatus: 'approved',
+        approvalReason: 'Aprobación protegida',
+        approvalEvidenceNote: 'Soporte de aprobación protegido',
+        approvalEvidenceUrls: ['https://files.example/ap-protected.pdf'],
+      }),
+      { merge: true },
+    );
+    expect(buildAccountingEventMock).not.toHaveBeenCalled();
+  });
+
+  it('recalculates purchase and vendor bill state with fiscal withholding applications', async () => {
+    getPilotAccountingSettingsForBusinessMock.mockResolvedValue({
+      generalAccountingEnabled: false,
+    });
+
+    documentSnapshots.set('businesses/business-1/purchases/purchase-1', {
+      id: 'purchase-1',
+      numberId: 124,
+      status: 'completed',
+      workflowStatus: 'completed',
+      completedAt: 2,
+      createdAt: 1,
+      paymentTerms: {
+        condition: 'credit',
+        expectedPaymentAt: 10,
+      },
+      paymentState: {
+        total: 1180,
+        paid: 0,
+        balance: 1180,
+        paymentCount: 0,
+      },
+      provider: {
+        id: 'supplier-1',
+        name: 'Supplier One',
+      },
+      monetary: {
+        documentTotals: {
+          total: 1180,
+          gross: 1180,
+          withholdingITBISAmount: 54,
+          withholdingISRAmount: 20,
+          netPayableAmount: 1106,
+        },
+      },
+    });
+    const paymentData = {
+      purchaseId: 'purchase-1',
+      status: 'posted',
+      totalAmount: 1106,
+      withholdingAmount: 74,
+      settlementAmount: 1180,
+      createdAt: 3,
+      occurredAt: 4,
+      paymentMethods: [
+        {
+          method: 'cash',
+          value: 1106,
+          cashCountId: 'cash-1',
+        },
+      ],
+      withholdingApplications: [
+        {
+          type: 'itbis',
+          amount: 54,
+          reference: 'RET-ITBIS-1',
+          taxPeriod: '2026-04',
+        },
+        {
+          type: 'isr',
+          amount: 20,
+          reference: 'RET-ISR-1',
+          taxPeriod: '2026-04',
+        },
+      ],
+    };
+    collectionEntries.set('businesses/business-1/accountsPayablePayments', [
+      {
+        id: 'payment-1',
+        data: paymentData,
+      },
+    ]);
+
+    await syncAccountsPayablePayment({
+      params: {
+        businessId: 'business-1',
+        paymentId: 'payment-1',
+      },
+      data: {
+        before: {
+          data: () => null,
+        },
+        after: {
+          data: () => paymentData,
+        },
+      },
+    });
+
+    expect(
+      getDocRef('businesses/business-1/purchases/purchase-1').set,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        paymentState: expect.objectContaining({
+          paid: 1180,
+          balance: 0,
+          paymentCount: 1,
+        }),
+      }),
+      { merge: true },
+    );
+    expect(
+      getDocRef('businesses/business-1/vendorBills/purchase:purchase-1').set,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceDocumentId: 'purchase-1',
+        status: 'paid',
+        paymentState: expect.objectContaining({
+          paid: 1180,
+          balance: 0,
+        }),
+        totals: {
+          total: 1180,
+          paid: 1180,
+          balance: 0,
+        },
+      }),
+      { merge: true },
+    );
+    expect(buildAccountingEventMock).not.toHaveBeenCalled();
+  });
+
+  it('excludes inactive supplier payments when recalculating purchase state', async () => {
+    getPilotAccountingSettingsForBusinessMock.mockResolvedValue({
+      generalAccountingEnabled: false,
+    });
+
+    documentSnapshots.set('businesses/business-1/purchases/purchase-1', {
+      id: 'purchase-1',
+      numberId: 124,
+      status: 'completed',
+      workflowStatus: 'completed',
+      completedAt: 2,
+      createdAt: 1,
+      paymentTerms: {
+        condition: 'credit',
+        expectedPaymentAt: 10,
+      },
+      paymentState: {
+        total: 100,
+        paid: 90,
+        balance: 10,
+        paymentCount: 3,
+      },
+      provider: {
+        id: 'supplier-1',
+        name: 'Supplier One',
+      },
+      monetary: {
+        documentTotals: {
+          total: 100,
+        },
+      },
+    });
+    collectionEntries.set('businesses/business-1/accountsPayablePayments', [
+      {
+        id: 'payment-active',
+        data: {
+          purchaseId: 'purchase-1',
+          status: 'posted',
+          totalAmount: 40,
+          createdAt: 3,
+          occurredAt: 4,
+        },
+      },
+      {
+        id: 'payment-voided',
+        data: {
+          purchaseId: 'purchase-1',
+          status: 'voided',
+          totalAmount: 30,
+          createdAt: 5,
+          occurredAt: 6,
+        },
+      },
+      {
+        id: 'payment-canceled',
+        data: {
+          purchaseId: 'purchase-1',
+          status: 'canceled',
+          totalAmount: 20,
+          createdAt: 7,
+          occurredAt: 8,
+        },
+      },
+      {
+        id: 'payment-draft',
+        data: {
+          purchaseId: 'purchase-1',
+          status: 'draft',
+          totalAmount: 10,
+          createdAt: 9,
+          occurredAt: 10,
+        },
+      },
+    ]);
+
+    await syncAccountsPayablePayment({
+      params: {
+        businessId: 'business-1',
+        paymentId: 'payment-voided',
+      },
+      data: {
+        before: {
+          data: () => ({
+            purchaseId: 'purchase-1',
+            status: 'posted',
+            totalAmount: 30,
+          }),
+        },
+        after: {
+          data: () => ({
+            purchaseId: 'purchase-1',
+            status: 'voided',
+            totalAmount: 30,
+          }),
+        },
+      },
+    });
+
+    expect(
+      getDocRef('businesses/business-1/purchases/purchase-1').set,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        paymentState: expect.objectContaining({
+          paid: 40,
+          balance: 60,
+          paymentCount: 1,
+          lastPaymentId: 'payment-active',
+        }),
+      }),
+      { merge: true },
+    );
+    expect(
+      getDocRef('businesses/business-1/vendorBills/purchase:purchase-1').set,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'partially_paid',
+        totals: {
+          total: 100,
+          paid: 40,
+          balance: 60,
+        },
       }),
       { merge: true },
     );
@@ -753,82 +1100,85 @@ describe('syncAccountsPayablePayment', () => {
     );
   });
 
-  it('preserves original cash movements and writes a reversal on void transitions', async () => {
-    buildAccountsPayablePaymentCashMovementsMock.mockImplementation(
-      ({ payment }) =>
-        payment?.status === 'posted'
-          ? [
-              {
-                id: 'app_payment-1_transfer_1',
-                businessId: 'business-1',
-                sourceId: 'payment-1',
-              },
-            ]
-          : [],
-    );
-    documentSnapshots.set('businesses/business-1/purchases/purchase-1', {
-      id: 'purchase-1',
-      status: 'completed',
-      workflowStatus: 'completed',
-      totalAmount: 100,
-      paymentState: {
-        total: 100,
-        paid: 40,
-        balance: 60,
-        paymentCount: 1,
-      },
-      paymentTerms: {},
-    });
-    collectionEntries.set('businesses/business-1/accountsPayablePayments', []);
-
-    await syncAccountsPayablePayment({
-      params: {
-        businessId: 'business-1',
-        paymentId: 'payment-1',
-      },
-      data: {
-        before: {
-          data: () => ({
-            purchaseId: 'purchase-1',
-            status: 'posted',
-            totalAmount: 40,
-            paymentMethods: [
-              {
-                method: 'transfer',
-                value: 40,
-                bankAccountId: 'bank-1',
-              },
-            ],
-          }),
+  it.each(['void', 'voided', 'canceled'])(
+    'preserves original cash movements and writes a reversal on %s transitions',
+    async (nextStatus) => {
+      buildAccountsPayablePaymentCashMovementsMock.mockImplementation(
+        ({ payment }) =>
+          payment?.status === 'posted'
+            ? [
+                {
+                  id: 'app_payment-1_transfer_1',
+                  businessId: 'business-1',
+                  sourceId: 'payment-1',
+                },
+              ]
+            : [],
+      );
+      documentSnapshots.set('businesses/business-1/purchases/purchase-1', {
+        id: 'purchase-1',
+        status: 'completed',
+        workflowStatus: 'completed',
+        totalAmount: 100,
+        paymentState: {
+          total: 100,
+          paid: 40,
+          balance: 60,
+          paymentCount: 1,
         },
-        after: {
-          data: () => ({
-            purchaseId: 'purchase-1',
-            status: 'void',
-            totalAmount: 40,
-            voidedAt: 10,
-            paymentMethods: [
-              {
-                method: 'transfer',
-                value: 40,
-                bankAccountId: 'bank-1',
-              },
-            ],
-          }),
-        },
-      },
-    });
+        paymentTerms: {},
+      });
+      collectionEntries.set('businesses/business-1/accountsPayablePayments', []);
 
-    expect(batchMocks[0].delete).not.toHaveBeenCalled();
-    expect(batchMocks[0].set).toHaveBeenCalledWith(
-      expect.objectContaining({
-        path: 'businesses/business-1/cashMovements/appv_payment-1_transfer_1',
-      }),
-      expect.objectContaining({
-        direction: 'in',
-        sourceType: 'supplier_payment_void',
-      }),
-      { merge: true },
-    );
-  });
+      await syncAccountsPayablePayment({
+        params: {
+          businessId: 'business-1',
+          paymentId: 'payment-1',
+        },
+        data: {
+          before: {
+            data: () => ({
+              purchaseId: 'purchase-1',
+              status: 'posted',
+              totalAmount: 40,
+              paymentMethods: [
+                {
+                  method: 'transfer',
+                  value: 40,
+                  bankAccountId: 'bank-1',
+                },
+              ],
+            }),
+          },
+          after: {
+            data: () => ({
+              purchaseId: 'purchase-1',
+              status: nextStatus,
+              totalAmount: 40,
+              voidedAt: 10,
+              paymentMethods: [
+                {
+                  method: 'transfer',
+                  value: 40,
+                  bankAccountId: 'bank-1',
+                },
+              ],
+            }),
+          },
+        },
+      });
+
+      expect(batchMocks[0].delete).not.toHaveBeenCalled();
+      expect(batchMocks[0].set).toHaveBeenCalledWith(
+        expect.objectContaining({
+          path: 'businesses/business-1/cashMovements/appv_payment-1_transfer_1',
+        }),
+        expect.objectContaining({
+          direction: 'in',
+          sourceType: 'supplier_payment_void',
+        }),
+        { merge: true },
+      );
+    },
+  );
 });

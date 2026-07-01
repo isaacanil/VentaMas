@@ -18,15 +18,19 @@ const Container = styled.div`
   width: 100%;
 `;
 
-const DatePickerContent = styled.div<{ $isMobile?: boolean }>`
+const DatePickerContent = styled.div<{
+  $isMobile?: boolean;
+  $calendarOnly?: boolean;
+}>`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: ${({ $isMobile }) => ($isMobile ? '14px' : '8px')};
   width: ${({ $isMobile }) => ($isMobile ? '100%' : 'max-content')};
-  height: ${({ $isMobile }) => ($isMobile ? 'auto' : '350px')};
+  height: ${({ $isMobile, $calendarOnly }) =>
+    $isMobile || $calendarOnly ? 'auto' : '350px'};
   min-height: 0;
   max-height: ${({ $isMobile }) => ($isMobile ? 'none' : '460px')};
-  padding: ${({ $isMobile }) => ($isMobile ? '1em' : '10px 0')};
+  padding: ${({ $isMobile }) => ($isMobile ? '4px 16px 10px' : '10px 0')};
 `;
 
 const ActionsSection = styled.div<{ $isMobile?: boolean }>`
@@ -35,15 +39,17 @@ const ActionsSection = styled.div<{ $isMobile?: boolean }>`
   z-index: 1;
   display: flex;
   gap: 8px;
-  padding: ${({ $isMobile }) => ($isMobile ? '1em' : '0')};
+  justify-content: center;
+  padding: ${({ $isMobile }) => ($isMobile ? '12px 16px 14px' : '6px 0 8px')};
   border-top: 1px solid var(--ds-color-border-subtle);
   background: var(--ds-color-bg-surface);
 `;
 
-const DesktopLayout = styled.div`
+const DesktopLayout = styled.div<{ $hasSidebar?: boolean }>`
   display: grid;
-  grid-template-columns: auto 220px;
-  gap: 0;
+  grid-template-columns: ${({ $hasSidebar }) =>
+    $hasSidebar ? 'auto 200px' : 'auto'};
+  gap: 8px;
   align-items: stretch;
   flex: 1;
   min-height: 0;
@@ -59,9 +65,9 @@ const CalendarPane = styled.div`
 
 const SidebarPane = styled.aside`
   display: flex;
-  flex: 0 0 220px;
+  flex: 0 0 200px;
   flex-direction: column;
-  width: 220px;
+  width: 200px;
   height: 100%;
   min-height: 0;
   max-height: 100%;
@@ -81,6 +87,7 @@ export const VmDatePicker = ({
   size = 'middle',
   disabled = false,
   presets = EMPTY_PRESETS,
+  showPresets = true,
   className,
   style,
   ...props
@@ -88,9 +95,15 @@ export const VmDatePicker = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const isMobile = useMobile();
   const finalPresets = useMemo<DatePickerPreset[]>(
-    () => (presets.length > 0 ? presets : createDefaultPresets(mode)),
-    [mode, presets],
+    () =>
+      showPresets
+        ? presets.length > 0
+          ? presets
+          : createDefaultPresets(mode)
+        : EMPTY_PRESETS,
+    [mode, presets, showPresets],
   );
+  const shouldShowPresets = showPresets && finalPresets.length > 0;
 
   const {
     open,
@@ -121,17 +134,6 @@ export const VmDatePicker = ({
 
   const mobileContent = (
     <DatePickerContent $isMobile>
-      <PresetsSection
-        presets={finalPresets}
-        value={value}
-        mode={mode}
-        isMobile={isMobile}
-        onPresetClick={(preset) => handlePresetClick(preset, isMobile)}
-        showPresetsDropdown={showPresetsDropdown}
-        setShowPresetsDropdown={setShowPresetsDropdown}
-        presetsDropdownRef={presetsDropdownRef}
-      />
-
       <CalendarSection
         currentDate={currentDate}
         onNavigateMonth={navigateMonth}
@@ -142,13 +144,27 @@ export const VmDatePicker = ({
         currentRangeStart={currentRangeStart}
         currentRangeEnd={currentRangeEnd}
         hoverDate={hoverDate}
+        isMobile={isMobile}
       />
+
+      {shouldShowPresets ? (
+        <PresetsSection
+          presets={finalPresets}
+          value={value}
+          mode={mode}
+          isMobile={isMobile}
+          onPresetClick={(preset) => handlePresetClick(preset, isMobile)}
+          showPresetsDropdown={showPresetsDropdown}
+          setShowPresetsDropdown={setShowPresetsDropdown}
+          presetsDropdownRef={presetsDropdownRef}
+        />
+      ) : null}
     </DatePickerContent>
   );
 
   const desktopContent = (
-    <DatePickerContent>
-      <DesktopLayout>
+    <DatePickerContent $calendarOnly={!shouldShowPresets}>
+      <DesktopLayout $hasSidebar={shouldShowPresets}>
         <CalendarPane>
           <CalendarSection
             currentDate={currentDate}
@@ -163,22 +179,24 @@ export const VmDatePicker = ({
           />
         </CalendarPane>
 
-        <SidebarPane>
-          <PresetsSection
-            layout="sidebar"
-            presets={finalPresets}
-            value={value}
-            mode={mode}
-            isMobile={isMobile}
-            onPresetClick={(preset) => handlePresetClick(preset, isMobile)}
-          />
-        </SidebarPane>
+        {shouldShowPresets ? (
+          <SidebarPane>
+            <PresetsSection
+              layout="sidebar"
+              presets={finalPresets}
+              value={value}
+              mode={mode}
+              isMobile={isMobile}
+              onPresetClick={(preset) => handlePresetClick(preset, isMobile)}
+            />
+          </SidebarPane>
+        ) : null}
       </DesktopLayout>
 
       {allowClear ? (
         <ActionsSection>
           <VmButton
-            fullWidth
+            size="sm"
             variant="tertiary"
             onPress={() => handleClear(null, finalPresets)}
           >
@@ -216,7 +234,7 @@ export const VmDatePicker = ({
           <ActionsSection $isMobile={isMobile}>
             {allowClear ? (
               <VmButton
-                fullWidth
+                size="sm"
                 variant="tertiary"
                 onPress={() => handleClear(null, finalPresets)}
               >

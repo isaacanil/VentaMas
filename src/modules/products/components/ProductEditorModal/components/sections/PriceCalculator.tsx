@@ -3,8 +3,11 @@ import { useCallback, useMemo } from 'react';
 import { useSelector, shallowEqual } from 'react-redux';
 
 import { selectCartTaxationEnabled } from '@/features/cart/cartSlice';
+import { shouldSelectZeroPriceInput } from '@/domain/products/priceInputFocus';
 import type { TableProps } from 'antd';
+import type { FocusEvent } from 'react';
 import type { ProductRecord } from '@/types/products';
+import { getPriceRules } from './PriceCalculator.rules';
 
 type PriceRow = {
   key: string;
@@ -12,10 +15,18 @@ type PriceRow = {
   description: string;
   name: Array<string | number>;
   amount: number;
+  required?: boolean;
   itbis?: string;
   finalPrice?: string;
   margin?: string;
   percentBenefits?: string;
+};
+
+const handlePriceNumberFocus = (event: FocusEvent<HTMLInputElement>) => {
+  if (!shouldSelectZeroPriceInput(event.currentTarget.value)) {
+    return;
+  }
+  event.currentTarget.select();
 };
 
 const columns: TableProps<PriceRow>['columns'] = [
@@ -31,19 +42,15 @@ const columns: TableProps<PriceRow>['columns'] = [
     render: (text: number, record: PriceRow) => (
       <Form.Item
         name={record.name}
-        rules={[
-          { required: true, message: 'Rellenar' },
-          {
-            type: 'number',
-            min: record?.cost || 0,
-            message: `Minimo ${record?.cost}`,
-          },
-          // { type: 'number', min: 0, message: 'No puede ser menor al costo.' }
-          // { type: 'number', min: 0, message: 'No puede ser negativa.' }
-        ]}
+        rules={getPriceRules(record)}
         style={{ margin: 0 }}
       >
-        <InputNumber defaultValue={text} min={0} step={0.1} />
+        <InputNumber
+          defaultValue={text}
+          min={0}
+          onFocus={handlePriceNumberFocus}
+          step={0.1}
+        />
       </Form.Item>
     ),
   },
@@ -89,6 +96,7 @@ export const PriceCalculator = () => {
           description: 'Precio Lista',
           name: ['pricing', 'listPrice'],
           amount: Number(safePricing.listPrice) || 0,
+          required: true,
         },
         {
           key: '2',

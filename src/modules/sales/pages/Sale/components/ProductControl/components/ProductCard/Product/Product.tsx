@@ -133,6 +133,7 @@ const ProductComponent = memo(({ product }: ProductProps) => {
               productInCart={productInCart}
               product={product}
               price={price}
+              taxationEnabled={taxationEnabled}
               isProductInCart={isProductInCart}
               isLowStock={isLowStock}
               isCriticalStock={isCriticalStock}

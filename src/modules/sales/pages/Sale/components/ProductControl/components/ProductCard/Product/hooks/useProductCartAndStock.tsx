@@ -2,15 +2,17 @@ import { useSelector } from 'react-redux';
 
 import type { RootState } from '@/app/store';
 import {
-  selectCartProductByProductId,
   SelectSettingCart,
+  SelectProduct,
 } from '@/features/cart/cartSlice';
+import { sumCartBaseQuantityForPhysicalStock } from '@/modules/sales/pages/Sale/utils/cartPhysicalStockUsage';
 
 import {
   isStockExceeded,
+  isStockInsufficientForNextUnit,
   isStockRestricted,
   isStockZero,
-  resolveStock,
+  resolveRemainingStockForStatus,
 } from '../utils/stock.utils';
 import type { CartProductRecord, ProductRecord } from '@/types/products';
 
@@ -19,13 +21,22 @@ import type { CartProductRecord, ProductRecord } from '@/types/products';
  * @param {string | number} productId - El ID del producto a verificar
  * @returns {{status: boolean, product: object | null}} - Estado y datos del producto seleccionado
  */
-export const useProductInCart = (productId?: string | number | null) => {
-  const selectedProduct = useSelector((state: RootState) =>
-    selectCartProductByProductId(
-      state as Parameters<typeof selectCartProductByProductId>[0],
-      productId,
-    ),
-  ) as unknown as CartProductRecord | null;
+export const useProductInCart = (product?: ProductRecord | null) => {
+  const productId = product?.id;
+  const saleUnitId = String(product?.selectedSaleUnit?.id ?? 'default');
+  const selectedProduct = useSelector((state: RootState) => {
+    if (typeof productId !== 'string' && typeof productId !== 'number') {
+      return null;
+    }
+
+    return (
+      state.cart.data.products.find(
+        (cartProduct) =>
+          cartProduct.id === productId &&
+          String(cartProduct.selectedSaleUnit?.id ?? 'default') === saleUnitId,
+      ) ?? null
+    );
+  }) as unknown as CartProductRecord | null;
 
   return {
     status: !!selectedProduct,
@@ -44,6 +55,7 @@ export const useProductStockStatus = (
       stockCriticalThreshold?: number;
     };
   };
+  const cartProducts = useSelector(SelectProduct) as CartProductRecord[];
   const billing = settingsCart?.billing;
   const lowThreshold = billing?.stockLowThreshold ?? 20;
 
@@ -54,12 +66,19 @@ export const useProductStockStatus = (
     return { isLowStock: false, isCriticalStock: false, isOutOfStock: false };
   }
 
+  const accumulatedPhysicalBaseQuantity = productInCart
+    ? sumCartBaseQuantityForPhysicalStock(cartProducts, productInCart)
+    : 0;
   const productToCheck: CartProductRecord | ProductRecord | null =
-    productInCart ?? originalProduct ?? null;
+    productInCart && accumulatedPhysicalBaseQuantity > 0
+      ? {
+          ...productInCart,
+          baseQuantity: accumulatedPhysicalBaseQuantity,
+        }
+      : (productInCart ?? originalProduct ?? null);
   const inCart = Boolean(productInCart);
 
-  const availableStock = resolveStock(productToCheck);
-  const remaining = availableStock - (productToCheck?.amountToBuy ?? 0);
+  const remaining = resolveRemainingStockForStatus(inCart, productToCheck);
 
   const criticalStock = (() => {
     if (!isStockRestricted(productToCheck)) return false;
@@ -76,7 +95,9 @@ export const useProductStockStatus = (
   const outOfStock = (() => {
     if (!isStockRestricted(productToCheck)) return false;
     return (
-      isStockExceeded(inCart, productToCheck) || isStockZero(productToCheck)
+      isStockExceeded(inCart, productToCheck) ||
+      isStockZero(productToCheck) ||
+      (!inCart && isStockInsufficientForNextUnit(productToCheck))
     );
   })();
 

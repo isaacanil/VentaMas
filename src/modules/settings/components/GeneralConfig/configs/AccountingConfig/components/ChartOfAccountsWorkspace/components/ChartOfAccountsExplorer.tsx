@@ -5,8 +5,10 @@ import styled from 'styled-components';
 import { AppIcon } from '@/components/ui/AppIcon';
 import type { ChartOfAccount, ChartOfAccountType } from '@/types/accounting';
 import {
-  CHART_OF_ACCOUNT_TYPE_LABELS,
+  CHART_OF_ACCOUNTS_MAX_LEVEL,
+  buildChartOfAccountClassificationLabel,
   buildChartOfAccountLabel,
+  isChartOfAccountPostingAllowedForEntries,
 } from '@/utils/accounting/chartOfAccounts';
 
 const { Search } = Input;
@@ -37,12 +39,6 @@ interface ChartOfAccountsExplorerProps {
   onStatusFilterChange: (value: StatusFilter) => void;
   onTypeFilterChange: (value: TypeFilter) => void;
 }
-
-const getLevelLabel = (depth: number, account: ChartOfAccount) => {
-  if (depth === 0) return 'Clase';
-  if (!account.postingAllowed) return 'Subgrupo';
-  return 'Mayor';
-};
 
 const getNormalSideLabel = (account: ChartOfAccount) =>
   account.normalSide === 'debit' ? 'Deudora' : 'Acreedora';
@@ -148,7 +144,7 @@ export const ChartOfAccountsExplorer = ({
           <Title>Catálogo de cuentas</Title>
           <Subtitle>
             Plan contable · {activeAccountsCount} cuentas activas · estructura
-            por clase, subgrupo y mayor
+            hasta {CHART_OF_ACCOUNTS_MAX_LEVEL} niveles
           </Subtitle>
         </HeaderCopy>
 
@@ -206,7 +202,7 @@ export const ChartOfAccountsExplorer = ({
           <TableTitle>
             Estructura del catálogo
             <TableMeta>
-              {classCount} clases · {postingAccountsCount} mayores
+              {classCount} clases · {postingAccountsCount} detalle
             </TableMeta>
           </TableTitle>
 
@@ -233,9 +229,9 @@ export const ChartOfAccountsExplorer = ({
             <thead>
               <tr>
                 <th>Cuenta</th>
-                <th>Nivel</th>
+                <th>Clasificación</th>
                 <th>Naturaleza</th>
-                <th>Tipo</th>
+                <th>Nivel</th>
                 <th>Saldo</th>
                 <th aria-label="Acciones" />
               </tr>
@@ -244,7 +240,7 @@ export const ChartOfAccountsExplorer = ({
               {loading && totalAccountsCount === 0 ? (
                 <tr>
                   <LoadingCell colSpan={6}>
-                    <Spin tip="Cargando catálogo de cuentas..." />
+                    <Spin description="Cargando catálogo de cuentas..." />
                   </LoadingCell>
                 </tr>
               ) : visibleAccounts.length > 0 ? (
@@ -253,6 +249,14 @@ export const ChartOfAccountsExplorer = ({
                   const childCount = childCountByParentId.get(account.id) ?? 0;
                   const isCollapsed = collapsedIds.has(account.id);
                   const isSelected = selectedAccountId === account.id;
+                  const isDetailAccount =
+                    isChartOfAccountPostingAllowedForEntries(
+                      account,
+                      childCount,
+                    );
+                  const canAddSubaccount =
+                    account.status === 'active' &&
+                    depth + 1 < CHART_OF_ACCOUNTS_MAX_LEVEL;
 
                   return (
                     <AccountRow
@@ -303,23 +307,22 @@ export const ChartOfAccountsExplorer = ({
                       </AccountCell>
 
                       <td>
-                        <LevelBadge $posting={account.postingAllowed}>
-                          {getLevelLabel(depth, account)}
+                        <LevelBadge $posting={isDetailAccount}>
+                          {buildChartOfAccountClassificationLabel(
+                            account,
+                            childCount,
+                          )}
                         </LevelBadge>
                       </td>
                       <MutedCell>
-                        {account.postingAllowed
-                          ? getNormalSideLabel(account)
-                          : '—'}
+                        {isDetailAccount ? getNormalSideLabel(account) : '—'}
                       </MutedCell>
                       <MutedCell>
-                        {account.postingAllowed
-                          ? CHART_OF_ACCOUNT_TYPE_LABELS[account.type]
-                          : '—'}
+                        Nivel {depth + 1} de {CHART_OF_ACCOUNTS_MAX_LEVEL}
                       </MutedCell>
                       <BalanceCell>—</BalanceCell>
                       <ActionsCell>
-                        {!account.postingAllowed ? (
+                        {canAddSubaccount ? (
                           <IconButton
                             type="button"
                             title={`Agregar subcuenta a ${account.name}`}

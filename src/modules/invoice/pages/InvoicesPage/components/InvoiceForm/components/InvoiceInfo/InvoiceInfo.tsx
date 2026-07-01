@@ -185,7 +185,7 @@ const CancelInvoiceConfirm = ({
       destroyOnClose
       centered
     >
-      <Spin spinning={isLoading} tip="Cargando..." size="large">
+      <Spin description="Cargando..." size="large" spinning={isLoading}>
         <ModalContent>
           <WarningCard>
             <WarningHeader>

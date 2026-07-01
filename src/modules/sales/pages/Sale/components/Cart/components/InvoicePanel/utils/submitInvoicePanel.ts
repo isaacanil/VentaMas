@@ -19,6 +19,11 @@ import type { InvoiceData } from '@/types/invoice';
 import type { TaxReceiptItem } from '@/types/taxReceipt';
 import type { UserIdentity } from '@/types/users';
 import type { AccountsReceivableDoc } from '@/utils/accountsReceivable/types';
+import {
+  validateDominicanTaxId,
+  type DominicanTaxIdInvalidReason,
+  type DominicanTaxIdKind,
+} from '@/utils/fiscal/dominicanTaxId';
 import { resolveBusinessFiscalRollout } from '@/utils/fiscal/fiscalRollout';
 import { getTaxReceiptAvailability } from '@/utils/taxReceipt';
 
@@ -172,6 +177,35 @@ const resolveClientIdentificationNumber = (
   );
 };
 
+type FiscalClientIdentityState = {
+  digitCount: number | null;
+  hasRawValue: boolean;
+  isValid: boolean;
+  kind: DominicanTaxIdKind | null;
+  reason: DominicanTaxIdInvalidReason | null;
+};
+
+export type ClientFiscalDataActionRequest = {
+  client: Record<string, unknown>;
+  description: string;
+  title: string;
+};
+
+const resolveFiscalClientIdentity = (
+  client: Record<string, unknown> | null,
+): FiscalClientIdentityState => {
+  const rawValue = resolveClientIdentificationNumber(client);
+  const validation = validateDominicanTaxId(rawValue);
+
+  return {
+    digitCount: validation.digitCount,
+    hasRawValue: Boolean(rawValue),
+    isValid: validation.isValid,
+    kind: validation.kind,
+    reason: validation.reason,
+  };
+};
+
 const hasFiscalClientIdentity = (
   client: Record<string, unknown> | null,
 ): boolean => {
@@ -184,7 +218,7 @@ const hasFiscalClientIdentity = (
   const clientName = normalizeToken(clientRecord.name);
   if (GENERIC_CLIENT_NAMES.has(clientName)) return false;
 
-  return Boolean(resolveClientIdentificationNumber(client));
+  return resolveFiscalClientIdentity(client).isValid;
 };
 
 const requiresFiscalClientIdentity = ({
@@ -215,6 +249,79 @@ const toInvoiceRecord = (
   return value as NonNullable<InvoiceProcessParams['insuranceAR']>;
 };
 
+const hasEditableClient = (
+  value: Record<string, unknown> | null,
+): value is Record<string, unknown> => {
+  const clientId = toCleanString(value?.id);
+  return Boolean(clientId && value?.name);
+};
+
+const buildInvalidFiscalIdentityDescription = ({
+  digitCount,
+  kind,
+  reason,
+}: {
+  digitCount: number | null;
+  kind: DominicanTaxIdKind | null;
+  reason: DominicanTaxIdInvalidReason | null;
+}) => {
+  if (reason === 'invalid-checksum') {
+    const documentLabel = kind === 'rnc' ? 'RNC' : 'cédula';
+    return `El dato fiscal del cliente tiene ${digitCount} dígitos, pero no pasa la validación del dígito verificador de ${documentLabel}. DGII/GISYS puede rechazarlo aunque la longitud sea correcta. Edita el cliente antes de completar este comprobante.`;
+  }
+
+  const receivedText =
+    digitCount === null
+      ? 'No encontramos un RNC o cédula en este cliente.'
+      : `El dato fiscal del cliente tiene ${digitCount} dígitos.`;
+  const ruleText =
+    'En RD, el RNC debe tener 9 dígitos y la cédula 11 dígitos, con dígito verificador válido.';
+
+  return `${receivedText} ${ruleText} Edita el cliente antes de completar este comprobante.`;
+};
+
+const showRequiredFiscalIdentityWarning = ({
+  client,
+  identity,
+  requestClientFiscalDataAction,
+}: {
+  client: Record<string, unknown> | null;
+  identity: FiscalClientIdentityState;
+  requestClientFiscalDataAction?: (
+    request: ClientFiscalDataActionRequest,
+  ) => void;
+}) => {
+  const title = identity.hasRawValue
+    ? 'RNC/cédula del cliente no válido'
+    : 'Cliente fiscal requerido';
+  const description = identity.hasRawValue
+    ? buildInvalidFiscalIdentityDescription({
+        digitCount: identity.digitCount,
+        kind: identity.kind,
+        reason: identity.reason,
+      })
+    : 'Selecciona o crea un cliente con RNC de 9 dígitos o cédula de 11 dígitos y dígito verificador válido antes de completar este comprobante.';
+
+  if (
+    identity.hasRawValue &&
+    hasEditableClient(client) &&
+    requestClientFiscalDataAction
+  ) {
+    requestClientFiscalDataAction({
+      title,
+      description,
+      client,
+    });
+    return;
+  }
+
+  notification.warning({
+    message: title,
+    description,
+    duration: 6,
+  });
+};
+
 interface SubmitInvoicePanelArgs {
   accountsReceivable: AccountsReceivableDoc | Record<string, unknown>;
   business: BusinessLike;
@@ -240,6 +347,9 @@ interface SubmitInvoicePanelArgs {
   monetaryContext?: DocumentCurrencyContext | null;
   ncfType: string | null;
   onIdempotencyConflict?: () => void;
+  requestClientFiscalDataAction?: (
+    request: ClientFiscalDataActionRequest,
+  ) => void;
   resolvedBusinessId: string | null;
   runInvoice: (params: InvoiceProcessParams) => Promise<InvoiceAttemptResult>;
   setInvoice: (invoice: InvoiceData | null) => void;
@@ -274,6 +384,7 @@ export const submitInvoicePanel = async ({
   monetaryContext,
   ncfType,
   onIdempotencyConflict,
+  requestClientFiscalDataAction,
   resolvedBusinessId,
   runInvoice,
   setInvoice,
@@ -347,32 +458,47 @@ export const submitInvoicePanel = async ({
         return;
       }
 
-      if (
-        requiresFiscalClientIdentity({
-          cart,
-          ncfType: selectedNcfType,
-        }) &&
-        !hasFiscalClientIdentity(client)
-      ) {
+      const { blockedReason, depleted } = getTaxReceiptAvailability(
+        taxReceiptData,
+        selectedNcfType,
+      );
+      if (blockedReason) {
         notification.warning({
-          message: 'Cliente fiscal requerido',
-          description:
-            'Selecciona o crea un cliente con RNC o cedula antes de completar este comprobante.',
+          message: 'Comprobante fiscal duplicado',
+          description: blockedReason,
           duration: 6,
         });
         dispatch(unlockTaxReceiptType());
         clearProgress();
+        return;
+      }
+
+      const fiscalClientIdentity = resolveFiscalClientIdentity(client);
+      const fiscalClientIdentityRequired = requiresFiscalClientIdentity({
+        cart,
+        ncfType: selectedNcfType,
+      });
+
+      if (
+        fiscalClientIdentityRequired &&
+        !hasFiscalClientIdentity(client)
+      ) {
+        showRequiredFiscalIdentityWarning({
+          client,
+          identity: fiscalClientIdentity,
+          requestClientFiscalDataAction,
+        });
+        dispatch(unlockTaxReceiptType());
+        clearProgress();
         traceInvoiceSubmitPhase('validaciones previas', 'blocked', traceContext, {
-          reason: 'missing-fiscal-client',
+          reason: fiscalClientIdentity.hasRawValue
+            ? 'invalid-fiscal-client'
+            : 'missing-fiscal-client',
         });
         return;
       }
 
       if (!electronicTaxReceiptModelEnabled) {
-        const { depleted } = getTaxReceiptAvailability(
-          taxReceiptData,
-          selectedNcfType,
-        );
         if (depleted) {
           setTaxReceiptModalOpen(true);
           dispatch(unlockTaxReceiptType());
@@ -603,11 +729,23 @@ export const submitInvoicePanel = async ({
 
     if (!taxReceiptDepleted) {
       const errorNotification = getInvoiceErrorNotification(typedError);
-      notification.error({
-        message: errorNotification.message,
-        description: errorNotification.description,
-        duration: errorNotification.duration ?? 6,
-      });
+      if (
+        errorNotification.action === 'edit-client-fiscal-data' &&
+        hasEditableClient(client) &&
+        requestClientFiscalDataAction
+      ) {
+        requestClientFiscalDataAction({
+          title: errorNotification.message,
+          description: errorNotification.description,
+          client,
+        });
+      } else {
+        notification.error({
+          message: errorNotification.message,
+          description: errorNotification.description,
+          duration: errorNotification.duration ?? 6,
+        });
+      }
     }
 
     if (traceContext) {

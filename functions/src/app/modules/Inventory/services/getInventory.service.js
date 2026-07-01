@@ -2,6 +2,7 @@
 import { https } from 'firebase-functions';
 
 import { db } from '../../../core/config/firebase.js';
+import { resolveInventoryBaseQuantity } from '../utils/saleUnitQuantity.util.js';
 
 const normalizeId = (value) => {
   if (value == null) return '';
@@ -9,7 +10,9 @@ const normalizeId = (value) => {
 };
 
 const hasSelectedPhysicalStock = (product) =>
-  Boolean(normalizeId(product?.productStockId) && normalizeId(product?.batchId));
+  Boolean(
+    normalizeId(product?.productStockId) && normalizeId(product?.batchId),
+  );
 
 const shouldResolveInventoryLine = (product) =>
   Boolean(product?.trackInventory) || hasSelectedPhysicalStock(product);
@@ -27,6 +30,77 @@ const getPhysicalStockQuantity = (data = {}) => {
 
   const legacyStock = Number(data.stock);
   return Number.isFinite(legacyStock) ? Math.max(legacyStock, 0) : 0;
+};
+
+const sanitizeDocIdPart = (value, fallback = 'none') => {
+  const raw = normalizeId(value) || fallback;
+  return raw.replace(/[^A-Za-z0-9_-]+/g, '_').slice(0, 90) || fallback;
+};
+
+const resolveInventoryLineId = (product, index) =>
+  normalizeId(product?.lineId) ||
+  normalizeId(product?.cid) ||
+  normalizeId(product?.cartLineId) ||
+  `line-${index}`;
+
+const buildInventorySideEffectId = ({
+  type,
+  saleId,
+  product,
+  index,
+  productStockId,
+  batchId,
+}) =>
+  [
+    type,
+    saleId,
+    resolveInventoryLineId(product, index),
+    product?.id,
+    productStockId || 'no-stock',
+    batchId || 'no-batch',
+  ]
+    .map((part) => sanitizeDocIdPart(part))
+    .join('__');
+
+const readSideEffectPrereqs = async (
+  tx,
+  { businessID, saleId, product, index, productStockId, batchId },
+) => {
+  if (!saleId) return {};
+
+  const movementId = buildInventorySideEffectId({
+    type: 'movement',
+    saleId,
+    product,
+    index,
+    productStockId,
+    batchId,
+  });
+  const backorderId = buildInventorySideEffectId({
+    type: 'backorder',
+    saleId,
+    product,
+    index,
+    productStockId,
+    batchId,
+  });
+  const movementRef = db.doc(`businesses/${businessID}/movements/${movementId}`);
+  const backorderRef = db.doc(
+    `businesses/${businessID}/backOrders/${backorderId}`,
+  );
+  const [movementSnap, backorderSnap] = await Promise.all([
+    tx.get(movementRef),
+    tx.get(backorderRef),
+  ]);
+
+  return {
+    movementId,
+    movementRef,
+    movementSnap,
+    backorderId,
+    backorderRef,
+    backorderSnap,
+  };
 };
 
 const readSnapshotId = (snapshot, ...fieldPaths) => {
@@ -178,7 +252,7 @@ export default getInventory;
  * @param {Array<{ id:string; trackInventory:boolean; productStockId?:string; batchId?:string; restrictSaleWithoutStock?:boolean }>} products
  * @returns {Promise<Array<{ index:number; prod:object; skipped?:boolean; reason?:string; productSnap?:DocumentSnapshot; productStockSnap?:DocumentSnapshot; batchSnap?:DocumentSnapshot }>>}
  */
-export async function collectInventoryPrereqs(tx, { user, products }) {
+export async function collectInventoryPrereqs(tx, { user, products, saleId }) {
   if (!user?.businessID) {
     throw new https.HttpsError(
       'invalid-argument',
@@ -262,11 +336,21 @@ export async function collectInventoryPrereqs(tx, { user, products }) {
         );
       }
 
+      const sideEffects = await readSideEffectPrereqs(tx, {
+        businessID: user.businessID,
+        saleId,
+        product: prod,
+        index,
+        productStockId: null,
+        batchId: null,
+      });
+
       prereqs.push({
         index,
         prod: { ...prod, restrictSaleWithoutStock: restrictSale },
         skipped: true,
         reason: 'missing-stock-reference',
+        ...sideEffects,
       });
       continue;
     }
@@ -295,12 +379,46 @@ export async function collectInventoryPrereqs(tx, { user, products }) {
       batchSnap,
     });
 
+    if (restrictSale) {
+      const requestedQuantity = resolveInventoryBaseQuantity({
+        ...prod,
+        productStockId,
+        batchId,
+      });
+      const availableQuantity = getPhysicalStockQuantity(
+        productStockSnap.data?.() || {},
+      );
+      if (requestedQuantity > availableQuantity) {
+        throw new https.HttpsError(
+          'failed-precondition',
+          `Stock insuficiente para ${
+            prod?.name || productId
+          }. Disponible ${availableQuantity}, solicitado ${requestedQuantity}.`,
+        );
+      }
+    }
+
+    const sideEffects = await readSideEffectPrereqs(tx, {
+      businessID: user.businessID,
+      saleId,
+      product: prod,
+      index,
+      productStockId,
+      batchId,
+    });
+
     prereqs.push({
       index,
-      prod,
+      prod: {
+        ...prod,
+        productStockId,
+        batchId,
+        restrictSaleWithoutStock: restrictSale,
+      },
       productSnap,
       productStockSnap,
       batchSnap,
+      ...sideEffects,
     });
   }
 

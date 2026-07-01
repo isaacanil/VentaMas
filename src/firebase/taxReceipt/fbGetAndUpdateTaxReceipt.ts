@@ -8,7 +8,7 @@ import {
 
 import type { TaxReceiptUser } from '@/types/taxReceipt';
 import { db } from '@/firebase/firebaseconfig';
-import { formatNcfCode } from '@/utils/taxReceipt';
+import { formatNcfCode, isActiveTaxReceiptData } from '@/utils/taxReceipt';
 
 /**
  * LEGACY COMPATIBILITY ONLY
@@ -38,11 +38,22 @@ export const fbGetAndUpdateTaxReceipt = async (
     const q = query(taxReceiptRef, where('data.name', '==', taxReceiptName));
     const querySnapshot = await getDocs(q);
 
-    if (querySnapshot.empty) {
+    const activeDocs = querySnapshot.docs.filter((receiptDoc) =>
+      isActiveTaxReceiptData(receiptDoc.data()?.data),
+    );
+
+    if (!activeDocs.length) {
       console.warn('No matching tax receipt documents found');
       return null; // Return null or appropriate value if no documents found
     }
-    const taxReceiptDoc = querySnapshot.docs[0];
+
+    if (activeDocs.length > 1) {
+      throw new Error(
+        `Hay ${activeDocs.length} comprobantes activos con el nombre "${taxReceiptName}". Deshabilita o repara los duplicados antes de generar NCF.`,
+      );
+    }
+
+    const taxReceiptDoc = activeDocs[0];
     const docRef = taxReceiptDoc.ref;
     const taxReceiptData = taxReceiptDoc.data();
     const raw = taxReceiptData.data || {};

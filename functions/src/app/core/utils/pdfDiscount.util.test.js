@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getDiscount } from './pdfDiscount.util.js';
+import { getActiveUnitPrice, getDiscount } from './pdfDiscount.util.js';
 
 describe('pdfDiscount.util', () => {
   it('returns zero when there are no products or no discount value', () => {
@@ -23,6 +23,29 @@ describe('pdfDiscount.util', () => {
         ],
       }),
     ).toBe(25);
+  });
+
+  it('uses selected sale unit pricing and keeps explicit zero prices', () => {
+    expect(
+      getDiscount({
+        discount: { value: 10 },
+        products: [
+          {
+            pricing: { price: 100 },
+            selectedSaleUnit: { pricing: { price: 300 } },
+            amountToBuy: 2,
+          },
+        ],
+      }),
+    ).toBe(60);
+
+    expect(
+      getActiveUnitPrice({
+        price: { unit: 999 },
+        pricing: { price: 100 },
+        selectedSaleUnit: { pricing: { price: 0 } },
+      }),
+    ).toBe(0);
   });
 
   it('coerces missing product prices and quantities to zero', () => {

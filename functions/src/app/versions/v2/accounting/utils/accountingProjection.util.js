@@ -106,9 +106,28 @@ export const normalizeChartOfAccountRecord = (value) => {
     code: toCleanString(record.code),
     name: toCleanString(record.name),
     status: record.status === 'inactive' ? 'inactive' : 'active',
+    parentId: toCleanString(record.parentId),
     postingAllowed: record.postingAllowed !== false,
     systemKey: toCleanString(record.systemKey),
   };
+};
+
+const buildChildCountByParentId = (accounts) =>
+  accounts.reduce((accumulator, account) => {
+    if (!account.parentId) {
+      return accumulator;
+    }
+
+    accumulator.set(account.parentId, (accumulator.get(account.parentId) || 0) + 1);
+    return accumulator;
+  }, new Map());
+
+const resolvePostingBlockReason = (account, childCount = 0) => {
+  if (!account) return 'account_not_found';
+  if (account.status !== 'active') return 'account_inactive';
+  if (childCount > 0) return 'account_has_children';
+  if (account.postingAllowed === false) return 'account_posting_disabled';
+  return null;
 };
 
 export const normalizeBankAccountRecord = (value) => {
@@ -292,6 +311,19 @@ const resolvePaymentMethodFunctionalAmount = (method, functionalRate) => {
       ? explicitFunctionalAmount
       : documentAmount * functionalRate;
   return amount > 0 ? amount : 0;
+};
+
+const resolvePayloadFunctionalAmount = (payload, keys, functionalRate) => {
+  for (const key of keys) {
+    const rawAmount = safeNumber(payload[key]);
+    if (rawAmount > 0) {
+      return key.toLowerCase().includes('functional')
+        ? rawAmount
+        : rawAmount * functionalRate;
+    }
+  }
+
+  return 0;
 };
 
 const resolveSaleSettlementBreakdown = (event) => {
@@ -482,13 +514,92 @@ const resolvePayablePaymentBreakdown = (event) => {
     },
     { cash: 0, bank: 0, creditNote: 0, other: 0 },
   );
+  const withholdingApplications = Array.isArray(payload.withholdingApplications)
+    ? payload.withholdingApplications
+    : [];
+  const withholding = withholdingApplications.reduce(
+    (accumulator, application) => {
+      const amount = resolvePaymentMethodFunctionalAmount(
+        application,
+        functionalRate,
+      );
+      if (amount <= 0) {
+        return accumulator;
+      }
+
+      const type = toCleanString(
+        application?.type ?? application?.taxType ?? application?.code,
+      )?.toLowerCase();
+
+      if (type === 'itbis' || type === 'withholding_itbis') {
+        accumulator.itbis += amount;
+        return accumulator;
+      }
+
+      if (type === 'isr' || type === 'income_tax' || type === 'withholding_isr') {
+        accumulator.isr += amount;
+        return accumulator;
+      }
+
+      accumulator.other += amount;
+      return accumulator;
+    },
+    { itbis: 0, isr: 0, other: 0 },
+  );
+  const applicationWithholdingTotal =
+    withholding.itbis + withholding.isr + withholding.other;
+  const explicitWithholdingAmount = resolvePayloadFunctionalAmount(
+    payload,
+    [
+      'functionalWithholdingAmount',
+      'withholdingFunctionalAmount',
+      'withholdingAmount',
+    ],
+    functionalRate,
+  );
+  if (
+    applicationWithholdingTotal <= 0 &&
+    explicitWithholdingAmount > 0
+  ) {
+    withholding.other += explicitWithholdingAmount;
+  }
+
+  const withholdingTotal =
+    withholding.itbis + withholding.isr + withholding.other;
+  const paidByMethods =
+    breakdown.cash + breakdown.bank + breakdown.creditNote + breakdown.other;
+  const settlementFromMethods =
+    paidByMethods > 0 ? paidByMethods + withholdingTotal : 0;
+  const settlementFromMonetary =
+    total > 0 ? total + withholdingTotal : 0;
+  const explicitSettlementAmount = resolvePayloadFunctionalAmount(
+    payload,
+    [
+      'functionalSettlementAmount',
+      'settlementFunctionalAmount',
+      'functionalAppliedAmount',
+      'appliedFunctionalAmount',
+      'settlementAmount',
+      'appliedAmount',
+    ],
+    functionalRate,
+  );
+  const settledAmount =
+    explicitSettlementAmount ||
+    settlementFromMethods ||
+    settlementFromMonetary ||
+    total;
 
   return {
     cash: roundJournalAmount(breakdown.cash),
     bank: roundJournalAmount(breakdown.bank),
     creditNote: roundJournalAmount(breakdown.creditNote),
     other: roundJournalAmount(breakdown.other),
-    settledAmount: roundJournalAmount(total),
+    withholdingITBIS: roundJournalAmount(withholding.itbis),
+    withholdingISR: roundJournalAmount(withholding.isr),
+    withholdingOther: roundJournalAmount(withholding.other),
+    withholdingTotal: roundJournalAmount(withholdingTotal),
+    settledAmount: roundJournalAmount(Math.max(settledAmount, 0)),
   };
 };
 
@@ -697,12 +808,18 @@ export const resolveEventAmountSource = (event, amountSource) => {
       return receivablePayment.collected;
     case 'accounts_receivable_withholding_amount':
       return receivablePayment.withheld;
+    case 'accounts_payable_payment_amount':
+      return payablePayment.settledAmount;
     case 'accounts_payable_cash_paid':
       return payablePayment.cash;
     case 'accounts_payable_bank_paid':
       return payablePayment.bank;
     case 'accounts_payable_credit_note_applied':
       return payablePayment.creditNote;
+    case 'accounts_payable_withholding_itbis':
+      return payablePayment.withholdingITBIS;
+    case 'accounts_payable_withholding_isr':
+      return payablePayment.withholdingISR;
     case 'payroll_accrual_amount':
       return payrollAccrual.accrual;
     case 'payroll_net_payable_amount':
@@ -714,7 +831,6 @@ export const resolveEventAmountSource = (event, amountSource) => {
     case 'purchase_total':
     case 'expense_total':
     case 'document_total':
-    case 'accounts_payable_payment_amount':
     case 'transfer_amount':
       return roundJournalAmount(total);
     case 'cash_over_short_gain':
@@ -904,6 +1020,7 @@ export const buildProjectedJournalLines = ({
       .filter((account) => account.systemKey)
       .map((account) => [account.systemKey, account]),
   );
+  const childCountByParentId = buildChildCountByParentId(normalizedAccounts);
   const unresolvedLines = [];
 
   const rawLines = profile.linesTemplate.flatMap((line, index) => {
@@ -930,21 +1047,20 @@ export const buildProjectedJournalLines = ({
               bankAccountId: allocation.bankAccountId,
               bankAccountsById,
             });
-            if (
-              !account ||
-              account.status !== 'active' ||
-              account.postingAllowed === false
-            ) {
+            const blockReason = resolvePostingBlockReason(
+              account,
+              childCountByParentId.get(account?.id) || 0,
+            );
+            if (blockReason) {
               unresolvedLines.push({
                 lineId: `${line.id || `line-${index + 1}`}:${allocation.bankAccountId}`,
                 accountId: account?.id ?? line.accountId ?? null,
                 accountSystemKey: line.accountSystemKey ?? null,
                 bankAccountId: allocation.bankAccountId,
-                reason: !account
-                  ? 'bank_chart_account_not_found'
-                  : account.status !== 'active'
-                    ? 'account_inactive'
-                    : 'account_posting_disabled',
+                reason:
+                  blockReason === 'account_not_found'
+                    ? 'bank_chart_account_not_found'
+                    : blockReason,
               });
               return [];
             }
@@ -981,20 +1097,16 @@ export const buildProjectedJournalLines = ({
           accountsBySystemKey,
         });
 
-        if (
-          !fallbackAccount ||
-          fallbackAccount.status !== 'active' ||
-          fallbackAccount.postingAllowed === false
-        ) {
+        const blockReason = resolvePostingBlockReason(
+          fallbackAccount,
+          childCountByParentId.get(fallbackAccount?.id) || 0,
+        );
+        if (blockReason) {
           unresolvedLines.push({
             lineId: line.id || `line-${index + 1}`,
             accountId: line.accountId ?? null,
             accountSystemKey: line.accountSystemKey ?? null,
-            reason: !fallbackAccount
-              ? 'account_not_found'
-              : fallbackAccount.status !== 'active'
-                ? 'account_inactive'
-                : 'account_posting_disabled',
+            reason: blockReason,
           });
           return allocationLines;
         }
@@ -1027,20 +1139,16 @@ export const buildProjectedJournalLines = ({
       accountsById,
       accountsBySystemKey,
     });
-    if (
-      !account ||
-      account.status !== 'active' ||
-      account.postingAllowed === false
-    ) {
+    const blockReason = resolvePostingBlockReason(
+      account,
+      childCountByParentId.get(account?.id) || 0,
+    );
+    if (blockReason) {
       unresolvedLines.push({
         lineId: line.id || `line-${index + 1}`,
         accountId: line.accountId ?? null,
         accountSystemKey: line.accountSystemKey ?? null,
-        reason: !account
-          ? 'account_not_found'
-          : account.status !== 'active'
-            ? 'account_inactive'
-            : 'account_posting_disabled',
+        reason: blockReason,
       });
       return [];
     }

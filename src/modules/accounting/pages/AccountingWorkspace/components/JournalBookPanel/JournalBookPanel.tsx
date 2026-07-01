@@ -15,19 +15,38 @@ import { JournalEntryDetailDrawer } from '../JournalEntryDetailDrawer';
 import { exportJournalBookWorkbook } from '../utils/journalBookExport';
 
 import type { JournalBookSummaryTotals } from './types';
-import type { AccountingLedgerRecord } from '../../utils/accountingWorkspace';
+import type { ChartOfAccount } from '@/types/accounting';
+import type {
+  AccountingLedgerRecord,
+  AccountingPeriodClosure,
+} from '../../utils/accountingWorkspace';
 
 interface JournalBookPanelProps {
   loading: boolean;
   onOpenOrigin: (record: AccountingLedgerRecord | null) => Promise<boolean>;
+  onUpdateEntry: (payload: {
+    description: string;
+    entryDate: string;
+    entryId: string;
+    lines: Array<{
+      accountId: string;
+      credit: number;
+      debit: number;
+      description?: string;
+    }>;
+    reason: string;
+  }) => Promise<boolean>;
   records: AccountingLedgerRecord[];
   openingOriginRecordId: string | null;
+  periodClosures: AccountingPeriodClosure[];
+  postingAccounts: ChartOfAccount[];
   requestedRecord: AccountingLedgerRecord | null;
   requestedSelectionKey: string | null;
   onReverseEntry: (
     entry: NonNullable<AccountingLedgerRecord['journalEntry']>,
   ) => Promise<boolean>;
   reversingEntryId: string | null;
+  updatingEntryId: string | null;
 }
 
 export const JournalBookPanel = ({
@@ -35,10 +54,14 @@ export const JournalBookPanel = ({
   onOpenOrigin,
   openingOriginRecordId,
   onReverseEntry,
+  onUpdateEntry,
+  periodClosures,
+  postingAccounts,
   records,
   requestedRecord,
   requestedSelectionKey,
   reversingEntryId,
+  updatingEntryId,
 }: JournalBookPanelProps) => {
   const navigate = useNavigate();
   const [moduleFilter, setModuleFilter] = useState('all');
@@ -305,7 +328,9 @@ export const JournalBookPanel = ({
             variant="primary"
             aria-label="Nuevo asiento"
             onPress={() => {
-              void navigate(ROUTES_NAME.ACCOUNTING_TERM.ACCOUNTING_MANUAL_ENTRIES);
+              void navigate(
+                ROUTES_NAME.ACCOUNTING_TERM.ACCOUNTING_MANUAL_ENTRIES,
+              );
             }}
           >
             <PlusOutlined />
@@ -350,10 +375,17 @@ export const JournalBookPanel = ({
         open={Boolean(selectedRecord)}
         openingOrigin={selectedRecord?.id === openingOriginRecordId}
         onOpenOrigin={onOpenOrigin}
+        onUpdateEntry={onUpdateEntry}
+        periodClosures={periodClosures}
+        postingAccounts={postingAccounts}
         record={selectedRecord}
         reversing={Boolean(
           selectedRecord?.journalEntry &&
           reversingEntryId === selectedRecord.journalEntry.id,
+        )}
+        updating={Boolean(
+          selectedRecord?.journalEntry &&
+          updatingEntryId === selectedRecord.journalEntry.id,
         )}
         onClose={handleCloseDrawer}
         onReverseEntry={onReverseEntry}

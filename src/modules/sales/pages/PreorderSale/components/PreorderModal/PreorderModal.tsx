@@ -16,6 +16,10 @@ import {
   type PreorderStatusTone,
 } from '@/modules/sales/utils/preorderStatusDisplay';
 import { formatPrice } from '@/utils/format';
+import {
+  resolveInvoiceProductQuantity,
+  resolveInvoiceProductUnitPrice,
+} from '@/utils/invoice/product';
 import type { InvoiceData, InvoiceProduct } from '@/types/invoice';
 
 type PreorderModalProps = {
@@ -190,18 +194,14 @@ export const PreorderModal = ({
                             ? item.name
                             : 'Sin nombre'}
                         </td>
-                        <td>
-                          {typeof item?.amountToBuy === 'number'
-                            ? item.amountToBuy
-                            : Number(item?.amountToBuy ?? 0) || 0}
-                        </td>
+                        <td>{resolveInvoiceProductQuantity(item)}</td>
                         <td>
                           {typeof item?.size === 'string' && item.size
                             ? item.size
                             : 'N/A'}
                         </td>
                         <td>
-                          {formatPrice(Number(item?.pricing?.price ?? 0))}
+                          {formatPrice(resolveInvoiceProductUnitPrice(item))}
                         </td>
                       </tr>
                     ))}

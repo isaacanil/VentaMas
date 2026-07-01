@@ -4,9 +4,7 @@ import {
   buildAccountingEvent,
   resolveAccountingPaymentChannel,
 } from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
-import {
-  resolveAccountingTimestamp as resolveTimestamp,
-} from '../../../versions/v2/accounting/utils/accountingTimestamp.util.js';
+import { resolveAccountingTimestamp as resolveTimestamp } from '../../../versions/v2/accounting/utils/accountingTimestamp.util.js';
 import {
   asRecord,
   resolvePurchaseDocumentTotal,
@@ -16,6 +14,7 @@ import {
   toCleanString,
 } from './payablePayments.shared.js';
 import {
+  isPurchaseReceiptInventoryPending,
   resolvePurchaseDocumentNature,
   resolvePurchaseSettlementTiming,
 } from './vendorBill.shared.js';
@@ -26,8 +25,18 @@ import {
 
 const COMMITTED_WORKFLOW_STATUSES = new Set(['completed']);
 const COMMITTED_LEGACY_STATUSES = new Set(['completed', 'delivered', 'posted']);
+const VOIDED_ACCOUNTS_PAYABLE_STATUSES = new Set([
+  'cancelled',
+  'canceled',
+  'void',
+  'voided',
+]);
 
 const resolveCommittedPurchaseState = (purchaseRecord) => {
+  if (isPurchaseReceiptInventoryPending(purchaseRecord)) {
+    return false;
+  }
+
   const workflowStatus = toCleanString(
     purchaseRecord.workflowStatus,
   )?.toLowerCase();
@@ -37,6 +46,42 @@ const resolveCommittedPurchaseState = (purchaseRecord) => {
 
   const legacyStatus = toCleanString(purchaseRecord.status)?.toLowerCase();
   return legacyStatus ? COMMITTED_LEGACY_STATUSES.has(legacyStatus) : false;
+};
+
+const resolvePurchaseAccountsPayableControl = (purchaseRecord) =>
+  asRecord(
+    purchaseRecord.accountsPayable ??
+      purchaseRecord.payables ??
+      purchaseRecord.vendorBill,
+  );
+
+const resolveVoidedAccountsPayableControl = (purchaseRecord) => {
+  const accountsPayable = resolvePurchaseAccountsPayableControl(purchaseRecord);
+  const status = toCleanString(
+    accountsPayable.status ??
+      accountsPayable.state ??
+      accountsPayable.approvalStatus,
+  )?.toLowerCase();
+  const isVoided =
+    VOIDED_ACCOUNTS_PAYABLE_STATUSES.has(status) ||
+    Boolean(accountsPayable.voidedAt) ||
+    Boolean(toCleanString(accountsPayable.voidedBy));
+
+  if (!isVoided) {
+    return null;
+  }
+
+  return {
+    status: 'voided',
+    voidedAt: accountsPayable.voidedAt ?? null,
+    voidedBy: toCleanString(accountsPayable.voidedBy),
+    voidReason: toCleanString(accountsPayable.voidReason),
+    voidEvidenceNote: toCleanString(accountsPayable.voidEvidenceNote),
+    voidEvidenceUrls: Array.isArray(accountsPayable.voidEvidenceUrls)
+      ? accountsPayable.voidEvidenceUrls.map(toCleanString).filter(Boolean)
+      : [],
+    controlEventId: toCleanString(accountsPayable.lastControlEventId),
+  };
 };
 
 const resolveCurrencyCode = (value) =>
@@ -208,8 +253,9 @@ const resolvePurchaseMonetarySnapshot = (purchaseRecord, { purchaseId }) => {
     ) ?? documentWithholdingITBIS,
   );
   const functionalWithholdingISR = roundToTwoDecimals(
-    safeNumber(functionalTotals.withholdingISRAmount ?? functionalTotals.isrWithheld) ??
-      documentWithholdingISR,
+    safeNumber(
+      functionalTotals.withholdingISRAmount ?? functionalTotals.isrWithheld,
+    ) ?? documentWithholdingISR,
   );
   const functionalNetPayable = resolveValidNetPayableAmount({
     contextLabel: `${contextLabel} functional totals`,
@@ -269,23 +315,38 @@ export const buildPurchaseCommittedAccountingEvent = ({
 
   const beforeCommitted = resolveCommittedPurchaseState(previousPurchase);
   const afterCommitted = resolveCommittedPurchaseState(nextPurchase);
-  if (!afterCommitted || beforeCommitted) {
+  const previousAccountsPayableVoid =
+    resolveVoidedAccountsPayableControl(previousPurchase);
+  const nextAccountsPayableVoid =
+    resolveVoidedAccountsPayableControl(nextPurchase);
+  const shouldVoidCommittedEvent =
+    afterCommitted && nextAccountsPayableVoid && !previousAccountsPayableVoid;
+
+  if (!afterCommitted || (beforeCommitted && !shouldVoidCommittedEvent)) {
     return null;
   }
 
   const supplierId = resolvePurchaseSupplierId(nextPurchase);
-  const occurredAt = resolveTimestamp(
-    nextPurchase.completedAt,
-    nextPurchase.updatedAt,
-    nextPurchase.createdAt,
-  );
+  const occurredAt = shouldVoidCommittedEvent
+    ? resolveTimestamp(
+        nextAccountsPayableVoid.voidedAt,
+        nextPurchase.updatedAt,
+        nextPurchase.completedAt,
+        nextPurchase.createdAt,
+      )
+    : resolveTimestamp(
+        nextPurchase.completedAt,
+        nextPurchase.updatedAt,
+        nextPurchase.createdAt,
+      );
   const monetarySnapshot = resolvePurchaseMonetarySnapshot(nextPurchase, {
     purchaseId,
   });
   const treasurySnapshot = resolvePurchaseTreasurySnapshot(nextPurchase);
-  return buildAccountingEvent({
+  const accountingEvent = buildAccountingEvent({
     businessId,
     eventType: 'purchase.committed',
+    status: shouldVoidCommittedEvent ? 'voided' : 'recorded',
     sourceType: 'purchase',
     sourceId: purchaseId,
     sourceDocumentType: 'purchase',
@@ -318,6 +379,10 @@ export const buildPurchaseCommittedAccountingEvent = ({
       paymentMethods: treasurySnapshot.paymentMethods,
       documentNature: resolvePurchaseDocumentNature(nextPurchase),
       settlementTiming: resolvePurchaseSettlementTiming(nextPurchase),
+      accountsPayableControlStatus: nextAccountsPayableVoid?.status ?? null,
+      accountsPayableControlEventId:
+        nextAccountsPayableVoid?.controlEventId ?? null,
+      accountsPayableVoidReason: nextAccountsPayableVoid?.voidReason ?? null,
       fiscalTotals: {
         subtotal: monetarySnapshot.monetary.subtotalAmount,
         taxAmount: monetarySnapshot.monetary.taxAmount,
@@ -332,6 +397,30 @@ export const buildPurchaseCommittedAccountingEvent = ({
     recordedAt,
     createdAt: recordedAt,
     createdBy: PURCHASE_ACCOUNTING_EVENT_SYNC_ACTOR,
-    metadata: buildPurchaseSourceAuditMetadata(nextPurchase),
+    metadata: {
+      ...buildPurchaseSourceAuditMetadata(nextPurchase),
+      accountsPayableVoidedAt: nextAccountsPayableVoid?.voidedAt ?? null,
+      accountsPayableVoidedBy: nextAccountsPayableVoid?.voidedBy ?? null,
+      accountsPayableControlEventId:
+        nextAccountsPayableVoid?.controlEventId ?? null,
+      accountsPayableVoidReason: nextAccountsPayableVoid?.voidReason ?? null,
+      accountsPayableVoidEvidenceNote:
+        nextAccountsPayableVoid?.voidEvidenceNote ?? null,
+      accountsPayableVoidEvidenceUrls:
+        nextAccountsPayableVoid?.voidEvidenceUrls ?? [],
+    },
   });
+
+  if (!shouldVoidCommittedEvent) {
+    return accountingEvent;
+  }
+
+  return {
+    ...accountingEvent,
+    voidedAt: nextAccountsPayableVoid.voidedAt ?? recordedAt,
+    voidedBy:
+      nextAccountsPayableVoid.voidedBy ?? PURCHASE_ACCOUNTING_EVENT_SYNC_ACTOR,
+    voidReason:
+      nextAccountsPayableVoid.voidReason ?? 'Cuenta por pagar anulada.',
+  };
 };

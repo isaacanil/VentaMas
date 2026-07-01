@@ -227,6 +227,7 @@ export const ProductsList = () => {
   const itemContent = useCallback(
     (_index: number, item: CartProduct) => (
       <ProductCardForCartMemo
+        cartProducts={ProductSelected}
         item={item}
         onOpenCommentModal={handleOpenCommentModal}
         onOpenDeleteModal={handleOpenDeleteModal}
@@ -241,6 +242,7 @@ export const ProductsList = () => {
       handleOpenDiscountModal,
       handleOpenBatchInfoModal,
       handleOpenServiceCommissionModal,
+      ProductSelected,
     ],
   );
 

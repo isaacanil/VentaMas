@@ -6,7 +6,12 @@ import type { TableColumnsType as ColumnsType } from 'antd';
 import type { InvoiceProduct } from '@/types/invoice';
 import type { NumberInput } from '@/utils/number/number';
 import { CreditNoteQuantityControl } from '../components/CreditNoteQuantityControl';
-import { resolveQuantity } from '../utils/quantity';
+import {
+  applyCreditNoteLineQuantity,
+  getCreditNoteQuantityInputConfig,
+  resolveCreditNoteLineQuantity,
+} from '../utils/quantity';
+import { getCreditNoteLineKey } from './useCreditNoteSelection.helpers';
 
 type CreditNoteProduct = InvoiceProduct & { maxAvailableQty?: number };
 type FormatPrice = (value: NumberInput) => string;
@@ -43,13 +48,16 @@ export const useCreditNoteColumns = ({
         title: '',
         dataIndex: 'select',
         width: '50px',
-        render: (_, record: CreditNoteProduct) => (
-          <Checkbox
-            checked={selectedItems.includes(record.id)}
-            disabled={effectiveIsView}
-            onChange={(e) => handleItemChange(record.id, e.target.checked)}
-          />
-        ),
+        render: (_, record: CreditNoteProduct) => {
+          const recordId = getCreditNoteLineKey(record);
+          return (
+            <Checkbox
+              checked={selectedItems.includes(recordId)}
+              disabled={effectiveIsView}
+              onChange={(e) => handleItemChange(recordId, e.target.checked)}
+            />
+          );
+        },
       },
       {
         title: 'Producto',
@@ -70,14 +78,15 @@ export const useCreditNoteColumns = ({
             typeof record.maxAvailableQty === 'number'
               ? Math.max(0, record.maxAvailableQty)
               : 0;
-          const originalQty = resolveQuantity(record.amountToBuy);
-          const recordId = record.id;
+          const originalQty = resolveCreditNoteLineQuantity(record);
+          const recordId = getCreditNoteLineKey(record);
           const creditedByOthers = creditedQuantities[String(recordId)] || 0;
-          const selected = selectedItems.includes(record.id);
+          const selected = selectedItems.includes(recordId);
           const value =
             itemQuantities[String(recordId)] ||
             existingItemQuantities[String(recordId)] ||
             1;
+          const quantityInputConfig = getCreditNoteQuantityInputConfig(record);
 
           return (
             <CreditNoteQuantityControl
@@ -86,9 +95,11 @@ export const useCreditNoteColumns = ({
               originalQuantity={originalQty}
               creditedByOthers={creditedByOthers}
               maxQuantity={maxQty}
+              minQuantity={quantityInputConfig.min}
+              step={quantityInputConfig.step}
               isEditable={!effectiveIsView && selected}
               onQuantityChange={(value) =>
-                handleQuantityChange(record.id, value)
+                handleQuantityChange(recordId, value)
               }
             />
           );
@@ -116,13 +127,13 @@ export const useCreditNoteColumns = ({
         align: 'right',
         responsive: ['lg'],
         render: (_, record: CreditNoteProduct) => {
-          const recordId = record.id;
+          const recordId = getCreditNoteLineKey(record);
           const qty =
             itemQuantities[String(recordId)] ||
             existingItemQuantities[String(recordId)] ||
-            resolveQuantity(record.amountToBuy) ||
+            resolveCreditNoteLineQuantity(record) ||
             1;
-          const tempItem = { ...record, amountToBuy: qty };
+          const tempItem = applyCreditNoteLineQuantity(record, qty);
           const itbis = getTax(tempItem, true);
           return formatPrice(itbis);
         },
@@ -135,29 +146,31 @@ export const useCreditNoteColumns = ({
         align: 'right',
         responsive: ['sm'],
         render: (_, record: CreditNoteProduct) => {
-          const recordId = record.id;
+          const recordId = getCreditNoteLineKey(record);
           const qty =
             itemQuantities[String(recordId)] ||
             existingItemQuantities[String(recordId)] ||
-            resolveQuantity(record.amountToBuy) ||
+            resolveCreditNoteLineQuantity(record) ||
             1;
-          const tempItem = { ...record, amountToBuy: qty };
+          const tempItem = applyCreditNoteLineQuantity(record, qty);
           return formatPrice(getTotalPrice(tempItem));
         },
         sorter: (a: CreditNoteProduct, b: CreditNoteProduct) => {
+          const aId = getCreditNoteLineKey(a);
+          const bId = getCreditNoteLineKey(b);
           const qtyA =
-            itemQuantities[String(a.id)] ||
-            existingItemQuantities[String(a.id)] ||
-            resolveQuantity(a.amountToBuy) ||
+            itemQuantities[String(aId)] ||
+            existingItemQuantities[String(aId)] ||
+            resolveCreditNoteLineQuantity(a) ||
             1;
           const qtyB =
-            itemQuantities[String(b.id)] ||
-            existingItemQuantities[String(b.id)] ||
-            resolveQuantity(b.amountToBuy) ||
+            itemQuantities[String(bId)] ||
+            existingItemQuantities[String(bId)] ||
+            resolveCreditNoteLineQuantity(b) ||
             1;
           return (
-            getTotalPrice({ ...a, amountToBuy: qtyA }) -
-            getTotalPrice({ ...b, amountToBuy: qtyB })
+            getTotalPrice(applyCreditNoteLineQuantity(a, qtyA)) -
+            getTotalPrice(applyCreditNoteLineQuantity(b, qtyB))
           );
         },
       },

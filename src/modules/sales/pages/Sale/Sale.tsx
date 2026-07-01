@@ -25,6 +25,10 @@ import { deleteClient } from '@/features/clientCart/clientCartSlice';
 import { selectCashRegisterAlertBypass } from '@/features/appModes/appModeSlice';
 import { selectUser } from '@/features/auth/userSlice';
 import { openProductStockSimple } from '@/features/productStock/productStockSimpleSlice';
+import {
+  normalizeSaleUnitForCart,
+  resolveProductBaseQuantity,
+} from '@/domain/products/saleUnits';
 import { clearTaxReceiptData } from '@/features/taxReceipt/taxReceiptSlice';
 import { useIsOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
 import { useGetProducts } from '@/firebase/products/fbGetProducts';
@@ -38,7 +42,6 @@ import type { MonetaryRateConfig } from '@/utils/accounting/lineMonetary';
 import {
   extractWeightInfo,
   formatWeight,
-  getBarcodeLookupCandidates,
   isVariableWeightBarcode,
   normalizeBarcodeDigits,
   normalizeBarcodeValue,
@@ -47,6 +50,8 @@ import {
   resolveProductStockSelection,
   shouldResolveProductStockSelection,
 } from '@/modules/sales/pages/Sale/utils/productStockSelection';
+import { sumCartBaseQuantityForPhysicalStock } from '@/modules/sales/pages/Sale/utils/cartPhysicalStockUsage';
+import { useSellableStockAvailability } from '@/modules/sales/pages/Sale/hooks/useSellableStockAvailability';
 import { ClientSelector } from '@/modules/contacts/public';
 import { ProductBatchModal } from '@/modules/inventory/public';
 import { MenuApp } from '@/modules/navigation/public';
@@ -60,14 +65,21 @@ import {
   buildProductSearchIndex,
   normalizeProductSearchTerm,
 } from './utils/productSearch';
+import { buildSaleUnitProductEntries } from './utils/saleUnitProductEntries';
+import {
+  buildSaleBarcodeIndex,
+  findSaleBarcodeMatch,
+  type BarcodeProductMatch,
+} from './utils/saleBarcodeIndex';
 
 import type { Dispatch, SetStateAction, JSX } from 'react';
-import type { ProductRecord } from '@/types/products';
+import type { ProductRecord, ProductSaleUnit } from '@/types/products';
 import type { UserIdentity } from '@/types/users';
 import type { ComponentType, ReactNode } from 'react';
 
 interface Product {
   barcode?: string | number;
+  saleUnits?: ProductSaleUnit[];
   weightDetail?: {
     isSoldByWeight?: boolean;
     weight?: string | number;
@@ -114,6 +126,8 @@ interface ProductsResponse {
   loading: boolean;
   stockMeta: Record<string, unknown>;
 }
+
+type SaleBarcodeProductMatch = BarcodeProductMatch<Product>;
 
 const MenuAppComponent = memo(MenuApp) as ComponentType<MenuAppProps>;
 const ProductControlEfficientMemo = memo(ProductControlEfficient);
@@ -195,6 +209,20 @@ const normalizeProductRecord = (product: Product): ProductRecord => {
   };
 };
 
+const buildSellableProductSearchIndex = (product: ProductRecord): string => {
+  const {
+    saleUnits: omittedSaleUnits,
+    selectedSaleUnit,
+    ...searchableProduct
+  } = product;
+  void omittedSaleUnits;
+  const saleUnitSearchIndex = selectedSaleUnit
+    ? buildProductSearchIndex(selectedSaleUnit)
+    : '';
+
+  return `${buildProductSearchIndex(searchableProduct)} ${saleUnitSearchIndex}`;
+};
+
 export const Sales = (): JSX.Element => {
   const { status: cashRegisterStatus } = useIsOpenCashReconciliation() as {
     status: string | 'loading';
@@ -248,19 +276,43 @@ export const Sales = (): JSX.Element => {
   const viewport = typeof viewportValue === 'number' ? viewportValue : 0;
   const dispatch = useDispatch();
   const user = useSelector(selectUser) as UserIdentity | null;
+  const selectedStockLocationScopes = useMemo(() => {
+    const selectedWarehouses = stockMeta.selectedWarehouses;
+    return Array.isArray(selectedWarehouses)
+      ? selectedWarehouses
+          .map((location) =>
+            typeof location === 'string' ? location.trim() : '',
+          )
+          .filter(Boolean)
+      : [];
+  }, [stockMeta]);
+  const sellableStockAvailability = useSellableStockAvailability(user, {
+    locationScopes: selectedStockLocationScopes,
+  });
 
   const productsList = products;
   const visibleProducts = useMemo(
     () => productsList.filter((product) => product.isVisible !== false),
     [productsList],
   );
+  const sellableProductEntries = useMemo(
+    () =>
+      visibleProducts.flatMap((product) =>
+        buildSaleUnitProductEntries(normalizeProductRecord(product), {
+          stockAvailabilityByProductId: sellableStockAvailability.index,
+          stockAvailabilityCanFilter: sellableStockAvailability.canFilter,
+          stockAvailabilityReady: sellableStockAvailability.ready,
+        }),
+      ),
+    [sellableStockAvailability, visibleProducts],
+  );
   const indexedVisibleProducts = useMemo(
     () =>
-      visibleProducts.map((product) => ({
+      sellableProductEntries.map((product) => ({
         product,
-        searchIndex: buildProductSearchIndex(product),
+        searchIndex: buildSellableProductSearchIndex(product),
       })),
-    [visibleProducts],
+    [sellableProductEntries],
   );
   const normalizedSearchTerm = useMemo(
     () => normalizeProductSearchTerm(deferredSearchData),
@@ -273,21 +325,10 @@ export const Sales = (): JSX.Element => {
           Boolean(currency),
         )
     : [];
-  const productsByBarcode = useMemo(() => {
-    const map = new Map<string, Product>();
-    for (const product of productsList) {
-      const normalizedBarcode = normalizeBarcodeValue(product?.barcode);
-      if (!normalizedBarcode) continue;
-
-      const barcodeCandidates = getBarcodeLookupCandidates(normalizedBarcode);
-      for (const candidate of barcodeCandidates) {
-        if (!map.has(candidate)) {
-          map.set(candidate, product);
-        }
-      }
-    }
-    return map;
-  }, [productsList]);
+  const productsByBarcode = useMemo(
+    () => buildSaleBarcodeIndex(productsList),
+    [productsList],
+  );
 
   // NOTA: El bloqueo de clics ahora se maneja mediante un overlay en ProductControlEfficient
 
@@ -318,6 +359,30 @@ export const Sales = (): JSX.Element => {
         placement: 'top',
       });
       return false;
+    }
+
+    const cartProducts = Array.isArray(cartData?.products)
+      ? cartData.products
+      : [];
+    const candidateStock = Number(resolution.product.stock);
+    if (
+      resolution.product.restrictSaleWithoutStock &&
+      Number.isFinite(candidateStock) &&
+      candidateStock > 0
+    ) {
+      const currentBaseQuantity = sumCartBaseQuantityForPhysicalStock(
+        cartProducts,
+        resolution.product,
+      );
+      const nextBaseQuantity = resolveProductBaseQuantity(resolution.product);
+      if (currentBaseQuantity + nextBaseQuantity > candidateStock) {
+        notification.warning({
+          title: 'Cantidad máxima alcanzada',
+          description: `No puedes agregar más unidades. El stock disponible es ${candidateStock}.`,
+          placement: 'top',
+        });
+        return false;
+      }
     }
 
     dispatch(addProduct(resolution.product));
@@ -368,13 +433,10 @@ export const Sales = (): JSX.Element => {
       return;
     }
 
-    const scannedCandidates = getBarcodeLookupCandidates(normalizedBarcode);
-    let product: Product | undefined;
-    for (const candidate of scannedCandidates) {
-      product = productsByBarcode.get(candidate);
-      if (product) break;
-    }
+    const barcodeMatch: SaleBarcodeProductMatch | undefined =
+      findSaleBarcodeMatch(productsByBarcode, normalizedBarcode);
 
+    const product = barcodeMatch?.product;
     if (!product) {
       notification.error({
         title: 'Producto no encontrado',
@@ -386,7 +448,7 @@ export const Sales = (): JSX.Element => {
 
     const isSoldByWeight = product?.weightDetail?.isSoldByWeight || false;
     const numericBarcode = normalizeBarcodeDigits(normalizedBarcode);
-    const scannedProduct: ProductRecord =
+    const scannedProductBase: ProductRecord =
       isVariableWeightBarcode(numericBarcode) && isSoldByWeight
         ? {
             ...(product as ProductRecord),
@@ -400,6 +462,12 @@ export const Sales = (): JSX.Element => {
             },
           }
         : (product as ProductRecord);
+    const scannedProduct = barcodeMatch?.saleUnit
+      ? {
+          ...scannedProductBase,
+          selectedSaleUnit: normalizeSaleUnitForCart(barcodeMatch.saleUnit),
+        }
+      : scannedProductBase;
 
     if (!shouldResolveProductStockSelection(scannedProduct)) {
       dispatchResolvedScannedProduct(scannedProduct);
@@ -441,6 +509,8 @@ export const Sales = (): JSX.Element => {
           ? cartData.products.find(
               (item) =>
                 item?.id === scannedProduct.id &&
+                String(item?.selectedSaleUnit?.id ?? 'default') ===
+                  String(scannedProduct.selectedSaleUnit?.id ?? 'default') &&
                 item?.restrictSaleWithoutStock &&
                 (!item?.productStockId || !item?.batchId),
             )
@@ -480,30 +550,33 @@ export const Sales = (): JSX.Element => {
 
   useBarcodeScanner(checkBarcode);
 
-  const filteredVisibleProducts = useMemo(
-    () =>
-      normalizedSearchTerm
-        ? indexedVisibleProducts
-            .filter(({ searchIndex }) =>
-              searchIndex.includes(normalizedSearchTerm),
-            )
-            .map(({ product }) => product)
-        : visibleProducts,
-    [indexedVisibleProducts, normalizedSearchTerm, visibleProducts],
-  );
-  const normalizedProducts = useMemo(
-    () => filteredVisibleProducts.map(normalizeProductRecord),
-    [filteredVisibleProducts],
+  const searchTokens = useMemo(
+    () => normalizedSearchTerm.split(/\s+/).filter(Boolean),
+    [normalizedSearchTerm]
   );
 
-  const filteredVisibleStockTotal = useMemo(
+  const filteredVisibleProducts = useMemo(
     () =>
-      filteredVisibleProducts.reduce(
-        (sum, product) => sum + (Number(product?.stock ?? 0) || 0),
-        0,
-      ),
-    [filteredVisibleProducts],
+      searchTokens.length > 0
+        ? indexedVisibleProducts
+            .filter(({ searchIndex }) =>
+              searchTokens.every((token) => searchIndex.includes(token)),
+            )
+            .map(({ product }) => product)
+        : sellableProductEntries,
+    [indexedVisibleProducts, searchTokens, sellableProductEntries],
   );
+  const normalizedProducts = filteredVisibleProducts;
+
+  const filteredVisibleStockTotal = useMemo(() => {
+    const countedProductIds = new Set<string>();
+    return filteredVisibleProducts.reduce((sum, product) => {
+      const productId = String(product?.id ?? '');
+      if (productId && countedProductIds.has(productId)) return sum;
+      if (productId) countedProductIds.add(productId);
+      return sum + (Number(product?.stock ?? 0) || 0);
+    }, 0);
+  }, [filteredVisibleProducts]);
   const statusMeta = useMemo(
     () => ({
       ...stockMeta,
@@ -596,7 +669,9 @@ export const Sales = (): JSX.Element => {
             forceRender
           />
           <ProductControlEfficientMemo
-            productsLoading={productsLoading}
+            productsLoading={
+              productsLoading || !sellableStockAvailability.ready
+            }
             products={normalizedProducts}
             statusMeta={statusMeta}
             isLocked={isBlockingCashRegisterStatus}

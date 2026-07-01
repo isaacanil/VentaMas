@@ -164,6 +164,96 @@ describe('autoCompletePreorderInvoice', () => {
     expect(mocks.submitInvoice).not.toHaveBeenCalled();
   });
 
+  it('keeps preorder lines with structured sale-unit quantities', async () => {
+    mocks.getDoc.mockImplementation(async (ref: { path?: string }) => {
+      if (ref.path?.includes('/invoicesV2/')) {
+        return createSnap(false);
+      }
+      return createSnap(true, {
+        data: {
+          ...preorderData,
+          products: [
+            {
+              id: 'product-1',
+              name: 'Boxed product',
+              amountToBuy: { unit: 2, total: 24 },
+              selectedSaleUnit: {
+                id: 'box-12',
+                quantity: 12,
+              },
+            },
+          ],
+        },
+      });
+    });
+
+    await autoCompletePreorderInvoice({
+      businessId: 'business-1',
+      userId: 'user-1',
+      preorderId: 'preorder-1',
+    });
+
+    expect(mocks.submitInvoice).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cart: expect.objectContaining({
+          products: [
+            expect.objectContaining({
+              amountToBuy: { unit: 2, total: 24 },
+              selectedSaleUnit: expect.objectContaining({
+                id: 'box-12',
+              }),
+            }),
+          ],
+        }),
+      }),
+    );
+  });
+
+  it('does not submit a preorder invoice when a weighted product has an unsupported unit', async () => {
+    mocks.getDoc.mockImplementation(async (ref: { path?: string }) => {
+      if (ref.path?.includes('/invoicesV2/')) {
+        return createSnap(false);
+      }
+      return createSnap(true, {
+        data: {
+          ...preorderData,
+          products: [
+            {
+              id: 'product-weight',
+              name: 'Queso fresco',
+              amountToBuy: 1,
+              weightDetail: {
+                isSoldByWeight: true,
+                weight: 2.5,
+                weightUnit: 'unidad',
+              },
+            },
+          ],
+        },
+      });
+    });
+
+    const result = await autoCompletePreorderInvoice({
+      businessId: 'business-1',
+      userId: 'user-1',
+      preorderId: 'preorder-1',
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error:
+        'Uno o más productos vendidos por peso tienen una unidad de peso no soportada. Selecciona kg, lb, oz, g o mg antes de facturar.',
+    });
+    expect(mocks.checkOpenCashReconciliation).not.toHaveBeenCalled();
+    expect(mocks.submitInvoice).not.toHaveBeenCalled();
+    expect(mocks.flowTrace).toHaveBeenCalledWith(
+      'PREORDER_AUTO_COMPLETE_INVALID_CART',
+      expect.objectContaining({
+        preorderId: 'preorder-1',
+      }),
+    );
+  });
+
   it('sanitizes idempotency segments for Firestore document ids', () => {
     const key = buildPreorderAutoCompleteIdempotencyKey({
       businessId: 'business / 1',

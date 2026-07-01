@@ -3,7 +3,8 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { ProductCard } from './ProductCard';
-import { resolveQuantity } from '../utils/quantity';
+import { getCreditNoteLineKey } from '../hooks/useCreditNoteSelection.helpers';
+import { resolveCreditNoteLineQuantity } from '../utils/quantity';
 import type { TableColumnsType as ColumnsType } from 'antd';
 import type { InvoiceProduct } from '@/types/invoice';
 
@@ -50,31 +51,34 @@ export const ProductList = ({
       <MobileContainer>
         <CardsContainer>
           {paginatedProducts.map((product, index) => {
+            const productKey = getCreditNoteLineKey(product);
             // Usar maxAvailableQty que ya incluye la lógica correcta para edición
             const maxQty = product.maxAvailableQty || 1;
-            const originalQty = resolveQuantity(product.amountToBuy);
+            const originalQty = resolveCreditNoteLineQuantity(product);
             const quantity =
-              itemQuantities[String(product.id)] ||
-              existingItemQuantities[String(product.id)] ||
+              itemQuantities[String(productKey)] ||
+              existingItemQuantities[String(productKey)] ||
               1;
-            const isSelected = selectedItems.includes(product.id);
+            const isSelected = selectedItems.includes(productKey);
             const creditedByOthers =
-              creditedQuantities[String(product.id)] || 0;
+              creditedQuantities[String(productKey)] || 0;
             const existingQuantity =
-              existingItemQuantities[String(product.id)] || 0;
+              existingItemQuantities[String(productKey)] || 0;
 
             return (
               <ProductCard
-                key={product.id ?? index}
+                key={productKey ?? index}
                 product={product}
                 isSelected={isSelected}
                 quantity={quantity}
                 maxQuantity={maxQty}
                 originalQuantity={originalQty}
                 isView={effectiveIsView}
-                onSelectionChange={onItemChange}
+                onSelectionChange={(_, selected) =>
+                  onItemChange(productKey, selected)
+                }
                 onQuantityChange={(value) =>
-                  onQuantityChange(product.id, value)
+                  onQuantityChange(productKey, value)
                 }
                 creditedByOthers={creditedByOthers}
                 existingQuantity={existingQuantity}
@@ -104,7 +108,7 @@ export const ProductList = ({
     <Table<CreditNoteProduct>
       dataSource={products}
       columns={columns}
-      rowKey="id"
+      rowKey={(record) => getCreditNoteLineKey(record) ?? ''}
       pagination={{
         current: currentPage,
         pageSize: pageSize,

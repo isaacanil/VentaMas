@@ -187,6 +187,8 @@ vi.mock('../services/printReady.service.js', () => ({
     attemptMarkInvoicePrintReadyMock(...args),
 }));
 
+import { collectInventoryPrereqs } from '../../../../modules/Inventory/services/getInventory.service.js';
+import { adjustProductInventory } from '../../../../modules/Inventory/services/Inventory.service.js';
 import { processInvoiceOutbox } from './outbox.worker.js';
 
 const refForPath = (path) => ({
@@ -396,6 +398,125 @@ describe('processInvoiceOutbox', () => {
     );
   });
 
+  it('processes updateInventory with invoice idempotency identifiers', async () => {
+    const collectInventoryPrereqsMock = vi.mocked(collectInventoryPrereqs);
+    const adjustProductInventoryMock = vi.mocked(adjustProductInventory);
+    const operations = [];
+    const taskRef = refForPath(
+      'businesses/business-1/invoicesV2/invoice-1/outbox/task-inventory',
+    );
+    const products = [
+      {
+        id: 'product-1',
+        name: 'Caja',
+        amountToBuy: { unit: 1, total: 12 },
+        selectedSaleUnit: {
+          id: 'box-12',
+          conversionFactorToBase: 12,
+        },
+      },
+    ];
+    const inventoryPrereqs = [{ index: 0, prod: products[0] }];
+    const accountingSettings = {
+      generalAccountingEnabled: true,
+      functionalCurrency: 'DOP',
+    };
+    const taskData = {
+      type: 'updateInventory',
+      status: 'pending',
+      attempts: 1,
+      payload: {
+        businessId: 'business-1',
+        userId: 'user-1',
+        products,
+      },
+    };
+    const tx = {
+      get: vi.fn(async (ref) => {
+        if (ref.path === taskRef.path) {
+          return { exists: true, data: () => taskData };
+        }
+        if (ref.path === 'businesses/business-1/invoicesV2/invoice-1') {
+          return {
+            exists: true,
+            data: () => ({
+              id: 'invoice-1',
+              status: 'pending',
+              userId: 'user-1',
+            }),
+          };
+        }
+        if (ref.path === 'businesses/business-1/settings/accounting') {
+          return {
+            exists: true,
+            data: () => accountingSettings,
+          };
+        }
+        throw new Error(`unexpected_read:${ref.path}`);
+      }),
+      set: vi.fn((ref, data, options) => {
+        operations.push({ op: 'set', path: ref.path, data, options });
+      }),
+      update: vi.fn((ref, data) => {
+        operations.push({ op: 'update', path: ref.path, data });
+      }),
+    };
+    collectInventoryPrereqsMock.mockResolvedValue(inventoryPrereqs);
+    adjustProductInventoryMock.mockResolvedValue(undefined);
+    runTransactionMock.mockImplementation(async (callback) => callback(tx));
+
+    const result = await processInvoiceOutbox({
+      params: {
+        businessId: 'business-1',
+        invoiceId: 'invoice-1',
+        taskId: 'task-inventory',
+      },
+      data: {
+        data: () => taskData,
+        ref: taskRef,
+      },
+    });
+
+    expect(result).toBeNull();
+    expect(collectInventoryPrereqsMock).toHaveBeenCalledWith(
+      tx,
+      expect.objectContaining({
+        user: { uid: 'user-1', businessID: 'business-1' },
+        products,
+        saleId: 'invoice-1',
+      }),
+    );
+    expect(adjustProductInventoryMock).toHaveBeenCalledWith(
+      tx,
+      expect.objectContaining({
+        user: { uid: 'user-1', businessID: 'business-1' },
+        products,
+        sale: { id: 'invoice-1' },
+        inventoryPrevreqs: inventoryPrereqs,
+        accountingSettings,
+      }),
+    );
+    expect(
+      operations.some(
+        (entry) =>
+          entry.op === 'update' &&
+          entry.path === 'businesses/business-1/invoicesV2/invoice-1' &&
+          entry.data.statusTimeline?.values?.some(
+            (value) => value.status === 'inventory_done',
+          ),
+      ),
+    ).toBe(true);
+    expect(
+      operations.some(
+        (entry) =>
+          entry.op === 'set' &&
+          entry.path === taskRef.path &&
+          entry.data.status === 'done' &&
+          entry.data.attempts === 2,
+      ),
+    ).toBe(true);
+  });
+
   it('projects non-transport electronic receipts into the canonical invoice', async () => {
     const operations = [];
     const taskRef = refForPath(
@@ -510,6 +631,206 @@ describe('processInvoiceOutbox', () => {
     );
     expect(invoiceUpdate).toBeTruthy();
     expect(invoiceUpdate.data.status).toBeUndefined();
+  });
+
+  it('prefiere invoice.snapshot.monetary sobre cart.monetary al crear canonica', async () => {
+    const operations = [];
+    const businessId = 'X63aIFwHzk3r0gmT8w6P';
+    const taskRef = refForPath(
+      `businesses/${businessId}/invoicesV2/invoice-money/outbox/task-canonical`,
+    );
+    const trustedMonetary = {
+      documentCurrency: { code: 'DOP' },
+      functionalCurrency: { code: 'DOP' },
+      totals: { total: 236, taxes: 36 },
+      functionalTotals: { total: 236, taxes: 36 },
+    };
+    const clientOwnedMonetary = {
+      documentCurrency: { code: 'USD' },
+      functionalCurrency: { code: 'DOP' },
+      totals: { total: 1, taxes: 0 },
+      functionalTotals: { total: 1, taxes: 0 },
+    };
+    const taskData = {
+      type: 'createCanonicalInvoice',
+      status: 'pending',
+      attempts: 0,
+      payload: {
+        businessId,
+        userId: 'user-1',
+        cart: {
+          cashCountId: 'cash-1',
+          numberID: 33,
+          products: [],
+          payment: { value: 236 },
+          monetary: clientOwnedMonetary,
+        },
+      },
+    };
+    const tx = {
+      get: vi.fn(async (ref) => {
+        if (ref.path === taskRef.path) {
+          return { data: () => taskData };
+        }
+        if (ref.path === `businesses/${businessId}/invoicesV2/invoice-money`) {
+          return {
+            exists: true,
+            data: () => ({
+              status: 'pending',
+              userId: 'user-1',
+              snapshot: {
+                monetary: trustedMonetary,
+              },
+            }),
+          };
+        }
+        if (ref.path === `businesses/${businessId}/invoices/invoice-money`) {
+          return {
+            exists: false,
+            data: () => null,
+          };
+        }
+        if (ref.path === `businesses/${businessId}/settings/billing`) {
+          return {
+            exists: false,
+            data: () => null,
+          };
+        }
+        throw new Error(`unexpected_read:${ref.path}`);
+      }),
+      set: vi.fn((ref, data, options) => {
+        operations.push({ op: 'set', path: ref.path, data, options });
+      }),
+      update: vi.fn((ref, data) => {
+        operations.push({ op: 'update', path: ref.path, data });
+      }),
+    };
+    runTransactionMock.mockImplementation(async (callback) => callback(tx));
+
+    await processInvoiceOutbox({
+      params: {
+        businessId,
+        invoiceId: 'invoice-money',
+        taskId: 'task-canonical',
+      },
+      data: {
+        data: () => taskData,
+        ref: taskRef,
+      },
+    });
+
+    const canonicalWrite = operations.find(
+      (entry) =>
+        entry.op === 'set' &&
+        entry.path === `businesses/${businessId}/invoices/invoice-money`,
+    );
+    expect(canonicalWrite.data.data.monetary).toEqual(
+      expect.objectContaining({
+        documentCurrency: { code: 'DOP' },
+        functionalCurrency: { code: 'DOP' },
+        documentTotals: { total: 236, taxes: 36 },
+        functionalTotals: { total: 236, taxes: 36 },
+        capturedBy: 'user-1',
+      }),
+    );
+    expect(canonicalWrite.data.data.monetary).not.toEqual(
+      expect.objectContaining({
+        documentCurrency: { code: 'USD' },
+        functionalTotals: { total: 1, taxes: 0 },
+      }),
+    );
+  });
+
+  it('no usa cart.monetary si falta invoice.snapshot.monetary', async () => {
+    const operations = [];
+    const businessId = 'X63aIFwHzk3r0gmT8w6P';
+    const taskRef = refForPath(
+      `businesses/${businessId}/invoicesV2/invoice-no-snapshot/outbox/task-canonical`,
+    );
+    const taskData = {
+      type: 'createCanonicalInvoice',
+      status: 'pending',
+      attempts: 0,
+      payload: {
+        businessId,
+        userId: 'user-1',
+        cart: {
+          cashCountId: 'cash-1',
+          numberID: 34,
+          products: [],
+          payment: { value: 236 },
+          monetary: {
+            documentCurrency: { code: 'USD' },
+            functionalCurrency: { code: 'DOP' },
+            totals: { total: 1, taxes: 0 },
+            functionalTotals: { total: 1, taxes: 0 },
+          },
+        },
+      },
+    };
+    const tx = {
+      get: vi.fn(async (ref) => {
+        if (ref.path === taskRef.path) {
+          return { data: () => taskData };
+        }
+        if (
+          ref.path ===
+          `businesses/${businessId}/invoicesV2/invoice-no-snapshot`
+        ) {
+          return {
+            exists: true,
+            data: () => ({
+              status: 'pending',
+              userId: 'user-1',
+              snapshot: {},
+            }),
+          };
+        }
+        if (
+          ref.path ===
+          `businesses/${businessId}/invoices/invoice-no-snapshot`
+        ) {
+          return {
+            exists: false,
+            data: () => null,
+          };
+        }
+        if (ref.path === `businesses/${businessId}/settings/billing`) {
+          return {
+            exists: false,
+            data: () => null,
+          };
+        }
+        throw new Error(`unexpected_read:${ref.path}`);
+      }),
+      set: vi.fn((ref, data, options) => {
+        operations.push({ op: 'set', path: ref.path, data, options });
+      }),
+      update: vi.fn((ref, data) => {
+        operations.push({ op: 'update', path: ref.path, data });
+      }),
+    };
+    runTransactionMock.mockImplementation(async (callback) => callback(tx));
+
+    await processInvoiceOutbox({
+      params: {
+        businessId,
+        invoiceId: 'invoice-no-snapshot',
+        taskId: 'task-canonical',
+      },
+      data: {
+        data: () => taskData,
+        ref: taskRef,
+      },
+    });
+
+    const canonicalWrite = operations.find(
+      (entry) =>
+        entry.op === 'set' &&
+        entry.path ===
+          `businesses/${businessId}/invoices/invoice-no-snapshot`,
+    );
+    expect(canonicalWrite.data.data).not.toHaveProperty('monetary');
   });
 
   it('uses the parent invoice actor when task payload userId differs', async () => {

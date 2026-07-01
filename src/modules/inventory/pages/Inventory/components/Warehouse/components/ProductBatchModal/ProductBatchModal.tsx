@@ -9,7 +9,11 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { addProduct, updateProductFields } from '@/features/cart/cartSlice';
+import {
+  addProduct,
+  SelectProduct,
+  updateProductFields,
+} from '@/features/cart/cartSlice';
 import type { Product as CartProduct } from '@/features/cart/types';
 import {
   DEFAULT_FILTER_CONTEXT,
@@ -30,6 +34,11 @@ import {
   formatInventoryQuantity,
 } from '@/modules/inventory/utils/format';
 import { normalizeLocationId } from '@/utils/inventory/locations';
+import { 
+  resolveProductBaseQuantity,
+  resolveSaleUnitConversionFactor 
+} from '@/domain/products/saleUnits';
+import { sumCartBaseQuantityForPhysicalStock } from '@/modules/sales/pages/Sale/utils/cartPhysicalStockUsage';
 import type { ProductBatchInfo } from '@/types/products';
 import type {
   InventoryStockItem,
@@ -247,6 +256,7 @@ type ProductRecord = {
   id: string;
   name?: string;
   restrictSaleWithoutStock?: boolean;
+  selectedSaleUnit?: { id?: string | null } | null;
 } & Record<string, unknown>;
 
 type ProductStockItem = ProductStockRecord | InventoryStockItem;
@@ -254,6 +264,7 @@ type ProductStockItem = ProductStockRecord | InventoryStockItem;
 export function ProductBatchModal() {
   const dispatch = useDispatch();
   const { notification, modal } = App.useApp();
+  const cartProducts = useSelector(SelectProduct) as CartProduct[];
   const { isOpen, productId, product, initialStocks, initialStocksProductId } =
     useSelector(selectProductStockSimple) as ReturnType<
       typeof selectProductStockSimple
@@ -303,6 +314,13 @@ export function ProductBatchModal() {
     if (!isStrictProduct) return productStocks;
     return productStocks.filter((stock) => (Number(stock?.quantity) || 0) > 0);
   }, [productStocks, isStrictProduct]);
+
+  const factor = typedProduct?.selectedSaleUnit 
+    ? resolveSaleUnitConversionFactor(typedProduct.selectedSaleUnit) 
+    : 1;
+  const isPresentation = factor > 1;
+  const unitName = typedProduct?.selectedSaleUnit?.unitName || '';
+  const suffix = isPresentation && unitName ? ` ${unitName.toLowerCase()}s` : ' uds';
 
   const handleCloseModal = () => {
     dispatch(closeProductStockSimple());
@@ -452,8 +470,39 @@ export function ProductBatchModal() {
         : String(batchInfo.batchId);
     const resolvedCartLineCid =
       typedProduct?.id && (batchInfo.productStockId || batchInfo.batchId)
-        ? `${typedProduct.id}::${batchInfo.productStockId ?? 'no-stock'}::${batchInfo.batchId ?? 'no-batch'}`
+        ? `${typedProduct.id}::${batchInfo.productStockId ?? 'no-stock'}::${batchInfo.batchId ?? 'no-batch'}${
+            typedProduct.selectedSaleUnit?.id
+              ? `::sale-unit::${typedProduct.selectedSaleUnit.id}`
+              : ''
+          }`
         : cartLineId;
+    const candidateLine = {
+      ...typedProduct,
+      productStockId: batchInfo.productStockId,
+      batchId: selectedBatchId,
+      stock: batchInfo.quantity ?? 0,
+      batchInfo,
+    } as CartProduct;
+    const candidateStock = Number(candidateLine.stock);
+    if (
+      isStrictProduct &&
+      Number.isFinite(candidateStock) &&
+      candidateStock > 0
+    ) {
+      const consumedBaseQuantity = sumCartBaseQuantityForPhysicalStock(
+        cartProducts,
+        candidateLine,
+        { excludeLineId: cartLineId },
+      );
+      const nextBaseQuantity = resolveProductBaseQuantity(candidateLine);
+      if (consumedBaseQuantity + nextBaseQuantity > candidateStock) {
+        notification.warning({
+          message: 'Cantidad máxima alcanzada',
+          description: `No puedes seleccionar este lote. Disponible ${candidateStock}, ya reservado ${consumedBaseQuantity} y solicitado ${nextBaseQuantity}.`,
+        });
+        return;
+      }
+    }
 
     if (cartLineId) {
       dispatch(
@@ -469,15 +518,7 @@ export function ProductBatchModal() {
         }),
       );
     } else {
-      dispatch(
-        addProduct({
-          ...typedProduct,
-          productStockId: batchInfo.productStockId,
-          batchId: selectedBatchId,
-          stock: batchInfo.quantity ?? 0,
-          batchInfo,
-        } as CartProduct),
-      );
+      dispatch(addProduct(candidateLine));
     }
     handleCloseModal();
   };
@@ -573,8 +614,15 @@ export function ProductBatchModal() {
             <StatLabel>
               Unidades:
               <StatValue>
-                {formatInventoryQuantity(inventorySummary.totalQuantity)}
+                {formatInventoryQuantity(
+                  isPresentation ? Math.floor(inventorySummary.totalQuantity / factor) : inventorySummary.totalQuantity
+                )}{suffix}
               </StatValue>
+              {isPresentation && (
+                <span style={{ fontSize: '0.85rem', color: '#64748b', marginLeft: '4px' }}>
+                  ({formatInventoryQuantity(inventorySummary.totalQuantity)} uds)
+                </span>
+              )}
             </StatLabel>
           </StatsBar>
         )}
@@ -601,6 +649,8 @@ export function ProductBatchModal() {
                           handleBatchToggle,
                           formatLocation,
                           isStrictProduct,
+                          factor,
+                          suffix,
                         }),
                       )}
                     </BatchGrid>
@@ -625,6 +675,8 @@ export function ProductBatchModal() {
                           handleBatchToggle,
                           formatLocation,
                           isStrictProduct,
+                          factor,
+                          suffix,
                         }),
                       )}
                     </BatchGrid>
@@ -649,6 +701,8 @@ export function ProductBatchModal() {
                     handleBatchToggle,
                     formatLocation,
                     isStrictProduct,
+                    factor,
+                    suffix,
                   }),
                 )}
               </BatchGrid>
@@ -695,6 +749,8 @@ type RenderBatchCardParams = {
   handleBatchToggle: (stock: ProductStockItem, isExpired: boolean) => void;
   formatLocation: (locationId: string) => string;
   isStrictProduct: boolean;
+  factor: number;
+  suffix: string;
 };
 
 function renderBatchCard({
@@ -704,6 +760,8 @@ function renderBatchCard({
   handleBatchToggle,
   formatLocation,
   isStrictProduct,
+  factor,
+  suffix,
 }: RenderBatchCardParams) {
   const expirationTimestamp = toExpirationTimestamp(stock.expirationDate);
   const isExpired =
@@ -713,7 +771,13 @@ function renderBatchCard({
     : null;
   const locationId = normalizeLocationId(stock.location);
   const numericQuantity = Number(stock.quantity) || 0;
-  const isDisabled = isStrictProduct && numericQuantity <= 0;
+  
+  let displayQuantity = numericQuantity;
+  if (factor > 1) {
+    displayQuantity = Math.floor(numericQuantity / factor);
+  }
+
+  const isDisabled = isStrictProduct && displayQuantity <= 0;
   const stockId = stock.id != null ? String(stock.id) : undefined;
   const batchLabel = formatBatchLabel(stock.batchNumberId, {
     prefix: 'Lote #',
@@ -740,8 +804,15 @@ function renderBatchCard({
           >
             {formattedExpiration || 'N/A'}
           </span>
-          <div className="quantity-chip">
-            {formatInventoryQuantity(numericQuantity)} uds
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+            <div className="quantity-chip">
+              {formatInventoryQuantity(displayQuantity)}{suffix}
+            </div>
+            {factor > 1 && (
+              <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                {formatInventoryQuantity(numericQuantity)} uds
+              </span>
+            )}
           </div>
         </div>
       </div>

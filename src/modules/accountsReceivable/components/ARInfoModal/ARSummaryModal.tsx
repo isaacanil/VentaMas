@@ -53,7 +53,6 @@ const ModalContent = styled.div`
     Roboto,
     sans-serif;
   background: #fff;
- 
 `;
 
 const HeaderBar = styled.div`
@@ -197,9 +196,7 @@ export default function ARSummaryModal() {
 
   useEffect(() => {
     if (isOpen && businessID && arId) {
-      dispatch(
-        fetchAccountReceivableDetails({ arId, businessID }),
-      );
+      dispatch(fetchAccountReceivableDetails({ arId, businessID }));
     }
   }, [arId, businessID, dispatch, isOpen]);
 
@@ -336,7 +333,7 @@ export default function ARSummaryModal() {
             padding: '64px 0',
           }}
         >
-          <Spin size="large" tip="Cargando información...">
+          <Spin description="Cargando información..." size="large">
             <div style={{ width: 200, height: 140 }} />
           </Spin>
         </div>
@@ -362,7 +359,6 @@ export default function ARSummaryModal() {
                   {arStatus.label}
                 </StatusPill>
               </h2>
-
             </div>
             <div className="actions">
               <ActionButtons

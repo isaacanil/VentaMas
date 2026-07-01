@@ -17,9 +17,7 @@ import {
   DEFAULT_FUNCTIONAL_CURRENCY,
   normalizeSupportedDocumentCurrency,
 } from '@/utils/accounting/currencies';
-import {
-  selectCashRegisterAlertBypass,
-} from '@/features/appModes/appModeSlice';
+import { selectCashRegisterAlertBypass } from '@/features/appModes/appModeSlice';
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import { selectUser } from '@/features/auth/userSlice';
 import {
@@ -183,7 +181,8 @@ const useInvoiceSummaryViewModel = () => {
   const { shouldDisableButton: insuranceFormIncomplete } =
     useInsuranceFormComplete();
   const isDeveloperUser = hasDeveloperAccess(user);
-  const requiresDiscountPinByRole = requiresInvoiceDiscountPinAuthorization(user);
+  const requiresDiscountPinByRole =
+    requiresInvoiceDiscountPinAuthorization(user);
   // Solo requiere PIN si el módulo de facturación está activo y es cajero
   const shouldRequirePinForDiscount =
     shouldUsePinForModule('invoices') && requiresDiscountPinByRole;
@@ -460,7 +459,12 @@ const useInvoiceSummaryViewModel = () => {
         setPreorderPrintData,
         source,
       }),
-    [business, billing?.invoiceType, setPendingPreorderPrint, setPreorderPrintData],
+    [
+      business,
+      billing?.invoiceType,
+      setPendingPreorderPrint,
+      setPreorderPrintData,
+    ],
   );
 
   useEffect(() => {
@@ -846,7 +850,7 @@ const InvoiceSummary = () => {
             justifyContent: 'center',
           }}
         >
-          <Spin tip="Cargando cotización..." size="large">
+          <Spin description="Cargando cotización..." size="large">
             <div style={{ width: 160, height: 140 }} />
           </Spin>
         </div>
@@ -865,7 +869,11 @@ const InvoiceSummary = () => {
           <Label>Descuento:</Label>
           {hasIndividualDiscounts ? (
             <Label style={{ color: '#52c41a', fontWeight: 600 }}>
-              -{formatPriceByCurrency(totalIndividualDiscounts, documentCurrency)}
+              -
+              {formatPriceByCurrency(
+                totalIndividualDiscounts,
+                documentCurrency,
+              )}
             </Label>
           ) : (
             <DiscountInputContainer>
@@ -895,17 +903,15 @@ const InvoiceSummary = () => {
         {insuranceEnabled && (
           <LineItem>
             <Label>Cobertura:</Label>
-            <Label>{formatPriceByCurrency(insuranceExtra, documentCurrency)}</Label>
+            <Label>
+              {formatPriceByCurrency(insuranceExtra, documentCurrency)}
+            </Label>
           </LineItem>
         )}
         {warningMessage && <WarningPill message={warningMessage} />}
         <TotalLine>
           <VmButtonGroup isDisabled={isSavingPreorder}>
-            <VmButton
-              variant="primary"
-              isDisabled={disabled}
-              onPress={action}
-            >
+            <VmButton variant="primary" isDisabled={disabled} onPress={action}>
               {text}
             </VmButton>
             <VmDropdown>
@@ -965,7 +971,10 @@ const InvoiceSummary = () => {
                       isDisabled={option.disabled}
                       variant={option.variant ?? 'default'}
                     >
-                      <span data-slot="label" className="flex items-center gap-2">
+                      <span
+                        data-slot="label"
+                        className="flex items-center gap-2"
+                      >
                         {option.icon}
                         {option.text}
                       </span>
@@ -976,7 +985,9 @@ const InvoiceSummary = () => {
             </VmDropdown>
           </VmButtonGroup>
           <TotalLabel>
-            <AnimatedNumber value={formatPriceByCurrency(total, documentCurrency)} />
+            <AnimatedNumber
+              value={formatPriceByCurrency(total, documentCurrency)}
+            />
           </TotalLabel>
         </TotalLine>
       </SummaryContainer>

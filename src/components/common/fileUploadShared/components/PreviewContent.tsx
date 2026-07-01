@@ -44,7 +44,9 @@ const AccessibleStatus = styled.div`
   clip-path: inset(50%);
 `;
 
-export type PreviewContentProps<TFile extends PreviewableFile = PreviewableFile> = {
+export type PreviewContentProps<
+  TFile extends PreviewableFile = PreviewableFile,
+> = {
   previewFile: TFile | null;
   previewVisible: boolean;
   setPreviewVisible: (value: boolean) => void;
@@ -90,7 +92,11 @@ const PreviewContentInner = <TFile extends PreviewableFile>({
     : error
       ? error
       : 'Imagen cargada';
-  const pdfStatus = isLoading ? 'Cargando PDF...' : error ? error : 'PDF cargado';
+  const pdfStatus = isLoading
+    ? 'Cargando PDF...'
+    : error
+      ? error
+      : 'PDF cargado';
 
   const previewContent = !previewFile ? null : isImage ? (
     <>
@@ -103,7 +109,7 @@ const PreviewContentInner = <TFile extends PreviewableFile>({
         style={{ maxWidth: '100%', height: 'auto' }}
         placeholder={
           <LoadingContainer>
-            <Spin size="large" tip="Cargando imagen...">
+            <Spin description="Cargando imagen..." size="large">
               <div style={{ width: '100%', minHeight: 160 }} />
             </Spin>
           </LoadingContainer>
@@ -123,8 +129,8 @@ const PreviewContentInner = <TFile extends PreviewableFile>({
       {isLoading && (
         <LoadingContainer>
           <Spin
+            description={`Cargando PDF${pdfLoadAttempts > 0 ? ` (intento ${pdfLoadAttempts + 1}/3)` : ''}`}
             size="large"
-            tip={`Cargando PDF${pdfLoadAttempts > 0 ? ` (intento ${pdfLoadAttempts + 1}/3)` : ''}`}
           >
             <div style={{ width: '100%', minHeight: 160 }} />
           </Spin>

@@ -281,9 +281,88 @@ describe('invoice print pagination document model', () => {
     });
 
     expect(model.lines[0]).toMatchObject({
-      descriptionLines: ['Producto pesado', 'Unidad: lb'],
+      descriptionLines: ['Producto pesado', 'Unidad: Libras (lb)'],
       quantity: 2.5,
     });
+  });
+
+  it('uses product weight as printable quantity even when amountToBuy is the legacy unit', () => {
+    const model = buildInvoicePrintDocumentModel({
+      business,
+      data: {
+        id: 'invoice-weighted-product-legacy-amount',
+        numberID: 1047,
+        NCF: 'B010000000127',
+        date: '2026-06-21',
+        products: [
+          {
+            id: 'product-weighted-legacy-amount',
+            name: 'Producto pesado con unidad legacy',
+            amountToBuy: 1,
+            pricing: { price: 100, tax: { tax: 0 } },
+            weightDetail: {
+              isSoldByWeight: true,
+              weight: 2.5,
+              weightUnit: 'lb',
+            },
+          },
+        ],
+        totalPurchaseWithoutTaxes: { value: 250 },
+        totalTaxes: { value: 0 },
+        totalPurchase: { value: 250 },
+      },
+    });
+
+    expect(model.lines[0]).toMatchObject({
+      descriptionLines: [
+        'Producto pesado con unidad legacy',
+        'Unidad: Libras (lb)',
+      ],
+      quantity: 2.5,
+    });
+  });
+
+  it('omits unit text when a product is not sold by weight or lacks a weight unit', () => {
+    const model = buildInvoicePrintDocumentModel({
+      business,
+      data: {
+        id: 'invoice-non-weighted-units',
+        numberID: 1046,
+        NCF: 'B010000000126',
+        date: '2026-06-21',
+        products: [
+          {
+            id: 'product-measurement-only',
+            name: 'Producto con medida interna',
+            amountToBuy: 1,
+            measurement: '45 mg',
+            pricing: { price: 100, tax: { tax: 0 } },
+            weightDetail: {
+              isSoldByWeight: false,
+              weightUnit: 'lb',
+            },
+          },
+          {
+            id: 'product-weighted-without-unit',
+            name: 'Producto pesado sin unidad',
+            amountToBuy: 0,
+            pricing: { price: 100, tax: { tax: 0 } },
+            weightDetail: {
+              isSoldByWeight: true,
+              weight: 3,
+            },
+          },
+        ],
+        totalPurchaseWithoutTaxes: { value: 400 },
+        totalTaxes: { value: 0 },
+        totalPurchase: { value: 400 },
+      },
+    });
+
+    expect(model.lines.map((line) => line.descriptionLines)).toEqual([
+      ['Producto con medida interna'],
+      ['Producto pesado sin unidad'],
+    ]);
   });
 
   it('lets preview signature assets override persisted business assets', () => {

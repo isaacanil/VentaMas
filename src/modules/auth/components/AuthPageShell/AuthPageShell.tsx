@@ -54,7 +54,7 @@ export const AuthPageShell = ({
 
   return (
     <PageRoot>
-      <Spin spinning={loading} fullscreen tip={loadingTip} />
+      <Spin description={loadingTip} fullscreen spinning={loading} />
 
       <Background>
         <Container $isImageLoaded={isImageVisible}>

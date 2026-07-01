@@ -1,6 +1,8 @@
 import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity';
 import { resolveInvoiceDocumentCurrency } from '@/utils/invoice/documentCurrency';
+import { resolveInvoiceProductQuantity } from '@/utils/invoice/product';
 import { toMillis } from '@/utils/date/dateUtils';
+import { getActiveUnitPrice } from '@/utils/pricing';
 import {
   getDiscount,
   getProductIndividualDiscount,
@@ -49,28 +51,11 @@ export const resolveInvoiceIdentity = (data?: InvoiceData | null) =>
   resolveDocumentIdentity(data);
 
 export const resolveQuantity = (product: InvoiceProduct): number => {
-  const rawQuantity = product?.amountToBuy;
-
-  if (typeof rawQuantity === 'number') {
-    return rawQuantity;
-  }
-
-  if (rawQuantity && typeof rawQuantity === 'object') {
-    const candidate = Number(rawQuantity.total ?? rawQuantity.unit ?? 0);
-    return Number.isFinite(candidate) ? candidate : 0;
-  }
-
-  const fallback =
-    Number(rawQuantity ?? 0) || Number(product?.weightDetail?.weight ?? 0);
-  return Number.isFinite(fallback) ? fallback : 0;
+  return resolveInvoiceProductQuantity(product);
 };
 
 export const resolveUnitPrice = (product: InvoiceProduct): number => {
-  const candidate =
-    Number(product?.selectedSaleUnit?.pricing?.price) ||
-    Number(product?.pricing?.price) ||
-    Number(product?.price?.unit) ||
-    0;
+  const candidate = getActiveUnitPrice(product);
 
   return Number.isFinite(candidate) ? candidate : 0;
 };

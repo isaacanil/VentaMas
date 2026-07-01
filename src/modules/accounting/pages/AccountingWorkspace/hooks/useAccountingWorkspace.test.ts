@@ -35,6 +35,7 @@ const fbCreateManualJournalEntryMock = vi.hoisted(() => vi.fn());
 const fbCloseAccountingPeriodMock = vi.hoisted(() => vi.fn());
 const fbReplayAccountingEventProjectionMock = vi.hoisted(() => vi.fn());
 const fbReverseJournalEntryMock = vi.hoisted(() => vi.fn());
+const fbUpdateJournalEntryMock = vi.hoisted(() => vi.fn());
 const resolveUserDisplayNamesBatchMock = vi.hoisted(() => vi.fn());
 
 vi.mock('react-redux', () => ({
@@ -72,6 +73,11 @@ vi.mock('@/firebase/accounting/fbReverseJournalEntry', () => ({
     fbReverseJournalEntryMock(...args),
 }));
 
+vi.mock('@/firebase/accounting/fbUpdateJournalEntry', () => ({
+  fbUpdateJournalEntry: (...args: unknown[]) =>
+    fbUpdateJournalEntryMock(...args),
+}));
+
 vi.mock('@/firebase/accounting/fbReplayAccountingEventProjection', () => ({
   fbReplayAccountingEventProjection: (...args: unknown[]) =>
     fbReplayAccountingEventProjectionMock(...args),
@@ -106,6 +112,7 @@ describe('useAccountingWorkspace loading', () => {
     fbCloseAccountingPeriodMock.mockReset();
     fbReplayAccountingEventProjectionMock.mockReset();
     fbReverseJournalEntryMock.mockReset();
+    fbUpdateJournalEntryMock.mockReset();
     resolveUserDisplayNamesBatchMock.mockReset();
     onSnapshotMock.mockReset();
     useAccountingConfigMock.mockReset();

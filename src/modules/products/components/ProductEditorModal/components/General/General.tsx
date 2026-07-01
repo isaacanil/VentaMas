@@ -11,6 +11,7 @@ import { InventoryInfo } from '../sections/InventoryInfo';
 import { PriceCalculator } from '../sections/PriceCalculator';
 import { PriceInfo } from '../sections/PriceInfo';
 import { ProductInfo } from '../sections/ProductInfo';
+import { SaleUnitsInfo } from '../sections/SaleUnitsInfo';
 
 type GeneralProps = {
   showImageManager: () => void;
@@ -33,9 +34,9 @@ export const General = ({ showImageManager }: GeneralProps) => {
   } = useGeneralProductForm();
   return (
     <Spin
-      tip="Cargando..."
-      spinning={submit}
+      description="Cargando..."
       indicator={spinnerIndicator}
+      spinning={submit}
     >
       <Form
         form={form}
@@ -73,6 +74,7 @@ export const General = ({ showImageManager }: GeneralProps) => {
           />
         </Row>
         <PriceCalculator />
+        <SaleUnitsInfo pricing={product?.pricing} />
         <Footer>
           <Button htmlType="button" onClick={handleReset}>
             Cancelar

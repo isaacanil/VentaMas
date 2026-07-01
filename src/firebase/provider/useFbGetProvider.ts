@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import type { UserIdentity } from '@/types/users';
+import { resolveUserIdentityBusinessId } from '@/utils/users/userIdentityAccess';
 
 import { listenProviders } from './provider.repository';
 import type { ProviderDocument } from './types';
@@ -12,7 +13,7 @@ export const useFbGetProviders = (userOverride?: UserIdentity | null) => {
   const [loadedBusinessId, setLoadedBusinessId] = useState<string | null>(null);
   const storeUser = useSelector(selectUser) as UserIdentity | null;
   const user = userOverride ?? storeUser;
-  const businessId = user?.businessID;
+  const businessId = resolveUserIdentityBusinessId(user);
 
   useEffect(() => {
     if (!businessId) {

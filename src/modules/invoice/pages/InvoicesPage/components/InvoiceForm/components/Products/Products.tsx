@@ -14,6 +14,7 @@ import {
 import { useGetProducts } from '@/firebase/products/fbGetProducts';
 import { formatPrice } from '@/utils/format';
 import { toNumber } from '@/utils/number/toNumber';
+import { resolveInvoiceProductQuantity } from '@/utils/invoice/product';
 import { getTotalPrice } from '@/utils/pricing';
 import type { InvoiceData, InvoiceProduct } from '@/types/invoice';
 
@@ -28,22 +29,8 @@ import { ProductListModal } from './ProductListModal';
 import { StyledProductTable } from './ProductTables.styles';
 
 const getProductQuantity = (product?: InvoiceProduct | null) => {
-  if (!product) return 1;
-  const { amountToBuy } = product;
-
-  if (typeof amountToBuy === 'number') {
-    return amountToBuy > 0 ? amountToBuy : 1;
-  }
-
-  if (amountToBuy && typeof amountToBuy === 'object') {
-    const total = Number((amountToBuy as { total?: number }).total);
-    const unit = Number((amountToBuy as { unit?: number }).unit);
-
-    if (!Number.isNaN(total) && total > 0) return total;
-    if (!Number.isNaN(unit) && unit > 0) return unit;
-  }
-
-  return 1;
+  const quantity = resolveInvoiceProductQuantity(product);
+  return quantity > 0 ? quantity : 1;
 };
 
 const getFormattedUnitPrice = (product: InvoiceProduct) => {
@@ -222,6 +209,7 @@ export const Products = ({ invoice, isEditLocked = false }: ProductsProps) => {
           />
           <Input
             value={getProductQuantity(record)}
+            inputMode="decimal"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               if (readOnly) {
                 message.warning(

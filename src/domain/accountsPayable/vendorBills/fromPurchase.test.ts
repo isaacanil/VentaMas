@@ -44,7 +44,24 @@ const buildPurchase = (overrides: Partial<Purchase> = {}): Purchase =>
 
 describe('vendorBills/fromPurchase', () => {
   it('does not materialize a pending purchase without AP activity', () => {
-    expect(shouldMaterializeVendorBillFromPurchase(buildPurchase())).toBe(false);
+    expect(shouldMaterializeVendorBillFromPurchase(buildPurchase())).toBe(
+      false,
+    );
+  });
+
+  it('does not materialize a completed purchase while inventory receipt is pending', () => {
+    const purchase = buildPurchase({
+      status: 'completed',
+      workflowStatus: 'completed',
+      receiptInventoryState: {
+        status: 'pending',
+        operationId: 'receipt-1',
+        warehouseId: 'warehouse-1',
+      },
+    });
+
+    expect(shouldMaterializeVendorBillFromPurchase(purchase)).toBe(false);
+    expect(buildVendorBillFromPurchase(purchase)).toBeNull();
   });
 
   it('materializes a draft vendor bill when AP activity exists before completion', () => {
@@ -66,6 +83,10 @@ describe('vendorBills/fromPurchase', () => {
     expect(buildVendorBillFromPurchase(purchase)).toMatchObject({
       status: 'draft',
       approvalStatus: 'draft',
+      paymentControl: {
+        canRegisterPayment: false,
+        status: 'pending_approval',
+      },
       paymentState: {
         status: 'partial',
         paid: 25,
@@ -87,6 +108,40 @@ describe('vendorBills/fromPurchase', () => {
       status: 'voided',
       approvalStatus: 'voided',
       sourceDocumentId: 'purchase-1',
+      paymentControl: {
+        canRegisterPayment: false,
+        status: 'closed',
+      },
+    });
+  });
+
+  it('projects a completed purchase with AP void control as a closed vendor bill', () => {
+    const purchase = buildPurchase({
+      status: 'completed',
+      workflowStatus: 'completed',
+      completedAt: new Date('2026-04-06T12:00:00.000Z'),
+      accountsPayable: {
+        approvalStatus: 'voided',
+        status: 'voided',
+        voidedAt: new Date('2026-04-07T12:00:00.000Z'),
+        voidedBy: 'user-1',
+        voidReason: 'Factura duplicada por suplidor',
+        voidEvidenceNote: 'Ticket AP-VOID-1',
+        voidEvidenceUrls: ['https://files.example/void.pdf'],
+      },
+    } as Partial<Purchase>);
+
+    expect(buildVendorBillFromPurchase(purchase)).toMatchObject({
+      status: 'voided',
+      approvalStatus: 'voided',
+      voidedBy: 'user-1',
+      voidReason: 'Factura duplicada por suplidor',
+      voidEvidenceNote: 'Ticket AP-VOID-1',
+      voidEvidenceUrls: ['https://files.example/void.pdf'],
+      paymentControl: {
+        canRegisterPayment: false,
+        status: 'closed',
+      },
     });
   });
 
@@ -100,7 +155,7 @@ describe('vendorBills/fromPurchase', () => {
     expect(buildVendorBillFromPurchase(purchase)).toBeNull();
   });
 
-  it('shows only approved or partially paid vendor bills in the main AP view', () => {
+  it('shows approved, held, disputed or partially paid vendor bills in the main AP view', () => {
     const openApprovedBill = buildVendorBillFromPurchase(
       buildPurchase({
         status: 'completed',
@@ -134,6 +189,20 @@ describe('vendorBills/fromPurchase', () => {
     expect(draftBill).not.toBeNull();
     expect(voidedBill).not.toBeNull();
     expect(isOpenVendorBill(openApprovedBill!)).toBe(true);
+    expect(
+      isOpenVendorBill({
+        ...openApprovedBill!,
+        status: 'on_hold',
+        paymentHold: { active: true, reason: 'Pendiente de aprobacion' },
+      }),
+    ).toBe(true);
+    expect(
+      isOpenVendorBill({
+        ...openApprovedBill!,
+        status: 'disputed',
+        dispute: { status: 'open', reason: 'Diferencia de precio' },
+      }),
+    ).toBe(true);
     expect(isOpenVendorBill(draftBill!)).toBe(false);
     expect(isOpenVendorBill(voidedBill!)).toBe(false);
   });

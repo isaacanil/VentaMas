@@ -20,6 +20,17 @@ import {
 const toErrorMessage = (error) =>
   error instanceof Error ? error.message : String(error || 'Unknown error');
 
+const asPlainRecord = (value) =>
+  value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+
+const hasRecordValues = (value) =>
+  Object.values(value || {}).some((entry) => {
+    if (entry === null || entry === undefined) return false;
+    if (Array.isArray(entry)) return entry.length > 0;
+    if (typeof entry === 'object') return Object.keys(entry).length > 0;
+    return true;
+  });
+
 const resolveNested = (value, ...path) =>
   path.reduce((current, key) => {
     if (!current || typeof current !== 'object') return null;
@@ -94,6 +105,26 @@ const pickCleanString = (...values) => {
     if (normalized) return normalized;
   }
   return null;
+};
+
+const normalizeProviderStatus = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const buildProviderErrorSummary = (error) => {
+  const details = asPlainRecord(error?.details);
+  const responseSummary = asPlainRecord(details.responseSummary);
+  const responseDetails = asPlainRecord(responseSummary.details);
+  const providerError = {
+    reason: pickCleanString(details.reason),
+    status: normalizeProviderStatus(details.status),
+    code: pickCleanString(responseSummary.code),
+    message: pickCleanString(responseSummary.message),
+    details: hasRecordValues(responseDetails) ? responseDetails : null,
+  };
+
+  return hasRecordValues(providerError) ? providerError : null;
 };
 
 const isRequiredFiscalFailure = ({ mode, status }) =>
@@ -318,6 +349,7 @@ export const buildElectronicSnapshot = ({
   response,
   error,
 }) => {
+  const providerError = buildProviderErrorSummary(error);
   const dgiiMessages = normalizeDgiiMessages(response);
   const diagnosticResponse = isDiagnosticResponse(response, dgiiMessages);
   const acceptedResponse = isAcceptedResponse(response);
@@ -412,6 +444,7 @@ export const buildElectronicSnapshot = ({
   signedXmlUrl: response?.links?.signedXml || null,
   pdfUrl: response?.links?.pdf || null,
   correlationId: response?.correlationId || null,
+  providerError,
   lastError: error
     ? toErrorMessage(error)
     : response?.lastError ||
@@ -611,12 +644,19 @@ const updateTaskFailedTx = ({
   electronicSnapshot,
   error,
 }) => {
+  const providerError = buildProviderErrorSummary(error);
   tx.set(
     taskRef,
     {
       status: 'failed',
       attempts: (task.attempts || 0) + 1,
       lastError: toErrorMessage(error),
+      providerError,
+      providerReason: providerError?.reason || null,
+      providerStatus: providerError?.status || null,
+      providerCode: providerError?.code || null,
+      providerMessage: providerError?.message || null,
+      providerDetails: providerError?.details || null,
       updatedAt: FieldValue.serverTimestamp(),
     },
     { merge: true },

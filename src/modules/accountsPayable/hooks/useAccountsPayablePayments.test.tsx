@@ -35,7 +35,10 @@ vi.mock('@/firebase/firebaseconfig', () => ({
   db: dbMock,
 }));
 
-import { useAccountsPayablePayments } from './useAccountsPayablePayments';
+import {
+  shouldShowAccountsPayablePayment,
+  useAccountsPayablePayments,
+} from './useAccountsPayablePayments';
 
 const createSnapshot = (
   payments: Array<{ id: string; data: PaymentDocData }>,
@@ -55,10 +58,31 @@ const sortablePayments = [
     },
   },
   {
-    id: 'voided-payment',
+    id: 'void-payment',
     data: {
       status: 'void',
       occurredAt: '2026-06-15T00:00:00.000Z',
+    },
+  },
+  {
+    id: 'voided-payment',
+    data: {
+      status: 'voided',
+      occurredAt: '2026-06-14T12:00:00.000Z',
+    },
+  },
+  {
+    id: 'canceled-payment',
+    data: {
+      status: 'canceled',
+      occurredAt: '2026-06-14T06:00:00.000Z',
+    },
+  },
+  {
+    id: 'cancelled-payment',
+    data: {
+      status: 'cancelled',
+      occurredAt: '2026-06-14T03:00:00.000Z',
     },
   },
   {
@@ -119,14 +143,17 @@ describe('useAccountsPayablePayments', () => {
     );
 
     expect(missingBusinessResult.current).toEqual({
+      error: null,
       payments: [],
       loading: false,
     });
     expect(missingPurchaseResult.current).toEqual({
+      error: null,
       payments: [],
       loading: false,
     });
     expect(closedResult.current).toEqual({
+      error: null,
       payments: [],
       loading: false,
     });
@@ -150,6 +177,7 @@ describe('useAccountsPayablePayments', () => {
     );
 
     expect(result.current).toEqual({
+      error: null,
       payments: [],
       loading: true,
     });
@@ -200,11 +228,40 @@ describe('useAccountsPayablePayments', () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.payments.map((payment) => payment.id)).toEqual([
+      'void-payment',
       'voided-payment',
+      'canceled-payment',
+      'cancelled-payment',
       'created-at-fallback',
       'occurred-at-wins',
       'timestamp-like-old-payment',
     ]);
+  });
+
+  it('clasifica pagos activos, borradores y terminalmente inactivos', () => {
+    expect(shouldShowAccountsPayablePayment({ status: 'posted' })).toBe(true);
+    expect(shouldShowAccountsPayablePayment({ status: undefined })).toBe(true);
+    expect(shouldShowAccountsPayablePayment({ status: 'draft' })).toBe(false);
+    expect(shouldShowAccountsPayablePayment({ status: 'void' })).toBe(false);
+    expect(shouldShowAccountsPayablePayment({ status: 'voided' })).toBe(false);
+    expect(shouldShowAccountsPayablePayment({ status: 'canceled' })).toBe(
+      false,
+    );
+    expect(shouldShowAccountsPayablePayment({ status: 'cancelled' })).toBe(
+      false,
+    );
+    expect(
+      shouldShowAccountsPayablePayment(
+        { status: 'voided' },
+        { includeVoided: true },
+      ),
+    ).toBe(true);
+    expect(
+      shouldShowAccountsPayablePayment(
+        { status: 'draft' },
+        { includeVoided: true },
+      ),
+    ).toBe(false);
   });
 
   it('limpia los pagos y resuelve loading cuando Firestore reporta error', async () => {
@@ -216,11 +273,7 @@ describe('useAccountsPayablePayments', () => {
       .mockImplementation(() => {});
 
     onSnapshotMock.mockImplementation(
-      (
-        _query,
-        onNext: SnapshotHandler,
-        onError: SnapshotErrorHandler,
-      ) => {
+      (_query, onNext: SnapshotHandler, onError: SnapshotErrorHandler) => {
         handleSnapshot = onNext;
         handleSnapshotError = onError;
         return vi.fn();
@@ -257,6 +310,7 @@ describe('useAccountsPayablePayments', () => {
 
     await waitFor(() =>
       expect(result.current).toEqual({
+        error: snapshotError,
         payments: [],
         loading: false,
       }),
@@ -267,5 +321,50 @@ describe('useAccountsPayablePayments', () => {
     );
 
     consoleErrorSpy.mockRestore();
+  });
+
+  it('oculta pagos anteriores mientras resuelve otra compra', async () => {
+    const handlers = [] as SnapshotHandler[];
+
+    onSnapshotMock.mockImplementation((_query, onNext: SnapshotHandler) => {
+      handlers.push(onNext);
+      return vi.fn();
+    });
+
+    const { result, rerender } = renderHook(
+      ({ purchaseId }) =>
+        useAccountsPayablePayments('business-1', purchaseId, true),
+      {
+        initialProps: { purchaseId: 'purchase-1' },
+      },
+    );
+
+    act(() => {
+      handlers[0]?.(
+        createSnapshot([
+          {
+            id: 'payment-purchase-1',
+            data: {
+              status: 'posted',
+              occurredAt: '2026-06-15T00:00:00.000Z',
+            },
+          },
+        ]),
+      );
+    });
+
+    await waitFor(() =>
+      expect(result.current.payments.map((payment) => payment.id)).toEqual([
+        'payment-purchase-1',
+      ]),
+    );
+
+    rerender({ purchaseId: 'purchase-2' });
+
+    expect(result.current).toEqual({
+      error: null,
+      payments: [],
+      loading: true,
+    });
   });
 });

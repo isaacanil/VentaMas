@@ -191,7 +191,7 @@ export async function addPurchase({
       await writeBatchOp.commit();
     }
 
-    const data = {
+    const data: Record<string, unknown> = {
       ...purchase,
       id,
       numberId,
@@ -201,14 +201,14 @@ export async function addPurchase({
       updatedAt: serverTimestamp(),
       deliveryAt: safeTimestamp(purchase.deliveryAt, 'now'),
       paymentAt: safeTimestamp(purchase.paymentAt, 'now'),
-      completedAt: purchase.completedAt
-        ? safeTimestamp(purchase.completedAt, 'now')
-        : null,
       attachmentUrls: updatedAttachments,
       replenishments: updatedReplenishments,
       paymentTerms,
       paymentState,
     };
+    if (purchase.completedAt) {
+      data.completedAt = safeTimestamp(purchase.completedAt, 'now');
+    }
     if (pilotMonetarySnapshot) {
       data.monetary = pilotMonetarySnapshot;
     }

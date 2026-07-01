@@ -17,6 +17,7 @@ export interface ComprobanteOption {
 export type TaxReceiptAvailability = {
   receipt: TaxReceiptItem | null;
   depleted: boolean;
+  blockedReason?: string;
 };
 
 export type SelectableTaxReceiptOptions = {
@@ -139,7 +140,7 @@ const normalizeDocumentFormat = (
 ): TaxReceiptDocumentFormat =>
   value === 'electronic' || value === 'traditional'
     ? value
-    : fallback ?? 'traditional';
+    : (fallback ?? 'traditional');
 
 export const getTaxReceiptData = (item: TaxReceiptItem): TaxReceiptData => {
   if (isTaxReceiptDocument(item)) return hydrateTaxReceiptData(item.data);
@@ -254,9 +255,44 @@ export const getTaxReceiptAvailability = (
     };
   }
 
-  const receipt =
-    receipts.find((item) => resolveReceiptData(item)?.name === receiptName) ||
-    null;
+  const requestedName = getTaxReceiptIdentity({ name: receiptName }).name;
+  const matchingReceipts = receipts.filter((item) => {
+    const data = resolveReceiptData(item);
+    return (
+      isActiveTaxReceiptData(data) &&
+      getTaxReceiptIdentity(data).name === requestedName
+    );
+  });
+  const matchingIds = new Set(
+    matchingReceipts
+      .map((item) => resolveReceiptData(item)?.id)
+      .filter((id): id is string => Boolean(id)),
+  );
+  const matchingFiscalKeys = new Set(
+    matchingReceipts
+      .map((item) => getTaxReceiptIdentity(resolveReceiptData(item)).fiscalKey)
+      .filter((fiscalKey): fiscalKey is string => Boolean(fiscalKey)),
+  );
+  const conflictingReceipts = receipts.filter((item) => {
+    const data = resolveReceiptData(item);
+    const identity = getTaxReceiptIdentity(data);
+    return (
+      isActiveTaxReceiptData(data) &&
+      (matchingIds.has(data?.id ?? '') ||
+        (!!identity.fiscalKey && matchingFiscalKeys.has(identity.fiscalKey)))
+    );
+  });
+
+  if (conflictingReceipts.length > 1) {
+    return {
+      receipt: null,
+      depleted: true,
+      blockedReason:
+        'Hay comprobantes fiscales duplicados activos. Deshabilita o repara los duplicados antes de facturar.',
+    };
+  }
+
+  const receipt = matchingReceipts[0] || null;
   if (!receipt) {
     return {
       receipt: null,
@@ -358,6 +394,66 @@ export const hydrateTaxReceiptData = (
   };
 };
 
+export const normalizeTaxReceiptLabel = (value: unknown): string => {
+  if (typeof value !== 'string' && typeof value !== 'number') return '';
+
+  return String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toUpperCase();
+};
+
+export const normalizeTaxReceiptCode = (value: unknown): string => {
+  const normalized = normalizeTaxReceiptLabel(value).replace(/[^A-Z0-9]/g, '');
+  if (/^\d$/.test(normalized)) return normalized.padStart(2, '0');
+  return normalized;
+};
+
+export const getTaxReceiptIdentity = (
+  data: Partial<TaxReceiptData> | null | undefined,
+) => {
+  const type = normalizeTaxReceiptCode(data?.type);
+  const serie = normalizeTaxReceiptCode(data?.serie ?? data?.series);
+  const name = normalizeTaxReceiptLabel(data?.name);
+
+  return {
+    name,
+    type,
+    serie,
+    fiscalKey: `${type}${serie}`,
+  };
+};
+
+export const getTaxReceiptDocumentId = (
+  data: Partial<TaxReceiptData> | null | undefined,
+): string => {
+  const { serie } = getTaxReceiptIdentity(data);
+  if (!serie) {
+    throw new Error('La serie del comprobante fiscal es requerida.');
+  }
+  return serie;
+};
+
+export const hasMatchingTaxReceiptIdentity = (
+  left: Partial<TaxReceiptData> | null | undefined,
+  right: Partial<TaxReceiptData> | null | undefined,
+): boolean => {
+  const leftIdentity = getTaxReceiptIdentity(left);
+  const rightIdentity = getTaxReceiptIdentity(right);
+
+  return (
+    (!!leftIdentity.fiscalKey &&
+      leftIdentity.fiscalKey === rightIdentity.fiscalKey) ||
+    (!!leftIdentity.name && leftIdentity.name === rightIdentity.name)
+  );
+};
+
+export const isActiveTaxReceiptData = (
+  data: Partial<TaxReceiptData> | null | undefined,
+) => data?.disabled !== true;
+
 export const buildTaxReceiptDocument = (
   data: TaxReceiptData,
 ): TaxReceiptDocument => ({
@@ -418,11 +514,17 @@ export const filterPredefinedReceipts = (
   newReceipts: TaxReceiptDocument[],
   localReceipts: TaxReceiptItem[],
 ) => {
-  const existingSeries = new Set(
-    localReceipts.map((receipt) => getTaxReceiptData(receipt).serie),
-  );
   const existingNames = new Set(
-    localReceipts.map((receipt) => getTaxReceiptData(receipt).name),
+    localReceipts.map((receipt) => {
+      const identity = getTaxReceiptIdentity(getTaxReceiptData(receipt));
+      return identity.name;
+    }),
+  );
+  const existingFiscalKeys = new Set(
+    localReceipts.map((receipt) => {
+      const identity = getTaxReceiptIdentity(getTaxReceiptData(receipt));
+      return identity.fiscalKey;
+    }),
   );
 
   const unique: TaxReceiptDocument[] = [];
@@ -430,11 +532,12 @@ export const filterPredefinedReceipts = (
   const duplicateSeries: string[] = [];
 
   newReceipts.forEach((receipt) => {
-    const { name, serie } = receipt.data;
-    if (existingNames.has(name)) {
+    const { name } = receipt.data;
+    const identity = getTaxReceiptIdentity(receipt.data);
+    if (existingNames.has(identity.name)) {
       duplicateNames.push(name);
-    } else if (existingSeries.has(serie)) {
-      duplicateSeries.push(serie);
+    } else if (existingFiscalKeys.has(identity.fiscalKey)) {
+      duplicateSeries.push(identity.fiscalKey);
     } else {
       unique.push({
         ...receipt,
@@ -443,8 +546,8 @@ export const filterPredefinedReceipts = (
           disabled: receipt.data.disabled ?? false,
         }),
       });
-      existingNames.add(name);
-      existingSeries.add(serie);
+      existingNames.add(identity.name);
+      existingFiscalKeys.add(identity.fiscalKey);
     }
   });
 

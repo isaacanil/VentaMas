@@ -7,6 +7,7 @@ import {
 } from '@/utils/accounting/lineMonetary';
 import { formatInvoicePrice } from '@/utils/invoice/documentCurrency';
 import { convertInvoiceDateToMillis } from '@/utils/invoice';
+import { resolveInvoiceProductQuantity } from '@/utils/invoice/product';
 
 export const formatWorkspaceAmount = (
   value: number | string | null | undefined,
@@ -23,21 +24,8 @@ export const getWorkspaceProductQuantity = (
   product?: InvoiceProduct | null,
 ) => {
   if (!product) return 1;
-  const { amountToBuy } = product;
-
-  if (typeof amountToBuy === 'number') {
-    return amountToBuy > 0 ? amountToBuy : 1;
-  }
-
-  if (amountToBuy && typeof amountToBuy === 'object') {
-    const total = Number(amountToBuy.total);
-    const unit = Number(amountToBuy.unit);
-
-    if (Number.isFinite(total) && total > 0) return total;
-    if (Number.isFinite(unit) && unit > 0) return unit;
-  }
-
-  return 1;
+  const quantity = resolveInvoiceProductQuantity(product);
+  return quantity > 0 ? quantity : 1;
 };
 
 export const getWorkspaceProductTotal = (

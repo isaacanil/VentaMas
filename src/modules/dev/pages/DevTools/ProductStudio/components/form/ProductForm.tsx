@@ -6,12 +6,14 @@ import { CodesSection } from '@/modules/dev/pages/DevTools/ProductStudio/compone
 import { IdentitySection } from '@/modules/dev/pages/DevTools/ProductStudio/components/sections/IdentitySection';
 import { InventorySection } from '@/modules/dev/pages/DevTools/ProductStudio/components/sections/InventorySection';
 import { PricingSection } from '@/modules/dev/pages/DevTools/ProductStudio/components/sections/PricingSection';
+import { SaleUnitsSection } from '@/modules/dev/pages/DevTools/ProductStudio/components/sections/SaleUnitsSection';
 import { WarrantySection } from '@/modules/dev/pages/DevTools/ProductStudio/components/sections/WarrantySection';
 import type { BrandOption } from '@/domain/products/brandSelection';
 import type { CategoryDocument } from '@/firebase/categories/types';
 import type {
   ActiveIngredient,
   ProductRecord,
+  ProductSaleUnit,
 } from '@/types/products';
 import type { SectionId } from '@/modules/dev/pages/DevTools/ProductStudio/utils/sections';
 import type { ProductPricingFormValues } from '@/domain/products/pricingForm';
@@ -30,8 +32,13 @@ interface BrandMeta {
 
 export type PricingValues = ProductPricingFormValues;
 
-export type ProductFormValues = Omit<ProductRecord, 'pricing'> & {
+export type ProductSaleUnitFormValues = Omit<ProductSaleUnit, 'pricing'> & {
   pricing?: PricingValues;
+};
+
+export type ProductFormValues = Omit<ProductRecord, 'pricing' | 'saleUnits'> & {
+  pricing?: PricingValues;
+  saleUnits?: ProductSaleUnitFormValues[];
 };
 
 type SectionDomIds = Record<SectionId, string>;
@@ -48,6 +55,7 @@ interface ProductFormProps {
   activeIngredients: ActiveIngredient[];
   sectionDomIds: SectionDomIds;
   product?: ProductRecord | null;
+  isUpdateMode: boolean;
   onOpenBrandModal: () => void;
   onAddCategory: () => void;
   onAddActiveIngredient: () => void;
@@ -64,6 +72,7 @@ export const ProductForm = ({
   activeIngredients,
   sectionDomIds,
   product,
+  isUpdateMode,
   onOpenBrandModal,
   onAddCategory,
   onAddActiveIngredient,
@@ -81,7 +90,11 @@ export const ProductForm = ({
         scrollToFirstError={{ behavior: 'smooth', block: 'center' }}
         style={{ width: '100%' }}
       >
-        <Space orientation="vertical" size="middle" style={{ width: '100%', paddingBottom: '12rem' }}>
+        <Space
+          orientation="vertical"
+          size="middle"
+          style={{ width: '100%', paddingBottom: '12rem' }}
+        >
           <IdentitySection
             domId={sectionDomIds.identity}
             brandMeta={brandMeta}
@@ -101,7 +114,15 @@ export const ProductForm = ({
             pricingValues={pricingValues}
           />
 
-          <InventorySection domId={sectionDomIds.inventory} />
+          <SaleUnitsSection
+            domId={sectionDomIds.saleUnits}
+            pricingValues={pricingValues}
+          />
+
+          <InventorySection
+            domId={sectionDomIds.inventory}
+            isUpdateMode={isUpdateMode}
+          />
 
           <WarrantySection domId={sectionDomIds.warranty} />
 

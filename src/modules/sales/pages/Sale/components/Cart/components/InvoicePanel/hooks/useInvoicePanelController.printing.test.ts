@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
   modalConfirm: vi.fn(),
   notificationError: vi.fn(),
   notificationSuccess: vi.fn(),
+  notificationWarning: vi.fn(),
   printInvoice: vi.fn(),
   runInvoice: vi.fn(),
   submitInvoicePanel: vi.fn(),
@@ -39,6 +40,7 @@ vi.mock('antd', () => ({
   notification: {
     error: mocks.notificationError,
     success: mocks.notificationSuccess,
+    warning: mocks.notificationWarning,
   },
 }));
 
@@ -222,7 +224,7 @@ describe('useInvoicePanelController print strategy integration', () => {
     expect(mocks.printInvoice).toHaveBeenCalledTimes(1);
   });
 
-  it('reports paginated print blockers without falling back to legacy react-to-print', async () => {
+  it('keeps the created invoice ready for a paginated retry when printing is blocked', async () => {
     const { result } = setupControllerTest({
       printPaginationEnabled: true,
     });
@@ -239,13 +241,73 @@ describe('useInvoicePanelController print strategy integration', () => {
     });
 
     expect(result.current.pendingPaginatedPrint).toBe(false);
-    expect(mocks.notificationError).toHaveBeenCalledWith(
+    expect(result.current.printRecoveryReason).toBe('paginated-print-timeout');
+    expect(result.current.invoice).toBe(createdInvoice);
+    expect(mocks.notificationWarning).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: 'Impresión paginada bloqueada',
-        description: expect.stringContaining('paginated-print-timeout'),
-        duration: 0,
+        message: 'Impresión paginada pendiente',
+        description: expect.stringContaining('Reintenta'),
+        duration: 6,
       }),
     );
     expect(mocks.printInvoice).not.toHaveBeenCalled();
+    expect(mocks.submitInvoicePanel).toHaveBeenCalledTimes(1);
+    expect(mocks.notificationError).not.toHaveBeenCalled();
+
+    act(() => {
+      result.current.retryPaginatedPrint();
+    });
+
+    expect(result.current.printRecoveryReason).toBeNull();
+    expect(result.current.pendingPaginatedPrint).toBe(true);
+    expect(mocks.submitInvoicePanel).toHaveBeenCalledTimes(1);
+    expect(mocks.printInvoice).not.toHaveBeenCalled();
+    expect(mocks.handleCancelShipping).not.toHaveBeenCalled();
+  });
+
+  it('opens the selected client editor from the fiscal data action', async () => {
+    const { result } = setupControllerTest();
+    const client = {
+      id: 'client-1',
+      name: 'Alanna Perez 2',
+      personalID: '0020166033',
+    };
+
+    mocks.submitInvoicePanel.mockImplementationOnce(
+      async (args: SubmitInvoicePanelArgs) => {
+        args.requestClientFiscalDataAction?.({
+          client,
+          title: 'RNC/cédula del cliente no válido',
+          description: 'El dato fiscal del cliente tiene 10 dígitos.',
+        });
+      },
+    );
+
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+
+    expect(result.current.clientFiscalDataAction).toEqual(
+      expect.objectContaining({
+        client,
+        title: 'RNC/cédula del cliente no válido',
+      }),
+    );
+
+    act(() => {
+      result.current.handleEditClientFiscalData();
+    });
+
+    expect(result.current.clientFiscalDataAction).toBeNull();
+    expect(mocks.dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'modal/toggleClientModal',
+        payload: expect.objectContaining({
+          addClientToCart: true,
+          data: client,
+          mode: 'update',
+        }),
+      }),
+    );
   });
 });

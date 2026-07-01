@@ -544,6 +544,15 @@ export const filterProductsSlice = createSlice({
             state.meta.loadedForUser = userId;
           }
           KNOWN_FILTER_CONTEXTS.forEach((context) => {
+            if (state.meta.dirtyContexts[context]) {
+              state.contexts[context] = {
+                ...DEFAULT_FILTERS,
+                ...state.contexts[context],
+              };
+              state.meta.hydratedContexts[context] = true;
+              return;
+            }
+
             const remote = contexts?.[context];
             if (remote && typeof remote === 'object') {
               state.contexts[context] = {

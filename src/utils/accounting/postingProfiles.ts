@@ -20,6 +20,10 @@ import {
   normalizeAccountingEventType,
   normalizeAccountingModuleKey,
 } from '@/utils/accounting/accountingEvents';
+import {
+  buildChartOfAccountChildrenByParentId,
+  isChartOfAccountPostingAllowedForEntries,
+} from '@/utils/accounting/chartOfAccounts';
 import { toCleanString } from '@/utils/text';
 
 const asRecord = (value: unknown): Record<string, unknown> =>
@@ -54,7 +58,7 @@ export interface AccountingPostingProfileDraft {
   priority: number;
   status?: AccountingPostingProfileStatus;
   conditions?: AccountingPostingCondition | null;
-  linesTemplate: AccountingPostingLineDraft[];
+  linesTemplate: AccountingPostingLineTemplate[];
   metadata?: Record<string, unknown>;
 }
 
@@ -325,6 +329,8 @@ export const ACCOUNTING_POSTING_AMOUNT_SOURCE_LABELS: Record<
   accounts_payable_cash_paid: 'Monto pagado por caja',
   accounts_payable_bank_paid: 'Monto pagado por banco',
   accounts_payable_credit_note_applied: 'Saldo a favor de suplidor aplicado',
+  accounts_payable_withholding_itbis: 'Retención ITBIS aplicada en CxP',
+  accounts_payable_withholding_isr: 'Retención ISR aplicada en CxP',
   payroll_accrual_amount: 'Nomina devengada',
   payroll_net_payable_amount: 'Neto de nomina por pagar',
   payroll_tax_deductions_amount: 'Retenciones fiscales de nomina',
@@ -454,6 +460,8 @@ export const normalizeAccountingPostingAmountSource = (
     case 'accounts_payable_cash_paid':
     case 'accounts_payable_bank_paid':
     case 'accounts_payable_credit_note_applied':
+    case 'accounts_payable_withholding_itbis':
+    case 'accounts_payable_withholding_isr':
     case 'payroll_accrual_amount':
     case 'payroll_net_payable_amount':
     case 'payroll_tax_deductions_amount':
@@ -1146,7 +1154,17 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'credit',
         accountSystemKey: 'bank',
-        amountSource: 'accounts_payable_payment_amount',
+        amountSource: 'accounts_payable_bank_paid',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_itbis_payable',
+        amountSource: 'accounts_payable_withholding_itbis',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_isr_payable',
+        amountSource: 'accounts_payable_withholding_isr',
       },
     ],
   },
@@ -1185,6 +1203,18 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
         amountSource: 'accounts_payable_credit_note_applied',
         omitIfZero: true,
       },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_itbis_payable',
+        amountSource: 'accounts_payable_withholding_itbis',
+        omitIfZero: true,
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_isr_payable',
+        amountSource: 'accounts_payable_withholding_isr',
+        omitIfZero: true,
+      },
     ],
   },
   {
@@ -1208,6 +1238,18 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
         accountSystemKey: 'supplier_credits',
         amountSource: 'accounts_payable_credit_note_applied',
       },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_itbis_payable',
+        amountSource: 'accounts_payable_withholding_itbis',
+        omitIfZero: true,
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_isr_payable',
+        amountSource: 'accounts_payable_withholding_isr',
+        omitIfZero: true,
+      },
     ],
   },
   {
@@ -1229,7 +1271,17 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'credit',
         accountSystemKey: 'cash',
-        amountSource: 'accounts_payable_payment_amount',
+        amountSource: 'accounts_payable_cash_paid',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_itbis_payable',
+        amountSource: 'accounts_payable_withholding_itbis',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'withholding_isr_payable',
+        amountSource: 'accounts_payable_withholding_isr',
       },
     ],
   },
@@ -1247,7 +1299,17 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'debit',
         accountSystemKey: 'bank',
-        amountSource: 'accounts_payable_payment_amount',
+        amountSource: 'accounts_payable_bank_paid',
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'withholding_itbis_payable',
+        amountSource: 'accounts_payable_withholding_itbis',
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'withholding_isr_payable',
+        amountSource: 'accounts_payable_withholding_isr',
       },
       {
         side: 'credit',
@@ -1287,6 +1349,18 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
         omitIfZero: true,
       },
       {
+        side: 'debit',
+        accountSystemKey: 'withholding_itbis_payable',
+        amountSource: 'accounts_payable_withholding_itbis',
+        omitIfZero: true,
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'withholding_isr_payable',
+        amountSource: 'accounts_payable_withholding_isr',
+        omitIfZero: true,
+      },
+      {
         side: 'credit',
         accountSystemKey: 'accounts_payable',
         amountSource: 'accounts_payable_payment_amount',
@@ -1311,6 +1385,18 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
         amountSource: 'accounts_payable_credit_note_applied',
       },
       {
+        side: 'debit',
+        accountSystemKey: 'withholding_itbis_payable',
+        amountSource: 'accounts_payable_withholding_itbis',
+        omitIfZero: true,
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'withholding_isr_payable',
+        amountSource: 'accounts_payable_withholding_isr',
+        omitIfZero: true,
+      },
+      {
         side: 'credit',
         accountSystemKey: 'accounts_payable',
         amountSource: 'accounts_payable_payment_amount',
@@ -1331,7 +1417,17 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'debit',
         accountSystemKey: 'cash',
-        amountSource: 'accounts_payable_payment_amount',
+        amountSource: 'accounts_payable_cash_paid',
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'withholding_itbis_payable',
+        amountSource: 'accounts_payable_withholding_itbis',
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'withholding_isr_payable',
+        amountSource: 'accounts_payable_withholding_isr',
       },
       {
         side: 'credit',
@@ -1787,9 +1883,17 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
 export const buildDefaultAccountingPostingProfileTemplates = (
   accounts: ChartOfAccount[],
 ): AccountingPostingProfileDraft[] => {
+  const childCountByParentId = buildChartOfAccountChildrenByParentId(accounts);
   const accountsBySystemKey = new Map(
     accounts
-      .filter((account) => account.systemKey)
+      .filter(
+        (account) =>
+          account.systemKey &&
+          isChartOfAccountPostingAllowedForEntries(
+            account,
+            childCountByParentId.get(account.id)?.length ?? 0,
+          ),
+      )
       .map((account) => [account.systemKey as string, account]),
   );
 

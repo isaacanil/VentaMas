@@ -1,5 +1,6 @@
 import type { CreditNoteRecord } from '@/types/creditNote';
 import type { InvoiceProduct } from '@/types/invoice';
+import { resolveCreditNoteLineQuantity } from '../utils/quantity';
 
 export type CreditNoteProduct = InvoiceProduct & { maxAvailableQty?: number };
 export type CreditNoteMode = 'create' | 'edit' | 'view';
@@ -34,6 +35,13 @@ export const createEmptyCreditNoteSelection = (): CreditNoteSelectionState => ({
   selectAll: false,
 });
 
+export const getCreditNoteLineKey = (
+  item: Pick<CreditNoteProduct, 'lineId' | 'cid' | 'id'> | null | undefined,
+): string | undefined => {
+  const key = item?.lineId ?? item?.cid ?? item?.id;
+  return key == null ? undefined : String(key);
+};
+
 export const getCreditNoteItemInitialQuantity = (
   itemId: string | undefined,
   item: CreditNoteProduct | undefined,
@@ -45,12 +53,13 @@ export const buildCreditNoteSelectionFromInvoiceItems = (
   items: CreditNoteProduct[],
   existingItemQuantities: Record<string, number>,
 ): CreditNoteSelectionState => {
-  const selectedItems = items.map((item) => item.id);
+  const selectedItems = items.map(getCreditNoteLineKey);
   const itemQuantities: Record<string, number> = {};
 
   items.forEach((item) => {
-    itemQuantities[String(item.id)] = getCreditNoteItemInitialQuantity(
-      item.id,
+    const itemKey = getCreditNoteLineKey(item);
+    itemQuantities[String(itemKey)] = getCreditNoteItemInitialQuantity(
+      itemKey,
       item,
       existingItemQuantities,
     );
@@ -68,12 +77,12 @@ export const buildCreditNoteSelectionFromCreditNote = (
   creditNoteData: CreditNoteRecord,
 ): CreditNoteSelectionState => {
   const items = creditNoteData.items || [];
-  const selectedItems = items.map((item) => item.id);
+  const selectedItems = items.map(getCreditNoteLineKey);
   const itemQuantities: Record<string, number> = {};
 
   items.forEach((item) => {
-    itemQuantities[String(item.id)] =
-      typeof item.amountToBuy === 'number' ? item.amountToBuy : 1;
+    const itemKey = getCreditNoteLineKey(item);
+    itemQuantities[String(itemKey)] = resolveCreditNoteLineQuantity(item);
   });
 
   return {

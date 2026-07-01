@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  canManageAccountsPayableControlAction,
+  hasAccountsPayableControlAdminAccess,
+  hasAccountsPayableControlWriteAccess,
+} from './accountsPayableControlAccess';
+import { canManageAccountsPayablePaymentRunAction } from './accountsPayablePaymentRunAccess';
+import {
   hasBillingAccountManageAccess,
   hasBusinessCreateUnderAccountQuotaAccess,
   isBusinessAccountOwner,
@@ -14,9 +20,11 @@ import {
 import { hasBusinessOwnershipClaimIssueAccess } from './businessOwnershipClaimIssueAccess';
 import { hasBusinessSettingsManageAccess } from './businessSettingsAccess';
 import { hasDeveloperAccess } from './developerAccess';
+import { hasFinancialDocumentVoidAccess } from './financialDocumentVoidAccess';
 import { requiresInvoiceDiscountPinAuthorization } from './invoiceDiscountAccess';
 import { hasManageAllAccess } from './manageAllAccess';
 import { hasRequiredCapabilitiesAccess } from './routeCapabilities';
+import { hasTreasuryOperatorAccess } from './treasuryOperatorAccess';
 
 const user = (role: string, extra: Record<string, unknown> = {}) => ({
   uid: `${role}-uid`,
@@ -43,6 +51,138 @@ describe('access helpers', () => {
     expect(hasManageAllAccess(user('manager'))).toBe(false);
     expect(hasManageAllAccess('admin')).toBe(false);
     expect(hasManageAllAccess(null)).toBe(false);
+  });
+
+  it('maps financial document void access to accounting and management roles', () => {
+    for (const role of [
+      'owner',
+      'admin',
+      'manager',
+      'accountant',
+      'controller',
+      'dev',
+      'contador',
+      'contralor',
+    ]) {
+      expect(hasFinancialDocumentVoidAccess(user(role))).toBe(true);
+    }
+
+    expect(
+      hasFinancialDocumentVoidAccess({
+        role: 'cashier',
+        activeBusinessRole: 'accountant',
+      }),
+    ).toBe(true);
+    expect(hasFinancialDocumentVoidAccess(user('auditor'))).toBe(false);
+    expect(hasFinancialDocumentVoidAccess(user('buyer'))).toBe(false);
+    expect(hasFinancialDocumentVoidAccess('accountant')).toBe(false);
+    expect(hasFinancialDocumentVoidAccess(null)).toBe(false);
+  });
+
+  it('maps treasury operator access to AP payment posting roles', () => {
+    for (const role of [
+      'owner',
+      'admin',
+      'manager',
+      'accountant',
+      'controller',
+      'dev',
+      'contador',
+      'contralor',
+    ]) {
+      expect(hasTreasuryOperatorAccess(user(role))).toBe(true);
+    }
+
+    expect(
+      hasTreasuryOperatorAccess({
+        role: 'cashier',
+        activeBusinessRole: 'controller',
+      }),
+    ).toBe(true);
+    expect(hasTreasuryOperatorAccess(user('auditor'))).toBe(false);
+    expect(hasTreasuryOperatorAccess(user('buyer'))).toBe(false);
+    expect(hasTreasuryOperatorAccess(user('cashier'))).toBe(false);
+    expect(hasTreasuryOperatorAccess('accountant')).toBe(false);
+    expect(hasTreasuryOperatorAccess(null)).toBe(false);
+  });
+
+  it('maps AP control access to write and admin accounting roles', () => {
+    for (const role of [
+      'owner',
+      'admin',
+      'accountant',
+      'controller',
+      'dev',
+      'contador',
+      'contralor',
+    ]) {
+      expect(hasAccountsPayableControlWriteAccess(user(role))).toBe(true);
+    }
+
+    for (const role of [
+      'owner',
+      'admin',
+      'controller',
+      'dev',
+      'contralor',
+    ]) {
+      expect(hasAccountsPayableControlAdminAccess(user(role))).toBe(true);
+    }
+
+    expect(hasAccountsPayableControlAdminAccess(user('accountant'))).toBe(
+      false,
+    );
+    expect(hasAccountsPayableControlWriteAccess(user('manager'))).toBe(false);
+    expect(hasAccountsPayableControlWriteAccess(user('auditor'))).toBe(false);
+    expect(hasAccountsPayableControlWriteAccess(user('buyer'))).toBe(false);
+  });
+
+  it('requires AP control admin access for approval, release and void actions', () => {
+    expect(
+      canManageAccountsPayableControlAction(user('accountant'), 'place_hold'),
+    ).toBe(true);
+    expect(
+      canManageAccountsPayableControlAction(
+        user('accountant'),
+        'open_dispute',
+      ),
+    ).toBe(true);
+    expect(
+      canManageAccountsPayableControlAction(user('accountant'), 'approve'),
+    ).toBe(false);
+    expect(
+      canManageAccountsPayableControlAction(user('controller'), 'approve'),
+    ).toBe(true);
+    expect(
+      canManageAccountsPayableControlAction(user('controller'), 'void'),
+    ).toBe(true);
+    expect(
+      canManageAccountsPayableControlAction(user('manager'), 'place_hold'),
+    ).toBe(false);
+  });
+
+  it('maps AP payment run actions to treasury and accounting admin roles', () => {
+    expect(
+      canManageAccountsPayablePaymentRunAction(user('manager'), 'submit'),
+    ).toBe(true);
+    expect(
+      canManageAccountsPayablePaymentRunAction(user('accountant'), 'submit'),
+    ).toBe(true);
+    expect(
+      canManageAccountsPayablePaymentRunAction(user('accountant'), 'approve'),
+    ).toBe(false);
+    expect(
+      canManageAccountsPayablePaymentRunAction(user('controller'), 'approve'),
+    ).toBe(true);
+    expect(
+      canManageAccountsPayablePaymentRunAction(user('controller'), 'reject'),
+    ).toBe(true);
+    expect(
+      canManageAccountsPayablePaymentRunAction(user('controller'), 'cancel'),
+    ).toBe(true);
+    expect(
+      canManageAccountsPayablePaymentRunAction(user('auditor'), 'submit'),
+    ).toBe(false);
   });
 
   it('keeps invoice discount PIN requirements scoped to cashier roles', () => {

@@ -5,18 +5,21 @@ import {
   getProductsPrice,
   getProductsTax,
   getProductsTotalPrice,
-  getTotalItems,
 } from '@/utils/pricing';
 import {
   applyDiscount,
   calculateChange,
 } from '@/features/invoice/utils/invoiceTotals';
+import { resolveProductBaseQuantity } from '@/domain/products/saleUnits';
+import {
+  resolveInvoiceProductQuantity,
+  resolveInvoiceProductsQuantity,
+} from '@/utils/invoice/product';
 import type {
   InvoiceProduct,
   InvoiceData,
   InvoiceFormSliceState,
   DiscountType,
-  InvoiceProductAmount,
 } from '@/types/invoice';
 
 const roundToTwoDecimals = (num: number): number => {
@@ -27,13 +30,22 @@ const updateProductAmount = (
   product: InvoiceProduct,
   newAmount: number,
 ): InvoiceProduct => {
-  // Crear una copia profunda de los objetos anidados
-  const updatedProduct = {
+  const quantity = normalizeInvoiceFormQuantity(newAmount, product);
+  const updatedProduct: InvoiceProduct = {
     ...product,
     pricing: { ...product?.pricing },
   };
 
-  updatedProduct.amountToBuy = newAmount;
+  if (product.weightDetail?.isSoldByWeight === true) {
+    updatedProduct.amountToBuy = product.amountToBuy ?? 1;
+    updatedProduct.weightDetail = {
+      ...product.weightDetail,
+      weight: quantity,
+    };
+  } else {
+    updatedProduct.amountToBuy = quantity;
+  }
+  updatedProduct.baseQuantity = resolveProductBaseQuantity(updatedProduct);
 
   return updatedProduct;
 };
@@ -55,16 +67,52 @@ const calculateTotals = (products: any[]) => {
 // };
 
 const calculateTotalItems = (products: any[]): number => {
-  const totalItems = getTotalItems(products);
-  // products.forEach(product => {
-  //     totalItems += product.amountToBuy;
-  // });
-  return totalItems;
+  return resolveInvoiceProductsQuantity(products);
 };
 
 const calculateTotalPurchaseWithoutTaxes = (products: any[]): number => {
   const result = getProductsPrice(products);
   return roundToTwoDecimals(result);
+};
+
+const roundQuantity = (value: number): number =>
+  Math.round((value + Number.EPSILON) * 1_000_000) / 1_000_000;
+
+const normalizeInvoiceFormQuantity = (
+  value: unknown,
+  product?: InvoiceProduct | null,
+): number => {
+  const parsed = Number(value);
+  if (Number.isFinite(parsed) && parsed > 0) return roundQuantity(parsed);
+  return product?.weightDetail?.isSoldByWeight === true ||
+    product?.selectedSaleUnit?.allowFractional === true
+    ? 0.01
+    : 1;
+};
+
+const resolveInvoiceFormProductLineKey = (
+  product?: InvoiceProduct | null,
+): string | null => {
+  if (!product) return null;
+  const identity =
+    product.cid ?? product.lineId ?? product.id ?? product.productId ?? null;
+  if (identity == null) return null;
+
+  const saleUnitId = product.selectedSaleUnit?.id ?? 'default';
+  const stockId = product.productStockId ?? 'no-stock';
+  const batchId = product.batchId ?? 'no-batch';
+  return `${String(identity)}::${String(saleUnitId)}::${String(stockId)}::${String(batchId)}`;
+};
+
+const findInvoiceFormProductIndex = (
+  products: InvoiceProduct[],
+  product: InvoiceProduct,
+): number => {
+  const targetKey = resolveInvoiceFormProductLineKey(product);
+  if (!targetKey) return -1;
+  return products.findIndex(
+    (item) => resolveInvoiceFormProductLineKey(item) === targetKey,
+  );
 };
 
 const invoice: InvoiceData = {
@@ -148,23 +196,18 @@ const invoiceFormSlice = createSlice({
     ) {
       const { mode, invoice, authorizationRequest = null } = action.payload;
 
-      // Asegúrate de que todos los productos tengan los cálculos correctos
       const products = (invoice.products || []).map(
         (product: InvoiceProduct) => {
-          const amount =
-            typeof product.amountToBuy === 'object' &&
-            product.amountToBuy !== null
-              ? (product.amountToBuy as InvoiceProductAmount).total || 0
-              : (product.amountToBuy as number) || 0;
-          return updateProductAmount(product, amount);
+          const quantity = resolveInvoiceProductQuantity(product);
+          return updateProductAmount(product, quantity);
         },
       );
 
       // Calcular totales, impuestos y cantidad de artículos
       const { totalPurchase, totalTaxes } = calculateTotals(products);
-      const totalItems = calculateTotalItems(invoice.products || []);
+      const totalItems = calculateTotalItems(products);
       const totalWithoutTaxes = calculateTotalPurchaseWithoutTaxes(
-        invoice.products || [],
+        products,
       );
 
       // Actualizar el estado de la factura
@@ -227,21 +270,20 @@ const invoiceFormSlice = createSlice({
       }
 
       const products = state.invoice.products || [];
-      const index = products.findIndex((item) => item.id === productId);
+      const index = findInvoiceFormProductIndex(products, product);
       if (index !== -1) {
         // Si el producto ya está en la lista, actualizar la cantidad
-        const currentAmountToBuy = products[index].amountToBuy;
-        const currentAmount =
-          typeof currentAmountToBuy === 'object' && currentAmountToBuy !== null
-            ? (currentAmountToBuy as InvoiceProductAmount).total || 0
-            : (currentAmountToBuy as number) || 0;
+        const currentAmount = resolveInvoiceProductQuantity(products[index]);
 
         products[index] = updateProductAmount(
           products[index],
           currentAmount + 1,
         );
       } else {
-        state.invoice.products = [...products, product];
+        state.invoice.products = [
+          ...products,
+          updateProductAmount(product, resolveInvoiceProductQuantity(product)),
+        ];
       }
 
       // Recalcular los totales de compra e impuestos
@@ -250,6 +292,9 @@ const invoiceFormSlice = createSlice({
 
       state.invoice.totalPurchase = { value: totalPurchase };
       state.invoice.totalTaxes = { value: totalTaxes };
+      state.invoice.totalPurchaseWithoutTaxes = {
+        value: calculateTotalPurchaseWithoutTaxes(updatedProducts),
+      };
       // Actualizar la cantidad total de artículos
       state.invoice.totalShoppingItems = {
         value: calculateTotalItems(updatedProducts),
@@ -343,7 +388,7 @@ const invoiceFormSlice = createSlice({
         return;
       }
       const products = state.invoice.products || [];
-      const index = products.findIndex((item) => item.id === product.id);
+      const index = findInvoiceFormProductIndex(products, product);
       if (index === -1) {
         return;
       }
@@ -393,26 +438,25 @@ const invoiceFormSlice = createSlice({
         return;
       }
       const products = state.invoice.products || [];
-      const index = products.findIndex((item) => item.id === product.id);
+      const index = findInvoiceFormProductIndex(products, product);
       if (index === -1) {
         return; // Si el producto no está en la lista, no hacer nada
       }
 
-      const currentAmountToBuy = products[index].amountToBuy;
-      let numericAmount =
-        typeof currentAmountToBuy === 'object' && currentAmountToBuy !== null
-          ? (currentAmountToBuy as InvoiceProductAmount).total || 0
-          : (currentAmountToBuy as number) || 0;
+      let numericAmount = resolveInvoiceProductQuantity(products[index]);
 
       switch (type) {
         case 'add':
           numericAmount += 1;
           break;
         case 'subtract':
-          numericAmount = Math.max(1, numericAmount - 1); // Evitar valores negativos
+          numericAmount = Math.max(
+            normalizeInvoiceFormQuantity(undefined, products[index]),
+            numericAmount - 1,
+          );
           break;
         case 'change':
-          numericAmount = Math.max(1, Number(amount) || 0); // Establecer la cantidad directamente, evitando negativos
+          numericAmount = normalizeInvoiceFormQuantity(amount, products[index]);
           break;
         default:
           break;
@@ -426,6 +470,9 @@ const invoiceFormSlice = createSlice({
       const { totalPurchase, totalTaxes } = calculateTotals(products);
       state.invoice.totalPurchase = { value: totalPurchase };
       state.invoice.totalTaxes = { value: totalTaxes };
+      state.invoice.totalPurchaseWithoutTaxes = {
+        value: calculateTotalPurchaseWithoutTaxes(products),
+      };
       // Actualizar cantidad total de artículos
       state.invoice.totalShoppingItems = {
         value: calculateTotalItems(products),

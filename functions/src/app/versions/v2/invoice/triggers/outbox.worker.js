@@ -457,6 +457,7 @@ export const processInvoiceOutbox = onDocumentCreated(
             inventoryPrereqs = await collectInventoryPrereqs(tx, {
               user,
               products,
+              saleId: invoiceId,
             });
             const accountingSettingsSnap = await tx.get(
               db.doc(`businesses/${businessId}/settings/accounting`),
@@ -681,9 +682,8 @@ export const processInvoiceOutbox = onDocumentCreated(
           const resolvedMonetary =
             isAccountingRolloutEnabledForBusiness(businessId)
               ? normalizePilotMonetarySnapshot(
-                cart?.monetary ??
-                  existingCanon?.monetary ??
-                  invoice?.snapshot?.monetary,
+                invoice?.snapshot?.monetary ??
+                  existingCanon?.monetary,
                 { capturedBy: user.uid },
               )
               : null;
@@ -719,6 +719,8 @@ export const processInvoiceOutbox = onDocumentCreated(
 
           if (resolvedMonetary) {
             canonicalData.monetary = resolvedMonetary;
+          } else {
+            delete canonicalData.monetary;
           }
 
           const frontendElectronicProjection =

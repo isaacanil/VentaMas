@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 export interface ProductPricingSnapshot {
+  currency?: string;
   cost?: number | string;
   price?: number | string;
   listPrice?: number | string;
@@ -20,6 +21,7 @@ export interface ProductSnapshot {
 }
 
 export interface ProductPreviewMetrics {
+  currencyMarker: string;
   cost: number;
   price: number;
   tax: number;
@@ -29,12 +31,15 @@ export interface ProductPreviewMetrics {
 }
 
 const formatNumber = (value: unknown): number => Number(value || 0);
+const getCurrencyMarker = (value: unknown): string =>
+  value === 'USD' ? 'USD' : 'RD$';
 
 export const useProductPreviewMetrics = (
   product: ProductSnapshot | null | undefined,
 ): ProductPreviewMetrics => {
   return useMemo(() => {
     const pricing = product?.pricing || {};
+    const currencyMarker = getCurrencyMarker(pricing.currency);
     const cost = formatNumber(pricing.cost);
     const price = formatNumber(pricing.price || pricing.listPrice);
     const tax = formatNumber(pricing.tax);
@@ -43,6 +48,7 @@ export const useProductPreviewMetrics = (
     const trackInventory = product?.trackInventory !== false;
 
     return {
+      currencyMarker,
       cost,
       price,
       tax,

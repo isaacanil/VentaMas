@@ -506,6 +506,7 @@ export const submitInvoice = async (
 };
 
 type FailedTaskRecord = UnknownRecord & {
+  createdAt?: unknown;
   lastError?: string;
   type?: string;
 };
@@ -516,6 +517,66 @@ type InvoiceMetaRecord = UnknownRecord & {
 
 type CanonicalInvoiceRecord = UnknownRecord & {
   data?: InvoiceData | null;
+};
+
+const toTaskMillis = (value: unknown) => {
+  if (!value) return null;
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (typeof value === 'string') {
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+  if (value instanceof Date) return value.getTime();
+  if (typeof value !== 'object') return null;
+
+  const candidate = value as {
+    seconds?: number;
+    _seconds?: number;
+    toDate?: () => Date;
+    toMillis?: () => number;
+  };
+  if (typeof candidate.toMillis === 'function') {
+    return candidate.toMillis();
+  }
+  if (typeof candidate.toDate === 'function') {
+    return candidate.toDate().getTime();
+  }
+  const seconds =
+    typeof candidate.seconds === 'number'
+      ? candidate.seconds
+      : typeof candidate._seconds === 'number'
+        ? candidate._seconds
+        : null;
+  return seconds == null ? null : seconds * 1000;
+};
+
+const filterSupersededFailedTasks = (
+  failedTasks: Array<FailedTaskRecord & { id: string }>,
+  doneTasks: Array<FailedTaskRecord & { id: string }>,
+) => {
+  if (!failedTasks.length || !doneTasks.length) return failedTasks;
+
+  const latestDoneByType = new Map<string, number>();
+  doneTasks.forEach((task) => {
+    const type = typeof task.type === 'string' ? task.type : null;
+    const createdAt = toTaskMillis(task.createdAt);
+    if (!type || createdAt == null) return;
+    const current = latestDoneByType.get(type);
+    if (current == null || createdAt > current) {
+      latestDoneByType.set(type, createdAt);
+    }
+  });
+
+  return failedTasks.filter((task) => {
+    const type = typeof task.type === 'string' ? task.type : null;
+    const failedCreatedAt = toTaskMillis(task.createdAt);
+    const latestDoneCreatedAt = type ? latestDoneByType.get(type) : null;
+    return !(
+      failedCreatedAt != null &&
+      latestDoneCreatedAt != null &&
+      latestDoneCreatedAt > failedCreatedAt
+    );
+  });
 };
 
 const fetchFailedTask = async ({
@@ -536,8 +597,21 @@ const fetchFailedTask = async ({
   );
   const failedSnap = await getDocs(failedQuery);
   if (failedSnap.empty) return null;
-  const docSnap = failedSnap.docs[0];
-  return { id: docSnap.id, ...(docSnap.data() as FailedTaskRecord) };
+  const failedTasks = failedSnap.docs.map((docSnap) => ({
+    id: docSnap.id,
+    ...(docSnap.data() as FailedTaskRecord),
+  }));
+  const doneQuery = query(outboxRef, where('status', '==', 'done'));
+  const doneSnap = await getDocs(doneQuery);
+  const doneTasks = doneSnap.docs.map((docSnap) => ({
+    id: docSnap.id,
+    ...(docSnap.data() as FailedTaskRecord),
+  }));
+  const activeFailedTasks = filterSupersededFailedTasks(
+    failedTasks,
+    doneTasks,
+  );
+  return activeFailedTasks[0] ?? null;
 };
 
 const createInvoiceAbortError = (): DOMException =>
@@ -630,17 +704,23 @@ const resolveInvoiceWaitResult = async ({
   invoiceId,
   invoiceData,
   canonicalData,
+  invoiceSnapshotFromCache = false,
 }: {
   businessId: string;
   invoiceId: string;
   invoiceData: InvoiceMetaRecord | null;
   canonicalData: CanonicalInvoiceRecord | null;
+  invoiceSnapshotFromCache?: boolean;
 }): Promise<InvoiceWaitResult | null> => {
   if (!invoiceData) {
     return null;
   }
 
   const invoiceStatus = invoiceData.status;
+  if (invoiceStatus === 'failed' && invoiceSnapshotFromCache) {
+    return null;
+  }
+
   if (invoiceStatus === 'failed') {
     throw await createInvoiceFailedError({ businessId, invoiceId, invoiceData });
   }
@@ -695,6 +775,7 @@ const waitForInvoiceResultFromSnapshots = ({
     let settled = false;
     let latestInvoiceData: InvoiceMetaRecord | null = null;
     let latestCanonicalData: CanonicalInvoiceRecord | null = null;
+    let latestInvoiceSnapshotFromCache = false;
     let lastSnapshot: UnknownRecord | null = null;
     const unsubscribes: Array<() => void> = [];
 
@@ -734,6 +815,7 @@ const waitForInvoiceResultFromSnapshots = ({
         invoiceId,
         invoiceData: latestInvoiceData,
         canonicalData: latestCanonicalData,
+        invoiceSnapshotFromCache: latestInvoiceSnapshotFromCache,
       })
         .then((result) => {
           if (result) {
@@ -786,6 +868,8 @@ const waitForInvoiceResultFromSnapshots = ({
             latestInvoiceData = invoiceSnap.exists()
               ? (invoiceSnap.data() as InvoiceMetaRecord)
               : null;
+            latestInvoiceSnapshotFromCache =
+              invoiceSnap.metadata?.fromCache === true;
             if (latestInvoiceData) {
               lastSnapshot = latestInvoiceData;
             }

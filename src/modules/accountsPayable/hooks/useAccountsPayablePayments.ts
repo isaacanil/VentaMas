@@ -1,5 +1,5 @@
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useReducer } from 'react';
 
 import { db } from '@/firebase/firebaseconfig';
 import type { AccountsPayablePayment } from '@/types/payments';
@@ -17,18 +17,103 @@ interface UseAccountsPayablePaymentsOptions {
   includeVoided?: boolean;
 }
 
+const HIDDEN_ACCOUNTS_PAYABLE_PAYMENT_STATUSES = new Set(['draft']);
+const VOIDED_ACCOUNTS_PAYABLE_PAYMENT_STATUSES = new Set([
+  'canceled',
+  'cancelled',
+  'void',
+  'voided',
+]);
+
+export const shouldShowAccountsPayablePayment = (
+  payment: { status?: string | null },
+  options: UseAccountsPayablePaymentsOptions = {},
+): boolean => {
+  const status = String(payment.status ?? '')
+    .trim()
+    .toLowerCase();
+
+  if (HIDDEN_ACCOUNTS_PAYABLE_PAYMENT_STATUSES.has(status)) {
+    return false;
+  }
+
+  if (
+    options.includeVoided !== true &&
+    VOIDED_ACCOUNTS_PAYABLE_PAYMENT_STATUSES.has(status)
+  ) {
+    return false;
+  }
+
+  return true;
+};
+
+interface AccountsPayablePaymentsState {
+  error: Error | null;
+  payments: AccountsPayablePayment[];
+  resolvedQueryKey: string | null;
+}
+
+type AccountsPayablePaymentsAction = {
+  type: 'resolveQuery';
+  error: Error | null;
+  payments: AccountsPayablePayment[];
+  queryKey: string;
+};
+
+const initialState: AccountsPayablePaymentsState = {
+  error: null,
+  payments: [],
+  resolvedQueryKey: null,
+};
+
+const reducer = (
+  state: AccountsPayablePaymentsState,
+  action: AccountsPayablePaymentsAction,
+): AccountsPayablePaymentsState => {
+  switch (action.type) {
+    case 'resolveQuery':
+      return {
+        error: action.error,
+        payments: action.payments,
+        resolvedQueryKey: action.queryKey,
+      };
+    default:
+      return state;
+  }
+};
+
+const sortAccountsPayablePayments = (
+  payments: AccountsPayablePayment[],
+): AccountsPayablePayment[] =>
+  [...payments].sort(
+    (left, right) =>
+      (toMillis(right.occurredAt) ?? toMillis(right.createdAt) ?? 0) -
+      (toMillis(left.occurredAt) ?? toMillis(left.createdAt) ?? 0),
+  );
+
 export const useAccountsPayablePayments = (
   businessId: string | null | undefined,
   purchaseId: string | null | undefined,
   isOpen: boolean,
   options: UseAccountsPayablePaymentsOptions = {},
 ) => {
-  const [payments, setPayments] = useState<AccountsPayablePayment[]>([]);
-  const [hasResolved, setHasResolved] = useState(false);
+  const [state, dispatchState] = useReducer(reducer, initialState);
   const includeVoided = options.includeVoided === true;
+  const currentQueryKey =
+    businessId && purchaseId && isOpen
+      ? `${businessId}:${purchaseId}:${includeVoided ? 'with-voided' : 'open'}`
+      : null;
+  const hasResolvedCurrentQuery =
+    currentQueryKey !== null && state.resolvedQueryKey === currentQueryKey;
+  const loading =
+    currentQueryKey !== null && state.resolvedQueryKey !== currentQueryKey;
+  const visiblePayments = useMemo(
+    () => (hasResolvedCurrentQuery ? state.payments : []),
+    [hasResolvedCurrentQuery, state.payments],
+  );
 
   useEffect(() => {
-    if (!businessId || !purchaseId || !isOpen) {
+    if (!businessId || !purchaseId || !isOpen || !currentQueryKey) {
       return undefined;
     }
 
@@ -50,36 +135,34 @@ export const useAccountsPayablePayments = (
           .map((docSnap) =>
             normalizeAccountsPayablePayment(docSnap.id, docSnap.data()),
           )
-          .filter((payment) => {
-            if (payment.status === 'draft') {
-              return false;
-            }
-            if (!includeVoided && payment.status === 'void') {
-              return false;
-            }
-            return true;
-          })
-          .sort(
-            (left, right) =>
-              (toMillis(right.occurredAt) ?? toMillis(right.createdAt) ?? 0) -
-              (toMillis(left.occurredAt) ?? toMillis(left.createdAt) ?? 0),
+          .filter((payment) =>
+            shouldShowAccountsPayablePayment(payment, { includeVoided }),
           );
 
-        setPayments(nextPayments);
-        setHasResolved(true);
+        dispatchState({
+          type: 'resolveQuery',
+          error: null,
+          payments: sortAccountsPayablePayments(nextPayments),
+          queryKey: currentQueryKey,
+        });
       },
       (error) => {
         console.error('Error fetching accounts payable payments:', error);
-        setPayments([]);
-        setHasResolved(true);
+        dispatchState({
+          type: 'resolveQuery',
+          error: error instanceof Error ? error : new Error(String(error)),
+          payments: [],
+          queryKey: currentQueryKey,
+        });
       },
     );
 
     return unsubscribe;
-  }, [businessId, includeVoided, isOpen, purchaseId]);
+  }, [businessId, currentQueryKey, includeVoided, isOpen, purchaseId]);
 
   return {
-    payments: businessId && purchaseId && isOpen ? payments : [],
-    loading: businessId && purchaseId && isOpen ? !hasResolved : false,
+    error: hasResolvedCurrentQuery ? state.error : null,
+    payments: visiblePayments,
+    loading,
   };
 };

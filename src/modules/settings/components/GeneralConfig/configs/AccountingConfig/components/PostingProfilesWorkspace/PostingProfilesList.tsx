@@ -14,6 +14,10 @@ import {
   getAccountingEventDefinition,
 } from '@/utils/accounting/accountingEvents';
 import {
+  buildChartOfAccountChildrenByParentId,
+  isChartOfAccountPostingAllowedForEntries,
+} from '@/utils/accounting/chartOfAccounts';
+import {
   ACCOUNTING_POSTING_AMOUNT_SOURCE_LABELS,
   ACCOUNTING_POSTING_PAYMENT_TERM_LABELS,
   ACCOUNTING_POSTING_PROFILE_STATUS_LABELS,
@@ -166,6 +170,17 @@ export const PostingProfilesList = ({
     (total, profile) => total + profile.linesTemplate.length,
     0,
   );
+  const availablePostingAccountsCount = useMemo(() => {
+    const childCountByParentId =
+      buildChartOfAccountChildrenByParentId(chartOfAccounts);
+
+    return chartOfAccounts.filter((account) =>
+      isChartOfAccountPostingAllowedForEntries(
+        account,
+        childCountByParentId.get(account.id)?.length ?? 0,
+      ),
+    ).length;
+  }, [chartOfAccounts]);
   const connectedModuleKeys = Array.from(
     new Set(activeProfiles.map((profile) => profile.moduleKey)),
   );
@@ -313,14 +328,7 @@ export const PostingProfilesList = ({
         </MetricCard>
         <MetricCard>
           <MetricLabel>Cuentas disponibles</MetricLabel>
-          <MetricValue>
-            {
-              chartOfAccounts.filter(
-                (account) =>
-                  account.status === 'active' && account.postingAllowed,
-              ).length
-            }
-          </MetricValue>
+          <MetricValue>{availablePostingAccountsCount}</MetricValue>
           <MetricMeta>para plantillas</MetricMeta>
         </MetricCard>
       </MetricGrid>
@@ -375,7 +383,7 @@ export const PostingProfilesList = ({
           <ProfilesList aria-busy={loading}>
             {loading && postingProfiles.length === 0 ? (
               <LoadingState>
-                <Spin tip="Cargando reglas de contabilización..." />
+                <Spin description="Cargando reglas de contabilización..." />
               </LoadingState>
             ) : filteredProfiles.length ? (
               filteredProfiles.map((profile) => {

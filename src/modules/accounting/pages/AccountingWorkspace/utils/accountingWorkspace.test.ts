@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { normalizeJournalEntryRecord } from '@/utils/accounting/journalEntries';
 
 import {
+  buildGeneralLedgerAccountOptions,
   buildGeneralLedgerSnapshot,
   buildLedgerRecords,
 } from './accountingWorkspace';
@@ -12,23 +13,53 @@ const buildAccount = ({
   id,
   name,
   normalSide,
+  parentId,
   type,
 }: {
   code: string;
   id: string;
   name: string;
   normalSide: 'debit' | 'credit';
+  parentId?: string | null;
   type: 'asset' | 'liability' | 'equity' | 'income' | 'expense';
 }) => ({
   id,
   businessId: 'business-1',
   code,
   name,
+  parentId: parentId ?? null,
   type,
   postingAllowed: true,
   status: 'active' as const,
   normalSide,
   currencyMode: 'functional_only' as const,
+});
+
+describe('buildGeneralLedgerAccountOptions', () => {
+  it('solo ofrece cuentas detalle en los selectores de mayor', () => {
+    const options = buildGeneralLedgerAccountOptions({
+      accounts: [
+        buildAccount({
+          id: 'cash-root',
+          code: '1100',
+          name: 'Caja',
+          normalSide: 'debit',
+          type: 'asset',
+        }),
+        buildAccount({
+          id: 'cash-detail',
+          code: '1101',
+          name: 'Caja principal',
+          normalSide: 'debit',
+          parentId: 'cash-root',
+          type: 'asset',
+        }),
+      ],
+      records: [],
+    });
+
+    expect(options.map((account) => account.id)).toEqual(['cash-detail']);
+  });
 });
 
 describe('accountingWorkspace manual entry references', () => {
@@ -107,6 +138,111 @@ describe('accountingWorkspace manual entry references', () => {
     expect(record.reference).toBe('Sin referencia');
     expect(record.internalReference).toBe('entry-2');
     expect(record.searchIndex).toContain('entry-2');
+  });
+});
+
+describe('accountingWorkspace journal book order', () => {
+  it('ordena los asientos cronologicamente aunque lleguen desordenados', () => {
+    const buildEntry = (id: string, entryDate: Date) =>
+      normalizeJournalEntryRecord(id, 'business-1', {
+        eventType: 'manual.entry.recorded',
+        status: 'posted',
+        sourceId: id,
+        description: `Asiento ${id}`,
+        entryDate,
+        periodKey: entryDate.toISOString().slice(0, 7),
+        totals: {
+          debit: 100,
+          credit: 100,
+        },
+        lines: [
+          {
+            lineNumber: 1,
+            accountId: 'cash-1',
+            accountCode: '101',
+            accountName: 'Caja general',
+            debit: 100,
+            credit: 0,
+          },
+          {
+            lineNumber: 2,
+            accountId: 'income-1',
+            accountCode: '401',
+            accountName: 'Ventas',
+            debit: 0,
+            credit: 100,
+          },
+        ],
+      });
+
+    const records = buildLedgerRecords({
+      accounts: [],
+      events: [],
+      journalEntries: [
+        buildEntry('entry-17', new Date('2026-06-17T12:00:00.000Z')),
+        buildEntry('entry-16-b', new Date('2026-06-16T15:00:00.000Z')),
+        buildEntry('entry-16-a', new Date('2026-06-16T09:00:00.000Z')),
+      ],
+      postingProfiles: [],
+    });
+
+    expect(records.map((record) => record.journalEntry?.id)).toEqual([
+      'entry-16-a',
+      'entry-16-b',
+      'entry-17',
+    ]);
+  });
+
+  it('ordena empates de fecha por folio visible, no por hora oculta', () => {
+    const buildEntry = (id: string, reference: string, entryDate: Date) =>
+      normalizeJournalEntryRecord(id, 'business-1', {
+        eventType: 'manual.entry.recorded',
+        status: 'posted',
+        sourceId: id,
+        description: `Asiento ${id}`,
+        entryDate,
+        periodKey: '2026-06',
+        metadata: {
+          note: reference,
+        },
+        totals: {
+          debit: 100,
+          credit: 100,
+        },
+        lines: [
+          {
+            lineNumber: 1,
+            accountId: 'cash-1',
+            accountCode: '101',
+            accountName: 'Caja general',
+            debit: 100,
+            credit: 0,
+          },
+          {
+            lineNumber: 2,
+            accountId: 'income-1',
+            accountCode: '401',
+            accountName: 'Ventas',
+            debit: 0,
+            credit: 100,
+          },
+        ],
+      });
+
+    const records = buildLedgerRecords({
+      accounts: [],
+      events: [],
+      journalEntries: [
+        buildEntry('entry-10', 'REC-10', new Date('2026-06-16T09:00:00.000Z')),
+        buildEntry('entry-2', 'REC-2', new Date('2026-06-16T15:00:00.000Z')),
+      ],
+      postingProfiles: [],
+    });
+
+    expect(records.map((record) => record.journalEntry?.id)).toEqual([
+      'entry-2',
+      'entry-10',
+    ]);
   });
 });
 
@@ -661,6 +797,172 @@ describe('accountingWorkspace projected profile lines', () => {
     ]);
   });
 
+  it('previsualiza pagos CxP con retenciones fiscales como liquidacion no bancaria', () => {
+    const payableAccount = {
+      ...buildAccount({
+        id: 'payable-1',
+        code: '2100',
+        name: 'Cuentas por pagar',
+        type: 'liability',
+        normalSide: 'credit',
+      }),
+      systemKey: 'accounts_payable',
+    };
+    const bankAccount = {
+      ...buildAccount({
+        id: 'bank-1',
+        code: '1110',
+        name: 'Banco principal',
+        type: 'asset',
+        normalSide: 'debit',
+      }),
+      systemKey: 'bank',
+    };
+    const itbisWithholdingAccount = {
+      ...buildAccount({
+        id: 'withholding-itbis-1',
+        code: '2301',
+        name: 'Retenciones ITBIS por pagar',
+        type: 'liability',
+        normalSide: 'credit',
+      }),
+      systemKey: 'withholding_itbis_payable',
+    };
+    const isrWithholdingAccount = {
+      ...buildAccount({
+        id: 'withholding-isr-1',
+        code: '2302',
+        name: 'Retenciones ISR por pagar',
+        type: 'liability',
+        normalSide: 'credit',
+      }),
+      systemKey: 'withholding_isr_payable',
+    };
+
+    const [record] = buildLedgerRecords({
+      accounts: [
+        payableAccount,
+        bankAccount,
+        itbisWithholdingAccount,
+        isrWithholdingAccount,
+      ],
+      events: [
+        {
+          id: 'accounts_payable.payment.recorded__payment-1',
+          businessId: 'business-1',
+          eventType: 'accounts_payable.payment.recorded',
+          eventVersion: 1,
+          status: 'recorded',
+          occurredAt: new Date('2026-04-18T12:00:00.000Z'),
+          recordedAt: new Date('2026-04-18T12:00:00.000Z'),
+          sourceId: 'payment-1',
+          sourceDocumentType: 'accounts_payable_payment',
+          sourceDocumentId: 'payment-1',
+          counterpartyType: 'supplier',
+          counterpartyId: 'supplier-1',
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: { amount: 1106, functionalAmount: 1106 },
+          treasury: { paymentChannel: 'bank' },
+          payload: {
+            settlementAmount: 1180,
+            paymentMethods: [{ method: 'transfer', value: 1106 }],
+            withholdingApplications: [
+              { type: 'itbis', amount: 54 },
+              { type: 'isr', amount: 20 },
+            ],
+          },
+          dedupeKey: 'dedupe-ap-payment',
+          idempotencyKey: 'idem-ap-payment',
+          projection: { status: 'pending', journalEntryId: null },
+          reversalOfEventId: null,
+          createdAt: new Date('2026-04-18T12:00:00.000Z'),
+          createdBy: 'ana@ventamas.do',
+          metadata: {},
+        },
+      ],
+      journalEntries: [],
+      postingProfiles: [
+        {
+          id: 'profile-ap-payment-bank',
+          businessId: 'business-1',
+          name: 'Pago CxP bancario',
+          eventType: 'accounts_payable.payment.recorded',
+          moduleKey: 'purchases',
+          status: 'active',
+          priority: 1,
+          conditions: {
+            settlementKind: 'bank',
+          },
+          linesTemplate: [
+            {
+              id: 'debit-payable',
+              side: 'debit',
+              accountSystemKey: 'accounts_payable',
+              amountSource: 'accounts_payable_payment_amount',
+              omitIfZero: true,
+            },
+            {
+              id: 'credit-bank',
+              side: 'credit',
+              accountSystemKey: 'bank',
+              amountSource: 'accounts_payable_bank_paid',
+              omitIfZero: true,
+            },
+            {
+              id: 'credit-withholding-itbis',
+              side: 'credit',
+              accountSystemKey: 'withholding_itbis_payable',
+              amountSource: 'accounts_payable_withholding_itbis',
+              omitIfZero: true,
+            },
+            {
+              id: 'credit-withholding-isr',
+              side: 'credit',
+              accountSystemKey: 'withholding_isr_payable',
+              amountSource: 'accounts_payable_withholding_isr',
+              omitIfZero: true,
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(record.detailMode).toBe('projected');
+    expect(record.lines.reduce((total, line) => total + line.debit, 0)).toBe(
+      1180,
+    );
+    expect(record.lines.reduce((total, line) => total + line.credit, 0)).toBe(
+      1180,
+    );
+    expect(record.lines).toEqual([
+      expect.objectContaining({
+        accountId: 'payable-1',
+        debit: 1180,
+        credit: 0,
+        amountSource: 'accounts_payable_payment_amount',
+      }),
+      expect.objectContaining({
+        accountId: 'bank-1',
+        debit: 0,
+        credit: 1106,
+        amountSource: 'accounts_payable_bank_paid',
+      }),
+      expect.objectContaining({
+        accountId: 'withholding-itbis-1',
+        debit: 0,
+        credit: 54,
+        amountSource: 'accounts_payable_withholding_itbis',
+      }),
+      expect.objectContaining({
+        accountId: 'withholding-isr-1',
+        debit: 0,
+        credit: 20,
+        amountSource: 'accounts_payable_withholding_isr',
+      }),
+    ]);
+  });
+
   it('respeta condiciones de naturaleza documental en perfiles proyectados', () => {
     const inventoryAccount = buildAccount({
       id: 'inventory-1',
@@ -916,96 +1218,108 @@ describe('buildGeneralLedgerSnapshot', () => {
       normalSide: 'debit',
     });
 
-    const openingEntry = normalizeJournalEntryRecord('entry-opening', 'business-1', {
-      eventType: 'manual.entry.recorded',
-      status: 'posted',
-      sourceId: 'entry-opening',
-      description: 'Saldo inicial',
-      entryDate: new Date('2026-02-28T12:00:00.000Z'),
-      periodKey: '2026-02',
-      totals: {
-        debit: 1000,
-        credit: 1000,
-      },
-      lines: [
-        {
-          lineNumber: 1,
-          accountId: 'cash-1',
-          accountCode: '101',
-          accountName: 'Caja general',
+    const openingEntry = normalizeJournalEntryRecord(
+      'entry-opening',
+      'business-1',
+      {
+        eventType: 'manual.entry.recorded',
+        status: 'posted',
+        sourceId: 'entry-opening',
+        description: 'Saldo inicial',
+        entryDate: new Date('2026-02-28T12:00:00.000Z'),
+        periodKey: '2026-02',
+        totals: {
           debit: 1000,
-          credit: 0,
-        },
-        {
-          lineNumber: 2,
-          accountId: 'equity-1',
-          accountCode: '301',
-          accountName: 'Capital',
-          debit: 0,
           credit: 1000,
         },
-      ],
-    });
-    const debitEntry = normalizeJournalEntryRecord('entry-debit', 'business-1', {
-      eventType: 'manual.entry.recorded',
-      status: 'posted',
-      sourceId: 'entry-debit',
-      description: 'Cobro del periodo',
-      entryDate: new Date('2026-03-05T12:00:00.000Z'),
-      periodKey: '2026-03',
-      totals: {
-        debit: 200,
-        credit: 200,
+        lines: [
+          {
+            lineNumber: 1,
+            accountId: 'cash-1',
+            accountCode: '101',
+            accountName: 'Caja general',
+            debit: 1000,
+            credit: 0,
+          },
+          {
+            lineNumber: 2,
+            accountId: 'equity-1',
+            accountCode: '301',
+            accountName: 'Capital',
+            debit: 0,
+            credit: 1000,
+          },
+        ],
       },
-      lines: [
-        {
-          lineNumber: 1,
-          accountId: 'cash-1',
-          accountCode: '101',
-          accountName: 'Caja general',
+    );
+    const debitEntry = normalizeJournalEntryRecord(
+      'entry-debit',
+      'business-1',
+      {
+        eventType: 'manual.entry.recorded',
+        status: 'posted',
+        sourceId: 'entry-debit',
+        description: 'Cobro del periodo',
+        entryDate: new Date('2026-03-05T12:00:00.000Z'),
+        periodKey: '2026-03',
+        totals: {
           debit: 200,
-          credit: 0,
-        },
-        {
-          lineNumber: 2,
-          accountId: 'income-1',
-          accountCode: '401',
-          accountName: 'Ventas',
-          debit: 0,
           credit: 200,
         },
-      ],
-    });
-    const creditEntry = normalizeJournalEntryRecord('entry-credit', 'business-1', {
-      eventType: 'manual.entry.recorded',
-      status: 'posted',
-      sourceId: 'entry-credit',
-      description: 'Gasto del periodo',
-      entryDate: new Date('2026-03-10T12:00:00.000Z'),
-      periodKey: '2026-03',
-      totals: {
-        debit: 50,
-        credit: 50,
+        lines: [
+          {
+            lineNumber: 1,
+            accountId: 'cash-1',
+            accountCode: '101',
+            accountName: 'Caja general',
+            debit: 200,
+            credit: 0,
+          },
+          {
+            lineNumber: 2,
+            accountId: 'income-1',
+            accountCode: '401',
+            accountName: 'Ventas',
+            debit: 0,
+            credit: 200,
+          },
+        ],
       },
-      lines: [
-        {
-          lineNumber: 1,
-          accountId: 'expense-1',
-          accountCode: '501',
-          accountName: 'Gasto operativo',
+    );
+    const creditEntry = normalizeJournalEntryRecord(
+      'entry-credit',
+      'business-1',
+      {
+        eventType: 'manual.entry.recorded',
+        status: 'posted',
+        sourceId: 'entry-credit',
+        description: 'Gasto del periodo',
+        entryDate: new Date('2026-03-10T12:00:00.000Z'),
+        periodKey: '2026-03',
+        totals: {
           debit: 50,
-          credit: 0,
-        },
-        {
-          lineNumber: 2,
-          accountId: 'cash-1',
-          accountCode: '101',
-          accountName: 'Caja general',
-          debit: 0,
           credit: 50,
         },
-      ],
-    });
+        lines: [
+          {
+            lineNumber: 1,
+            accountId: 'expense-1',
+            accountCode: '501',
+            accountName: 'Gasto operativo',
+            debit: 50,
+            credit: 0,
+          },
+          {
+            lineNumber: 2,
+            accountId: 'cash-1',
+            accountCode: '101',
+            accountName: 'Caja general',
+            debit: 0,
+            credit: 50,
+          },
+        ],
+      },
+    );
 
     const records = buildLedgerRecords({
       accounts: [cashAccount],
@@ -1038,96 +1352,108 @@ describe('buildGeneralLedgerSnapshot', () => {
       normalSide: 'credit',
     });
 
-    const openingEntry = normalizeJournalEntryRecord('entry-opening', 'business-1', {
-      eventType: 'manual.entry.recorded',
-      status: 'posted',
-      sourceId: 'entry-opening',
-      description: 'Saldo inicial por pagar',
-      entryDate: new Date('2026-02-15T12:00:00.000Z'),
-      periodKey: '2026-02',
-      totals: {
-        debit: 300,
-        credit: 300,
-      },
-      lines: [
-        {
-          lineNumber: 1,
-          accountId: 'expense-1',
-          accountCode: '501',
-          accountName: 'Gasto operativo',
+    const openingEntry = normalizeJournalEntryRecord(
+      'entry-opening',
+      'business-1',
+      {
+        eventType: 'manual.entry.recorded',
+        status: 'posted',
+        sourceId: 'entry-opening',
+        description: 'Saldo inicial por pagar',
+        entryDate: new Date('2026-02-15T12:00:00.000Z'),
+        periodKey: '2026-02',
+        totals: {
           debit: 300,
-          credit: 0,
-        },
-        {
-          lineNumber: 2,
-          accountId: 'payable-1',
-          accountCode: '201',
-          accountName: 'Cuentas por pagar',
-          debit: 0,
           credit: 300,
         },
-      ],
-    });
-    const debitEntry = normalizeJournalEntryRecord('entry-debit', 'business-1', {
-      eventType: 'manual.entry.recorded',
-      status: 'posted',
-      sourceId: 'entry-debit',
-      description: 'Pago parcial',
-      entryDate: new Date('2026-03-05T12:00:00.000Z'),
-      periodKey: '2026-03',
-      totals: {
-        debit: 100,
-        credit: 100,
+        lines: [
+          {
+            lineNumber: 1,
+            accountId: 'expense-1',
+            accountCode: '501',
+            accountName: 'Gasto operativo',
+            debit: 300,
+            credit: 0,
+          },
+          {
+            lineNumber: 2,
+            accountId: 'payable-1',
+            accountCode: '201',
+            accountName: 'Cuentas por pagar',
+            debit: 0,
+            credit: 300,
+          },
+        ],
       },
-      lines: [
-        {
-          lineNumber: 1,
-          accountId: 'payable-1',
-          accountCode: '201',
-          accountName: 'Cuentas por pagar',
+    );
+    const debitEntry = normalizeJournalEntryRecord(
+      'entry-debit',
+      'business-1',
+      {
+        eventType: 'manual.entry.recorded',
+        status: 'posted',
+        sourceId: 'entry-debit',
+        description: 'Pago parcial',
+        entryDate: new Date('2026-03-05T12:00:00.000Z'),
+        periodKey: '2026-03',
+        totals: {
           debit: 100,
-          credit: 0,
-        },
-        {
-          lineNumber: 2,
-          accountId: 'cash-1',
-          accountCode: '101',
-          accountName: 'Caja general',
-          debit: 0,
           credit: 100,
         },
-      ],
-    });
-    const creditEntry = normalizeJournalEntryRecord('entry-credit', 'business-1', {
-      eventType: 'manual.entry.recorded',
-      status: 'posted',
-      sourceId: 'entry-credit',
-      description: 'Nueva obligacion',
-      entryDate: new Date('2026-03-20T12:00:00.000Z'),
-      periodKey: '2026-03',
-      totals: {
-        debit: 40,
-        credit: 40,
+        lines: [
+          {
+            lineNumber: 1,
+            accountId: 'payable-1',
+            accountCode: '201',
+            accountName: 'Cuentas por pagar',
+            debit: 100,
+            credit: 0,
+          },
+          {
+            lineNumber: 2,
+            accountId: 'cash-1',
+            accountCode: '101',
+            accountName: 'Caja general',
+            debit: 0,
+            credit: 100,
+          },
+        ],
       },
-      lines: [
-        {
-          lineNumber: 1,
-          accountId: 'expense-1',
-          accountCode: '501',
-          accountName: 'Gasto operativo',
+    );
+    const creditEntry = normalizeJournalEntryRecord(
+      'entry-credit',
+      'business-1',
+      {
+        eventType: 'manual.entry.recorded',
+        status: 'posted',
+        sourceId: 'entry-credit',
+        description: 'Nueva obligacion',
+        entryDate: new Date('2026-03-20T12:00:00.000Z'),
+        periodKey: '2026-03',
+        totals: {
           debit: 40,
-          credit: 0,
-        },
-        {
-          lineNumber: 2,
-          accountId: 'payable-1',
-          accountCode: '201',
-          accountName: 'Cuentas por pagar',
-          debit: 0,
           credit: 40,
         },
-      ],
-    });
+        lines: [
+          {
+            lineNumber: 1,
+            accountId: 'expense-1',
+            accountCode: '501',
+            accountName: 'Gasto operativo',
+            debit: 40,
+            credit: 0,
+          },
+          {
+            lineNumber: 2,
+            accountId: 'payable-1',
+            accountCode: '201',
+            accountName: 'Cuentas por pagar',
+            debit: 0,
+            credit: 40,
+          },
+        ],
+      },
+    );
 
     const records = buildLedgerRecords({
       accounts: [payableAccount],

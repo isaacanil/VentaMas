@@ -4,6 +4,9 @@ import styled from 'styled-components';
 import { formatNumber } from '@/utils/format';
 import { formatPriceByCurrency } from '@/utils/format';
 import { resolveProductLineCurrency } from '@/utils/accounting/lineMonetary';
+import { getWeightedUnitPriceForDisplay } from '@/domain/products/weightPriceDisplay';
+import { resolveProductBaseQuantity } from '@/domain/products/saleUnits';
+import { shouldLabelStockAsBaseUnits } from '../utils/stock.utils';
 
 import {
   getAmountBackground,
@@ -36,12 +39,14 @@ const FooterWrapper = styled.div<FooterWrapperProps>`
   border-top-left-radius: ${({ $imageHiddenRef }: FooterWrapperProps) =>
     $imageHiddenRef === false ? '10px' : '0'};
   transition: 0.8s border-radius ease-in-out;
+  gap: 0.2em;
 `;
 
 const Group = styled.div`
   display: flex;
-  gap: 1em;
+  gap: 0.2em;
   align-items: center;
+  min-width: 0;
 `;
 
 const AmountToBuy = styled.div<StockThemeProps>`
@@ -50,8 +55,8 @@ const AmountToBuy = styled.div<StockThemeProps>`
   width: min-content;
   height: 1.6em;
   padding: 0 0.4em;
-  margin-left: 1.6em;
-  font-size: 15px;
+  margin-left: 0.2em;
+  font-size: 13px;
   font-weight: 600;
   color: ${(props: StockThemeProps) => getAmountColor(props)};
   letter-spacing: 0.2px;
@@ -66,10 +71,13 @@ const AmountToBuy = styled.div<StockThemeProps>`
 const Price = styled.div<StockThemeProps>`
   display: block;
   height: 100%;
-  font-size: 16px;
-  font-weight: 550;
+  font-size: 14px;
+  font-weight: 600;
   color: ${(props: StockThemeProps) => getPriceColor(props)};
   transition: color 0.4s ease-in-out;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 /**
@@ -88,6 +96,7 @@ type ProductFooterProps = {
   productInCart?: CartProductRecord | null;
   product: ProductRecord;
   price: number;
+  taxationEnabled: boolean;
   isProductInCart: boolean;
   isLowStock: boolean;
   isCriticalStock: boolean;
@@ -99,6 +108,7 @@ export const ProductFooter = ({
   productInCart,
   product,
   price,
+  taxationEnabled,
   isProductInCart,
   isLowStock,
   isCriticalStock,
@@ -106,6 +116,10 @@ export const ProductFooter = ({
 }: ProductFooterProps) => {
   const isDisabled = isOutOfStock || isCriticalStock || isLowStock;
   const productCurrency = resolveProductLineCurrency(product);
+  const isSoldByWeight = product.weightDetail?.isSoldByWeight;
+  const displayPrice = isSoldByWeight
+    ? getWeightedUnitPriceForDisplay(product, taxationEnabled)
+    : price;
   const hasSelectedProductStock = Boolean(productInCart?.productStockId);
   const stockValue = hasSelectedProductStock
     ? typeof productInCart?.stock === 'number'
@@ -120,8 +134,32 @@ export const ProductFooter = ({
         : undefined;
   const hasValidStock =
     typeof stockValue === 'number' && !Number.isNaN(stockValue);
+    
+  let displayStockValue = stockValue;
+  let stockSuffix = '';
+
+  const factor = product?.selectedSaleUnit?.conversionFactorToBase ?? 1;
+  const isPresentation = factor > 1;
+
+  if (isPresentation && hasValidStock && stockValue !== undefined) {
+    displayStockValue = Math.floor(stockValue / factor);
+    const unitName = product?.selectedSaleUnit?.unitName;
+    stockSuffix = unitName ? ` ${unitName.toLowerCase()}s` : ' uds';
+  } else if (!isPresentation) {
+    stockSuffix = ' uds';
+  }
+
   const formattedStock =
-    hasValidStock && stockValue !== 0 ? formatNumber(stockValue) : '-';
+    hasValidStock && displayStockValue !== 0
+      ? `${formatNumber(displayStockValue)}${stockSuffix}`
+      : '-';
+
+  const requestedStockQuantity =
+    isProductInCart && productInCart
+      ? isPresentation
+        ? productInCart.amountToBuy || 0
+        : resolveProductBaseQuantity(productInCart)
+      : null;
 
   return (
     <FooterWrapper $imageHiddenRef={productState.imageHidden}>
@@ -134,15 +172,15 @@ export const ProductFooter = ({
           $isSelected={isProductInCart}
           $hasStrictStock={product.restrictSaleWithoutStock}
         >
-          {isProductInCart && productInCart?.amountToBuy !== undefined
-            ? `${formatNumber(productInCart.amountToBuy)} / `
+          {requestedStockQuantity !== null
+            ? `${formatNumber(requestedStockQuantity)} / `
             : ''}
           {formattedStock}
         </AmountToBuy>
       </Group>
 
       <Group>
-        {product.weightDetail?.isSoldByWeight ? (
+        {isSoldByWeight ? (
           <Price
             $isDisabled={isDisabled}
             $isOutOfStock={isOutOfStock}
@@ -151,7 +189,7 @@ export const ProductFooter = ({
             $isSelected={isProductInCart}
             $hasStrictStock={product.restrictSaleWithoutStock}
           >
-            {formatPriceByCurrency(price, productCurrency)} /{' '}
+            {formatPriceByCurrency(displayPrice, productCurrency)} /{' '}
             {product.weightDetail.weightUnit}
           </Price>
         ) : (
@@ -163,7 +201,7 @@ export const ProductFooter = ({
             $isSelected={isProductInCart}
             $hasStrictStock={product.restrictSaleWithoutStock}
           >
-            {formatPriceByCurrency(price, productCurrency)}
+            {formatPriceByCurrency(displayPrice, productCurrency)}
           </Price>
         )}
       </Group>

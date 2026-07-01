@@ -1,13 +1,17 @@
 import { useEffect, useMemo } from 'react';
-import { Form, Input, Modal, Select, Switch } from 'antd';
+import { Form, Input, Modal, Select } from 'antd';
 
 import type { ChartOfAccount } from '@/types/accounting';
 import {
+  CHART_OF_ACCOUNTS_MAX_LEVEL,
   CHART_OF_ACCOUNT_CURRENCY_MODE_LABELS,
   CHART_OF_ACCOUNT_NORMAL_SIDE_LABELS,
   CHART_OF_ACCOUNT_TYPE_LABELS,
+  buildChartOfAccountChildrenByParentId,
+  buildChartOfAccountsById,
   collectChartOfAccountDescendantIds,
   deriveNormalSideForChartOfAccountType,
+  getChartOfAccountLevel,
   type ChartOfAccountDraft,
 } from '@/utils/accounting/chartOfAccounts';
 
@@ -45,6 +49,11 @@ const CHART_OF_ACCOUNT_CURRENCY_MODE_OPTIONS = Object.entries(
   value,
 }));
 
+const CHART_OF_ACCOUNT_CLASSIFICATION_OPTIONS = [
+  { label: 'Cuenta Detalle', value: true },
+  { label: 'Cuenta Mayor', value: false },
+];
+
 export const AddChartOfAccountModal = ({
   accounts,
   createDefaults,
@@ -55,6 +64,18 @@ export const AddChartOfAccountModal = ({
   open,
 }: AddChartOfAccountModalProps) => {
   const [form] = Form.useForm<Partial<ChartOfAccountDraft>>();
+  const watchedType = Form.useWatch('type', form);
+  const accountsById = useMemo(
+    () => buildChartOfAccountsById(accounts),
+    [accounts],
+  );
+  const childrenByParentId = useMemo(
+    () => buildChartOfAccountChildrenByParentId(accounts),
+    [accounts],
+  );
+  const editingChildCount = editingAccount
+    ? (childrenByParentId.get(editingAccount.id)?.length ?? 0)
+    : 0;
   const descendantIds = useMemo(
     () =>
       editingAccount
@@ -74,15 +95,30 @@ export const AddChartOfAccountModal = ({
             return false;
           }
 
+          if (watchedType && account.type !== watchedType) {
+            return false;
+          }
+
+          if (
+            getChartOfAccountLevel(account, accountsById) >=
+            CHART_OF_ACCOUNTS_MAX_LEVEL
+          ) {
+            return false;
+          }
+
           return (
-            account.status === 'active' || account.id === editingAccount?.parentId
+            account.status === 'active' ||
+            account.id === editingAccount?.parentId
           );
         })
         .map((account) => ({
-          label: `${account.code} · ${account.name}`,
+          label: `${account.code} · ${account.name} · Nivel ${getChartOfAccountLevel(
+            account,
+            accountsById,
+          )}`,
           value: account.id,
         })),
-    [accounts, descendantIds, editingAccount],
+    [accounts, accountsById, descendantIds, editingAccount, watchedType],
   );
 
   useEffect(() => {
@@ -110,9 +146,10 @@ export const AddChartOfAccountModal = ({
       parentId: editingAccount.parentId ?? undefined,
       currencyMode: editingAccount.currencyMode,
       subtype: editingAccount.subtype ?? undefined,
-      postingAllowed: editingAccount.postingAllowed,
+      postingAllowed:
+        editingChildCount > 0 ? false : editingAccount.postingAllowed,
     });
-  }, [createDefaults, editingAccount, form, open]);
+  }, [createDefaults, editingAccount, editingChildCount, form, open]);
 
   const handleSubmit = async () => {
     const values = await form.validateFields();
@@ -167,6 +204,7 @@ export const AddChartOfAccountModal = ({
             'normalSide',
             deriveNormalSideForChartOfAccountType(changedValues.type),
           );
+          form.setFieldValue('parentId', undefined);
         }}
       >
         <Form.Item
@@ -197,7 +235,9 @@ export const AddChartOfAccountModal = ({
         <Form.Item
           label="Nombre"
           name="name"
-          rules={[{ required: true, message: 'Ingrese el nombre de la cuenta.' }]}
+          rules={[
+            { required: true, message: 'Ingrese el nombre de la cuenta.' },
+          ]}
         >
           <Input placeholder="Ej. Caja general" />
         </Form.Item>
@@ -229,11 +269,18 @@ export const AddChartOfAccountModal = ({
         </Form.Item>
 
         <Form.Item
-          label="Permite asientos directos"
+          label="Clasificación"
           name="postingAllowed"
-          valuePropName="checked"
+          help={
+            editingChildCount > 0
+              ? 'Las cuentas con subcuentas se clasifican como Cuenta Mayor.'
+              : undefined
+          }
         >
-          <Switch />
+          <Select
+            disabled={editingChildCount > 0}
+            options={CHART_OF_ACCOUNT_CLASSIFICATION_OPTIONS}
+          />
         </Form.Item>
       </Form>
     </Modal>

@@ -72,6 +72,10 @@ export interface ChartOfAccountTemplate extends ChartOfAccountDraft {
   parentCode?: string | null;
 }
 
+export const CHART_OF_ACCOUNTS_MAX_LEVEL = 6;
+
+export type ChartOfAccountClassification = 'major' | 'detail';
+
 export const normalizeChartOfAccountDraft = (
   value: Partial<ChartOfAccountDraft> | null | undefined,
 ): ChartOfAccountDraft => {
@@ -132,6 +136,106 @@ export const normalizeChartOfAccountRecord = (
 
 export const buildChartOfAccountLabel = (account: ChartOfAccount): string =>
   `${account.code} · ${account.name}`;
+
+export const buildChartOfAccountsById = (
+  accounts: ChartOfAccount[],
+): Map<string, ChartOfAccount> =>
+  new Map(accounts.map((account) => [account.id, account]));
+
+export const buildChartOfAccountChildrenByParentId = (
+  accounts: ChartOfAccount[],
+): Map<string, ChartOfAccount[]> =>
+  accounts.reduce<Map<string, ChartOfAccount[]>>((accumulator, account) => {
+    if (!account.parentId) {
+      return accumulator;
+    }
+
+    const currentChildren = accumulator.get(account.parentId) ?? [];
+    accumulator.set(account.parentId, [...currentChildren, account]);
+    return accumulator;
+  }, new Map());
+
+export const getChartOfAccountDepth = (
+  account: Pick<ChartOfAccount, 'id' | 'parentId'>,
+  accountsById: Map<string, Pick<ChartOfAccount, 'id' | 'parentId'>>,
+): number => {
+  let depth = 0;
+  let currentParentId = account.parentId ?? null;
+  const visitedIds = new Set<string>([account.id]);
+
+  while (currentParentId) {
+    if (visitedIds.has(currentParentId)) {
+      break;
+    }
+
+    const parentAccount = accountsById.get(currentParentId);
+    if (!parentAccount) {
+      break;
+    }
+
+    visitedIds.add(currentParentId);
+    depth += 1;
+    currentParentId = parentAccount.parentId ?? null;
+  }
+
+  return depth;
+};
+
+export const getChartOfAccountLevel = (
+  account: Pick<ChartOfAccount, 'id' | 'parentId'>,
+  accountsById: Map<string, Pick<ChartOfAccount, 'id' | 'parentId'>>,
+): number => getChartOfAccountDepth(account, accountsById) + 1;
+
+export const getChartOfAccountMaxDescendantDepth = (
+  accountId: string,
+  childrenByParentId: Map<string, Pick<ChartOfAccount, 'id'>[]>,
+): number => {
+  const children = childrenByParentId.get(accountId) ?? [];
+  if (!children.length) {
+    return 0;
+  }
+
+  return Math.max(
+    ...children.map(
+      (childAccount) =>
+        1 +
+        getChartOfAccountMaxDescendantDepth(
+          childAccount.id,
+          childrenByParentId,
+        ),
+    ),
+  );
+};
+
+export const resolveChartOfAccountClassification = (
+  account: Pick<ChartOfAccount, 'postingAllowed'>,
+  childCount = 0,
+): ChartOfAccountClassification =>
+  childCount > 0 || account.postingAllowed === false ? 'major' : 'detail';
+
+export const CHART_OF_ACCOUNT_CLASSIFICATION_LABELS: Record<
+  ChartOfAccountClassification,
+  string
+> = {
+  major: 'Cuenta Mayor',
+  detail: 'Cuenta Detalle',
+};
+
+export const buildChartOfAccountClassificationLabel = (
+  account: Pick<ChartOfAccount, 'postingAllowed'>,
+  childCount = 0,
+): string =>
+  CHART_OF_ACCOUNT_CLASSIFICATION_LABELS[
+    resolveChartOfAccountClassification(account, childCount)
+  ];
+
+export const isChartOfAccountPostingAllowedForEntries = (
+  account: Pick<ChartOfAccount, 'postingAllowed' | 'status'>,
+  childCount = 0,
+): boolean =>
+  account.status === 'active' &&
+  account.postingAllowed !== false &&
+  childCount === 0;
 
 export const collectChartOfAccountDescendantIds = (
   accounts: ChartOfAccount[],

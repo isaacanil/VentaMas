@@ -48,7 +48,14 @@ export interface ProductWarranty {
 export interface ProductSaleUnit {
   id: string;
   unitName?: string;
+  barcode?: string | number;
+  qrcode?: string | number;
+  qrCode?: string | number;
+  sku?: string | number;
   quantity?: number;
+  conversionFactorToBase?: number;
+  allowFractional?: boolean;
+  active?: boolean;
   pricing: ProductPricing;
 }
 
@@ -99,6 +106,7 @@ export interface ProductRecord extends Record<string, unknown> {
   saleUnits?: ProductSaleUnit[];
   selectedSaleUnit?: ProductSaleUnit | null;
   selectedSaleUnitId?: string | null;
+  baseQuantity?: number | null;
   isSoldInUnits?: boolean;
   productStockId?: string | null;
   batchId?: string | number | null;

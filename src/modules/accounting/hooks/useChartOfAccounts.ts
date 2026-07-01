@@ -16,8 +16,13 @@ import {
 import { db } from '@/firebase/firebaseconfig';
 import type { ChartOfAccount } from '@/types/accounting';
 import {
+  CHART_OF_ACCOUNTS_MAX_LEVEL,
+  buildChartOfAccountChildrenByParentId,
+  buildChartOfAccountsById,
   collectChartOfAccountDescendantIds,
   DEFAULT_CHART_OF_ACCOUNTS_TEMPLATE,
+  getChartOfAccountLevel,
+  getChartOfAccountMaxDescendantDepth,
   normalizeChartOfAccountDraft,
   normalizeChartOfAccountRecord,
   type ChartOfAccountDraft,
@@ -190,9 +195,8 @@ export const useChartOfAccounts = ({
       }
 
       if (draft.parentId) {
-        const parentAccount =
-          chartOfAccounts.find((account) => account.id === draft.parentId) ??
-          null;
+        const accountsById = buildChartOfAccountsById(chartOfAccounts);
+        const parentAccount = accountsById.get(draft.parentId) ?? null;
 
         if (!parentAccount) {
           message.error('La cuenta padre seleccionada no existe.');
@@ -207,6 +211,16 @@ export const useChartOfAccounts = ({
         if (parentAccount.type !== draft.type) {
           message.error(
             'La cuenta padre debe pertenecer al mismo tipo contable.',
+          );
+          return false;
+        }
+
+        if (
+          getChartOfAccountLevel(parentAccount, accountsById) >=
+          CHART_OF_ACCOUNTS_MAX_LEVEL
+        ) {
+          message.error(
+            `El catálogo solo permite subcuentas hasta el nivel ${CHART_OF_ACCOUNTS_MAX_LEVEL}.`,
           );
           return false;
         }
@@ -299,9 +313,8 @@ export const useChartOfAccounts = ({
       }
 
       if (draft.parentId) {
-        const parentAccount =
-          chartOfAccounts.find((account) => account.id === draft.parentId) ??
-          null;
+        const accountsById = buildChartOfAccountsById(chartOfAccounts);
+        const parentAccount = accountsById.get(draft.parentId) ?? null;
 
         if (!parentAccount) {
           message.error('La cuenta padre seleccionada no existe.');
@@ -319,6 +332,34 @@ export const useChartOfAccounts = ({
           );
           return false;
         }
+
+        const childrenByParentId =
+          buildChartOfAccountChildrenByParentId(chartOfAccounts);
+        const parentLevel = getChartOfAccountLevel(parentAccount, accountsById);
+        const maxDescendantDepth = getChartOfAccountMaxDescendantDepth(
+          chartOfAccountId,
+          childrenByParentId,
+        );
+
+        if (
+          parentLevel + 1 + maxDescendantDepth >
+          CHART_OF_ACCOUNTS_MAX_LEVEL
+        ) {
+          message.error(
+            `Mover esta cuenta excedería el nivel ${CHART_OF_ACCOUNTS_MAX_LEVEL} permitido.`,
+          );
+          return false;
+        }
+      }
+
+      const hasChildren = chartOfAccounts.some(
+        (account) => account.parentId === chartOfAccountId,
+      );
+      if (hasChildren && draft.postingAllowed !== false) {
+        message.error(
+          'Una Cuenta Mayor con subcuentas no puede recibir asientos directos.',
+        );
+        return false;
       }
 
       const childrenWithDifferentType = chartOfAccounts.filter(

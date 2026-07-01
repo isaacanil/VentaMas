@@ -8,6 +8,7 @@ import { fbCloseAccountingPeriod } from '@/firebase/accounting/fbCloseAccounting
 import { fbCreateManualJournalEntry } from '@/firebase/accounting/fbCreateManualJournalEntry';
 import { fbReplayAccountingEventProjection } from '@/firebase/accounting/fbReplayAccountingEventProjection';
 import { fbReverseJournalEntry } from '@/firebase/accounting/fbReverseJournalEntry';
+import { fbUpdateJournalEntry } from '@/firebase/accounting/fbUpdateJournalEntry';
 import { db } from '@/firebase/firebaseconfig';
 import {
   useAccountingConfig,
@@ -17,6 +18,10 @@ import {
 } from '@/modules/accounting/public';
 import type { AccountingEvent, JournalEntry } from '@/types/accounting';
 import { normalizeAccountingEventRecord } from '@/utils/accounting/accountingEvents';
+import {
+  buildChartOfAccountChildrenByParentId,
+  isChartOfAccountPostingAllowedForEntries,
+} from '@/utils/accounting/chartOfAccounts';
 import { resolveUserDisplayNamesBatch } from '@/utils/users/resolveUserDisplayNamesBatch';
 import { normalizeJournalEntryRecord } from '@/utils/accounting/journalEntries';
 import {
@@ -47,6 +52,14 @@ interface ManualEntryInput {
     description?: string;
   }>;
   note?: string;
+}
+
+interface UpdateEntryInput {
+  description: string;
+  entryDate: string;
+  entryId: string;
+  lines: ManualEntryInput['lines'];
+  reason: string;
 }
 
 const asRecord = (value: unknown): Record<string, unknown> =>
@@ -172,6 +185,7 @@ export const useAccountingWorkspace = ({
   const [savingManualEntry, setSavingManualEntry] = useState(false);
   const [closingPeriod, setClosingPeriod] = useState(false);
   const [reversingEntryId, setReversingEntryId] = useState<string | null>(null);
+  const [updatingEntryId, setUpdatingEntryId] = useState<string | null>(null);
   const [replayingEventId, setReplayingEventId] = useState<string | null>(null);
 
   const accountingEvents = useMemo(
@@ -444,15 +458,19 @@ export const useAccountingWorkspace = ({
     [ledgerRecords, periodClosures],
   );
 
-  const postingAccounts = useMemo(
-    () =>
-      chartOfAccounts
-        .filter(
-          (account) => account.status === 'active' && account.postingAllowed,
-        )
-        .sort((left, right) => left.code.localeCompare(right.code)),
-    [chartOfAccounts],
-  );
+  const postingAccounts = useMemo(() => {
+    const childCountByParentId =
+      buildChartOfAccountChildrenByParentId(chartOfAccounts);
+
+    return chartOfAccounts
+      .filter((account) =>
+        isChartOfAccountPostingAllowedForEntries(
+          account,
+          childCountByParentId.get(account.id)?.length ?? 0,
+        ),
+      )
+      .sort((left, right) => left.code.localeCompare(right.code));
+  }, [chartOfAccounts]);
 
   const saveManualEntry = useCallback(
     async ({ description, entryDate, lines, note }: ManualEntryInput) => {
@@ -616,6 +634,92 @@ export const useAccountingWorkspace = ({
     [businessId],
   );
 
+  const updatePostedEntry = useCallback(
+    async ({
+      description,
+      entryDate,
+      entryId,
+      lines,
+      reason,
+    }: UpdateEntryInput) => {
+      if (!businessId) {
+        message.error('No se encontro el negocio activo.');
+        return false;
+      }
+
+      const periodStatus = resolveAccountingPeriodStatus(
+        entryDate,
+        periodClosures,
+      );
+      if (periodStatus.isClosed) {
+        message.error(
+          'No puedes registrar esta correccion con la fecha seleccionada porque ese periodo esta cerrado. Usa otra fecha o solicita reabrir el periodo.',
+        );
+        return false;
+      }
+
+      const sanitizedLines = lines
+        .map((line) => ({
+          ...line,
+          debit: Number(line.debit) || 0,
+          credit: Number(line.credit) || 0,
+        }))
+        .filter(
+          (line) =>
+            line.accountId &&
+            ((line.debit > 0 && line.credit === 0) ||
+              (line.credit > 0 && line.debit === 0)),
+        );
+
+      if (sanitizedLines.length < 2) {
+        message.error('El asiento requiere al menos dos lineas validas.');
+        return false;
+      }
+
+      const totals = sanitizedLines.reduce(
+        (accumulator, line) => ({
+          debit: accumulator.debit + line.debit,
+          credit: accumulator.credit + line.credit,
+        }),
+        { debit: 0, credit: 0 },
+      );
+
+      if (Math.abs(totals.debit - totals.credit) > 0.005) {
+        message.error(
+          'El asiento no cuadra. Debito y credito deben coincidir.',
+        );
+        return false;
+      }
+
+      setUpdatingEntryId(entryId);
+      try {
+        await fbUpdateJournalEntry({
+          businessId,
+          description: description.trim(),
+          entryDate,
+          entryId,
+          lines: sanitizedLines.map((line) => ({
+            accountId: line.accountId,
+            description: line.description?.trim() || undefined,
+            debit: line.debit,
+            credit: line.credit,
+          })),
+          reason: reason.trim(),
+        });
+
+        message.success('Correccion contable registrada.');
+        return true;
+      } catch (cause) {
+        console.error('Error registrando correccion contable:', cause);
+        message.error('No se pudo registrar la correccion contable.');
+        return false;
+      } finally {
+        setUpdatingEntryId(null);
+      }
+    },
+    [businessId, periodClosures],
+  );
+
   const replayProjection = useCallback(
     async (eventId: string) => {
       if (!businessId) {
@@ -674,6 +778,8 @@ export const useAccountingWorkspace = ({
     reversePostedEntry,
     saveManualEntry,
     savingManualEntry,
+    updatePostedEntry,
+    updatingEntryId,
     reversingEntryId,
     summary,
     closePeriod,

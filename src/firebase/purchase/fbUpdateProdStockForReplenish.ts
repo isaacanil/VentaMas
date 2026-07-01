@@ -26,9 +26,7 @@ export const fbUpdateProdStockForReplenish = async (
       productId,
     );
     return updateDoc(productRef, {
-      'product.stock': increment(
-        Number.isFinite(stockIncrement) ? stockIncrement : 0,
-      ),
+      stock: increment(Number.isFinite(stockIncrement) ? stockIncrement : 0),
     });
   });
 

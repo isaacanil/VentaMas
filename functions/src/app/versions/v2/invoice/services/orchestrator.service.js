@@ -21,6 +21,13 @@ import {
 } from '../../../../modules/electronicTaxReceipts/config/gisysFact.config.js';
 import { GISYS_FACT_PLATFORM_CONFIG_PATH } from '../../../../modules/electronicTaxReceipts/config/gisysFactPlatform.config.js';
 import { resolveGisysDocumentType } from '../../../../modules/electronicTaxReceipts/utils/gisysDocumentType.util.js';
+import {
+  PAYMENT_METHOD_TOLERANCE,
+  roundPaymentAmount,
+  safePaymentNumber,
+  sumActiveNonReceivablePaymentMethods,
+  sumCreditNoteApplications,
+} from '../../../../modules/invoice/utils/invoicePayment.util.js';
 
 const safeNumber = (value) => {
   const parsed = Number(value);
@@ -52,7 +59,9 @@ const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 
 const hasSelectedPhysicalStock = (product) =>
-  Boolean(toCleanString(product?.productStockId) && toCleanString(product?.batchId));
+  Boolean(
+    toCleanString(product?.productStockId) && toCleanString(product?.batchId),
+  );
 
 const shouldTrackProductInventory = (product) =>
   Boolean(product?.trackInventory) || hasSelectedPhysicalStock(product);
@@ -69,6 +78,82 @@ const normalizeClientToken = (value) =>
     .replace(/[^A-Z0-9]+/g, ' ');
 
 const resolveCartTotal = (cart) => safeNumber(cart?.totalPurchase?.value);
+
+const readCartMonetaryValue = (source) => {
+  if (!source || typeof source !== 'object' || Array.isArray(source)) {
+    return null;
+  }
+  return safePaymentNumber(source.value);
+};
+
+const resolveTrustedReceivableAmount = (cart) => {
+  const totalPurchase = readCartMonetaryValue(cart?.totalPurchase);
+  if (totalPurchase == null) return null;
+
+  const creditNotePayment = sumCreditNoteApplications(cart);
+  const methodPayment = sumActiveNonReceivablePaymentMethods(cart);
+  const actualPayment = readCartMonetaryValue(cart?.payment);
+  const nonReceivablePayment =
+    methodPayment ??
+    Math.max(roundPaymentAmount((actualPayment ?? 0) - creditNotePayment), 0);
+
+  return roundPaymentAmount(
+    Math.max(totalPurchase - nonReceivablePayment - creditNotePayment, 0),
+  );
+};
+
+export const buildTrustedAccountsReceivableFromInvoicePayload = ({
+  payload,
+  invoiceId,
+  nowMs,
+}) => {
+  const arData = asRecord(payload?.accountsReceivable);
+  const totalInstallments = Number(arData?.totalInstallments);
+  if (!Number.isFinite(totalInstallments) || totalInstallments <= 0) {
+    throw new https.HttpsError(
+      'invalid-argument',
+      'accountsReceivable.totalInstallments es requerido cuando isAddedToReceivables=true',
+      { reason: 'invalid-accounts-receivable' },
+    );
+  }
+
+  const totalReceivable = resolveTrustedReceivableAmount(payload?.cart);
+  if (totalReceivable == null) {
+    throw new https.HttpsError(
+      'invalid-argument',
+      'No se pudo recalcular el balance por cobrar desde la factura.',
+      { reason: 'invalid-accounts-receivable-total' },
+    );
+  }
+  if (totalReceivable <= PAYMENT_METHOD_TOLERANCE) {
+    throw new https.HttpsError(
+      'invalid-argument',
+      'La venta a credito no tiene balance pendiente por cobrar.',
+      { reason: 'invalid-accounts-receivable-balance' },
+    );
+  }
+
+  const normalizedInstallments = Math.trunc(totalInstallments);
+  const normalizedReceivable = roundPaymentAmount(totalReceivable);
+  const installmentAmount = roundPaymentAmount(
+    normalizedReceivable / normalizedInstallments,
+  );
+  const clientId = toCleanString(payload?.client?.id) || toCleanString(arData?.clientId);
+
+  return {
+    ...arData,
+    invoiceId,
+    clientId,
+    totalInstallments: normalizedInstallments,
+    totalReceivable: normalizedReceivable,
+    currentBalance: normalizedReceivable,
+    remainingBalance: normalizedReceivable,
+    arBalance: normalizedReceivable,
+    installmentAmount,
+    createdAt: arData.createdAt || nowMs,
+    updatedAt: arData.updatedAt || nowMs,
+  };
+};
 
 const resolveClientIdentificationNumber = (client) => {
   const clientRecord = asRecord(client);
@@ -315,7 +400,7 @@ export async function createPendingInvoice({
     const pilotMonetarySnapshot = rolloutEnabled
       ? await resolvePilotMonetarySnapshotForBusiness({
           businessId,
-          monetary: payload?.cart?.monetary,
+          monetary: null,
           source: payload?.cart,
           settings: accountingSettingsSnap?.exists
             ? accountingSettingsSnap.data()
@@ -585,14 +670,50 @@ export async function createPendingInvoice({
       `businesses/${businessId}/invoicesV2/${newInvoiceId}/outbox/${taskId}`,
     );
     const products = Array.isArray(payload?.cart?.products)
-      ? payload.cart.products.map((p) => ({
-          id: p.id,
-          name: p.name,
-          amountToBuy: p.amountToBuy,
-          trackInventory: shouldTrackProductInventory(p),
-          productStockId: p.productStockId,
-          batchId: p.batchId,
-        }))
+      ? payload.cart.products.map((p) => {
+          const selectedSaleUnit = p.selectedSaleUnit || p.saleUnit || null;
+          return {
+            id: p.id,
+            name: p.name,
+            amountToBuy: p.amountToBuy,
+            baseQuantity: p.baseQuantity,
+            lineId: p.lineId || p.cid || null,
+            selectedSaleUnit: selectedSaleUnit
+              ? {
+                  id: selectedSaleUnit.id || null,
+                  unitName: selectedSaleUnit.unitName || null,
+                  barcode:
+                    selectedSaleUnit.barcode ||
+                    selectedSaleUnit.qrcode ||
+                    selectedSaleUnit.qrCode ||
+                    selectedSaleUnit.sku ||
+                    null,
+                  quantity: selectedSaleUnit.quantity,
+                  conversionFactorToBase:
+                    selectedSaleUnit.conversionFactorToBase,
+                  allowFractional: selectedSaleUnit.allowFractional === true,
+                  pricing: selectedSaleUnit.pricing
+                    ? {
+                        currency: selectedSaleUnit.pricing.currency || null,
+                        price: selectedSaleUnit.pricing.price ?? null,
+                        listPrice: selectedSaleUnit.pricing.listPrice ?? null,
+                        tax: selectedSaleUnit.pricing.tax ?? null,
+                      }
+                    : null,
+                }
+              : null,
+            weightDetail: p.weightDetail
+              ? {
+                  isSoldByWeight: p.weightDetail.isSoldByWeight === true,
+                  weight: p.weightDetail.weight,
+                  weightUnit: p.weightDetail.weightUnit || null,
+                }
+              : null,
+            trackInventory: shouldTrackProductInventory(p),
+            productStockId: p.productStockId,
+            batchId: p.batchId,
+          };
+        })
       : [];
 
     tx.set(outboxRef, {
@@ -734,11 +855,18 @@ export async function createPendingInvoice({
 
     // Crear tarea de outbox: setupAR (Fase 4)
     const isAddedToReceivables = !!payload?.cart?.isAddedToReceivables;
-    const arData = payload?.accountsReceivable || null;
+    const nowMs = Date.now();
+    const trustedArData = isAddedToReceivables
+      ? buildTrustedAccountsReceivableFromInvoicePayload({
+          payload,
+          invoiceId: newInvoiceId,
+          nowMs,
+        })
+      : null;
     if (isAddedToReceivables) {
-      const totalInstallments = Number(arData?.totalInstallments);
+      const totalInstallments = Number(trustedArData?.totalInstallments);
       if (
-        !arData ||
+        !trustedArData ||
         !Number.isFinite(totalInstallments) ||
         totalInstallments <= 0
       ) {
@@ -751,14 +879,13 @@ export async function createPendingInvoice({
     }
     if (
       isAddedToReceivables &&
-      arData &&
-      Number(arData?.totalInstallments) > 0
+      trustedArData &&
+      Number(trustedArData?.totalInstallments) > 0
     ) {
       const arTaskId = nanoid();
       const arOutboxRef = db.doc(
         `businesses/${businessId}/invoicesV2/${newInvoiceId}/outbox/${arTaskId}`,
       );
-      const nowMs = Date.now();
       tx.set(arOutboxRef, {
         id: arTaskId,
         type: 'setupAR',
@@ -769,12 +896,8 @@ export async function createPendingInvoice({
         payload: {
           businessId,
           userId,
-          ar: {
-            ...arData,
-            createdAt: arData.createdAt || nowMs,
-            updatedAt: arData.updatedAt || nowMs,
-          },
-          clientId: payload?.client?.id || null,
+          ar: trustedArData,
+          clientId: trustedArData.clientId || null,
         },
       });
       auditTx(tx, {

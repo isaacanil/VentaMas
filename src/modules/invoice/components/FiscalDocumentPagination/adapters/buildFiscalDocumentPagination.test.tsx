@@ -114,12 +114,40 @@ describe('buildFiscalDocumentPagination', () => {
     expect(row.getByText('2')).toBeInTheDocument();
     expect(row.getByText('P001')).toBeInTheDocument();
     expect(row.getByText('Producto gravado')).toBeInTheDocument();
-    expect(row.getByText('1')).toBeInTheDocument();
+    expect(row.queryByText('Indicador: Exento')).not.toBeInTheDocument();
     expect(row.getByText('100.00')).toBeInTheDocument();
     expect(row.getByText('-')).toBeInTheDocument();
     expect(row.getByText('18.00')).toBeInTheDocument();
     expect(row.getByText('236.00')).toBeInTheDocument();
     expect(row.queryByText(/RD\$/)).not.toBeInTheDocument();
+  });
+
+  it('omits the generic fiscal indicator column and marks only exempt lines', () => {
+    const adapter = buildFiscalDocumentPagination(buildInvoiceModel());
+
+    render(
+      <>
+        {adapter.renderHeader({
+          isFirstPage: true,
+          isLastPage: true,
+          pageBlockCount: 2,
+          pageNumber: 1,
+          totalPages: 1,
+        })}
+        {adapter.blocks.map((block) => block.content)}
+      </>,
+    );
+
+    expect(screen.queryByText('Ind.')).not.toBeInTheDocument();
+
+    const rows = document.querySelectorAll('[data-print-block-role="product-line"]');
+    expect(rows).toHaveLength(2);
+    expect(
+      within(rows[0] as HTMLElement).queryByText('Indicador: Exento'),
+    ).not.toBeInTheDocument();
+    expect(
+      within(rows[1] as HTMLElement).getByText('Indicador: Exento'),
+    ).toBeInTheDocument();
   });
 
   it('repeats the client chrome on continuation pages', () => {
@@ -138,6 +166,10 @@ describe('buildFiscalDocumentPagination', () => {
     expect(screen.getByAltText('Logo del negocio')).toHaveAttribute(
       'src',
       'data:image/png;base64,logo',
+    );
+    expect(screen.getByAltText('Logo del negocio')).toHaveAttribute(
+      'data-print-optional-image',
+      'true',
     );
     expect(screen.getByText('Sucursal: Sucursal Central')).toBeInTheDocument();
     expect(screen.getByText('Sector: Piantini')).toBeInTheDocument();
@@ -159,6 +191,7 @@ describe('buildFiscalDocumentPagination', () => {
       screen.getByText('Fecha venc. e-NCF: 31/12/2026'),
     ).toBeInTheDocument();
     expect(screen.getByText('Descripcion')).toBeInTheDocument();
+    expect(screen.queryByText('Ind.')).not.toBeInTheDocument();
     expect(
       document.querySelector('[data-print-section="header-divider"]'),
     ).toBeInTheDocument();
@@ -234,9 +267,17 @@ describe('buildFiscalDocumentPagination', () => {
       'src',
       'data:image/png;base64,signature',
     );
+    expect(screen.getByAltText('Firma del negocio')).toHaveAttribute(
+      'data-print-optional-image',
+      'true',
+    );
     expect(screen.getByAltText('Sello del negocio')).toHaveAttribute(
       'src',
       'data:image/png;base64,stamp',
+    );
+    expect(screen.getByAltText('Sello del negocio')).toHaveAttribute(
+      'data-print-optional-image',
+      'true',
     );
     expect(screen.getByText('ABC123')).toBeInTheDocument();
     expect(screen.getByText('21/06/2026')).toBeInTheDocument();

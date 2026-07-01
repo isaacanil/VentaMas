@@ -205,6 +205,74 @@ describe('creditNotes.service', () => {
     expect(lastReadOrder).toBeLessThan(firstUpdateOrder);
   });
 
+  it('acumula entradas duplicadas de la misma nota antes de validar saldo', async () => {
+    const tx = txWithDocs({
+      creditNote: creditNoteDoc({
+        status: 'issued',
+        ncf: 'B0400000001',
+        totalAmount: 100,
+        availableAmount: 100,
+      }),
+    });
+
+    await expect(
+      consumeCreditNotesTx(tx, {
+        businessId: 'business-1',
+        userId: 'user-1',
+        invoiceId: 'invoice-1',
+        creditNotes: [
+          { id: 'credit-note-1', amountUsed: 60 },
+          { id: 'credit-note-1', amountUsed: 50 },
+        ],
+      }),
+    ).rejects.toThrow('Saldo insuficiente');
+
+    expect(tx.update).not.toHaveBeenCalled();
+    expect(tx.set).not.toHaveBeenCalled();
+  });
+
+  it('crea una sola aplicacion por nota duplicada cuando el saldo alcanza', async () => {
+    const tx = txWithDocs({
+      creditNote: creditNoteDoc({
+        status: 'issued',
+        ncf: 'B0400000001',
+        totalAmount: 100,
+        availableAmount: 100,
+      }),
+    });
+
+    const result = await consumeCreditNotesTx(tx, {
+      businessId: 'business-1',
+      userId: 'user-1',
+      invoiceId: 'invoice-1',
+      creditNotes: [
+        { id: 'credit-note-1', amountUsed: 60 },
+        { id: 'credit-note-1', amountUsed: 30 },
+      ],
+    });
+
+    expect(result.applicationIds).toEqual(['application-1']);
+    expect(tx.update).toHaveBeenCalledTimes(1);
+    expect(tx.update).toHaveBeenCalledWith(
+      { path: 'businesses/business-1/creditNotes/credit-note-1' },
+      expect.objectContaining({
+        availableAmount: 10,
+        status: 'applied',
+      }),
+    );
+    expect(tx.set).toHaveBeenCalledTimes(1);
+    expect(tx.set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/creditNoteApplications/application-1',
+      }),
+      expect.objectContaining({
+        amountApplied: 90,
+        previousBalance: 100,
+        newBalance: 10,
+      }),
+    );
+  });
+
   it('permite consumir una nota electronica aceptada fiscalmente', async () => {
     const tx = txWithDocs({
       creditNote: creditNoteDoc({

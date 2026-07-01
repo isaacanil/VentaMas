@@ -674,7 +674,7 @@ export const InsuranceAuthModal = () => {
 
       {isLoading ? (
         <LoadingContainer>
-          <Spin tip="Cargando datos de autorización...">
+          <Spin description="Cargando datos de autorización...">
             <SpinPlaceholder />
           </Spin>
         </LoadingContainer>

@@ -20,10 +20,16 @@ import {
   THRESHOLD,
   asRecord,
   buildPurchasePaymentState,
+  isActiveSupplierPaymentRecord,
+  isExplicitActiveSupplierPaymentStatus,
+  isInactiveSupplierPaymentStatus,
   normalizePaymentMethodsForAggregation,
+  normalizeSupplierPaymentStatus,
+  normalizeWithholdingApplicationsForAggregation,
   resolvePaymentAmount,
   resolvePaymentRecordCashAccountId,
   resolvePaymentRecordCashCountId,
+  resolvePaymentWithholdingAmount,
   resolvePurchaseDocumentTotal,
   resolvePurchaseSupplierId,
   roundToTwoDecimals,
@@ -34,6 +40,7 @@ import {
 import {
   buildCanonicalVendorBillIdFromPurchaseId,
   buildVendorBillProjection,
+  preserveVendorBillControlDetails,
 } from './vendorBill.shared.js';
 
 export { buildVendorBillProjection } from './vendorBill.shared.js';
@@ -41,7 +48,6 @@ export { buildVendorBillProjection } from './vendorBill.shared.js';
 const REGION = 'us-central1';
 const MEMORY = '256MiB';
 const NODE_VERSION = '20';
-const INACTIVE_PAYMENT_STATUSES = new Set(['void', 'draft']);
 
 const syncVendorBillPaymentState = async ({
   businessId,
@@ -69,14 +75,34 @@ const syncVendorBillPaymentState = async ({
     return;
   }
 
-  await vendorBillRef.set(vendorBillProjection, { merge: true });
+  const existingVendorBillSnap = await vendorBillRef.get();
+  const existingVendorBill = existingVendorBillSnap.exists
+    ? asRecord(existingVendorBillSnap.data())
+    : {};
+
+  await vendorBillRef.set(
+    preserveVendorBillControlDetails({
+      existingVendorBill,
+      vendorBillProjection,
+    }),
+    { merge: true },
+  );
 };
 
 const resolvePaymentStatus = (paymentRecord) =>
-  toCleanString(paymentRecord?.status)?.toLowerCase() || null;
+  normalizeSupplierPaymentStatus(paymentRecord?.status);
 
 const isActivePaymentStatus = (status) =>
-  Boolean(status) && !INACTIVE_PAYMENT_STATUSES.has(status);
+  isExplicitActiveSupplierPaymentStatus(status);
+
+const isPaymentInactivationTransition = ({
+  nextStatus,
+  previousPaymentExists,
+  previousStatus,
+}) =>
+  previousPaymentExists &&
+  (isActivePaymentStatus(previousStatus) || !previousStatus) &&
+  isInactiveSupplierPaymentStatus(nextStatus);
 
 const resolveCurrencyCode = (value) =>
   toCleanString(asRecord(value).code ?? value)?.toUpperCase() || null;
@@ -133,16 +159,29 @@ export const buildAccountsPayablePaymentAccountingEvents = ({
   if (!Object.keys(nextPayment).length) {
     return [];
   }
+  const previousPaymentExists = Object.keys(previousPayment).length > 0;
 
   const previousStatus = resolvePaymentStatus(previousPayment);
   const nextStatus = resolvePaymentStatus(nextPayment);
   const normalizedPaymentMethods =
     normalizePaymentMethodsForAggregation(nextPayment);
+  const withholdingApplications =
+    normalizeWithholdingApplicationsForAggregation(nextPayment);
+  const withholdingAmount = resolvePaymentWithholdingAmount(nextPayment);
   const supplierId =
     toCleanString(nextPayment.supplierId) ??
     toCleanString(nextPayment.counterpartyId) ??
     resolvePurchaseSupplierId(nextPayment);
   const paymentMonetarySnapshot = resolvePaymentMonetarySnapshot(nextPayment);
+  const paymentRunId =
+    toCleanString(nextPayment.paymentRunId) ??
+    toCleanString(nextPayment.metadata?.paymentRunId) ??
+    null;
+  const paymentRunStatusSnapshot = asRecord(
+    nextPayment.metadata?.paymentRunStatusSnapshot,
+  );
+  const hasPaymentRunStatusSnapshot =
+    Object.keys(paymentRunStatusSnapshot).length > 0;
   const commonPayload = {
     purchaseId: toCleanString(nextPayment.purchaseId) ?? null,
     vendorBillId:
@@ -160,10 +199,20 @@ export const buildAccountsPayablePaymentAccountingEvents = ({
       toCleanString(nextPayment.reference) ??
       toCleanString(nextPayment.metadata?.reference) ??
       null,
+    paymentRunId,
+    paymentRunStatusSnapshot: hasPaymentRunStatusSnapshot
+      ? paymentRunStatusSnapshot
+      : null,
     paymentMethods: serializePaymentMethods(normalizedPaymentMethods),
     appliedCreditNotes: Array.isArray(nextPayment.metadata?.appliedCreditNotes)
       ? nextPayment.metadata.appliedCreditNotes
       : [],
+    settlementAmount: roundToTwoDecimals(
+      safeNumber(nextPayment.settlementAmount ?? nextPayment.appliedAmount) ??
+        resolvePaymentAmount(nextPayment),
+    ),
+    withholdingApplications,
+    withholdingAmount,
   };
   const commonEventInput = {
     businessId,
@@ -189,10 +238,19 @@ export const buildAccountsPayablePaymentAccountingEvents = ({
       paymentChannel: resolveAccountingPaymentChannel(normalizedPaymentMethods),
     },
     payload: commonPayload,
+    metadata: {
+      paymentRunId,
+      paymentRunStatusSnapshot: hasPaymentRunStatusSnapshot
+        ? paymentRunStatusSnapshot
+        : null,
+    },
   };
   const events = [];
 
-  if (!isActivePaymentStatus(previousStatus) && isActivePaymentStatus(nextStatus)) {
+  if (
+    !isActivePaymentStatus(previousStatus) &&
+    isActivePaymentStatus(nextStatus)
+  ) {
     events.push(
       buildAccountingEvent({
         ...commonEventInput,
@@ -212,7 +270,13 @@ export const buildAccountsPayablePaymentAccountingEvents = ({
     );
   }
 
-  if (previousStatus !== 'void' && nextStatus === 'void') {
+  if (
+    isPaymentInactivationTransition({
+      nextStatus,
+      previousPaymentExists,
+      previousStatus,
+    })
+  ) {
     events.push(
       buildAccountingEvent({
         ...commonEventInput,
@@ -221,7 +285,11 @@ export const buildAccountsPayablePaymentAccountingEvents = ({
           ...commonPayload,
           reason:
             toCleanString(nextPayment.voidReason) ??
+            toCleanString(nextPayment.cancelReason) ??
+            toCleanString(nextPayment.cancellationReason) ??
             toCleanString(nextPayment.metadata?.voidReason) ??
+            toCleanString(nextPayment.metadata?.cancelReason) ??
+            toCleanString(nextPayment.metadata?.cancellationReason) ??
             null,
           restoredCreditNotes: Array.isArray(
             nextPayment.metadata?.restoredCreditNotes,
@@ -268,20 +336,34 @@ const syncCashMovementsForPayment = async ({
 }) => {
   const previousStatus = resolvePaymentStatus(beforePayment);
   const nextStatus = resolvePaymentStatus(afterPayment);
+  const previousPaymentExists = Boolean(beforePayment);
+  const paymentWasInactivated = isPaymentInactivationTransition({
+    nextStatus,
+    previousPaymentExists,
+    previousStatus,
+  });
+  const beforePaymentIsActive =
+    beforePayment && isActiveSupplierPaymentRecord(beforePayment);
+  const afterPaymentIsActive =
+    afterPayment && isActiveSupplierPaymentRecord(afterPayment);
   const beforeMovements = buildAccountsPayablePaymentCashMovements({
     businessId,
-    payment: beforePayment ? { ...beforePayment, id: paymentId } : null,
+    payment: beforePaymentIsActive
+      ? { ...beforePayment, id: paymentId }
+      : null,
     createdAt:
       beforePayment?.createdAt ?? beforePayment?.occurredAt ?? Date.now(),
   });
   const afterMovements = buildAccountsPayablePaymentCashMovements({
     businessId,
-    payment: afterPayment ? { ...afterPayment, id: paymentId } : null,
+    payment: afterPaymentIsActive
+      ? { ...afterPayment, id: paymentId }
+      : null,
     createdAt: afterPayment?.createdAt ?? afterPayment?.occurredAt ?? Date.now(),
   });
 
   const voidMovements =
-    previousStatus !== 'void' && nextStatus === 'void'
+    paymentWasInactivated
       ? buildAccountsPayablePaymentVoidCashMovements({
           businessId,
           payment: afterPayment ? { ...afterPayment, id: paymentId } : null,
@@ -294,7 +376,7 @@ const syncCashMovementsForPayment = async ({
       : [];
   const batch = db.batch();
   const afterIds = new Set(afterMovements.map((movement) => movement.id));
-  const shouldPreserveOriginalMovements = nextStatus === 'void';
+  const shouldPreserveOriginalMovements = paymentWasInactivated;
 
   if (!shouldPreserveOriginalMovements) {
     beforeMovements.forEach((movement) => {
@@ -355,10 +437,7 @@ const syncPurchasePaymentState = async ({ businessId, purchaseId }) => {
       id: paymentDoc.id,
       ...asRecord(paymentDoc.data()),
     }))
-    .filter((paymentRecord) => {
-      const status = toCleanString(paymentRecord.status)?.toLowerCase();
-      return status !== 'void' && status !== 'draft';
-    });
+    .filter((paymentRecord) => isActiveSupplierPaymentRecord(paymentRecord));
 
   const paid = roundToTwoDecimals(
     activePayments.reduce(

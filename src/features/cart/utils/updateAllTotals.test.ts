@@ -39,6 +39,80 @@ describe('updateAllTotals', () => {
     expect(state.data.mixedCurrencySale).toBe(false);
   });
 
+  it('calculates subtotal, taxes and total using weight for weighted products', () => {
+    const state = buildState();
+    state.settings.taxReceipt.enabled = true;
+    state.settings.fiscal.taxationEnabled = true;
+    state.data.products = [
+      {
+        id: 'weighted-1',
+        cid: 'weighted-1',
+        name: 'Cilantro por libra',
+        amountToBuy: 1,
+        weightDetail: {
+          isSoldByWeight: true,
+          weight: 2.5,
+          weightUnit: 'lb',
+        },
+        pricing: {
+          currency: 'DOP',
+          listPrice: 30,
+          price: 30,
+          tax: 18,
+        },
+        cost: {
+          total: 0,
+        },
+      },
+    ] as never;
+
+    updateAllTotals(state);
+
+    expect(state.data.totalPurchaseWithoutTaxes.value).toBe(75);
+    expect(state.data.totalTaxes.value).toBe(13.5);
+    expect(state.data.totalPurchase.value).toBe(88.5);
+    expect(state.data.totalShoppingItems.value).toBe(1);
+  });
+
+  it('applies individual discounts to weighted products before tax', () => {
+    const state = buildState();
+    state.settings.taxReceipt.enabled = true;
+    state.settings.fiscal.taxationEnabled = true;
+    state.data.products = [
+      {
+        id: 'weighted-discount-1',
+        cid: 'weighted-discount-1',
+        name: 'Queso por libra',
+        amountToBuy: 1,
+        weightDetail: {
+          isSoldByWeight: true,
+          weight: 2.5,
+          weightUnit: 'lb',
+        },
+        pricing: {
+          currency: 'DOP',
+          listPrice: 100,
+          price: 100,
+          tax: 18,
+        },
+        discount: {
+          type: 'percentage',
+          value: 10,
+        },
+        cost: {
+          total: 0,
+        },
+      },
+    ] as never;
+
+    updateAllTotals(state);
+
+    expect(state.data.totalPurchaseWithoutTaxes.value).toBe(225);
+    expect(state.data.totalTaxes.value).toBe(40.5);
+    expect(state.data.totalPurchase.value).toBe(265.5);
+    expect(state.data.totalShoppingItems.value).toBe(1);
+  });
+
   it('forces the functional currency when the sale mixes currencies and uses active payment methods', () => {
     const state = buildState();
     state.settings.taxReceipt.enabled = true;

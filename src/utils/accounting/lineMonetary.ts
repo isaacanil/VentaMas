@@ -15,8 +15,8 @@ import {
 import { resolveInvoiceDocumentCurrency } from '@/utils/invoice/documentCurrency';
 import {
   getDiscount,
+  getProductsPrice,
   getTax,
-  getTotal,
   getTotalPrice,
   limit,
 } from '@/utils/pricing';
@@ -172,7 +172,7 @@ export const getCartProductCurrencies = (
 
 export const getFunctionalProductSubtotal = (product: ProductLike): number =>
   limit(
-    getTotal(product as never) *
+    getProductsPrice([product as never]) *
       (toFiniteNumber(product?.monetary?.exchangeRate) || 1),
   );
 

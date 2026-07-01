@@ -15,6 +15,32 @@ const toCleanString = (value) => {
   return trimmed.length ? trimmed : null;
 };
 
+const roundCurrency = (value) =>
+  Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+
+const normalizeCreditNotesForConsumption = (creditNotes) => {
+  const grouped = new Map();
+  for (const note of Array.isArray(creditNotes) ? creditNotes : []) {
+    const id = toCleanString(note?.id);
+    const amountUsed = Number(note?.amountUsed);
+    if (!id || !(amountUsed > 0)) continue;
+
+    const existing = grouped.get(id);
+    if (existing) {
+      existing.amountUsed = roundCurrency(existing.amountUsed + amountUsed);
+      continue;
+    }
+
+    grouped.set(id, {
+      ...note,
+      id,
+      amountUsed: roundCurrency(amountUsed),
+    });
+  }
+
+  return Array.from(grouped.values());
+};
+
 const isElectronicCreditNote = (creditNote) => {
   return isElectronicAdjustmentNote(creditNote, { ncfPrefix: 'E34' });
 };
@@ -182,7 +208,8 @@ export async function consumeCreditNotesTx(
   tx,
   { businessId, userId, invoiceId, creditNotes = [] },
 ) {
-  if (!Array.isArray(creditNotes) || creditNotes.length === 0)
+  const normalizedCreditNotes = normalizeCreditNotesForConsumption(creditNotes);
+  if (normalizedCreditNotes.length === 0)
     return { applicationIds: [] };
 
   const canonicalInvoiceRef = db.doc(
@@ -212,7 +239,7 @@ export async function consumeCreditNotesTx(
   const applicationWrites = [];
   const creditNoteWrites = [];
 
-  for (const note of creditNotes) {
+  for (const note of normalizedCreditNotes) {
     if (!note?.id || !(Number(note?.amountUsed) > 0)) continue;
 
     const cnRef = db.doc(`businesses/${businessId}/creditNotes/${note.id}`);

@@ -1,11 +1,12 @@
 import styled from 'styled-components';
 
-import { VmLabel } from '@/components/heroui';
+import { VmLabel, VmTabs } from '@/components/heroui';
 
 import type { DatePickerPresetLayout } from '../types';
 
 interface PresetsContainerProps {
   $layout: DatePickerPresetLayout;
+  $isMobile?: boolean;
 }
 
 interface DropdownItemProps {
@@ -16,23 +17,42 @@ interface PresetButtonProps {
   $layout: DatePickerPresetLayout;
   $active?: boolean;
   $isToggle?: boolean;
+  $isMobile?: boolean;
 }
 
 export const PresetsContainer = styled.div<PresetsContainerProps>`
-  border: 1px solid #d9d9d9;
-  border-radius: 6px;
-  padding: ${({ $layout }: PresetsContainerProps) =>
-    $layout === 'sidebar' ? '12px 2px 12px 12px' : '12px'};
-  padding-bottom: ${({ $layout }: PresetsContainerProps) =>
-    $layout === 'sidebar' ? '0' : '12px'};
+  border: ${({ $isMobile }: PresetsContainerProps) =>
+    $isMobile ? '0' : '1px solid #d9d9d9'};
+  border-radius: ${({ $isMobile }: PresetsContainerProps) =>
+    $isMobile ? '0' : '6px'};
+  padding: ${({ $layout, $isMobile }: PresetsContainerProps) => {
+    if ($isMobile) return '2px 0 6px';
+    return $layout === 'sidebar' ? '12px 2px 12px 12px' : '12px';
+  }};
+  padding-bottom: ${({ $layout, $isMobile }: PresetsContainerProps) =>
+    $isMobile ? '6px' : $layout === 'sidebar' ? '0' : '12px'};
   height: ${({ $layout }: PresetsContainerProps) =>
     $layout === 'sidebar' ? '100%' : 'auto'};
 `;
 
-export const PresetsGrid = styled.div`
+export const PresetsGrid = styled.div<{ $isMobile?: boolean }>`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  grid-template-columns: ${({ $isMobile }) =>
+    $isMobile ? 'none' : 'repeat(3, 1fr)'};
+  grid-template-rows: ${({ $isMobile }) =>
+    $isMobile ? 'repeat(2, minmax(34px, auto))' : 'none'};
+  grid-auto-flow: ${({ $isMobile }) => ($isMobile ? 'column' : 'row')};
+  grid-auto-columns: ${({ $isMobile }) => ($isMobile ? 'max-content' : 'auto')};
+  gap: ${({ $isMobile }) => ($isMobile ? '8px' : '12px')};
+  max-width: 100%;
+  overflow-x: ${({ $isMobile }) => ($isMobile ? 'auto' : 'visible')};
+  padding-inline: ${({ $isMobile }) => ($isMobile ? '1px' : '0')};
+  scrollbar-width: none;
+  scroll-padding-inline: 1px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 export const PresetsDropdownContainer = styled.div`
@@ -115,17 +135,30 @@ export const DropdownItem = styled.button<DropdownItemProps>`
 `;
 
 export const PresetButton = styled.button<PresetButtonProps>`
-  width: ${({ $layout }: PresetButtonProps) =>
-    $layout === 'sidebar' ? '100%' : 'auto'};
-  text-align: ${({ $layout }: PresetButtonProps) =>
-    $layout === 'sidebar' ? 'left' : 'center'};
-  justify-content: ${({ $layout }: PresetButtonProps) =>
-    $layout === 'sidebar' ? 'flex-start' : 'center'};
+  width: ${({ $layout, $isMobile }: PresetButtonProps) =>
+    $isMobile
+      ? 'auto'
+      : $layout === 'sidebar'
+        ? '100%'
+        : 'auto'};
+  flex: ${({ $isMobile }: PresetButtonProps) =>
+    $isMobile ? '0 0 auto' : 'initial'};
+  min-height: ${({ $isMobile }: PresetButtonProps) =>
+    $isMobile ? '34px' : 'auto'};
+  text-align: ${({ $layout, $isMobile }: PresetButtonProps) =>
+    $isMobile ? 'center' : $layout === 'sidebar' ? 'left' : 'center'};
+  justify-content: ${({ $layout, $isMobile }: PresetButtonProps) =>
+    $isMobile
+      ? 'center'
+      : $layout === 'sidebar'
+        ? 'flex-start'
+        : 'center'};
   display: flex;
   align-items: center;
   gap: ${({ $layout }: PresetButtonProps) =>
     $layout === 'sidebar' ? '10px' : '0'};
-  padding: 10px 16px;
+  padding: ${({ $isMobile }: PresetButtonProps) =>
+    $isMobile ? '7px 12px' : '10px 16px'};
   border: 1px solid
     ${({ $active, $isToggle }: PresetButtonProps) => {
       if ($isToggle) return '#bfbfbf';
@@ -133,7 +166,8 @@ export const PresetButton = styled.button<PresetButtonProps>`
     }};
   border-width: ${({ $isToggle }: PresetButtonProps) =>
     $isToggle ? '2px' : '1px'};
-  border-radius: 4px;
+  border-radius: ${({ $isMobile }: PresetButtonProps) =>
+    $isMobile ? '999px' : '4px'};
   background: ${({ $active, $isToggle }: PresetButtonProps) => {
     if ($isToggle) return '#f5f5f5';
     return $active ? '#1890ff' : 'white';
@@ -142,7 +176,8 @@ export const PresetButton = styled.button<PresetButtonProps>`
     if ($isToggle) return '#6b7280';
     return $active ? 'white' : '#374151';
   }};
-  font-size: 14px;
+  font-size: ${({ $isMobile }: PresetButtonProps) =>
+    $isMobile ? '13px' : '14px'};
   cursor: pointer;
   transition: all 0.3s;
   font-weight: 500;
@@ -162,6 +197,61 @@ export const PresetButton = styled.button<PresetButtonProps>`
 
   &:active {
     transform: translateY(1px);
+  }
+`;
+
+export const MobilePresetTabs = styled(VmTabs)`
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+
+  > [data-slot='tabs-list-container'] {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  > [data-slot='tabs-list-container'] > [data-slot='tabs-list'] {
+    width: max-content;
+    min-width: 100%;
+    max-width: none;
+  }
+
+  > [data-slot='tabs-panel'] {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+    outline: none;
+  }
+`;
+
+export const MobilePresetGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+
+  ${PresetButton} {
+    width: 100%;
+    min-width: 0;
+    min-height: 38px;
+    padding: 8px 10px;
+    white-space: normal;
+    line-height: 1.2;
   }
 `;
 

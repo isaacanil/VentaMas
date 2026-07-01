@@ -10,12 +10,12 @@ import styled from 'styled-components';
 
 import { CellRenderer } from '@/components/ui/AdvancedTable/components/CellRenderer/CellRenderer';
 import { Row } from '@/components/ui/AdvancedTable/components/Table/TableRow.styles';
-import { CenteredText } from '@/components/ui/CenteredText';
 import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/types/AdvancedTableTypes';
 import type { TableRow } from '@/components/ui/AdvancedTable/types/ColumnTypes';
 
 const Body = styled.div<{ $loading?: boolean }>`
   position: relative;
+  min-height: 100%;
   opacity: ${({ $loading }) => ($loading ? 0.6 : 1)};
   transition: opacity 0.3s ease-in-out;
 `;
@@ -187,7 +187,11 @@ export const TableBody = <RowData extends TableRow>({
               </Fragment>
             );
           })}
-      {!currentData.length && <CenteredText text={emptyText} />}
+      {!loading && !currentData.length && (
+        <EmptyState aria-live="polite">
+          <EmptyStateText>{emptyText}</EmptyStateText>
+        </EmptyState>
+      )}
     </Container>
   );
 
@@ -195,13 +199,34 @@ export const TableBody = <RowData extends TableRow>({
 };
 
 const Container = styled.div`
+  position: relative;
   display: grid;
   gap: 0.2em 1em;
   align-content: flex-start;
+  min-height: 100%;
 
   &[data-border='on'] {
     row-gap: 0;
   }
+`;
+
+const EmptyState = styled.div`
+  position: sticky;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: min(100%, 100vw);
+  min-height: 220px;
+  padding: 24px 16px;
+  pointer-events: none;
+`;
+
+const EmptyStateText = styled.div`
+  max-width: min(420px, calc(100vw - 32px));
+  color: var(--ds-color-text-secondary, #555);
+  font-size: 14px;
+  line-height: 1.45;
+  text-align: center;
 `;
 const GroupHeader = styled.div`
   padding: 10px;

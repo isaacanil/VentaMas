@@ -1,5 +1,6 @@
 import type {
   ProductBatchInfo,
+  ProductSaleUnit,
   SupportedDocumentCurrency,
 } from '../../types/products';
 import type {
@@ -55,13 +56,8 @@ export interface Product {
     tax?: number | string;
     [key: string]: any;
   };
-  selectedSaleUnit?: {
-    pricing: {
-      currency?: SupportedDocumentCurrency;
-      price: number;
-    };
-    [key: string]: any;
-  } | null;
+  selectedSaleUnit?: ProductSaleUnit | null;
+  baseQuantity?: number | null;
   monetary?: ProductMonetarySnapshot | null;
   insurance?: {
     mode: string | null;

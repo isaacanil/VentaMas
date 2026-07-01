@@ -47,6 +47,7 @@ import {
   isFormValidationError,
   normalizePricingForForm,
   normalizePricingForUpdate,
+  normalizeProductForStudioSubmit,
   toProductPreviewSnapshot,
 } from '../utils/productStudioForm';
 import type { ProductRecord } from '@/types/products';
@@ -125,10 +126,13 @@ export const useProductStudioController = () => {
   const previewMetrics = useProductPreviewMetrics(previewSnapshot);
   const sectionDomIds = useMemo(
     () =>
-      FORM_SECTIONS.reduce<Record<SectionId, string>>((acc, section) => {
-        acc[section.id] = getSectionDomId(section.id);
-        return acc;
-      }, {} as Record<SectionId, string>),
+      FORM_SECTIONS.reduce<Record<SectionId, string>>(
+        (acc, section) => {
+          acc[section.id] = getSectionDomId(section.id);
+          return acc;
+        },
+        {} as Record<SectionId, string>,
+      ),
     [],
   );
 
@@ -233,10 +237,20 @@ export const useProductStudioController = () => {
   }, [productIdFromParams, loadProductById, resetToCreateState]);
 
   const handleValuesChange = useCallback(
-    (changedValues: Partial<ProductFormValues>) => {
+    (
+      changedValues: Partial<ProductFormValues>,
+      allValues: ProductFormValues,
+    ) => {
       const key = getFieldKey(changedValues);
       if (!key) return;
-      const value = changedValues[key];
+      const value =
+        key === 'saleUnits' ? allValues.saleUnits : changedValues[key];
+      const isEditingProduct = isUpdateMode || status === 'update';
+
+      if (key === 'stock' && isEditingProduct) {
+        form.setFieldsValue({ stock: product?.stock ?? 0 });
+        return;
+      }
 
       if (key === 'pricing') {
         const currentPricing = normalizePricingForForm(product?.pricing) || {};
@@ -280,7 +294,7 @@ export const useProductStudioController = () => {
         form.setFieldsValue({ brandId: BRAND_DEFAULT_OPTION_VALUE });
       }
     },
-    [dispatch, form, product, productBrands],
+    [dispatch, form, isUpdateMode, product, productBrands, status],
   );
 
   const handleSubmit = useCallback(() => {
@@ -297,7 +311,9 @@ export const useProductStudioController = () => {
     form
       .validateFields()
       .then(async () => {
-        const sanitizedProduct = buildSanitizedProductForSubmit(product);
+        const productForSubmit = normalizeProductForStudioSubmit(product);
+        const sanitizedProduct =
+          buildSanitizedProductForSubmit(productForSubmit);
         if (!sanitizedProduct) {
           throw new Error('No hay datos de producto para guardar.');
         }

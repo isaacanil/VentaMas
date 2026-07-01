@@ -41,7 +41,8 @@ import {
   isPaginatedDomInvoiceTemplate,
   isProgrammaticLetterPdfTemplate,
 } from '@/utils/invoice/template';
-import { getProductsTax, getTotalItems } from '@/utils/pricing';
+import { getProductsTax } from '@/utils/pricing';
+import { resolveInvoiceProductsQuantity } from '@/utils/invoice/product';
 import { Invoice } from '@/modules/invoice/components/Invoice/components/Invoice/Invoice';
 import { FiscalDocumentPaginatedPrintHost } from '@/modules/invoice/components/FiscalDocumentPagination/FiscalDocumentPaginatedPrintHost';
 import { VmDropdown } from '@/components/heroui';
@@ -648,7 +649,7 @@ const SaleReportTable = ({
       date: invoiceDateSeconds,
       itbis: getProductsTax((data?.products || []) as any),
       payment: Number(data?.payment?.value ?? 0),
-      products: getTotalItems((data?.products || []) as any),
+      products: resolveInvoiceProductsQuantity(data?.products ?? []),
       change: Number(data?.change?.value ?? 0),
       total: paymentInfo.total,
       paymentStatus: paymentInfo,

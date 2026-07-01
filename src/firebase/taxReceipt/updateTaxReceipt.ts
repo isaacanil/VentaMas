@@ -1,17 +1,22 @@
 import {
   doc,
-  updateDoc,
   collection,
   query,
   where,
   orderBy,
   limit,
   getDocs,
+  runTransaction,
 } from 'firebase/firestore';
 
 import type { TaxReceiptData, TaxReceiptUser } from '@/types/taxReceipt';
 import { db } from '@/firebase/firebaseconfig'; // Assuming firebaseconfig.js is in the parent directory
-import { normalizeTaxReceiptData } from '@/utils/taxReceipt';
+import {
+  getTaxReceiptIdentity,
+  hasMatchingTaxReceiptIdentity,
+  isActiveTaxReceiptData,
+  normalizeTaxReceiptData,
+} from '@/utils/taxReceipt';
 
 /**
  * Extrae el número de secuencia de un código NCF
@@ -96,20 +101,43 @@ export const updateTaxReceipt = async (
   }
 
   try {
-    const receiptRef = doc(
-      db,
-      'businesses',
-      user.businessID,
-      'taxReceipts',
-      data.id,
-    );
+    const receiptPath = ['businesses', user.businessID, 'taxReceipts'] as const;
+    const receiptRef = doc(db, ...receiptPath, data.id);
+    const receiptsRef = collection(db, ...receiptPath);
 
-    const normalizedData = normalizeTaxReceiptData(data);
+    const normalizedData = normalizeTaxReceiptData(data) as TaxReceiptData;
 
     // Asegurar que el ID siempre esté presente en los datos guardados
     normalizedData.id = data.id;
 
-    await updateDoc(receiptRef, { data: normalizedData });
+    const receiptSnapshot = await getDocs(receiptsRef);
+
+    if (isActiveTaxReceiptData(normalizedData)) {
+      const duplicate = receiptSnapshot.docs.find((receiptDoc) => {
+        if (receiptDoc.id === data.id) return false;
+        const existingData = receiptDoc.data()?.data as
+          | Partial<TaxReceiptData>
+          | undefined;
+        return (
+          isActiveTaxReceiptData(existingData) &&
+          hasMatchingTaxReceiptIdentity(existingData, normalizedData)
+        );
+      });
+
+      if (duplicate) {
+        const duplicateData = duplicate.data()?.data as
+          | Partial<TaxReceiptData>
+          | undefined;
+        const duplicateIdentity = getTaxReceiptIdentity(duplicateData);
+        throw new Error(
+          `Ya existe otro comprobante activo con la misma identidad fiscal (${duplicateIdentity.fiscalKey || duplicateIdentity.name}).`,
+        );
+      }
+    }
+
+    await runTransaction(db, async (transaction) => {
+      transaction.update(receiptRef, { data: normalizedData });
+    });
     console.log(`Tax receipt ${data.id} updated successfully.`);
   } catch (error) {
     const errorMessage =

@@ -1,6 +1,7 @@
 import { CREDIT_NOTE_STATUS_LABEL } from '@/constants/creditNoteStatus';
 import { formatTimestamp } from '@/utils/format';
-import { getTax, getTotalPrice } from '@/utils/pricing';
+import { resolveInvoiceProductQuantity } from '@/utils/invoice/product';
+import { getActiveUnitPrice, getTax, getTotalPrice } from '@/utils/pricing';
 import type { CreditNoteRecord } from '@/types/creditNote';
 import type { InvoiceProduct } from '@/types/invoice';
 
@@ -84,8 +85,8 @@ const formatCreditNoteDetailed = (creditNotes: CreditNoteRecord[]) => {
         Cliente: client?.name || 'Cliente Genérico',
         Producto: item.name || 'N/A',
         Categoría: item.category || 'N/A',
-        Cantidad: ensureNumber(item.amountToBuy || 1),
-        'Precio Unitario': ensureNumber(item.pricing?.price || item.price || 0),
+        Cantidad: ensureNumber(resolveInvoiceProductQuantity(item)),
+        'Precio Unitario': ensureNumber(getActiveUnitPrice(item)),
         'ITBIS Item': ensureNumber(itemItbis),
         'Total Item': ensureNumber(itemTotal),
         'Total ITBIS NC': ensureNumber(totalItbis),

@@ -1,9 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  CHART_OF_ACCOUNTS_MAX_LEVEL,
   collectChartOfAccountDescendantIds,
   DEFAULT_CHART_OF_ACCOUNTS_TEMPLATE,
+  buildChartOfAccountChildrenByParentId,
+  buildChartOfAccountsById,
+  getChartOfAccountLevel,
+  getChartOfAccountMaxDescendantDepth,
+  isChartOfAccountPostingAllowedForEntries,
   normalizeChartOfAccountRecord,
+  resolveChartOfAccountClassification,
   sortChartOfAccountsForDisplay,
 } from '@/utils/accounting/chartOfAccounts';
 
@@ -169,5 +176,73 @@ describe('chartOfAccounts', () => {
     expect(
       sortChartOfAccountsForDisplay(accounts).map((account) => account.id),
     ).toEqual(['assets', 'cash', 'bank', 'income']);
+  });
+
+  it('clasifica cuentas mayor y detalle segun hijos y permiso de asiento', () => {
+    const accounts = [
+      normalizeChartOfAccountRecord('root', 'business-1', {
+        code: '1000',
+        name: 'Activos',
+        type: 'asset',
+        postingAllowed: true,
+      }),
+      normalizeChartOfAccountRecord('detail', 'business-1', {
+        code: '1100',
+        name: 'Caja',
+        type: 'asset',
+        parentId: 'root',
+        postingAllowed: true,
+      }),
+      normalizeChartOfAccountRecord('manual-major', 'business-1', {
+        code: '1200',
+        name: 'Bancos',
+        type: 'asset',
+        postingAllowed: false,
+      }),
+    ];
+    const childrenByParentId = buildChartOfAccountChildrenByParentId(accounts);
+
+    expect(
+      resolveChartOfAccountClassification(
+        accounts[0],
+        childrenByParentId.get('root')?.length ?? 0,
+      ),
+    ).toBe('major');
+    expect(
+      resolveChartOfAccountClassification(
+        accounts[1],
+        childrenByParentId.get('detail')?.length ?? 0,
+      ),
+    ).toBe('detail');
+    expect(
+      resolveChartOfAccountClassification(
+        accounts[2],
+        childrenByParentId.get('manual-major')?.length ?? 0,
+      ),
+    ).toBe('major');
+    expect(isChartOfAccountPostingAllowedForEntries(accounts[0], 1)).toBe(
+      false,
+    );
+    expect(isChartOfAccountPostingAllowedForEntries(accounts[1], 0)).toBe(true);
+  });
+
+  it('calcula nivel hasta el sexto nivel y profundidad de descendientes', () => {
+    const accounts = Array.from({ length: CHART_OF_ACCOUNTS_MAX_LEVEL }).map(
+      (_, index) =>
+        normalizeChartOfAccountRecord(`level-${index + 1}`, 'business-1', {
+          code: `1${index + 1}00`,
+          name: `Nivel ${index + 1}`,
+          type: 'asset',
+          parentId: index === 0 ? null : `level-${index}`,
+        }),
+    );
+    const accountsById = buildChartOfAccountsById(accounts);
+    const childrenByParentId = buildChartOfAccountChildrenByParentId(accounts);
+
+    expect(getChartOfAccountLevel(accounts[0], accountsById)).toBe(1);
+    expect(getChartOfAccountLevel(accounts[5], accountsById)).toBe(6);
+    expect(
+      getChartOfAccountMaxDescendantDepth('level-1', childrenByParentId),
+    ).toBe(5);
   });
 });

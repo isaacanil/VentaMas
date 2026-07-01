@@ -4,10 +4,12 @@ import {
   DOMINICAN_PROVINCE_CODES,
   DOMINICAN_PROVINCE_CODE_SET,
 } from '../utils/dominicanLocationCodes.util.js';
+import { normalizeValidDominicanTaxId } from '../utils/dominicanTaxId.util.js';
 import { resolveGisysDocumentType } from '../utils/gisysDocumentType.util.js';
 
 const DEFAULT_CURRENCY = 'DOP';
 const DEFAULT_BUYER_NAME = 'Consumidor Final';
+const DGII_CONSUMER_FINAL_DETAIL_THRESHOLD = 250000;
 const GISYS_INVOICE_INTERNAL_ID_MAX_LENGTH = 20;
 const GISYS_INVOICE_INTERNAL_ID_HASH_PREFIX = 'VM';
 const PROVINCE_MUNICIPALITY_CODE_PATTERN = /^\d{6}$/;
@@ -40,6 +42,7 @@ const ITEM_KIND = Object.freeze({
 });
 const TAXED_AMOUNT_INDICATOR_DOCUMENT_TYPES = new Set([
   'E31',
+  'E32',
   'E33',
   'E34',
   'E41',
@@ -412,6 +415,11 @@ const resolveUnitPrice = (product) =>
   ) ?? 0;
 
 const resolveQuantity = (product) => {
+  if (product?.weightDetail?.isSoldByWeight === true) {
+    const weight = pickNumber(product?.weightDetail?.weight);
+    if (weight > 0) return weight;
+  }
+
   const quantity =
     pickNumber(
       product?.amountToBuy,
@@ -600,7 +608,23 @@ const buildPayments = (cart, grandTotal) => {
   return [{ form: '1', amount: roundAmount(fallbackAmount) }];
 };
 
-const buildBuyer = ({ client, documentType }) => {
+const resolveBuyerTaxId = ({ optional, values }) => {
+  const fallback = pickString(...values);
+  const normalized = normalizeValidDominicanTaxId(fallback);
+  if (normalized) return normalized;
+  return optional ? null : fallback;
+};
+
+const isBuyerTaxIdOptional = ({ documentType, totals }) => {
+  const grandTotal = toFiniteNumber(totals?.grandTotal, null);
+  return (
+    documentType === 'E32' &&
+    grandTotal !== null &&
+    grandTotal < DGII_CONSUMER_FINAL_DETAIL_THRESHOLD
+  );
+};
+
+const buildBuyer = ({ client, documentType, totals }) => {
   const buyer = asRecord(client);
   const identification = asRecord(buyer.identification);
   const name =
@@ -611,24 +635,28 @@ const buildBuyer = ({ client, documentType }) => {
       buyer.companyName,
       buyer.commercialName,
     ) || (documentType === 'E32' ? DEFAULT_BUYER_NAME : null);
+  const taxIdValues = [
+    buyer.rnc,
+    buyer.RNC,
+    buyer.rncCedula,
+    buyer.identification,
+    buyer.identificationNumber,
+    buyer.documentNumber,
+    buyer.personalID,
+    buyer.personalId,
+    buyer.taxId,
+    buyer.cedula,
+    identification.rnc,
+    identification.rncCedula,
+    identification.number,
+    identification.value,
+  ];
 
   return pruneUndefined({
-    rncCedula: pickString(
-      buyer.rnc,
-      buyer.RNC,
-      buyer.rncCedula,
-      buyer.identification,
-      buyer.identificationNumber,
-      buyer.documentNumber,
-      buyer.personalID,
-      buyer.personalId,
-      buyer.taxId,
-      buyer.cedula,
-      identification.rnc,
-      identification.rncCedula,
-      identification.number,
-      identification.value,
-    ),
+    rncCedula: resolveBuyerTaxId({
+      optional: isBuyerTaxIdOptional({ documentType, totals }),
+      values: taxIdValues,
+    }),
     foreignId: pickString(buyer.foreignId),
     name,
     contactName: pickString(buyer.contactName),
@@ -978,7 +1006,7 @@ export const buildGisysIssuePayload = ({
         totals,
       }),
       issuer: buildIssuer({ business, providerConfig }),
-      buyer: buildBuyer({ client, documentType }),
+      buyer: buildBuyer({ client, documentType, totals }),
       payments: buildPayments(cart, totals.grandTotal),
       items,
       totals,

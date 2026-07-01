@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 
+import { OPERATION_MODES } from '@/constants/modes';
 import { selectAR } from '@/features/accountsReceivable/accountsReceivableSlice';
 import { selectAppMode } from '@/features/appModes/appModeSlice';
 import { selectBusinessData } from '@/features/auth/businessSlice';
@@ -20,6 +21,7 @@ import type {
   PaymentMethod,
 } from '@/features/cart/types';
 import { selectClient } from '@/features/clientCart/clientCartSlice';
+import { toggleClientModal } from '@/features/modals/modalSlice';
 import { selectInsuranceAR } from '@/features/insurance/insuranceAccountsReceivableSlice';
 import { selectInsuranceAuthData } from '@/features/insurance/insuranceAuthSlice';
 import {
@@ -43,6 +45,7 @@ import { useInvoicePanelPaymentBootstrap } from './useInvoicePanelPaymentBootstr
 import { buildInvoiceSubmissionIdempotencyKey } from '../utils/invoiceSubmissionIdempotency';
 import { processInvoicePrint } from '../utils/processInvoicePrint';
 import { submitInvoicePanel } from '../utils/submitInvoicePanel';
+import type { ClientFiscalDataActionRequest } from '../utils/submitInvoicePanel';
 
 type BusinessLike = {
   id?: string | null;
@@ -57,27 +60,36 @@ type LoadingState = {
 };
 
 type InvoicePanelUiState = {
+  clientFiscalDataAction: ClientFiscalDataActionRequest | null;
   invoice: InvoiceData | null;
   pendingPaginatedPrint: boolean;
   pendingPrint: boolean;
+  printRecoveryReason: string | null;
   submitted: boolean;
   taxReceiptModalOpen: boolean;
   loading: LoadingState;
 };
 
 type InvoicePanelUiAction =
+  | {
+      type: 'setClientFiscalDataAction';
+      payload: ClientFiscalDataActionRequest | null;
+    }
   | { type: 'setInvoice'; payload: InvoiceData | null }
   | { type: 'setPendingPaginatedPrint'; payload: boolean }
   | { type: 'setPendingPrint'; payload: boolean }
+  | { type: 'setPrintRecoveryReason'; payload: string | null }
   | { type: 'setSubmitted'; payload: boolean }
   | { type: 'setTaxReceiptModalOpen'; payload: boolean }
   | { type: 'setLoading'; payload: LoadingState }
   | { type: 'resetPanelUiState' };
 
 const initialInvoicePanelUiState: InvoicePanelUiState = {
+  clientFiscalDataAction: null,
   invoice: null,
   pendingPaginatedPrint: false,
   pendingPrint: false,
+  printRecoveryReason: null,
   submitted: false,
   taxReceiptModalOpen: false,
   loading: {
@@ -91,12 +103,16 @@ const invoicePanelUiReducer = (
   action: InvoicePanelUiAction,
 ): InvoicePanelUiState => {
   switch (action.type) {
+    case 'setClientFiscalDataAction':
+      return { ...state, clientFiscalDataAction: action.payload };
     case 'setInvoice':
       return { ...state, invoice: action.payload };
     case 'setPendingPaginatedPrint':
       return { ...state, pendingPaginatedPrint: action.payload };
     case 'setPendingPrint':
       return { ...state, pendingPrint: action.payload };
+    case 'setPrintRecoveryReason':
+      return { ...state, printRecoveryReason: action.payload };
     case 'setSubmitted':
       return { ...state, submitted: action.payload };
     case 'setTaxReceiptModalOpen':
@@ -106,6 +122,8 @@ const invoicePanelUiReducer = (
     case 'resetPanelUiState':
       return {
         ...state,
+        clientFiscalDataAction: null,
+        printRecoveryReason: null,
         submitted: false,
         taxReceiptModalOpen: false,
       };
@@ -137,7 +155,8 @@ export const useInvoicePanelController = () => {
   );
   const { invoice, pendingPrint, submitted, taxReceiptModalOpen, loading } =
     uiState;
-  const { pendingPaginatedPrint } = uiState;
+  const { clientFiscalDataAction, pendingPaginatedPrint } = uiState;
+  const { printRecoveryReason } = uiState;
 
   const [idempotencySeed, resetIdempotencySeed] = useReducer(
     () => `gen:${nanoid()}`,
@@ -162,6 +181,31 @@ export const useInvoicePanelController = () => {
   const handleInvoicePanel = useCallback(() => {
     dispatch(toggleInvoicePanelOpen(undefined));
   }, [dispatch]);
+
+  const closeClientFiscalDataAction = useCallback(() => {
+    dispatchUi({ type: 'setClientFiscalDataAction', payload: null });
+  }, []);
+
+  const requestClientFiscalDataAction = useCallback(
+    (request: ClientFiscalDataActionRequest) => {
+      dispatchUi({ type: 'setClientFiscalDataAction', payload: request });
+    },
+    [],
+  );
+
+  const handleEditClientFiscalData = useCallback(() => {
+    if (!clientFiscalDataAction) return;
+
+    dispatchUi({ type: 'setClientFiscalDataAction', payload: null });
+    handleInvoicePanel();
+    dispatch(
+      toggleClientModal({
+        mode: OPERATION_MODES.UPDATE.id,
+        data: clientFiscalDataAction.client,
+        addClientToCart: true,
+      }),
+    );
+  }, [clientFiscalDataAction, dispatch, handleInvoicePanel]);
 
   const cart = useSelector(SelectCartData) as CartData;
   const cartSettings = useSelector(SelectSettingCart) as CartSettings;
@@ -298,6 +342,7 @@ export const useInvoicePanelController = () => {
     dispatchUi({ type: 'setInvoice', payload: null });
     dispatchUi({ type: 'setPendingPaginatedPrint', payload: false });
     dispatchUi({ type: 'setPendingPrint', payload: false });
+    dispatchUi({ type: 'setPrintRecoveryReason', payload: null });
     handleCancelShipping({ dispatch, viewport, clearTaxReceipt: true });
 
     const defaultReceipt =
@@ -408,6 +453,7 @@ export const useInvoicePanelController = () => {
   );
 
   const handlePaginatedPrintComplete = useCallback(() => {
+    dispatchUi({ type: 'setPrintRecoveryReason', payload: null });
     dispatchUi({ type: 'setPendingPaginatedPrint', payload: false });
     handleAfterPrint();
   }, [handleAfterPrint]);
@@ -415,17 +461,25 @@ export const useInvoicePanelController = () => {
   const handlePaginatedPrintBlocked = useCallback((reason: string) => {
     console.warn('[InvoicePanel] paginated invoice print blocked', reason);
     dispatchUi({ type: 'setPendingPaginatedPrint', payload: false });
+    dispatchUi({ type: 'setPrintRecoveryReason', payload: reason });
     dispatchUi({
       type: 'setLoading',
       payload: { status: false, message: '' },
     });
-    dispatch(unlockTaxReceiptType());
-    notification.error({
-      message: 'Impresión paginada bloqueada',
-      description: `No se imprimió la factura ni se usó la plantilla clásica. Diagnóstico: ${reason}`,
-      duration: 0,
+    notification.warning({
+      message: 'Impresión paginada pendiente',
+      description:
+        'La factura ya fue creada. Reintenta la impresión paginada para completar el cierre.',
+      duration: 6,
     });
-  }, [dispatch]);
+  }, []);
+
+  const retryPaginatedPrint = useCallback(() => {
+    if (!invoice) return;
+
+    dispatchUi({ type: 'setPrintRecoveryReason', payload: null });
+    dispatchUi({ type: 'setPendingPaginatedPrint', payload: true });
+  }, [invoice]);
 
   const showCancelSaleConfirm = () => {
     AntdModal.confirm({
@@ -478,6 +532,7 @@ export const useInvoicePanelController = () => {
       buildIdempotencyKey,
       onIdempotencyConflict: resetIdempotencySeed,
       ncfType,
+      requestClientFiscalDataAction,
       resolvedBusinessId,
       runInvoice,
       setInvoice: setPanelInvoice,
@@ -531,6 +586,9 @@ export const useInvoicePanelController = () => {
     invoice,
     invoicePanel,
     business,
+    clientFiscalDataAction,
+    closeClientFiscalDataAction,
+    handleEditClientFiscalData,
     isAddedToReceivables,
     isAnyPaymentEnabled,
     isChangeNegative,
@@ -538,6 +596,8 @@ export const useInvoicePanelController = () => {
     ncfType,
     resolvedBusinessId,
     pendingPaginatedPrint,
+    printRecoveryReason,
+    retryPaginatedPrint,
     retryWithTaxReceipt,
     showCancelSaleConfirm,
     submitted,

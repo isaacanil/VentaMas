@@ -135,8 +135,10 @@ export default function SegmentForm(_props: SegmentFormProps) {
       destroyOnClose
     >
       <Spin
+        description={
+          formData?.id ? 'Actualizando segmento...' : 'Creando segmento...'
+        }
         spinning={loading}
-        tip={formData?.id ? 'Actualizando segmento...' : 'Creando segmento...'}
       >
         <Form
           form={form}

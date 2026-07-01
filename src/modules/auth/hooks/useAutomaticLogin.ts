@@ -1,9 +1,9 @@
 import { Modal } from 'antd';
-import { signInWithCustomToken, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signInWithCustomToken, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import {
   INACTIVITY_WARNING,
@@ -29,7 +29,14 @@ import { createFirebaseCallable } from '@/firebase/functions/callable';
 import { normalizeCurrentUserContext } from '@/utils/auth-adapter';
 
 const EXPIRY_WARNING_WINDOW_MS = 24 * 60 * 60 * 1000; // 24h
+const AUTH_HYDRATION_TIMEOUT_MS = 2500;
 const RETRY_DELAYS_MS = [2000, 5000];
+const PUBLIC_AUTH_PATHS = new Set([
+  '/',
+  '/login',
+  '/signup',
+  '/claim-business',
+]);
 
 const ACTIVITY_EVENTS = [
   'mousedown',
@@ -40,10 +47,12 @@ const ACTIVITY_EVENTS = [
   'focus',
 ];
 
-const AUTH_ERROR_CODES = [
+const AUTH_LIKE_ERROR_CODES = [
   'unauthenticated',
   'permission-denied',
   'invalid-argument',
+  'failed-precondition',
+  'not-found',
 ];
 
 const TRANSIENT_SESSION_ERROR_CODES = [
@@ -52,6 +61,32 @@ const TRANSIENT_SESSION_ERROR_CODES = [
   'resource-exhausted',
   'aborted',
   'internal',
+];
+
+const SILENT_STALE_SESSION_HINTS = [
+  'sesion no encontrada',
+  'sesión no encontrada',
+  'token de sesion requerido',
+  'token de sesión requerido',
+];
+
+const TERMINAL_SESSION_ERROR_HINTS = [
+  'sesion ha expirado',
+  'sesión ha expirado',
+  'sesion cerrada por inactividad',
+  'sesión cerrada por inactividad',
+  'usuario no encontrado',
+  'no se encontro el usuario',
+  'no se encontró el usuario',
+  'usuario esta inactivo',
+  'usuario está inactivo',
+  'no tiene acceso activo',
+  'no tienes acceso activo',
+  'negocio esta en estado',
+  'negocio está en estado',
+  'access-revoked',
+  'revoked',
+  'inactive',
 ];
 
 type SessionStatus = 'idle' | 'checking' | 'ready';
@@ -180,9 +215,27 @@ const getErrorMessage = (error: unknown): string => {
   return '';
 };
 
-const isAuthError = (error: unknown): boolean => {
+const includesAnyHint = (value: string, hints: string[]): boolean =>
+  hints.some((hint) => value.includes(hint));
+
+const isAuthLikeError = (error: unknown): boolean => {
   const code = getErrorCode(error).toLowerCase();
-  return AUTH_ERROR_CODES.some((errCode) => code.includes(errCode));
+  return AUTH_LIKE_ERROR_CODES.some((errCode) => code.includes(errCode));
+};
+
+const isTerminalSessionError = (error: unknown): boolean => {
+  if (!isAuthLikeError(error)) return false;
+  const message = getErrorMessage(error).toLowerCase();
+  return includesAnyHint(message, [
+    ...SILENT_STALE_SESSION_HINTS,
+    ...TERMINAL_SESSION_ERROR_HINTS,
+  ]);
+};
+
+const isSilentStaleSessionError = (error: unknown): boolean => {
+  if (!isAuthLikeError(error)) return false;
+  const message = getErrorMessage(error).toLowerCase();
+  return includesAnyHint(message, SILENT_STALE_SESSION_HINTS);
 };
 
 const isTransientSessionError = (error: unknown): boolean => {
@@ -202,10 +255,58 @@ const isTransientSessionError = (error: unknown): boolean => {
     'unavailable',
     'temporarily',
     'offline',
+    'firebasecustomtoken',
   ];
 
   return transientMessageHints.some((hint) => message.includes(hint));
 };
+
+const isRecoverableSessionError = (error: unknown): boolean =>
+  isTransientSessionError(error) ||
+  (isAuthLikeError(error) && !isTerminalSessionError(error));
+
+const isInitialRefreshSource = (source: string): boolean =>
+  source === 'initial' || source.startsWith('initial-');
+
+const isPublicAuthPath = (pathname: string): boolean =>
+  PUBLIC_AUTH_PATHS.has(pathname);
+
+const waitForCurrentFirebaseUser = (userId: string): Promise<boolean> =>
+  new Promise((resolve) => {
+    let settled = false;
+    let shouldUnsubscribe = false;
+    let unsubscribe: (() => void) | null = null;
+
+    const finish = (matched: boolean) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      if (unsubscribe) {
+        unsubscribe();
+      } else {
+        shouldUnsubscribe = true;
+      }
+      resolve(matched);
+    };
+
+    const timer = setTimeout(() => {
+      finish(auth.currentUser?.uid === userId);
+    }, AUTH_HYDRATION_TIMEOUT_MS);
+
+    unsubscribe = onAuthStateChanged(
+      auth,
+      (user) => {
+        finish(user?.uid === userId);
+      },
+      () => {
+        finish(false);
+      },
+    );
+
+    if (shouldUnsubscribe) {
+      unsubscribe();
+    }
+  });
 
 const ensureFirebaseAuthSession = async (
   userId: string | null | undefined,
@@ -217,6 +318,8 @@ const ensureFirebaseAuthSession = async (
 
   const currentUser = auth.currentUser;
   if (currentUser?.uid === userId) return;
+
+  if (await waitForCurrentFirebaseUser(userId)) return;
 
   if (typeof firebaseCustomToken !== 'string' || !firebaseCustomToken.trim()) {
     throw new Error('Sesión inválida: faltó firebaseCustomToken.');
@@ -236,8 +339,10 @@ const ensureFirebaseAuthSession = async (
 export function useAutomaticLogin() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const modalKeyRef = useRef<string | null>(null);
+  const currentPathnameRef = useRef(location.pathname);
   const lastActivityRef = useRef<number>(Date.now());
   const userIdRef = useRef<string | null>(null);
   const isMountedRef = useRef(true);
@@ -254,6 +359,8 @@ export function useAutomaticLogin() {
   const [error, setError] = useState<Error | null>(null);
   const [sessionExpiredDialogOpen, setSessionExpiredDialogOpen] =
     useState(false);
+
+  currentPathnameRef.current = location.pathname;
 
   const openModalOnce = useCallback(
     (key: string, renderModal: (reset: () => void) => void) => {
@@ -472,9 +579,17 @@ export function useAutomaticLogin() {
 
           lastActivityRef.current = Date.now();
           resetRetryState();
+          if (isMountedRef.current) {
+            setStatus('ready');
+          }
           return { ok: true, session };
         } catch (refreshError) {
-          const logSessionRefreshError = isTransientSessionError(refreshError)
+          const isTerminalError = isTerminalSessionError(refreshError);
+          const isSilentStaleSession =
+            isSilentStaleSessionError(refreshError);
+          const isRecoverableError = isRecoverableSessionError(refreshError);
+          const logSessionRefreshError =
+            isRecoverableError || isSilentStaleSession
             ? console.warn
             : console.error;
           logSessionRefreshError(
@@ -494,9 +609,14 @@ export function useAutomaticLogin() {
             };
           }
 
-          if (isAuthError(refreshError)) {
-            showSessionExpiredModal();
-            await handleLogout({ redirect: true });
+          if (isTerminalError) {
+            const isOnPublicAuthPath = isPublicAuthPath(
+              currentPathnameRef.current,
+            );
+            if (!isOnPublicAuthPath && !isSilentStaleSession) {
+              showSessionExpiredModal();
+            }
+            await handleLogout({ redirect: !isOnPublicAuthPath });
             return {
               ok: false,
               reason: 'invalid-session',
@@ -505,21 +625,23 @@ export function useAutomaticLogin() {
           }
 
           if (isMountedRef.current) {
-            const message = isTransientSessionError(refreshError)
+            const message = isRecoverableError
               ? 'No se pudo renovar la sesión. Reintentaremos pronto.'
               : 'No se pudo renovar la sesión.';
             setError(
               refreshError instanceof Error ? refreshError : new Error(message),
             );
-            setStatus('ready');
+            setStatus(
+              isRecoverableError && isInitialRefreshSource(source)
+                ? 'checking'
+                : 'ready',
+            );
           }
 
           scheduleRetry(source);
           return {
             ok: false,
-            reason: isTransientSessionError(refreshError)
-              ? 'transient-error'
-              : 'error',
+            reason: isRecoverableError ? 'transient-error' : 'error',
             error: refreshError,
           };
         } finally {
@@ -619,6 +741,10 @@ export function useAutomaticLogin() {
                 ? result.error
                 : new Error(getErrorMessage(result.error) || 'Error de sesión');
             setErrorSafe(err);
+          }
+          if (result?.reason === 'transient-error') {
+            setStatusSafe('checking');
+            return;
           }
           dispatch(setAuthReady());
           setStatusSafe('ready');

@@ -1,4 +1,9 @@
 import {
+  normalizeSaleUnitForCart,
+  resolveProductBaseQuantity,
+  resolveSaleUnitConversionFactor,
+} from '@/domain/products/saleUnits';
+import {
   PRODUCT_ITEM_TYPE_OPTIONS,
   initTaxes,
 } from '@/domain/products/productDefaults';
@@ -45,7 +50,9 @@ export const normalizeItemType = (
   value: unknown,
   rawType?: unknown,
 ): ProductItemType => {
-  const itemTypeValues = PRODUCT_ITEM_TYPE_OPTIONS.map((option) => option.value);
+  const itemTypeValues = PRODUCT_ITEM_TYPE_OPTIONS.map(
+    (option) => option.value,
+  );
   if (typeof value === 'string') {
     const normalized = value.trim().toLowerCase();
     if ((itemTypeValues as string[]).includes(normalized)) {
@@ -119,16 +126,29 @@ export const normalizePricingForPersistence = (
     normalized.currency,
   ) as SupportedDocumentCurrency;
   normalized.cost = toFiniteNumber(normalized.cost, 0);
-  normalized.price = toFiniteNumber(normalized.price, 0);
-  const fallbackPrice = normalized.price ?? 0;
-  normalized.listPrice = toFiniteNumber(normalized.listPrice, fallbackPrice);
-  normalized.avgPrice = toFiniteNumber(normalized.avgPrice, fallbackPrice);
-  normalized.minPrice = toFiniteNumber(normalized.minPrice, fallbackPrice);
+  const canonicalListPrice = resolveCanonicalListPrice(normalized);
+  normalized.listPrice = canonicalListPrice;
+  normalized.price = canonicalListPrice;
+  normalized.avgPrice = toFiniteNumber(normalized.avgPrice, canonicalListPrice);
+  normalized.minPrice = toFiniteNumber(normalized.minPrice, canonicalListPrice);
   normalized.cardPrice = toFiniteNumber(normalized.cardPrice, 0);
   normalized.offerPrice = toFiniteNumber(normalized.offerPrice, 0);
   normalized.tax = normalizeTaxPercentage(normalized.tax);
   return normalized;
 };
+
+export const resolveCanonicalListPrice = (
+  pricing: ProductPricing | null | undefined,
+): number => {
+  if (!pricing || typeof pricing !== 'object') return 0;
+  const price = toFiniteNumber(pricing.price, 0);
+  const listPrice = toFiniteNumber(pricing.listPrice, 0);
+  return listPrice > 0 ? listPrice : price > 0 ? price : 0;
+};
+
+export const normalizePricingForRead = (
+  pricing: ProductPricing = {},
+): ProductPricing => normalizePricingForPersistence(pricing);
 
 export const normalizeProductForPersistence = (
   rawProduct: ProductRecord,
@@ -145,7 +165,7 @@ export const normalizeProductForPersistence = (
   if (Array.isArray(normalizedProduct.saleUnits)) {
     normalizedProduct.saleUnits = normalizedProduct.saleUnits.map((unit) => {
       if (!unit || typeof unit !== 'object') return unit as ProductSaleUnit;
-      const normalizedUnit: ProductSaleUnit = { ...unit };
+      const normalizedUnit: ProductSaleUnit = normalizeSaleUnitForCart(unit);
       if (normalizedUnit.pricing) {
         normalizedUnit.pricing = normalizePricingForPersistence(
           normalizedUnit.pricing,
@@ -156,7 +176,7 @@ export const normalizeProductForPersistence = (
   }
   if (normalizedProduct.selectedSaleUnit) {
     normalizedProduct.selectedSaleUnit = {
-      ...normalizedProduct.selectedSaleUnit,
+      ...normalizeSaleUnitForCart(normalizedProduct.selectedSaleUnit),
       pricing: normalizePricingForPersistence(
         normalizedProduct.selectedSaleUnit.pricing || {},
       ),
@@ -185,8 +205,20 @@ export const normalizeProductForPersistence = (
     normalizedProduct.amountToBuy,
     1,
   );
+  if (normalizedProduct.selectedSaleUnit) {
+    normalizedProduct.selectedSaleUnit.conversionFactorToBase =
+      resolveSaleUnitConversionFactor(normalizedProduct.selectedSaleUnit);
+    normalizedProduct.selectedSaleUnit.quantity =
+      normalizedProduct.selectedSaleUnit.conversionFactorToBase;
+  }
+  normalizedProduct.baseQuantity =
+    resolveProductBaseQuantity(normalizedProduct);
   return normalizedProduct;
 };
+
+export const normalizeProductForRead = (
+  rawProduct: ProductRecord,
+): ProductRecord => normalizeProductForPersistence(rawProduct);
 
 export const buildNormalizedProductSnapshot = (
   product: ProductRecord | null | undefined,

@@ -9,7 +9,7 @@ import { selectUser } from '@/features/auth/userSlice';
 import { openModalUpdateProd } from '@/features/modals/modalSlice';
 import {
   ChangeProductData,
-  selectUpdateProductData,
+  clearUpdateProductData,
 } from '@/features/updateProduct/updateProductSlice';
 import { hasDeveloperAccess } from '@/utils/access/developerAccess';
 
@@ -17,18 +17,27 @@ export const AddProductButton = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector(selectUser);
-  const { product } = useSelector(selectUpdateProductData);
 
   const handleOpen = () => {
+    dispatch(clearUpdateProductData());
     dispatch(openModalUpdateProd());
     dispatch(
-      ChangeProductData({ product, status: OPERATION_MODES.CREATE.label }),
+      ChangeProductData({ product: {}, status: OPERATION_MODES.CREATE.label }),
     );
+  };
+
+  const handleOpenStudioCreate = () => {
+    dispatch(clearUpdateProductData());
+    dispatch(
+      ChangeProductData({ product: {}, status: OPERATION_MODES.CREATE.label }),
+    );
+    navigate('/inventory/product-studio');
   };
 
   if (hasDeveloperAccess(user)) {
     return (
       <Dropdown
+        trigger={['click']}
         menu={{
           items: [
             {
@@ -41,7 +50,7 @@ export const AddProductButton = () => {
               label: 'Crear en ProductStudio',
               key: '2',
               icon: <ToolOutlined />,
-              onClick: () => navigate('/inventory/product-studio'),
+              onClick: handleOpenStudioCreate,
             },
           ],
         }}

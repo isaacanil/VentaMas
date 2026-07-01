@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   getChange,
+  getActiveUnitPrice,
   getProductsIndividualDiscounts,
   getProductsTax,
   getProductsTotalPrice,
@@ -44,6 +45,32 @@ describe('pricing', () => {
     expect(getProductsTax([product])).toBe(36);
   });
 
+  it('resolves the active unit price from selected sale units without losing explicit zero', () => {
+    expect(
+      getActiveUnitPrice({
+        price: { unit: 999 },
+        pricing: { price: 100, tax: 18 },
+        selectedSaleUnit: {
+          id: 'box',
+          pricing: { price: 250 },
+        },
+      }),
+    ).toBe(250);
+
+    expect(
+      getActiveUnitPrice({
+        price: { unit: 999 },
+        pricing: { price: 100, tax: 18 },
+        selectedSaleUnit: {
+          id: 'promo',
+          pricing: { price: 0 },
+        },
+      }),
+    ).toBe(0);
+
+    expect(getActiveUnitPrice({ price: { unit: 45 } })).toBe(45);
+  });
+
   it('supports weighted products and aggregates item counts separately', () => {
     const weightedProduct = {
       amountToBuy: 4,
@@ -59,6 +86,53 @@ describe('pricing', () => {
 
     expect(getTotalPrice(weightedProduct)).toBe(354);
     expect(getTotalItems([weightedProduct, { amountToBuy: 3 }])).toBe(7);
+  });
+
+  it('applies individual discounts consistently to weighted products', () => {
+    const weightedProduct = {
+      amountToBuy: 1,
+      weightDetail: {
+        isSoldByWeight: true,
+        weight: 2.5,
+        weightUnit: 'lb',
+      },
+      pricing: {
+        price: 100,
+        tax: 18,
+      },
+      discount: {
+        type: 'percentage',
+        value: 10,
+      },
+    };
+
+    expect(getTotal(weightedProduct)).toBe(225);
+    expect(getProductsIndividualDiscounts([weightedProduct])).toBe(25);
+    expect(getProductsTax([weightedProduct])).toBe(40.5);
+    expect(getTotalPrice(weightedProduct)).toBe(265.5);
+    expect(getProductsTotalPrice([weightedProduct])).toBe(265.5);
+  });
+
+  it('caps fixed individual discounts for weighted products before tax', () => {
+    const weightedProduct = {
+      amountToBuy: 1,
+      weightDetail: {
+        isSoldByWeight: true,
+        weight: 2.5,
+      },
+      pricing: {
+        price: 100,
+        tax: 18,
+      },
+      discount: {
+        type: 'amount',
+        value: 300,
+      },
+    };
+
+    expect(getTotal(weightedProduct)).toBe(0);
+    expect(getProductsTax([weightedProduct])).toBe(0);
+    expect(getProductsTotalPrice([weightedProduct])).toBe(0);
   });
 
   it('does not apply general discount when products already have individual discounts', () => {

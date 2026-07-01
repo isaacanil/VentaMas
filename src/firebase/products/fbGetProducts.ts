@@ -33,6 +33,10 @@ import {
 } from '@/features/filterProduct/filterProductsSlice';
 import { db } from '@/firebase/firebaseconfig';
 import {
+  normalizeProductForRead,
+  resolveCanonicalListPrice,
+} from '@/domain/products/normalization';
+import {
   isProductExplicitlyInventoryTracked,
   isProductExplicitlyNotInventoryTracked,
   resolveProductInventoryItemType,
@@ -45,6 +49,8 @@ type NamedItem = { name?: string | null };
 type StockThresholds = { lowThreshold?: number; criticalThreshold?: number };
 type StockIndex = Record<string, Record<string, number>>;
 type ServerAppliedFilters = Partial<Record<string, boolean>>;
+
+const WAREHOUSE_STOCK_INDEX_FALLBACK_DELAY_MS = 3500;
 
 const normalizeTaxValue = (value: unknown): number | null => {
   if (value === null || value === undefined || value === '') return null;
@@ -105,12 +111,12 @@ function filterProducts(
   if (!serverApplied.priceStatus) {
     if (priceStatus === 'sinPrecio') {
       productsArray = productsArray.filter((product) => {
-        const price = Number(product?.pricing?.price ?? 0);
+        const price = resolveCanonicalListPrice(product?.pricing);
         return !Number.isFinite(price) || price <= 0;
       });
     } else if (priceStatus === 'conPrecio') {
       productsArray = productsArray.filter((product) => {
-        const price = Number(product?.pricing?.price ?? 0);
+        const price = resolveCanonicalListPrice(product?.pricing);
         return Number.isFinite(price) && price > 0;
       });
     }
@@ -283,7 +289,15 @@ function orderingProducts(
 
   if (criterio === 'nombre') handleOrdering('name', orden);
   if (criterio === 'inventariable') handleOrdering('trackInventory', orden);
-  if (criterio === 'precio') handleOrdering('pricing.price', orden);
+  if (criterio === 'precio') {
+    productsArray.sort((a, b) => {
+      const valueA = resolveCanonicalListPrice(a?.pricing);
+      const valueB = resolveCanonicalListPrice(b?.pricing);
+      if (orden === 'ascNum' || orden === 'asc') return valueA - valueB;
+      if (orden === 'descNum' || orden === 'desc') return valueB - valueA;
+      return 0;
+    });
+  }
   if (criterio === 'costo') handleOrdering('pricing.cost', orden);
   if (criterio === 'stock') handleOrdering('stock', orden);
   if (criterio === 'categoria') handleOrdering('category', orden);
@@ -305,7 +319,12 @@ export const fbGetProducts = async (
       'products',
     );
     const snapshot = await getDocs(productsRef);
-    const allProducts = snapshot.docs.map((doc) => doc.data() as ProductRecord);
+    const allProducts = snapshot.docs.map((doc) =>
+      normalizeProductForRead({
+        id: doc.id,
+        ...(doc.data() as ProductRecord),
+      }),
+    );
     return allProducts;
   } catch (error) {
     console.error('Error al obtener todos los productos:', error);
@@ -376,10 +395,12 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
   );
 
   const [warehouseStockState, setWarehouseStockState] = useState<{
+    fallbackOpen?: boolean;
     scopeKey: string;
     index: StockIndex;
     ready: boolean;
   }>({
+    fallbackOpen: false,
     scopeKey: '',
     index: {},
     ready: false,
@@ -435,6 +456,20 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
     const warehouseLoaded: Record<string, boolean> = {};
     const expectedWarehouses = selectedWarehouses.length;
     let isMounted = true;
+    const fallbackTimeout = window.setTimeout(() => {
+      if (!isMounted) return;
+      setWarehouseStockState((current) => {
+        if (current.scopeKey === currentStockScopeKey && current.ready) {
+          return current;
+        }
+        return {
+          fallbackOpen: true,
+          scopeKey: currentStockScopeKey,
+          index: {},
+          ready: true,
+        };
+      });
+    }, WAREHOUSE_STOCK_INDEX_FALLBACK_DELAY_MS);
 
     const unsubscribes = selectedWarehouses.map((warehouseId) => {
       const lowerBound = warehouseId;
@@ -451,6 +486,7 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
         locationQuery,
         (snapshot) => {
           if (!isMounted) return;
+          window.clearTimeout(fallbackTimeout);
           warehouseDocsMap[warehouseId] = snapshot.docs.map(
             (doc) => doc.data() as Record<string, unknown>,
           );
@@ -482,15 +518,21 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
               ? Object.keys(warehouseLoaded).length >= expectedWarehouses
               : true;
           setWarehouseStockState({
+            fallbackOpen: false,
             scopeKey: currentStockScopeKey,
             index: aggregatedMap,
             ready: allReady,
           });
         },
         (error) => {
-          console.error('Error al escuchar stock filtrado por almacén:', error);
+          console.warn(
+            'No se pudo escuchar stock filtrado por almacén; se mostrarán productos sin bloquear la venta:',
+            error,
+          );
           if (isMounted) {
+            window.clearTimeout(fallbackTimeout);
             setWarehouseStockState({
+              fallbackOpen: true,
               scopeKey: currentStockScopeKey,
               index: {},
               ready: true,
@@ -502,6 +544,7 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
 
     return () => {
       isMounted = false;
+      window.clearTimeout(fallbackTimeout);
       unsubscribes.forEach((unsubscribe) => {
         if (typeof unsubscribe === 'function') unsubscribe();
       });
@@ -519,6 +562,8 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
     () => (hasCurrentWarehouseStock ? warehouseStockState.index : {}),
     [hasCurrentWarehouseStock, warehouseStockState.index],
   );
+  const isWarehouseStockFallbackOpen =
+    hasCurrentWarehouseStock && warehouseStockState.fallbackOpen === true;
   const stockIndexReady =
     !stockFilterActive ||
     (hasCurrentWarehouseStock && warehouseStockState.ready);
@@ -553,6 +598,10 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
       // Mejor devolver null para indicar que espere
       if (!stockIndexReady) return null;
 
+      if (isWarehouseStockFallbackOpen) {
+        return base.map(baseMapper);
+      }
+
       const result: ProductRecord[] = [];
       for (const product of base) {
         const productId = product.id ?? '';
@@ -572,6 +621,7 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
     [
       stockFilterActive,
       stockIndexReady,
+      isWarehouseStockFallbackOpen,
       selectedWarehouses,
       warehouseStockIndex,
     ],
@@ -609,7 +659,10 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
               createdBy: ___,
               ...cleanDoc
             } = docData as Record<string, unknown>;
-            return cleanDoc as ProductRecord;
+            return normalizeProductForRead({
+              id: item.id,
+              ...(cleanDoc as ProductRecord),
+            });
           }
           return docData;
         });
@@ -739,10 +792,12 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
     () => ({
       filterActive: stockFilterActive,
       selectedWarehouses,
+      stockIndexFallbackOpen: isWarehouseStockFallbackOpen,
       stockIndexReady,
       visibleStockTotal: processedData.total,
     }),
     [
+      isWarehouseStockFallbackOpen,
       stockFilterActive,
       selectedWarehouses,
       stockIndexReady,

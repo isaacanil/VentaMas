@@ -51,43 +51,53 @@ const formatLineMoneyForTable = (
     ? value.replace(/^(-?)RD\$/, '$1')
     : (value ?? '-');
 
+const buildPrintableDescriptionLines = (
+  line: InvoicePrintLineModel,
+): string[] => [
+  ...line.descriptionLines,
+  ...(line.billingIndicator === '4' ? ['Indicador: Exento'] : []),
+];
+
 const renderLineBlock = (
   model: InvoicePrintDocumentModel,
   line: InvoicePrintLineModel,
   index: number,
-): ReactElement => (
-  <Styles.ProductRow
-    $tone={index % 2 === 0 ? 'soft' : 'plain'}
-    data-print-block-id={line.id}
-    data-print-block-role="product-line"
-  >
-    <Styles.BodyCell $align="center">{line.quantity}</Styles.BodyCell>
-    <Styles.BodyCell>{line.code}</Styles.BodyCell>
-    <Styles.DescriptionCell>
-      {line.descriptionLines.map((descriptionLine, lineIndex) => (
-        <Styles.DescriptionLine
-          key={`${line.id}-description-${lineIndex}`}
-          $muted={lineIndex > 0}
-        >
-          {descriptionLine}
-        </Styles.DescriptionLine>
-      ))}
-    </Styles.DescriptionCell>
-    <Styles.BodyCell $align="center">{line.billingIndicator}</Styles.BodyCell>
-    <Styles.BodyCell $align="right">
-      {formatLineMoneyForTable(line.unitPrice, model)}
-    </Styles.BodyCell>
-    <Styles.BodyCell $align="right">
-      {formatLineMoneyForTable(line.discount, model)}
-    </Styles.BodyCell>
-    <Styles.BodyCell $align="right">
-      {formatLineMoneyForTable(line.tax, model)}
-    </Styles.BodyCell>
-    <Styles.BodyCell $align="right">
-      {formatLineMoneyForTable(line.total, model)}
-    </Styles.BodyCell>
-  </Styles.ProductRow>
-);
+): ReactElement => {
+  const descriptionLines = buildPrintableDescriptionLines(line);
+
+  return (
+    <Styles.ProductRow
+      $tone={index % 2 === 0 ? 'soft' : 'plain'}
+      data-print-block-id={line.id}
+      data-print-block-role="product-line"
+    >
+      <Styles.BodyCell $align="center">{line.quantity}</Styles.BodyCell>
+      <Styles.BodyCell>{line.code}</Styles.BodyCell>
+      <Styles.DescriptionCell>
+        {descriptionLines.map((descriptionLine, lineIndex) => (
+          <Styles.DescriptionLine
+            key={`${line.id}-description-${lineIndex}`}
+            $muted={lineIndex > 0}
+          >
+            {descriptionLine}
+          </Styles.DescriptionLine>
+        ))}
+      </Styles.DescriptionCell>
+      <Styles.BodyCell $align="right">
+        {formatLineMoneyForTable(line.unitPrice, model)}
+      </Styles.BodyCell>
+      <Styles.BodyCell $align="right">
+        {formatLineMoneyForTable(line.discount, model)}
+      </Styles.BodyCell>
+      <Styles.BodyCell $align="right">
+        {formatLineMoneyForTable(line.tax, model)}
+      </Styles.BodyCell>
+      <Styles.BodyCell $align="right">
+        {formatLineMoneyForTable(line.total, model)}
+      </Styles.BodyCell>
+    </Styles.ProductRow>
+  );
+};
 
 const renderSummaryBlock = (
   model: InvoicePrintDocumentModel,
@@ -208,6 +218,7 @@ const renderSignatureCanvas = (
         <Styles.SignatureImage
           src={signatureAssets.signatureUrl}
           alt="Firma del negocio"
+          data-print-optional-image="true"
           $offsetX={signatureAssets.signature.offsetX}
           $offsetY={signatureAssets.signature.offsetY}
           $scale={signatureAssets.signature.scale}
@@ -217,6 +228,7 @@ const renderSignatureCanvas = (
         <Styles.StampImage
           src={signatureAssets.stampUrl}
           alt="Sello del negocio"
+          data-print-optional-image="true"
           $offsetX={signatureAssets.stamp.offsetX}
           $offsetY={signatureAssets.stamp.offsetY}
           $opacity={signatureAssets.stamp.opacity}
@@ -254,7 +266,11 @@ const createHeaderRenderer =
       <Styles.HeaderTop $hasLogo={Boolean(model.business.logoUrl)}>
         {model.business.logoUrl ? (
           <Styles.BrandColumn>
-            <Styles.Logo src={model.business.logoUrl} alt="Logo del negocio" />
+            <Styles.Logo
+              src={model.business.logoUrl}
+              alt="Logo del negocio"
+              data-print-optional-image="true"
+            />
           </Styles.BrandColumn>
         ) : null}
 
@@ -320,7 +336,6 @@ const createHeaderRenderer =
         <Styles.HeaderCell $align="center">Cant</Styles.HeaderCell>
         <Styles.HeaderCell>Codigo</Styles.HeaderCell>
         <Styles.HeaderCell>Descripcion</Styles.HeaderCell>
-        <Styles.HeaderCell $align="center">Ind.</Styles.HeaderCell>
         <Styles.HeaderCell $align="right">Precio</Styles.HeaderCell>
         <Styles.HeaderCell $align="right">Desc.</Styles.HeaderCell>
         <Styles.HeaderCell $align="right">ITBIS</Styles.HeaderCell>

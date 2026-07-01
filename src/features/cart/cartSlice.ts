@@ -5,9 +5,13 @@ import {
 } from '@reduxjs/toolkit';
 import { nanoid } from 'nanoid';
 import type { CreditNoteSelection } from '@/types/creditNote';
+import type { ProductPricing } from '@/types/products';
 
 import { GenericClient } from '@/features/clientCart/clientCartSlice';
-import { roundDecimals } from '@/utils/pricing';
+import {
+  getProductIndividualDiscount,
+  roundDecimals,
+} from '@/utils/pricing';
 import {
   DEFAULT_FUNCTIONAL_CURRENCY,
   normalizeSupportedDocumentCurrency,
@@ -17,6 +21,11 @@ import {
   type MonetaryRateConfig,
 } from '@/utils/accounting/lineMonetary';
 import { normalizeAccountingCurrencyRateConfig } from '@/utils/accounting/contracts';
+import {
+  normalizeSaleUnitForCart,
+  resolveProductBaseQuantity,
+  resolveSaleUnitConversionFactor,
+} from '@/domain/products/saleUnits';
 
 import { initialState, defaultDelivery } from './default/default';
 import { resolveProductForCartDocumentCurrency } from './utils/documentPricing';
@@ -45,9 +54,10 @@ interface UpdateProductFieldsPayload {
 
 interface ChangeProductPricePayload {
   id: string;
-  pricing?: Product['pricing'];
+  pricing?: Product['pricing'] | ProductPricing;
   saleUnit?: Product['selectedSaleUnit'];
   price?: number;
+  manualOverride?: boolean;
 }
 
 interface ChangeProductWeightPayload {
@@ -60,9 +70,7 @@ export interface FiscalTaxationPayload {
   source?: 'legacy-tax-receipt' | 'business-fiscal';
 }
 
-const normalizeDocumentCurrency = (
-  value: unknown,
-): SupportedDocumentCurrency =>
+const normalizeDocumentCurrency = (value: unknown): SupportedDocumentCurrency =>
   normalizeSupportedDocumentCurrency(value, DEFAULT_FUNCTIONAL_CURRENCY);
 
 const normalizeExchangeRate = (value: unknown): number | null => {
@@ -144,7 +152,12 @@ const matchesCartProductIdentifier = (
   identifier: string,
 ): boolean => {
   if (!product || !identifier) return false;
-  return product.cid === identifier || product.id === identifier;
+  if (product.cid === identifier) return true;
+  const hasLineSpecificCid =
+    typeof product.cid === 'string' &&
+    product.cid.trim().length > 0 &&
+    product.cid !== product.id;
+  return !hasLineSpecificCid && product.id === identifier;
 };
 
 const hasPhysicalStockIdentity = (
@@ -152,8 +165,10 @@ const hasPhysicalStockIdentity = (
 ): boolean =>
   Boolean(
     product &&
-      !product.weightDetail?.isSoldByWeight &&
-      (product.productStockId || product.batchId || product.restrictSaleWithoutStock),
+    !product.weightDetail?.isSoldByWeight &&
+    (product.productStockId ||
+      product.batchId ||
+      product.restrictSaleWithoutStock),
   );
 
 const canMergeCartProductLine = (
@@ -162,13 +177,26 @@ const canMergeCartProductLine = (
 ): boolean => {
   if (!existing || !incoming) return false;
   if (existing.id !== incoming.id) return false;
-  if (existing.weightDetail?.isSoldByWeight || incoming.weightDetail?.isSoldByWeight) {
+  if (
+    String(existing.selectedSaleUnit?.id ?? 'default') !==
+    String(incoming.selectedSaleUnit?.id ?? 'default')
+  ) {
+    return false;
+  }
+  if (
+    existing.weightDetail?.isSoldByWeight ||
+    incoming.weightDetail?.isSoldByWeight
+  ) {
     return false;
   }
 
-  if (hasPhysicalStockIdentity(existing) || hasPhysicalStockIdentity(incoming)) {
+  if (
+    hasPhysicalStockIdentity(existing) ||
+    hasPhysicalStockIdentity(incoming)
+  ) {
     return (
-      String(existing.productStockId ?? '') === String(incoming.productStockId ?? '') &&
+      String(existing.productStockId ?? '') ===
+        String(incoming.productStockId ?? '') &&
       String(existing.batchId ?? '') === String(incoming.batchId ?? '')
     );
   }
@@ -176,13 +204,30 @@ const canMergeCartProductLine = (
   return true;
 };
 
+const withResolvedBaseQuantity = <T extends Product>(product: T): T => ({
+  ...product,
+  baseQuantity: resolveProductBaseQuantity(product),
+});
+
+const resolveCartLineSaleUnitKey = (
+  product: Partial<Product> | null | undefined,
+): string => String(product?.selectedSaleUnit?.id ?? 'default');
+
 const resolveCartLineCid = (product: Product): string => {
   if (product.weightDetail?.isSoldByWeight) {
     return nanoid(8);
   }
 
+  const saleUnitKey = resolveCartLineSaleUnitKey(product);
+  const saleUnitSuffix =
+    saleUnitKey === 'default' ? '' : `::sale-unit::${saleUnitKey}`;
+
   if (product.productStockId || product.batchId) {
-    return `${product.id ?? 'product'}::${product.productStockId ?? 'no-stock'}::${product.batchId ?? 'no-batch'}`;
+    return `${product.id ?? 'product'}::${product.productStockId ?? 'no-stock'}::${product.batchId ?? 'no-batch'}${saleUnitSuffix}`;
+  }
+
+  if (saleUnitKey !== 'default') {
+    return `${product.id ?? product.cid ?? 'product'}${saleUnitSuffix}`;
   }
 
   return String(product.cid ?? product.id ?? nanoid(8));
@@ -202,13 +247,43 @@ const ensureCartLineCid = (product: Product): string => {
     return resolveCartLineCid(product);
   }
 
+  if (resolveCartLineSaleUnitKey(product) !== 'default') {
+    return resolveCartLineCid(product);
+  }
+
   return currentCid ?? String(product.id ?? nanoid(8));
 };
 
-const normalizeCartProductLine = (product: Product): Product => ({
-  ...product,
-  cid: ensureCartLineCid(product),
-});
+const normalizeCartProductLine = (product: Product): Product =>
+  withResolvedBaseQuantity({
+    ...product,
+    selectedSaleUnit: product.selectedSaleUnit
+      ? normalizeSaleUnitForCart(product.selectedSaleUnit)
+      : null,
+    cid: ensureCartLineCid(product),
+  });
+
+const hasManualPriceOverride = (
+  product: Partial<Product> | null | undefined,
+): boolean => product?.pricingSource?.mode === 'manual-price';
+
+const refreshCartLinePricingFromIncoming = (
+  target: Product,
+  incoming: Product,
+): void => {
+  if (hasManualPriceOverride(target)) return;
+
+  if (incoming.pricing) {
+    target.pricing = { ...incoming.pricing };
+  }
+
+  target.selectedSaleUnit = incoming.selectedSaleUnit
+    ? normalizeSaleUnitForCart(incoming.selectedSaleUnit)
+    : null;
+
+  target.monetary = incoming.monetary ?? null;
+  target.pricingSource = incoming.pricingSource ?? target.pricingSource ?? null;
+};
 
 export const cartSlice = createSlice({
   name: 'factura',
@@ -266,7 +341,8 @@ export const cartSlice = createSlice({
         processedCart.manualRatesByCurrency = normalizeManualRatesByCurrency(
           processedCart.manualRatesByCurrency,
         );
-        processedCart.mixedCurrencySale = processedCart.mixedCurrencySale === true;
+        processedCart.mixedCurrencySale =
+          processedCart.mixedCurrencySale === true;
         const loadedExchangeRate = normalizeExchangeRate(
           processedCart.exchangeRate,
         );
@@ -342,11 +418,12 @@ export const cartSlice = createSlice({
       action: PayloadAction<UpdateProductFieldsPayload>,
     ) => {
       const { id, data } = action.payload;
-      const product = state.data.products.find(
-        (p) => p.id === id || p.cid === id,
+      const product = state.data.products.find((p) =>
+        matchesCartProductIdentifier(p, id),
       );
       if (product) {
         Object.assign(product, data);
+        product.baseQuantity = resolveProductBaseQuantity(product);
       }
     },
     addTaxReceiptInState: (
@@ -464,23 +541,72 @@ export const cartSlice = createSlice({
       state: CartState,
       action: PayloadAction<ChangeProductPricePayload>,
     ) => {
-      const { id, pricing, saleUnit, price } = action.payload;
+      const { id, pricing, saleUnit, price, manualOverride } = action.payload;
       const product = state.data.products.find((product) =>
         matchesCartProductIdentifier(product, id),
       );
       if (product) {
         if (saleUnit) {
-          product.selectedSaleUnit = saleUnit;
+          product.selectedSaleUnit = normalizeSaleUnitForCart(saleUnit, price);
         } else if (pricing) {
-          product.pricing = pricing;
+          const rawTax = pricing.tax ?? product.pricing?.tax;
+          let tax: string | number | undefined;
+          if (rawTax && typeof rawTax === 'object' && 'tax' in rawTax) {
+            const nestedTax = rawTax.tax;
+            tax =
+              typeof nestedTax === 'string' || typeof nestedTax === 'number'
+                ? nestedTax
+                : undefined;
+          } else if (typeof rawTax === 'string' || typeof rawTax === 'number') {
+            tax = rawTax;
+          }
+          const listPrice = Number(
+            pricing.listPrice ??
+              product.pricing?.listPrice ??
+              pricing.price ??
+              0,
+          );
+          const nextListPrice = Number.isFinite(listPrice) ? listPrice : 0;
+          const nextPricing: Product['pricing'] = {
+            ...(product.pricing || {
+              listPrice: nextListPrice,
+              price: nextListPrice,
+            }),
+            ...pricing,
+            tax,
+            listPrice: nextListPrice,
+            price: nextListPrice,
+          };
+          product.pricing = nextPricing;
           product.pricing.price = product.pricing.listPrice;
           product.selectedSaleUnit = null;
         }
-        if (price && product.selectedSaleUnit) {
+        const hasExplicitPrice =
+          price !== undefined &&
+          price !== null &&
+          Number.isFinite(Number(price));
+        if (hasExplicitPrice && product.selectedSaleUnit) {
           product.selectedSaleUnit.pricing.price = price;
-        } else if (price) {
+        } else if (hasExplicitPrice) {
           product.pricing.price = price;
         }
+        if (hasExplicitPrice && manualOverride) {
+          product.pricingSource = {
+            ...(product.pricingSource ?? {}),
+            mode: 'manual-price',
+            resolvedFrom: product.selectedSaleUnit ? 'saleUnit' : 'product',
+          };
+        } else if (pricing || saleUnit) {
+          product.pricingSource = {
+            ...(product.pricingSource ?? {}),
+            mode:
+              product.pricingSource?.mode === 'mixed-currency'
+                ? 'mixed-currency'
+                : 'direct-price',
+            resolvedFrom: product.selectedSaleUnit ? 'saleUnit' : 'product',
+          };
+        }
+        product.baseQuantity = resolveProductBaseQuantity(product);
       }
     },
     addPaymentMethodAutoValue: (state: CartState) => {
@@ -524,23 +650,32 @@ export const cartSlice = createSlice({
         matchingLine.productStockId = product.productStockId;
         matchingLine.batchId = product.batchId;
         matchingLine.stock = product.stock;
+        refreshCartLinePricingFromIncoming(matchingLine, product);
+        matchingLine.baseQuantity = resolveProductBaseQuantity({
+          ...matchingLine,
+          amountToBuy: matchingLine.amountToBuy + incomingAmount,
+        });
         if (product.batchInfo) {
           matchingLine.batchInfo = product.batchInfo;
         }
         matchingLine.amountToBuy += incomingAmount;
       } else {
-        const productData = {
+        const normalizedSelectedSaleUnit = product.selectedSaleUnit
+          ? normalizeSaleUnitForCart(product.selectedSaleUnit)
+          : null;
+        const productData = withResolvedBaseQuantity({
           ...product,
+          selectedSaleUnit: normalizedSelectedSaleUnit,
           cid: ensureCartLineCid(product),
           amountToBuy: incomingAmount,
           insurance: product.insurance || { mode: null, value: 0 },
-        };
+        });
         state.data.products = [...products, productData];
       }
     },
     deleteProduct: (state: CartState, action: PayloadAction<string>) => {
-      const productFound = state.data.products.find(
-        (product) => matchesCartProductIdentifier(product, action.payload),
+      const productFound = state.data.products.find((product) =>
+        matchesCartProductIdentifier(product, action.payload),
       );
       if (productFound) {
         state.data.products.splice(
@@ -558,11 +693,12 @@ export const cartSlice = createSlice({
       action: PayloadAction<ChangeProductAmountPayload>,
     ) => {
       const { id, value } = action.payload;
-      const productFound = state.data.products.find(
-        (product) => matchesCartProductIdentifier(product, id),
+      const productFound = state.data.products.find((product) =>
+        matchesCartProductIdentifier(product, id),
       );
       if (productFound) {
         productFound.amountToBuy = Number(value);
+        productFound.baseQuantity = resolveProductBaseQuantity(productFound);
       }
     },
     addAmountToProduct: (
@@ -570,11 +706,12 @@ export const cartSlice = createSlice({
       action: PayloadAction<Pick<ChangeProductAmountPayload, 'id'>>,
     ) => {
       const { id } = action.payload;
-      const productFound = state.data.products.find(
-        (product) => matchesCartProductIdentifier(product, id),
+      const productFound = state.data.products.find((product) =>
+        matchesCartProductIdentifier(product, id),
       );
       if (productFound) {
         productFound.amountToBuy = productFound.amountToBuy + 1;
+        productFound.baseQuantity = resolveProductBaseQuantity(productFound);
       }
     },
     diminishAmountToProduct: (
@@ -582,11 +719,12 @@ export const cartSlice = createSlice({
       action: PayloadAction<Pick<ChangeProductAmountPayload, 'id'>>,
     ) => {
       const { id } = action.payload;
-      const productFound = state.data.products.find(
-        (product: Product) => matchesCartProductIdentifier(product, id),
+      const productFound = state.data.products.find((product: Product) =>
+        matchesCartProductIdentifier(product, id),
       );
       if (productFound) {
         productFound.amountToBuy -= 1;
+        productFound.baseQuantity = resolveProductBaseQuantity(productFound);
         if (productFound.amountToBuy === 0) {
           state.data.products.splice(
             state.data.products.indexOf(productFound),
@@ -625,6 +763,7 @@ export const cartSlice = createSlice({
       const product = state.data.products.find((product) => product.cid === id);
       if (product && product.weightDetail) {
         product.weightDetail.weight = weight;
+        product.baseQuantity = resolveProductBaseQuantity(product);
       }
     },
     totalPurchaseWithoutTaxes: (state: CartState) => {
@@ -710,10 +849,7 @@ export const cartSlice = createSlice({
       if (!priceKey) return;
 
       const applyPrice = (
-        pricing:
-          | Product['pricing']
-          | { price: number; [key: string]: any }
-          | undefined,
+        pricing: Product['pricing'] | ProductPricing | undefined,
       ) => {
         if (!pricing) return false;
         const candidate = Number(pricing[priceKey as keyof typeof pricing]);
@@ -730,7 +866,11 @@ export const cartSlice = createSlice({
         applyPrice(pricing);
         if (selectedSaleUnit?.pricing) {
           applyPrice(selectedSaleUnit.pricing);
+          selectedSaleUnit.conversionFactorToBase =
+            resolveSaleUnitConversionFactor(selectedSaleUnit);
+          selectedSaleUnit.quantity = selectedSaleUnit.conversionFactorToBase;
         }
+        product.baseQuantity = resolveProductBaseQuantity(product);
       });
 
       updateAllTotals(state);
@@ -1001,32 +1141,11 @@ export const selectTotalIndividualDiscounts = createSelector(
       true,
   ],
   (discountedProducts, taxationEnabled) =>
-    discountedProducts.reduce((total, product) => {
-      const activePricing = resolveActiveProductPricing(product);
-      const parsedProductPrice = Number(activePricing?.price ?? 0);
-      const productPrice = Number.isFinite(parsedProductPrice)
-        ? parsedProductPrice
-        : 0;
-
-      const parsedTaxPercentage = activePricing?.tax
-        ? Number(activePricing.tax)
-        : 0;
-      const taxPercentage = Number.isFinite(parsedTaxPercentage)
-        ? parsedTaxPercentage
-        : 0;
-      const quantity = product.amountToBuy || 1;
-
-      const unitPriceWithTax = taxationEnabled
-        ? productPrice * (1 + taxPercentage / 100)
-        : productPrice;
-      const totalPriceWithTax = unitPriceWithTax * quantity;
-
-      if (product.discount?.type === 'percentage') {
-        return total + totalPriceWithTax * (product.discount.value / 100);
-      }
-
-      return total + (product.discount?.value || 0);
-    }, 0),
+    discountedProducts.reduce(
+      (total, product) =>
+        total + getProductIndividualDiscount(product, taxationEnabled),
+      0,
+    ),
 );
 
 export const selectCreditNotePayment = (state: CartRootState) =>
@@ -1038,6 +1157,3 @@ export const selectTotalCreditNotePayment = (state: CartRootState) =>
   );
 
 export default cartSlice.reducer;
-
-
-

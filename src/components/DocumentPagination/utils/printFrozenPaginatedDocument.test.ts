@@ -223,6 +223,41 @@ describe('printFrozenPaginatedDocument', () => {
     expect(window.print).not.toHaveBeenCalled();
   });
 
+  it('removes the frozen iframe when the print attempt is aborted before print', async () => {
+    const iframePrint = vi.fn();
+    const appendChild = vi.spyOn(document.body, 'appendChild');
+    appendChild.mockImplementation((node: Node) => {
+      const result = HTMLElement.prototype.appendChild.call(document.body, node);
+
+      if (node instanceof HTMLIFrameElement && node.contentWindow) {
+        Object.defineProperty(node.contentWindow, 'print', {
+          configurable: true,
+          value: iframePrint,
+        });
+      }
+
+      return result;
+    });
+    const controller = new AbortController();
+    setReadySource();
+
+    const printPromise = printFrozenPaginatedDocument({
+      signal: controller.signal,
+      onBeforePrint: () => {
+        controller.abort();
+      },
+    });
+    const printExpectation = expect(printPromise).rejects.toMatchObject({
+      name: 'AbortError',
+    });
+
+    await vi.advanceTimersByTimeAsync(16);
+    await printExpectation;
+    expect(document.querySelector('iframe')).toBeNull();
+    expect(iframePrint).not.toHaveBeenCalled();
+    expect(window.print).not.toHaveBeenCalled();
+  });
+
   it('keeps the frozen snapshot on A4 CSS instead of screen-computed pixel sizes', async () => {
     const iframePrint = vi.fn();
     const appendChild = vi.spyOn(document.body, 'appendChild');
@@ -292,6 +327,52 @@ describe('printFrozenPaginatedDocument', () => {
     await expect(printPromise).resolves.toBe(true);
 
     expect(iframePrint).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps printing when an optional visual asset did not confirm loading', async () => {
+    const iframePrint = vi.fn();
+    const appendChild = vi.spyOn(document.body, 'appendChild');
+    appendChild.mockImplementation((node: Node) => {
+      const result = HTMLElement.prototype.appendChild.call(document.body, node);
+
+      if (node instanceof HTMLIFrameElement && node.contentWindow) {
+        Object.defineProperty(node.contentWindow, 'print', {
+          configurable: true,
+          value: iframePrint,
+        });
+      }
+
+      return result;
+    });
+    const source = setReadySource();
+    const optionalImage = document.createElement('img');
+    optionalImage.src = 'https://example.com/stamp.png';
+    optionalImage.alt = 'Sello del negocio';
+    optionalImage.dataset.printOptionalImage = 'true';
+    Object.defineProperty(optionalImage, 'complete', {
+      configurable: true,
+      value: true,
+    });
+    Object.defineProperty(optionalImage, 'naturalWidth', {
+      configurable: true,
+      value: 0,
+    });
+    Object.defineProperty(optionalImage, 'naturalHeight', {
+      configurable: true,
+      value: 0,
+    });
+    source.appendChild(optionalImage);
+
+    const printPromise = printFrozenPaginatedDocument({ cleanupDelayMs: 5_000 });
+
+    await vi.advanceTimersByTimeAsync(2_600);
+    await expect(printPromise).resolves.toBe(true);
+
+    expect(iframePrint).toHaveBeenCalledTimes(1);
+    expect(window.alert).not.toHaveBeenCalled();
+    expect(
+      document.querySelector('iframe')?.contentDocument?.body.innerHTML,
+    ).not.toContain('stamp.png');
   });
 
   it('blocks printing when the frozen iframe copy still overflows', async () => {

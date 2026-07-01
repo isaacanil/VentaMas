@@ -5,9 +5,8 @@ import {
   getPilotAccountingSettingsForBusiness,
   isAccountingRolloutEnabledForBusiness,
 } from '../../../versions/v2/accounting/utils/accountingRollout.util.js';
-import {
-  buildPurchaseCommittedAccountingEvent,
-} from './purchaseAccountingEvent.shared.js';
+import { runAccountingEventProjection } from '../../../versions/v2/accounting/accountingEventProjection.service.js';
+import { buildPurchaseCommittedAccountingEvent } from './purchaseAccountingEvent.shared.js';
 import { asRecord } from './payablePayments.shared.js';
 
 const REGION = 'us-central1';
@@ -57,6 +56,13 @@ export const syncPurchaseCommittedAccountingEvent = onDocumentWritten(
     await db
       .doc(`businesses/${businessId}/accountingEvents/${accountingEvent.id}`)
       .set(accountingEvent, { merge: true });
+    if (accountingEvent.status === 'voided') {
+      await runAccountingEventProjection({
+        businessId,
+        eventId: accountingEvent.id,
+        accountingEvent,
+      });
+    }
 
     return null;
   },

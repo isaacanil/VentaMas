@@ -114,6 +114,18 @@ export interface PurchaseReceiptEvent {
   [key: string]: unknown;
 }
 
+export type PurchaseReceiptInventoryStatus = 'pending' | 'applied' | 'failed';
+
+export interface PurchaseReceiptInventoryState {
+  status?: PurchaseReceiptInventoryStatus | string | null;
+  operationId?: string | null;
+  warehouseId?: string | null;
+  startedAt?: TimestampLike | null;
+  appliedAt?: TimestampLike | null;
+  updatedAt?: TimestampLike | null;
+  [key: string]: unknown;
+}
+
 export interface Purchase {
   id?: string;
   orderId?: string;
@@ -130,6 +142,7 @@ export interface Purchase {
   destinationWarehouseId?: string | null;
   attachmentUrls?: PurchaseAttachment[];
   receiptHistory?: PurchaseReceiptEvent[];
+  receiptInventoryState?: PurchaseReceiptInventoryState | null;
   replenishments?: PurchaseReplenishment[];
   dates?: PurchaseDates;
   note?: string;

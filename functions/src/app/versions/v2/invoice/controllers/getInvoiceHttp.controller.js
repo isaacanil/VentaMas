@@ -197,6 +197,12 @@ export const getInvoiceV2Http = https.onRequest(async (req, res) => {
           status: data.status || null,
           attempts: data.attempts || 0,
           lastError: data.lastError || null,
+          providerError: data.providerError || null,
+          providerReason: data.providerReason || null,
+          providerStatus: data.providerStatus || null,
+          providerCode: data.providerCode || null,
+          providerMessage: data.providerMessage || null,
+          providerDetails: data.providerDetails || null,
           updatedAt: data.updatedAt || null,
           createdAt: data.createdAt || null,
         };

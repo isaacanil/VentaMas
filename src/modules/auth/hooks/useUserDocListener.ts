@@ -2,7 +2,7 @@ import { onSnapshot, doc } from 'firebase/firestore';
 import { useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { login, logout } from '@/features/auth/userSlice';
+import { login } from '@/features/auth/userSlice';
 import { auth, db } from '@/firebase/firebaseconfig';
 import { normalizeCurrentUserContext } from '@/utils/auth-adapter';
 
@@ -75,7 +75,9 @@ export function useUserDocListener(userId: string | null | undefined): void {
           dispatch(login(payload));
         } else {
           lastPayloadSignatureRef.current = null;
-          dispatch(logout());
+          console.warn(
+            'user doc listener: user document missing; keeping session until refresh validates it.',
+          );
         }
       },
       (error) => {

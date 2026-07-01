@@ -1,5 +1,5 @@
 import { BarcodeOutlined, InfoCircleOutlined } from '@/constants/icons/antd';
-import { InputNumber, Select, Switch, Tooltip } from 'antd';
+import { Alert, InputNumber, Select, Switch, Tooltip } from 'antd';
 import { Form } from 'antd';
 import styled from 'styled-components';
 
@@ -49,9 +49,13 @@ const CompactFields = styled.div`
 
 interface InventorySectionProps {
   domId: string;
+  isUpdateMode: boolean;
 }
 
-export const InventorySection = ({ domId }: InventorySectionProps) => (
+export const InventorySection = ({
+  domId,
+  isUpdateMode,
+}: InventorySectionProps) => (
   <SectionCard id={domId}>
     <SectionHeader>
       <SectionTitle level={4}>Inventario</SectionTitle>
@@ -59,6 +63,14 @@ export const InventorySection = ({ domId }: InventorySectionProps) => (
         Define cómo se moverá el stock y los permisos de venta.
       </SectionDescription>
     </SectionHeader>
+    {isUpdateMode && (
+      <Alert
+        type="info"
+        showIcon
+        message="El stock se ajusta desde los movimientos de inventario."
+        style={{ marginBottom: 16 }}
+      />
+    )}
     <FieldGrid>
       <SwitchField
         name="trackInventory"
@@ -79,9 +91,14 @@ export const InventorySection = ({ domId }: InventorySectionProps) => (
       <Form.Item
         name="stock"
         label="Stock disponible"
+        help={
+          isUpdateMode
+            ? 'Bloqueado al editar para mantener trazabilidad de existencias.'
+            : undefined
+        }
         rules={[{ required: true, message: 'Indica el stock inicial.' }]}
       >
-        <InputNumber min={0} style={{ width: '100%' }} />
+        <InputNumber min={0} disabled={isUpdateMode} style={{ width: '100%' }} />
       </Form.Item>
       <Form.Item
         name="packSize"
@@ -139,6 +156,22 @@ export const InventorySection = ({ domId }: InventorySectionProps) => (
             <Form.Item
               name={['weightDetail', 'weightUnit']}
               label="Unidad"
+              dependencies={[['weightDetail', 'isSoldByWeight']]}
+              rules={[
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (
+                      getFieldValue(['weightDetail', 'isSoldByWeight']) &&
+                      !value
+                    ) {
+                      return Promise.reject(
+                        new Error('Seleccionar una unidad de medida.'),
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                }),
+              ]}
               style={{ marginBottom: 0, width: 140 }}
             >
               <Select

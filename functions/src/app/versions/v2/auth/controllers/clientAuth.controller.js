@@ -378,6 +378,28 @@ const assertUserCanStartSession = async (userDoc, userData) => {
   };
 };
 
+const isAccessRevocationError = (error) => {
+  const code =
+    error && typeof error.code === 'string' ? error.code.toLowerCase() : '';
+  if (code !== 'permission-denied' && code !== 'failed-precondition') {
+    return false;
+  }
+
+  const message =
+    error && typeof error.message === 'string'
+      ? error.message.toLowerCase()
+      : '';
+  return [
+    'usuario esta inactivo',
+    'usuario está inactivo',
+    'no tiene acceso activo',
+    'no tienes acceso activo',
+    'negocio esta en estado',
+    'negocio está en estado',
+    'no permite acceso',
+  ].some((hint) => message.includes(hint));
+};
+
 const resolveBusinessIdFromEntry = (entry) => {
   if (!isPlainObject(entry)) return null;
   const businessNode = isPlainObject(entry.business) ? entry.business : {};
@@ -1839,10 +1861,12 @@ export const clientRefreshSession = onCall(
         userSnap.data() || {},
       );
     } catch (error) {
-      await terminateSession(snap, 'access-revoked', {
-        reason: 'user-or-business-inactive',
-      });
-      await updateUserPresence(sessionUserId, 'offline');
+      if (isAccessRevocationError(error)) {
+        await terminateSession(snap, 'access-revoked', {
+          reason: 'user-or-business-inactive',
+        });
+        await updateUserPresence(sessionUserId, 'offline');
+      }
       throw error;
     }
 

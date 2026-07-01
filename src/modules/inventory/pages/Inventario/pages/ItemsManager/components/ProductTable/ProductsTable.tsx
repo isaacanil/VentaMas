@@ -26,6 +26,7 @@ import { formatPrice } from '@/utils/format';
 import { formatNumber } from '@/utils/format';
 import { getTax, getTotalPrice } from '@/utils/pricing';
 import { hasDeveloperAccess } from '@/utils/access/developerAccess';
+import { getWeightedUnitPriceForDisplay } from '@/domain/products/weightPriceDisplay';
 import { toggleBarcodeModal } from '@/modules/inventory/state/barcodePrintModalSlice';
 import { ProductCategoryBar } from '@/modules/products/public';
 import { AdvancedTable } from '@/components/ui/AdvancedTable';
@@ -164,9 +165,11 @@ export const ProductsTable = ({ products, searchTerm }: ProductTableProps) => {
       align: 'right',
       cell: ({ value }) => {
         const product = value as ProductRecord;
-        const price = getTotalPrice(product, taxReceiptEnabled);
         const unit = product?.weightDetail?.weightUnit;
         const isSoldByWeight = product?.weightDetail?.isSoldByWeight;
+        const price = isSoldByWeight
+          ? getWeightedUnitPriceForDisplay(product, taxReceiptEnabled)
+          : getTotalPrice(product, taxReceiptEnabled);
         if (isSoldByWeight) {
           return (
             <div>
@@ -233,7 +236,7 @@ export const ProductsTable = ({ products, searchTerm }: ProductTableProps) => {
 
         return (
           <ButtonGroup>
-            <Dropdown menu={menu}>
+            <Dropdown menu={menu} trigger={['click']}>
               <Button icon={<MoreOutlined />} />
             </Dropdown>
           </ButtonGroup>

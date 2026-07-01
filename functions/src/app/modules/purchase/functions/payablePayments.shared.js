@@ -9,6 +9,19 @@ export const THRESHOLD = 0.01;
 
 const BANK_METHODS_REQUIRING_BANK_ACCOUNT = new Set(['card', 'transfer']);
 const CASH_METHODS_REQUIRING_CASH_COUNT = new Set(['cash']);
+const INACTIVE_SUPPLIER_PAYMENT_STATUSES = new Set([
+  'canceled',
+  'cancelled',
+  'draft',
+  'void',
+  'voided',
+]);
+const TERMINAL_INACTIVE_SUPPLIER_PAYMENT_STATUSES = new Set([
+  'canceled',
+  'cancelled',
+  'void',
+  'voided',
+]);
 const SUPPLIER_PAYMENT_METHOD_ALIASES = Object.freeze({
   cash: 'cash',
   open_cash: 'cash',
@@ -86,6 +99,31 @@ export const normalizeSupplierPaymentMethodCode = (value) => {
   if (!trimmed.length) return null;
   const normalized = trimmed.toLowerCase();
   return SUPPLIER_PAYMENT_METHOD_ALIASES[normalized] ?? trimmed;
+};
+
+export const normalizeSupplierPaymentStatus = (value) =>
+  toCleanString(value)?.toLowerCase() ?? null;
+
+export const isInactiveSupplierPaymentStatus = (value) => {
+  const status = normalizeSupplierPaymentStatus(value);
+  return Boolean(status) && INACTIVE_SUPPLIER_PAYMENT_STATUSES.has(status);
+};
+
+export const isTerminalInactiveSupplierPaymentStatus = (value) => {
+  const status = normalizeSupplierPaymentStatus(value);
+  return (
+    Boolean(status) && TERMINAL_INACTIVE_SUPPLIER_PAYMENT_STATUSES.has(status)
+  );
+};
+
+export const isExplicitActiveSupplierPaymentStatus = (value) => {
+  const status = normalizeSupplierPaymentStatus(value);
+  return Boolean(status) && !INACTIVE_SUPPLIER_PAYMENT_STATUSES.has(status);
+};
+
+export const isActiveSupplierPaymentRecord = (paymentRecord) => {
+  const status = normalizeSupplierPaymentStatus(asRecord(paymentRecord).status);
+  return !status || !INACTIVE_SUPPLIER_PAYMENT_STATUSES.has(status);
 };
 
 export const paymentMethodRequiresBankAccount = (methodCode) =>
@@ -166,16 +204,82 @@ export const normalizePaymentMethodsForAggregation = (paymentRecord) => {
     .filter(Boolean);
 };
 
+export const normalizeWithholdingApplicationsForAggregation = (
+  paymentRecord,
+) => {
+  const applications = Array.isArray(paymentRecord.withholdingApplications)
+    ? paymentRecord.withholdingApplications
+    : Array.isArray(paymentRecord.metadata?.withholdingApplications)
+      ? paymentRecord.metadata.withholdingApplications
+      : [];
+
+  return applications
+    .map((entry) => {
+      const applicationRecord = asRecord(entry);
+      const amount = roundToTwoDecimals(
+        applicationRecord.amount ?? applicationRecord.value,
+      );
+      if (amount <= THRESHOLD || applicationRecord.status === false) {
+        return null;
+      }
+      return {
+        type: toCleanString(
+          applicationRecord.type ??
+            applicationRecord.taxType ??
+            applicationRecord.code,
+        ),
+        amount,
+        reference: toCleanString(applicationRecord.reference),
+        taxPeriod: toCleanString(applicationRecord.taxPeriod),
+      };
+    })
+    .filter(Boolean);
+};
+
+export const resolvePaymentWithholdingAmount = (paymentRecord) => {
+  const applicationAmount = roundToTwoDecimals(
+    normalizeWithholdingApplicationsForAggregation(paymentRecord).reduce(
+      (sum, application) => sum + application.amount,
+      0,
+    ),
+  );
+  if (applicationAmount > THRESHOLD) {
+    return applicationAmount;
+  }
+  return roundToTwoDecimals(
+    paymentRecord.withholdingAmount ??
+      paymentRecord.metadata?.withholdingAmount ??
+      0,
+  );
+};
+
 export const resolvePaymentAmount = (paymentRecord) => {
   const paymentMethods = normalizePaymentMethodsForAggregation(paymentRecord);
+  const withholdingAmount = resolvePaymentWithholdingAmount(paymentRecord);
   if (paymentMethods.length > 0) {
     return roundToTwoDecimals(
-      paymentMethods.reduce((sum, method) => sum + method.amount, 0),
+      paymentMethods.reduce((sum, method) => sum + method.amount, 0) +
+        withholdingAmount,
+    );
+  }
+  if (withholdingAmount > THRESHOLD) {
+    const recordedSettlementAmount = safeNumber(
+      paymentRecord.settlementAmount ?? paymentRecord.appliedAmount,
+    );
+    if (recordedSettlementAmount != null) {
+      return roundToTwoDecimals(recordedSettlementAmount);
+    }
+    return roundToTwoDecimals(
+      (safeNumber(paymentRecord.totalAmount) ?? 0) + withholdingAmount,
     );
   }
 
   return roundToTwoDecimals(
-    paymentRecord.totalAmount ?? paymentRecord.amount ?? paymentRecord.value,
+    paymentRecord.settlementAmount ??
+      paymentRecord.appliedAmount ??
+      paymentRecord.totalAmount ??
+      paymentRecord.amount ??
+      paymentRecord.value,
   );
 };
 

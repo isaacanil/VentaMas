@@ -151,6 +151,7 @@ export const TaxReceiptDepletedModal = ({
       title="Sin comprobantes"
       size="sm"
       footer={footer}
+      isDismissable={false}
     >
       <ContentWrapper>
         <BodyText>

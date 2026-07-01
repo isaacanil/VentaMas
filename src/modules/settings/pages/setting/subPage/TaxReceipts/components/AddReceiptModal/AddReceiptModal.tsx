@@ -24,6 +24,7 @@ import type {
   TaxReceiptDocument,
   TaxReceiptTemplate,
 } from '@/types/taxReceipt';
+import { getTaxReceiptIdentity } from '@/utils/taxReceipt';
 
 const { Option } = Select;
 const { Title, Text } = Typography;
@@ -31,7 +32,6 @@ const { Title, Text } = Typography;
 interface AddReceiptDrawerProps {
   visible: boolean;
   onCancel: () => void;
-  onAddReceipt?: (receipts: TaxReceiptTemplate[]) => void;
   existingReceipts?: TaxReceiptDocument[];
 }
 
@@ -63,16 +63,20 @@ const AddReceiptDrawer = ({
   const user = useSelector(selectUser); // Obtener el usuario del estado de Redux
   const safeUser = {
     businessID: user?.businessID ?? null,
-    uid: user?.id ?? null,
+    uid: user?.uid ?? user?.id ?? null,
     id: user?.id ?? null,
   };
 
   // Crear conjuntos de nombres y series existentes para rápida verificación
   const existingNames = new Set<string>(
-    existingReceipts.map((receipt) => receipt.data?.name || ''),
+    existingReceipts
+      .map((receipt) => getTaxReceiptIdentity(receipt.data).name)
+      .filter(Boolean),
   );
-  const existingSeries = new Set<string>(
-    existingReceipts.map((receipt) => receipt.data?.serie || ''),
+  const existingFiscalKeys = new Set<string>(
+    existingReceipts
+      .map((receipt) => getTaxReceiptIdentity(receipt.data).fiscalKey)
+      .filter(Boolean),
   );
 
   const handleAfterOpenChange = useCallback((open: boolean) => {
@@ -83,17 +87,20 @@ const AddReceiptDrawer = ({
 
   // Función para verificar si un comprobante ya existe
   const isTemplateExisting = (template: TaxReceiptTemplate) => {
+    const templateIdentity = getTaxReceiptIdentity(template);
     return (
-      existingNames.has(template.name) || existingSeries.has(template.serie)
+      existingNames.has(templateIdentity.name) ||
+      existingFiscalKeys.has(templateIdentity.fiscalKey)
     );
   };
 
   // Mensaje de por qué no se puede agregar un comprobante
   const getExistingReason = (template: TaxReceiptTemplate) => {
-    if (existingNames.has(template.name))
+    const templateIdentity = getTaxReceiptIdentity(template);
+    if (existingNames.has(templateIdentity.name))
       return `Ya existe un comprobante con el nombre "${template.name}"`;
-    if (existingSeries.has(template.serie))
-      return `Ya existe un comprobante con la serie "${template.serie}"`;
+    if (existingFiscalKeys.has(templateIdentity.fiscalKey))
+      return `Ya existe un comprobante con el prefijo "${templateIdentity.fiscalKey}"`;
     return '';
   };
 
@@ -164,9 +171,12 @@ const AddReceiptDrawer = ({
       onCancel(); // Cerrar el drawer
     } catch (error) {
       console.error('Error al agregar comprobantes predefinidos:', error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Error al agregar los comprobantes.';
       message.error({
-        content:
-          'Error al agregar los comprobantes. Por favor, inténtalo de nuevo.',
+        content: errorMessage,
         key,
         duration: 3,
       });
@@ -212,7 +222,9 @@ const AddReceiptDrawer = ({
     >
       <Content>
         <SelectContainer>
-          <label htmlFor="tax-receipt-country-select">Selecciona un país:</label>
+          <label htmlFor="tax-receipt-country-select">
+            Selecciona un país:
+          </label>
           <Select<string>
             id="tax-receipt-country-select"
             value={selectedCountry}
@@ -235,63 +247,61 @@ const AddReceiptDrawer = ({
             {countryComprobantes[selectedCountry].countryName}
           </Title>
           <TemplatesGrid>
-            {countryComprobantes[selectedCountry].templates.map(
-              (template) => {
-                const isExisting = isTemplateExisting(template);
-                const selected = isTemplateSelected(template);
-                return (
-                  <TemplateCard
-                    key={`${template.type}-${template.serie}-${template.name}`}
-                    $selected={selected}
-                    $disabled={isExisting}
-                    onClick={() =>
-                      !isExisting && toggleTemplateSelection(template)
+            {countryComprobantes[selectedCountry].templates.map((template) => {
+              const isExisting = isTemplateExisting(template);
+              const selected = isTemplateSelected(template);
+              return (
+                <TemplateCard
+                  key={`${template.type}-${template.serie}-${template.name}`}
+                  $selected={selected}
+                  $disabled={isExisting}
+                  onClick={() =>
+                    !isExisting && toggleTemplateSelection(template)
+                  }
+                >
+                  {isExisting && (
+                    <ExistingOverlay>
+                      <ExclamationCircleOutlined /> Ya existe
+                    </ExistingOverlay>
+                  )}
+                  <CardHeader $selected={selected} $disabled={isExisting}>
+                    <h4>{template.name}</h4>
+                    <small>
+                      Tipo: {template.type} | Serie: {template.serie}
+                    </small>
+                  </CardHeader>
+                  <CardBody>
+                    <p>{template.description}</p>
+                    <p>Secuencia: {template.sequence}</p>
+                    <p>
+                      Incremento: {template.increase} | Cantidad:{' '}
+                      {template.quantity}
+                    </p>
+                  </CardBody>
+                  <Tooltip
+                    title={
+                      isExisting
+                        ? getExistingReason(template)
+                        : selected
+                          ? 'Quitar selección'
+                          : 'Seleccionar'
                     }
                   >
-                    {isExisting && (
-                      <ExistingOverlay>
-                        <ExclamationCircleOutlined /> Ya existe
-                      </ExistingOverlay>
-                    )}
-                    <CardHeader $selected={selected} $disabled={isExisting}>
-                      <h4>{template.name}</h4>
-                      <small>
-                        Tipo: {template.type} | Serie: {template.serie}
-                      </small>
-                    </CardHeader>
-                    <CardBody>
-                      <p>{template.description}</p>
-                      <p>Secuencia: {template.sequence}</p>
-                      <p>
-                        Incremento: {template.increase} | Cantidad:{' '}
-                        {template.quantity}
-                      </p>
-                    </CardBody>
-                    <Tooltip
-                      title={
-                        isExisting
-                          ? getExistingReason(template)
-                          : selected
-                            ? 'Quitar selección'
-                            : 'Seleccionar'
-                      }
+                    <Button
+                      type={selected ? 'primary' : 'default'}
+                      disabled={isExisting}
+                      block
                     >
-                      <Button
-                        type={selected ? 'primary' : 'default'}
-                        disabled={isExisting}
-                        block
-                      >
-                        {isExisting
-                          ? 'No disponible'
-                          : selected
-                            ? 'Seleccionado'
-                            : 'Seleccionar'}
-                      </Button>
-                    </Tooltip>
-                  </TemplateCard>
-                );
-              },
-            )}
+                      {isExisting
+                        ? 'No disponible'
+                        : selected
+                          ? 'Seleccionado'
+                          : 'Seleccionar'}
+                    </Button>
+                  </Tooltip>
+                </TemplateCard>
+              );
+            })}
           </TemplatesGrid>
         </TemplatesSection>
       </Content>

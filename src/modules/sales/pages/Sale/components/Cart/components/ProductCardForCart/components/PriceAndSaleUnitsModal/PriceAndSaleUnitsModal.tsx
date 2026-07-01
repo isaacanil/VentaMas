@@ -3,6 +3,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
+import { resolveSaleUnitConversionFactor } from '@/domain/products/saleUnits';
 import { useListenSaleUnits } from '@/firebase/products/saleUnits/fbUpdateSaleUnit';
 import { normalizeSupportedDocumentCurrency } from '@/utils/accounting/currencies';
 import { formatPriceByCurrency } from '@/utils/format';
@@ -115,7 +116,7 @@ type PriceAndSaleUnitsModalProps = {
   isVisible: boolean;
   onClose: () => void;
   item: SaleUnitItem;
-  onSelectPrice: (price: PriceOption) => void;
+  onSelectPrice: (price: PriceOption, unit?: SaleUnitRecord | null) => void;
   onSelectDefaultUnit: (item: SaleUnitItem) => void;
   onSelectUnit: (unit: SaleUnitRecord) => void;
   prices?: PriceOption[];
@@ -136,9 +137,8 @@ type ManualPrice = {
 
 const EMPTY_PRICE_OPTIONS: PriceOption[] = [];
 
-const normalizeCurrency = (
-  value: unknown,
-): SupportedDocumentCurrency => normalizeSupportedDocumentCurrency(value);
+const normalizeCurrency = (value: unknown): SupportedDocumentCurrency =>
+  normalizeSupportedDocumentCurrency(value);
 
 const PriceAndSaleUnitsModal = ({
   isVisible,
@@ -153,29 +153,54 @@ const PriceAndSaleUnitsModal = ({
   const productId = item.id ? String(item.id) : undefined;
   const [manualSelection, setManualSelection] = useState<ManualSelection>(null);
   const [manualPrice, setManualPrice] = useState<ManualPrice>(null);
-  const { data: saleUnits } = useListenSaleUnits(productId) as {
+  const { data: listenedSaleUnits } = useListenSaleUnits(productId) as {
     data: ProductSaleUnit[];
   };
   const navigate = useNavigate();
+  const availableSaleUnits = useMemo<SaleUnitRecord[]>(() => {
+    const unitsById = new Map<string, SaleUnitRecord>();
+    const appendUnit = (unit: ProductSaleUnit | null | undefined) => {
+      if (!unit || unit.active === false) return;
+      const id = typeof unit.id === 'string' ? unit.id.trim() : '';
+      if (!id) return;
+      unitsById.set(id, { ...unit, id });
+    };
+
+    listenedSaleUnits?.forEach(appendUnit);
+    item.saleUnits?.forEach(appendUnit);
+    appendUnit(selectedUnit as ProductSaleUnit | null | undefined);
+    return Array.from(unitsById.values());
+  }, [item.saleUnits, listenedSaleUnits, selectedUnit]);
+
+  const manualSelectionItemId = manualSelection?.itemId;
+  const manualSelectionUnitId = manualSelection?.unitId;
+  const selectedUnitIdValue = selectedUnit?.id;
+  const isDefaultUnitSelected = item.selectedSaleUnit === null;
+  const selectedSaleUnitId = item.selectedSaleUnit?.id;
+  const defaultSaleUnitId = item.defaultSaleUnitId;
 
   const selectedUnitId = useMemo(() => {
     if (!isVisible) return null;
-    if (manualSelection?.itemId === productId && manualSelection?.unitId) {
-      return manualSelection.unitId;
+    if (manualSelectionItemId === productId && manualSelectionUnitId) {
+      return manualSelectionUnitId;
     }
-    return selectedUnit?.id || item.defaultSaleUnitId || 'default';
+    if (selectedUnitIdValue) return selectedUnitIdValue;
+    if (isDefaultUnitSelected) return 'default';
+    return selectedSaleUnitId || defaultSaleUnitId || 'default';
   }, [
     isVisible,
-    manualSelection?.itemId,
-    manualSelection?.unitId,
-    item.defaultSaleUnitId,
+    manualSelectionItemId,
+    manualSelectionUnitId,
+    defaultSaleUnitId,
+    isDefaultUnitSelected,
     productId,
-    selectedUnit?.id,
+    selectedSaleUnitId,
+    selectedUnitIdValue,
   ]);
   const displayCurrency: SupportedDocumentCurrency =
     selectedUnitId && selectedUnitId !== 'default'
       ? normalizeCurrency(
-          saleUnits?.find((unit) => unit.id === selectedUnitId)?.pricing
+          availableSaleUnits.find((unit) => unit.id === selectedUnitId)?.pricing
             ?.currency,
         )
       : normalizeCurrency(item?.pricing?.currency);
@@ -222,7 +247,9 @@ const PriceAndSaleUnitsModal = ({
     }
 
     // Si estamos en una unidad de venta específica
-    const selectedUnit = saleUnits?.find((unit) => unit.id === selectedUnitId);
+    const selectedUnit = availableSaleUnits.find(
+      (unit) => unit.id === selectedUnitId,
+    );
     if (!selectedUnit) return 'listPrice';
 
     const prices =
@@ -248,7 +275,7 @@ const PriceAndSaleUnitsModal = ({
     if (currentPrice === offerPriceVal) return 'offerPrice';
 
     return 'listPrice';
-  }, [item.pricing, selectedUnitId, saleUnits]);
+  }, [availableSaleUnits, item.pricing, selectedUnitId]);
 
   const getDefaultPrice = useCallback(
     (prices: PriceOption[]) => {
@@ -291,7 +318,7 @@ const PriceAndSaleUnitsModal = ({
 
       // Llamar a onSelectPrice con el precio por defecto
       if (defaultPrice) {
-        onSelectPrice(defaultPrice);
+        onSelectPrice(defaultPrice, unit);
       }
     }
   };
@@ -319,7 +346,7 @@ const PriceAndSaleUnitsModal = ({
 
       // Llamar a onSelectPrice con el precio por defecto
       if (defaultPrice) {
-        onSelectPrice(defaultPrice);
+        onSelectPrice(defaultPrice, null);
       }
     }
   };
@@ -335,7 +362,7 @@ const PriceAndSaleUnitsModal = ({
       pricingOptions =
         prices.length > 0 ? prices : extraerPreciosConImpuesto(item.pricing);
     } else {
-      const selectedUnitData = saleUnits?.find(
+      const selectedUnitData = availableSaleUnits.find(
         (unit) => unit.id === selectedUnitId,
       );
       pricingOptions = extraerPreciosConImpuesto(selectedUnitData?.pricing);
@@ -348,7 +375,14 @@ const PriceAndSaleUnitsModal = ({
 
     const defaultPrice = getDefaultPrice(enabledPrices);
     return { enabledPrices, defaultPrice };
-  }, [selectedUnitId, saleUnits, item, isVisible, prices, getDefaultPrice]);
+  }, [
+    selectedUnitId,
+    availableSaleUnits,
+    item,
+    isVisible,
+    prices,
+    getDefaultPrice,
+  ]);
 
   const combinedPrices = derivedPrices.enabledPrices;
   const selectedPrice = useMemo(() => {
@@ -366,7 +400,11 @@ const PriceAndSaleUnitsModal = ({
   const handleSelectPrice = (price: PriceOption) => {
     setManualPrice({ itemId: productId, price });
     // Pasamos todo el objeto de precio para que ProductCardForCart pueda extraer los valores correctos
-    onSelectPrice(price);
+    const unit =
+      selectedUnitId && selectedUnitId !== 'default'
+        ? availableSaleUnits.find((unit) => unit.id === selectedUnitId) || null
+        : null;
+    onSelectPrice(price, unit);
   };
 
   // Determina si un precio está seleccionado
@@ -407,16 +445,21 @@ const PriceAndSaleUnitsModal = ({
         {/* Unidades de Venta */}
         <div>
           <SectionTitle>Unidades de Venta</SectionTitle>
-          {saleUnits && saleUnits.length > 0 ? (
+          {availableSaleUnits.length > 0 ? (
             <SaleUnitsContainer>
-              {saleUnits.map((unit) => (
+              {availableSaleUnits.map((unit) => (
                 <SaleUnitCard
                   key={unit.id}
                   selected={unit.id === selectedUnitId}
                   onClick={() => handleSelectUnit(unit)}
                 >
                   <div>
-                    <p>{unit?.unitName}</p>
+                    <p>
+                      {unit?.unitName}
+                      {resolveSaleUnitConversionFactor(unit) > 1
+                        ? ` x ${resolveSaleUnitConversionFactor(unit)}`
+                        : ''}
+                    </p>
                     <p>
                       Precio:{' '}
                       {formatPriceByCurrency(

@@ -1,11 +1,22 @@
-import { Button, Input, InputNumber, Select, Form, Modal } from 'antd';
 import type { FormInstance } from 'antd';
 import { DateTime } from 'luxon';
+import type { Key } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import DatePicker from '@/components/DatePicker';
+import {
+  VmButton,
+  VmListBox,
+  VmModal,
+  VmNumberField,
+  VmSelect,
+  VmTextArea,
+} from '@/components/heroui';
+import {
+  VmDatePicker,
+  type DatePickerValue,
+} from '@/components/common/DatePicker';
 import { formatPrice } from '@/utils/format';
 import type { CreditLimitConfig } from '@/utils/accountsReceivable/types';
 
@@ -30,8 +41,6 @@ import PaymentDatesOverview from '../PaymentDatesOverview/PaymentDatesOverview';
 
 import usePaymentDates from './usePaymentDates';
 
-const { Option } = Select;
-const { TextArea } = Input;
 const getPositive = (value: number) => (value < 0 ? -value : value);
 
 const toDateTime = (millis: number | null | undefined) => {
@@ -88,9 +97,17 @@ export const ReceivableManagementPanel = ({
   const dispatch = useDispatch();
   const user = useSelector(selectUser) as UserIdentity;
   const [userModifiedDate, setUserModifiedDate] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const [baseCalculationDate, setBaseCalculationDate] = useState(() =>
     DateTime.now().startOf('day').toMillis(),
   );
+  const {
+    paymentFrequency = 'monthly',
+    totalInstallments = 1,
+    currentBalance,
+    paymentDate,
+    comments,
+  } = useSelector(selectAR) as any as AccountsReceivableState;
 
   const handleModalClose = useCallback(() => {
     // Reset form if it exists
@@ -99,23 +116,10 @@ export const ReceivableManagementPanel = ({
     }
     // Reset local states
     setUserModifiedDate(false);
+    setSubmitAttempted(false);
     // Call the original close panel function
     closePanel();
   }, [form, closePanel]);
-
-  const handleConfirm = useCallback(async () => {
-    if (onConfirm) {
-      await onConfirm();
-    }
-  }, [onConfirm]);
-
-  const {
-    paymentFrequency = 'monthly',
-    totalInstallments = 1,
-    currentBalance,
-    paymentDate,
-    comments,
-  } = useSelector(selectAR) as any as AccountsReceivableState;
 
   const cartData = useSelector(SelectCartData) as any;
   const client = useSelector(selectClient) as ClientIdentity | null;
@@ -183,6 +187,18 @@ export const ReceivableManagementPanel = ({
     [paymentDate, updatePaymentDateInStore],
   );
 
+  const handleDatePickerChange = useCallback(
+    (value: DatePickerValue) => {
+      const nextDate = Array.isArray(value) ? value[0] : value;
+      if (nextDate && nextDate.toMillis() < DateTime.now().startOf('day').toMillis()) {
+        return;
+      }
+
+      handleDateChange(nextDate ?? null);
+    },
+    [handleDateChange],
+  );
+
   const setInstallments = useCallback(
     (value: number | null) => {
       const numValue = Number(value) || 1;
@@ -196,6 +212,14 @@ export const ReceivableManagementPanel = ({
       updateARConfig({ paymentFrequency: value });
     },
     [updateARConfig],
+  );
+
+  const handleFrequencySelection = useCallback(
+    (key: Key | null) => {
+      if (key === null) return;
+      setFrequency(String(key));
+    },
+    [setFrequency],
   );
 
   const setComments = useCallback(
@@ -217,6 +241,63 @@ export const ReceivableManagementPanel = ({
     includeStartDate,
   );
   const effectivePaymentDate = paymentDate ?? nextPaymentDate;
+  const selectedPaymentDate = useMemo(
+    () => (effectivePaymentDate ? toDateTime(effectivePaymentDate) : null),
+    [effectivePaymentDate],
+  );
+  const fieldErrors = useMemo(
+    () => ({
+      frequency:
+        submitAttempted && !paymentFrequency
+          ? 'Seleccione una frecuencia de pago'
+          : '',
+      installments:
+        submitAttempted &&
+        (!Number.isFinite(totalInstallments) ||
+          totalInstallments < 1 ||
+          totalInstallments > maxInstallments)
+          ? `Cuotas entre 1 y ${maxInstallments}`
+          : '',
+      paymentDate:
+        submitAttempted && !effectivePaymentDate
+          ? 'Seleccione una fecha de pago'
+          : '',
+    }),
+    [
+      effectivePaymentDate,
+      maxInstallments,
+      paymentFrequency,
+      submitAttempted,
+      totalInstallments,
+    ],
+  );
+  const validateCurrentValues = useCallback(() => {
+    setSubmitAttempted(true);
+
+    const hasFrequency = Boolean(paymentFrequency);
+    const hasInstallments =
+      Number.isFinite(totalInstallments) &&
+      totalInstallments >= 1 &&
+      totalInstallments <= maxInstallments;
+    const hasPaymentDate = Boolean(effectivePaymentDate);
+
+    return hasFrequency && hasInstallments && hasPaymentDate;
+  }, [
+    effectivePaymentDate,
+    maxInstallments,
+    paymentFrequency,
+    totalInstallments,
+  ]);
+
+  const handleConfirm = useCallback(async () => {
+    if (!validateCurrentValues()) {
+      return;
+    }
+
+    if (onConfirm) {
+      await onConfirm();
+    }
+  }, [onConfirm, validateCurrentValues]);
 
   // Redundant hook removed, using only useGetPendingBalance for better performance
   useGetPendingBalance({
@@ -231,9 +312,7 @@ export const ReceivableManagementPanel = ({
       form.setFieldsValue({
         paymentFrequency,
         totalInstallments,
-        paymentDate: effectivePaymentDate
-          ? (toDateTime(effectivePaymentDate) as any)
-          : null,
+        paymentDate: selectedPaymentDate as any,
         comments: comments || '',
       });
     }
@@ -242,7 +321,7 @@ export const ReceivableManagementPanel = ({
     form,
     paymentFrequency,
     totalInstallments,
-    effectivePaymentDate,
+    selectedPaymentDate,
     comments,
   ]);
 
@@ -267,103 +346,131 @@ export const ReceivableManagementPanel = ({
 
   // Siempre renderizar el modal si isOpen es true, independientemente de otros estados
   return (
-    <Modal
+    <VmModal
       title="Gestión de Cuentas por Cobrar"
-      open={isOpen}
-      onCancel={handleModalClose}
+      ariaLabel="Gestión de Cuentas por Cobrar"
+      isOpen={isOpen}
+      onOpenChange={(open) => {
+        if (!open) handleModalClose();
+      }}
+      isDismissable={false}
+      size="lg"
       footer={
-        showActions
-          ? [
-              <Button
-                key="cancel"
-                onClick={handleModalClose}
-                disabled={confirmLoading}
-              >
-                {cancelText}
-              </Button>,
-              <Button
-                key="confirm"
-                type="primary"
-                onClick={handleConfirm}
-                loading={confirmLoading}
-              >
-                {confirmText}
-              </Button>,
-            ]
-          : null
+        showActions ? (
+          <>
+            <VmButton
+              variant="secondary"
+              onPress={handleModalClose}
+              isDisabled={confirmLoading}
+            >
+              {cancelText}
+            </VmButton>
+            <VmButton
+              variant="primary"
+              isPending={confirmLoading}
+              onPress={() => void handleConfirm()}
+            >
+              {confirmText}
+            </VmButton>
+          </>
+        ) : null
       }
-      destroyOnClose={true}
-      width={600}
-      style={{ top: 20 }}
     >
       <PanelContainer>
         <Header>
           <Label>Balance pendiente</Label>
           <Label>{formatPrice(getPositive(currentBalance))}</Label>
         </Header>
-        <Form layout="vertical" form={form}>
+        <FormLayout>
           <Group>
-            <FormItem
-              label="Frecuencia de Pago"
-              name="paymentFrequency"
-              rules={[
-                {
-                  required: true,
-                  message: 'Seleccione una frecuencia de pago',
-                },
-              ]}
-            >
-              <Select style={{ width: '100%' }} onChange={setFrequency}>
-                <Option value="monthly">Mensual</Option>
-                <Option value="weekly">Semanal</Option>
-              </Select>
-            </FormItem>
-            <FormItem
-              label="Cuotas"
-              name="totalInstallments"
-              rules={[
-                { required: true, message: 'Seleccione el número de cuotas' },
-                {
-                  type: 'number',
-                  min: 1,
-                  max: maxInstallments,
-                  message: `Cuotas entre 1 y ${maxInstallments}`,
-                },
-              ]}
-            >
-              <InputNumber
+            <Field>
+              <FieldLabel>
+                <RequiredMark>*</RequiredMark> Frecuencia de Pago
+              </FieldLabel>
+              <VmSelect
+                aria-label="Frecuencia de Pago"
+                fullWidth
+                selectedKey={paymentFrequency || null}
+                onSelectionChange={handleFrequencySelection}
+              >
+                <VmSelect.Trigger>
+                  <VmSelect.Value />
+                  <VmSelect.Indicator />
+                </VmSelect.Trigger>
+                <VmSelect.Popover>
+                  <VmListBox aria-label="Frecuencias de pago">
+                    <VmListBox.Item id="monthly" textValue="Mensual">
+                      Mensual
+                      <VmListBox.ItemIndicator />
+                    </VmListBox.Item>
+                    <VmListBox.Item id="weekly" textValue="Semanal">
+                      Semanal
+                      <VmListBox.ItemIndicator />
+                    </VmListBox.Item>
+                  </VmListBox>
+                </VmSelect.Popover>
+              </VmSelect>
+              {fieldErrors.frequency ? (
+                <FieldError>{fieldErrors.frequency}</FieldError>
+              ) : null}
+            </Field>
+            <Field>
+              <FieldLabel>
+                <RequiredMark>*</RequiredMark> Cuotas
+              </FieldLabel>
+              <VmNumberField
+                aria-label="Cuotas"
+                minValue={1}
+                maxValue={maxInstallments}
+                step={1}
+                value={totalInstallments || 1}
                 onChange={setInstallments}
-                style={{ width: '100%' }}
-              />
-            </FormItem>
+              >
+                <VmNumberField.Group>
+                  <VmNumberField.Input />
+                  <VmNumberField.DecrementButton />
+                  <VmNumberField.IncrementButton />
+                </VmNumberField.Group>
+              </VmNumberField>
+              {fieldErrors.installments ? (
+                <FieldError>{fieldErrors.installments}</FieldError>
+              ) : null}
+            </Field>
           </Group>
           <Group>
-            <FormItem
-              label="Fecha de Primer Pago"
-              name="paymentDate"
-              rules={[
-                { required: true, message: 'Seleccione una fecha de pago' },
-              ]}
-            >
-              <DatePicker
+            <Field>
+              <FieldLabel>
+                <RequiredMark>*</RequiredMark> Fecha de Primer Pago
+              </FieldLabel>
+              <VmDatePicker
+                mode="single"
+                value={selectedPaymentDate}
+                placeholder="Seleccionar fecha"
                 format="DD/MM/YYYY"
-                style={{ width: '100%' }}
-                onChange={handleDateChange}
-                disabledDate={(current) =>
-                  !!current &&
-                  current.toMillis() < DateTime.now().startOf('day').toMillis()
-                }
+                allowClear
+                showPresets={false}
+                onChange={handleDatePickerChange}
               />
-            </FormItem>
-            <FormItem label="Monto por Cuota">
-              <div style={{ fontWeight: 600 }}>
-                <span>{formatPrice(derivedInstallmentAmount)}</span>
-              </div>
-            </FormItem>
+              {fieldErrors.paymentDate ? (
+                <FieldError>{fieldErrors.paymentDate}</FieldError>
+              ) : null}
+            </Field>
+            <Field>
+              <FieldLabel>Monto por Cuota</FieldLabel>
+              <InstallmentAmount>
+                {formatPrice(derivedInstallmentAmount)}
+              </InstallmentAmount>
+            </Field>
           </Group>
-          <FormItem label="Comentarios" name="comments">
-            <TextArea rows={3} onChange={(e) => setComments(e.target.value)} />
-          </FormItem>
+          <Field>
+            <FieldLabel>Comentarios</FieldLabel>
+            <CommentArea
+              aria-label="Comentarios"
+              rows={3}
+              value={comments || ''}
+              onChange={(event) => setComments(event.target.value)}
+            />
+          </Field>
           {paymentDates.length > 0 && totalInstallments > 0 && (
             <PaymentDatesOverview
               paymentDates={paymentDates}
@@ -372,7 +479,7 @@ export const ReceivableManagementPanel = ({
               installments={totalInstallments}
             />
           )}
-        </Form>
+        </FormLayout>
         <Footer>
           <Header>
             <Label>Total a Crédito.</Label>
@@ -387,11 +494,13 @@ export const ReceivableManagementPanel = ({
           </Header>
         </Footer>
       </PanelContainer>
-    </Modal>
+    </VmModal>
   );
 };
 
 const PanelContainer = styled.div`
+  display: grid;
+  gap: 14px;
   padding: 6px 12px;
   background: #f4f4f4;
   border-radius: 8px;
@@ -424,12 +533,49 @@ const Label = styled.span`
   color: #333;
 `;
 
-const FormItem = styled(Form.Item)`
-  margin-bottom: 15px;
-`;
-
 const Group = styled.div`
   display: grid;
   grid-template-columns: 1fr 0.8fr;
   gap: 1em;
+
+  @media (width <= 640px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const FormLayout = styled.div`
+  display: grid;
+  gap: 14px;
+`;
+
+const Field = styled.div`
+  display: grid;
+  gap: 6px;
+`;
+
+const FieldLabel = styled.label`
+  margin: 0;
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 500;
+`;
+
+const RequiredMark = styled.span`
+  color: #dc2626;
+`;
+
+const FieldError = styled.span`
+  color: #dc2626;
+  font-size: 12px;
+`;
+
+const InstallmentAmount = styled.div`
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+`;
+
+const CommentArea = styled(VmTextArea)`
+  min-height: 86px;
 `;

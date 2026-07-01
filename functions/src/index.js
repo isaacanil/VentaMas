@@ -33,6 +33,7 @@ import { analyzeFinanceReadiness } from './app/modules/accounting/functions/anal
 import { backfillJournalEntryAccountIds } from './app/modules/accounting/functions/backfillJournalEntryAccountIds.js';
 import { replayAccountingEventProjection } from './app/modules/accounting/functions/replayAccountingEventProjection.js';
 import { reverseJournalEntry } from './app/modules/accounting/functions/reverseJournalEntry.js';
+import { updateJournalEntry } from './app/modules/accounting/functions/updateJournalEntry.js';
 import {
   backfillBankAccountChartLinks,
   createAccountingPostingProfile,
@@ -48,6 +49,11 @@ import { syncAccountingSettingsDerivedRecords } from './app/modules/accounting/f
 import { syncBankAccountDerivedHistory } from './app/modules/accounting/functions/syncBankAccountDerivedHistory.js';
 import { syncChartOfAccountsDerivedHistory } from './app/modules/accounting/functions/syncChartOfAccountsDerivedHistory.js';
 import { addSupplierPayment } from './app/modules/purchase/functions/addSupplierPayment.js';
+import { completePurchaseReceipt } from './app/modules/purchase/functions/completePurchaseReceipt.js';
+import { createAccountsPayablePaymentRun } from './app/modules/purchase/functions/createAccountsPayablePaymentRun.js';
+import { manageAccountsPayablePaymentRun } from './app/modules/purchase/functions/manageAccountsPayablePaymentRun.js';
+import { manageVendorBillControl } from './app/modules/purchase/functions/manageVendorBillControl.js';
+import { repairAccountsPayablePurchaseMirrors } from './app/modules/purchase/functions/repairAccountsPayablePurchaseMirrors.js';
 import { syncAccountsPayablePayment } from './app/modules/purchase/functions/syncAccountsPayablePayment.js';
 import { syncPurchaseCommittedAccountingEvent } from './app/modules/purchase/functions/syncPurchaseCommittedAccountingEvent.js';
 import { syncPurchaseSupplierCreditNote } from './app/modules/purchase/functions/syncPurchaseSupplierCreditNote.js';
@@ -225,6 +231,7 @@ export {
   backfillJournalEntryAccountIds,
   replayAccountingEventProjection,
   reverseJournalEntry,
+  updateJournalEntry,
   backfillBankAccountChartLinks,
   createAccountingPostingProfile,
   createBankAccount,
@@ -238,6 +245,11 @@ export {
   syncBankAccountDerivedHistory,
   syncChartOfAccountsDerivedHistory,
   addSupplierPayment,
+  completePurchaseReceipt,
+  createAccountsPayablePaymentRun,
+  manageAccountsPayablePaymentRun,
+  manageVendorBillControl,
+  repairAccountsPayablePurchaseMirrors,
   syncAccountsPayablePayment,
   syncPurchaseCommittedAccountingEvent,
   syncPurchaseSupplierCreditNote,

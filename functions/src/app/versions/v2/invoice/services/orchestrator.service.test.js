@@ -57,7 +57,10 @@ vi.mock('nanoid', () => ({
   nanoid: (...args) => nanoidMock(...args),
 }));
 
-import { createPendingInvoice } from './orchestrator.service.js';
+import {
+  buildTrustedAccountsReceivableFromInvoicePayload,
+  createPendingInvoice,
+} from './orchestrator.service.js';
 
 describe('orchestrator.service', () => {
   let tx;
@@ -149,6 +152,68 @@ describe('orchestrator.service', () => {
     vi.useRealTimers();
   });
 
+  it('recalcula la CxC desde la factura y no desde totalReceivable del cliente', async () => {
+    const trustedAr = buildTrustedAccountsReceivableFromInvoicePayload({
+      invoiceId: 'invoice-1',
+      nowMs: 1773705600000,
+      payload: {
+        client: { id: 'client-1' },
+        cart: {
+          totalPurchase: { value: 236 },
+          payment: { value: 60 },
+          paymentMethod: [
+            { method: 'cash', status: true, value: 40 },
+            { method: 'creditNote', status: true, value: 20 },
+          ],
+          creditNotePayment: [{ id: 'credit-note-1', amountUsed: 20 }],
+        },
+        accountsReceivable: {
+          clientId: 'client-spoof',
+          totalReceivable: 1,
+          currentBalance: 1,
+          totalInstallments: 4,
+          paymentFrequency: 'monthly',
+        },
+      },
+    });
+
+    expect(trustedAr).toEqual(
+      expect.objectContaining({
+        invoiceId: 'invoice-1',
+        clientId: 'client-1',
+        totalReceivable: 176,
+        currentBalance: 176,
+        remainingBalance: 176,
+        arBalance: 176,
+        installmentAmount: 44,
+        totalInstallments: 4,
+        paymentFrequency: 'monthly',
+        createdAt: 1773705600000,
+        updatedAt: 1773705600000,
+      }),
+    );
+  });
+
+  it('rechaza ventas marcadas como CxC sin balance pendiente', () => {
+    expect(() =>
+      buildTrustedAccountsReceivableFromInvoicePayload({
+        invoiceId: 'invoice-1',
+        nowMs: 1773705600000,
+        payload: {
+          cart: {
+            totalPurchase: { value: 236 },
+            payment: { value: 236 },
+            paymentMethod: [{ method: 'cash', status: true, value: 236 }],
+          },
+          accountsReceivable: {
+            totalReceivable: 236,
+            totalInstallments: 2,
+          },
+        },
+      }),
+    ).toThrow('La venta a credito no tiene balance pendiente por cobrar.');
+  });
+
   it('returns the existing invoice when the idempotency key was already registered', async () => {
     tx.get.mockImplementation(async (ref) => {
       if (ref.path === 'idempotency:business-1:idem-1') {
@@ -234,6 +299,13 @@ describe('orchestrator.service', () => {
               id: 'p1',
               name: 'Producto A',
               amountToBuy: 1,
+              baseQuantity: 12,
+              selectedSaleUnit: {
+                id: 'box-12',
+                unitName: 'Caja',
+                quantity: 12,
+                conversionFactorToBase: 12,
+              },
               trackInventory: false,
               productStockId: 'stock-1',
               batchId: 'batch-1',
@@ -316,6 +388,235 @@ describe('orchestrator.service', () => {
             trackInventory: true,
             productStockId: 'stock-1',
             batchId: 'batch-1',
+            amountToBuy: 1,
+            baseQuantity: 12,
+            selectedSaleUnit: expect.objectContaining({
+              id: 'box-12',
+              unitName: 'Caja',
+              quantity: 12,
+              conversionFactorToBase: 12,
+              allowFractional: false,
+            }),
+          }),
+        ],
+      },
+    });
+  });
+
+  it('deriva snapshot monetario sin confiar en cart.monetary del cliente', async () => {
+    isAccountingRolloutEnabledForBusinessMock.mockReturnValue(true);
+    const trustedMonetary = {
+      documentCurrency: { code: 'DOP' },
+      functionalCurrency: { code: 'DOP' },
+      totals: { subtotal: 200, taxes: 36, total: 236, paid: 236 },
+      functionalTotals: { subtotal: 200, taxes: 36, total: 236, paid: 236 },
+    };
+    resolvePilotMonetarySnapshotForBusinessMock.mockResolvedValue(
+      trustedMonetary,
+    );
+
+    await createPendingInvoice({
+      businessId: 'business-1',
+      userId: 'user-1',
+      idempotencyKey: 'idem-1',
+      payload: {
+        cart: {
+          id: 'cart-monetary',
+          products: [{ id: 'p1', name: 'Producto A', amountToBuy: 2 }],
+          payment: { value: 236 },
+          totalPurchaseWithoutTaxes: { value: 200 },
+          totalTaxes: { value: 36 },
+          totalPurchase: { value: 236 },
+          monetary: {
+            documentCurrency: { code: 'USD' },
+            functionalCurrency: { code: 'DOP' },
+            totals: { total: 1, taxes: 0 },
+            functionalTotals: { total: 1, taxes: 0 },
+          },
+        },
+        client: { id: 'client-1' },
+      },
+    });
+
+    expect(resolvePilotMonetarySnapshotForBusinessMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        businessId: 'business-1',
+        monetary: null,
+        source: expect.objectContaining({
+          id: 'cart-monetary',
+          monetary: expect.objectContaining({
+            documentCurrency: { code: 'USD' },
+          }),
+        }),
+        totals: {
+          subtotal: 200,
+          taxes: 36,
+          total: 236,
+          paid: 236,
+        },
+        capturedBy: 'user-1',
+      }),
+    );
+
+    const invoiceWrite = tx.set.mock.calls.find(
+      ([ref]) =>
+        ref.path === 'businesses/business-1/invoicesV2/cart-monetary',
+    );
+    expect(invoiceWrite?.[1].snapshot.monetary).toBe(trustedMonetary);
+
+    const canonicalTaskWrite = tx.set.mock.calls.find(
+      ([, data]) => data?.type === 'createCanonicalInvoice',
+    );
+    expect(canonicalTaskWrite?.[1].payload.cart.monetary).toBe(
+      trustedMonetary,
+    );
+  });
+
+  it('programa setupAR con CxC saneada y no con totalReceivable manipulado', async () => {
+    nanoidMock.mockReset();
+    nanoidMock
+      .mockReturnValueOnce('task-inventory')
+      .mockReturnValueOnce('task-canonical')
+      .mockReturnValueOnce('task-cash-count')
+      .mockReturnValueOnce('task-ar')
+      .mockReturnValueOnce('task-credit-notes');
+
+    const result = await createPendingInvoice({
+      businessId: 'business-1',
+      userId: 'user-1',
+      idempotencyKey: 'idem-1',
+      payload: {
+        cart: {
+          id: 'cart-ar',
+          products: [{ id: 'p1', name: 'Producto A', amountToBuy: 1 }],
+          totalPurchaseWithoutTaxes: { value: 200 },
+          totalTaxes: { value: 36 },
+          totalPurchase: { value: 236 },
+          payment: { value: 60 },
+          paymentMethod: [
+            { method: 'cash', status: true, value: 40 },
+            { method: 'creditNote', status: true, value: 20 },
+          ],
+          creditNotePayment: [{ id: 'credit-note-1', amountUsed: 20 }],
+          isAddedToReceivables: true,
+        },
+        client: { id: 'client-1' },
+        accountsReceivable: {
+          clientId: 'client-spoof',
+          totalReceivable: 1,
+          currentBalance: 1,
+          totalInstallments: 4,
+          paymentFrequency: 'monthly',
+        },
+      },
+    });
+
+    expect(result).toMatchObject({
+      invoiceId: 'cart-ar',
+      status: 'pending',
+    });
+
+    const arTaskWrite = tx.set.mock.calls.find(
+      ([, data]) => data?.type === 'setupAR',
+    );
+    expect(arTaskWrite?.[0].path).toBe(
+      'businesses/business-1/invoicesV2/cart-ar/outbox/task-ar',
+    );
+    expect(arTaskWrite?.[1].payload).toMatchObject({
+      businessId: 'business-1',
+      userId: 'user-1',
+      clientId: 'client-1',
+      ar: {
+        invoiceId: 'cart-ar',
+        clientId: 'client-1',
+        totalReceivable: 176,
+        currentBalance: 176,
+        remainingBalance: 176,
+        arBalance: 176,
+        installmentAmount: 44,
+        totalInstallments: 4,
+        paymentFrequency: 'monthly',
+        createdAt: new Date('2026-03-17T00:00:00.000Z').getTime(),
+        updatedAt: new Date('2026-03-17T00:00:00.000Z').getTime(),
+      },
+    });
+
+    const creditNoteTaskWrite = tx.set.mock.calls.find(
+      ([, data]) => data?.type === 'consumeCreditNotes',
+    );
+    expect(creditNoteTaskWrite?.[1].payload.creditNotes).toEqual([
+      {
+        id: 'credit-note-1',
+        ncf: null,
+        amountUsed: 20,
+        originalAmount: null,
+      },
+    ]);
+  });
+
+  it('normalizes legacy saleUnit payloads into selectedSaleUnit for inventory tasks', async () => {
+    await createPendingInvoice({
+      businessId: 'business-1',
+      userId: 'user-1',
+      idempotencyKey: 'idem-1',
+      payload: {
+        cart: {
+          id: 'cart-legacy-sale-unit',
+          products: [
+            {
+              id: 'p1',
+              name: 'Producto A',
+              amountToBuy: 2,
+              saleUnit: {
+                id: 'pack-6',
+                unitName: 'Paquete',
+                barcode: 'PK6',
+                quantity: 6,
+                pricing: {
+                  currency: 'DOP',
+                  price: 150,
+                  listPrice: 150,
+                  tax: 18,
+                },
+              },
+              trackInventory: true,
+            },
+          ],
+          payment: { value: 300 },
+          totalPurchaseWithoutTaxes: { value: 300 },
+          totalTaxes: { value: 54 },
+          totalPurchase: { value: 354 },
+        },
+        client: { id: 'client-1' },
+      },
+    });
+
+    const inventoryTaskWrite = tx.set.mock.calls.find(
+      ([ref]) =>
+        ref.path ===
+        'businesses/business-1/invoicesV2/cart-legacy-sale-unit/outbox/task-inventory',
+    );
+    expect(inventoryTaskWrite?.[1]).toMatchObject({
+      type: 'updateInventory',
+      payload: {
+        products: [
+          expect.objectContaining({
+            id: 'p1',
+            amountToBuy: 2,
+            selectedSaleUnit: expect.objectContaining({
+              id: 'pack-6',
+              unitName: 'Paquete',
+              barcode: 'PK6',
+              quantity: 6,
+              conversionFactorToBase: undefined,
+              allowFractional: false,
+              pricing: {
+                currency: 'DOP',
+                price: 150,
+                listPrice: 150,
+                tax: 18,
+              },
+            }),
           }),
         ],
       },

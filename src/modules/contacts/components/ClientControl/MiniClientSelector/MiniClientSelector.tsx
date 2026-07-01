@@ -1,14 +1,30 @@
-import { UserOutlined, SearchOutlined } from '@/constants/icons/antd';
-import { Modal, Input, List, Avatar, Typography, Empty, Spin } from 'antd';
-import { useState, useMemo, type ChangeEvent, type MouseEvent } from 'react';
+import { SearchOutlined, UserOutlined } from '@/constants/icons/antd';
+import { useMemo, useState, type ChangeEvent } from 'react';
 import { useDispatch } from 'react-redux';
 
+import { VmButton, VmModal, VmSpinner } from '@/components/heroui';
 import { addClient } from '@/features/clientCart/clientCartSlice';
 import { useFbGetClientsOnOpen } from '@/firebase/client/useFbGetClientsOnOpen';
 import { filterByDeepSearchText } from '@/utils/searchText';
 
-const { Search } = Input;
-const { Text } = Typography;
+import {
+  ClearSearchButton,
+  ClientAvatar,
+  ClientDetails,
+  ClientList,
+  ClientListItem,
+  ClientMeta,
+  ClientName,
+  ClientOption,
+  ClientOptionContent,
+  SearchIcon,
+  SearchInput,
+  SearchShell,
+  SelectorContent,
+  StateBlock,
+  StateDescription,
+  StateTitle,
+} from './MiniClientSelector.styles';
 
 type ClientRecord = {
   id?: string;
@@ -26,6 +42,15 @@ type MiniClientSelectorProps = {
   onClose: () => void;
 };
 
+const formatClientMeta = (client: ClientRecord): string => {
+  const meta = [
+    client.phone ? `Tel: ${client.phone}` : null,
+    client.email ? `Email: ${client.email}` : null,
+  ].filter(Boolean);
+
+  return meta.join(' | ');
+};
+
 export const MiniClientSelector = ({
   isOpen,
   onClose,
@@ -38,7 +63,6 @@ export const MiniClientSelector = ({
 
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Filtrar clientes que no sean genéricos
   const nonGenericClients = useMemo<ClientRow[]>(
     () =>
       clients.filter(({ client }) => client.name && client.name.trim() !== ''),
@@ -50,112 +74,110 @@ export const MiniClientSelector = ({
     [nonGenericClients, searchTerm],
   );
 
-  const handleSelectClient = (clientData: ClientRow) => {
-    // dispatch(setClient(clientData.client));
-    dispatch(addClient(clientData.client as any));
+  const handleClose = () => {
+    setSearchTerm('');
     onClose();
   };
 
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
+  const handleSelectClient = (clientData: ClientRow) => {
+    dispatch(addClient(clientData.client as any));
+    handleClose();
+  };
+
+  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
   };
 
   return (
-    <Modal
+    <VmModal
+      isOpen={isOpen}
       title="Seleccionar Cliente"
-      open={isOpen}
-      onCancel={onClose}
-      footer={null}
-      width={500}
-      style={{ top: 20 }}
-      styles={{
-        header: { padding: '16px 24px' },
-        body: { padding: '0' },
+      size="lg"
+      isDismissable={false}
+      isKeyboardDismissDisabled
+      closeButtonLabel="Cerrar selector de cliente"
+      ariaLabel="Seleccionar Cliente"
+      onOpenChange={(open) => {
+        if (!open) handleClose();
       }}
+      footer={
+        <VmButton variant="secondary" onPress={handleClose}>
+          Cerrar
+        </VmButton>
+      }
     >
-      <div style={{ marginBottom: 16, padding: '0 16px' }}>
-        <Search
-          placeholder="Buscar cliente..."
-          allowClear
-          onSearch={handleSearch}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            handleSearch(e.target.value)
-          }
-          prefix={<SearchOutlined />}
-          style={{ width: '100%' }}
-        />
-      </div>
+      <SelectorContent>
+        <SearchShell>
+          <SearchIcon aria-hidden="true">
+            <SearchOutlined />
+          </SearchIcon>
+          <SearchInput
+            fullWidth
+            aria-label="Buscar cliente"
+            placeholder="Buscar cliente..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+          />
+          {searchTerm ? (
+            <ClearSearchButton
+              size="sm"
+              variant="secondary"
+              onPress={() => setSearchTerm('')}
+            >
+              Limpiar
+            </ClearSearchButton>
+          ) : null}
+        </SearchShell>
 
-      <div style={{ maxHeight: 400, overflowY: 'auto' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 40 }}>
-            <Spin size="large" />
-          </div>
+          <StateBlock role="status" aria-live="polite">
+            <VmSpinner size="sm" />
+            <StateTitle>Cargando clientes</StateTitle>
+            <StateDescription>
+              Estamos preparando la lista de clientes disponibles.
+            </StateDescription>
+          </StateBlock>
         ) : filteredClients.length === 0 ? (
-          <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description="No se encontraron clientes"
-          />
+          <StateBlock role="status" aria-live="polite">
+            <StateTitle>No se encontraron clientes</StateTitle>
+            <StateDescription>
+              Ajusta la búsqueda o crea un cliente específico antes de continuar
+              con CxC.
+            </StateDescription>
+          </StateBlock>
         ) : (
-          <List<ClientRow>
-            dataSource={filteredClients}
-            renderItem={(clientData: ClientRow) => (
-              <List.Item
-                style={{
-                  cursor: 'pointer',
-                  padding: '12px 16px',
-                  borderRadius: 6,
-                  marginBottom: 4,
-                  transition: 'all 0.2s',
-                }}
-                className="client-list-item"
-                onClick={() => handleSelectClient(clientData)}
-                onMouseEnter={(e: MouseEvent<HTMLDivElement>) => {
-                  e.currentTarget.style.backgroundColor = '#f5f5f5';
-                }}
-                onMouseLeave={(e: MouseEvent<HTMLDivElement>) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                <List.Item.Meta
-                  avatar={
-                    <Avatar
-                      icon={<UserOutlined />}
-                      style={{ backgroundColor: '#1890ff' }}
-                      size="small"
-                    />
-                  }
-                  title={
-                    <Text strong style={{ fontSize: 14 }}>
-                      {clientData.client.name}
-                    </Text>
-                  }
-                  description={
-                    <div>
-                      {clientData.client.phone && (
-                        <Text
-                          type="secondary"
-                          style={{ fontSize: 12, display: 'block' }}
-                        >
-                          📞 {clientData.client.phone}
-                        </Text>
-                      )}
-                      {clientData.client.email && (
-                        <Text
-                          type="secondary"
-                          style={{ fontSize: 12, display: 'block' }}
-                        >
-                          📧 {clientData.client.email}
-                        </Text>
-                      )}
-                    </div>
-                  }
-                />
-              </List.Item>
-            )}
-          />
+          <ClientList role="list" aria-label="Clientes disponibles">
+            {filteredClients.map((clientData) => {
+              const { client } = clientData;
+              const clientName = client.name?.trim() || 'Cliente sin nombre';
+              const clientMeta = formatClientMeta(client);
+              const clientKey = client.id || clientName;
+
+              return (
+                <ClientListItem key={clientKey}>
+                  <ClientOption
+                    variant="ghost"
+                    aria-label={`Seleccionar ${clientName}`}
+                    onPress={() => handleSelectClient(clientData)}
+                  >
+                    <ClientOptionContent>
+                      <ClientAvatar aria-hidden="true">
+                        <UserOutlined />
+                      </ClientAvatar>
+                      <ClientDetails>
+                        <ClientName>{clientName}</ClientName>
+                        {clientMeta ? (
+                          <ClientMeta>{clientMeta}</ClientMeta>
+                        ) : null}
+                      </ClientDetails>
+                    </ClientOptionContent>
+                  </ClientOption>
+                </ClientListItem>
+              );
+            })}
+          </ClientList>
         )}
-      </div>
-    </Modal>
+      </SelectorContent>
+    </VmModal>
   );
 };

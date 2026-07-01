@@ -262,7 +262,13 @@ export const getBillExportCallback = (
       return (ws, data, cols) => {
         applyProfessionalStyling(ws, data.length);
         formatCurrencyColumns(ws, cols, ['Precio', 'Total']);
-        formatNumberColumns(ws, cols, ['Cantidad Facturada']);
+        formatNumberColumns(ws, cols, [
+          'Cantidad Facturada',
+          'Cantidad Comercial',
+          'Cantidad Base Inventario',
+          'Peso Vendido',
+          'Cantidad Presentación',
+        ]);
         addTotalsRow(ws, data, cols, ['Precio', 'Cantidad Facturada', 'Total']);
       };
     default:

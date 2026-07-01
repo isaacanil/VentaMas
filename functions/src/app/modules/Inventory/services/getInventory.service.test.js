@@ -122,6 +122,10 @@ describe('collectInventoryPrereqs', () => {
     expect(prereqs).toHaveLength(1);
     expect(prereqs[0]).toMatchObject({
       index: 0,
+      prod: {
+        productStockId: 'stock-1',
+        batchId: 'batch-1',
+      },
       productSnap,
       productStockSnap,
       batchSnap,
@@ -248,6 +252,299 @@ describe('collectInventoryPrereqs', () => {
     ).rejects.toMatchObject({
       code: 'failed-precondition',
       message: 'El stock stock-1 no pertenece al producto product-1.',
+    });
+  });
+
+  it('rejects restrictSaleWithoutStock true when no productStockId can be resolved', async () => {
+    const productSnap = makeSnapshot(
+      'businesses/business-1/products/product-1',
+      {
+        stock: 0,
+        trackInventory: true,
+        restrictSaleWithoutStock: true,
+      },
+    );
+
+    const tx = {
+      get: vi.fn(async (ref) => {
+        if (ref.path === 'businesses/business-1/products/product-1') {
+          return productSnap;
+        }
+        if (
+          ref.type === 'query' &&
+          ref.path === 'businesses/business-1/productsStock'
+        ) {
+          return { docs: [] };
+        }
+        throw new Error(`unexpected_read:${ref.path}`);
+      }),
+    };
+
+    await expect(
+      collectInventoryPrereqs(tx, {
+        user: { businessID: 'business-1', uid: 'user-1' },
+        products: [
+          {
+            id: 'product-1',
+            name: 'Producto A',
+            amountToBuy: 1,
+            trackInventory: true,
+          },
+        ],
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      message: expect.stringContaining('requiere seleccionar una existencia'),
+    });
+  });
+
+  it('rejects restrictSaleWithoutStock true when batchId is missing and cannot be resolved', async () => {
+    const productSnap = makeSnapshot(
+      'businesses/business-1/products/product-1',
+      {
+        stock: 5,
+        trackInventory: true,
+        restrictSaleWithoutStock: true,
+      },
+    );
+
+    const tx = {
+      get: vi.fn(async (ref) => {
+        if (ref.path === 'businesses/business-1/products/product-1') {
+          return productSnap;
+        }
+        if (
+          ref.type === 'query' &&
+          ref.path === 'businesses/business-1/productsStock'
+        ) {
+          return { docs: [] };
+        }
+        throw new Error(`unexpected_read:${ref.path}`);
+      }),
+    };
+
+    await expect(
+      collectInventoryPrereqs(tx, {
+        user: { businessID: 'business-1', uid: 'user-1' },
+        products: [
+          {
+            id: 'product-1',
+            name: 'Producto A',
+            amountToBuy: 1,
+            trackInventory: true,
+            productStockId: 'stock-1',
+          },
+        ],
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      message: expect.stringContaining('requiere seleccionar una existencia'),
+    });
+  });
+
+  it('rejects restrictSaleWithoutStock true when selected stock is insufficient', async () => {
+    const productSnap = makeSnapshot(
+      'businesses/business-1/products/product-1',
+      {
+        stock: 10,
+        trackInventory: true,
+        restrictSaleWithoutStock: true,
+      },
+    );
+    const productStockSnap = makeSnapshot(
+      'businesses/business-1/productsStock/stock-1',
+      {
+        productId: 'product-1',
+        batchId: 'batch-1',
+        quantity: 10,
+        isDeleted: false,
+        status: 'active',
+      },
+    );
+    const batchSnap = makeSnapshot('businesses/business-1/batches/batch-1', {
+      productId: 'product-1',
+      quantity: 10,
+    });
+
+    const tx = {
+      get: vi.fn(async (ref) => {
+        if (ref.path === 'businesses/business-1/products/product-1') {
+          return productSnap;
+        }
+        if (ref.path === 'businesses/business-1/productsStock/stock-1') {
+          return productStockSnap;
+        }
+        if (ref.path === 'businesses/business-1/batches/batch-1') {
+          return batchSnap;
+        }
+        throw new Error(`unexpected_read:${ref.path}`);
+      }),
+    };
+
+    await expect(
+      collectInventoryPrereqs(tx, {
+        user: { businessID: 'business-1', uid: 'user-1' },
+        products: [
+          {
+            id: 'product-1',
+            name: 'Producto A',
+            amountToBuy: 12,
+            trackInventory: true,
+            productStockId: 'stock-1',
+            batchId: 'batch-1',
+          },
+        ],
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      message: expect.stringContaining('Stock insuficiente'),
+    });
+  });
+
+  it('allows restrictSaleWithoutStock true when selected stock is sufficient', async () => {
+    const productSnap = makeSnapshot(
+      'businesses/business-1/products/product-1',
+      {
+        stock: 10,
+        trackInventory: true,
+        restrictSaleWithoutStock: true,
+      },
+    );
+    const productStockSnap = makeSnapshot(
+      'businesses/business-1/productsStock/stock-1',
+      {
+        productId: 'product-1',
+        batchId: 'batch-1',
+        quantity: 10,
+        isDeleted: false,
+        status: 'active',
+      },
+    );
+    const batchSnap = makeSnapshot('businesses/business-1/batches/batch-1', {
+      productId: 'product-1',
+      quantity: 10,
+    });
+
+    const tx = {
+      get: vi.fn(async (ref) => {
+        if (ref.path === 'businesses/business-1/products/product-1') {
+          return productSnap;
+        }
+        if (ref.path === 'businesses/business-1/productsStock/stock-1') {
+          return productStockSnap;
+        }
+        if (ref.path === 'businesses/business-1/batches/batch-1') {
+          return batchSnap;
+        }
+        throw new Error(`unexpected_read:${ref.path}`);
+      }),
+    };
+
+    const prereqs = await collectInventoryPrereqs(tx, {
+      user: { businessID: 'business-1', uid: 'user-1' },
+      products: [
+        {
+          id: 'product-1',
+          name: 'Producto A',
+          amountToBuy: 8,
+          trackInventory: true,
+          productStockId: 'stock-1',
+          batchId: 'batch-1',
+        },
+      ],
+    });
+
+    expect(prereqs).toHaveLength(1);
+    expect(prereqs[0]).toMatchObject({
+      prod: {
+        restrictSaleWithoutStock: true,
+      },
+      productStockSnap,
+      batchSnap,
+    });
+  });
+
+  it('pre-reads deterministic movement and backorder side effects when saleId is provided', async () => {
+    const productSnap = makeSnapshot(
+      'businesses/business-1/products/product-1',
+      {
+        stock: 10,
+        trackInventory: true,
+        restrictSaleWithoutStock: false,
+      },
+    );
+    const productStockSnap = makeSnapshot(
+      'businesses/business-1/productsStock/stock-1',
+      {
+        productId: 'product-1',
+        batchId: 'batch-1',
+        quantity: 10,
+      },
+    );
+    const batchSnap = makeSnapshot('businesses/business-1/batches/batch-1', {
+      productId: 'product-1',
+      quantity: 10,
+    });
+    const existingMovementSnap = makeSnapshot(
+      'businesses/business-1/movements/movement__invoice-1__line-a__product-1__stock-1__batch-1',
+      {
+        saleId: 'invoice-1',
+      },
+    );
+    const emptyBackorderSnap = makeSnapshot(
+      'businesses/business-1/backOrders/backorder__invoice-1__line-a__product-1__stock-1__batch-1',
+      null,
+    );
+
+    const tx = {
+      get: vi.fn(async (ref) => {
+        if (ref.path === 'businesses/business-1/products/product-1') {
+          return productSnap;
+        }
+        if (ref.path === 'businesses/business-1/productsStock/stock-1') {
+          return productStockSnap;
+        }
+        if (ref.path === 'businesses/business-1/batches/batch-1') {
+          return batchSnap;
+        }
+        if (
+          ref.path ===
+          'businesses/business-1/movements/movement__invoice-1__line-a__product-1__stock-1__batch-1'
+        ) {
+          return existingMovementSnap;
+        }
+        if (
+          ref.path ===
+          'businesses/business-1/backOrders/backorder__invoice-1__line-a__product-1__stock-1__batch-1'
+        ) {
+          return emptyBackorderSnap;
+        }
+        throw new Error(`unexpected_read:${ref.path}`);
+      }),
+    };
+
+    const prereqs = await collectInventoryPrereqs(tx, {
+      user: { businessID: 'business-1', uid: 'user-1' },
+      saleId: 'invoice-1',
+      products: [
+        {
+          id: 'product-1',
+          name: 'Producto A',
+          amountToBuy: 1,
+          trackInventory: true,
+          productStockId: 'stock-1',
+          batchId: 'batch-1',
+          cid: 'line-a',
+        },
+      ],
+    });
+
+    expect(prereqs[0]).toMatchObject({
+      movementId: 'movement__invoice-1__line-a__product-1__stock-1__batch-1',
+      backorderId:
+        'backorder__invoice-1__line-a__product-1__stock-1__batch-1',
+      movementSnap: existingMovementSnap,
+      backorderSnap: emptyBackorderSnap,
     });
   });
 });

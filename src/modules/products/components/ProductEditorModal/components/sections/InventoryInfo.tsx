@@ -132,25 +132,49 @@ export const InventoryInfo = ({ onSaveAdjustments }: InventoryInfoProps) => {
           </Form.Item>
         </Col>
         {product?.weightDetail?.isSoldByWeight ? (
-          <Col span={12}>
-            <Form.Item
-              name={['weightDetail', 'weightUnit']}
-              label="Unidad de Medida"
-              rules={[
-                {
-                  required: true,
-                  message: 'Seleccionar una unidad de medida.',
-                },
-              ]}
-            >
-              <Select
-                options={unitsOfMeasure.map((unit) => ({
-                  value: unit.unit,
-                  label: unit.unit,
-                }))}
-              />
-            </Form.Item>
-          </Col>
+          <>
+            <Col span={6}>
+              <Form.Item
+                name={['weightDetail', 'weight']}
+                label="Peso"
+                rules={[
+                  { required: true, message: 'Indicar el peso.' },
+                  {
+                    type: 'number',
+                    min: 0,
+                    message: 'Introducir un peso valido.',
+                  },
+                ]}
+              >
+                <InputNumber
+                  min={0}
+                  step={0.001}
+                  style={{
+                    width: '100%',
+                  }}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item
+                name={['weightDetail', 'weightUnit']}
+                label="Unidad de Medida"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Seleccionar una unidad de medida.',
+                  },
+                ]}
+              >
+                <Select
+                  options={unitsOfMeasure.map((unit) => ({
+                    value: unit.unit,
+                    label: unit.unit,
+                  }))}
+                />
+              </Form.Item>
+            </Col>
+          </>
         ) : (
           <Col span={12}></Col>
         )}

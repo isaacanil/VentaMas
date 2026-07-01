@@ -455,13 +455,11 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
             />
           )}
         </Wrapper>
-        <TableLoadingOverlay
-          $visible={loading}
-          style={{ pointerEvents: loading ? 'auto' : 'none' }}
-          aria-hidden={!loading}
-        >
-          <TableSpinner />
-        </TableLoadingOverlay>
+        {loading ? (
+          <TableLoadingOverlay>
+            <TableSpinner />
+          </TableLoadingOverlay>
+        ) : null}
         <TableFooter
           currentPage={currentPage}
           elementName={elementName}
@@ -569,7 +567,7 @@ const TableContainer = styled.div`
   isolation: isolate;
 `;
 
-const TableLoadingOverlay = styled.div<{ $visible: boolean }>`
+const TableLoadingOverlay = styled.div`
   position: absolute;
   inset: 0;
   z-index: 3;
@@ -577,8 +575,6 @@ const TableLoadingOverlay = styled.div<{ $visible: boolean }>`
   align-items: center;
   justify-content: center;
   background: rgb(255 255 255 / 70%);
-  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
-  transition: opacity 0.3s ease-in-out;
 `;
 
 const TableSpinner = styled.div`

@@ -1,5 +1,12 @@
 // src/utils/invoiceValidation.js
 
+import {
+  resolveInvoiceProductQuantity,
+  resolveInvoiceProductUnitPrice,
+} from '@/utils/invoice/product';
+import type { InvoiceProduct } from '@/types/invoice';
+import { isSupportedWeightUnit } from '@/domain/products/weightUnits';
+
 type InvoiceCartProductLike = {
   amountToBuy?: unknown;
   batchId?: unknown;
@@ -10,6 +17,13 @@ type InvoiceCartProductLike = {
     price?: unknown;
   };
   restrictSaleWithoutStock?: unknown;
+  saleUnit?: unknown;
+  selectedSaleUnit?: unknown;
+  weightDetail?: {
+    isSoldByWeight?: unknown;
+    weight?: unknown;
+    weightUnit?: unknown;
+  } | null;
 };
 
 type InvoiceCartLike = {
@@ -18,6 +32,9 @@ type InvoiceCartLike = {
 
 const getCartProducts = (cart?: InvoiceCartLike | null): InvoiceCartProductLike[] =>
   Array.isArray(cart?.products) ? cart.products : [];
+
+const asInvoiceProduct = (product: InvoiceCartProductLike): InvoiceProduct =>
+  product as unknown as InvoiceProduct;
 
 export function hasProductsInInvoice(cart?: InvoiceCartLike | null) {
   return getCartProducts(cart).length > 0;
@@ -29,8 +46,35 @@ export function allProductsHaveValidQuantityInInvoice(cart?: InvoiceCartLike | n
 
   return products.every((product) => {
     if (!product || typeof product !== 'object') return false;
-    const amount = Number(product.amountToBuy ?? 1);
+    const amount = resolveInvoiceProductQuantity(asInvoiceProduct(product));
     return Number.isFinite(amount) && amount > 0;
+  });
+}
+
+export function allWeightedProductsHaveValidWeightInInvoice(
+  cart?: InvoiceCartLike | null,
+) {
+  const products = getCartProducts(cart);
+  if (!products.length) return false;
+
+  return products.every((product) => {
+    if (!product || typeof product !== 'object') return false;
+    if (product.weightDetail?.isSoldByWeight !== true) return true;
+    const weight = Number(product.weightDetail?.weight);
+    return Number.isFinite(weight) && weight > 0;
+  });
+}
+
+export function allWeightedProductsHaveSupportedWeightUnitInInvoice(
+  cart?: InvoiceCartLike | null,
+) {
+  const products = getCartProducts(cart);
+  if (!products.length) return false;
+
+  return products.every((product) => {
+    if (!product || typeof product !== 'object') return false;
+    if (product.weightDetail?.isSoldByWeight !== true) return true;
+    return isSupportedWeightUnit(product.weightDetail?.weightUnit);
   });
 }
 
@@ -40,8 +84,9 @@ export function meetsMinimumInvoiceRequirement(
 ) {
   const products = getCartProducts(cart);
   const totalAmount = products.reduce((acc, product) => {
-    const price = Number(product?.pricing?.price ?? 0);
-    const amount = Number(product?.amountToBuy ?? 1);
+    const invoiceProduct = asInvoiceProduct(product);
+    const price = resolveInvoiceProductUnitPrice(invoiceProduct);
+    const amount = resolveInvoiceProductQuantity(invoiceProduct);
     return acc + price * amount;
   }, 0);
 
@@ -80,6 +125,19 @@ export function validateInvoiceCart(
     return {
       isValid: false,
       message: 'One or more products have an invalid quantity (must be > 0).',
+    };
+  }
+  if (!allWeightedProductsHaveValidWeightInInvoice(cart)) {
+    return {
+      isValid: false,
+      message: 'One or more products sold by weight have an invalid weight (must be > 0).',
+    };
+  }
+  if (!allWeightedProductsHaveSupportedWeightUnitInInvoice(cart)) {
+    return {
+      isValid: false,
+      message:
+        'Uno o más productos vendidos por peso tienen una unidad de peso no soportada. Selecciona kg, lb, oz, g o mg antes de facturar.',
     };
   }
 

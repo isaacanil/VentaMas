@@ -4,7 +4,6 @@ import type {
   InvoiceData,
   InvoicePaymentMethod,
   InvoiceProduct,
-  InvoiceProductAmount,
 } from '@/types/invoice';
 import {
   applyDiscount,
@@ -14,12 +13,15 @@ import {
   getProductsPrice,
   getProductsTax,
   getProductsTotalPrice,
-  getTotalItems,
 } from '@/utils/pricing';
 import {
   convertInvoiceDateToMillis,
   prepareInvoiceForEdit,
 } from '@/utils/invoice';
+import {
+  resolveInvoiceProductQuantity,
+  resolveInvoiceProductsQuantity,
+} from '@/utils/invoice/product';
 import {
   resolveElectronicTaxReceiptSnapshot,
   resolveFiscalDocumentNumber,
@@ -54,9 +56,56 @@ export type InvoiceWorkspaceEditWindow = {
 const roundToTwoDecimals = (value: number): number =>
   Math.round(value * 100) / 100;
 
+const roundQuantity = (value: number): number =>
+  Math.round((value + Number.EPSILON) * 1_000_000) / 1_000_000;
+
 const toFiniteNumber = (value: unknown, fallback = 0): number => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const resolveSaleUnitConversionFactor = (product: InvoiceProduct): number => {
+  const saleUnit =
+    product.selectedSaleUnit ??
+    (product as InvoiceProduct & { saleUnit?: unknown }).saleUnit;
+
+  if (!saleUnit || typeof saleUnit !== 'object' || Array.isArray(saleUnit)) {
+    return 1;
+  }
+
+  const factor = toFiniteNumber(
+    (saleUnit as Record<string, unknown>).conversionFactorToBase,
+    toFiniteNumber((saleUnit as Record<string, unknown>).quantity, 1),
+  );
+
+  return factor > 0 ? factor : 1;
+};
+
+export const getWorkspaceProductQuantityInputConfig = (
+  product?: InvoiceProduct | null,
+) => {
+  const allowsFractional =
+    product?.weightDetail?.isSoldByWeight === true ||
+    product?.selectedSaleUnit?.allowFractional === true;
+
+  return {
+    min: allowsFractional ? 0.01 : 1,
+    step: allowsFractional ? 0.01 : 1,
+  };
+};
+
+const resolveMinimumProductQuantity = (product: InvoiceProduct): number =>
+  getWorkspaceProductQuantityInputConfig(product).min;
+
+const resolveDraftBaseQuantity = (
+  product: InvoiceProduct,
+  quantity: number,
+): number => {
+  if (product.weightDetail?.isSoldByWeight === true) {
+    return roundQuantity(quantity);
+  }
+
+  return roundQuantity(quantity * resolveSaleUnitConversionFactor(product));
 };
 
 const formatEditWindowRemaining = (remainingMs: number): string => {
@@ -96,21 +145,8 @@ export const getWorkspaceEditProductQuantity = (
   product?: InvoiceProduct | null,
 ): number => {
   if (!product) return 1;
-  const amountToBuy = product.amountToBuy;
-
-  if (typeof amountToBuy === 'number') {
-    return amountToBuy > 0 ? amountToBuy : 1;
-  }
-
-  if (amountToBuy && typeof amountToBuy === 'object') {
-    const total = toFiniteNumber((amountToBuy as InvoiceProductAmount).total);
-    const unit = toFiniteNumber((amountToBuy as InvoiceProductAmount).unit);
-
-    if (total > 0) return total;
-    if (unit > 0) return unit;
-  }
-
-  return 1;
+  const quantity = resolveInvoiceProductQuantity(product);
+  return quantity > 0 ? quantity : resolveMinimumProductQuantity(product);
 };
 
 export const getWorkspaceEditProductKey = (
@@ -127,10 +163,31 @@ export const getWorkspaceEditProductKey = (
 const normalizeProductAmount = (
   product: InvoiceProduct,
   amount: number,
-): InvoiceProduct => ({
-  ...product,
-  amountToBuy: Math.max(1, toFiniteNumber(amount, 1)),
-});
+): InvoiceProduct => {
+  const minimumQuantity = resolveMinimumProductQuantity(product);
+  const quantity = roundQuantity(
+    Math.max(minimumQuantity, toFiniteNumber(amount, minimumQuantity)),
+  );
+  const baseQuantity = resolveDraftBaseQuantity(product, quantity);
+
+  if (product.weightDetail?.isSoldByWeight === true) {
+    return {
+      ...product,
+      amountToBuy: product.amountToBuy ?? 1,
+      baseQuantity,
+      weightDetail: {
+        ...product.weightDetail,
+        weight: quantity,
+      },
+    };
+  }
+
+  return {
+    ...product,
+    amountToBuy: quantity,
+    baseQuantity,
+  };
+};
 
 const normalizePaymentMethods = (
   methods: InvoicePaymentMethod[] = [],
@@ -195,7 +252,7 @@ export const recalculateWorkspaceInvoiceDraft = (
     },
     totalShoppingItems: {
       ...invoice.totalShoppingItems,
-      value: getTotalItems(products),
+      value: resolveInvoiceProductsQuantity(products),
     },
     payment: {
       ...invoice.payment,

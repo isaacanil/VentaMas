@@ -11,6 +11,8 @@ import {
 import {
   buildCanonicalVendorBillIdFromPurchaseId,
   buildVendorBillProjection,
+  isPurchaseReceiptInventoryPending,
+  preserveVendorBillControlDetails,
 } from './vendorBill.shared.js';
 
 const REGION = 'us-central1';
@@ -31,12 +33,15 @@ export const syncVendorBillFromPurchase = onDocumentWritten(
       return null;
     }
 
-    const vendorBillId = buildCanonicalVendorBillIdFromPurchaseId(
-      normalizedPurchaseId,
-    );
+    const vendorBillId =
+      buildCanonicalVendorBillIdFromPurchaseId(normalizedPurchaseId);
     const vendorBillRef = db.doc(
       `businesses/${businessId}/vendorBills/${vendorBillId}`,
     );
+    const existingVendorBillSnap = await vendorBillRef.get();
+    const existingVendorBill = existingVendorBillSnap?.exists
+      ? asRecord(existingVendorBillSnap.data())
+      : {};
     const afterPurchase = asRecord(event.data?.after?.data());
 
     if (!Object.keys(afterPurchase).length) {
@@ -52,6 +57,19 @@ export const syncVendorBillFromPurchase = onDocumentWritten(
     }
 
     const total = resolvePurchaseDocumentTotal(afterPurchase);
+
+    if (isPurchaseReceiptInventoryPending(afterPurchase)) {
+      await vendorBillRef.delete().catch((error) => {
+        logger.warn('Failed deleting vendorBill while purchase inventory is pending', {
+          businessId,
+          purchaseId: normalizedPurchaseId,
+          vendorBillId,
+          error: error?.message || String(error),
+        });
+      });
+      return null;
+    }
+
     const paymentState =
       afterPurchase.paymentState ??
       buildPurchasePaymentState({
@@ -83,7 +101,13 @@ export const syncVendorBillFromPurchase = onDocumentWritten(
       return null;
     }
 
-    await vendorBillRef.set(vendorBillProjection, { merge: true });
+    await vendorBillRef.set(
+      preserveVendorBillControlDetails({
+        existingVendorBill,
+        vendorBillProjection,
+      }),
+      { merge: true },
+    );
     return null;
   },
 );

@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import styled from 'styled-components';
 
-import { VmPopover } from '@/components/heroui';
+import { VmButton, VmPopover } from '@/components/heroui';
 
 import { CalendarSection } from './components/CalendarSection';
 import { DatePickerInput } from './components/DatePickerInput';
@@ -19,44 +19,33 @@ const Container = styled.div`
   width: 100%;
 `;
 
-const VmPopoverContent = styled(VmPopover.Content)`
-  border: 1px solid var(--ds-color-border-default);
-  border-radius: 8px;
-  background: var(--ds-color-bg-surface, #fff);
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.12),
-    0 1px 4px rgba(0, 0, 0, 0.06);
-  padding: 0;
-  overflow: hidden;
-`;
-
 interface DatePickerContentProps {
   $isMobile?: boolean;
+  $calendarOnly?: boolean;
 }
 
 interface ActionsSectionProps {
   $isMobile?: boolean;
 }
 
-interface ActionButtonProps {
-  $primary?: boolean;
+interface DesktopLayoutProps {
+  $hasSidebar?: boolean;
 }
 
 const DatePickerContent = styled.div<DatePickerContentProps>`
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  min-width: ${({ $isMobile }: DatePickerContentProps) =>
-    $isMobile ? 'auto' : '540px'};
-  max-width: ${({ $isMobile }: DatePickerContentProps) =>
-    $isMobile ? '100%' : '680px'};
-  height: ${({ $isMobile }: DatePickerContentProps) =>
-    $isMobile ? 'auto' : '350px'};
+  gap: ${({ $isMobile }: DatePickerContentProps) =>
+    $isMobile ? '14px' : '8px'};
+  width: ${({ $isMobile }: DatePickerContentProps) =>
+    $isMobile ? '100%' : 'max-content'};
+  height: ${({ $isMobile, $calendarOnly }: DatePickerContentProps) =>
+    $isMobile || $calendarOnly ? 'auto' : '350px'};
   min-height: 0;
   max-height: ${({ $isMobile }: DatePickerContentProps) =>
     $isMobile ? 'none' : '460px'};
   padding: ${({ $isMobile }: DatePickerContentProps) =>
-    $isMobile ? '1em' : '10px 0px'};
+    $isMobile ? '4px 16px 10px' : '10px 0px'};
 `;
 
 const ActionsSection = styled.div<ActionsSectionProps>`
@@ -65,44 +54,18 @@ const ActionsSection = styled.div<ActionsSectionProps>`
   z-index: 1;
   display: flex;
   gap: 8px;
+  justify-content: center;
   padding: ${({ $isMobile }: ActionsSectionProps) =>
-    $isMobile ? '1em' : '0px'};
+    $isMobile ? '12px 16px 14px' : '6px 0 8px'};
   background: white;
   border-top: 1px solid #f0f0f0;
 `;
 
-const ActionButton = styled.button<ActionButtonProps>`
-  flex: 1;
-  padding: 8px 16px;
-  font-size: 14px;
-  color: ${({ $primary }: ActionButtonProps) =>
-    $primary ? 'white' : '#595959'};
-  cursor: pointer;
-  background: ${({ $primary }: ActionButtonProps) =>
-    $primary ? '#1890ff' : 'white'};
-  border: 1px solid
-    ${({ $primary }: ActionButtonProps) => ($primary ? '#1890ff' : '#d9d9d9')};
-  border-radius: 4px;
-  transition: all 0.3s;
-
-  &:hover {
-    ${({ $primary }: ActionButtonProps) =>
-      $primary
-        ? `
-            background: #40a9ff;
-            border-color: #40a9ff;
-        `
-        : `
-            border-color: #1890ff;
-            color: #1890ff;
-        `}
-  }
-`;
-
-const DesktopLayout = styled.div`
+const DesktopLayout = styled.div<DesktopLayoutProps>`
   display: grid;
-  grid-template-columns: 1fr 220px;
-  gap: 16px;
+  grid-template-columns: ${({ $hasSidebar }: DesktopLayoutProps) =>
+    $hasSidebar ? 'auto 200px' : 'auto'};
+  gap: 8px;
   align-items: stretch;
   height: 100%;
   min-height: 0;
@@ -118,9 +81,9 @@ const CalendarPane = styled.div`
 
 const SidebarPane = styled.aside`
   display: flex;
-  flex: 0 0 220px;
+  flex: 0 0 200px;
   flex-direction: column;
-  width: 220px;
+  width: 200px;
   height: 100%;
   min-height: 0;
   max-height: 100%;
@@ -139,6 +102,7 @@ export const DatePicker = ({
   size = 'middle',
   disabled = false,
   presets = EMPTY_PRESETS,
+  showPresets = true,
   className,
   style,
   ...props
@@ -147,7 +111,12 @@ export const DatePicker = ({
   const isMobile = useMobile();
 
   const finalPresets: DatePickerPreset[] =
-    presets.length > 0 ? presets : createDefaultPresets(mode);
+    showPresets
+      ? presets.length > 0
+        ? presets
+        : createDefaultPresets(mode)
+      : EMPTY_PRESETS;
+  const shouldShowPresets = showPresets && finalPresets.length > 0;
 
   const {
     open,
@@ -177,20 +146,8 @@ export const DatePicker = ({
   const inputValue = formatDisplayValue(value ?? null, format, mode);
   const hasValue = inputValue !== '';
 
-
   const mobileContent = (
     <DatePickerContent $isMobile>
-      <PresetsSection
-        presets={finalPresets}
-        value={value}
-        mode={mode}
-        isMobile={isMobile}
-        onPresetClick={(preset) => handlePresetClick(preset, isMobile)}
-        showPresetsDropdown={showPresetsDropdown}
-        setShowPresetsDropdown={setShowPresetsDropdown}
-        presetsDropdownRef={presetsDropdownRef}
-      />
-
       <CalendarSection
         currentDate={currentDate}
         onNavigateMonth={navigateMonth}
@@ -201,13 +158,27 @@ export const DatePicker = ({
         currentRangeStart={currentRangeStart}
         currentRangeEnd={currentRangeEnd}
         hoverDate={hoverDate}
+        isMobile={isMobile}
       />
+
+      {shouldShowPresets ? (
+        <PresetsSection
+          presets={finalPresets}
+          value={value}
+          mode={mode}
+          isMobile={isMobile}
+          onPresetClick={(preset) => handlePresetClick(preset, isMobile)}
+          showPresetsDropdown={showPresetsDropdown}
+          setShowPresetsDropdown={setShowPresetsDropdown}
+          presetsDropdownRef={presetsDropdownRef}
+        />
+      ) : null}
     </DatePickerContent>
   );
 
   const desktopContent = (
-    <DatePickerContent>
-      <DesktopLayout>
+    <DatePickerContent $calendarOnly={!shouldShowPresets}>
+      <DesktopLayout $hasSidebar={shouldShowPresets}>
         <CalendarPane>
           <CalendarSection
             currentDate={currentDate}
@@ -222,23 +193,29 @@ export const DatePicker = ({
           />
         </CalendarPane>
 
-        <SidebarPane>
-          <PresetsSection
-            layout="sidebar"
-            presets={finalPresets}
-            value={value}
-            mode={mode}
-            isMobile={isMobile}
-            onPresetClick={(preset) => handlePresetClick(preset, isMobile)}
-          />
-        </SidebarPane>
+        {shouldShowPresets ? (
+          <SidebarPane>
+            <PresetsSection
+              layout="sidebar"
+              presets={finalPresets}
+              value={value}
+              mode={mode}
+              isMobile={isMobile}
+              onPresetClick={(preset) => handlePresetClick(preset, isMobile)}
+            />
+          </SidebarPane>
+        ) : null}
       </DesktopLayout>
 
       {allowClear && (
         <ActionsSection>
-          <ActionButton onClick={(e) => handleClear(e, finalPresets)}>
+          <VmButton
+            size="sm"
+            variant="tertiary"
+            onPress={() => handleClear(null, finalPresets)}
+          >
             Limpiar
-          </ActionButton>
+          </VmButton>
         </ActionsSection>
       )}
     </DatePickerContent>
@@ -274,9 +251,13 @@ export const DatePicker = ({
           {mobileContent}
           <ActionsSection $isMobile={isMobile}>
             {allowClear && (
-              <ActionButton onClick={(e) => handleClear(e, finalPresets)}>
+              <VmButton
+                size="sm"
+                variant="tertiary"
+                onPress={() => handleClear(null, finalPresets)}
+              >
                 Limpiar
-              </ActionButton>
+              </VmButton>
             )}
           </ActionsSection>
         </MobileModal>
@@ -306,9 +287,9 @@ export const DatePicker = ({
             {...props}
           />
         </VmPopover.Trigger>
-        <VmPopoverContent placement="bottom start">
+        <VmPopover.Content placement="bottom start" className="overflow-hidden">
           {desktopContent}
-        </VmPopoverContent>
+        </VmPopover.Content>
       </VmPopover.Root>
     </Container>
   );

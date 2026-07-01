@@ -137,11 +137,22 @@ describe('createManualJournalEntry', () => {
           ),
         };
       }
+      if (path === 'businesses/business-1/chartOfAccounts') {
+        return { path };
+      }
       throw new Error(`Unexpected collection path: ${path}`);
     });
-    transactionGetMock.mockImplementation(async (ref) =>
-      toSnapshot(ref.path, transactionSnapshots.get(ref.path)),
-    );
+    transactionGetMock.mockImplementation(async (ref) => {
+      if (ref.path === 'businesses/business-1/chartOfAccounts') {
+        return {
+          docs: Array.from(transactionSnapshots.entries())
+            .filter(([path]) => path.startsWith(`${ref.path}/`))
+            .map(([path, value]) => toSnapshot(path, value)),
+        };
+      }
+
+      return toSnapshot(ref.path, transactionSnapshots.get(ref.path));
+    });
     runTransactionMock.mockImplementation(async (callback) =>
       callback({
         get: transactionGetMock,
@@ -232,5 +243,51 @@ describe('createManualJournalEntry', () => {
         periodKey: '2026-04',
       }),
     );
+  });
+
+  it('rejects manual journal entries using cuentas mayor', async () => {
+    transactionSnapshots.set('businesses/business-1/settings/accounting', {});
+    transactionSnapshots.set('businesses/business-1/chartOfAccounts/cash', {
+      code: '1.1.00',
+      name: 'Caja',
+      status: 'active',
+      postingAllowed: true,
+    });
+    transactionSnapshots.set('businesses/business-1/chartOfAccounts/cash-1', {
+      code: '1.1.01',
+      name: 'Caja principal',
+      status: 'active',
+      postingAllowed: true,
+      parentId: 'cash',
+    });
+    transactionSnapshots.set('businesses/business-1/chartOfAccounts/sales', {
+      code: '4.1.01',
+      name: 'Ventas',
+      status: 'active',
+      postingAllowed: true,
+    });
+    transactionSnapshots.set(
+      'businesses/business-1/accountingPeriodClosures/2026-04',
+      null,
+    );
+
+    await expect(
+      createManualJournalEntry({
+        data: {
+          businessId: 'business-1',
+          description: 'Ajuste manual',
+          entryDate: '2026-04-12',
+          lines: [
+            { accountId: 'cash', debit: 100, credit: 0 },
+            { accountId: 'sales', debit: 0, credit: 100 },
+          ],
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'invalid-argument',
+      message: 'Todas las cuentas del asiento deben ser Cuentas Detalle.',
+    });
+
+    expect(transactionSetMock).not.toHaveBeenCalled();
   });
 });

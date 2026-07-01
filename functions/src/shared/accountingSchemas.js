@@ -232,6 +232,29 @@ export const CreateManualJournalEntryResultSchema = z.object({
   status: z.enum(['posted', 'reversed']),
 });
 
+export const UpdateJournalEntryInputSchema = z.object({
+  businessId: trimmedStringSchema,
+  entryId: trimmedStringSchema,
+  description: trimmedStringSchema,
+  entryDate: z
+    .string()
+    .regex(
+      /^\d{4}-\d{2}-\d{2}$/,
+      'La fecha del asiento debe tener formato YYYY-MM-DD.',
+    ),
+  lines: z
+    .array(callableLedgerLineSchema)
+    .min(2, 'El asiento requiere al menos dos líneas válidas.'),
+  reason: trimmedStringSchema,
+});
+
+export const UpdateJournalEntryResultSchema = z.object({
+  ok: z.literal(true),
+  entryId: trimmedStringSchema,
+  editId: trimmedStringSchema,
+  status: z.enum(['posted', 'reversed']),
+});
+
 export const ReverseJournalEntryInputSchema = z.object({
   businessId: trimmedStringSchema,
   entryId: trimmedStringSchema,

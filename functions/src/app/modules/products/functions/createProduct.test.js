@@ -217,4 +217,84 @@ describe('createProduct', () => {
       tx: transaction,
     });
   });
+
+  it('normalizes persisted product pricing so price follows listPrice', async () => {
+    prepareLimitedCreateOperationMock.mockResolvedValue({
+      authUid: 'user-1',
+      businessId: 'business-1',
+      input: {
+        businessID: 'business-1',
+        name: 'Cafe Premium',
+        stock: '1',
+        pricing: {
+          price: 150,
+          listPrice: 120,
+          avgPrice: 140,
+        },
+        saleUnits: [
+          {
+            id: 'box-12',
+            unitName: 'Caja',
+            pricing: {
+              price: 1300,
+              listPrice: 1200,
+            },
+          },
+        ],
+      },
+      metricKey: 'productsTotal',
+      incrementBy: 1,
+    });
+
+    await expect(createProduct({ data: {} })).resolves.toEqual({
+      ok: true,
+      productId: 'product-id',
+      businessId: 'business-1',
+    });
+
+    const writesByPath = Object.fromEntries(
+      transactionSetMock.mock.calls.map(([ref, data]) => [ref.path, data]),
+    );
+    const product = writesByPath['businesses/business-1/products/product-id'];
+
+    expect(product.pricing).toMatchObject({
+      price: 120,
+      listPrice: 120,
+      avgPrice: 140,
+    });
+    expect(product.saleUnits[0].pricing).toMatchObject({
+      price: 1200,
+      listPrice: 1200,
+    });
+  });
+
+  it('backfills legacy product listPrice from price on create', async () => {
+    prepareLimitedCreateOperationMock.mockResolvedValue({
+      authUid: 'user-1',
+      businessId: 'business-1',
+      input: {
+        businessID: 'business-1',
+        name: 'Cafe Legacy',
+        stock: 1,
+        pricing: {
+          price: 95,
+          listPrice: 0,
+        },
+      },
+      metricKey: 'productsTotal',
+      incrementBy: 1,
+    });
+
+    await createProduct({ data: {} });
+
+    const writesByPath = Object.fromEntries(
+      transactionSetMock.mock.calls.map(([ref, data]) => [ref.path, data]),
+    );
+    expect(
+      writesByPath['businesses/business-1/products/product-id'].pricing,
+    ).toMatchObject({
+      price: 95,
+      listPrice: 95,
+    });
+  });
 });

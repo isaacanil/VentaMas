@@ -143,7 +143,7 @@ const ClientListContainerComponent = ({
     <Body>
       {loading ? (
         <LoadingContainer>
-          <Spin size="large" tip="Cargando clientes...">
+          <Spin description="Cargando clientes..." size="large">
             <div style={{ minHeight: '100px', minWidth: '200px' }} />
           </Spin>
         </LoadingContainer>

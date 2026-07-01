@@ -1,4 +1,3 @@
-import { AutoComplete } from 'antd';
 import type { ReactNode } from 'react';
 import React from 'react';
 
@@ -8,6 +7,7 @@ import {
 } from '@/modules/invoice/pages/InvoicesPage/components/FilterBar/constants';
 
 import { FilterField } from './FilterField';
+import { FilterSelectControl } from './FilterSelectControl';
 
 type ClientOption = {
   value: string;
@@ -27,24 +27,18 @@ export const ClientFilter = ({
   value,
   onChange,
   clientOptions,
-  loading: _loading,
+  loading,
   label,
 }: ClientFilterProps) => (
   <FilterField label={label ?? FILTER_CONFIG.client.label}>
-    <AutoComplete
+    <FilterSelectControl
       value={value || ''}
       onChange={onChange}
       placeholder="Todos"
-      allowClear
       options={clientOptions}
-      style={{ width: FILTER_CONFIG.client.width }}
-      popupMatchSelectWidth={false}
-      size="middle"
-      aria-label={ACCESSIBILITY_CONFIG.ariaLabels.clientSelect}
-      filterOption={(inputValue, option) =>
-        option?.searchText?.includes?.(inputValue?.toLowerCase?.() ?? '') ??
-        false
-      }
+      width={FILTER_CONFIG.client.width}
+      isDisabled={loading}
+      ariaLabel={ACCESSIBILITY_CONFIG.ariaLabels.clientSelect}
     />
   </FilterField>
 );

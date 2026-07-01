@@ -28,7 +28,7 @@ export const UserActivityList = ({
   if (loading) {
     return (
       <LoadingWrapper>
-        <Spin tip="Cargando actividad...">
+        <Spin description="Cargando actividad...">
           <div style={{ width: '100%', minHeight: 80 }} />
         </Spin>
       </LoadingWrapper>

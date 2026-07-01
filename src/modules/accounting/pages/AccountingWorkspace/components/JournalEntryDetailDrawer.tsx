@@ -1,15 +1,22 @@
-import { Button, Popconfirm } from 'antd';
+import { Popconfirm } from 'antd';
+import type { CSSProperties } from 'react';
+import { useCallback, useState } from 'react';
 import styled from 'styled-components';
 
-import { Modal } from '@/components/common/Modal';
+import { VmButton, VmModal } from '@/components/heroui';
+import type { ChartOfAccount } from '@/types/accounting';
 
+import { JournalEntryEditForm } from './JournalEntryDetailDrawer/JournalEntryEditForm';
 import { resolveAccountingOriginTarget } from '../utils/accountingOrigin';
 import {
   formatAccountingDate,
   formatAccountingMoney,
 } from '../utils/accountingWorkspace';
 
-import type { AccountingLedgerRecord } from '../utils/accountingWorkspace';
+import type {
+  AccountingLedgerRecord,
+  AccountingPeriodClosure,
+} from '../utils/accountingWorkspace';
 
 const TECHNICAL_CODEX_DOCUMENT_PATTERN =
   /^codex-(?<type>[a-z]+)-(?<source>[a-z]+)-(?<sequence>\d+)$/i;
@@ -30,6 +37,11 @@ const DOCUMENT_SOURCE_LABELS: Record<string, string> = {
   sale: 'venta',
   purchase: 'compra',
   vendor: 'proveedor',
+};
+
+const DETAIL_MODAL_DIALOG_STYLE: CSSProperties = {
+  maxWidth: 'min(820px, calc(100dvw - 32px))',
+  width: 'min(820px, calc(100dvw - 32px))',
 };
 
 const formatVisibleDocumentReference = (
@@ -60,20 +72,42 @@ interface JournalEntryDetailDrawerProps {
   onReverseEntry?: (
     entry: NonNullable<AccountingLedgerRecord['journalEntry']>,
   ) => Promise<boolean>;
+  onUpdateEntry?: (payload: {
+    description: string;
+    entryDate: string;
+    entryId: string;
+    lines: Array<{
+      accountId: string;
+      credit: number;
+      debit: number;
+      description?: string;
+    }>;
+    reason: string;
+  }) => Promise<boolean>;
   openingOrigin?: boolean;
+  periodClosures?: AccountingPeriodClosure[];
+  postingAccounts?: ChartOfAccount[];
   record: AccountingLedgerRecord | null;
   reversing?: boolean;
+  updating?: boolean;
 }
 
 export const JournalEntryDetailDrawer = ({
   onClose,
   onOpenOrigin,
   onReverseEntry,
+  onUpdateEntry,
   openingOrigin = false,
   open,
+  periodClosures = [],
+  postingAccounts = [],
   record,
   reversing = false,
+  updating = false,
 }: JournalEntryDetailDrawerProps) => {
+  const [editing, setEditing] = useState(false);
+  const [editFooterElement, setEditFooterElement] =
+    useState<HTMLDivElement | null>(null);
   const isPostedEntry =
     record?.detailMode === 'posted' && record.journalEntry?.status === 'posted';
   const isManualEntry =
@@ -81,6 +115,9 @@ export const JournalEntryDetailDrawer = ({
     record.journalEntry?.eventType === 'manual.entry.recorded';
   const isAutomaticEntry = record?.sourceKind === 'automatic';
   const canReverse = isPostedEntry && isManualEntry;
+  const canEditAutomatic = Boolean(
+    isPostedEntry && isAutomaticEntry && record?.journalEntry && onUpdateEntry,
+  );
   const originTarget = resolveAccountingOriginTarget(record);
   const visibleDocumentReference =
     record?.documentReference &&
@@ -92,15 +129,37 @@ export const JournalEntryDetailDrawer = ({
   const documentLabel = formatVisibleDocumentReference(
     visibleDocumentReference,
   );
+  const showEditor = Boolean(editing && canEditAutomatic && record);
+  const editFormId = record
+    ? `journal-entry-edit-form-${record.id}`
+    : 'journal-entry-edit-form';
+  const handleClose = () => {
+    setEditing(false);
+    onClose();
+  };
+  const handleEditFooterMount = useCallback(
+    (element: HTMLDivElement | null) => {
+      setEditFooterElement(element);
+    },
+    [],
+  );
 
   return (
-    <Modal
-      destroyOnHidden
-      footer={null}
-      title={record?.title ?? 'Detalle del asiento'}
-      width={820}
-      open={open}
-      onCancel={onClose}
+    <VmModal
+      ariaLabel={
+        showEditor ? 'Correccion contable' : record?.title ?? 'Detalle del asiento'
+      }
+      dialogProps={{ style: DETAIL_MODAL_DIALOG_STYLE }}
+      footer={
+        showEditor ? (
+          <EditModalFooterMount ref={handleEditFooterMount} />
+        ) : null
+      }
+      isOpen={open}
+      title={showEditor ? 'Correccion contable' : record?.title ?? 'Detalle del asiento'}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) handleClose();
+      }}
     >
       {record ? (
         <ModalBody>
@@ -115,7 +174,9 @@ export const JournalEntryDetailDrawer = ({
                     : 'Vista previa'}
                 </HeaderBadge>
                 {isAutomaticEntry ? (
-                  <HeaderBadge>No editable</HeaderBadge>
+                  <HeaderBadge>
+                    {canEditAutomatic ? 'Corregible' : 'Automatico'}
+                  </HeaderBadge>
                 ) : null}
               </SummaryBadges>
             </SummaryHeader>
@@ -155,95 +216,139 @@ export const JournalEntryDetailDrawer = ({
             </MetaGrid>
           </HeaderBlock>
 
-          <LinesTableShell>
-            <LinesTable>
-              <thead>
-                <tr>
-                  <th>Cuenta</th>
-                  <th>Detalle</th>
-                  <th>Debito</th>
-                  <th>Credito</th>
-                </tr>
-              </thead>
-              <tbody>
-                {record.lines.map((line) => (
-                  <tr key={`${record.id}-${line.lineNumber}`}>
-                    <AccountCell>
-                      <strong>{line.accountCode ?? 'Sin codigo'}</strong>
-                      <span>{line.accountName ?? 'Cuenta sin nombre'}</span>
-                    </AccountCell>
-                    <DetailCell>
-                      {line.description ?? 'Sin detalle adicional'}
-                    </DetailCell>
-                    <NumericCell $tone="debit">
-                      {line.debit ? formatAccountingMoney(line.debit) : '-'}
-                    </NumericCell>
-                    <NumericCell $tone="credit">
-                      {line.credit ? formatAccountingMoney(line.credit) : '-'}
-                    </NumericCell>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colSpan={2}>Total</td>
-                  <NumericCell $tone="debit">
-                    {formatAccountingMoney(
-                      record.lines.reduce((sum, line) => sum + line.debit, 0),
-                    )}
-                  </NumericCell>
-                  <NumericCell $tone="credit">
-                    {formatAccountingMoney(
-                      record.lines.reduce((sum, line) => sum + line.credit, 0),
-                    )}
-                  </NumericCell>
-                </tr>
-              </tfoot>
-            </LinesTable>
-          </LinesTableShell>
+          {showEditor ? (
+            <JournalEntryEditForm
+              key={`${record.id}:edit`}
+              closures={periodClosures}
+              formId={editFormId}
+              modalFooterElement={editFooterElement}
+              postingAccounts={postingAccounts}
+              record={record}
+              saving={updating}
+              useModalFooter
+              onCancel={() => setEditing(false)}
+              onSubmit={onUpdateEntry!}
+            />
+          ) : (
+            <>
+              <LinesTableShell>
+                <LinesTable>
+                  <thead>
+                    <tr>
+                      <th>Cuenta</th>
+                      <th>Detalle</th>
+                      <th>Debito</th>
+                      <th>Credito</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {record.lines.map((line) => (
+                      <tr key={`${record.id}-${line.lineNumber}`}>
+                        <AccountCell>
+                          <strong>{line.accountCode ?? 'Sin codigo'}</strong>
+                          <span>{line.accountName ?? 'Cuenta sin nombre'}</span>
+                        </AccountCell>
+                        <DetailCell>
+                          {line.description ?? 'Sin detalle adicional'}
+                        </DetailCell>
+                        <NumericCell $tone="debit">
+                          {line.debit ? formatAccountingMoney(line.debit) : '-'}
+                        </NumericCell>
+                        <NumericCell $tone="credit">
+                          {line.credit
+                            ? formatAccountingMoney(line.credit)
+                            : '-'}
+                        </NumericCell>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan={2}>Total</td>
+                      <NumericCell $tone="debit">
+                        {formatAccountingMoney(
+                          record.lines.reduce(
+                            (sum, line) => sum + line.debit,
+                            0,
+                          ),
+                        )}
+                      </NumericCell>
+                      <NumericCell $tone="credit">
+                        {formatAccountingMoney(
+                          record.lines.reduce(
+                            (sum, line) => sum + line.credit,
+                            0,
+                          ),
+                        )}
+                      </NumericCell>
+                    </tr>
+                  </tfoot>
+                </LinesTable>
+              </LinesTableShell>
 
-          {isPostedEntry && isAutomaticEntry ? (
-            <CorrectionNotice>
-              <strong>Asiento automatico no editable.</strong>
-              <span>
-                Corrige desde el documento origen para mantener operacion y
-                contabilidad alineadas.
-              </span>
-            </CorrectionNotice>
-          ) : null}
-
-          {originTarget || (canReverse && record.journalEntry) ? (
-            <ActionRow>
-              {originTarget ? (
-                <Button
-                  loading={openingOrigin}
-                  onClick={() => void onOpenOrigin?.(record)}
-                >
-                  {originTarget.label}
-                </Button>
+              {isPostedEntry && isAutomaticEntry && !canEditAutomatic ? (
+                <CorrectionNotice>
+                  <strong>Asiento automatico.</strong>
+                  <span>
+                    Corrige desde el documento origen para mantener operacion y
+                    contabilidad alineadas.
+                  </span>
+                </CorrectionNotice>
               ) : null}
 
-              {canReverse && record.journalEntry && onReverseEntry ? (
-                <Popconfirm
-                  okText="Reversar"
-                  cancelText="Cancelar"
-                  placement="left"
-                  title="Reversar asiento"
-                  description="Se creara un nuevo asiento con los importes invertidos y el original quedara marcado como revertido."
-                  onConfirm={() => void onReverseEntry(record.journalEntry!)}
-                >
-                  <Button danger loading={reversing}>
-                    Reversar asiento
-                  </Button>
-                </Popconfirm>
+              {originTarget ||
+              canEditAutomatic ||
+              (canReverse && record.journalEntry) ? (
+                <ActionRow>
+                  {originTarget ? (
+                    <VmButton
+                      isPending={openingOrigin}
+                      variant="secondary"
+                      onPress={() => void onOpenOrigin?.(record)}
+                    >
+                      {originTarget.label}
+                    </VmButton>
+                  ) : null}
+
+                  {canEditAutomatic ? (
+                    <VmButton
+                      isPending={updating}
+                      variant="primary"
+                      onPress={() => setEditing(true)}
+                    >
+                      Correccion contable
+                    </VmButton>
+                  ) : null}
+
+                  {canReverse && record.journalEntry && onReverseEntry ? (
+                    <Popconfirm
+                      okText="Reversar"
+                      cancelText="Cancelar"
+                      placement="left"
+                      title="Reversar asiento"
+                      description="Se creara un nuevo asiento con los importes invertidos y el original quedara marcado como revertido."
+                      onConfirm={() =>
+                        void onReverseEntry(record.journalEntry!)
+                      }
+                    >
+                      <VmButton isPending={reversing} variant="danger">
+                        Reversar asiento
+                      </VmButton>
+                    </Popconfirm>
+                  ) : null}
+                </ActionRow>
               ) : null}
-            </ActionRow>
-          ) : null}
+            </>
+          )}
         </ModalBody>
       ) : null}
-    </Modal>
+    </VmModal>
   );
 };
+
+const EditModalFooterMount = styled.div`
+  width: 100%;
+`;
 
 const ModalBody = styled.div`
   display: flex;

@@ -1,13 +1,93 @@
 import { https, logger } from 'firebase-functions';
-import { nanoid } from 'nanoid';
 
 import { db, serverTimestamp } from '../../../core/config/firebase.js';
 import { buildAccountingEvent } from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
 import { isAccountingRolloutEnabledForBusiness } from '../../../versions/v2/accounting/utils/accountingRollout.util.js';
 
 import { MovementType, MovementReason } from './movementEnums.js';
+import {
+  buildSaleUnitMovementSnapshot,
+  resolveInventoryBaseQuantity,
+} from '../utils/saleUnitQuantity.util.js';
+import { isSupportedWeightUnit } from '../utils/weightUnit.util.js';
 
 const BACK_ORDERS_COLLECTION = 'backOrders';
+
+const sanitizeDocIdPart = (value, fallback = 'none') => {
+  const raw =
+    value === null || value === undefined || value === ''
+      ? fallback
+      : String(value).trim();
+  return raw.replace(/[^A-Za-z0-9_-]+/g, '_').slice(0, 90) || fallback;
+};
+
+const resolveInventoryLineId = (product, index) =>
+  product?.lineId || product?.cid || product?.cartLineId || `line-${index}`;
+
+const buildInventorySideEffectId = ({
+  type,
+  saleId,
+  product,
+  index,
+  productStockId,
+  batchId,
+}) =>
+  [
+    type,
+    saleId,
+    resolveInventoryLineId(product, index),
+    product?.id,
+    productStockId || 'no-stock',
+    batchId || 'no-batch',
+  ]
+    .map((part) => sanitizeDocIdPart(part))
+    .join('__');
+
+const resolveInventorySideEffectState = ({
+  businessID,
+  prereq,
+  saleId,
+  product,
+  index,
+  productStockId,
+  batchId,
+}) => {
+  const movementId =
+    prereq?.movementId ||
+    buildInventorySideEffectId({
+      type: 'movement',
+      saleId,
+      product,
+      index,
+      productStockId,
+      batchId,
+    });
+  const backorderId =
+    prereq?.backorderId ||
+    buildInventorySideEffectId({
+      type: 'backorder',
+      saleId,
+      product,
+      index,
+      productStockId,
+      batchId,
+    });
+
+  return {
+    movementId,
+    movementRef:
+      prereq?.movementRef ||
+      db.doc(`businesses/${businessID}/movements/${movementId}`),
+    movementExists: prereq?.movementSnap?.exists === true,
+    backorderId,
+    backorderRef:
+      prereq?.backorderRef ||
+      db.doc(
+        `businesses/${businessID}/${BACK_ORDERS_COLLECTION}/${backorderId}`,
+      ),
+    backorderExists: prereq?.backorderSnap?.exists === true,
+  };
+};
 
 const getPhysicalStockQuantity = (productStockSnap) => {
   const rawQuantity = productStockSnap?.get?.('quantity');
@@ -33,13 +113,33 @@ const shouldAdjustInventoryLine = (product) =>
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 
+const toCleanString = (value) => {
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length ? trimmed : null;
+};
+
 const safeNumber = (value) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 };
 
-const roundMoney = (value) =>
-  Math.round((safeNumber(value) ?? 0) * 100) / 100;
+const assertSupportedWeightInventoryLine = (product) => {
+  if (product?.weightDetail?.isSoldByWeight !== true) return;
+
+  const weightUnit = toCleanString(product?.weightDetail?.weightUnit);
+  if (!weightUnit || isSupportedWeightUnit(weightUnit)) return;
+
+  throw new https.HttpsError(
+    'failed-precondition',
+    `Unidad de peso no soportada para ${
+      product?.name || product?.id || 'producto'
+    }: ${weightUnit}`,
+  );
+};
+
+const roundMoney = (value) => Math.round((safeNumber(value) ?? 0) * 100) / 100;
 
 const readSnapshotField = (snapshot, fieldPath) => {
   if (!snapshot || !fieldPath) return null;
@@ -70,7 +170,11 @@ const resolvePositiveNumber = (...values) => {
   return null;
 };
 
-const resolveInventoryUnitCost = ({ batchSnap, productSnap, productStockSnap }) =>
+const resolveInventoryUnitCost = ({
+  batchSnap,
+  productSnap,
+  productStockSnap,
+}) =>
   resolvePositiveNumber(
     readSnapshotField(productStockSnap, 'unitCost'),
     readSnapshotField(productStockSnap, 'cost'),
@@ -171,6 +275,7 @@ export async function adjustProductInventory(
     (inventoryPrevreqs || []).map((entry) => [entry.index, entry]),
   );
   const productAdjustments = new Map();
+  const productStockAdjustments = new Map();
   const batchAdjustments = new Map();
   const skippedProducts = [];
   const normalizedAccountingSettings = asRecord(accountingSettings);
@@ -180,24 +285,48 @@ export async function adjustProductInventory(
   );
   const cogsLines = [];
 
-  const registerBackorder = ({ productId, productStockId, pendingQty }) => {
+  const registerBackorder = ({
+    productId,
+    productName,
+    productStockId,
+    batchId,
+    pendingQty,
+    requestedQuantity,
+    saleUnitSnapshot,
+    lineId,
+    backorderId,
+    backorderRef,
+  }) => {
     if (!pendingQty || pendingQty <= 0) return;
-    const backorderId = nanoid();
     const ts = serverTimestamp();
-    tx.set(db.doc(`businesses/${businessID}/${BACK_ORDERS_COLLECTION}/${backorderId}`), {
-      id: backorderId,
-      productId,
-      quantity: pendingQty,
-      productStockId: productStockId || null,
-      saleId,
-      initialQuantity: pendingQty,
-      pendingQuantity: pendingQty,
-      status: 'pending',
-      createdAt: ts,
-      createdBy: uid,
-      updatedAt: ts,
-      updatedBy: uid,
-    });
+    tx.set(
+      backorderRef ||
+        db.doc(
+          `businesses/${businessID}/${BACK_ORDERS_COLLECTION}/${backorderId}`,
+        ),
+      {
+        id: backorderId,
+        productId,
+        productName: productName || null,
+        quantity: pendingQty,
+        baseQuantity: pendingQty,
+        productStockId: productStockId || null,
+        batchId: batchId || null,
+        saleId,
+        lineId: lineId || null,
+        requestedQuantity: requestedQuantity ?? pendingQty,
+        requestedBaseQuantity: requestedQuantity ?? pendingQty,
+        initialQuantity: pendingQty,
+        pendingQuantity: pendingQty,
+        pendingBaseQuantity: pendingQty,
+        saleUnit: saleUnitSnapshot,
+        status: 'pending',
+        createdAt: ts,
+        createdBy: uid,
+        updatedAt: ts,
+        updatedBy: uid,
+      },
+    );
   };
 
   const registerMovement = ({
@@ -207,13 +336,17 @@ export async function adjustProductInventory(
     batchNumberId,
     quantityMoved,
     sourceLocation,
+    productStockId,
     requestedQuantity,
+    saleUnitSnapshot,
+    lineId,
+    movementId,
+    movementRef,
   }) => {
-    if (!quantityMoved || quantityMoved <= 0) return;
-    const movementId = nanoid();
+    if (!quantityMoved || quantityMoved <= 0) return null;
     const ts = serverTimestamp();
     tx.set(
-      db.doc(`businesses/${businessID}/movements/${movementId}`),
+      movementRef || db.doc(`businesses/${businessID}/movements/${movementId}`),
       {
         id: movementId,
         saleId,
@@ -225,34 +358,59 @@ export async function adjustProductInventory(
         batchNumberId: batchNumberId || null,
         productId,
         productName,
+        productStockId: productStockId || null,
+        lineId: lineId || null,
         sourceLocation: sourceLocation || null,
         destinationLocation: null,
         quantity: quantityMoved,
         requestedQuantity: requestedQuantity ?? quantityMoved,
+        saleUnit: saleUnitSnapshot,
         movementType: MovementType.Exit,
         movementReason: MovementReason.Sale,
         isDeleted: false,
       },
       { merge: false },
     );
+    return movementId;
   };
 
   for (let index = 0; index < products.length; index += 1) {
-    const prod = products[index];
+    const prereq = prereqMap.get(index);
+    const prod = prereq?.prod || products[index];
     if (!shouldAdjustInventoryLine(prod)) continue;
+    assertSupportedWeightInventoryLine(prod);
 
     const {
       id: productId,
       name: productName,
-      amountToBuy,
       productStockId,
       batchId,
+      cid,
+      lineId: rawLineId,
     } = prod;
 
-    const quantityRequested = Math.max(Number(amountToBuy) || 0, 0);
+    const quantityRequested = resolveInventoryBaseQuantity(prod);
     if (quantityRequested === 0) continue;
+    const saleUnitSnapshot = buildSaleUnitMovementSnapshot(prod);
+    const lineId = rawLineId || cid || null;
+    const sideEffectState = resolveInventorySideEffectState({
+      businessID,
+      prereq,
+      saleId,
+      product: prod,
+      index,
+      productStockId,
+      batchId,
+    });
 
-    const prereq = prereqMap.get(index);
+    if (sideEffectState.movementExists || sideEffectState.backorderExists) {
+      skippedProducts.push({
+        productId,
+        reason: 'inventory-side-effect-already-exists',
+      });
+      continue;
+    }
+
     if (!prereq) {
       logger.error('Inventario sin prerequisitos resueltos', {
         productId,
@@ -269,8 +427,15 @@ export async function adjustProductInventory(
       skippedProducts.push({ productId, reason: prereq.reason });
       registerBackorder({
         productId,
+        productName,
         productStockId: productStockId || null,
+        batchId,
         pendingQty: quantityRequested,
+        requestedQuantity: quantityRequested,
+        saleUnitSnapshot,
+        lineId,
+        backorderId: sideEffectState.backorderId,
+        backorderRef: sideEffectState.backorderRef,
       });
       continue;
     }
@@ -279,25 +444,36 @@ export async function adjustProductInventory(
     const batchSnap = prereq.batchSnap;
     const productSnap = prereq.productSnap;
 
-    const availableStock = getPhysicalStockQuantity(productStockSnap);
+    const productStockKey =
+      productStockSnap?.ref?.path || productStockId || `line-${index}`;
+    const productStockEntry = productStockAdjustments.get(productStockKey) || {
+      ref: productStockSnap.ref,
+      snap: productStockSnap,
+      available: getPhysicalStockQuantity(productStockSnap),
+      consumed: 0,
+    };
+    const availableStock = Math.max(
+      productStockEntry.available - productStockEntry.consumed,
+      0,
+    );
     const qtyToConsume = Math.min(quantityRequested, availableStock);
     const backorderQty = quantityRequested - qtyToConsume;
-    const remainingStock = Math.max(availableStock - qtyToConsume, 0);
     const batchNumberId = batchSnap?.get('numberId') || null;
     const sourceLocation = productStockSnap?.get('location') || null;
 
-    const stockPayload = {
-      quantity: remainingStock,
-      stock: remainingStock,
-      updatedAt: serverTimestamp(),
-      updatedBy: uid,
-    };
-    if (remainingStock <= 0) {
-      stockPayload.status = 'inactive';
+    if (prod.restrictSaleWithoutStock === true && backorderQty > 0) {
+      throw new https.HttpsError(
+        'failed-precondition',
+        `Stock insuficiente para ${
+          productName || productId
+        }. Disponible ${availableStock}, solicitado ${quantityRequested}.`,
+      );
     }
-    tx.update(productStockSnap.ref, stockPayload);
 
     if (qtyToConsume > 0) {
+      productStockEntry.consumed += qtyToConsume;
+      productStockAdjustments.set(productStockKey, productStockEntry);
+
       const productEntry = productAdjustments.get(productId) || {
         ref: productSnap.ref,
         snap: productSnap,
@@ -316,14 +492,19 @@ export async function adjustProductInventory(
         batchAdjustments.set(batchId, batchEntry);
       }
 
-      registerMovement({
+      const movementId = registerMovement({
         productId,
         productName,
         batchId,
         batchNumberId,
         quantityMoved: qtyToConsume,
+        productStockId,
         requestedQuantity: quantityRequested,
         sourceLocation,
+        saleUnitSnapshot,
+        lineId,
+        movementId: sideEffectState.movementId,
+        movementRef: sideEffectState.movementRef,
       });
 
       if (accountingEnabled) {
@@ -338,7 +519,10 @@ export async function adjustProductInventory(
             productName: productName || null,
             productStockId: productStockId || null,
             batchId: batchId || null,
+            movementId,
+            lineId: lineId || null,
             quantity: qtyToConsume,
+            saleUnit: saleUnitSnapshot,
             unitCost: roundMoney(unitCost),
             totalCost: roundMoney(unitCost * qtyToConsume),
           });
@@ -349,13 +533,41 @@ export async function adjustProductInventory(
     if (backorderQty > 0) {
       registerBackorder({
         productId,
+        productName,
         productStockId,
+        batchId,
         pendingQty: backorderQty,
+        requestedQuantity: quantityRequested,
+        saleUnitSnapshot,
+        lineId,
+        backorderId: sideEffectState.backorderId,
+        backorderRef: sideEffectState.backorderRef,
       });
     }
   }
 
   const ts = serverTimestamp();
+
+  for (const [productStockKey, data] of productStockAdjustments.entries()) {
+    if (!data?.ref) continue;
+    const nextStock = Math.max(data.available - data.consumed, 0);
+    const stockPayload = {
+      quantity: nextStock,
+      stock: nextStock,
+      updatedAt: ts,
+      updatedBy: uid,
+    };
+    if (nextStock <= 0) {
+      stockPayload.status = 'inactive';
+    }
+    tx.update(data.ref, stockPayload);
+    logger.debug('Existencia fisica actualizada', {
+      productStockId: productStockKey,
+      consumed: data.consumed,
+      nextStock,
+      saleId,
+    });
+  }
 
   for (const [productId, data] of productAdjustments.entries()) {
     if (!data?.ref) continue;

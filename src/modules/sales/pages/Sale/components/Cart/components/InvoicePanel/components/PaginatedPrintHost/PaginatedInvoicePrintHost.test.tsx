@@ -181,10 +181,36 @@ describe('PaginatedInvoicePrintHost', () => {
       );
     });
     expect(onPrintBlocked).toHaveBeenCalledTimes(1);
+    expect(printFrozenPaginatedDocument).toHaveBeenCalledTimes(2);
     expect(onPrintBlocked).toHaveBeenCalledWith(
       expect.stringContaining('ready=yes'),
     );
     expect(onPrinted).not.toHaveBeenCalled();
+  });
+
+  it('retries the frozen paginated print before reporting success', async () => {
+    const onPrinted = vi.fn();
+    const onPrintBlocked = vi.fn();
+    vi.mocked(printFrozenPaginatedDocument)
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(true);
+
+    render(
+      <PaginatedInvoicePrintHost
+        business={{ name: 'VentaMas Demo' }}
+        invoice={invoice}
+        pending
+        readyTimeoutMs={10}
+        onPrintBlocked={onPrintBlocked}
+        onPrinted={onPrinted}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(printFrozenPaginatedDocument).toHaveBeenCalledTimes(2);
+    });
+    await waitFor(() => expect(onPrinted).toHaveBeenCalledTimes(1));
+    expect(onPrintBlocked).not.toHaveBeenCalled();
   });
 
   it('waits for a fresh ready DOM source before reprinting the same invoice', async () => {
@@ -197,6 +223,7 @@ describe('PaginatedInvoicePrintHost', () => {
         business={{ name: 'VentaMas Demo' }}
         invoice={invoice}
         pending
+        readyTimeoutMs={10}
         onPrintBlocked={onPrintBlocked}
         onPrinted={onPrinted}
       />,
@@ -316,13 +343,14 @@ describe('PaginatedInvoicePrintHost', () => {
         business={{ name: 'VentaMas Demo' }}
         invoice={invoice}
         pending
+        readyTimeoutMs={10}
         onPrintBlocked={onPrintBlocked}
         onPrinted={onPrinted}
       />,
     );
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(4_000);
+      await vi.advanceTimersByTimeAsync(10);
     });
 
     expect(onPrintBlocked).toHaveBeenCalledWith(
@@ -348,8 +376,15 @@ describe('PaginatedInvoicePrintHost', () => {
   it('reports a blocked print when the frozen print helper never settles', async () => {
     const onPrinted = vi.fn();
     const onPrintBlocked = vi.fn();
-    vi.mocked(printFrozenPaginatedDocument).mockReturnValue(
-      new Promise<boolean>(() => {}),
+    const attemptSignals: AbortSignal[] = [];
+    vi.useFakeTimers();
+    vi.mocked(printFrozenPaginatedDocument).mockImplementation(
+      ({ signal } = {}) => {
+        if (signal) {
+          attemptSignals.push(signal);
+        }
+        return new Promise<boolean>(() => {});
+      },
     );
 
     render(
@@ -357,25 +392,44 @@ describe('PaginatedInvoicePrintHost', () => {
         business={{ name: 'VentaMas Demo' }}
         invoice={invoice}
         pending
-        readyTimeoutMs={10}
+        printAttemptTimeoutMs={10}
         onPrintBlocked={onPrintBlocked}
         onPrinted={onPrinted}
       />,
     );
 
-    await waitFor(() => {
-      expect(printFrozenPaginatedDocument).toHaveBeenCalledTimes(1);
+    await act(async () => undefined);
+
+    expect(printFrozenPaginatedDocument).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10);
     });
 
-    await waitFor(() => {
-      expect(onPrintBlocked).toHaveBeenCalledWith(
-        expect.stringContaining('paginated-print-timeout'),
-      );
+    expect(attemptSignals[0]?.aborted).toBe(true);
+    expect(onPrintBlocked).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(250);
     });
+
+    expect(printFrozenPaginatedDocument).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10);
+    });
+
+    expect(onPrintBlocked).toHaveBeenCalledWith(
+      expect.stringContaining('paginated-print-timeout'),
+    );
     expect(onPrintBlocked).toHaveBeenCalledWith(
       expect.stringContaining('ready=yes'),
     );
+    expect(onPrintBlocked).toHaveBeenCalledWith(
+      expect.stringContaining('intentos=2'),
+    );
     expect(onPrintBlocked).toHaveBeenCalledTimes(1);
+    expect(attemptSignals[1]?.aborted).toBe(true);
     expect(onPrinted).not.toHaveBeenCalled();
   });
 

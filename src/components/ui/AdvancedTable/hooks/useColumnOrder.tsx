@@ -3,6 +3,7 @@ import type { ColumnConfig, ColumnStatus } from '../types/ColumnTypes';
 
 type ColumnStatusFlag = ColumnStatus | boolean | undefined;
 type ColumnLike = { accessor: string; status?: ColumnStatusFlag };
+type PersistedColumn = Pick<ColumnLike, 'accessor' | 'status'>;
 
 const buildLocalStorageName = (
   userId?: string | null,
@@ -74,6 +75,12 @@ const filterInvalidColumns = <Col extends ColumnLike>(columns: Col[]): Col[] =>
       !(Object.keys(savedCol).length === 1 && savedCol.status === true),
   );
 
+const serializeColumnOrder = (columns: ColumnLike[]): PersistedColumn[] =>
+  columns.map((column) => ({
+    accessor: column.accessor,
+    status: column.status,
+  }));
+
 const mergeColumns = <Col extends ColumnLike>(
   defaultColumns: Col[],
   savedColumns: ColumnLike[],
@@ -138,10 +145,14 @@ export const useColumnOrder = <Col extends ColumnConfig>(
 
   useEffect(() => {
     if (tableName) {
-      localStorage.setItem(
-        localStorageName,
-        JSON.stringify(resolvedColumnOrder),
-      );
+      try {
+        localStorage.setItem(
+          localStorageName,
+          JSON.stringify(serializeColumnOrder(resolvedColumnOrder)),
+        );
+      } catch (error) {
+        console.error('Error al guardar la configuración de columnas:', error);
+      }
     }
   }, [resolvedColumnOrder, localStorageName, tableName]);
 

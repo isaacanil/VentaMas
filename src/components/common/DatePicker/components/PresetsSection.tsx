@@ -1,19 +1,12 @@
-import { CloseOutlined } from '@ant-design/icons';
-import React, { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { isPresetActive } from '@/components/common/DatePicker/utils/dateUtils';
 import { VmListBox } from '@/components/heroui';
 import {
   DropdownGroup,
   DropdownItem,
-  MobileDrawer,
-  MobileDrawerClose,
-  MobileDrawerContent,
-  MobileDrawerHeader,
-  MobileDrawerOverlay,
-  MobileDrawerTitle,
-  MobileGroup,
-  MobileGroupTitle,
+  MobilePresetGrid,
+  MobilePresetTabs,
   PresetButton,
   PresetsContainer,
   PresetsDropdown,
@@ -44,6 +37,15 @@ type SidebarPresetOption = Extract<SidebarPresetItem, { kind: 'preset' }>;
 const DEFAULT_GROUP = 'Rangos rápidos';
 const EMPTY_DATE_PICKER_PRESETS: DatePickerPreset[] = [];
 const VISIBLE_PRESETS_COUNT = 5;
+const MOBILE_GROUP_LABELS: Record<string, string> = {
+  [DEFAULT_GROUP]: 'Rápidos',
+  'Periodos recientes': 'Recientes',
+  'Periodos pasados': 'Pasados',
+  Trimestres: 'Trimestres',
+};
+
+const getMobileGroupLabel = (groupName: string): string =>
+  MOBILE_GROUP_LABELS[groupName] || groupName;
 
 export const PresetsSection = ({
   presets = EMPTY_DATE_PICKER_PRESETS,
@@ -58,10 +60,13 @@ export const PresetsSection = ({
 }: PresetsSectionProps) => {
   const normalizedLayout = layout;
   const presetItems = presets;
+  const [selectedMobileGroup, setSelectedMobileGroup] = useState<string | null>(
+    null,
+  );
 
   const groupedEntries = useMemo<[string, DatePickerPreset[]][]>(() => {
     const sourcePresets =
-      normalizedLayout === 'sidebar'
+      isMobile || normalizedLayout === 'sidebar'
         ? presetItems
         : presetItems.slice(VISIBLE_PRESETS_COUNT);
     const grouped = sourcePresets.reduce<Record<string, DatePickerPreset[]>>(
@@ -74,12 +79,21 @@ export const PresetsSection = ({
       {},
     );
     return Object.entries(grouped);
-  }, [presetItems, normalizedLayout]);
+  }, [presetItems, normalizedLayout, isMobile]);
 
   const selectedKey = useMemo(() => {
     const active = presetItems.find((p) => isPresetActive(value, p, mode));
     return active ? active.label : null;
   }, [presetItems, value, mode]);
+
+  const activeMobileGroup =
+    presetItems.find((preset) => preset.label === selectedKey)?.group ||
+    DEFAULT_GROUP;
+  const mobileSelectedKey =
+    selectedMobileGroup ||
+    groupedEntries.find(([groupName]) => groupName === activeMobileGroup)?.[0] ||
+    groupedEntries[0]?.[0] ||
+    DEFAULT_GROUP;
 
   const sidebarPresetItems = useMemo<SidebarPresetItem[]>(() => {
     return groupedEntries.flatMap(([groupName, items]) => {
@@ -158,15 +172,65 @@ export const PresetsSection = ({
     );
   }
 
+  const visiblePresets = isMobile
+    ? presets
+    : presets.slice(0, VISIBLE_PRESETS_COUNT);
+  const shouldShowOverflowPresets =
+    !isMobile && presets.length > VISIBLE_PRESETS_COUNT;
+
+  if (isMobile) {
+    return (
+      <PresetsContainer $isMobile $layout={normalizedLayout}>
+        <MobilePresetTabs
+          selectedKey={mobileSelectedKey}
+          onSelectionChange={(key) => setSelectedMobileGroup(String(key))}
+        >
+          <MobilePresetTabs.ListContainer>
+            <MobilePresetTabs.List aria-label="Rangos rápidos de fecha">
+              {groupedEntries.map(([groupName]) => (
+                <MobilePresetTabs.Tab id={groupName} key={groupName}>
+                  <MobilePresetTabs.Indicator />
+                  {getMobileGroupLabel(groupName)}
+                </MobilePresetTabs.Tab>
+              ))}
+            </MobilePresetTabs.List>
+          </MobilePresetTabs.ListContainer>
+
+          {groupedEntries.map(([groupName, items]) => (
+            <MobilePresetTabs.Panel id={groupName} key={groupName}>
+              <MobilePresetGrid>
+                {items.map((preset) => {
+                  const isActive = isPresetActive(value, preset, mode);
+                  return (
+                    <PresetButton
+                      key={`${groupName}-${preset.label}`}
+                      $active={isActive}
+                      $isMobile
+                      $layout="grid"
+                      onClick={() => onPresetClick?.(preset)}
+                    >
+                      {preset.label}
+                    </PresetButton>
+                  );
+                })}
+              </MobilePresetGrid>
+            </MobilePresetTabs.Panel>
+          ))}
+        </MobilePresetTabs>
+      </PresetsContainer>
+    );
+  }
+
   return (
-    <PresetsContainer $layout={normalizedLayout}>
-      <PresetsGrid>
-        {presets.slice(0, VISIBLE_PRESETS_COUNT).map((preset) => {
+    <PresetsContainer $isMobile={isMobile} $layout={normalizedLayout}>
+      <PresetsGrid $isMobile={isMobile}>
+        {visiblePresets.map((preset) => {
           const isActive = isPresetActive(value, preset, mode);
           return (
             <PresetButton
               key={preset.label}
               $active={isActive}
+              $isMobile={isMobile}
               $layout="grid"
               onClick={() => onPresetClick?.(preset)}
             >
@@ -174,7 +238,7 @@ export const PresetsSection = ({
             </PresetButton>
           );
         })}
-        {presets.length > VISIBLE_PRESETS_COUNT && (
+        {shouldShowOverflowPresets && (
           <>
             <PresetsDropdownContainer ref={presetsDropdownRef}>
               <PresetButton
@@ -209,49 +273,6 @@ export const PresetsSection = ({
                 </PresetsDropdown>
               )}
             </PresetsDropdownContainer>
-            {isMobile && showPresetsDropdown && (
-              <MobileDrawerOverlay
-                onClick={() => setShowPresetsDropdown?.(false)}
-              >
-                <MobileDrawer
-                  onClick={(event: React.MouseEvent) => event.stopPropagation()}
-                >
-                  <MobileDrawerHeader>
-                    <MobileDrawerTitle>Más rangos</MobileDrawerTitle>
-                    <MobileDrawerClose
-                      onClick={() => setShowPresetsDropdown?.(false)}
-                    >
-                      <CloseOutlined />
-                    </MobileDrawerClose>
-                  </MobileDrawerHeader>
-                  <MobileDrawerContent>
-                    {groupedEntries.map(([groupName, items]) => (
-                      <MobileGroup key={groupName}>
-                        {groupedEntries.length > 1 && (
-                          <MobileGroupTitle>{groupName}</MobileGroupTitle>
-                        )}
-                        {items.map((preset) => {
-                          const isActive = isPresetActive(value, preset, mode);
-                          return (
-                            <PresetButton
-                              key={`${groupName}-${preset.label}`}
-                              $active={isActive}
-                              $layout="sidebar"
-                              onClick={() => {
-                                onPresetClick?.(preset);
-                                setShowPresetsDropdown?.(false);
-                              }}
-                            >
-                              {preset.label}
-                            </PresetButton>
-                          );
-                        })}
-                      </MobileGroup>
-                    ))}
-                  </MobileDrawerContent>
-                </MobileDrawer>
-              </MobileDrawerOverlay>
-            )}
           </>
         )}
       </PresetsGrid>

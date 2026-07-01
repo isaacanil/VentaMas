@@ -1,8 +1,9 @@
-import { Button, Typography, message } from 'antd';
+import { Alert, Button, Input, Typography, message } from 'antd';
 import { DateTime } from 'luxon';
 import { nanoid } from 'nanoid';
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
 
 import DatePicker from '@/components/DatePicker';
 import { ModalShell } from '@/components/common/Modal';
@@ -14,6 +15,8 @@ import { useAccountingBankingSettings } from '@/hooks/useAccountingBankPaymentPo
 import type { CashRegisterOption } from '@/modules/cashReconciliation/public';
 import { useActiveBankAccounts } from '@/modules/accounting/public';
 import type { UserIdentity } from '@/types/users';
+import { hasTreasuryOperatorAccess } from '@/utils/access/treasuryOperatorAccess';
+import { formatPrice } from '@/utils/format/formatPrice';
 import type { Purchase } from '@/utils/purchase/types';
 import { resolveConfiguredBankAccountId } from '@/utils/payments/bankPaymentPolicy';
 import { PurchasePill } from '../../pages/OrderAndPurchase/shared/components/PurchasePill/PurchasePill';
@@ -26,6 +29,7 @@ import {
   getSupplierPaymentMethodsTotal,
   getSupplierPaymentSubmissionMethods,
   normalizeSupplierCreditNotes,
+  resolveSupplierPaymentFiscalSettlement,
   roundToTwoDecimals,
   toFiniteNumber,
   validateSupplierPaymentMethods,
@@ -33,6 +37,17 @@ import {
 import { resolveSupplierPaymentCallableErrorMessage } from './utils/supplierPaymentErrors';
 
 const { Text } = Typography;
+const { TextArea } = Input;
+
+const MIN_PAYMENT_EVIDENCE_LENGTH = 3;
+
+const normalizeSupplierPaymentEvidence = (value: string): string =>
+  value.trim();
+
+const getSupplierPaymentEvidenceError = (value: string): string | null =>
+  normalizeSupplierPaymentEvidence(value).length < MIN_PAYMENT_EVIDENCE_LENGTH
+    ? 'Indica una evidencia o referencia.'
+    : null;
 
 type SupplierPaymentCashGateStatus = 'loading' | 'open' | 'closing' | 'closed';
 
@@ -105,6 +120,8 @@ const resolveSupplierPaymentCashGateCopy = (
 interface RegisterSupplierPaymentModalProps {
   open: boolean;
   purchase: Purchase | null;
+  paymentRunId?: string | null;
+  vendorBillId?: string | null;
   onCancel: () => void;
   onPaymentRegistered?: (purchase: Purchase) => void;
 }
@@ -112,6 +129,8 @@ interface RegisterSupplierPaymentModalProps {
 export const RegisterSupplierPaymentModal = ({
   open,
   purchase,
+  paymentRunId = null,
+  vendorBillId = null,
   onCancel,
   onPaymentRegistered,
 }: RegisterSupplierPaymentModalProps) => {
@@ -178,9 +197,17 @@ export const RegisterSupplierPaymentModal = ({
         ? 'Configura una cuenta bancaria en Ajustes > Contabilidad'
         : 'Sin cuenta bancaria activa configurada';
   const balance = useMemo(() => resolvePurchaseBalance(purchase), [purchase]);
+  const fiscalSettlement = useMemo(
+    () =>
+      resolveSupplierPaymentFiscalSettlement({
+        balance,
+        purchase,
+      }),
+    [balance, purchase],
+  );
   const [paymentMethods, setPaymentMethods] = useState(() =>
     createDefaultSupplierPaymentMethods({
-      initialCashValue: balance,
+      initialCashValue: fiscalSettlement.cashRequirementAmount,
       defaultCashCountId: defaultCashRegisterId,
     }),
   );
@@ -189,10 +216,15 @@ export const RegisterSupplierPaymentModal = ({
   const [showOccurredAtPicker, setShowOccurredAtPicker] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [idempotencyKey] = useState(() => nanoid());
+  const evidenceInputId = useId();
+  const evidenceErrorId = useId();
+  const [evidenceNote, setEvidenceNote] = useState('');
+  const [evidenceTouched, setEvidenceTouched] = useState(false);
   const supplierId = useMemo(
     () => resolvePurchaseSupplierId(purchase),
     [purchase],
   );
+  const canRegisterSupplierPayment = hasTreasuryOperatorAccess(user);
   const { creditNotes: supplierCreditNotes } = useSupplierCreditNotes(
     businessId,
     supplierId,
@@ -246,6 +278,8 @@ export const RegisterSupplierPaymentModal = ({
     () => getSupplierPaymentMethodsTotal(effectivePaymentMethods),
     [effectivePaymentMethods],
   );
+  const withholdingApplications = fiscalSettlement.withholdingApplications;
+  const withholdingAmount = fiscalSettlement.withholdingAmount;
   const submissionPaymentMethods = useMemo(
     () =>
       getSupplierPaymentSubmissionMethods(effectivePaymentMethods, {
@@ -259,8 +293,12 @@ export const RegisterSupplierPaymentModal = ({
     ],
   );
   const remainingBalance = roundToTwoDecimals(
-    Math.max(balance - normalizedAmount, 0),
+    Math.max(balance - normalizedAmount - withholdingAmount, 0),
   );
+  const normalizedEvidenceNote = normalizeSupplierPaymentEvidence(evidenceNote);
+  const evidenceError = evidenceTouched
+    ? getSupplierPaymentEvidenceError(evidenceNote)
+    : null;
   const requiresNextPaymentDate = remainingBalance > 0.01;
   const cashGateCopy = resolveSupplierPaymentCashGateCopy(
     resolvedCashRegisterStatus,
@@ -272,6 +310,11 @@ export const RegisterSupplierPaymentModal = ({
 
   const handleSubmit = async () => {
     if (!purchase || !user) return;
+    if (!canRegisterSupplierPayment) {
+      message.error('No tienes permisos para registrar pagos de CxP.');
+      return;
+    }
+
     const paymentMethodsError = validateSupplierPaymentMethods(
       effectivePaymentMethods,
       {
@@ -279,6 +322,7 @@ export const RegisterSupplierPaymentModal = ({
         requireBankAccount: isBankAccountsModuleEnabled,
         availableCreditNotes: normalizedSupplierCreditNotes,
         balance,
+        settlementAdjustmentAmount: withholdingAmount,
       },
     );
     if (paymentMethodsError) {
@@ -291,15 +335,26 @@ export const RegisterSupplierPaymentModal = ({
       );
       return;
     }
+    setEvidenceTouched(true);
+    const paymentEvidenceError = getSupplierPaymentEvidenceError(evidenceNote);
+    if (paymentEvidenceError) {
+      message.error(paymentEvidenceError);
+      return;
+    }
 
     setSubmitting(true);
     try {
       await fbAddAccountsPayablePayment(user, {
         purchase,
+        vendorBillId,
+        paymentRunId,
         paymentMethods: submissionPaymentMethods,
+        withholdingApplications,
         occurredAt,
         nextPaymentAt: requiresNextPaymentDate ? nextPaymentAt : null,
         idempotencyKey,
+        note: normalizedEvidenceNote,
+        evidenceNote: normalizedEvidenceNote,
       });
       message.success('Pago a proveedor registrado correctamente.');
       onPaymentRegistered?.(purchase);
@@ -330,6 +385,30 @@ export const RegisterSupplierPaymentModal = ({
       Registrar pago
     </Button>,
   ];
+
+  if (!canRegisterSupplierPayment) {
+    return (
+      <ModalShell
+        title="Registrar pago a proveedor"
+        open={open}
+        onCancel={onCancel}
+        width={520}
+        footer={[
+          <Button key="close" onClick={onCancel}>
+            Cerrar
+          </Button>,
+        ]}
+        destroyOnHidden
+      >
+        <Alert
+          message="No tienes permisos para registrar pagos de CxP"
+          description="Esta acción requiere un rol de tesorería, contabilidad o administración."
+          showIcon
+          type="warning"
+        />
+      </ModalShell>
+    );
+  }
 
   return (
     <ModalShell
@@ -380,9 +459,10 @@ export const RegisterSupplierPaymentModal = ({
 
         <SupplierPaymentMethods
           methods={effectivePaymentMethods}
-          targetAmount={balance}
+          targetAmount={fiscalSettlement.cashRequirementAmount}
           balance={balance}
           totalToRegister={normalizedAmount}
+          settlementAdjustmentAmount={withholdingAmount}
           bankAccountsEnabled={isBankAccountsModuleEnabled}
           bankAccounts={bankAccounts}
           defaultBankAccountId={configuredBankAccountId}
@@ -393,6 +473,48 @@ export const RegisterSupplierPaymentModal = ({
           onChange={setPaymentMethods}
           disabled={submitting}
         />
+
+        <EvidenceField>
+          <label htmlFor={evidenceInputId}>Evidencia o referencia</label>
+          <TextArea
+            id={evidenceInputId}
+            aria-errormessage={evidenceError ? evidenceErrorId : undefined}
+            aria-invalid={evidenceError ? 'true' : 'false'}
+            autoSize={{ minRows: 2, maxRows: 4 }}
+            disabled={submitting}
+            maxLength={240}
+            onBlur={() => setEvidenceTouched(true)}
+            onChange={(event) => {
+              const nextEvidence = event.target.value;
+              setEvidenceNote(nextEvidence);
+              if (
+                evidenceTouched &&
+                getSupplierPaymentEvidenceError(nextEvidence) == null
+              ) {
+                setEvidenceTouched(false);
+              }
+            }}
+            placeholder="Ticket, comprobante, referencia bancaria o enlace del soporte"
+            required
+            showCount
+            status={evidenceError ? 'error' : undefined}
+            value={evidenceNote}
+          />
+          {evidenceError ? (
+            <FieldError id={evidenceErrorId} role="alert">
+              {evidenceError}
+            </FieldError>
+          ) : null}
+        </EvidenceField>
+
+        {withholdingAmount > 0.01 && (
+          <Alert
+            message="Retención fiscal aplicada a esta liquidación"
+            description={`Se liquidarán ${formatPrice(withholdingAmount)} como retención fiscal sin generar salida de caja o banco. ITBIS ${formatPrice(fiscalSettlement.withholdingITBISAmount)} · ISR ${formatPrice(fiscalSettlement.withholdingISRAmount)}.`}
+            showIcon
+            type="info"
+          />
+        )}
 
         {requiresNextPaymentDate && (
           <div>
@@ -416,3 +538,18 @@ export const RegisterSupplierPaymentModal = ({
     </ModalShell>
   );
 };
+
+const EvidenceField = styled.div`
+  display: grid;
+  gap: 8px;
+
+  label {
+    color: var(--ds-color-text-primary, #111);
+    font-weight: 600;
+  }
+`;
+
+const FieldError = styled.div`
+  color: #cf1322;
+  font-size: 12px;
+`;

@@ -1,13 +1,15 @@
 import { DateTime } from 'luxon';
 
+import { getActiveUnitPrice } from '@/utils/pricing';
 import { toMillis } from '@/utils/date/dateUtils';
 import type { TimestampLike } from '@/utils/date/types';
+import { resolveInvoiceProductQuantity } from '@/utils/invoice/product';
 
 import type { InvoicePdfData, InvoicePdfProduct } from '../types';
 
 type DiscountProduct = Pick<
   InvoicePdfProduct,
-  'amountToBuy' | 'discount' | 'pricing'
+  'amountToBuy' | 'discount' | 'price' | 'pricing' | 'selectedSaleUnit'
 >;
 
 type DiscountSource =
@@ -37,8 +39,8 @@ export function getDiscount(d: DiscountSource): number {
   if (!discountValue || products.length === 0) return 0;
 
   const subtotal = products.reduce((sum, p) => {
-    const price = Number(p?.pricing?.price) || 0;
-    const qty = Number(p?.amountToBuy) || 0;
+    const price = getActiveUnitPrice(p);
+    const qty = resolveInvoiceProductQuantity(p);
     return sum + price * qty;
   }, 0);
 
@@ -52,8 +54,8 @@ export function getProductIndividualDiscount(
 
   if (!product?.discount || discountValue <= 0) return 0;
 
-  const price = +product.pricing?.price || 0;
-  const quantity = +product.amountToBuy || 1;
+  const price = getActiveUnitPrice(product);
+  const quantity = resolveInvoiceProductQuantity(product) || 1;
   const subtotalBeforeDiscount = price * quantity;
 
   if (product.discount.type === 'percentage') {

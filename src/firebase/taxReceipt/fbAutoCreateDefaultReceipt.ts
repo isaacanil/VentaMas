@@ -17,7 +17,6 @@ import { serializeFirestoreDocuments } from '@/utils/serialization/serializeFire
 import { buildTaxReceiptDocument } from '@/utils/taxReceipt';
 import { validateUser } from '@/utils/userValidation';
 
-import { removeDuplicateTaxReceipts } from './removeDuplicateTaxReceipts';
 import { taxReceiptDefault } from './taxReceiptsDefault';
 
 export const useAutoCreateDefaultTaxReceipt = () => {
@@ -36,75 +35,69 @@ export const useAutoCreateDefaultTaxReceipt = () => {
 
     const unsubscribe = onSnapshot(taxReceiptsRef, async (snapshot) => {
       if (!snapshot.empty) {
-        try {
-          await removeDuplicateTaxReceipts(user.businessID);
-        } catch (err) {
-          console.error('Error al eliminar duplicados:', err);
-        }
-      } else {
-        try {
-          const existingReceipts = new Set<string>();
-          const existingSnapshot = await getDocs(taxReceiptsRef);
-          existingSnapshot.forEach((docItem) => {
-            if (docItem.data().data && docItem.data().data.serie) {
-              existingReceipts.add(docItem.data().data.serie);
-            }
-          });
-
-          await runTransaction(db, async (transaction) => {
-            const docRefs = [];
-            const docSnapshots = [];
-
-            for (const item of taxReceiptDefault) {
-              if (!existingReceipts.has(item.serie)) {
-                const serie = item.serie;
-                const taxReceiptRef = doc(
-                  db,
-                  'businesses',
-                  user.businessID,
-                  'taxReceipts',
-                  serie,
-                );
-                docRefs.push({ ref: taxReceiptRef, item });
-                const docSnapshot = await transaction.get(taxReceiptRef);
-                docSnapshots.push(docSnapshot);
-              }
-            }
-
-            validateUser(user);
-            docRefs.forEach((docRef, index) => {
-              if (!docSnapshots[index].exists()) {
-                const taxReceiptDocument = buildTaxReceiptDocument({
-                  ...docRef.item,
-                  id: docRef.item.serie,
-                  createdAt: serverTimestamp(),
-                });
-                transaction.set(docRef.ref, {
-                  data: taxReceiptDocument.data,
-                });
-              }
-            });
-          });
-
-          console.log(
-            'Los recibos fiscales por defecto fueron creados o ya existían.',
-          );
-        } catch (err) {
-          console.error(
-            'Error en la transacción al crear los recibos por defecto:',
-            err,
-          );
-        }
+        const taxReceiptsArray = snapshot.docs.map(
+          (docItem) => docItem.data() as TaxReceiptDocument,
+        );
+        const serializedTaxReceipts = serializeFirestoreDocuments(
+          taxReceiptsArray as any,
+        ) as unknown as TaxReceiptDocument[];
+        dispatch(getTaxReceiptData(serializedTaxReceipts));
         return;
       }
 
-      const taxReceiptsArray = snapshot.docs.map(
-        (docItem) => docItem.data() as TaxReceiptDocument,
-      );
-      const serializedTaxReceipts = serializeFirestoreDocuments(
-        taxReceiptsArray as any,
-      ) as unknown as TaxReceiptDocument[];
-      dispatch(getTaxReceiptData(serializedTaxReceipts));
+      try {
+        const existingReceipts = new Set<string>();
+        const existingSnapshot = await getDocs(taxReceiptsRef);
+        existingSnapshot.forEach((docItem) => {
+          if (docItem.data().data && docItem.data().data.serie) {
+            existingReceipts.add(docItem.data().data.serie);
+          }
+        });
+
+        await runTransaction(db, async (transaction) => {
+          const docRefs = [];
+          const docSnapshots = [];
+
+          for (const item of taxReceiptDefault) {
+            if (!existingReceipts.has(item.serie)) {
+              const serie = item.serie;
+              const taxReceiptRef = doc(
+                db,
+                'businesses',
+                user.businessID,
+                'taxReceipts',
+                serie,
+              );
+              docRefs.push({ ref: taxReceiptRef, item });
+              const docSnapshot = await transaction.get(taxReceiptRef);
+              docSnapshots.push(docSnapshot);
+            }
+          }
+
+          validateUser(user);
+          docRefs.forEach((docRef, index) => {
+            if (!docSnapshots[index].exists()) {
+              const taxReceiptDocument = buildTaxReceiptDocument({
+                ...docRef.item,
+                id: docRef.item.serie,
+                createdAt: serverTimestamp(),
+              });
+              transaction.set(docRef.ref, {
+                data: taxReceiptDocument.data,
+              });
+            }
+          });
+        });
+
+        console.log(
+          'Los recibos fiscales por defecto fueron creados o ya existían.',
+        );
+      } catch (err) {
+        console.error(
+          'Error en la transacción al crear los recibos por defecto:',
+          err,
+        );
+      }
     });
 
     return () => {

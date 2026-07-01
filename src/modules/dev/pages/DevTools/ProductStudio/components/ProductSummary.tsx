@@ -181,7 +181,9 @@ export const ProductSummary: React.FC<ProductSummaryProps> = ({
       </MetricRow>
       <MetricRow>
         <span className="label">Precio</span>
-        <span className="value">RD$ {previewMetrics.price?.toFixed(2)}</span>
+        <span className="value">
+          {previewMetrics.currencyMarker} {previewMetrics.price?.toFixed(2)}
+        </span>
       </MetricRow>
       <MetricRow>
         <span className="label">Ganancia</span>

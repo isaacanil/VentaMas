@@ -1,4 +1,4 @@
-import type { ProductPricing } from '@/types/products';
+import type { ProductPricing, ProductSaleUnit } from '@/types/products';
 import type { PaymentMethodEntry, PaymentState } from '@/types/payments';
 import type { ServiceCommissionLineSnapshot } from '@/domain/commissions/types';
 
@@ -33,11 +33,12 @@ export interface InvoiceProductAmount {
 
 export interface InvoiceProduct {
   id?: string;
+  lineId?: string;
   name?: string;
   productName?: string;
   stock?: number;
   pricing?: ProductPricing;
-  selectedSaleUnit?: { pricing?: ProductPricing };
+  selectedSaleUnit?: Partial<ProductSaleUnit> & { pricing?: ProductPricing };
   price?: { unit?: number | string; total?: number | string };
   amountToBuy?: number | InvoiceProductAmount;
   barcode?: string;

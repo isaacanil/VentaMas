@@ -45,6 +45,18 @@ const VOID_CREDIT_NOTE_STATUSES = new Set([
 ]);
 const CONFIRMED_REJECTED_ELECTRONIC_STATUSES = new Set(['rejected']);
 const MONEY_EPSILON = 0.01;
+const PHYSICAL_RETURN_NOT_IMPLEMENTED = 'PHYSICAL_RETURN_NOT_IMPLEMENTED';
+const PHYSICAL_RETURN_FLAGS = [
+  'physicalReturn',
+  'isPhysicalReturn',
+  'returnInventory',
+  'inventoryReturn',
+  'returnToStock',
+  'restoreInventory',
+  'restock',
+  'restockInventory',
+  'affectsInventory',
+];
 
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -62,6 +74,36 @@ const safeNumber = (value) => {
 };
 
 const roundToTwoDecimals = (value) => Math.round(safeNumber(value) * 100) / 100;
+
+const hasPhysicalReturnFlag = (value) => {
+  const record = asRecord(value);
+  if (
+    toCleanString(record.inventoryEffect)?.toLowerCase() ===
+    'physical_return'
+  ) {
+    return true;
+  }
+
+  return PHYSICAL_RETURN_FLAGS.some((flag) => record[flag] === true);
+};
+
+const assertNoPhysicalReturnIntent = (creditNoteData) => {
+  const items = Array.isArray(creditNoteData?.items)
+    ? creditNoteData.items
+    : [];
+  if (
+    hasPhysicalReturnFlag(creditNoteData) ||
+    items.some((item) => hasPhysicalReturnFlag(item))
+  ) {
+    throw new HttpsError(
+      'failed-precondition',
+      'PHYSICAL_RETURN_NOT_IMPLEMENTED: las notas de crédito actuales son solo financieras y no restauran inventario ni COGS.',
+      {
+        reason: PHYSICAL_RETURN_NOT_IMPLEMENTED,
+      },
+    );
+  }
+};
 
 const resolveBusinessId = (payload) =>
   toCleanString(payload.businessId) || toCleanString(payload.businessID);
@@ -176,16 +218,19 @@ const assertCreditNoteClientMatchesInvoice = ({
 };
 
 const resolveLineItemId = (item) =>
+  toCleanString(item?.lineId) ||
+  toCleanString(item?.cid) ||
   toCleanString(item?.id) ||
   toCleanString(item?.productId) ||
-  toCleanString(item?.cid) ||
   toCleanString(item?.sku) ||
   null;
 
 const resolveQuantity = (value) => {
   const record = asRecord(value);
   if (Object.keys(record).length > 0) {
-    return safeNumber(record.total ?? record.value ?? record.quantity ?? 0);
+    return safeNumber(
+      record.unit ?? record.value ?? record.quantity ?? record.total ?? 0,
+    );
   }
   return safeNumber(value);
 };
@@ -387,6 +432,7 @@ export const createCustomerCreditNote = onCall(
         'La nota de crédito requiere un total mayor que cero.',
       );
     }
+    assertNoPhysicalReturnIntent(creditNoteData);
 
     await assertUserAccess({
       authUid,
@@ -516,6 +562,9 @@ export const createCustomerCreditNote = onCall(
       const record = {
         ...creditNoteData,
         id,
+        inventoryEffect: 'financial_only',
+        physicalReturn: false,
+        affectsInventory: false,
         numberID,
         number: `NC-${year}-${String(numberID).padStart(6, '0')}`,
         ncf: reservation?.ncfCode ?? null,
@@ -648,11 +697,18 @@ export const updateCustomerCreditNote = onCall(
           'La nota de crédito ya fue emitida o aplicada. No se permite edición directa.',
         );
       }
+      assertNoPhysicalReturnIntent({
+        ...current,
+        ...updates,
+      });
 
       tx.set(
         noteRef,
         {
           ...updates,
+          inventoryEffect: 'financial_only',
+          physicalReturn: false,
+          affectsInventory: false,
           updatedAt: Timestamp.now(),
           updatedBy: authUid,
         },

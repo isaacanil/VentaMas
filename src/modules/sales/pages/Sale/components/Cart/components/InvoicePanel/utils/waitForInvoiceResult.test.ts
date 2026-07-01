@@ -53,6 +53,9 @@ type MockDocumentReference = {
 type MockDocumentSnapshot = {
   exists: () => boolean;
   data: () => Record<string, unknown>;
+  metadata?: {
+    fromCache?: boolean;
+  };
 };
 
 type SnapshotHandler = (snapshot: MockDocumentSnapshot) => void;
@@ -60,9 +63,11 @@ type SnapshotErrorHandler = (error: unknown) => void;
 
 const makeDocumentSnapshot = (
   data: Record<string, unknown> | null,
+  metadata: MockDocumentSnapshot['metadata'] = {},
 ): MockDocumentSnapshot => ({
   exists: () => Boolean(data),
   data: () => data ?? {},
+  metadata,
 });
 
 const makeDocumentReference = (...args: unknown[]): MockDocumentReference => ({
@@ -154,5 +159,43 @@ describe('waitForInvoiceResult', () => {
         path: 'businesses/business-1/invoices/invoice-review',
       }),
     );
+  });
+
+  it('ignora un failed cacheado y espera la version confirmada por servidor', async () => {
+    firestoreMocks.onSnapshot.mockImplementation(
+      (
+        ref: MockDocumentReference,
+        onNext: SnapshotHandler,
+      ): (() => void) => {
+        if (ref.path.includes('/invoicesV2/')) {
+          onNext(makeDocumentSnapshot({ status: 'failed' }, { fromCache: true }));
+          setTimeout(() => {
+            onNext(
+              makeDocumentSnapshot({ status: 'committed' }, { fromCache: false }),
+            );
+          }, 0);
+        } else {
+          onNext(
+            makeDocumentSnapshot({
+              data: {
+                id: 'invoice-recovered',
+              },
+            }),
+          );
+        }
+
+        return vi.fn();
+      },
+    );
+
+    const result = await waitForInvoiceResult({
+      businessId: 'business-1',
+      invoiceId: 'invoice-recovered',
+      timeoutMs: 100,
+    });
+
+    expect(result.invoice).toEqual({ id: 'invoice-recovered' });
+    expect(result.invoiceMeta).toMatchObject({ status: 'committed' });
+    expect(firestoreMocks.getDocs).not.toHaveBeenCalled();
   });
 });

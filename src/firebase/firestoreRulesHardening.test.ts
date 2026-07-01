@@ -14,17 +14,46 @@ const expectCollectionLocked = (collection: string, param = 'documentId') => {
   );
 };
 
+const expectCollectionReadRequiresAccountingAccess = (
+  collection: string,
+  param = 'documentId',
+) => {
+  expect(rules).toMatch(
+    new RegExp(
+      `match /businesses/\\{businessId\\}/${collection}/\\{${param}\\} \\{[\\s\\S]*?allow read: if hasAccountingReadAccess\\(businessId\\);`,
+    ),
+  );
+};
+
+const expectCollectionFullyDenied = (
+  collection: string,
+  param = 'documentId',
+) => {
+  expect(rules).toMatch(
+    new RegExp(
+      `match /businesses/\\{businessId\\}/${collection}/\\{${param}\\} \\{[\\s\\S]*?allow read, write: if false;`,
+    ),
+  );
+};
+
 describe('firestore financial hardening rules', () => {
   it('blocks direct client writes to posted accounting sources of truth', () => {
     expectCollectionLocked('journalEntries', 'journalEntryId');
     expectCollectionLocked('accountingEvents', 'eventId');
     expectCollectionLocked('accountsReceivable');
     expectCollectionLocked('accountsPayable');
+    expectCollectionLocked('accountsPayablePayments');
     expectCollectionLocked('payments');
     expectCollectionLocked('cashMovements', 'movementId');
     expectCollectionLocked('cashCounts', 'cashCountId');
     expectCollectionLocked('cashCountSales', 'saleId');
+    expectCollectionLocked(
+      'supplierCreditNoteApplications',
+      'applicationId',
+    );
+    expectCollectionLocked('supplierCreditNotes', 'supplierCreditNoteId');
     expectCollectionLocked('vendorBills', 'vendorBillId');
+    expectCollectionLocked('vendorBillControlEvents', 'eventId');
   });
 
   it('forces fiscal and credit-note mutations through backend flows', () => {
@@ -53,6 +82,37 @@ describe('firestore financial hardening rules', () => {
     );
     expect(rules).toMatch(
       /match \/businesses\/\{businessId\}\/accountingEventProjectionDeadLetters\/\{deadLetterId\} \{[\s\S]*?allow read: if hasAccountingReadAccess\(businessId\);/,
+    );
+  });
+
+  it('restricts accounts payable sources to accounting read roles', () => {
+    expectCollectionReadRequiresAccountingAccess('accountsPayable');
+    expectCollectionReadRequiresAccountingAccess('accountsPayablePayments');
+    expectCollectionReadRequiresAccountingAccess(
+      'supplierCreditNoteApplications',
+      'applicationId',
+    );
+    expectCollectionReadRequiresAccountingAccess(
+      'supplierCreditNotes',
+      'supplierCreditNoteId',
+    );
+    expectCollectionReadRequiresAccountingAccess('vendorBills', 'vendorBillId');
+    expectCollectionReadRequiresAccountingAccess(
+      'vendorBillControlEvents',
+      'eventId',
+    );
+    expect(rules).toMatch(
+      /function isAccountsPayableProtectedCollection\(collectionId\) \{[\s\S]*?'accountsPayable'[\s\S]*?'accountsPayablePayments'[\s\S]*?'accountsPayablePaymentIdempotency'[\s\S]*?'supplierCreditNoteApplications'[\s\S]*?'supplierCreditNotes'[\s\S]*?'vendorBills'[\s\S]*?'vendorBillControlEvents'/,
+    );
+    expect(rules).toMatch(
+      /match \/businesses\/\{businessId\}\/\{collectionId\}\/\{document=\*\*\} \{[\s\S]*?allow read: if hasBusinessAccess\(businessId\)[\s\S]*?&& !isAccountsPayableProtectedCollection\(collectionId\);/,
+    );
+  });
+
+  it('keeps accounts payable internal control documents unreadable by clients', () => {
+    expectCollectionFullyDenied(
+      'accountsPayablePaymentIdempotency',
+      'idempotencyId',
     );
   });
 
@@ -94,10 +154,16 @@ describe('firestore financial hardening rules', () => {
       /match \/businesses\/\{businessId\}\/purchases\/\{purchaseId\} \{[\s\S]*?allow create: if hasBusinessWriteAccess\(businessId\)[\s\S]*?isMutablePurchaseSource\(request\.resource\.data\)[\s\S]*?!isLockedPurchaseDocument\(request\.resource\.data\);/,
     );
     expect(rules).toMatch(
-      /allow update: if hasBusinessWriteAccess\(businessId\)[\s\S]*?isMutablePurchaseSource\(resource\.data\)[\s\S]*?!isLockedPurchaseDocument\(resource\.data\);/,
+      /allow update: if hasBusinessWriteAccess\(businessId\)[\s\S]*?isMutablePurchaseSource\(resource\.data\)[\s\S]*?isMutablePurchaseSource\(request\.resource\.data\)[\s\S]*?!isLockedPurchaseDocument\(resource\.data\)[\s\S]*?!isLockedPurchaseDocument\(request\.resource\.data\);/,
     );
     expect(rules).toMatch(
       /allow delete: if hasBusinessWriteAccess\(businessId\)[\s\S]*?isDeletablePurchaseSource\(resource\.data\)[\s\S]*?!isLockedPurchaseDocument\(resource\.data\);/,
+    );
+  });
+
+  it('treats accounts payable purchase footprints as backend-owned', () => {
+    expect(rules).toMatch(
+      /function hasPostedPurchaseFootprint\(data\) \{[\s\S]*?'accountsPayable'[\s\S]*?'payables'[\s\S]*?'vendorBill'[\s\S]*?'vendorBillId'[\s\S]*?'accountsPayableId'/,
     );
   });
 
@@ -116,9 +182,21 @@ describe('firestore financial hardening rules', () => {
     );
   });
 
-  it('keeps the business catch-all read-only', () => {
+  it('requires synchronized product price fields when pricing is created or changed', () => {
     expect(rules).toMatch(
-      /match \/businesses\/\{businessId\}\/\{document=\*\*\} \{[\s\S]*?allow read: if hasBusinessAccess\(businessId\);[\s\S]*?allow write: if false;/,
+      /function hasSynchronizedProductPricing\(data\) \{[\s\S]*?data\.pricing\.get\('price', null\) == data\.pricing\.get\('listPrice', null\);/,
+    );
+    expect(rules).toMatch(
+      /function productPricingUnchanged\(\) \{[\s\S]*?request\.resource\.data\.diff\(resource\.data\)\.affectedKeys\(\)\.hasAny\(\[[\s\S]*?'pricing'[\s\S]*?\]\)/,
+    );
+    expect(rules).toMatch(
+      /match \/businesses\/\{businessId\}\/products\/\{productId\} \{[\s\S]*?allow create: if hasBusinessWriteAccess\(businessId\)[\s\S]*?hasSynchronizedProductPricing\(request\.resource\.data\);[\s\S]*?allow update: if hasBusinessWriteAccess\(businessId\)[\s\S]*?productPricingUnchanged\(\)[\s\S]*?hasSynchronizedProductPricing\(request\.resource\.data\)/,
+    );
+  });
+
+  it('keeps the business catch-all read-only without reopening protected AP collections', () => {
+    expect(rules).toMatch(
+      /match \/businesses\/\{businessId\}\/\{collectionId\}\/\{document=\*\*\} \{[\s\S]*?allow read: if hasBusinessAccess\(businessId\)[\s\S]*?&& !isAccountsPayableProtectedCollection\(collectionId\);[\s\S]*?allow write: if false;/,
     );
   });
 

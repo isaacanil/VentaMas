@@ -113,9 +113,11 @@ export function WarehouseForm(_props: WarehouseFormProps) {
       footer={null}
     >
       <Spin
+        description={
+          formData?.id ? 'Actualizando almacén...' : 'Creando almacén...'
+        }
         size="large"
         spinning={loading}
-        tip={formData?.id ? 'Actualizando almacén...' : 'Creando almacén...'}
       >
         <CardDescription>
           {formData?.id

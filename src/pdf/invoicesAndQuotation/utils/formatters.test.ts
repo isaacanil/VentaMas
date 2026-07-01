@@ -20,6 +20,39 @@ describe('invoices and quotations PDF formatters', () => {
     ).toBe(25);
   });
 
+  it('calculates general discounts with selected sale unit pricing', () => {
+    expect(
+      getDiscount({
+        discount: { value: 10 },
+        products: [
+          {
+            pricing: { price: 100 },
+            selectedSaleUnit: { id: 'box', pricing: { price: 300 } },
+            amountToBuy: 2,
+          },
+        ],
+      }),
+    ).toBe(60);
+  });
+
+  it('calculates general discounts from sold weight instead of legacy amount', () => {
+    expect(
+      getDiscount({
+        discount: { value: 10 },
+        products: [
+          {
+            pricing: { price: 100 },
+            amountToBuy: 1,
+            weightDetail: {
+              isSoldByWeight: true,
+              weight: 2.5,
+            },
+          },
+        ],
+      }),
+    ).toBe(25);
+  });
+
   it('returns zero for general discounts without products or values', () => {
     const products = [{ pricing: { price: 100 }, amountToBuy: 2 }];
 
@@ -46,6 +79,31 @@ describe('invoices and quotations PDF formatters', () => {
         discount: { type: 'fixed', value: 500 },
       }),
     ).toBe(300);
+  });
+
+  it('calculates individual discounts with selected sale unit pricing', () => {
+    expect(
+      getProductIndividualDiscount({
+        pricing: { price: 100 },
+        selectedSaleUnit: { id: 'box', pricing: { price: 240 } },
+        amountToBuy: 2,
+        discount: { type: 'percentage', value: 10 },
+      }),
+    ).toBe(48);
+  });
+
+  it('calculates individual discounts from sold weight', () => {
+    expect(
+      getProductIndividualDiscount({
+        pricing: { price: 100 },
+        amountToBuy: 1,
+        weightDetail: {
+          isSoldByWeight: true,
+          weight: 2.5,
+        },
+        discount: { type: 'percentage', value: 10 },
+      }),
+    ).toBe(25);
   });
 
   it('aggregates individual discounts and detects whether they exist', () => {

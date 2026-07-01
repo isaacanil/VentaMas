@@ -1,5 +1,4 @@
 import { https, logger } from 'firebase-functions';
-import { nanoid } from 'nanoid';
 
 import { db, serverTimestamp } from '../../../core/config/firebase.js';
 /**
@@ -92,8 +91,8 @@ export async function getAndUpdateTaxReceipt(
 
   const taxReceipt = taxReceiptSnap.data().data;
 
-  // Helper: check if an NCF is already used in any invoice (old or new)
-  const isNcfAlreadyUsed = async (code) => {
+  // Helper: check if an NCF is already used or reserved.
+  const getNcfReservationState = async (code) => {
     const invoicesQuery = db
       .collection('businesses')
       .doc(businessId)
@@ -101,7 +100,17 @@ export async function getAndUpdateTaxReceipt(
       .where('data.NCF', '==', code)
       .limit(1);
     const snap = await tx.get(invoicesQuery);
-    return !snap.empty;
+    const usageRef = db
+      .collection('businesses')
+      .doc(businessId)
+      .collection('ncfUsage')
+      .doc(code);
+    const usageSnap = await tx.get(usageRef);
+
+    return {
+      exists: !snap.empty || usageSnap.exists,
+      usageRef,
+    };
   };
 
   // Avoid infinite loops; reasonably cap the number of retries
@@ -132,21 +141,24 @@ export async function getAndUpdateTaxReceipt(
 
   let chosenSeq = null;
   let candidateNCF = null;
+  let usageRef = null;
   let attempts = 0;
   while (attempts < MAX_ATTEMPTS) {
     const steps = attempts + 1; // first try is +increase once
     const seq = computeSeq(baseSequence, inc, steps, 10);
     const code = `${type}${serie}${seq}`;
-    const exists = await isNcfAlreadyUsed(code);
+    const reservationState = await getNcfReservationState(code);
+    const exists = reservationState.exists;
     if (!exists) {
       chosenSeq = seq;
       candidateNCF = code;
+      usageRef = reservationState.usageRef;
       break;
     }
     attempts += 1;
   }
 
-  if (!candidateNCF || !chosenSeq) {
+  if (!candidateNCF || !chosenSeq || !usageRef) {
     throw new https.HttpsError(
       'failed-precondition',
       'No se pudo encontrar un NCF no duplicado antes de agotar los intentos',
@@ -160,12 +172,7 @@ export async function getAndUpdateTaxReceipt(
     quantity: (qtyBefore - incValue).toString(),
   };
 
-  const usageId = nanoid();
-  const usageRef = db
-    .collection('businesses')
-    .doc(businessId)
-    .collection('ncfUsage')
-    .doc(usageId);
+  const usageId = usageRef.id;
 
   // Persist updated tax receipt data reflecting any sequence advances
   tx.update(taxReceiptSnap.ref, { data: updatedData });

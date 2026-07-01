@@ -36,6 +36,15 @@ const roundToTwoDecimals = (value) => Math.round(safeNumber(value) * 100) / 100;
 
 const isIsoDateOnly = (value) => /^\d{4}-\d{2}-\d{2}$/.test(value);
 
+const buildChildCountByParentId = (chartAccounts = []) =>
+  chartAccounts.reduce((accumulator, account) => {
+    const parentId = toCleanString(account.parentId);
+    if (!parentId) return accumulator;
+
+    accumulator.set(parentId, (accumulator.get(parentId) || 0) + 1);
+    return accumulator;
+  }, new Map());
+
 const sanitizeManualLines = (lines) =>
   lines.map((line) => ({
     accountId: line.accountId,
@@ -140,12 +149,16 @@ export const createManualJournalEntry = onCall(
   const entryRef = journalEntriesCollection.doc();
   const entryId = entryRef.id;
   const settingsRef = db.doc(`businesses/${businessId}/settings/accounting`);
+  const chartAccountsRef = db.collection(
+    `businesses/${businessId}/chartOfAccounts`,
+  );
 
   let result = null;
 
   await db.runTransaction(async (transaction) => {
-    const [settingsSnap, ...accountSnaps] = await Promise.all([
+    const [settingsSnap, chartAccountsSnap, ...accountSnaps] = await Promise.all([
       transaction.get(settingsRef),
+      transaction.get(chartAccountsRef),
       ...Array.from(new Set(sanitizedLines.map((line) => line.accountId))).map(
         (accountId) =>
           transaction.get(
@@ -167,6 +180,12 @@ export const createManualJournalEntry = onCall(
     const accountsById = new Map(
       accountSnaps.map((snapshot) => [snapshot.id, asRecord(snapshot.data())]),
     );
+    const childCountByParentId = buildChildCountByParentId(
+      chartAccountsSnap.docs.map((snapshot) => ({
+        id: snapshot.id,
+        ...asRecord(snapshot.data()),
+      })),
+    );
 
     const resolvedLines = sanitizedLines.map((line, index) => {
       const account = accountsById.get(line.accountId);
@@ -182,10 +201,13 @@ export const createManualJournalEntry = onCall(
           'Todas las cuentas del asiento deben estar activas.',
         );
       }
-      if (account.postingAllowed === false) {
+      if (
+        account.postingAllowed === false ||
+        (childCountByParentId.get(line.accountId) || 0) > 0
+      ) {
         throw new HttpsError(
           'invalid-argument',
-          'Todas las cuentas del asiento deben permitir posteo.',
+          'Todas las cuentas del asiento deben ser Cuentas Detalle.',
         );
       }
 

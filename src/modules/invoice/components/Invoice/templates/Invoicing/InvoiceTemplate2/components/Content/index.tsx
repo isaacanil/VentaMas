@@ -8,17 +8,13 @@ import {
 
 import { PRODUCT_BRAND_DEFAULT } from '@/domain/products/productDefaults';
 import { formatInvoicePrice } from '@/utils/invoice/documentCurrency';
+import { resolveInvoiceProductQuantity } from '@/utils/invoice/product';
 import type { TableColumnsType as ColumnsType } from 'antd';
 import type {
   InvoiceCreditNote,
   InvoiceData,
   InvoiceProduct,
 } from '@/types/invoice';
-
-const toNumber = (value: unknown, fallback = 0) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : fallback;
-};
 
 interface ContentProps {
   data?: InvoiceData | null;
@@ -31,12 +27,7 @@ export default function Content({ data }: ContentProps) {
       title: 'CANT.',
       dataIndex: 'amountToBuy',
       key: 'quantity',
-      render: (value, record) => {
-        const quantity = toNumber(value);
-        if (quantity > 0) return quantity;
-        const weight = toNumber(record?.weightDetail?.weight);
-        return weight > 0 ? weight : 0;
-      },
+      render: (_value, record) => resolveInvoiceProductQuantity(record),
     },
     {
       title: 'CODIGO',

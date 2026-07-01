@@ -22,6 +22,9 @@ import {
 import { assertAccountingPeriodOpenInTransaction } from '../../../versions/v2/accounting/utils/periodClosure.util.js';
 import { DGII_608_REASON_CATALOG_VERSION } from '../../compliance/services/dgii608ReasonCatalog.service.js';
 import { voidServiceCommissionsTx } from '../../commissions/services/serviceCommissions.service.js';
+import {
+  convertWeightToInventoryBaseQuantity,
+} from '../../Inventory/utils/weightUnit.util.js';
 
 const LOCKED_INVOICE_STATUSES = new Set([
   'issued',
@@ -88,13 +91,74 @@ const isLockedInvoice = (invoiceDoc) => {
   );
 };
 
-const getProductQuantity = (product) => {
+const getProductAmountToBuy = (product) => {
   const amountToBuy = product?.amountToBuy;
   if (typeof amountToBuy === 'number') return amountToBuy;
   if (typeof amountToBuy === 'string') return safeNumber(amountToBuy);
   const amount = asRecord(amountToBuy);
   return safeNumber(amount.total ?? amount.unit ?? product?.quantity);
 };
+
+const getSaleUnitSaleQuantity = (product) => {
+  const amountToBuy = product?.amountToBuy;
+  if (typeof amountToBuy === 'number') return amountToBuy;
+  if (typeof amountToBuy === 'string') return safeNumber(amountToBuy);
+  const amount = asRecord(amountToBuy);
+  return safeNumber(
+    amount.unit ?? amount.value ?? amount.quantity ?? amount.total,
+  );
+};
+
+const getSaleUnitConversionFactor = (product) => {
+  const unit = asRecord(product?.selectedSaleUnit || product?.saleUnit);
+  const conversionFactor = safeNumber(unit.conversionFactorToBase);
+  if (conversionFactor > 0) return conversionFactor;
+  const quantity = safeNumber(unit.quantity);
+  return quantity > 0 ? quantity : 1;
+};
+
+const getProductInventoryBaseQuantity = (product) => {
+  const baseQuantity = safeNumber(product?.baseQuantity);
+  if (baseQuantity > 0) return baseQuantity;
+
+  if (product?.weightDetail?.isSoldByWeight === true) {
+    return convertWeightToInventoryBaseQuantity({
+      weight: product?.weightDetail?.weight,
+      unit: product?.weightDetail?.weightUnit,
+    });
+  }
+
+  if (product?.selectedSaleUnit || product?.saleUnit) {
+    return (
+      getSaleUnitSaleQuantity(product) * getSaleUnitConversionFactor(product)
+    );
+  }
+
+  return getProductAmountToBuy(product);
+};
+
+const hasSelectedPhysicalStock = (product) =>
+  Boolean(toCleanString(product?.productStockId) && toCleanString(product?.batchId));
+
+const shouldRequireDetailedInventoryRestore = (product) =>
+  getProductInventoryBaseQuantity(product) > 0 &&
+  (Boolean(product?.trackInventory) || hasSelectedPhysicalStock(product));
+
+const getInvoiceInventoryRestoreProducts = (products) =>
+  Array.isArray(products)
+    ? products.filter((product) => shouldRequireDetailedInventoryRestore(product))
+    : [];
+
+const hasCompleteDetailedCogsLines = ({ cogsEntryExists, cogsLines }) =>
+  cogsEntryExists === true &&
+  cogsLines.length > 0 &&
+  cogsLines.every(
+    (line) =>
+      line.productId &&
+      line.productStockId &&
+      line.batchId &&
+      line.quantity > 0,
+  );
 
 const resolveInventoryCogsLines = (eventData) => {
   const payload = asRecord(eventData?.payload);
@@ -129,6 +193,7 @@ const restoreDetailedInventoryFromCogsLinesTx = ({
         db.doc(`businesses/${businessId}/productsStock/${line.productStockId}`),
         {
           quantity: FieldValue.increment(line.quantity),
+          stock: FieldValue.increment(line.quantity),
           status: 'active',
           updatedAt: now,
           updatedBy: authUid,
@@ -150,6 +215,29 @@ const restoreDetailedInventoryFromCogsLinesTx = ({
       );
     }
   });
+};
+
+const aggregateProductRestoreQuantitiesFromCogsLines = (lines) => {
+  const quantities = new Map();
+  lines.forEach((line) => {
+    if (!line.productId || !line.quantity) return;
+    quantities.set(
+      line.productId,
+      (quantities.get(line.productId) || 0) + line.quantity,
+    );
+  });
+  return quantities;
+};
+
+const aggregateProductRestoreQuantitiesFromInvoiceProducts = (products) => {
+  const quantities = new Map();
+  products.forEach((product) => {
+    const productId = toCleanString(product?.id || product?.productId);
+    const quantity = getProductInventoryBaseQuantity(product);
+    if (!productId || !quantity) return;
+    quantities.set(productId, (quantities.get(productId) || 0) + quantity);
+  });
+  return quantities;
 };
 
 const buildUpdatedInvoiceData = ({ invoice, updates, now, authUid }) => ({
@@ -482,6 +570,26 @@ export const voidInvoiceFinancialDocument = onCall(
         );
       }
 
+      const cogsEvent = cogsEventSnap.exists
+        ? asRecord(cogsEventSnap.data())
+        : {};
+      const cogsLines = resolveInventoryCogsLines(cogsEvent);
+      const products = Array.isArray(invoice.products) ? invoice.products : [];
+      const inventoryRestoreProducts =
+        getInvoiceInventoryRestoreProducts(products);
+      if (
+        inventoryRestoreProducts.length > 0 &&
+        !hasCompleteDetailedCogsLines({
+          cogsEntryExists: cogsEntrySnap.exists,
+          cogsLines,
+        })
+      ) {
+        throw new HttpsError(
+          'failed-precondition',
+          'La factura contiene inventario fisico, pero no tiene detalle COGS suficiente para restaurar productsStock/batches de forma segura. Requiere revision manual.',
+        );
+      }
+
       const now = Timestamp.now();
       if (committedEntrySnap.exists || cogsEntrySnap.exists) {
         await assertAccountingPeriodOpenInTransaction({
@@ -549,19 +657,21 @@ export const voidInvoiceFinancialDocument = onCall(
         );
       }
 
-      const products = Array.isArray(invoice.products) ? invoice.products : [];
-      products.forEach((product) => {
-        const productId = toCleanString(product?.id || product?.productId);
-        const quantity = getProductQuantity(product);
-        if (!productId || !quantity) return;
+      const productRestoreQuantities = cogsLines.length
+        ? aggregateProductRestoreQuantitiesFromCogsLines(cogsLines)
+        : aggregateProductRestoreQuantitiesFromInvoiceProducts(products);
+
+      productRestoreQuantities.forEach((quantity, productId) => {
         transaction.update(
           db.doc(`businesses/${businessId}/products/${productId}`),
-          { 'product.stock': FieldValue.increment(quantity) },
+          {
+            stock: FieldValue.increment(quantity),
+            updatedAt: now,
+            updatedBy: authUid,
+          },
         );
       });
 
-      const cogsEvent = cogsEventSnap.exists ? asRecord(cogsEventSnap.data()) : {};
-      const cogsLines = resolveInventoryCogsLines(cogsEvent);
       if (cogsEntrySnap.exists && !cogsVoidEntrySnap.exists) {
         restoreDetailedInventoryFromCogsLinesTx({
           authUid,
@@ -779,7 +889,9 @@ export const voidInvoiceFinancialDocument = onCall(
           sourceDocumentType: 'invoice',
           sourceDocumentId: invoiceId,
           currency: toCleanString(originalCogsEntry.currency),
-          functionalCurrency: toCleanString(originalCogsEntry.functionalCurrency),
+          functionalCurrency: toCleanString(
+            originalCogsEntry.functionalCurrency,
+          ),
           monetary: {
             amount: cogsTotal,
             functionalAmount: cogsTotal,
@@ -829,7 +941,9 @@ export const voidInvoiceFinancialDocument = onCall(
             toCleanString(invoice.numberID) || invoiceId
           }`,
           currency: toCleanString(originalCogsEntry.currency),
-          functionalCurrency: toCleanString(originalCogsEntry.functionalCurrency),
+          functionalCurrency: toCleanString(
+            originalCogsEntry.functionalCurrency,
+          ),
           sourceType: 'invoice_inventory',
           sourceId: invoiceId,
           reversalOfEntryId: cogsEntryRef.id,

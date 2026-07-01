@@ -9,6 +9,8 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseconfig';
 import { checkOpenCashReconciliation } from '@/firebase/cashCount/cashReconciliationStatus.repository';
 import { flowTrace } from '@/utils/flowTrace';
+import { resolveInvoiceProductQuantity } from '@/utils/invoice/product';
+import { validateInvoiceCart } from '@/utils/invoiceValidation';
 import type { InvoiceData } from '@/types/invoice';
 
 import { submitInvoice, waitForInvoiceResult } from './invoice.service';
@@ -216,7 +218,7 @@ const loadPreorderAsCart = async (
         (product) =>
           product &&
           typeof product === 'object' &&
-          Number((product as { amountToBuy?: unknown }).amountToBuy) > 0,
+          resolveInvoiceProductQuantity(product) > 0,
       )
     : [];
 
@@ -305,6 +307,18 @@ export const autoCompletePreorderInvoice = async (
       return {
         success: false,
         error: 'No se encontró la preventa o no tiene productos.',
+      };
+    }
+
+    const cartValidation = validateInvoiceCart(cart);
+    if (!cartValidation.isValid) {
+      void flowTrace('PREORDER_AUTO_COMPLETE_INVALID_CART', {
+        preorderId,
+        reason: cartValidation.message,
+      });
+      return {
+        success: false,
+        error: cartValidation.message,
       };
     }
 

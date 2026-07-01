@@ -13,6 +13,10 @@ import type {
   ChartOfAccount,
 } from '@/types/accounting';
 import {
+  buildChartOfAccountChildrenByParentId,
+  isChartOfAccountPostingAllowedForEntries,
+} from '@/utils/accounting/chartOfAccounts';
+import {
   buildDefaultAccountingPostingProfileTemplates,
   normalizeAccountingPostingProfileDraft,
   normalizeAccountingPostingProfileRecord,
@@ -59,6 +63,8 @@ const buildValidationError = ({
   const accountsById = new Map(
     chartOfAccounts.map((account) => [account.id, account]),
   );
+  const childCountByParentId =
+    buildChartOfAccountChildrenByParentId(chartOfAccounts);
   for (const line of draft.linesTemplate) {
     if (!line.accountId) {
       return 'Todas las lineas deben apuntar a una cuenta contable.';
@@ -73,8 +79,13 @@ const buildValidationError = ({
       return 'Todas las cuentas usadas en reglas de contabilización deben estar activas.';
     }
 
-    if (!account.postingAllowed) {
-      return 'Todas las cuentas usadas en reglas de contabilización deben permitir asientos directos.';
+    if (
+      !isChartOfAccountPostingAllowedForEntries(
+        account,
+        childCountByParentId.get(account.id)?.length ?? 0,
+      )
+    ) {
+      return 'Todas las cuentas usadas en reglas de contabilización deben ser Cuentas Detalle.';
     }
   }
 

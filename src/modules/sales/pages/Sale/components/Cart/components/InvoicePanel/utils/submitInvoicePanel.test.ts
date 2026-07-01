@@ -64,6 +64,7 @@ const baseArgs = () => ({
   isTestMode: false,
   monetaryContext: null,
   ncfType: 'CONSUMIDOR FINAL',
+  requestClientFiscalDataAction: vi.fn(),
   resolvedBusinessId: 'business-1',
   runInvoice: vi.fn().mockResolvedValue({
     invoice: { id: 'invoice-1', products: [] },
@@ -104,6 +105,47 @@ describe('submitInvoicePanel', () => {
     await submitInvoicePanel(args as never);
 
     expect(args.setTaxReceiptModalOpen).toHaveBeenCalledWith(true);
+    expect(args.runInvoice).not.toHaveBeenCalled();
+  });
+
+  it('limpia el progreso cuando bloquea por comprobantes fiscales duplicados', async () => {
+    const args = baseArgs();
+    args.taxReceiptData = [
+      {
+        data: {
+          id: '02',
+          name: 'CONSUMIDOR FINAL',
+          type: 'B',
+          serie: '02',
+          quantity: '2000',
+          increase: 1,
+          sequence: '0',
+        },
+      },
+      {
+        data: {
+          id: 'zsM9Zr0b',
+          name: 'CONSUMIDOR FINAL',
+          type: 'B',
+          serie: '02',
+          quantity: '44',
+          increase: 1,
+          sequence: '273',
+        },
+      },
+    ];
+
+    await submitInvoicePanel(args as never);
+
+    expect(notificationMock.warning).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Comprobante fiscal duplicado',
+      }),
+    );
+    expect(args.setLoading).toHaveBeenLastCalledWith({
+      status: false,
+      message: '',
+    });
     expect(args.runInvoice).not.toHaveBeenCalled();
   });
 
@@ -172,6 +214,95 @@ describe('submitInvoicePanel', () => {
     expect(args.runInvoice).not.toHaveBeenCalled();
   });
 
+  it('bloquea comprobante fiscal detallado con RNC o cedula invalido', async () => {
+    const args = baseArgs();
+    args.business = {
+      id: 'business-1',
+      features: {
+        fiscal: {
+          electronicModelEnabled: true,
+          electronicTransportEnabled: true,
+        },
+      },
+    };
+    args.ncfType = 'CREDITO FISCAL';
+    args.client = {
+      id: 'client-1',
+      name: 'Alanna Perez  2',
+      personalID: '0020166033',
+    };
+
+    await submitInvoicePanel(args as never);
+
+    expect(args.runInvoice).not.toHaveBeenCalled();
+    expect(args.requestClientFiscalDataAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        client: args.client,
+        description: expect.stringContaining('10 dígitos'),
+        title: 'RNC/cédula del cliente no válido',
+      }),
+    );
+  });
+
+  it('bloquea comprobante fiscal detallado con cedula de 11 digitos y verificador incorrecto', async () => {
+    const args = baseArgs();
+    args.business = {
+      id: 'business-1',
+      features: {
+        fiscal: {
+          electronicModelEnabled: true,
+          electronicTransportEnabled: true,
+        },
+      },
+    };
+    args.ncfType = 'CREDITO FISCAL';
+    args.client = {
+      id: 'client-1',
+      name: 'Alanna Perez  2',
+      personalID: '00201660332',
+    };
+
+    await submitInvoicePanel(args as never);
+
+    expect(args.runInvoice).not.toHaveBeenCalled();
+    expect(args.requestClientFiscalDataAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        client: args.client,
+        description: expect.stringContaining('dígito verificador'),
+        title: 'RNC/cédula del cliente no válido',
+      }),
+    );
+  });
+
+  it('permite comprobante fiscal detallado con cedula de 11 digitos y verificador correcto', async () => {
+    const args = baseArgs();
+    args.business = {
+      id: 'business-1',
+      features: {
+        fiscal: {
+          electronicModelEnabled: true,
+          electronicTransportEnabled: true,
+        },
+      },
+    };
+    args.ncfType = 'CREDITO FISCAL';
+    args.client = {
+      id: 'client-1',
+      name: 'Alanna Perez 2',
+      personalID: '00201660339',
+    };
+
+    await submitInvoicePanel(args as never);
+
+    expect(args.requestClientFiscalDataAction).not.toHaveBeenCalled();
+    expect(args.runInvoice).toHaveBeenCalledWith(
+      expect.objectContaining({
+        client: args.client,
+        ncfType: 'CREDITO FISCAL',
+      }),
+    );
+  });
+
   it('permite consumidor final menor a RD$250,000 con cliente generico', async () => {
     const args = baseArgs();
     args.business = {
@@ -190,6 +321,62 @@ describe('submitInvoicePanel', () => {
     expect(args.runInvoice).toHaveBeenCalledWith(
       expect.objectContaining({
         taxReceiptEnabled: true,
+        ncfType: 'CONSUMIDOR FINAL',
+      }),
+    );
+  });
+
+  it('permite consumidor final opcional con RNC o cedula invalido sin molestar al cajero', async () => {
+    const args = baseArgs();
+    args.business = {
+      id: 'business-1',
+      features: {
+        fiscal: {
+          electronicModelEnabled: true,
+          electronicTransportEnabled: true,
+        },
+      },
+    };
+    args.client = {
+      id: 'client-1',
+      name: 'Alanna Perez  2',
+      personalID: '0020166033',
+    };
+
+    await submitInvoicePanel(args as never);
+
+    expect(args.requestClientFiscalDataAction).not.toHaveBeenCalled();
+    expect(args.runInvoice).toHaveBeenCalledWith(
+      expect.objectContaining({
+        client: args.client,
+        ncfType: 'CONSUMIDOR FINAL',
+      }),
+    );
+  });
+
+  it('permite consumidor final opcional con cedula de verificador incorrecto sin molestar al cajero', async () => {
+    const args = baseArgs();
+    args.business = {
+      id: 'business-1',
+      features: {
+        fiscal: {
+          electronicModelEnabled: true,
+          electronicTransportEnabled: true,
+        },
+      },
+    };
+    args.client = {
+      id: 'client-1',
+      name: 'Alanna Perez 2',
+      personalID: '00201660332',
+    };
+
+    await submitInvoicePanel(args as never);
+
+    expect(args.requestClientFiscalDataAction).not.toHaveBeenCalled();
+    expect(args.runInvoice).toHaveBeenCalledWith(
+      expect.objectContaining({
+        client: args.client,
         ncfType: 'CONSUMIDOR FINAL',
       }),
     );
@@ -477,6 +664,90 @@ describe('submitInvoicePanel', () => {
     );
     expect(JSON.stringify(notificationMock.error.mock.calls)).not.toContain(
       'idempotencia',
+    );
+  });
+
+  it('ofrece editar el cliente cuando GISYS rechaza datos fiscales', async () => {
+    const args = baseArgs();
+    args.business = {
+      id: 'business-1',
+      features: {
+        fiscal: {
+          electronicModelEnabled: true,
+          electronicTransportEnabled: true,
+        },
+      },
+    };
+    args.ncfType = 'CREDITO FISCAL';
+    args.client = {
+      id: '0zuSiyyv',
+      name: 'Alanna Perez  2',
+      personalID: '00113918205',
+    };
+    args.runInvoice = vi.fn().mockRejectedValue(
+      Object.assign(new Error('GISYS FACT issue failed (422)'), {
+        code: 'invoice-failed',
+        failedTask: {
+          type: 'issueElectronicTaxReceipt',
+          lastError: 'GISYS FACT issue failed (422)',
+          providerCode: 'BUYER_RNC_NOT_FOUND',
+          providerMessage:
+            'El RNC/Cedula del comprador no fue encontrado en el catalogo DGII local. No se reservo eNCF.',
+          providerDetails: {
+            catalogDownloadedAt: '2026-05-01T04:20:04.957Z',
+            eNcfReserved: false,
+          },
+        },
+      }),
+    );
+
+    await submitInvoicePanel(args as never);
+
+    expect(notificationMock.error).not.toHaveBeenCalled();
+    expect(args.requestClientFiscalDataAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        client: args.client,
+        description: expect.stringContaining('BUYER_RNC_NOT_FOUND'),
+        title: 'Revisa los datos fiscales del cliente',
+      }),
+    );
+  });
+
+  it('no ofrece editar cliente solo por un 422 genérico de GISYS', async () => {
+    const args = baseArgs();
+    args.business = {
+      id: 'business-1',
+      features: {
+        fiscal: {
+          electronicModelEnabled: true,
+          electronicTransportEnabled: true,
+        },
+      },
+    };
+    args.ncfType = 'CREDITO FISCAL';
+    args.client = {
+      id: 'client-1',
+      name: 'Cliente fiscal',
+      personalID: '00113918205',
+    };
+    args.runInvoice = vi.fn().mockRejectedValue(
+      Object.assign(new Error('GISYS FACT issue failed (422)'), {
+        code: 'invoice-failed',
+        failedTask: {
+          type: 'issueElectronicTaxReceipt',
+          lastError: 'GISYS FACT issue failed (422)',
+        },
+      }),
+    );
+
+    await submitInvoicePanel(args as never);
+
+    expect(args.requestClientFiscalDataAction).not.toHaveBeenCalled();
+    expect(notificationMock.error).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Factura no finalizada',
+        description: expect.stringContaining('GISYS FACT issue failed (422)'),
+      }),
     );
   });
 });

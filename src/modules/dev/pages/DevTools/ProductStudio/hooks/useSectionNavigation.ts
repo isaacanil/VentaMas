@@ -14,6 +14,7 @@ const isSectionId = (value: string): value is SectionId =>
 
 export const useSectionNavigation = () => {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const scrollFrameRef = useRef<number | null>(null);
   const initialSection = FORM_SECTIONS[0]?.id ?? 'identity';
   const [activeSection, setActiveSection] = useState<SectionId>(initialSection);
 
@@ -50,7 +51,8 @@ export const useSectionNavigation = () => {
       return;
     }
 
-    const handleScroll = () => {
+    const updateActiveSection = () => {
+      scrollFrameRef.current = null;
       let currentSection: SectionId = FORM_SECTIONS[0]?.id ?? 'identity';
       const containerRect = container.getBoundingClientRect();
 
@@ -71,10 +73,24 @@ export const useSectionNavigation = () => {
       );
     };
 
+    const handleScroll = () => {
+      if (scrollFrameRef.current !== null) {
+        return;
+      }
+
+      scrollFrameRef.current = window.requestAnimationFrame(
+        updateActiveSection,
+      );
+    };
+
     container.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
+    updateActiveSection();
     return () => {
       container.removeEventListener('scroll', handleScroll);
+      if (scrollFrameRef.current !== null) {
+        window.cancelAnimationFrame(scrollFrameRef.current);
+        scrollFrameRef.current = null;
+      }
     };
   }, []);
 

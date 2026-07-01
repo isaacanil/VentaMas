@@ -2,7 +2,16 @@ import { Card, InputNumber, Row, Col, Select, Checkbox, Form } from 'antd';
 import { useSelector } from 'react-redux';
 
 import { selectCartTaxationEnabled } from '@/features/cart/cartSlice';
+import { shouldSelectZeroPriceInput } from '@/domain/products/priceInputFocus';
 import { initTaxes, taxLabel } from '@/domain/products/productDefaults';
+import type { FocusEvent } from 'react';
+
+const handlePriceNumberFocus = (event: FocusEvent<HTMLInputElement>) => {
+  if (!shouldSelectZeroPriceInput(event.currentTarget.value)) {
+    return;
+  }
+  event.currentTarget.select();
+};
 
 export const PriceInfo = () => {
   const taxationEnabled = useSelector(selectCartTaxationEnabled);
@@ -49,6 +58,7 @@ export const PriceInfo = () => {
           >
             <InputNumber
               placeholder=""
+              onFocus={handlePriceNumberFocus}
               style={{
                 width: '100%',
               }}

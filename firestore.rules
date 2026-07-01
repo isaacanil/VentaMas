@@ -200,6 +200,20 @@ service cloud.firestore {
       ]);
     }
 
+    function isAccountsPayableProtectedCollection(collectionId) {
+      return collectionId in [
+        'accountsPayable',
+        'accountsPayablePayments',
+        'accountsPayablePaymentRunEvents',
+        'accountsPayablePaymentRuns',
+        'accountsPayablePaymentIdempotency',
+        'supplierCreditNoteApplications',
+        'supplierCreditNotes',
+        'vendorBills',
+        'vendorBillControlEvents'
+      ];
+    }
+
     function hasFinanceConfigAccess(businessId) {
       return hasBusinessWriteRole(businessId, [
         'owner',
@@ -358,6 +372,9 @@ service cloud.firestore {
 
     function hasPostedPurchaseFootprint(data) {
       return documentPayload(data).keys().hasAny([
+        'accountsPayable',
+        'payables',
+        'vendorBill',
         'vendorBillId',
         'accountsPayableId',
         'accountingEventId',
@@ -368,6 +385,9 @@ service cloud.firestore {
         'canceledAt',
         'voidedAt'
       ]) || data.keys().hasAny([
+        'accountsPayable',
+        'payables',
+        'vendorBill',
         'vendorBillId',
         'accountsPayableId',
         'accountingEventId',
@@ -402,6 +422,18 @@ service cloud.firestore {
         'settings',
         'lastSelectedBusinessId',
         'updatedAt'
+      ]);
+    }
+
+    function hasSynchronizedProductPricing(data) {
+      return !data.keys().hasAny(['pricing'])
+        || !(data.pricing is map)
+        || data.pricing.get('price', null) == data.pricing.get('listPrice', null);
+    }
+
+    function productPricingUnchanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        'pricing'
       ]);
     }
 
@@ -639,12 +671,36 @@ service cloud.firestore {
     }
 
     match /businesses/{businessId}/accountsPayable/{documentId} {
-      allow read: if hasBusinessAccess(businessId);
+      allow read: if hasAccountingReadAccess(businessId);
       allow create, update, delete: if false;
     }
 
     match /businesses/{businessId}/accountsPayablePayments/{documentId} {
-      allow read: if hasBusinessAccess(businessId);
+      allow read: if hasAccountingReadAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/accountsPayablePaymentRuns/{documentId} {
+      allow read: if hasAccountingReadAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/accountsPayablePaymentRunEvents/{documentId} {
+      allow read: if hasAccountingReadAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/accountsPayablePaymentIdempotency/{idempotencyId} {
+      allow read, write: if false;
+    }
+
+    match /businesses/{businessId}/supplierCreditNoteApplications/{applicationId} {
+      allow read: if hasAccountingReadAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/supplierCreditNotes/{supplierCreditNoteId} {
+      allow read: if hasAccountingReadAccess(businessId);
       allow create, update, delete: if false;
     }
 
@@ -794,7 +850,19 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    match /businesses/{businessId}/products/{document=**} {
+    match /businesses/{businessId}/products/{productId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create: if hasBusinessWriteAccess(businessId)
+        && hasSynchronizedProductPricing(request.resource.data);
+      allow update: if hasBusinessWriteAccess(businessId)
+        && (
+          productPricingUnchanged()
+          || hasSynchronizedProductPricing(request.resource.data)
+        );
+      allow delete: if hasBusinessWriteAccess(businessId);
+    }
+
+    match /businesses/{businessId}/products/{productId}/{document=**} {
       allow read: if hasBusinessAccess(businessId);
       allow write: if hasBusinessWriteAccess(businessId);
     }
@@ -881,7 +949,9 @@ service cloud.firestore {
         && !isLockedPurchaseDocument(request.resource.data);
       allow update: if hasBusinessWriteAccess(businessId)
         && isMutablePurchaseSource(resource.data)
-        && !isLockedPurchaseDocument(resource.data);
+        && isMutablePurchaseSource(request.resource.data)
+        && !isLockedPurchaseDocument(resource.data)
+        && !isLockedPurchaseDocument(request.resource.data);
       allow delete: if hasBusinessWriteAccess(businessId)
         && isDeletablePurchaseSource(resource.data)
         && !isLockedPurchaseDocument(resource.data);
@@ -898,7 +968,12 @@ service cloud.firestore {
     }
 
     match /businesses/{businessId}/vendorBills/{vendorBillId} {
-      allow read: if hasBusinessAccess(businessId);
+      allow read: if hasAccountingReadAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/vendorBillControlEvents/{eventId} {
+      allow read: if hasAccountingReadAccess(businessId);
       allow create, update, delete: if false;
     }
 
@@ -912,8 +987,9 @@ service cloud.firestore {
       allow write: if hasBusinessWriteAccess(businessId);
     }
 
-    match /businesses/{businessId}/{document=**} {
-      allow read: if hasBusinessAccess(businessId);
+    match /businesses/{businessId}/{collectionId}/{document=**} {
+      allow read: if hasBusinessAccess(businessId)
+        && !isAccountsPayableProtectedCollection(collectionId);
       allow write: if false;
     }
 

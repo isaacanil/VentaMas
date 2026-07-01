@@ -46,6 +46,68 @@ const normalizeToken = (value) => toCleanString(value)?.toLowerCase() || null;
 
 const hasRecordData = (value) => Object.keys(asRecord(value)).length > 0;
 
+const toMillis = (value) => {
+  if (!value) return null;
+  if (typeof value.toMillis === 'function') return value.toMillis();
+  if (typeof value.toDate === 'function') return value.toDate().getTime();
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (typeof value === 'string') {
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+  if (typeof value === 'object') {
+    const seconds =
+      typeof value.seconds === 'number'
+        ? value.seconds
+        : typeof value._seconds === 'number'
+          ? value._seconds
+          : null;
+    if (seconds != null) return seconds * 1000;
+  }
+  return null;
+};
+
+const resolveTaskCreatedMillis = (docSnap) => {
+  const data = typeof docSnap?.data === 'function' ? docSnap.data() : docSnap;
+  return toMillis(data?.createdAt);
+};
+
+const resolveTaskType = (docSnap) => {
+  const data = typeof docSnap?.data === 'function' ? docSnap.data() : docSnap;
+  return toCleanString(data?.type);
+};
+
+const filterSupersededFailedTasks = (failedDocs = [], doneDocs = []) => {
+  if (!failedDocs.length || !doneDocs.length) return failedDocs;
+
+  const latestDoneCreatedByType = new Map();
+  for (const doneDoc of doneDocs) {
+    const type = resolveTaskType(doneDoc);
+    const createdAt = resolveTaskCreatedMillis(doneDoc);
+    if (!type || createdAt == null) continue;
+    const current = latestDoneCreatedByType.get(type);
+    if (current == null || createdAt > current) {
+      latestDoneCreatedByType.set(type, createdAt);
+    }
+  }
+
+  if (!latestDoneCreatedByType.size) return failedDocs;
+
+  return failedDocs.filter((failedDoc) => {
+    const type = resolveTaskType(failedDoc);
+    const failedCreatedAt = resolveTaskCreatedMillis(failedDoc);
+    const latestDoneCreatedAt = type
+      ? latestDoneCreatedByType.get(type)
+      : null;
+    return !(
+      failedCreatedAt != null &&
+      latestDoneCreatedAt != null &&
+      latestDoneCreatedAt > failedCreatedAt
+    );
+  });
+};
+
 const resolveElectronicTaxReceiptSnapshot = (invoice) => {
   const invoiceRecord = asRecord(invoice);
   const snapshot = asRecord(invoiceRecord.snapshot);
@@ -285,19 +347,22 @@ export async function attemptFinalizeInvoice({ businessId, invoiceId }) {
     if (!pendingSnap.empty) return; // aun pendientes
 
     let nonBlockingFailureSummary = null;
+    let supersededFailureSummary = null;
     const failedSnap = await tx.get(outboxCol.where('status', '==', 'failed'));
     if (!failedSnap.empty) {
-      const failedTasks = summarizeOutboxTasks(failedSnap.docs);
-      if (areOnlyNonBlockingFailures(failedTasks)) {
+      const doneSnap = await tx.get(outboxCol.where('status', '==', 'done'));
+      const activeFailedDocs = filterSupersededFailedTasks(
+        failedSnap.docs,
+        doneSnap.docs || [],
+      );
+      const failedTasks = summarizeOutboxTasks(activeFailedDocs);
+      if (!failedTasks.length) {
+        supersededFailureSummary = {
+          ignored: failedSnap.docs.length,
+        };
+      } else if (areOnlyNonBlockingFailures(failedTasks)) {
         const summary = buildNonBlockingFailureSummary(failedTasks);
         nonBlockingFailureSummary = summary;
-        auditTx(tx, {
-          businessId,
-          invoiceId,
-          event: 'finalize_non_blocking_failures',
-          level: 'warn',
-          data: summary,
-        });
       } else {
         await failFinalizeInTx(tx, {
           businessId,
@@ -396,6 +461,24 @@ export async function attemptFinalizeInvoice({ businessId, invoiceId }) {
         nonBlockingFailureSummary.requiresCashCountReview === true;
     }
     tx.update(invoiceRef, invoiceUpdate);
+    if (supersededFailureSummary) {
+      auditTx(tx, {
+        businessId,
+        invoiceId,
+        event: 'finalize_ignored_superseded_failures',
+        level: 'info',
+        data: supersededFailureSummary,
+      });
+    }
+    if (nonBlockingFailureSummary) {
+      auditTx(tx, {
+        businessId,
+        invoiceId,
+        event: 'finalize_non_blocking_failures',
+        level: 'warn',
+        data: nonBlockingFailureSummary,
+      });
+    }
     for (const entry of timelineEntries) {
       const eventId = `finalize__${entry.status}`;
       upsertInvoiceTimelineEventInTransaction({

@@ -40,6 +40,29 @@ describe('productStockSelection', () => {
       ],
       availableStockCount: 3,
       availableLocationCount: 2,
+      totalPhysicalStockQuantity: 6,
+    });
+  });
+
+  it('filters physical stocks below the required base quantity', () => {
+    expect(
+      analyzeAvailableProductStocks(
+        [
+          { id: 's1', quantity: 6, location: 'segment-1-row-1-shelf-1' },
+          { id: 's2', quantity: 11, location: 'segment-2-row-1-shelf-1' },
+          { id: 's3', quantity: 12, location: 'segment-3-row-1-shelf-1' },
+          { id: 's4', quantity: 24, location: 'segment-4-row-1-shelf-1' },
+        ] as never,
+        { minQuantity: 12 },
+      ),
+    ).toEqual({
+      availableStocks: [
+        { id: 's3', quantity: 12, location: 'segment-3-row-1-shelf-1' },
+        { id: 's4', quantity: 24, location: 'segment-4-row-1-shelf-1' },
+      ],
+      availableStockCount: 2,
+      availableLocationCount: 2,
+      totalPhysicalStockQuantity: 53,
     });
   });
 
@@ -68,7 +91,9 @@ describe('productStockSelection', () => {
         availableStockCount: 0,
         product: { productName: '  Acetaminofen  ' } as never,
       }),
-    ).toBe('El producto "Acetaminofen" no tiene existencias físicas disponibles.');
+    ).toBe(
+      'El producto "Acetaminofen" no tiene existencias físicas disponibles.',
+    );
 
     expect(
       buildMissingPhysicalSelectionMessage({
@@ -76,13 +101,25 @@ describe('productStockSelection', () => {
         availableStockCount: 0,
         product: null,
       }),
-    ).toBe('El producto "este producto" no tiene existencias físicas disponibles.');
+    ).toBe(
+      'El producto "este producto" no tiene existencias físicas disponibles.',
+    );
   });
 
   it('returns needs-selection when the product has multiple valid stocks', async () => {
     getProductStockByProductIdMock.mockResolvedValue([
-      { id: 's1', batchId: 'b1', quantity: 2, location: 'segment-1-row-1-shelf-1' },
-      { id: 's2', batchId: 'b2', quantity: 1, location: 'segment-2-row-1-shelf-1' },
+      {
+        id: 's1',
+        batchId: 'b1',
+        quantity: 2,
+        location: 'segment-1-row-1-shelf-1',
+      },
+      {
+        id: 's2',
+        batchId: 'b2',
+        quantity: 1,
+        location: 'segment-2-row-1-shelf-1',
+      },
     ]);
 
     const result = await resolveProductStockSelection({
@@ -192,6 +229,113 @@ describe('productStockSelection', () => {
         kind: 'unavailable',
         availableStockCount: 0,
         availableLocationCount: 0,
+      }),
+    );
+  });
+
+  it('blocks a sale unit when no single physical stock can fulfill its base quantity', async () => {
+    getProductStockByProductIdMock.mockResolvedValue([
+      {
+        id: 's1',
+        batchId: 'b1',
+        quantity: 1,
+        location: 'segment-1-row-1-shelf-1',
+      },
+      {
+        id: 's2',
+        batchId: 'b2',
+        quantity: 5,
+        location: 'segment-2-row-1-shelf-1',
+      },
+      {
+        id: 's3',
+        batchId: 'b3',
+        quantity: 6,
+        location: 'segment-3-row-1-shelf-1',
+      },
+    ]);
+
+    const result = await resolveProductStockSelection({
+      product: {
+        id: 'product-1',
+        name: 'Granola sin Azucar',
+        restrictSaleWithoutStock: true,
+        selectedSaleUnit: {
+          id: 'caja-x12',
+          unitName: 'Caja',
+          quantity: 12,
+          conversionFactorToBase: 12,
+        },
+      } as never,
+      user: { uid: 'user-1', businessID: 'business-1' } as never,
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        kind: 'unavailable',
+        availableStockCount: 0,
+        availableLocationCount: 0,
+        availableStocks: [],
+        totalPhysicalStockQuantity: 12,
+        message:
+          'El producto "Granola sin Azucar" tiene 12 unidades en total, pero ninguna ubicación o lote tiene 12 unidades juntas para Caja x 12.',
+      }),
+    );
+    expect(getLocationNameMock).not.toHaveBeenCalled();
+  });
+
+  it('filters weighted stock using base kilograms instead of visible pounds', async () => {
+    getProductStockByProductIdMock.mockResolvedValue([
+      {
+        id: 's1',
+        batchId: 'b1',
+        quantity: 1,
+        location: 'segment-1-row-1-shelf-1',
+      },
+    ]);
+    getLocationNameMock.mockResolvedValue('Pasillo A');
+
+    await expect(
+      resolveProductStockSelection({
+        product: {
+          id: 'product-1',
+          name: 'Carne',
+          restrictSaleWithoutStock: true,
+          weightDetail: {
+            isSoldByWeight: true,
+            weight: 2,
+            weightUnit: 'lb',
+          },
+        } as never,
+        user: { uid: 'user-1', businessID: 'business-1' } as never,
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        kind: 'direct',
+        product: expect.objectContaining({
+          productStockId: 's1',
+        }),
+      }),
+    );
+
+    await expect(
+      resolveProductStockSelection({
+        product: {
+          id: 'product-1',
+          name: 'Carne',
+          restrictSaleWithoutStock: true,
+          weightDetail: {
+            isSoldByWeight: true,
+            weight: 3,
+            weightUnit: 'lb',
+          },
+        } as never,
+        user: { uid: 'user-1', businessID: 'business-1' } as never,
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        kind: 'unavailable',
+        availableStockCount: 0,
       }),
     );
   });

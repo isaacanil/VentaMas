@@ -25,6 +25,8 @@ import { getTotalPrice } from '@/utils/pricing';
 import type { ProductRecord } from '@/types/products';
 import type { UserIdentity } from '@/types/users';
 import { resolveProductForCartDocumentCurrency } from '@/features/cart/utils/documentPricing';
+import { resolveProductBaseQuantity } from '@/domain/products/saleUnits';
+import { sumCartBaseQuantityForPhysicalStock } from '@/modules/sales/pages/Sale/utils/cartPhysicalStockUsage';
 
 import {
   useProductInCart,
@@ -62,9 +64,8 @@ export const useProductHandling = (
 
   const [isFirebaseLoading, setIsFirebaseLoading] = useState(false);
 
-  const { status: isProductInCart, product: productInCart } = useProductInCart(
-    product?.id,
-  );
+  const { status: isProductInCart, product: productInCart } =
+    useProductInCart(product);
 
   const { isLowStock, isCriticalStock, isOutOfStock } = useProductStockStatus(
     productInCart,
@@ -84,8 +85,8 @@ export const useProductHandling = (
       : EMPTY_CART_PRODUCTS;
     const currentCartCurrencies = cartProducts
       .map((item) => item?.monetary?.documentCurrency)
-      .filter(
-        (currency): currency is SupportedDocumentCurrency => Boolean(currency),
+      .filter((currency): currency is SupportedDocumentCurrency =>
+        Boolean(currency),
       );
 
     return resolveProductForCartDocumentCurrency(
@@ -104,7 +105,7 @@ export const useProductHandling = (
 
   const notifyDocumentCurrencyBlock = (reason?: string) => {
     notification.warning({
-      message: 'Producto no elegible para esta moneda',
+      title: 'Producto no elegible para esta moneda',
       description:
         reason ??
         'Este producto no puede agregarse con la moneda documental actual.',
@@ -124,27 +125,21 @@ export const useProductHandling = (
     const cartProducts = Array.isArray(cartData?.products)
       ? cartData.products
       : EMPTY_CART_PRODUCTS;
-    const matchingStrictLine =
-      cartProducts.find(
-        (cartProduct) =>
-          cartProduct.id === resolution.product.id &&
-          !cartProduct.weightDetail?.isSoldByWeight &&
-          String(cartProduct.productStockId ?? '') ===
-            String(resolution.product.productStockId ?? '') &&
-          String(cartProduct.batchId ?? '') ===
-            String(resolution.product.batchId ?? ''),
-      ) ?? null;
+    const candidateStock = Number(resolution.product.stock);
+    const currentBaseQuantity = sumCartBaseQuantityForPhysicalStock(
+      cartProducts,
+      resolution.product,
+    );
+    const nextBaseQuantity = resolveProductBaseQuantity(resolution.product);
 
     if (
       resolution.product.restrictSaleWithoutStock &&
-      matchingStrictLine &&
-      Number.isFinite(Number(matchingStrictLine.stock)) &&
-      Number(matchingStrictLine.amountToBuy || 0) >=
-        Number(matchingStrictLine.stock)
+      Number.isFinite(candidateStock) &&
+      currentBaseQuantity + nextBaseQuantity > candidateStock
     ) {
       notification.warning({
-        message: 'Cantidad máxima alcanzada',
-        description: `No puedes agregar más unidades. El stock disponible es ${Number(matchingStrictLine.stock)}.`,
+        title: 'Cantidad máxima alcanzada',
+        description: `No puedes agregar más unidades. El stock disponible es ${candidateStock}.`,
         placement: 'bottomRight',
       });
       return false;
@@ -163,12 +158,9 @@ export const useProductHandling = (
     const matchingCartLines = cartProducts.filter(
       (cartProduct) => cartProduct.id === product?.id,
     );
-    if (
-      product?.restrictSaleWithoutStock &&
-      matchingCartLines.length > 1
-    ) {
+    if (product?.restrictSaleWithoutStock && matchingCartLines.length > 1) {
       notification.info({
-        message: 'Gestiona este producto desde el carrito',
+        title: 'Gestiona este producto desde el carrito',
         description:
           'Este producto ya tiene varias líneas por lote o ubicación. Elimínalo desde el carrito para no afectar la línea equivocada.',
         placement: 'bottomRight',
@@ -184,7 +176,7 @@ export const useProductHandling = (
 
   const isCartProductMissingPhysicalSelection = Boolean(
     productInCart?.restrictSaleWithoutStock &&
-      (!productInCart?.productStockId || !productInCart?.batchId),
+    (!productInCart?.productStockId || !productInCart?.batchId),
   );
 
   const handleGetThisProduct = async (e?: MouseEvent) => {
@@ -199,10 +191,21 @@ export const useProductHandling = (
       return;
     }
 
-    if (isProductInCart && !product?.restrictSaleWithoutStock) {
+    const hasDefaultCartLine = Boolean(
+      productInCart &&
+      !productInCart.selectedSaleUnit?.id &&
+      !productInCart.productStockId &&
+      !productInCart.batchId,
+    );
+
+    if (
+      isProductInCart &&
+      hasDefaultCartLine &&
+      !product?.restrictSaleWithoutStock
+    ) {
       if (isCartProductMissingPhysicalSelection) {
         notification.info({
-          message: 'Selecciona la existencia física',
+          title: 'Selecciona la existencia física',
           description:
             'Este producto necesita una ubicación o lote antes de seguir agregándolo.',
           placement: 'bottomRight',
@@ -213,11 +216,20 @@ export const useProductHandling = (
 
       // Check stock limit for current batch
       const currentStock = Number(productInCart?.stock);
-      const currentAmount = Number(productInCart?.amountToBuy || 0);
+      const currentAmount = Number(
+        productInCart?.baseQuantity ?? productInCart?.amountToBuy ?? 0,
+      );
+      const nextBaseQuantity = resolveProductBaseQuantity({
+        ...productInCart,
+        amountToBuy: 1,
+      });
 
-      if (Number.isFinite(currentStock) && currentAmount >= currentStock) {
+      if (
+        Number.isFinite(currentStock) &&
+        currentAmount + nextBaseQuantity > currentStock
+      ) {
         notification.warning({
-          message: 'Cantidad máxima alcanzada',
+          title: 'Cantidad máxima alcanzada',
           description: `No puedes agregar más unidades. El stock disponible es ${currentStock}.`,
           placement: 'bottomRight',
         });
@@ -252,7 +264,7 @@ export const useProductHandling = (
 
           if (selection.kind === 'unavailable') {
             notification.warning({
-              message: 'Sin disponibilidad',
+              title: 'Sin disponibilidad',
               description: selection.message,
               placement: 'bottomRight',
             });
@@ -262,7 +274,7 @@ export const useProductHandling = (
           notification[
             selection.reason === 'single-expired' ? 'warning' : 'info'
           ]({
-            message: 'Selecciona la existencia física',
+            title: 'Selecciona la existencia física',
             description: selection.message,
             placement: 'bottomRight',
           });
@@ -277,7 +289,7 @@ export const useProductHandling = (
           console.error('Error fetching product stocks:', error);
           if (product?.restrictSaleWithoutStock) {
             notification.warning({
-              message: 'Selecciona la existencia física',
+              title: 'Selecciona la existencia física',
               description:
                 'No se pudo validar el inventario automáticamente. Selecciona una ubicación o lote antes de continuar.',
               placement: 'bottomRight',

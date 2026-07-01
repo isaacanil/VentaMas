@@ -13,6 +13,85 @@ vi.mock('@/firebase/accountsReceivable/fbGetPendingBalance', () => ({
   useGetPendingBalance: () => 0,
 }));
 
+vi.mock('@/components/heroui', () => {
+  type MockProps = Record<string, unknown> & {
+    children?: ReactNode;
+  };
+
+  function VmButton({ children, onPress, isDisabled, ...props }: MockProps) {
+    return (
+      <button
+        {...props}
+        disabled={Boolean(isDisabled)}
+        onClick={() => {
+          if (typeof onPress === 'function') onPress();
+        }}
+      >
+        {children}
+      </button>
+    );
+  }
+
+  function VmModal({
+    ariaLabel,
+    children,
+    footer,
+    isDismissable,
+    isOpen,
+    title,
+  }: MockProps) {
+    return isOpen ? (
+      <div
+        role="dialog"
+        aria-label={String(ariaLabel || title || '')}
+        data-is-dismissable={String(isDismissable)}
+      >
+        {title ? <div>{title}</div> : null}
+        {children}
+        {footer ? <footer>{footer}</footer> : null}
+      </div>
+    ) : null;
+  }
+
+  function VmSelect({ children }: MockProps) {
+    return <div>{children}</div>;
+  }
+
+  VmSelect.Trigger = ({ children }: MockProps) => <button>{children}</button>;
+  VmSelect.Value = () => <span>Mensual</span>;
+  VmSelect.Indicator = () => null;
+  VmSelect.Popover = ({ children }: MockProps) => <div>{children}</div>;
+
+  function VmListBox({ children }: MockProps) {
+    return <div>{children}</div>;
+  }
+
+  VmListBox.Item = ({ children }: MockProps) => <div>{children}</div>;
+  VmListBox.ItemIndicator = () => null;
+
+  function VmNumberField({ children }: MockProps) {
+    return <div>{children}</div>;
+  }
+
+  VmNumberField.Group = ({ children }: MockProps) => <div>{children}</div>;
+  VmNumberField.Input = () => <input type="number" />;
+  VmNumberField.DecrementButton = () => <button type="button">-</button>;
+  VmNumberField.IncrementButton = () => <button type="button">+</button>;
+
+  function VmTextArea(props: MockProps) {
+    return <textarea {...props} />;
+  }
+
+  return {
+    VmButton,
+    VmListBox,
+    VmModal,
+    VmNumberField,
+    VmSelect,
+    VmTextArea,
+  };
+});
+
 vi.mock('antd', () => {
   type MockProps = Record<string, unknown> & {
     children?: ReactNode;
@@ -115,13 +194,15 @@ vi.mock('antd', () => {
     children,
     title,
     open,
+    maskClosable,
   }: {
     children?: ReactNode;
     title?: ReactNode;
     open?: boolean;
+    maskClosable?: boolean;
   } & Record<string, unknown>) {
     return open ? (
-      <div>
+      <div data-mask-closable={String(maskClosable)}>
         {title ? <div>{title}</div> : null}
         {children}
       </div>
@@ -146,6 +227,20 @@ vi.mock('@/components/DatePicker', () => ({
     disabledDate?: unknown;
     [key: string]: unknown;
   }) => <input data-testid="date-picker" {...props} />,
+}));
+
+vi.mock('@/components/common/DatePicker', () => ({
+  VmDatePicker: ({
+    onChange: _onChange,
+    showPresets,
+    ...props
+  }: Record<string, unknown>) => (
+    <input
+      data-testid="vm-date-picker"
+      data-show-presets={String(showPresets)}
+      {...props}
+    />
+  ),
 }));
 
 vi.mock('../PaymentDatesOverview/PaymentDatesOverview', () => ({
@@ -233,6 +328,10 @@ describe('ReceivableManagementPanel', () => {
   it('renders when a valid client is selected', () => {
     renderPanel();
     expect(screen.getByText('Balance pendiente')).toBeInTheDocument();
+    expect(screen.getByTestId('vm-date-picker')).toHaveAttribute(
+      'data-show-presets',
+      'false',
+    );
   });
 
   it('does not render when client is invalid', () => {
@@ -244,5 +343,12 @@ describe('ReceivableManagementPanel', () => {
     const { closePanel } = renderPanel({ isChangeNegative: true });
     expect(screen.getByText('Balance pendiente')).toBeInTheDocument();
     expect(closePanel).not.toHaveBeenCalled();
+  });
+
+  it('requires explicit controls instead of closing from the overlay', () => {
+    renderPanel({ isChangeNegative: true });
+    expect(
+      screen.getByRole('dialog', { name: 'Gestión de Cuentas por Cobrar' }),
+    ).toHaveAttribute('data-is-dismissable', 'false');
   });
 });

@@ -4,8 +4,15 @@ import styled from 'styled-components';
 
 import useViewportWidth from '@/hooks/useViewportWidth';
 import type { ChartOfAccount, ChartOfAccountType } from '@/types/accounting';
-import type { ChartOfAccountDraft } from '@/utils/accounting/chartOfAccounts';
-import { sortChartOfAccountsForDisplay } from '@/utils/accounting/chartOfAccounts';
+import {
+  CHART_OF_ACCOUNTS_MAX_LEVEL,
+  buildChartOfAccountChildrenByParentId,
+  buildChartOfAccountsById,
+  getChartOfAccountDepth,
+  isChartOfAccountPostingAllowedForEntries,
+  sortChartOfAccountsForDisplay,
+  type ChartOfAccountDraft,
+} from '@/utils/accounting/chartOfAccounts';
 import { ChartOfAccountsExplorer } from './components/ChartOfAccountsExplorer';
 import { ChartOfAccountInspector } from './components/ChartOfAccountInspector';
 
@@ -81,60 +88,36 @@ export const ChartOfAccountsList = ({
   const deferredSearch = useDeferredValue(search);
 
   const accountsById = useMemo(
-    () => new Map(accounts.map((account) => [account.id, account])),
+    () => buildChartOfAccountsById(accounts),
     [accounts],
   );
   const orderedAccounts = useMemo(
     () => sortChartOfAccountsForDisplay(accounts),
     [accounts],
   );
-  const childCountByParentId = useMemo(
-    () =>
-      accounts.reduce<Map<string, number>>((accumulator, account) => {
-        if (!account.parentId) {
-          return accumulator;
-        }
-
-        accumulator.set(
-          account.parentId,
-          (accumulator.get(account.parentId) ?? 0) + 1,
-        );
-        return accumulator;
-      }, new Map()),
+  const childrenByParentId = useMemo(
+    () => buildChartOfAccountChildrenByParentId(accounts),
     [accounts],
   );
-  const childrenByParentId = useMemo(
+  const childCountByParentId = useMemo(
     () =>
-      accounts.reduce<Map<string, ChartOfAccount[]>>((accumulator, account) => {
-        if (!account.parentId) {
-          return accumulator;
-        }
-
-        const currentChildren = accumulator.get(account.parentId) ?? [];
-        accumulator.set(account.parentId, [...currentChildren, account]);
-        return accumulator;
-      }, new Map()),
-    [accounts],
+      new Map(
+        Array.from(childrenByParentId.entries()).map(([parentId, children]) => [
+          parentId,
+          children.length,
+        ]),
+      ),
+    [childrenByParentId],
   );
   const depthById = useMemo(() => {
     const nextDepths = new Map<string, number>();
 
     orderedAccounts.forEach((account) => {
-      let depth = 0;
-      let currentParentId = account.parentId ?? null;
-      let safety = 0;
-
-      while (currentParentId && safety < accounts.length) {
-        depth += 1;
-        currentParentId = accountsById.get(currentParentId)?.parentId ?? null;
-        safety += 1;
-      }
-
-      nextDepths.set(account.id, depth);
+      nextDepths.set(account.id, getChartOfAccountDepth(account, accountsById));
     });
 
     return nextDepths;
-  }, [accounts.length, accountsById, orderedAccounts]);
+  }, [accountsById, orderedAccounts]);
 
   const filteredAccounts = useMemo(() => {
     const normalizedSearch = deferredSearch.trim().toLowerCase();
@@ -166,8 +149,14 @@ export const ChartOfAccountsList = ({
     [accounts],
   );
   const postingAccounts = useMemo(
-    () => accounts.filter((account) => account.postingAllowed),
-    [accounts],
+    () =>
+      accounts.filter((account) =>
+        isChartOfAccountPostingAllowedForEntries(
+          account,
+          childCountByParentId.get(account.id) ?? 0,
+        ),
+      ),
+    [accounts, childCountByParentId],
   );
 
   const selectedAccount = useMemo(() => {
@@ -208,6 +197,13 @@ export const ChartOfAccountsList = ({
   const handleOpenChartOfAccountModal = (parentAccount?: ChartOfAccount) => {
     if (!parentAccount) {
       onAddChartOfAccountClick();
+      return;
+    }
+
+    if (
+      (depthById.get(parentAccount.id) ?? 0) + 1 >=
+      CHART_OF_ACCOUNTS_MAX_LEVEL
+    ) {
       return;
     }
 

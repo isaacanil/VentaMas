@@ -77,7 +77,7 @@ export const Welcome = () => {
               <Suspense
                 fallback={
                   <LoadingContainer>
-                    <Spin size="large" tip="Cargando..." />
+                    <Spin description="Cargando..." size="large" />
                   </LoadingContainer>
                 }
               >

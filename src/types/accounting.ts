@@ -119,6 +119,8 @@ export type AccountingPostingAmountSource =
   | 'accounts_payable_cash_paid'
   | 'accounts_payable_bank_paid'
   | 'accounts_payable_credit_note_applied'
+  | 'accounts_payable_withholding_itbis'
+  | 'accounts_payable_withholding_isr'
   | 'payroll_accrual_amount'
   | 'payroll_net_payable_amount'
   | 'payroll_tax_deductions_amount'

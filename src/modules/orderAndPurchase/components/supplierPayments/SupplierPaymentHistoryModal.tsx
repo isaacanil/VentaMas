@@ -1,14 +1,7 @@
-import {
-  Button,
-  Empty,
-  Modal as AntdModal,
-  Tag,
-  Typography,
-  message,
-} from 'antd';
+import { Button, Empty, Tag, Typography, message } from 'antd';
 import { ProfileOutlined } from '@ant-design/icons';
 import { DateTime } from 'luxon';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -22,9 +15,10 @@ import type {
   PaymentMethodEntry,
 } from '@/types/payments';
 import type { UserIdentity } from '@/types/users';
-import { hasManageAllAccess } from '@/utils/access/manageAllAccess';
+import { hasFinancialDocumentVoidAccess } from '@/utils/access/financialDocumentVoidAccess';
 import { toMillis } from '@/utils/date/toMillis';
 import { formatPrice } from '@/utils/format/formatPrice';
+import { resolvePaymentSettlementSummary } from '@/utils/payments/paymentSettlementSummary';
 import type { Purchase } from '@/utils/purchase/types';
 
 import { resolveSupplierPaymentCallableErrorMessage } from './utils/supplierPaymentErrors';
@@ -32,6 +26,7 @@ import {
   roundToTwoDecimals,
   toFiniteNumber,
 } from './utils/supplierPaymentMethods';
+import { SupplierPaymentVoidModal } from './SupplierPaymentVoidModal';
 
 const { Text, Title } = Typography;
 
@@ -110,7 +105,15 @@ export const SupplierPaymentHistoryModal = ({
       includeVoided: true,
     },
   );
-  const canVoidPayments = hasManageAllAccess(user);
+  const canVoidPayments = hasFinancialDocumentVoidAccess(user);
+  const [voidingPayment, setVoidingPayment] =
+    useState<AccountsPayablePayment | null>(null);
+  const [voidSubmitting, setVoidSubmitting] = useState(false);
+
+  const closeVoidModal = () => {
+    if (voidSubmitting) return;
+    setVoidingPayment(null);
+  };
 
   const handleVoidPayment = (payment: AccountsPayablePayment) => {
     if (!user) {
@@ -118,159 +121,226 @@ export const SupplierPaymentHistoryModal = ({
       return;
     }
 
-    AntdModal.confirm({
-      title: 'Anular pago',
-      centered: true,
-      okText: 'Anular',
-      cancelText: 'Cancelar',
-      okButtonProps: { danger: true },
-      content: `Se anulará el recibo ${payment.receiptNumber ?? payment.id}. Esta acción recalculará el balance de la compra.`,
-      onOk: async () => {
-        try {
-          await fbVoidAccountsPayablePayment(user, {
-            paymentId: payment.id,
-            reason: 'Anulado desde historial de pagos de compras.',
-          });
-          message.success('Pago anulado correctamente.');
-        } catch (error) {
-          console.error('Failed to void supplier payment', error);
-          message.error(
-            resolveSupplierPaymentCallableErrorMessage(
-              error,
-              'No se pudo anular el pago al proveedor.',
-            ),
-          );
-        }
-      },
-    });
+    setVoidingPayment(payment);
+  };
+
+  const handleConfirmVoidPayment = async (
+    reason: string,
+    evidenceNote: string,
+  ) => {
+    if (!user || !voidingPayment) return;
+
+    setVoidSubmitting(true);
+    try {
+      await fbVoidAccountsPayablePayment(user, {
+        evidenceNote,
+        paymentId: voidingPayment.id,
+        reason,
+      });
+      message.success('Pago anulado correctamente.');
+      setVoidingPayment(null);
+    } catch (error) {
+      console.error('Failed to void supplier payment', error);
+      message.error(
+        resolveSupplierPaymentCallableErrorMessage(
+          error,
+          'No se pudo anular el pago al proveedor.',
+        ),
+      );
+    } finally {
+      setVoidSubmitting(false);
+    }
   };
 
   return (
-    <ModalShell
-      title="Historial de pagos"
-      open={open}
-      onCancel={onCancel}
-      width={760}
-      footer={[
-        <Button key="close" onClick={onCancel}>
-          Cerrar
-        </Button>,
-      ]}
-      destroyOnHidden
-    >
-      <Content>
-        <Header>
-          <div>
-            <Title level={5} style={{ margin: 0 }}>
-              {providerName ?? `Compra ${purchase?.numberId ?? ''}`}
-            </Title>
-            <Text type="secondary">
-              {purchase?.paymentState?.status
-                ? `Estado actual: ${String(
-                    purchase.paymentState.status,
-                  ).replace(/_/g, ' ')}`
-                : 'Sin estado de pago'}
-            </Text>
-          </div>
-          <Summary>
-            <Text type="secondary">Pagado</Text>
-            <strong>
-              {formatPrice(toFiniteNumber(purchase?.paymentState?.paid) ?? 0)}
-            </strong>
-          </Summary>
-        </Header>
+    <>
+      <ModalShell
+        title="Historial de pagos"
+        open={open}
+        onCancel={onCancel}
+        width={760}
+        footer={[
+          <Button key="close" onClick={onCancel}>
+            Cerrar
+          </Button>,
+        ]}
+        destroyOnHidden
+      >
+        <Content>
+          <Header>
+            <div>
+              <Title level={5} style={{ margin: 0 }}>
+                {providerName ?? `Compra ${purchase?.numberId ?? ''}`}
+              </Title>
+              <Text type="secondary">
+                {purchase?.paymentState?.status
+                  ? `Estado actual: ${String(
+                      purchase.paymentState.status,
+                    ).replace(/_/g, ' ')}`
+                  : 'Sin estado de pago'}
+              </Text>
+            </div>
+            <Summary>
+              <Text type="secondary">Pagado</Text>
+              <strong>
+                {formatPrice(toFiniteNumber(purchase?.paymentState?.paid) ?? 0)}
+              </strong>
+            </Summary>
+          </Header>
 
-        {loading ? (
-          <Empty
-            description="Cargando pagos..."
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-          />
-        ) : payments.length === 0 ? (
-          <Empty
-            description="Esta compra todavía no tiene pagos registrados."
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-          />
-        ) : (
-          <List>
-            {payments.map((payment) => {
-              const paymentMethods = normalizePaymentMethods(payment);
-              const statusTag = resolvePaymentStatusTag(payment.status);
+          {loading ? (
+            <Empty
+              description="Cargando pagos..."
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
+          ) : payments.length === 0 ? (
+            <Empty
+              description="Esta compra todavía no tiene pagos registrados."
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
+          ) : (
+            <List>
+              {payments.map((payment) => {
+                const paymentMethods = normalizePaymentMethods(payment);
+                const settlementSummary =
+                  resolvePaymentSettlementSummary(payment);
+                const statusTag = resolvePaymentStatusTag(payment.status);
 
-              return (
-                <PaymentCard key={payment.id}>
-                  <CardHeader>
-                    <CardTitleGroup>
-                      <div>
-                        <strong>{payment.receiptNumber ?? payment.id}</strong>
-                        <MetaLine>
-                          {formatPaymentDate(
-                            payment.occurredAt ?? payment.createdAt,
-                          )}
-                        </MetaLine>
-                      </div>
-                      <Tag color={statusTag.color}>{statusTag.label}</Tag>
-                    </CardTitleGroup>
-                    <Amount>{formatPrice(payment.totalAmount)}</Amount>
-                  </CardHeader>
+                return (
+                  <PaymentCard key={payment.id}>
+                    <CardHeader>
+                      <CardTitleGroup>
+                        <div>
+                          <strong>{payment.receiptNumber ?? payment.id}</strong>
+                          <MetaLine>
+                            {formatPaymentDate(
+                              payment.occurredAt ?? payment.createdAt,
+                            )}
+                          </MetaLine>
+                        </div>
+                        <Tag color={statusTag.color}>{statusTag.label}</Tag>
+                      </CardTitleGroup>
+                      <AmountStack>
+                        <span>Salida de caja</span>
+                        <Amount>
+                          {formatPrice(settlementSummary.cashAmount)}
+                        </Amount>
+                      </AmountStack>
+                    </CardHeader>
 
-                  <MethodsList>
-                    {paymentMethods.map((method) => {
-                      const amount = resolvePaymentMethodAmount(method);
-                      const label =
-                        PAYMENT_METHOD_LABELS[String(method.method || '')] ??
-                        String(method.method || 'Método');
+                    <MethodsList>
+                      {paymentMethods.map((method) => {
+                        const amount = resolvePaymentMethodAmount(method);
+                        const label =
+                          PAYMENT_METHOD_LABELS[String(method.method || '')] ??
+                          String(method.method || 'Método');
 
-                      return (
-                        <MethodRow key={`${payment.id}-${label}-${amount}`}>
-                          <span>{label}</span>
-                          <span>{formatPrice(amount)}</span>
-                        </MethodRow>
-                      );
-                    })}
-                  </MethodsList>
+                        return (
+                          <MethodRow key={`${payment.id}-${label}-${amount}`}>
+                            <span>{label}</span>
+                            <span>{formatPrice(amount)}</span>
+                          </MethodRow>
+                        );
+                      })}
+                    </MethodsList>
 
-                  {typeof payment.metadata?.note === 'string' &&
-                    payment.metadata.note.trim() && (
-                      <MetaLine>Nota: {payment.metadata.note.trim()}</MetaLine>
-                    )}
-                  {payment.status === 'void' && payment.voidReason && (
-                    <MetaLine>Motivo: {payment.voidReason}</MetaLine>
-                  )}
-
-                  <ActionsRow>
-                    <Button
-                      type="link"
-                      icon={<ProfileOutlined />}
-                      onClick={() =>
-                        openAccountingEntry({
-                          eventType:
-                            payment.status === 'void'
-                              ? 'accounts_payable.payment.voided'
-                              : 'accounts_payable.payment.recorded',
-                          sourceDocumentId: payment.id,
-                          sourceDocumentType: 'accountsPayablePayment',
-                        })
-                      }
-                    >
-                      Ver asiento contable
-                    </Button>
-                    {payment.status !== 'void' && canVoidPayments ? (
-                      <Button
-                        danger
-                        type="link"
-                        onClick={() => handleVoidPayment(payment)}
+                    {settlementSummary.hasWithholdingSettlement ? (
+                      <SettlementGrid
+                        aria-label="Desglose de liquidación fiscal del pago"
                       >
-                        Anular pago
-                      </Button>
+                        <SettlementItem>
+                          <span>Retención fiscal</span>
+                          <strong>
+                            {formatPrice(settlementSummary.withholdingAmount)}
+                          </strong>
+                        </SettlementItem>
+                        <SettlementItem>
+                          <span>Total liquidado</span>
+                          <strong>
+                            {formatPrice(settlementSummary.settlementAmount)}
+                          </strong>
+                        </SettlementItem>
+                        {settlementSummary.withholdingBreakdown.map((line) => (
+                          <SettlementItem
+                            key={`${payment.id}-${line.type}-${line.amount}`}
+                          >
+                            <span>{line.label}</span>
+                            <strong>{formatPrice(line.amount)}</strong>
+                          </SettlementItem>
+                        ))}
+                      </SettlementGrid>
                     ) : null}
-                  </ActionsRow>
-                </PaymentCard>
-              );
-            })}
-          </List>
-        )}
-      </Content>
-    </ModalShell>
+
+                    {typeof payment.metadata?.note === 'string' &&
+                      payment.metadata.note.trim() && (
+                        <MetaLine>
+                          Nota: {payment.metadata.note.trim()}
+                        </MetaLine>
+                      )}
+                    {typeof payment.evidenceNote === 'string' &&
+                    payment.evidenceNote.trim() ? (
+                      <MetaLine>
+                        Evidencia de registro: {payment.evidenceNote.trim()}
+                      </MetaLine>
+                    ) : null}
+                    {payment.status === 'void' && payment.voidReason && (
+                      <MetaLine>Motivo: {payment.voidReason}</MetaLine>
+                    )}
+                    {payment.status === 'void' &&
+                    typeof payment.voidEvidenceNote === 'string' &&
+                    payment.voidEvidenceNote.trim() ? (
+                      <MetaLine>
+                        Evidencia de anulación:{' '}
+                        {payment.voidEvidenceNote.trim()}
+                      </MetaLine>
+                    ) : null}
+
+                    <ActionsRow>
+                      <Button
+                        type="link"
+                        icon={<ProfileOutlined />}
+                        onClick={() =>
+                          openAccountingEntry({
+                            eventType:
+                              payment.status === 'void'
+                                ? 'accounts_payable.payment.voided'
+                                : 'accounts_payable.payment.recorded',
+                            sourceDocumentId: payment.id,
+                            sourceDocumentType: 'accountsPayablePayment',
+                          })
+                        }
+                      >
+                        Ver asiento contable
+                      </Button>
+                      {payment.status !== 'void' && canVoidPayments ? (
+                        <Button
+                          danger
+                          type="link"
+                          onClick={() => handleVoidPayment(payment)}
+                        >
+                          Anular pago
+                        </Button>
+                      ) : null}
+                    </ActionsRow>
+                  </PaymentCard>
+                );
+              })}
+            </List>
+          )}
+        </Content>
+      </ModalShell>
+
+      {voidingPayment ? (
+        <SupplierPaymentVoidModal
+          key={voidingPayment.id}
+          onCancel={closeVoidModal}
+          onConfirm={handleConfirmVoidPayment}
+          open={Boolean(voidingPayment)}
+          payment={voidingPayment}
+          submitting={voidSubmitting}
+        />
+      ) : null}
+    </>
   );
 };
 
@@ -345,7 +415,53 @@ const Amount = styled.div`
   color: #262626;
 `;
 
+const AmountStack = styled.div`
+  display: grid;
+  gap: 2px;
+  justify-items: end;
+
+  span {
+    color: #8c8c8c;
+    font-size: 12px;
+  }
+
+  @media (max-width: 520px) {
+    justify-items: start;
+  }
+`;
+
+const SettlementGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  min-width: 0;
+`;
+
+const SettlementItem = styled.div`
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fafafa;
+
+  span {
+    overflow: hidden;
+    color: #8c8c8c;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    color: #262626;
+    font-size: 13px;
+  }
+`;
+
 const ActionsRow = styled.div`
   display: flex;
   justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
 `;

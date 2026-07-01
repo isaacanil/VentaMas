@@ -7,6 +7,7 @@ import {
 
 import type { PdfContent, PdfTableBody, PdfTableRow } from '@/pdf/types';
 import type { CreditNoteData } from '../../../types';
+import { getActiveUnitPrice } from '@/utils/pricing';
 
 /* ──────────────────────────────────────────────── */
 export function buildContent(d: CreditNoteData): PdfContent[] {
@@ -31,7 +32,7 @@ export function buildContent(d: CreditNoteData): PdfContent[] {
   const body: PdfTableBody = [
     headerRow,
     ...products.flatMap((p) => {
-      const price = +p.pricing?.price || 0;
+      const price = getActiveUnitPrice(p);
       const quantity = +p.amountToBuy || 1;
 
       // Usar las funciones de pricing.js para mantener consistencia

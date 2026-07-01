@@ -2,14 +2,17 @@ import type { FilterBarItem } from '@/components/common/FilterBar';
 
 import type {
   AccountsPayableAgingBucket,
+  AccountsPayableFiscalFilter,
   AccountsPayableGroupBy,
   AccountsPayableTraceabilityFilter,
 } from '../utils/accountsPayableDashboard';
 
 interface BuildAccountsPayableToolbarItemsParams {
   agingBucketFilter: AccountsPayableAgingBucket | 'all';
+  fiscalFilter: AccountsPayableFiscalFilter;
   groupBy: AccountsPayableGroupBy;
   onAgingBucketChange: (value: AccountsPayableAgingBucket | 'all') => void;
+  onFiscalFilterChange: (value: AccountsPayableFiscalFilter) => void;
   onGroupByChange: (value: AccountsPayableGroupBy) => void;
   onTraceabilityChange: (value: AccountsPayableTraceabilityFilter) => void;
   traceabilityFilter: AccountsPayableTraceabilityFilter;
@@ -17,8 +20,10 @@ interface BuildAccountsPayableToolbarItemsParams {
 
 export const buildAccountsPayableToolbarItems = ({
   agingBucketFilter,
+  fiscalFilter,
   groupBy,
   onAgingBucketChange,
+  onFiscalFilterChange,
   onGroupByChange,
   onTraceabilityChange,
   traceabilityFilter,
@@ -30,7 +35,9 @@ export const buildAccountsPayableToolbarItems = ({
     label: 'Aging',
     value: agingBucketFilter,
     onChange: (value) =>
-      onAgingBucketChange((value as AccountsPayableAgingBucket | 'all') ?? 'all'),
+      onAgingBucketChange(
+        (value as AccountsPayableAgingBucket | 'all') ?? 'all',
+      ),
     options: [
       { label: 'Todos', value: 'all' },
       { label: 'Al día', value: 'current' },
@@ -61,6 +68,27 @@ export const buildAccountsPayableToolbarItems = ({
     ],
     allowClear: false,
     minWidth: 180,
+  },
+  {
+    key: 'fiscal-filter',
+    type: 'select',
+    section: 'main',
+    label: 'Fiscal',
+    value: fiscalFilter,
+    onChange: (value) =>
+      onFiscalFilterChange(
+        (value as AccountsPayableFiscalFilter | null) ?? 'all',
+      ),
+    options: [
+      { label: 'Todos', value: 'all' },
+      { label: 'Sin NCF', value: 'missing_ncf' },
+      { label: 'Con NCF', value: 'with_ncf' },
+      { label: 'Con retenciones', value: 'with_withholdings' },
+      { label: 'Sin factura proveedor', value: 'missing_vendor_reference' },
+      { label: 'Sin clasif. DGII', value: 'missing_dgii_classification' },
+    ],
+    allowClear: false,
+    minWidth: 190,
   },
   {
     key: 'group-by',

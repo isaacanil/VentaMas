@@ -7,6 +7,7 @@ import {
 
 import type { PdfContent, PdfHeaderFooter, PdfTableBody } from '@/pdf/types';
 import type { CreditNoteBusinessInfo, CreditNoteData } from '../../../types';
+import { getActiveUnitPrice } from '@/utils/pricing';
 
 /* ───── bloque firma + etiqueta opcional ───── */
 function signatureBlock(label?: string, extraLine?: string): PdfContent {
@@ -40,7 +41,7 @@ export function buildFooter(
   let totalItbis = 0;
 
   (d.items || []).forEach((item) => {
-    const price = +item.pricing?.price || 0;
+    const price = getActiveUnitPrice(item);
     const quantity = +item.amountToBuy || 1;
 
     // Usar subtotal básico (precio * cantidad)

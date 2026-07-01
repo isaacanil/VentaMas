@@ -86,6 +86,7 @@ export async function processInvoiceData({
     const inventoryPrevreqs = await collectInventoryPrereqs(tx, {
       user,
       products: cart.products,
+      saleId: cart?.id || null,
     });
 
     const { accountReceivableNextIDSnap, insurance } =

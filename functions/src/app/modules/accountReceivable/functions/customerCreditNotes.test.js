@@ -203,6 +203,108 @@ describe('customerCreditNotes hardening', () => {
     expect(transactionSetMock).not.toHaveBeenCalled();
   });
 
+  it('rechaza marcar una nota editable como devolucion fisica', async () => {
+    docSnapshots.set('businesses/business-1/creditNotes/credit-note-1', {
+      id: 'credit-note-1',
+      status: 'draft',
+      totalAmount: 118,
+      inventoryEffect: 'financial_only',
+    });
+
+    await expect(
+      updateCustomerCreditNote({
+        data: {
+          businessId: 'business-1',
+          creditNoteId: 'credit-note-1',
+          updates: {
+            physicalReturn: true,
+            totalAmount: 100,
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      message: expect.stringContaining('PHYSICAL_RETURN_NOT_IMPLEMENTED'),
+      details: expect.objectContaining({
+        reason: 'PHYSICAL_RETURN_NOT_IMPLEMENTED',
+      }),
+    });
+
+    expect(transactionSetMock).not.toHaveBeenCalled();
+  });
+
+  it('rechaza devolucion fisica marcada en una linea durante update', async () => {
+    docSnapshots.set('businesses/business-1/creditNotes/credit-note-1', {
+      id: 'credit-note-1',
+      status: 'draft',
+      totalAmount: 118,
+      inventoryEffect: 'financial_only',
+    });
+
+    await expect(
+      updateCustomerCreditNote({
+        data: {
+          businessId: 'business-1',
+          creditNoteId: 'credit-note-1',
+          updates: {
+            items: [
+              {
+                id: 'weighted-1',
+                name: 'Peso',
+                inventoryReturn: true,
+              },
+            ],
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      details: expect.objectContaining({
+        reason: 'PHYSICAL_RETURN_NOT_IMPLEMENTED',
+      }),
+    });
+
+    expect(transactionSetMock).not.toHaveBeenCalled();
+  });
+
+  it('mantiene las notas editables como financieras al actualizar', async () => {
+    docSnapshots.set('businesses/business-1/creditNotes/credit-note-1', {
+      id: 'credit-note-1',
+      status: 'draft',
+      totalAmount: 118,
+      inventoryEffect: 'financial_only',
+      physicalReturn: false,
+      affectsInventory: false,
+    });
+
+    const result = await updateCustomerCreditNote({
+      data: {
+        businessId: 'business-1',
+        creditNoteId: 'credit-note-1',
+        updates: { totalAmount: 100 },
+      },
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      creditNoteId: 'credit-note-1',
+    });
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/creditNotes/credit-note-1',
+      }),
+      expect.objectContaining({
+        totalAmount: 100,
+        inventoryEffect: 'financial_only',
+        physicalReturn: false,
+        affectsInventory: false,
+        updatedAt: 'timestamp-now',
+        updatedBy: 'user-1',
+      }),
+      { merge: true },
+    );
+  });
+
   it('aplica notas de credito solo por transaccion backend', async () => {
     const result = await applyCustomerCreditNotes({
       data: {
@@ -430,6 +532,73 @@ describe('customerCreditNotes hardening', () => {
     expect(reserveNcfMock).not.toHaveBeenCalled();
   });
 
+  it('valida cantidades por linea cuando el mismo producto tiene presentaciones distintas', async () => {
+    docSnapshots.set('businesses/business-1', {
+      fiscal: {
+        sequenceEngineV2Enabled: true,
+      },
+    });
+    docSnapshots.set('businesses/business-1/invoices/invoice-1', {
+      data: {
+        id: 'invoice-1',
+        NCF: 'B0100000001',
+        numberID: 714,
+        date: '2026-06-16T18:40:42.000Z',
+        totalPurchase: { value: 100 },
+        products: [
+          {
+            id: 'product-1',
+            cid: 'product-1',
+            amountToBuy: 1,
+          },
+          {
+            id: 'product-1',
+            cid: 'product-1::sale-unit::box-12',
+            amountToBuy: { unit: 1, total: 12 },
+            selectedSaleUnit: {
+              id: 'box-12',
+              unitName: 'Caja',
+              quantity: 12,
+            },
+          },
+        ],
+      },
+    });
+    docSnapshots.set('businesses/business-1/creditNotes', []);
+
+    await expect(
+      createCustomerCreditNote({
+        data: {
+          businessId: 'business-1',
+          creditNote: {
+            invoiceId: 'invoice-1',
+            client: { id: 'client-1', name: 'GI SYS SRL' },
+            items: [
+              {
+                id: 'product-1',
+                cid: 'product-1',
+                name: 'Unidad base',
+                amountToBuy: 2,
+              },
+            ],
+            totalAmount: 10,
+            reason: 'Devolucion parcial',
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      details: expect.objectContaining({
+        reason: 'credit-note-quantity-exceeds-invoice',
+        itemId: 'product-1',
+        originalQuantity: 1,
+        requestedQuantity: 2,
+      }),
+    });
+
+    expect(reserveNcfMock).not.toHaveBeenCalled();
+  });
+
   it('no cuenta notas electronicas rechazadas por DGII contra el cupo de la factura', async () => {
     docSnapshots.set('businesses/business-1', {
       fiscal: {
@@ -481,7 +650,177 @@ describe('customerCreditNotes hardening', () => {
     expect(result.creditNote).toMatchObject({
       number: 'NC-2026-000001',
       totalAmount: 30,
+      inventoryEffect: 'financial_only',
+      physicalReturn: false,
+      affectsInventory: false,
     });
+  });
+
+  it('crea una nota financiera con presentacion y peso sin tocar inventario ni COGS', async () => {
+    docSnapshots.set('businesses/business-1', {
+      fiscal: {
+        sequenceEngineV2Enabled: true,
+      },
+    });
+    docSnapshots.set('businesses/business-1/invoices/invoice-1', {
+      data: {
+        id: 'invoice-1',
+        NCF: 'B0100000001',
+        numberID: 714,
+        date: '2026-06-16T18:40:42.000Z',
+        client: { id: 'client-1', personalID: '132619201' },
+        totalPurchase: { value: 300 },
+        products: [
+          {
+            id: 'product-1',
+            cid: 'product-1::sale-unit::box-12',
+            amountToBuy: { unit: 1, total: 12 },
+            selectedSaleUnit: {
+              id: 'box-12',
+              quantity: 12,
+            },
+          },
+          {
+            id: 'weighted-1',
+            cid: 'weighted-1',
+            amountToBuy: 1,
+            weightDetail: {
+              isSoldByWeight: true,
+              weight: 2.5,
+            },
+          },
+        ],
+      },
+    });
+    docSnapshots.set('businesses/business-1/creditNotes', []);
+
+    const result = await createCustomerCreditNote({
+      data: {
+        businessId: 'business-1',
+        creditNote: {
+          invoiceId: 'invoice-1',
+          client: {
+            id: 'client-1',
+            name: 'GI SYS SRL',
+            personalID: '132619201',
+          },
+          items: [
+            {
+              id: 'product-1',
+              cid: 'product-1::sale-unit::box-12',
+              name: 'Caja',
+              amountToBuy: { unit: 1, total: 12 },
+              selectedSaleUnit: {
+                id: 'box-12',
+                quantity: 12,
+              },
+            },
+            {
+              id: 'weighted-1',
+              cid: 'weighted-1',
+              name: 'Peso',
+              amountToBuy: 1,
+              weightDetail: {
+                isSoldByWeight: true,
+                weight: 2.5,
+              },
+            },
+          ],
+          totalAmount: 100,
+          reason: 'Devolucion parcial',
+        },
+      },
+    });
+
+    expect(result.creditNote).toMatchObject({
+      inventoryEffect: 'financial_only',
+      physicalReturn: false,
+      affectsInventory: false,
+    });
+    const writtenPaths = transactionSetMock.mock.calls.map(([ref]) => ref.path);
+    expect(
+      writtenPaths.some((path) => path.includes('/products/')),
+    ).toBe(false);
+    expect(
+      writtenPaths.some((path) => path.includes('/productsStock/')),
+    ).toBe(false);
+    expect(writtenPaths.some((path) => path.includes('/batches/'))).toBe(false);
+    expect(
+      writtenPaths.some((path) =>
+        path.includes('/accountingEvents/inventory.cogs'),
+      ),
+    ).toBe(false);
+  });
+
+  it('rechaza intentos de devolucion fisica hasta implementar reversa real de inventario y COGS', async () => {
+    await expect(
+      createCustomerCreditNote({
+        data: {
+          businessId: 'business-1',
+          creditNote: {
+            invoiceId: 'invoice-1',
+            client: { id: 'client-1', name: 'GI SYS SRL' },
+            items: [
+              {
+                id: 'product-1',
+                name: 'Caja',
+                amountToBuy: { unit: 1, total: 12 },
+                selectedSaleUnit: {
+                  id: 'box-12',
+                  quantity: 12,
+                },
+              },
+            ],
+            totalAmount: 100,
+            physicalReturn: true,
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      message: expect.stringContaining('PHYSICAL_RETURN_NOT_IMPLEMENTED'),
+      details: expect.objectContaining({
+        reason: 'PHYSICAL_RETURN_NOT_IMPLEMENTED',
+      }),
+    });
+
+    expect(transactionSetMock).not.toHaveBeenCalled();
+    expect(reserveNcfMock).not.toHaveBeenCalled();
+  });
+
+  it('rechaza devolucion fisica marcada a nivel de linea de peso', async () => {
+    await expect(
+      createCustomerCreditNote({
+        data: {
+          businessId: 'business-1',
+          creditNote: {
+            invoiceId: 'invoice-1',
+            client: { id: 'client-1', name: 'GI SYS SRL' },
+            items: [
+              {
+                id: 'weighted-1',
+                name: 'Peso',
+                amountToBuy: 1,
+                weightDetail: {
+                  isSoldByWeight: true,
+                  weight: 2.5,
+                },
+                returnInventory: true,
+              },
+            ],
+            totalAmount: 100,
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      details: expect.objectContaining({
+        reason: 'PHYSICAL_RETURN_NOT_IMPLEMENTED',
+      }),
+    });
+
+    expect(transactionSetMock).not.toHaveBeenCalled();
+    expect(reserveNcfMock).not.toHaveBeenCalled();
   });
 
   it('mantiene en cupo notas electronicas con fallo ambiguo hasta reconciliar', async () => {

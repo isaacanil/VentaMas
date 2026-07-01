@@ -1,6 +1,7 @@
 import { https, logger } from 'firebase-functions';
 import { nanoid } from 'nanoid';
 
+import { db } from '../../../../core/config/firebase.js';
 import { resolveIdempotencyKey } from '../utils/idempotency.util.js';
 import {
   resolveHttpAuthUser,
@@ -23,17 +24,57 @@ async function loadDeps() {
       import('../services/orchestrator.service.js'),
       import('../../../../modules/cashCount/utils/cashCountQueries.js'),
       import('../../../../modules/cashCount/utils/cashCountCheck.js'),
-    ]).then(([validation, orchestrator, cashCountQueries, cashCountCheck]) => {
+      import('../../accounting/utils/accountingRollout.util.js'),
+    ]).then(([
+      validation,
+      orchestrator,
+      cashCountQueries,
+      cashCountCheck,
+      accountingRollout,
+    ]) => {
       const cashCountHelpers = cashCountQueries?.default ?? cashCountQueries;
       return {
         validateInvoiceCart: validation.validateInvoiceCart,
+        validateInvoiceCartAgainstCatalog:
+          validation.validateInvoiceCartAgainstCatalog,
         createPendingInvoice: orchestrator.createPendingInvoice,
         getOpenCashCountDoc: cashCountHelpers?.getOpenCashCountDoc,
         checkOpenCashCount: cashCountCheck.checkOpenCashCount,
+        getPilotAccountingSettingsForBusiness:
+          accountingRollout.getPilotAccountingSettingsForBusiness,
       };
     });
   }
   return depsPromise;
+}
+
+async function loadInvoiceProductCatalog({ businessId, productId }) {
+  const productRef = db.doc(`businesses/${businessId}/products/${productId}`);
+  const saleUnitsRef = db.collection(
+    `businesses/${businessId}/products/${productId}/saleUnits`,
+  );
+  const [productSnap, saleUnitsSnap] = await Promise.all([
+    productRef.get(),
+    saleUnitsRef.get(),
+  ]);
+
+  if (!productSnap.exists) {
+    return { exists: false, product: null, saleUnits: [] };
+  }
+
+  return {
+    exists: true,
+    product: {
+      id: productSnap.id,
+      ...(productSnap.data?.() || {}),
+    },
+    saleUnits: Array.isArray(saleUnitsSnap?.docs)
+      ? saleUnitsSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...(doc.data?.() || {}),
+        }))
+      : [],
+  };
 }
 
 export const createInvoiceV2Http = https.onRequest(async (req, res) => {
@@ -52,9 +93,11 @@ export const createInvoiceV2Http = https.onRequest(async (req, res) => {
   try {
     const {
       validateInvoiceCart,
+      validateInvoiceCartAgainstCatalog,
       createPendingInvoice,
       getOpenCashCountDoc,
       checkOpenCashCount,
+      getPilotAccountingSettingsForBusiness,
     } = await loadDeps();
     const idempotencyKey = resolveIdempotencyKey({
       rawRequest: req,
@@ -117,16 +160,43 @@ export const createInvoiceV2Http = https.onRequest(async (req, res) => {
         .json({ error: 'ncfType es requerido cuando NCF esta habilitado' });
     }
 
-    const validation = validateInvoiceCart(data?.cart);
+    const accountingSettings = await getPilotAccountingSettingsForBusiness(
+      businessId,
+    );
+    const validationOptions = {
+      functionalCurrency: accountingSettings?.functionalCurrency,
+    };
+
+    const validation = validateInvoiceCart(data?.cart, validationOptions);
     if (!validation?.isValid) {
       return res.status(412).json({
         error: 'Carrito invalido: ' + (validation?.message || 'error'),
       });
     }
+    const catalogValidation = await validateInvoiceCartAgainstCatalog(
+      data?.cart,
+      {
+        businessId,
+        loadProductCatalog: loadInvoiceProductCatalog,
+        ...validationOptions,
+      },
+    );
+    if (!catalogValidation?.isValid) {
+      return res.status(412).json({
+        error: 'Carrito invalido: ' + (catalogValidation?.message || 'error'),
+        code: catalogValidation?.code,
+      });
+    }
+    const trustedPayload = catalogValidation?.trustedCart
+      ? {
+          ...data,
+          cart: catalogValidation.trustedCart,
+        }
+      : data;
 
-    const isAddedToReceivables = !!data?.cart?.isAddedToReceivables;
+    const isAddedToReceivables = !!trustedPayload?.cart?.isAddedToReceivables;
     if (isAddedToReceivables) {
-      const arData = data?.accountsReceivable || null;
+      const arData = trustedPayload?.accountsReceivable || null;
       const totalInstallments = Number(arData?.totalInstallments);
       if (
         !arData ||
@@ -160,7 +230,7 @@ export const createInvoiceV2Http = https.onRequest(async (req, res) => {
     const result = await createPendingInvoice({
       businessId,
       userId,
-      payload: data,
+      payload: trustedPayload,
       idempotencyKey,
       cashCountId,
     });

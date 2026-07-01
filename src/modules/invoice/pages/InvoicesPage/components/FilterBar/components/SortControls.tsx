@@ -1,7 +1,8 @@
-import { Select, Button, Space } from 'antd';
 import type { ReactNode } from 'react';
 import React from 'react';
+import styled from 'styled-components';
 
+import { VmButton } from '@/components/heroui';
 import { icons } from '@/constants/icons/icons';
 import {
   FILTER_CONFIG,
@@ -10,6 +11,7 @@ import {
 import type { SortDirection } from '../hooks';
 
 import { FilterField } from './FilterField';
+import { FilterSelectControl } from './FilterSelectControl';
 
 type SortControlsProps = {
   sortCriteria: string;
@@ -27,24 +29,39 @@ export const SortControls = ({
   label,
 }: SortControlsProps) => (
   <FilterField label={label ?? FILTER_CONFIG.sort.label}>
-    <Space.Compact>
-      <Select
+    <SortControlGroup role="group" aria-label="Ordenar facturas">
+      <FilterSelectControl
         value={sortCriteria}
-        style={{ width: 130 }}
         onChange={onSortChange}
+        width={FILTER_CONFIG.sort.width}
+        ariaLabel={ACCESSIBILITY_CONFIG.ariaLabels.sortCriteria}
         options={FILTER_CONFIG.sort.options}
-        size="middle"
-        aria-label={ACCESSIBILITY_CONFIG.ariaLabels.sortCriteria}
       />
-      <Button
-        icon={
-          sortDirection === 'asc' ? icons.sort.sortAsc : icons.sort.sortDesc
-        }
-        onClick={onToggleDirection}
-        disabled={sortCriteria === 'defaultCriteria'}
-        size="middle"
+      <VmButton
+        isIconOnly
+        size="sm"
+        variant="secondary"
+        onPress={onToggleDirection}
+        isDisabled={sortCriteria === 'defaultCriteria'}
         aria-label={ACCESSIBILITY_CONFIG.ariaLabels.sortDirection}
-      />
-    </Space.Compact>
+      >
+        {sortDirection === 'asc' ? icons.sort.sortAsc : icons.sort.sortDesc}
+      </VmButton>
+    </SortControlGroup>
   </FilterField>
 );
+
+const SortControlGroup = styled.div`
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 0;
+
+  @media (max-width: 900px) {
+    width: 100%;
+
+    [data-filter-select-control] {
+      flex: 1 1 auto;
+    }
+  }
+`;

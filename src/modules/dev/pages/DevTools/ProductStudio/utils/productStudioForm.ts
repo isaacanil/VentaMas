@@ -3,12 +3,14 @@ import {
   resolveBrandSelection,
   type ProductBrandOptionSource,
 } from '@/domain/products/brandSelection';
+import { normalizeSaleUnitForCart } from '@/domain/products/saleUnits';
 import {
   buildNormalizedProductSnapshot,
   normalizeItemType,
   normalizeTrackInventoryValue,
 } from '@/domain/products/normalization';
 import {
+  normalizeProductPricingCurrency,
   normalizeProductPricingTax,
   toProductPricingNumber,
   type ProductPricingFormValues,
@@ -17,12 +19,17 @@ import type {
   PricingTax,
   ProductPricing,
   ProductRecord,
+  ProductSaleUnit,
   ProductWarranty,
   ProductWeightDetail,
 } from '@/types/products';
 import type { UserWithBusiness } from '@/types/users';
-import type { ProductFormValues } from '@/modules/dev/pages/DevTools/ProductStudio/components/form/ProductForm';
+import type {
+  ProductFormValues,
+  ProductSaleUnitFormValues,
+} from '@/modules/dev/pages/DevTools/ProductStudio/components/form/ProductForm';
 import { isRecord } from '@/utils/object/record';
+import { nanoid } from 'nanoid';
 
 type ProductPatch = Partial<ProductRecord> & Record<string, unknown>;
 import type { ProductSnapshot } from '@/modules/dev/pages/DevTools/ProductStudio/hooks/useProductPreviewMetrics';
@@ -49,17 +56,17 @@ export const isFormValidationError = (
   return Array.isArray(errorFields);
 };
 
-export const normalizeTaxValue = (
-  tax: PricingTax | null | undefined,
-): number => normalizeProductPricingTax(tax);
+export const normalizeTaxValue = (tax: PricingTax | null | undefined): number =>
+  normalizeProductPricingTax(tax);
 
 export const normalizePricingForForm = (
   pricing: ProductPricing | undefined,
 ): ProductPricingFormValues | undefined => {
   if (!pricing) return undefined;
-  const { avgPrice, tax, ...rest } = pricing;
+  const { avgPrice, currency, tax, ...rest } = pricing;
   return {
     ...rest,
+    currency: normalizeProductPricingCurrency(currency),
     tax: normalizeTaxValue(tax),
     midPrice: avgPrice ?? null,
   };
@@ -72,6 +79,7 @@ export const normalizePricingForUpdate = (
   pricing: ProductPricingFormValues,
 ): ProductPricing => {
   const {
+    currency,
     midPrice,
     tax,
     cost,
@@ -83,18 +91,120 @@ export const normalizePricingForUpdate = (
   } = pricing;
   const result: ProductPricing = { ...passthrough };
 
+  result.currency = normalizeProductPricingCurrency(currency);
   result.tax = normalizeTaxValue(tax);
 
-  if (hasNumericValue(midPrice)) result.avgPrice = toProductPricingNumber(midPrice);
+  if (hasNumericValue(midPrice))
+    result.avgPrice = toProductPricingNumber(midPrice);
   if (hasNumericValue(cost)) result.cost = toProductPricingNumber(cost);
-  if (hasNumericValue(listPrice)) result.listPrice = toProductPricingNumber(listPrice);
-  if (hasNumericValue(minPrice)) result.minPrice = toProductPricingNumber(minPrice);
-  if (hasNumericValue(cardPrice)) result.cardPrice = toProductPricingNumber(cardPrice);
+  if (hasNumericValue(listPrice)) {
+    const normalizedListPrice = toProductPricingNumber(listPrice);
+    result.listPrice = normalizedListPrice;
+    result.price = normalizedListPrice;
+  }
+  if (hasNumericValue(minPrice))
+    result.minPrice = toProductPricingNumber(minPrice);
+  if (hasNumericValue(cardPrice))
+    result.cardPrice = toProductPricingNumber(cardPrice);
   if (hasNumericValue(offerPrice)) {
     result.offerPrice = toProductPricingNumber(offerPrice);
   }
 
   return result;
+};
+
+const readPositiveNumber = (value: unknown, fallback: number): number => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
+const normalizeSaleUnitPricingForForm = (
+  pricing: ProductPricing | undefined,
+): ProductPricingFormValues | undefined => {
+  const normalized = normalizePricingForForm(pricing);
+  if (!normalized) return undefined;
+  return {
+    ...normalized,
+    listPrice: normalized.listPrice ?? pricing?.price ?? 0,
+  };
+};
+
+export const normalizeSaleUnitsForForm = (
+  saleUnits: ProductSaleUnit[] | undefined,
+): ProductSaleUnitFormValues[] => {
+  if (!Array.isArray(saleUnits)) return [];
+  return saleUnits.map((unit, index) => {
+    const normalizedUnit = normalizeSaleUnitForCart({
+      ...unit,
+      id:
+        typeof unit?.id === 'string' && unit.id.trim()
+          ? unit.id
+          : `sale-unit-${index + 1}`,
+      pricing: unit?.pricing || {},
+    });
+
+    return {
+      ...normalizedUnit,
+      pricing: normalizeSaleUnitPricingForForm(normalizedUnit.pricing) || {},
+    };
+  });
+};
+
+export const normalizeSaleUnitsForUpdate = (
+  value: unknown,
+  product?: ProductRecord | null,
+): ProductSaleUnit[] => {
+  if (!Array.isArray(value)) return [];
+
+  return value.filter(isRecord).map((rawUnit) => {
+    const rawPricing = isRecord(rawUnit.pricing) ? rawUnit.pricing : {};
+    const conversionFactorToBase = readPositiveNumber(
+      rawUnit.conversionFactorToBase ?? rawUnit.quantity,
+      1,
+    );
+    const pricing = normalizePricingForUpdate({
+      ...(rawPricing as ProductPricingFormValues),
+      currency: rawPricing.currency ?? product?.pricing?.currency,
+      tax: rawPricing.tax ?? product?.pricing?.tax ?? 0,
+    });
+    const price = pricing.price ?? pricing.listPrice;
+
+    return normalizeSaleUnitForCart(
+      {
+        ...(rawUnit as Partial<ProductSaleUnit>),
+        id:
+          typeof rawUnit.id === 'string' && rawUnit.id.trim()
+            ? rawUnit.id
+            : nanoid(),
+        unitName:
+          typeof rawUnit.unitName === 'string' ? rawUnit.unitName.trim() : '',
+        quantity: conversionFactorToBase,
+        conversionFactorToBase,
+        allowFractional: rawUnit.allowFractional === true,
+        active: rawUnit.active !== false,
+        pricing,
+      } as ProductSaleUnit,
+      price,
+    );
+  });
+};
+
+export const normalizeProductForStudioSubmit = (
+  product: ProductRecord | null | undefined,
+): ProductRecord | null | undefined => {
+  if (!product) return product;
+
+  const pricingForForm = normalizePricingForForm(product.pricing);
+
+  return {
+    ...product,
+    pricing: pricingForForm
+      ? normalizePricingForUpdate(pricingForForm)
+      : product.pricing,
+    saleUnits: Array.isArray(product.saleUnits)
+      ? normalizeSaleUnitsForUpdate(product.saleUnits, product)
+      : product.saleUnits,
+  };
 };
 
 export const getNormalizedProductValues = (
@@ -105,6 +215,7 @@ export const getNormalizedProductValues = (
   return {
     ...snapshot,
     pricing: normalizePricingForForm(product?.pricing),
+    saleUnits: normalizeSaleUnitsForForm(snapshot.saleUnits),
     weightDetail: snapshot.weightDetail as ProductWeightDetail | undefined,
     warranty: snapshot.warranty as ProductWarranty | undefined,
   };
@@ -160,6 +271,12 @@ export const getChangedProductPatch = ({
         ...product?.warranty,
         ...(isRecord(value) ? (value as ProductWarranty) : {}),
       },
+    };
+  }
+
+  if (key === 'saleUnits') {
+    return {
+      saleUnits: normalizeSaleUnitsForUpdate(value, product),
     };
   }
 

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildProductMonetarySnapshot,
   getCartProductCurrencies,
+  getFunctionalProductSubtotal,
   resolveDisplayTotalForCurrency,
   resolveDisplayUnitPriceForCurrency,
 } from './lineMonetary';
@@ -110,5 +111,22 @@ describe('lineMonetary', () => {
 
     expect(resolveDisplayUnitPriceForCurrency(product, 'DOP')).toBe(600);
     expect(resolveDisplayTotalForCurrency(product, 'DOP')).toBe(1416);
+  });
+
+  it('calculates subtotal with weight for products sold by weight', () => {
+    expect(
+      getFunctionalProductSubtotal({
+        amountToBuy: 1,
+        weightDetail: {
+          isSoldByWeight: true,
+          weight: 2.5,
+        },
+        pricing: {
+          currency: 'DOP',
+          price: 30,
+          tax: 18,
+        },
+      }),
+    ).toBe(75);
   });
 });

@@ -12,16 +12,18 @@ import {
   getPilotAccountingSettingsForBusiness,
   isAccountingRolloutEnabledForBusiness,
 } from '../../../versions/v2/accounting/utils/accountingRollout.util.js';
-import {
-  assertAccountingPeriodOpenInTransaction,
-} from '../../../versions/v2/accounting/utils/periodClosure.util.js';
+import { assertAccountingPeriodOpenInTransaction } from '../../../versions/v2/accounting/utils/periodClosure.util.js';
 import {
   THRESHOLD,
   asRecord,
   buildPurchasePaymentState,
   buildSupplierCreditNoteApplicationId,
+  isActiveSupplierPaymentRecord,
+  isTerminalInactiveSupplierPaymentStatus,
+  normalizeSupplierPaymentStatus,
   normalizePaymentMethodsForAggregation,
   resolvePaymentAmount,
+  resolvePaymentWithholdingAmount,
   resolvePurchaseDocumentTotal,
   roundToTwoDecimals,
   sanitizeForResponse,
@@ -31,11 +33,10 @@ import {
 import {
   buildCanonicalVendorBillIdFromPurchaseId,
   buildVendorBillProjection,
+  preserveVendorBillControlDetails,
   resolvePurchaseIdFromVendorBillRecord,
 } from './vendorBill.shared.js';
-import {
-  isCashMovementReconciledOrLinked,
-} from '../../treasury/utils/cashMovementReconciliation.util.js';
+import { isCashMovementReconciledOrLinked } from '../../treasury/utils/cashMovementReconciliation.util.js';
 
 const aggregatePaymentCreditNotes = (paymentRecord) =>
   normalizePaymentMethodsForAggregation(paymentRecord).reduce(
@@ -93,6 +94,257 @@ const buildVoidResponse = ({
   payment: sanitizeForResponse(paymentRecord),
 });
 
+const validateVoidReason = (reason) => {
+  const normalizedReason = toCleanString(reason);
+  if (!normalizedReason || normalizedReason.length < 5) {
+    throw new HttpsError(
+      'invalid-argument',
+      'Debe indicar un motivo de anulación con al menos 5 caracteres.',
+    );
+  }
+
+  return normalizedReason;
+};
+
+const normalizeEvidenceUrls = (value) =>
+  (Array.isArray(value) ? value : [])
+    .map((entry) => toCleanString(entry))
+    .filter(Boolean)
+    .slice(0, 10);
+
+const normalizeEvidenceNote = (value) => toCleanString(value);
+
+const validateVoidEvidence = ({ evidenceNote, evidenceUrls }) => {
+  if (evidenceNote || evidenceUrls.length > 0) {
+    return;
+  }
+
+  throw new HttpsError(
+    'invalid-argument',
+    'Debe indicar una evidencia o referencia para anular el pago al proveedor.',
+  );
+};
+
+const resolveActorId = (value) => {
+  const directId = toCleanString(value);
+  if (directId) return directId;
+
+  const record = asRecord(value);
+  return (
+    toCleanString(record.uid) ??
+    toCleanString(record.id) ??
+    toCleanString(record.userId) ??
+    null
+  );
+};
+
+const assertPaymentVoidSegregationOfDuties = ({ authUid, paymentRecord }) => {
+  const createdBy = resolveActorId(
+    paymentRecord.createdBy ?? paymentRecord.createdByUser,
+  );
+  if (!createdBy || createdBy !== authUid) return;
+
+  throw new HttpsError(
+    'failed-precondition',
+    'La anulación del pago debe realizarla un usuario distinto al que lo registró.',
+  );
+};
+
+const resolvePaymentRunIdFromPayment = (paymentRecord) =>
+  toCleanString(paymentRecord.paymentRunId) ??
+  toCleanString(paymentRecord.metadata?.paymentRunId) ??
+  toCleanString(paymentRecord.paymentRunStatusSnapshot?.id) ??
+  toCleanString(paymentRecord.metadata?.paymentRunStatusSnapshot?.id) ??
+  null;
+
+const resolvePaymentCashAmount = (paymentRecord) =>
+  roundToTwoDecimals(
+    normalizePaymentMethodsForAggregation(paymentRecord).reduce(
+      (sum, method) => sum + method.amount,
+      0,
+    ),
+  );
+
+const resolvePaymentRunLineBaseAmounts = (lineRecord) => {
+  const cashRequirementAmount = roundToTwoDecimals(
+    lineRecord.cashRequirementAmount ?? lineRecord.executedCashRequirementAmount,
+  );
+  const withholdingAmount = roundToTwoDecimals(lineRecord.withholdingAmount);
+  const balanceAmount = roundToTwoDecimals(
+    lineRecord.balanceAmount ??
+      lineRecord.grossBalanceAmount ??
+      cashRequirementAmount + withholdingAmount,
+  );
+
+  return {
+    balanceAmount,
+    cashRequirementAmount,
+    withholdingAmount,
+  };
+};
+
+const isPaymentRunLineComplete = (lineSnapshot) =>
+  lineSnapshot.cashRequirementAmount - lineSnapshot.paidCashAmount <=
+    THRESHOLD &&
+  lineSnapshot.withholdingAmount - lineSnapshot.paidWithholdingAmount <=
+    THRESHOLD &&
+  lineSnapshot.balanceAmount - lineSnapshot.paidSettlementAmount <= THRESHOLD;
+
+const isPaymentRunLinePartial = (lineSnapshot) =>
+  !isPaymentRunLineComplete(lineSnapshot) &&
+  (lineSnapshot.paidCashAmount > THRESHOLD ||
+    lineSnapshot.paidSettlementAmount > THRESHOLD ||
+    lineSnapshot.paidWithholdingAmount > THRESHOLD);
+
+const resolveLatestPaymentForLine = (payments) =>
+  payments
+    .slice()
+    .sort((left, right) => {
+      const leftMillis =
+        toMillis(left.occurredAt) ?? toMillis(left.createdAt) ?? 0;
+      const rightMillis =
+        toMillis(right.occurredAt) ?? toMillis(right.createdAt) ?? 0;
+      return rightMillis - leftMillis;
+    })[0] ?? null;
+
+const buildPaymentRunStatusSnapshot = (paymentRun) => ({
+  approvalStatus: toCleanString(paymentRun.approvalStatus) ?? null,
+  executionStatus: toCleanString(paymentRun.executionStatus) ?? null,
+  status: toCleanString(paymentRun.status) ?? null,
+});
+
+const buildPaymentRunVoidExecutionPatch = ({
+  activePayments,
+  authUid,
+  now,
+  paymentId,
+  paymentRecord,
+  paymentRun,
+  reason,
+}) => {
+  const paymentRunId = resolvePaymentRunIdFromPayment(paymentRecord);
+  const lines = Array.isArray(paymentRun.lines) ? paymentRun.lines : [];
+  if (!paymentRunId || !lines.length) return null;
+
+  const runPayments = activePayments.filter(
+    (record) => resolvePaymentRunIdFromPayment(record) === paymentRunId,
+  );
+  const updatedLines = lines.map((line) => {
+    const lineRecord = asRecord(line);
+    const vendorBillId = toCleanString(lineRecord.vendorBillId);
+    const matchingPayments = runPayments.filter(
+      (record) => toCleanString(record.vendorBillId) === vendorBillId,
+    );
+    const latestPayment = resolveLatestPaymentForLine(matchingPayments);
+    const paidCashAmount = roundToTwoDecimals(
+      matchingPayments.reduce(
+        (sum, record) => sum + resolvePaymentCashAmount(record),
+        0,
+      ),
+    );
+    const paidSettlementAmount = roundToTwoDecimals(
+      matchingPayments.reduce(
+        (sum, record) => sum + resolvePaymentAmount(record),
+        0,
+      ),
+    );
+    const paidWithholdingAmount = roundToTwoDecimals(
+      matchingPayments.reduce(
+        (sum, record) => sum + resolvePaymentWithholdingAmount(record),
+        0,
+      ),
+    );
+    const paymentIds = matchingPayments.map((record) => record.id).filter(Boolean);
+    const baseAmounts = resolvePaymentRunLineBaseAmounts(lineRecord);
+    const lineSnapshot = {
+      ...baseAmounts,
+      paidCashAmount,
+      paidSettlementAmount,
+      paidWithholdingAmount,
+    };
+    const executionStatus = isPaymentRunLineComplete(lineSnapshot)
+      ? 'executed'
+      : isPaymentRunLinePartial(lineSnapshot)
+        ? 'partial'
+        : 'not_started';
+
+    return {
+      ...lineRecord,
+      executionStatus,
+      lastPaymentAt: latestPayment?.occurredAt ?? latestPayment?.createdAt ?? null,
+      lastPaymentId: latestPayment?.id ?? null,
+      paidCashAmount,
+      paidSettlementAmount,
+      paidWithholdingAmount,
+      paymentIds,
+    };
+  });
+
+  const lineSnapshots = updatedLines.map((line) => ({
+    ...resolvePaymentRunLineBaseAmounts(asRecord(line)),
+    paidCashAmount: roundToTwoDecimals(line.paidCashAmount),
+    paidSettlementAmount: roundToTwoDecimals(line.paidSettlementAmount),
+    paidWithholdingAmount: roundToTwoDecimals(line.paidWithholdingAmount),
+  }));
+  const executedLineCount = lineSnapshots.filter(isPaymentRunLineComplete).length;
+  const partialLineCount = lineSnapshots.filter(isPaymentRunLinePartial).length;
+  const totalLineCount = lineSnapshots.length;
+  const paidCashAmount = roundToTwoDecimals(
+    lineSnapshots.reduce((sum, line) => sum + line.paidCashAmount, 0),
+  );
+  const paidSettlementAmount = roundToTwoDecimals(
+    lineSnapshots.reduce((sum, line) => sum + line.paidSettlementAmount, 0),
+  );
+  const paidWithholdingAmount = roundToTwoDecimals(
+    lineSnapshots.reduce((sum, line) => sum + line.paidWithholdingAmount, 0),
+  );
+  const allLinesExecuted =
+    totalLineCount > 0 && executedLineCount === totalLineCount;
+  const hasExecutedAmount =
+    paidCashAmount > THRESHOLD ||
+    paidSettlementAmount > THRESHOLD ||
+    paidWithholdingAmount > THRESHOLD;
+  const latestRunPayment = resolveLatestPaymentForLine(runPayments);
+  const currentStatus = toCleanString(paymentRun.status);
+  const nextStatus = allLinesExecuted
+    ? 'executed'
+    : currentStatus === 'executed'
+      ? 'approved'
+      : (currentStatus ?? 'approved');
+
+  return {
+    executedAt: allLinesExecuted ? (paymentRun.executedAt ?? now) : null,
+    executedBy: allLinesExecuted ? (paymentRun.executedBy ?? authUid) : null,
+    executionStatus: allLinesExecuted
+      ? 'executed'
+      : hasExecutedAmount
+        ? 'in_progress'
+        : 'not_started',
+    executionSummary: {
+      executedLineCount,
+      lastPaymentAt:
+        latestRunPayment?.occurredAt ?? latestRunPayment?.createdAt ?? null,
+      lastPaymentId: latestRunPayment?.id ?? null,
+      paidCashAmount,
+      paidSettlementAmount,
+      paidWithholdingAmount,
+      partialLineCount,
+      pendingLineCount: Math.max(
+        totalLineCount - executedLineCount - partialLineCount,
+        0,
+      ),
+      totalLineCount,
+    },
+    lastVoidedPaymentId: paymentId,
+    lastVoidedPaymentReason: reason,
+    lastVoidedPaymentAt: now,
+    lines: updatedLines,
+    status: nextStatus,
+    updatedAt: now,
+    updatedBy: authUid,
+  };
+};
+
 export const voidSupplierPayment = onCall(async (request) => {
   const authUid = await resolveCallableAuthUid(request);
   if (!authUid) {
@@ -105,7 +357,9 @@ export const voidSupplierPayment = onCall(async (request) => {
     toCleanString(payload.businessID) ||
     null;
   const paymentId = toCleanString(payload.paymentId);
-  const reason = toCleanString(payload.reason);
+  const reason = validateVoidReason(payload.reason);
+  const evidenceNote = normalizeEvidenceNote(payload.evidenceNote);
+  const evidenceUrls = normalizeEvidenceUrls(payload.evidenceUrls);
 
   if (!businessId) {
     throw new HttpsError('invalid-argument', 'businessId es requerido.');
@@ -113,6 +367,7 @@ export const voidSupplierPayment = onCall(async (request) => {
   if (!paymentId) {
     throw new HttpsError('invalid-argument', 'paymentId es requerido.');
   }
+  validateVoidEvidence({ evidenceNote, evidenceUrls });
 
   const accountingSettings =
     await getPilotAccountingSettingsForBusiness(businessId);
@@ -130,7 +385,7 @@ export const voidSupplierPayment = onCall(async (request) => {
   await assertUserAccess({
     authUid,
     businessId,
-    allowedRoles: MEMBERSHIP_ROLE_GROUPS.AUDIT,
+    allowedRoles: MEMBERSHIP_ROLE_GROUPS.FINANCIAL_DOCUMENT_VOID,
   });
   await assertBusinessSubscriptionAccess({
     businessId,
@@ -152,14 +407,18 @@ export const voidSupplierPayment = onCall(async (request) => {
       id: paymentSnap.id,
       ...asRecord(paymentSnap.data()),
     };
-    const paymentStatus = toCleanString(paymentRecord.status)?.toLowerCase();
+    const paymentStatus = normalizeSupplierPaymentStatus(paymentRecord.status);
+    const paymentRunId = resolvePaymentRunIdFromPayment(paymentRecord);
     const vendorBillId =
       toCleanString(paymentRecord.vendorBillId) ??
       buildCanonicalVendorBillIdFromPurchaseId(paymentRecord.purchaseId);
     const purchaseId =
       toCleanString(paymentRecord.purchaseId) ??
       resolvePurchaseIdFromVendorBillRecord(
-        { sourceDocumentType: 'purchase', sourceDocumentId: paymentRecord.purchaseId },
+        {
+          sourceDocumentType: 'purchase',
+          sourceDocumentId: paymentRecord.purchaseId,
+        },
         vendorBillId,
       );
     if (!purchaseId) {
@@ -181,7 +440,7 @@ export const voidSupplierPayment = onCall(async (request) => {
     }
 
     const purchaseRecord = asRecord(purchaseSnap.data());
-    if (paymentStatus === 'void') {
+    if (isTerminalInactiveSupplierPaymentStatus(paymentStatus)) {
       result = buildVoidResponse({
         paymentRecord,
         paymentState: purchaseRecord.paymentState ?? null,
@@ -194,16 +453,28 @@ export const voidSupplierPayment = onCall(async (request) => {
       return;
     }
 
+    const vendorBillRef = vendorBillId
+      ? db.doc(`businesses/${businessId}/vendorBills/${vendorBillId}`)
+      : null;
+    const vendorBillSnap = vendorBillRef
+      ? await transaction.get(vendorBillRef)
+      : null;
+    const vendorBillRecord = vendorBillSnap?.exists
+      ? asRecord(vendorBillSnap.data())
+      : {};
+
+    assertPaymentVoidSegregationOfDuties({ authUid, paymentRecord });
+
+    const now = Timestamp.now();
+
     await assertAccountingPeriodOpenInTransaction({
       transaction,
       businessId,
-      effectiveDate:
-        paymentRecord.occurredAt ?? paymentRecord.createdAt ?? Date.now(),
+      effectiveDate: now,
       settings: accountingSettings,
       rolloutEnabled: true,
       operationLabel: 'anular este pago a suplidor',
-      createError: (message) =>
-        new HttpsError('failed-precondition', message),
+      createError: (message) => new HttpsError('failed-precondition', message),
     });
 
     const cashMovementsQuery = db
@@ -229,12 +500,21 @@ export const voidSupplierPayment = onCall(async (request) => {
         id: docSnap.id,
         ...asRecord(docSnap.data()),
       }))
-      .filter((record) => {
-        const status = toCleanString(record.status)?.toLowerCase();
-        return (
-          record.id !== paymentId && status !== 'void' && status !== 'draft'
-        );
-      });
+      .filter(
+        (record) =>
+          record.id !== paymentId && isActiveSupplierPaymentRecord(record),
+      );
+    const paymentRunRef = paymentRunId
+      ? db.doc(
+          `businesses/${businessId}/accountsPayablePaymentRuns/${paymentRunId}`,
+        )
+      : null;
+    const paymentRunSnap = paymentRunRef
+      ? await transaction.get(paymentRunRef)
+      : null;
+    const paymentRunRecord = paymentRunSnap?.exists
+      ? asRecord(paymentRunSnap.data())
+      : null;
 
     const total = resolvePurchaseDocumentTotal(purchaseRecord);
     const paidAfterVoid = roundToTwoDecimals(
@@ -271,7 +551,6 @@ export const voidSupplierPayment = onCall(async (request) => {
           : null,
     });
 
-    const now = Timestamp.now();
     const restoredCreditNotes = [];
     for (const [creditNoteId, restoreAmount] of aggregatePaymentCreditNotes(
       paymentRecord,
@@ -349,6 +628,8 @@ export const voidSupplierPayment = onCall(async (request) => {
           nextRemainingAmount,
           voidedAt: now,
           voidedBy: authUid,
+          voidEvidenceNote: evidenceNote ?? null,
+          voidEvidenceUrls: evidenceUrls,
           voidReason: reason,
           updatedAt: now,
           updatedBy: authUid,
@@ -366,19 +647,68 @@ export const voidSupplierPayment = onCall(async (request) => {
       });
     }
 
+    if (paymentRunRef && paymentRunRecord) {
+      const paymentRunPatch = buildPaymentRunVoidExecutionPatch({
+        activePayments,
+        authUid,
+        now,
+        paymentId,
+        paymentRecord,
+        paymentRun: paymentRunRecord,
+        reason,
+      });
+
+      if (paymentRunPatch) {
+        const nextPaymentRun = {
+          ...paymentRunRecord,
+          ...paymentRunPatch,
+        };
+        const eventId = `payment_run_void__${paymentId}`;
+
+        transaction.set(paymentRunRef, paymentRunPatch, { merge: true });
+        transaction.set(
+          db.doc(
+            `businesses/${businessId}/accountsPayablePaymentRunEvents/${eventId}`,
+          ),
+          {
+            id: eventId,
+            businessId,
+            paymentRunId,
+            action: 'void_payment',
+            reason,
+            evidenceNote: evidenceNote ?? null,
+            evidenceUrls,
+            previousStatus: buildPaymentRunStatusSnapshot(paymentRunRecord),
+            nextStatus: buildPaymentRunStatusSnapshot(nextPaymentRun),
+            createdAt: now,
+            createdBy: authUid,
+            sourceType: 'accountsPayablePayment',
+            sourceId: paymentId,
+          },
+        );
+      }
+    }
+
     transaction.set(
       paymentRef,
       {
         vendorBillId,
+        paymentRunId: paymentRunId ?? null,
         status: 'void',
         updatedAt: now,
         updatedBy: authUid,
         voidedAt: now,
         voidedBy: authUid,
+        voidEvidenceNote: evidenceNote ?? null,
+        voidEvidenceUrls: evidenceUrls,
         voidReason: reason,
         metadata: {
           ...asRecord(paymentRecord.metadata),
           restoredCreditNotes,
+          voidEvidence: {
+            note: evidenceNote ?? null,
+            urls: evidenceUrls,
+          },
         },
       },
       { merge: true },
@@ -416,8 +746,11 @@ export const voidSupplierPayment = onCall(async (request) => {
     });
     if (vendorBillProjection && vendorBillId) {
       transaction.set(
-        db.doc(`businesses/${businessId}/vendorBills/${vendorBillId}`),
-        vendorBillProjection,
+        vendorBillRef,
+        preserveVendorBillControlDetails({
+          existingVendorBill: vendorBillRecord,
+          vendorBillProjection,
+        }),
         { merge: true },
       );
     }
@@ -431,10 +764,16 @@ export const voidSupplierPayment = onCall(async (request) => {
         updatedBy: authUid,
         voidedAt: now,
         voidedBy: authUid,
+        voidEvidenceNote: evidenceNote ?? null,
+        voidEvidenceUrls: evidenceUrls,
         voidReason: reason,
         metadata: {
           ...asRecord(paymentRecord.metadata),
           restoredCreditNotes,
+          voidEvidence: {
+            note: evidenceNote ?? null,
+            urls: evidenceUrls,
+          },
         },
       },
       paymentState,

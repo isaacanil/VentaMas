@@ -53,7 +53,7 @@ const Body = () => {
           <Suspense
             fallback={
               <LoadingContainer>
-                <Spin size="large" tip="Cargando galería..." />
+                <Spin description="Cargando galería..." size="large" />
               </LoadingContainer>
             }
           >

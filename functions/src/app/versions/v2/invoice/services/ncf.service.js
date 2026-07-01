@@ -59,8 +59,8 @@ export async function reserveNcf(tx, { businessId, userId, ncfType }) {
   const receiptSnap = await getTaxReceiptDocFromTx(tx, user, ncfType);
   const receiptData = receiptSnap.data()?.data;
 
-  // Helper: check if an NCF is already used in any invoice
-  const isNcfAlreadyUsed = async (code) => {
+  // Helper: check if an NCF is already used or reserved in this business.
+  const getNcfReservationState = async (code) => {
     const invoicesQuery = db
       .collection('businesses')
       .doc(businessId)
@@ -68,7 +68,17 @@ export async function reserveNcf(tx, { businessId, userId, ncfType }) {
       .where('data.NCF', '==', code)
       .limit(1);
     const snap = await tx.get(invoicesQuery);
-    return !snap.empty;
+    const usageRef = db
+      .collection('businesses')
+      .doc(businessId)
+      .collection('ncfUsage')
+      .doc(code);
+    const usageSnap = await tx.get(usageRef);
+
+    return {
+      exists: !snap.empty || usageSnap.exists,
+      usageRef,
+    };
   };
 
   // Compute candidate codes by advancing sequence without decrementing quantity per skip
@@ -122,21 +132,24 @@ export async function reserveNcf(tx, { businessId, userId, ncfType }) {
   let attempts = 0;
   let chosenSeqValue = null;
   let ncfCode = null;
+  let usageRef = null;
   while (attempts < MAX_ATTEMPTS) {
     const steps = attempts + 1; // first try is +increase once
     const seqValue = computeSeqValue(steps);
     const seq = padSeq(seqValue);
     const code = `${typeCode}${serieCode}${seq}`;
-    const exists = await isNcfAlreadyUsed(code);
+    const reservationState = await getNcfReservationState(code);
+    const exists = reservationState.exists;
     if (!exists) {
       chosenSeqValue = seqValue;
       ncfCode = code;
+      usageRef = reservationState.usageRef;
       break;
     }
     attempts += 1;
   }
 
-  if (!ncfCode || chosenSeqValue === null) {
+  if (!ncfCode || chosenSeqValue === null || !usageRef) {
     throw new Error('No se pudo encontrar un NCF no duplicado');
   }
 
@@ -161,13 +174,6 @@ export async function reserveNcf(tx, { businessId, userId, ncfType }) {
 
   // update receipt with new sequence/quantity
   tx.update(receiptSnap.ref, { data: updatedData });
-
-  // create usage record in pending status
-  const usageRef = db
-    .collection('businesses')
-    .doc(businessId)
-    .collection('ncfUsage')
-    .doc();
 
   tx.set(usageRef, {
     id: usageRef.id,

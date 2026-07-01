@@ -24,6 +24,7 @@ import {
   addWorkspaceDraftProduct,
   getWorkspaceEditProductKey,
   getWorkspaceEditProductQuantity,
+  getWorkspaceProductQuantityInputConfig,
   removeWorkspaceDraftProduct,
   updateWorkspaceDraftProductQuantity,
   updateWorkspaceDraftProductUnitPrice,
@@ -111,7 +112,7 @@ export const InvoiceWorkspaceProducts = ({
 
   const handleProductQuantityChange = (productKey: string, value: string) => {
     if (!canEditDirectly) return;
-    const quantity = Math.max(1, parseAmount(value));
+    const quantity = parseAmount(value);
     setDraft((current) =>
       updateWorkspaceDraftProductQuantity(current, productKey, quantity),
     );
@@ -222,6 +223,8 @@ export const InvoiceWorkspaceProducts = ({
                 const productFieldId = createFieldIdSegment(productKey);
                 const productQuantityId = `invoice-workspace-product-${productFieldId}-quantity`;
                 const productName = getProductName(product);
+                const quantityInputConfig =
+                  getWorkspaceProductQuantityInputConfig(product);
 
                 return (
                   <ProductRow key={productKey} $editing={isEditing}>
@@ -234,8 +237,8 @@ export const InvoiceWorkspaceProducts = ({
                         id={productQuantityId}
                         name={productQuantityId}
                         type="number"
-                        min="1"
-                        step="1"
+                        min={String(quantityInputConfig.min)}
+                        step={String(quantityInputConfig.step)}
                         aria-label={`Cantidad ${productName}`}
                         value={getWorkspaceEditProductQuantity(product)}
                         disabled={!canEditDirectly}

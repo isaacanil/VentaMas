@@ -96,8 +96,11 @@ export const ProductList = ({
   }, []);
 
   const computeProductKey = useCallback(
-    (index: number, product?: ProductRecord) =>
-      product?.id ? String(product.id) : `product-${index}`,
+    (index: number, product?: ProductRecord) => {
+      const productId = product?.id ? String(product.id) : `product-${index}`;
+      const saleUnitId = product?.selectedSaleUnit?.id ?? 'default';
+      return `${productId}::${saleUnitId}`;
+    },
     [],
   );
 

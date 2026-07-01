@@ -1,4 +1,3 @@
-import { Select } from 'antd';
 import type { ReactNode } from 'react';
 import React from 'react';
 
@@ -9,6 +8,7 @@ import {
 import type { PaymentStatusFilter as PaymentStatus } from '@/types/invoiceFilters';
 
 import { FilterField } from './FilterField';
+import { FilterSelectControl } from './FilterSelectControl';
 
 type PaymentStatusFilterProps = {
   value?: PaymentStatus;
@@ -22,14 +22,12 @@ export const PaymentStatusFilter = ({
   label,
 }: PaymentStatusFilterProps) => (
   <FilterField label={label ?? FILTER_CONFIG.paymentStatus.label}>
-    <Select
+    <FilterSelectControl
       value={value ?? ''}
-      onChange={(val) => onChange?.(val ?? '')}
+      onChange={(val) => onChange?.((val ?? '') as PaymentStatus)}
       placeholder="Todos"
-      allowClear
-      style={{ width: FILTER_CONFIG.paymentStatus.width }}
-      size="middle"
-      aria-label={ACCESSIBILITY_CONFIG.ariaLabels.paymentStatusSelect}
+      width={FILTER_CONFIG.paymentStatus.width}
+      ariaLabel={ACCESSIBILITY_CONFIG.ariaLabels.paymentStatusSelect}
       options={FILTER_CONFIG.paymentStatus.options}
     />
   </FilterField>

@@ -503,10 +503,10 @@ export const PersonalPinManagement = () => {
 
   return (
     <Spin
-      spinning={loading}
-      size="large"
-      tip="Procesando..."
       delay={250}
+      description="Procesando..."
+      size="large"
+      spinning={loading}
       style={{ width: '100%' }}
     >
       <PageContainer>
@@ -518,10 +518,7 @@ export const PersonalPinManagement = () => {
             Mis PINs de Autorización
           </Title>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <Button
-              icon={<SafetyOutlined />}
-              onClick={openInfoModal}
-            >
+            <Button icon={<SafetyOutlined />} onClick={openInfoModal}>
               Más información
             </Button>
             <Button
@@ -755,5 +752,3 @@ export const PersonalPinManagement = () => {
 };
 
 export default PersonalPinManagement;
-
-

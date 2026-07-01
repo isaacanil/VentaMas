@@ -20,7 +20,9 @@ import {
 } from '@/pdf/invoicesAndQuotation/invoices/templates/template2-v2/utils/pageLayout';
 import { paginateInvoiceProducts } from '@/pdf/invoicesAndQuotation/invoices/templates/template2-v2/utils/pagination';
 import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity';
+import { resolveInvoiceProductQuantity } from '@/utils/invoice/product';
 import { toMillis } from '@/utils/date/dateUtils';
+import { getActiveUnitPrice } from '@/utils/pricing';
 import {
   getDiscount,
   getProductIndividualDiscount,
@@ -264,27 +266,12 @@ const formatDate = (value: unknown): string => {
 };
 
 const resolveQuantity = (product: InvoicePdfProduct): number => {
-  const rawQuantity = product?.amountToBuy;
-
-  if (typeof rawQuantity === 'number') {
-    return rawQuantity;
-  }
-
-  if (rawQuantity && typeof rawQuantity === 'object') {
-    const candidate = Number(rawQuantity.total ?? rawQuantity.unit ?? 0);
-    return Number.isFinite(candidate) ? candidate : 0;
-  }
-
-  const fallback = Number(rawQuantity ?? 0);
-  return Number.isFinite(fallback) ? fallback : 0;
+  const quantity = resolveInvoiceProductQuantity(product);
+  return Number.isFinite(quantity) ? quantity : 0;
 };
 
 const resolveUnitPrice = (product: InvoicePdfProduct): number => {
-  const candidate =
-    Number(product?.selectedSaleUnit?.pricing?.price) ||
-    Number(product?.pricing?.price) ||
-    Number(product?.price?.unit) ||
-    0;
+  const candidate = getActiveUnitPrice(product);
 
   return Number.isFinite(candidate) ? candidate : 0;
 };

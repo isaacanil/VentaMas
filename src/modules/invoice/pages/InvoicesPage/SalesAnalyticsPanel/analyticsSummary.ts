@@ -6,6 +6,8 @@ import {
 } from '@/utils/date/dateUtils';
 import { formatPrice } from '@/utils/format';
 import { getInvoicePaymentInfo } from '@/utils/invoice';
+import { getActiveProductPricing, getActiveUnitPrice } from '@/utils/pricing';
+import type { InvoiceProduct } from '@/types/invoice';
 
 import { getInvoiceDateSeconds, toNumber, type SalesRecord } from './utils';
 
@@ -21,12 +23,18 @@ type CategorySeed = {
   label: string;
   total: number;
   items: number;
+  baseQuantity: number;
+  weightQuantity: number;
+  saleUnitQuantity: number;
 };
 
 export type CustomerProductRow = {
   nombre?: string;
   precio: number;
   cantidad: number;
+  baseQuantity: number;
+  weightQuantity: number;
+  saleUnitQuantity: number;
   subtotal: number;
 };
 
@@ -76,6 +84,9 @@ export type CategoryPerformanceItem = {
   label: string;
   total: number;
   items: number;
+  baseQuantity: number;
+  weightQuantity: number;
+  saleUnitQuantity: number;
   share: number;
 };
 
@@ -166,6 +177,58 @@ const normalizePurchaseType = (value: unknown) => {
     .replace(/\b\w/g, (match) => match.toUpperCase());
 };
 
+const roundQuantity = (value: number): number =>
+  Math.round((value + Number.EPSILON) * 1_000_000) / 1_000_000;
+
+const readAmountQuantity = (amount: InvoiceProduct['amountToBuy']): number => {
+  if (amount && typeof amount === 'object' && !Array.isArray(amount)) {
+    return toNumber(
+      amount.total ?? amount.unit ?? amount.value ?? amount.quantity,
+    );
+  }
+
+  return toNumber(amount);
+};
+
+const resolveConversionFactor = (product: InvoiceProduct): number => {
+  const saleUnit = product.selectedSaleUnit;
+  if (!saleUnit) return 1;
+
+  const factor = toNumber(
+    saleUnit.conversionFactorToBase ?? saleUnit.quantity,
+    1,
+  );
+  return factor > 0 ? factor : 1;
+};
+
+const resolveProductQuantities = (product: InvoiceProduct) => {
+  const amountQuantity = readAmountQuantity(product.amountToBuy);
+  const weightQuantity =
+    product.weightDetail?.isSoldByWeight === true
+      ? roundQuantity(toNumber(product.weightDetail.weight))
+      : 0;
+  const commercialQuantity =
+    product.weightDetail?.isSoldByWeight === true
+      ? weightQuantity
+      : amountQuantity;
+  const explicitBaseQuantity = toNumber(product.baseQuantity);
+  const baseQuantity =
+    explicitBaseQuantity > 0
+      ? roundQuantity(explicitBaseQuantity)
+      : roundQuantity(
+          product.weightDetail?.isSoldByWeight === true
+            ? weightQuantity
+            : amountQuantity * resolveConversionFactor(product),
+        );
+
+  return {
+    baseQuantity,
+    commercialQuantity,
+    saleUnitQuantity: product.selectedSaleUnit ? amountQuantity : 0,
+    weightQuantity,
+  };
+};
+
 const createBreakdownEntry = (
   map: Map<string, BreakdownSeed>,
   key: string,
@@ -185,6 +248,9 @@ const createCategoryEntry = (map: Map<string, CategorySeed>, label: string) => {
       label,
       total: 0,
       items: 0,
+      baseQuantity: 0,
+      weightQuantity: 0,
+      saleUnitQuantity: 0,
     });
   }
 
@@ -350,13 +416,10 @@ export const buildSalesAnalyticsSummary = (
       total: totalPurchase,
       items,
       productos: (sale.data.products ?? []).map((product, productIndex) => {
-        const taxPercent = toNumber(product.pricing?.tax);
-        const price = toNumber(product.pricing?.price);
-        const quantity = toNumber(
-          typeof product.amountToBuy === 'number'
-            ? product.amountToBuy
-            : (product.amountToBuy?.total ?? product.amountToBuy?.unit),
-        );
+        const activePricing = getActiveProductPricing(product);
+        const taxPercent = toNumber(activePricing?.tax);
+        const price = getActiveUnitPrice(product);
+        const quantities = resolveProductQuantities(product);
         const unitPrice = price + price * (taxPercent / 100);
 
         return {
@@ -365,8 +428,11 @@ export const buildSalesAnalyticsSummary = (
             product.productName ??
             `Producto ${productIndex + 1}`,
           precio: unitPrice,
-          cantidad: quantity,
-          subtotal: unitPrice * quantity,
+          cantidad: quantities.commercialQuantity,
+          baseQuantity: quantities.baseQuantity,
+          weightQuantity: quantities.weightQuantity,
+          saleUnitQuantity: quantities.saleUnitQuantity,
+          subtotal: unitPrice * quantities.commercialQuantity,
         };
       }),
     });
@@ -394,16 +460,16 @@ export const buildSalesAnalyticsSummary = (
     (sale.data.products ?? []).forEach((product) => {
       const category = normalizeCategoryName(product.category);
       const categoryEntry = createCategoryEntry(categories, category);
-      const price = toNumber(product.pricing?.price);
-      const taxPercent = toNumber(product.pricing?.tax);
-      const quantity = toNumber(
-        typeof product.amountToBuy === 'number'
-          ? product.amountToBuy
-          : (product.amountToBuy?.total ?? product.amountToBuy?.unit),
-      );
-      const subtotal = price * quantity;
+      const activePricing = getActiveProductPricing(product);
+      const price = getActiveUnitPrice(product);
+      const taxPercent = toNumber(activePricing?.tax);
+      const quantities = resolveProductQuantities(product);
+      const subtotal = price * quantities.commercialQuantity;
 
-      categoryEntry.items += quantity;
+      categoryEntry.items += quantities.commercialQuantity;
+      categoryEntry.baseQuantity += quantities.baseQuantity;
+      categoryEntry.weightQuantity += quantities.weightQuantity;
+      categoryEntry.saleUnitQuantity += quantities.saleUnitQuantity;
       categoryEntry.total += subtotal + subtotal * (taxPercent / 100);
     });
   });

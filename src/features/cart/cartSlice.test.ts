@@ -3,8 +3,10 @@ import { describe, expect, it, vi } from 'vitest';
 import reducer, {
   addProduct,
   changeProductPrice,
+  changeProductWeight,
   clearCreditNotePayment,
   loadCart,
+  onChangeValueAmountToProduct,
   setAccountingContext,
   setCreditNotePayment,
   selectTotalIndividualDiscounts,
@@ -14,8 +16,8 @@ import reducer, {
 import type { Product } from './types';
 
 const createCartProduct = (overrides: Partial<Product> = {}): Product => ({
-  id: 'product-1',
-  cid: 'product-1',
+  id: overrides.id ?? 'product-1',
+  cid: overrides.cid ?? overrides.id ?? 'product-1',
   name: 'Producto de prueba',
   amountToBuy: 1,
   pricing: {
@@ -79,6 +81,93 @@ describe('cartSlice', () => {
     expect(state.data.products[1]?.amountToBuy).toBe(2);
   });
 
+  it('separa lineas por unidad de venta y calcula la cantidad base', () => {
+    let state = reducer(
+      undefined,
+      addProduct(
+        createCartProduct({
+          id: 'soda-1',
+          selectedSaleUnit: null,
+        }),
+      ),
+    );
+
+    state = reducer(
+      state,
+      addProduct(
+        createCartProduct({
+          id: 'soda-1',
+          selectedSaleUnit: {
+            id: 'box-12',
+            unitName: 'Caja',
+            quantity: 12,
+            pricing: {
+              price: 480,
+            },
+          },
+        }),
+      ),
+    );
+
+    state = reducer(
+      state,
+      addProduct(
+        createCartProduct({
+          id: 'soda-1',
+          selectedSaleUnit: {
+            id: 'box-12',
+            unitName: 'Caja',
+            quantity: 12,
+            pricing: {
+              price: 480,
+            },
+          },
+        }),
+      ),
+    );
+
+    expect(state.data.products).toHaveLength(2);
+    expect(state.data.products[0]?.cid).toBe('soda-1');
+    expect(state.data.products[0]?.amountToBuy).toBe(1);
+    expect(state.data.products[0]?.baseQuantity).toBe(1);
+    expect(state.data.products[1]?.cid).toBe('soda-1::sale-unit::box-12');
+    expect(state.data.products[1]?.amountToBuy).toBe(2);
+    expect(state.data.products[1]?.selectedSaleUnit?.id).toBe('box-12');
+    expect(state.data.products[1]?.baseQuantity).toBe(24);
+
+    state = reducer(
+      state,
+      onChangeValueAmountToProduct({
+        id: 'soda-1::sale-unit::box-12',
+        value: 3,
+      }),
+    );
+
+    expect(state.data.products[0]?.amountToBuy).toBe(1);
+    expect(state.data.products[0]?.baseQuantity).toBe(1);
+    expect(state.data.products[1]?.amountToBuy).toBe(3);
+    expect(state.data.products[1]?.baseQuantity).toBe(36);
+
+    state = reducer(
+      state,
+      updateProductFields({
+        id: 'soda-1::sale-unit::box-12',
+        data: {
+          productStockId: 'stock-1',
+          batchId: 'batch-1',
+          cid: 'soda-1::stock-1::batch-1::sale-unit::box-12',
+        },
+      }),
+    );
+
+    expect(state.data.products[0]?.cid).toBe('soda-1');
+    expect(state.data.products[0]?.productStockId).toBeUndefined();
+    expect(state.data.products[1]?.cid).toBe(
+      'soda-1::stock-1::batch-1::sale-unit::box-12',
+    );
+    expect(state.data.products[1]?.productStockId).toBe('stock-1');
+  });
+
   it('apunta cambios de precio y campos a la linea correcta usando cid', () => {
     let state = reducer(
       undefined,
@@ -124,6 +213,200 @@ describe('cartSlice', () => {
     expect(state.data.products[1]?.comment).toBe('Linea B');
   });
 
+  it('guarda la unidad de venta seleccionada al cambiar precio', () => {
+    let state = reducer(
+      undefined,
+      addProduct(createCartProduct({ id: 'rice-1' })),
+    );
+
+    state = reducer(
+      state,
+      changeProductPrice({
+        id: 'rice-1',
+        price: 350,
+        saleUnit: {
+          id: 'pack-5',
+          unitName: 'Paquete',
+          quantity: 5,
+          pricing: {
+            price: 320,
+          },
+        },
+      }),
+    );
+
+    expect(state.data.products[0]?.selectedSaleUnit).toEqual(
+      expect.objectContaining({
+        id: 'pack-5',
+        unitName: 'Paquete',
+        quantity: 5,
+        conversionFactorToBase: 5,
+        pricing: expect.objectContaining({
+          price: 350,
+        }),
+      }),
+    );
+    expect(state.data.products[0]?.baseQuantity).toBe(5);
+  });
+
+  it('permite fijar explicitamente precio cero en la linea del carrito', () => {
+    let state = reducer(
+      undefined,
+      addProduct(
+        createCartProduct({
+          id: 'promo-1',
+          pricing: {
+            price: 100,
+            listPrice: 100,
+          },
+        }),
+      ),
+    );
+
+    state = reducer(
+      state,
+      changeProductPrice({
+        id: 'promo-1',
+        price: 0,
+      }),
+    );
+
+    expect(state.data.products[0]?.pricing?.price).toBe(0);
+  });
+
+  it('refresca el precio de una linea fusionada cuando no fue editado manualmente', () => {
+    let state = reducer(
+      undefined,
+      addProduct(
+        createCartProduct({
+          id: 'sync-price-1',
+          pricing: {
+            price: 100,
+            listPrice: 100,
+          },
+        }),
+      ),
+    );
+
+    state = reducer(
+      state,
+      addProduct(
+        createCartProduct({
+          id: 'sync-price-1',
+          pricing: {
+            price: 125,
+            listPrice: 125,
+          },
+        }),
+      ),
+    );
+
+    expect(state.data.products).toHaveLength(1);
+    expect(state.data.products[0]?.amountToBuy).toBe(2);
+    expect(state.data.products[0]?.pricing?.price).toBe(125);
+    expect(state.data.products[0]?.pricing?.listPrice).toBe(125);
+  });
+
+  it('preserva el precio manual cuando vuelve a fusionar el mismo producto', () => {
+    let state = reducer(
+      undefined,
+      addProduct(
+        createCartProduct({
+          id: 'manual-price-1',
+          pricing: {
+            price: 100,
+            listPrice: 100,
+          },
+        }),
+      ),
+    );
+
+    state = reducer(
+      state,
+      changeProductPrice({
+        id: 'manual-price-1',
+        price: 80,
+        manualOverride: true,
+      }),
+    );
+
+    state = reducer(
+      state,
+      addProduct(
+        createCartProduct({
+          id: 'manual-price-1',
+          pricing: {
+            price: 125,
+            listPrice: 125,
+          },
+        }),
+      ),
+    );
+
+    expect(state.data.products).toHaveLength(1);
+    expect(state.data.products[0]?.amountToBuy).toBe(2);
+    expect(state.data.products[0]?.pricing?.price).toBe(80);
+    expect(state.data.products[0]?.pricingSource?.mode).toBe('manual-price');
+  });
+
+  it('actualiza la cantidad base cuando cambia el peso', () => {
+    let state = reducer(
+      undefined,
+      addProduct(
+        createCartProduct({
+          id: 'ham-1',
+          weightDetail: {
+            isSoldByWeight: true,
+            weight: 1.5,
+          },
+        }),
+      ),
+    );
+
+    expect(state.data.products[0]?.baseQuantity).toBe(1.5);
+
+    state = reducer(
+      state,
+      changeProductWeight({
+        id: 'ham-1',
+        weight: 2.25,
+      }),
+    );
+
+    expect(state.data.products[0]?.weightDetail?.weight).toBe(2.25);
+    expect(state.data.products[0]?.baseQuantity).toBe(2.25);
+  });
+
+  it('convierte peso vendido en libras a cantidad base de inventario', () => {
+    let state = reducer(
+      undefined,
+      addProduct(
+        createCartProduct({
+          id: 'ham-lb-1',
+          weightDetail: {
+            isSoldByWeight: true,
+            weight: 2,
+            weightUnit: 'lb',
+          },
+        }),
+      ),
+    );
+
+    expect(state.data.products[0]?.weightDetail?.weight).toBe(2);
+    expect(state.data.products[0]?.baseQuantity).toBe(0.907185);
+
+    state = reducer(
+      state,
+      changeProductWeight({
+        id: 'ham-lb-1',
+        weight: 3,
+      }),
+    );
+
+    expect(state.data.products[0]?.weightDetail?.weight).toBe(3);
+    expect(state.data.products[0]?.baseQuantity).toBe(1.360777);
+  });
+
   it('calcula descuentos individuales solo con el precio activo canonico', () => {
     const state = reducer(
       undefined,
@@ -150,6 +433,49 @@ describe('cartSlice', () => {
         taxReceipt: { enabled: true },
       }),
     ).toBe(0);
+  });
+
+  it('calcula descuentos individuales de productos por peso usando el peso vendido', () => {
+    const state = reducer(
+      undefined,
+      addProduct(
+        createCartProduct({
+          id: 'weighted-discount-1',
+          amountToBuy: 1,
+          weightDetail: {
+            isSoldByWeight: true,
+            weight: 2.5,
+            weightUnit: 'lb',
+          },
+          pricing: {
+            currency: 'DOP',
+            listPrice: 100,
+            price: 100,
+            tax: 18,
+          },
+          discount: {
+            type: 'percentage',
+            value: 10,
+          },
+        }),
+      ),
+    );
+
+    expect(
+      selectTotalIndividualDiscounts({
+        cart: {
+          ...state,
+          settings: {
+            ...state.settings,
+            fiscal: {
+              ...state.settings.fiscal,
+              taxationEnabled: true,
+            },
+          },
+        },
+        taxReceipt: { enabled: true },
+      }),
+    ).toBe(29.5);
   });
 
   it('normaliza el cid al cargar lineas antiguas con existencia fisica', () => {

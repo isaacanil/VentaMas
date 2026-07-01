@@ -106,6 +106,53 @@ const chartOfAccounts = [
 ];
 
 describe('accountingProjection.util fiscal amount sources', () => {
+  it('marks profile lines targeting parent accounts as unresolved', () => {
+    const { lines, unresolvedLines } = buildProjectedJournalLines({
+      event: {
+        id: 'invoice.committed__invoice-1',
+        eventType: 'invoice.committed',
+        sourceDocumentId: 'invoice-1',
+        monetary: {
+          amount: 100,
+          functionalAmount: 100,
+        },
+      },
+      profile: {
+        id: 'invoice-profile',
+        name: 'Venta',
+        eventType: 'invoice.committed',
+        linesTemplate: [
+          {
+            id: 'cash',
+            side: 'debit',
+            accountId: 'cash-1',
+            amountSource: 'document_total',
+            omitIfZero: true,
+          },
+        ],
+      },
+      chartOfAccounts: [
+        ...chartOfAccounts,
+        {
+          id: 'cash-child-1',
+          code: '1101',
+          name: 'Caja principal',
+          status: 'active',
+          postingAllowed: true,
+          parentId: 'cash-1',
+        },
+      ],
+    });
+
+    expect(lines).toHaveLength(0);
+    expect(unresolvedLines).toEqual([
+      expect.objectContaining({
+        accountId: 'cash-1',
+        reason: 'account_has_children',
+      }),
+    ]);
+  });
+
   it('projects a credit inventory purchase with recoverable ITBIS separated from inventory', () => {
     const { lines, unresolvedLines } = buildProjectedJournalLines({
       event: {
@@ -268,6 +315,106 @@ describe('accountingProjection.util fiscal amount sources', () => {
         accountSystemKey: 'withholding_isr_payable',
         debit: 0,
         credit: 100,
+      }),
+    ]);
+  });
+
+  it('projects payable payments with fiscal withholding as non-cash AP settlement', () => {
+    const { lines, unresolvedLines } = buildProjectedJournalLines({
+      event: {
+        id: 'accounts_payable.payment.recorded__payment-1',
+        eventType: 'accounts_payable.payment.recorded',
+        sourceDocumentId: 'payment-1',
+        monetary: {
+          amount: 1106,
+          functionalAmount: 1106,
+        },
+        treasury: {
+          paymentChannel: 'bank',
+        },
+        payload: {
+          paymentMethods: [
+            {
+              method: 'transfer',
+              amount: 1106,
+            },
+          ],
+          withholdingApplications: [
+            {
+              type: 'itbis',
+              amount: 54,
+            },
+            {
+              type: 'isr',
+              amount: 20,
+            },
+          ],
+        },
+      },
+      profile: {
+        id: 'ap-payment-profile',
+        name: 'Pago CxP con retenciones',
+        eventType: 'accounts_payable.payment.recorded',
+        linesTemplate: [
+          {
+            id: 'ap',
+            side: 'debit',
+            accountSystemKey: 'accounts_payable',
+            amountSource: 'accounts_payable_payment_amount',
+            omitIfZero: true,
+          },
+          {
+            id: 'bank',
+            side: 'credit',
+            accountSystemKey: 'bank',
+            amountSource: 'accounts_payable_bank_paid',
+            omitIfZero: true,
+          },
+          {
+            id: 'itbis-withholding',
+            side: 'credit',
+            accountSystemKey: 'withholding_itbis_payable',
+            amountSource: 'accounts_payable_withholding_itbis',
+            omitIfZero: true,
+          },
+          {
+            id: 'isr-withholding',
+            side: 'credit',
+            accountSystemKey: 'withholding_isr_payable',
+            amountSource: 'accounts_payable_withholding_isr',
+            omitIfZero: true,
+          },
+        ],
+      },
+      bankAccounts: [],
+      chartOfAccounts,
+    });
+
+    expect(unresolvedLines).toEqual([]);
+    expect(lines).toEqual([
+      expect.objectContaining({
+        accountSystemKey: 'accounts_payable',
+        debit: 1180,
+        credit: 0,
+        amountSource: 'accounts_payable_payment_amount',
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'bank',
+        debit: 0,
+        credit: 1106,
+        amountSource: 'accounts_payable_bank_paid',
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'withholding_itbis_payable',
+        debit: 0,
+        credit: 54,
+        amountSource: 'accounts_payable_withholding_itbis',
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'withholding_isr_payable',
+        debit: 0,
+        credit: 20,
+        amountSource: 'accounts_payable_withholding_isr',
       }),
     ]);
   });

@@ -2,6 +2,8 @@ export { FilterBar } from './pages/OrderAndPurchase/shared/components/Transactio
 export {
   RegisterSupplierPaymentModal,
   SupplierPaymentHistoryModal,
+  SupplierPaymentVoidModal,
+  resolveSupplierPaymentCallableErrorMessage,
 } from './components/supplierPayments';
 export type {
   DataConfigMap,

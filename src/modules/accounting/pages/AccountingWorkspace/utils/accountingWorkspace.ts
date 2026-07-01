@@ -19,6 +19,10 @@ import {
   getAccountingEventDefinition,
 } from '@/utils/accounting/accountingEvents';
 import {
+  buildChartOfAccountChildrenByParentId,
+  isChartOfAccountPostingAllowedForEntries,
+} from '@/utils/accounting/chartOfAccounts';
+import {
   buildAccountingPeriodKey,
   buildJournalEntryTotals,
   toDateOrNull,
@@ -360,6 +364,23 @@ const resolvePaymentMethodFunctionalAmount = (
   return amount > 0 ? amount : 0;
 };
 
+const resolvePayloadFunctionalAmount = (
+  payload: Record<string, unknown>,
+  keys: string[],
+  functionalRate: number,
+): number => {
+  for (const key of keys) {
+    const rawAmount = toFiniteAmount(payload[key]);
+    if (rawAmount > 0) {
+      return key.toLowerCase().includes('functional')
+        ? rawAmount
+        : rawAmount * functionalRate;
+    }
+  }
+
+  return 0;
+};
+
 const resolveSaleSettlementBreakdown = (event: AccountingEvent) => {
   const { functionalRate, paymentMethods, payload, total } =
     resolveSaleSettlementContext(event);
@@ -507,13 +528,91 @@ const resolvePayablePaymentBreakdown = (event: AccountingEvent) => {
     },
     { cash: 0, bank: 0, creditNote: 0, other: 0 },
   );
+  const withholdingApplications = Array.isArray(payload.withholdingApplications)
+    ? payload.withholdingApplications
+    : [];
+  const withholding = withholdingApplications.reduce(
+    (accumulator, application) => {
+      const applicationRecord = asRecord(application);
+      const amount = resolvePaymentMethodFunctionalAmount(
+        application,
+        functionalRate,
+      );
+      if (amount <= 0) {
+        return accumulator;
+      }
+
+      const type = toCleanString(
+        applicationRecord.type ??
+          applicationRecord.taxType ??
+          applicationRecord.code,
+      )?.toLowerCase();
+
+      if (type === 'itbis' || type === 'withholding_itbis') {
+        accumulator.itbis += amount;
+        return accumulator;
+      }
+
+      if (type === 'isr' || type === 'income_tax' || type === 'withholding_isr') {
+        accumulator.isr += amount;
+        return accumulator;
+      }
+
+      accumulator.other += amount;
+      return accumulator;
+    },
+    { itbis: 0, isr: 0, other: 0 },
+  );
+  const applicationWithholdingTotal =
+    withholding.itbis + withholding.isr + withholding.other;
+  const explicitWithholdingAmount = resolvePayloadFunctionalAmount(
+    payload,
+    [
+      'functionalWithholdingAmount',
+      'withholdingFunctionalAmount',
+      'withholdingAmount',
+    ],
+    functionalRate,
+  );
+  if (applicationWithholdingTotal <= 0 && explicitWithholdingAmount > 0) {
+    withholding.other += explicitWithholdingAmount;
+  }
+
+  const withholdingTotal =
+    withholding.itbis + withholding.isr + withholding.other;
+  const paidByMethods =
+    breakdown.cash + breakdown.bank + breakdown.creditNote + breakdown.other;
+  const settlementFromMethods =
+    paidByMethods > 0 ? paidByMethods + withholdingTotal : 0;
+  const settlementFromMonetary = total > 0 ? total + withholdingTotal : 0;
+  const explicitSettlementAmount = resolvePayloadFunctionalAmount(
+    payload,
+    [
+      'functionalSettlementAmount',
+      'settlementFunctionalAmount',
+      'functionalAppliedAmount',
+      'appliedFunctionalAmount',
+      'settlementAmount',
+      'appliedAmount',
+    ],
+    functionalRate,
+  );
+  const settledAmount =
+    explicitSettlementAmount ||
+    settlementFromMethods ||
+    settlementFromMonetary ||
+    total;
 
   return {
     cash: roundAccountingAmount(breakdown.cash),
     bank: roundAccountingAmount(breakdown.bank),
     creditNote: roundAccountingAmount(breakdown.creditNote),
     other: roundAccountingAmount(breakdown.other),
-    settledAmount: roundAccountingAmount(total),
+    withholdingITBIS: roundAccountingAmount(withholding.itbis),
+    withholdingISR: roundAccountingAmount(withholding.isr),
+    withholdingOther: roundAccountingAmount(withholding.other),
+    withholdingTotal: roundAccountingAmount(withholdingTotal),
+    settledAmount: roundAccountingAmount(Math.max(settledAmount, 0)),
   };
 };
 
@@ -672,6 +771,90 @@ const assignStableEntryReferences = (
       searchIndex: `${record.searchIndex} ${entryReference}`.toLowerCase(),
     };
   });
+};
+
+const DETAIL_MODE_SORT_ORDER: Record<
+  AccountingLedgerRecord['detailMode'],
+  number
+> = {
+  posted: 0,
+  projected: 1,
+};
+
+const compareLedgerSortText = (left: string, right: string): number =>
+  left.localeCompare(right, undefined, {
+    numeric: true,
+    sensitivity: 'base',
+  });
+
+const getLedgerRecordSortTime = (record: AccountingLedgerRecord): number => {
+  const date = record.entryDate;
+  if (!date || Number.isNaN(date.getTime())) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  ).getTime();
+};
+
+const getReferenceNumericSuffix = (value: string | null): string | null => {
+  const match = toCleanString(value)?.match(/(\d{1,12})$/);
+
+  return match ? match[1].padStart(12, '0') : null;
+};
+
+const getLedgerRecordSortReference = (
+  record: AccountingLedgerRecord,
+): string => {
+  const visibleReference =
+    toCleanString(record.documentReference) ?? toCleanString(record.reference);
+  const numericSuffix = getReferenceNumericSuffix(visibleReference);
+
+  return (
+    numericSuffix ??
+    visibleReference ??
+    toCleanString(record.entryReference) ??
+    toCleanString(record.internalReference) ??
+    record.id
+  );
+};
+
+const compareAccountingLedgerRecords = (
+  left: AccountingLedgerRecord,
+  right: AccountingLedgerRecord,
+): number => {
+  const leftTime = getLedgerRecordSortTime(left);
+  const rightTime = getLedgerRecordSortTime(right);
+  if (leftTime !== rightTime) {
+    return leftTime - rightTime;
+  }
+
+  const periodCompare = (left.periodKey ?? '').localeCompare(
+    right.periodKey ?? '',
+  );
+  if (periodCompare !== 0) {
+    return periodCompare;
+  }
+
+  const referenceCompare = compareLedgerSortText(
+    getLedgerRecordSortReference(left),
+    getLedgerRecordSortReference(right),
+  );
+  if (referenceCompare !== 0) {
+    return referenceCompare;
+  }
+
+  const detailModeCompare =
+    DETAIL_MODE_SORT_ORDER[left.detailMode] -
+    DETAIL_MODE_SORT_ORDER[right.detailMode];
+  if (detailModeCompare !== 0) {
+    return detailModeCompare;
+  }
+
+  return compareLedgerSortText(left.id, right.id);
 };
 
 const shouldCompactVisibleReference = (value: string | null): boolean =>
@@ -1090,6 +1273,12 @@ const resolveEventAmountSource = (
       return payablePayment.bank;
     case 'accounts_payable_credit_note_applied':
       return payablePayment.creditNote;
+    case 'accounts_payable_payment_amount':
+      return payablePayment.settledAmount;
+    case 'accounts_payable_withholding_itbis':
+      return payablePayment.withholdingITBIS;
+    case 'accounts_payable_withholding_isr':
+      return payablePayment.withholdingISR;
     case 'payroll_accrual_amount':
       return payrollAccrual.accrual;
     case 'payroll_net_payable_amount':
@@ -1101,7 +1290,6 @@ const resolveEventAmountSource = (
     case 'purchase_total':
     case 'expense_total':
     case 'document_total':
-    case 'accounts_payable_payment_amount':
     case 'transfer_amount':
       return total;
     case 'cash_over_short_gain':
@@ -1644,7 +1832,7 @@ export const buildLedgerRecords = ({
   return assignStableEntryReferences([
     ...automaticRecords,
     ...standaloneEntries,
-  ]);
+  ]).sort(compareAccountingLedgerRecords);
 };
 
 const recordAffectsPeriod = (
@@ -1722,6 +1910,7 @@ export const buildGeneralLedgerAccountOptions = ({
   records: AccountingLedgerRecord[];
 }): GeneralLedgerAccountOption[] => {
   const movementCounts = new Map<string, number>();
+  const childCountByParentId = buildChartOfAccountChildrenByParentId(accounts);
 
   records.forEach((record) => {
     record.lines.forEach((line) => {
@@ -1733,7 +1922,12 @@ export const buildGeneralLedgerAccountOptions = ({
   });
 
   return accounts
-    .filter((account) => account.status === 'active' && account.postingAllowed)
+    .filter((account) =>
+      isChartOfAccountPostingAllowedForEntries(
+        account,
+        childCountByParentId.get(account.id)?.length ?? 0,
+      ),
+    )
     .map((account) => ({
       id: account.id,
       code: account.code,

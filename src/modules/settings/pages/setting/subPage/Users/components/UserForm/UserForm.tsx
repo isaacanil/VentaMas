@@ -252,9 +252,7 @@ const SignUpModalInner = ({
           : undefined;
 
       const payload: UserFormValues = {
-        ...(isEditMode
-          ? { id: data?.id || data?.uid }
-          : {}),
+        ...(isEditMode ? { id: data?.id || data?.uid } : {}),
         ...values,
         name: normalizedName,
         email: normalizedEmail,
@@ -376,7 +374,7 @@ const SignUpModalInner = ({
         onCancel={handleClose}
         footer={footerButtons}
       >
-        <Spin spinning={loading} tip={modalLabels.spin}>
+        <Spin description={modalLabels.spin} spinning={loading}>
           <Form
             form={form}
             layout="vertical"
@@ -466,17 +464,19 @@ const SignUpModalInner = ({
               />
             )}
 
-            {isEditMode && currentEmailNormalized && !isCurrentEmailVerified && (
-              <div style={{ marginTop: -8, marginBottom: 16 }}>
-                <Button
-                  size="small"
-                  type="link"
-                  onClick={emailVerification.openEmailVerificationModal}
-                >
-                  Verificar correo
-                </Button>
-              </div>
-            )}
+            {isEditMode &&
+              currentEmailNormalized &&
+              !isCurrentEmailVerified && (
+                <div style={{ marginTop: -8, marginBottom: 16 }}>
+                  <Button
+                    size="small"
+                    type="link"
+                    onClick={emailVerification.openEmailVerificationModal}
+                  >
+                    Verificar correo
+                  </Button>
+                </div>
+              )}
 
             <Form.Item
               label="Rol"

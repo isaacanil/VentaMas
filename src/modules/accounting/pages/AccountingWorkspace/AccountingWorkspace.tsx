@@ -82,6 +82,8 @@ export default function AccountingWorkspace() {
     reversePostedEntry,
     saveManualEntry,
     savingManualEntry,
+    updatePostedEntry,
+    updatingEntryId,
     reversingEntryId,
   } = useAccountingWorkspace({
     includeAccountingSetup: shouldLoadAccountingSetup,
@@ -284,8 +286,12 @@ export default function AccountingWorkspace() {
             onOpenOrigin={openRecordOrigin}
             requestedRecord={requestedJournalRecord}
             requestedSelectionKey={requestedSelectionKey}
+            postingAccounts={postingAccounts}
+            periodClosures={periodClosures}
             reversingEntryId={reversingEntryId}
             onReverseEntry={reversePostedEntry}
+            updatingEntryId={updatingEntryId}
+            onUpdateEntry={updatePostedEntry}
           />
         );
     }

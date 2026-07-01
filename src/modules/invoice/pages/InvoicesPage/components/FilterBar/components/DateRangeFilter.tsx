@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 import type { ReactNode } from 'react';
 import React, { useCallback, useMemo } from 'react';
 
-import { DatePicker } from '@/components/common/DatePicker';
+import { VmDatePicker } from '@/components/common/DatePicker';
 import type { DateRangeSelection } from '@/types/invoiceFilters';
 
 import { FilterField } from './FilterField';
@@ -53,7 +53,7 @@ export const DateRangeFilter = ({
 
   return (
     <FilterField label={label ?? 'Fechas'}>
-      <DatePicker
+      <VmDatePicker
         mode="range"
         value={dateValue}
         onChange={handleDateChange}

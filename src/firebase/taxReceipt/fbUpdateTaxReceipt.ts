@@ -2,7 +2,12 @@ import { collection, doc, writeBatch } from 'firebase/firestore';
 
 import type { TaxReceiptDocument, TaxReceiptUser } from '@/types/taxReceipt';
 import { db } from '@/firebase/firebaseconfig';
-import { normalizeTaxReceiptData } from '@/utils/taxReceipt';
+import {
+  getTaxReceiptDocumentId,
+  hasMatchingTaxReceiptIdentity,
+  isActiveTaxReceiptData,
+  normalizeTaxReceiptData,
+} from '@/utils/taxReceipt';
 
 export const fbUpdateTaxReceipt = async (
   user: TaxReceiptUser,
@@ -20,28 +25,44 @@ export const fbUpdateTaxReceipt = async (
     );
     const batch = writeBatch(db);
 
-    // Primero, obtener el conjunto de series existentes en la base de datos
-    const seriesInFirebase = new Set<string>();
-    // Este es un placeholder, en una implementación real necesitarías consultar Firebase
-    // para obtener las series existentes
+    const activeReceiptsToWrite: TaxReceiptDocument[] = [];
 
     // Para cada comprobante en el array
     for (const receipt of taxReceiptArray) {
       if (receipt && receipt.data) {
-        const { serie } = receipt.data;
-        const taxReceiptRef = doc(taxReceiptsRef, serie);
-        const normalizedData = normalizeTaxReceiptData({
-          ...receipt.data,
-          id: serie,
-        });
+        const normalizedData = normalizeTaxReceiptData(
+          receipt.data,
+        ) as TaxReceiptDocument['data'];
+
+        if (
+          isActiveTaxReceiptData(normalizedData) &&
+          activeReceiptsToWrite.some((existingReceipt) =>
+            hasMatchingTaxReceiptIdentity(existingReceipt.data, normalizedData),
+          )
+        ) {
+          throw new Error(
+            'Hay comprobantes fiscales activos duplicados. Corrige la configuración antes de guardar.',
+          );
+        }
+
+        if (isActiveTaxReceiptData(normalizedData)) {
+          activeReceiptsToWrite.push({
+            ...receipt,
+            data: normalizedData,
+          });
+        }
+
+        const receiptId =
+          normalizedData.id ?? getTaxReceiptDocumentId(normalizedData);
+        const taxReceiptRef = doc(taxReceiptsRef, receiptId);
 
         // Establecer los datos del comprobante
         batch.set(taxReceiptRef, {
-          data: normalizedData,
+          data: {
+            ...normalizedData,
+            id: receiptId, // Asegurar que el ID siempre apunte al documento escrito
+          },
         });
-
-        // Marcar esta serie como procesada
-        seriesInFirebase.add(serie);
       }
     }
 

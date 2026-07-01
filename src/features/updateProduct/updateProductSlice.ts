@@ -65,6 +65,7 @@ const createEmptyProduct = () => ({
   barcode: '',
   order: 1,
   hasExpirationDate: false,
+  saleUnits: [],
   selectedSaleUnit: null,
 });
 

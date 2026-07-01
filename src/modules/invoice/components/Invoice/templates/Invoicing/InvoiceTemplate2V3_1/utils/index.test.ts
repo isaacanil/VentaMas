@@ -8,6 +8,7 @@ import {
   resolveElectronicPrintInfo,
   resolveInvoiceTotals,
   resolvePageSummary,
+  resolveQuantity,
 } from './index';
 
 describe('InvoiceTemplate2V3_1 electronic print helpers', () => {
@@ -119,6 +120,43 @@ describe('InvoiceTemplate2V3_1 product print helpers', () => {
         },
       } as never),
     ).toBe('3');
+  });
+
+  it('uses sold weight as the printed quantity and fiscal total base', () => {
+    const products = [
+      {
+        name: 'Producto pesado',
+        amountToBuy: 1,
+        weightDetail: {
+          isSoldByWeight: true,
+          weight: 2.5,
+          weightUnit: 'kg',
+        },
+        pricing: { price: 100, tax: { tax: 18, billingIndicator: '1' } },
+      },
+    ];
+
+    expect(resolveQuantity(products[0] as never)).toBe(2.5);
+    expect(resolvePageSummary(products as never, 'DOP')).toEqual({
+      subtotal: 'RD$250.00',
+      tax: 'RD$45.00',
+      total: 'RD$295.00',
+    });
+
+    expect(
+      resolveInvoiceTotals({
+        products: products as never,
+        totalPurchaseWithoutTaxes: { value: 250 },
+        totalTaxes: { value: 45 },
+        totalPurchase: { value: 295 },
+      }),
+    ).toEqual([
+      ['Sub-total', 'RD$250.00'],
+      ['Monto gravado', 'RD$250.00'],
+      ['ITBIS 18%', 'RD$45.00'],
+      ['ITBIS', 'RD$45.00'],
+      ['Total', 'RD$295.00'],
+    ]);
   });
 
   it('summarizes page and fiscal totals using the printed product rows', () => {

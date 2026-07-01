@@ -9,6 +9,8 @@ import type {
   InvoicePdfData,
   InvoicePdfProduct,
 } from '@/pdf/invoicesAndQuotation/types';
+import { getActiveUnitPrice } from '@/utils/pricing';
+import { resolveInvoiceProductQuantity } from '@/utils/invoice/product';
 
 const DEFAULT_BRAND = 'Sin marca';
 
@@ -37,10 +39,11 @@ export function buildContent(d: InvoicePdfData): PdfContent[] {
   const body: PdfTableBody = [
     headerRow,
     ...products.flatMap((p) => {
-      const price = +p.pricing?.price || 0;
+      const price = getActiveUnitPrice(p);
       const taxP = +p.pricing?.tax || 0; // porcentaje
       const tax = price * (taxP / 100);
-      const tot = (price + tax) * (+p.amountToBuy || 0);
+      const quantity = resolveInvoiceProductQuantity(p);
+      const tot = (price + tax) * quantity;
       const brand = typeof p?.brand === 'string' ? p.brand.trim() : '';
       const hasBrand =
         brand && brand.toLowerCase() !== DEFAULT_BRAND.toLowerCase();
@@ -60,7 +63,7 @@ export function buildContent(d: InvoicePdfData): PdfContent[] {
       });
 
       const productRow = [
-        { text: p.amountToBuy, alignment: 'center', noWrap: true },
+        { text: quantity, alignment: 'center', noWrap: true },
         { text: p.barcode || '-', alignment: 'left', noWrap: true },
         descriptionCell,
         formatCurrencyCell(price),

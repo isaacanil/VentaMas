@@ -32,7 +32,9 @@ const {
     if (!hoistedDocumentRefs.has(path)) {
       hoistedDocumentRefs.set(path, {
         path,
-        get: vi.fn(async () => toDocSnapshot(path, hoistedDocumentSnapshots.get(path))),
+        get: vi.fn(async () =>
+          toDocSnapshot(path, hoistedDocumentSnapshots.get(path)),
+        ),
         set: vi.fn(async (data) => {
           hoistedDocumentSnapshots.set(path, data);
         }),
@@ -307,6 +309,279 @@ describe('projectAccountingEventToJournalEntry', () => {
         'businesses/business-1/accountingEventProjectionDeadLetters/hr_commission.accrued__period-1',
       ),
     ).toBe(false);
+  });
+
+  it('reverses an existing projected journal entry when its accounting event is voided', async () => {
+    const eventId = 'supplier_credit_note.issued__purchase_overpaid_purchase-1';
+    const reversalEntryId = `${eventId}__void_reversal`;
+    documentSnapshots.set(`businesses/business-1/journalEntries/${eventId}`, {
+      id: eventId,
+      businessId: 'business-1',
+      eventId,
+      eventType: 'supplier_credit_note.issued',
+      eventVersion: 1,
+      status: 'posted',
+      entryDate: '2026-04-10T12:00:00.000Z',
+      periodKey: '2026-04',
+      description: 'Saldo a favor de suplidor emitido',
+      currency: 'DOP',
+      functionalCurrency: 'DOP',
+      sourceType: 'supplierCreditNote',
+      sourceId: 'purchase_overpaid_purchase-1',
+      totals: {
+        debit: 45,
+        credit: 45,
+      },
+      lines: [
+        {
+          lineNumber: 1,
+          accountId: 'supplier-credits-1',
+          accountSystemKey: 'supplier_credits',
+          debit: 45,
+          credit: 0,
+          description: 'Saldo a favor',
+        },
+        {
+          lineNumber: 2,
+          accountId: 'ap-1',
+          accountSystemKey: 'accounts_payable',
+          debit: 0,
+          credit: 45,
+          description: 'CxP',
+        },
+      ],
+      metadata: {
+        projectedFromProfileId: 'profile-supplier-credit-issued',
+      },
+    });
+    documentSnapshots.set(
+      `businesses/business-1/accountingEventProjectionDeadLetters/${eventId}`,
+      {
+        id: eventId,
+        projectionStatus: 'failed',
+      },
+    );
+
+    await projectAccountingEventToJournalEntry({
+      params: {
+        businessId: 'business-1',
+        eventId,
+      },
+      data: {
+        data: () => ({
+          id: eventId,
+          businessId: 'business-1',
+          eventType: 'supplier_credit_note.issued',
+          eventVersion: 1,
+          sourceType: 'supplierCreditNote',
+          sourceId: 'purchase_overpaid_purchase-1',
+          sourceDocumentId: 'purchase_overpaid_purchase-1',
+          sourceDocumentType: 'supplierCreditNote',
+          status: 'voided',
+          recordedAt: '2026-04-13T09:00:00.000Z',
+          voidedAt: '2026-05-02T15:30:00.000Z',
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: {
+            amount: 0,
+            functionalAmount: 0,
+          },
+          payload: {
+            supplierCreditNoteId: 'purchase_overpaid_purchase-1',
+            status: 'void',
+          },
+        }),
+      },
+    });
+
+    const originalEntry = documentSnapshots.get(
+      `businesses/business-1/journalEntries/${eventId}`,
+    );
+    expect(originalEntry).toMatchObject({
+      status: 'reversed',
+      metadata: expect.objectContaining({
+        reversedByEntryId: reversalEntryId,
+        reversedByEventId: eventId,
+        reversalReason: 'Evento contable anulado',
+      }),
+    });
+
+    const reversalEntry = documentSnapshots.get(
+      `businesses/business-1/journalEntries/${reversalEntryId}`,
+    );
+    expect(reversalEntry).toMatchObject({
+      id: reversalEntryId,
+      status: 'posted',
+      entryDate: '2026-05-02T15:30:00.000Z',
+      periodKey: '2026-05',
+      sourceType: 'accounting_event_void',
+      sourceId: eventId,
+      reversalOfEntryId: eventId,
+      reversalOfEventId: eventId,
+      metadata: expect.objectContaining({
+        entryOrigin: 'automatic_void_reversal',
+        reversedEntryId: eventId,
+        reversedEventId: eventId,
+      }),
+    });
+    expect(reversalEntry.lines).toEqual([
+      expect.objectContaining({
+        accountSystemKey: 'supplier_credits',
+        debit: 0,
+        credit: 45,
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'accounts_payable',
+        debit: 45,
+        credit: 0,
+      }),
+    ]);
+
+    const eventRecord = documentSnapshots.get(
+      `businesses/business-1/accountingEvents/${eventId}`,
+    );
+    expect(eventRecord).toMatchObject({
+      projection: expect.objectContaining({
+        status: 'voided',
+        journalEntryId: null,
+      }),
+      'metadata.journalEntryId': null,
+      'metadata.voidedJournalEntryId': eventId,
+      'metadata.voidedJournalEntryReversalId': reversalEntryId,
+    });
+    expect(
+      documentSnapshots.has(
+        `businesses/business-1/accountingEventProjectionDeadLetters/${eventId}`,
+      ),
+    ).toBe(false);
+  });
+
+  it('fails a voided event without mutating entries when the reversal period is closed', async () => {
+    const eventId = 'purchase.committed__purchase-closed';
+    const reversalEntryId = `${eventId}__void_reversal`;
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+      functionalCurrency: 'DOP',
+    });
+    documentSnapshots.set(
+      'businesses/business-1/accountingPeriodClosures/2026-05',
+      {
+        closedAt: '2026-05-31T23:59:59.000Z',
+      },
+    );
+    documentSnapshots.set(`businesses/business-1/journalEntries/${eventId}`, {
+      id: eventId,
+      businessId: 'business-1',
+      eventId,
+      eventType: 'purchase.committed',
+      eventVersion: 1,
+      status: 'posted',
+      entryDate: '2026-04-10T12:00:00.000Z',
+      periodKey: '2026-04',
+      description: 'Compra registrada',
+      currency: 'DOP',
+      functionalCurrency: 'DOP',
+      sourceType: 'purchase',
+      sourceId: 'purchase-closed',
+      totals: {
+        debit: 200,
+        credit: 200,
+      },
+      lines: [
+        {
+          lineNumber: 1,
+          accountId: 'inventory-1',
+          accountSystemKey: 'inventory',
+          debit: 200,
+          credit: 0,
+        },
+        {
+          lineNumber: 2,
+          accountId: 'ap-1',
+          accountSystemKey: 'accounts_payable',
+          debit: 0,
+          credit: 200,
+        },
+      ],
+      metadata: {
+        projectedFromProfileId: 'profile-purchase-committed',
+      },
+    });
+
+    await projectAccountingEventToJournalEntry({
+      params: {
+        businessId: 'business-1',
+        eventId,
+      },
+      data: {
+        data: () => ({
+          id: eventId,
+          businessId: 'business-1',
+          eventType: 'purchase.committed',
+          eventVersion: 1,
+          sourceType: 'purchase',
+          sourceId: 'purchase-closed',
+          sourceDocumentId: 'purchase-closed',
+          sourceDocumentType: 'purchase',
+          status: 'voided',
+          recordedAt: '2026-04-10T12:00:00.000Z',
+          voidedAt: '2026-05-02T15:30:00.000Z',
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: {
+            amount: 0,
+            functionalAmount: 0,
+          },
+          payload: {
+            purchaseId: 'purchase-closed',
+            status: 'voided',
+          },
+        }),
+      },
+    });
+
+    expect(
+      documentSnapshots.get(`businesses/business-1/journalEntries/${eventId}`),
+    ).toMatchObject({
+      status: 'posted',
+      metadata: {
+        projectedFromProfileId: 'profile-purchase-committed',
+      },
+    });
+    expect(
+      documentSnapshots.has(
+        `businesses/business-1/journalEntries/${reversalEntryId}`,
+      ),
+    ).toBe(false);
+
+    const eventRecord = documentSnapshots.get(
+      `businesses/business-1/accountingEvents/${eventId}`,
+    );
+    expect(eventRecord).toMatchObject({
+      projection: expect.objectContaining({
+        status: 'failed',
+        journalEntryId: eventId,
+        lastError: expect.objectContaining({
+          code: 'accounting-period-closed',
+          details: expect.objectContaining({
+            periodKey: '2026-05',
+            periodRole: 'void_reversal',
+          }),
+        }),
+      }),
+    });
+    expect(
+      documentSnapshots.get(
+        `businesses/business-1/accountingEventProjectionDeadLetters/${eventId}`,
+      ),
+    ).toMatchObject({
+      id: eventId,
+      projectionStatus: 'failed',
+      lastError: expect.objectContaining({
+        code: 'accounting-period-closed',
+      }),
+    });
   });
 
   it('skips zero amount events without creating a journal entry', async () => {
@@ -620,6 +895,20 @@ describe('projectAccountingEventToJournalEntry', () => {
               amountSource: 'accounts_payable_credit_note_applied',
               omitIfZero: true,
             },
+            {
+              id: 'l5',
+              side: 'credit',
+              accountSystemKey: 'withholding_itbis_payable',
+              amountSource: 'accounts_payable_withholding_itbis',
+              omitIfZero: true,
+            },
+            {
+              id: 'l6',
+              side: 'credit',
+              accountSystemKey: 'withholding_isr_payable',
+              amountSource: 'accounts_payable_withholding_isr',
+              omitIfZero: true,
+            },
           ],
         },
       },
@@ -669,6 +958,28 @@ describe('projectAccountingEventToJournalEntry', () => {
           systemKey: 'supplier_credits',
         },
       },
+      {
+        id: 'withholding-itbis-1',
+        data: {
+          id: 'withholding-itbis-1',
+          code: '2210',
+          name: 'Retenciones ITBIS por pagar',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'withholding_itbis_payable',
+        },
+      },
+      {
+        id: 'withholding-isr-1',
+        data: {
+          id: 'withholding-isr-1',
+          code: '2220',
+          name: 'Retenciones ISR por pagar',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'withholding_isr_payable',
+        },
+      },
     ]);
 
     await projectAccountingEventToJournalEntry({
@@ -696,6 +1007,7 @@ describe('projectAccountingEventToJournalEntry', () => {
             paymentChannel: 'mixed',
           },
           payload: {
+            settlementAmount: 174,
             paymentMethods: [
               {
                 method: 'cash',
@@ -711,6 +1023,16 @@ describe('projectAccountingEventToJournalEntry', () => {
                 supplierCreditNoteId: 'scn-1',
               },
             ],
+            withholdingApplications: [
+              {
+                type: 'itbis',
+                amount: 54,
+              },
+              {
+                type: 'isr',
+                amount: 20,
+              },
+            ],
           },
         }),
       },
@@ -724,14 +1046,14 @@ describe('projectAccountingEventToJournalEntry', () => {
     expect(journalEntry).toMatchObject({
       eventType: 'accounts_payable.payment.recorded',
       totals: {
-        debit: 100,
-        credit: 100,
+        debit: 174,
+        credit: 174,
       },
     });
     expect(journalEntry.lines).toEqual([
       expect.objectContaining({
         accountSystemKey: 'accounts_payable',
-        debit: 100,
+        debit: 174,
         credit: 0,
         amountSource: 'accounts_payable_payment_amount',
       }),
@@ -752,6 +1074,18 @@ describe('projectAccountingEventToJournalEntry', () => {
         debit: 0,
         credit: 30,
         amountSource: 'accounts_payable_credit_note_applied',
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'withholding_itbis_payable',
+        debit: 0,
+        credit: 54,
+        amountSource: 'accounts_payable_withholding_itbis',
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'withholding_isr_payable',
+        debit: 0,
+        credit: 20,
+        amountSource: 'accounts_payable_withholding_isr',
       }),
     ]);
   });
@@ -1045,7 +1379,10 @@ describe('projectAccountingEventToJournalEntry', () => {
       generalAccountingEnabled: true,
       functionalCurrency: 'DOP',
     });
-    collectionSnapshots.set('businesses/business-1/accountingPostingProfiles', []);
+    collectionSnapshots.set(
+      'businesses/business-1/accountingPostingProfiles',
+      [],
+    );
     collectionSnapshots.set('businesses/business-1/chartOfAccounts', []);
 
     await projectAccountingEventToJournalEntry({
@@ -1102,7 +1439,10 @@ describe('projectAccountingEventToJournalEntry', () => {
         status: 'closed',
       },
     );
-    collectionSnapshots.set('businesses/business-1/accountingPostingProfiles', []);
+    collectionSnapshots.set(
+      'businesses/business-1/accountingPostingProfiles',
+      [],
+    );
     collectionSnapshots.set('businesses/business-1/chartOfAccounts', []);
 
     await projectAccountingEventToJournalEntry({
@@ -1596,7 +1936,8 @@ describe('projectAccountingEventToJournalEntry', () => {
         data: {
           id: 'profile-sale-credit-split',
           name: 'Venta credito con abono',
-          description: 'Factura confirmada con cobro parcial y saldo a cuentas por cobrar.',
+          description:
+            'Factura confirmada con cobro parcial y saldo a cuentas por cobrar.',
           eventType: 'invoice.committed',
           status: 'active',
           priority: 15,

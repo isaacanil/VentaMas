@@ -15,29 +15,21 @@ import {
 
 const clone = (value) => structuredClone(value);
 
-const getExportedEnumConstantNames = (schemaModule) =>
-  Object.keys(schemaModule)
-    .filter(
-      (name) => name.endsWith('_VALUES') && Array.isArray(schemaModule[name]),
-    )
-    .sort();
+const getExportedEnumConstantEntries = (schemaModule) =>
+  Object.entries(schemaModule)
+    .filter(([name, value]) => name.endsWith('_VALUES') && Array.isArray(value))
+    .sort(([leftName], [rightName]) => leftName.localeCompare(rightName));
 
 describe('accountingSchemas parity', () => {
   it('keeps exported enum constants aligned', () => {
-    const frontendConstantNames = getExportedEnumConstantNames(
+    const frontendConstantEntries = getExportedEnumConstantEntries(
       FrontendAccountingSchemas,
     );
-    const functionsConstantNames = getExportedEnumConstantNames(
+    const functionsConstantEntries = getExportedEnumConstantEntries(
       FunctionsAccountingSchemas,
     );
 
-    expect(functionsConstantNames).toEqual(frontendConstantNames);
-
-    for (const constantName of functionsConstantNames) {
-      expect(FunctionsAccountingSchemas[constantName]).toEqual(
-        FrontendAccountingSchemas[constantName],
-      );
-    }
+    expect(functionsConstantEntries).toEqual(frontendConstantEntries);
   });
 
   it('keeps frontend and Functions AccountingEvent parsing aligned', () => {

@@ -29,6 +29,7 @@ import {
 import { normalizeChangedProductPricingPatch } from '@/domain/products/pricingForm';
 import type { ProductRecord } from '@/types/products';
 import type { UserWithBusiness } from '@/types/users';
+import { normalizeSaleUnitsChangeForModal } from './useGeneralProductForm.helpers';
 
 interface ValidationError {
   errorFields?: Array<{ errors?: string[] }>;
@@ -64,7 +65,10 @@ export const useGeneralProductForm = () => {
     form.setFieldsValue(normalizedForForm);
   }, [form, product, productFormSyncKey]);
 
-  const handleChangeValues = (changeValue: Partial<ProductRecord>) => {
+  const handleChangeValues = (
+    changeValue: Partial<ProductRecord>,
+    allValues?: Partial<ProductRecord>,
+  ) => {
     const key = Object.keys(changeValue)[0];
     const value = changeValue[key];
 
@@ -93,6 +97,20 @@ export const useGeneralProductForm = () => {
         ChangeProductData({
           product: {
             warranty: { ...product?.warranty, ...changeValue?.warranty },
+          },
+        }),
+      );
+      return;
+    }
+
+    if (key === 'saleUnits') {
+      dispatch(
+        ChangeProductData({
+          product: {
+            saleUnits: normalizeSaleUnitsChangeForModal(
+              changeValue,
+              allValues,
+            ),
           },
         }),
       );

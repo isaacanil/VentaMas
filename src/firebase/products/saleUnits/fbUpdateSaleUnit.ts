@@ -2,15 +2,16 @@
 import {
   doc,
   getDoc,
+  getDocs,
   setDoc,
   updateDoc,
-  increment,
   collection,
   onSnapshot,
   deleteDoc,
 } from 'firebase/firestore';
 import type {
   CollectionReference,
+  DocumentReference,
   FirestoreError,
   Unsubscribe,
 } from 'firebase/firestore';
@@ -27,6 +28,46 @@ type SaleUnitInput = Partial<ProductSaleUnit> &
   Record<string, unknown> & { id?: string };
 
 type SaleUnitRecord = ProductSaleUnit & Record<string, unknown>;
+
+const getSaleUnitsCollectionRef = (
+  businessID: string,
+  productId: string,
+): CollectionReference<SaleUnitRecord> =>
+  collection(
+    db,
+    'businesses',
+    businessID,
+    'products',
+    productId,
+    'saleUnits',
+  ) as CollectionReference<SaleUnitRecord>;
+
+const readSaleUnitsFromSubcollection = async (
+  businessID: string,
+  productId: string,
+): Promise<SaleUnitRecord[]> => {
+  const saleUnitsRef = getSaleUnitsCollectionRef(businessID, productId);
+  const snapshot = await getDocs(saleUnitsRef);
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+};
+
+const syncProductSaleUnitsCache = async (
+  productRef: DocumentReference,
+  businessID: string,
+  productId: string,
+) => {
+  const saleUnits = await readSaleUnitsFromSubcollection(
+    businessID,
+    productId,
+  );
+  await updateDoc(productRef, {
+    saleUnits,
+    saleUnitsCount: saleUnits.length,
+  });
+};
 
 // Función para actualizar o crear una unidad de venta en la subcolección saleUnits
 export const fbUpsetSaleUnits = async (
@@ -57,8 +98,6 @@ export const fbUpsetSaleUnits = async (
       return;
     }
 
-    // Verificamos si el producto tiene unidades de venta
-    const saleUnitsCount = Number(productSnap.data()?.saleUnitsCount ?? 0);
     const saleUnitId = newSaleUnit.id ?? nanoid();
     newSaleUnit.id = saleUnitId;
 
@@ -72,31 +111,19 @@ export const fbUpsetSaleUnits = async (
       'saleUnits',
       saleUnitId,
     );
+    const saleUnitSnap = await getDoc(saleUnitRef);
 
-    if (saleUnitsCount > 0) {
-      // Si hay unidades de venta, buscamos la unidad específica
-      const saleUnitSnap = await getDoc(saleUnitRef);
-
-      if (saleUnitSnap.exists()) {
-        // Si la unidad de venta existe, actualizamos la unidad de venta
-        console.log('Actualizando la unidad de venta en la base de datos.');
-        await updateDoc(saleUnitRef, newSaleUnit);
-      } else {
-        // Si la unidad de venta no existe, la creamos
-        console.log('Creando la unidad de venta en la base de datos.');
-        await setDoc(saleUnitRef, newSaleUnit);
-        // Actualizamos el contador de unidades de venta en el producto
-        await updateDoc(productRef, { saleUnitsCount: increment(1) });
-      }
+    if (saleUnitSnap.exists()) {
+      // Si la unidad de venta existe, actualizamos la unidad de venta
+      console.log('Actualizando la unidad de venta en la base de datos.');
+      await updateDoc(saleUnitRef, newSaleUnit);
     } else {
-      // Si no hay unidades de venta, creamos la primera unidad de venta
-      console.log(
-        'No existen unidades de venta. Creando la primera unidad de venta en la base de datos.',
-      );
+      // Si la unidad de venta no existe, la creamos
+      console.log('Creando la unidad de venta en la base de datos.');
       await setDoc(saleUnitRef, newSaleUnit);
-      // Actualizamos el contador de unidades de venta en el producto
-      await updateDoc(productRef, { saleUnitsCount: increment(1) });
     }
+
+    await syncProductSaleUnitsCache(productRef, user.businessID, productId);
     console.log(
       'Unidad de venta actualizada o creada con éxito en la base de datos.',
     );
@@ -139,7 +166,7 @@ export const fbDeleteSaleUnit = async (
       'products',
       productId,
     );
-    await updateDoc(productRef, { saleUnitsCount: increment(-1) });
+    await syncProductSaleUnitsCache(productRef, user.businessID, productId);
     console.log('Unidad de venta eliminada con éxito de la base de datos.');
   } catch (error) {
     console.error('Error eliminando la unidad de venta: ', error);
@@ -161,14 +188,7 @@ export const fbListenSaleUnits = (
     }
 
     // Referencia a la subcolección saleUnits dentro del producto específico
-    const saleUnitsRef = collection(
-      db,
-      'businesses',
-      user.businessID,
-      'products',
-      productId,
-      'saleUnits',
-    ) as CollectionReference<SaleUnitRecord>;
+    const saleUnitsRef = getSaleUnitsCollectionRef(user.businessID, productId);
     return onSnapshot(saleUnitsRef, (snapshot) => {
       const saleUnits = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -204,14 +224,7 @@ export const useListenSaleUnits = (productId: string | null | undefined) => {
     }
 
     // Referencia a la subcolección saleUnits dentro del producto específico
-    const saleUnitsRef = collection(
-      db,
-      'businesses',
-      businessID,
-      'products',
-      productId,
-      'saleUnits',
-    ) as CollectionReference<SaleUnitRecord>;
+    const saleUnitsRef = getSaleUnitsCollectionRef(businessID, productId);
     const unsubscribe = onSnapshot(
       saleUnitsRef,
       (snapshot) => {

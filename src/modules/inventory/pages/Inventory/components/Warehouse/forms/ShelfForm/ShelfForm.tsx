@@ -116,8 +116,10 @@ export function ShelfForm(_props: ShelfFormProps) {
       destroyOnClose
     >
       <Spin
+        description={
+          formData?.id ? 'Actualizando estante...' : 'Creando estante...'
+        }
         spinning={loading}
-        tip={formData?.id ? 'Actualizando estante...' : 'Creando estante...'}
       >
         <Form
           form={form}

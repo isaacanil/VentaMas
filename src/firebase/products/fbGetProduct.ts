@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
+import { normalizeProductForRead } from '@/domain/products/normalization';
 import type { ProductRecord } from '@/types/products';
 import type { UserWithBusiness } from '@/types/users';
 
@@ -21,7 +22,10 @@ export const fbGetProduct = async (
   );
   const productSnapshot = await getDoc(productRef);
   if (productSnapshot.exists()) {
-    return { id: productSnapshot.id, ...productSnapshot.data() };
+    return normalizeProductForRead({
+      id: productSnapshot.id,
+      ...(productSnapshot.data() as ProductRecord),
+    }) as ProductRecord & { id: string };
   } else {
     return null; // Producto no encontrado
   }
@@ -47,7 +51,12 @@ export const fbListenProduct = (
     productRef,
     (doc) => {
       if (doc.exists()) {
-        setProduct({ id: doc.id, ...doc.data() });
+        setProduct(
+          normalizeProductForRead({
+            id: doc.id,
+            ...(doc.data() as ProductRecord),
+          }),
+        );
         setError(null);
       } else {
         setProduct(null); // Producto no encontrado

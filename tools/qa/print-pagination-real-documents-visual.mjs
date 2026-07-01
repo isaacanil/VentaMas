@@ -266,7 +266,7 @@ const business: InvoiceBusinessInfo = {
 
 const buildProduct = (index: number, long = false): InvoiceProduct => {
   const unitPrice = 100 + index * 3;
-  const tax = index % 5 === 0 ? 0 : 18;
+  const tax = index === 2 || index % 5 === 0 ? 0 : 18;
   const amountToBuy = (index % 3) + 1;
   return {
     id: \`product-\${index}\`,
@@ -288,6 +288,16 @@ const buildProduct = (index: number, long = false): InvoiceProduct => {
         tax: { tax },
       },
     },
+    weightDetail:
+      index === 1
+        ? {
+            isSoldByWeight: true,
+            weightUnit: 'lb',
+          }
+        : {
+            isSoldByWeight: false,
+            weightUnit: 'lb',
+          },
   };
 };
 
@@ -956,6 +966,20 @@ const assertReadyState = async (page, label, expectedKind, expectedPageCount) =>
 
   assertExpectedAssets(state, label);
   assertBusinessFiscalText(state, label);
+  if (expectedKind === 'invoice') {
+    if (!state.visibleText.includes('Unidad: Libras (lb)')) {
+      throw new Error(`${label}: falta unidad con descripcion y codigo.`);
+    }
+    if (state.visibleText.includes('Unidad: unidad')) {
+      throw new Error(`${label}: muestra unidad en productos no vendidos por peso.`);
+    }
+    if (state.visibleText.includes('Ind.')) {
+      throw new Error(`${label}: muestra columna Ind. en la representacion impresa.`);
+    }
+    if (!state.visibleText.includes('Indicador: Exento')) {
+      throw new Error(`${label}: falta indicador visual solo para item exento.`);
+    }
+  }
   assertPageBoxesDoNotOverlap(state, label);
   console.log(JSON.stringify({ label, pageCount: state.pageCount, kind: state.documentKind }));
   return state;

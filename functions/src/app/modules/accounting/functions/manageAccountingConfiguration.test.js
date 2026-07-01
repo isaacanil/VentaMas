@@ -275,6 +275,41 @@ describe('manageAccountingConfiguration', () => {
     });
   });
 
+  it('rejects chart accounts deeper than the sixth level', async () => {
+    collectionSnapshots.set(
+      'businesses/business-1/chartOfAccounts',
+      Array.from({ length: 6 }).map((_, index) => ({
+        id: `level-${index + 1}`,
+        data: {
+          code: `1${index + 1}00`,
+          name: `Nivel ${index + 1}`,
+          type: 'asset',
+          status: 'active',
+          postingAllowed: true,
+          parentId: index === 0 ? null : `level-${index}`,
+        },
+      })),
+    );
+
+    await expect(
+      createChartOfAccount({
+        data: {
+          businessId: 'business-1',
+          account: {
+            code: '1700',
+            name: 'Nivel 7',
+            type: 'asset',
+            parentId: 'level-6',
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      message: 'El catálogo solo permite subcuentas hasta el nivel 6.',
+    });
+    expect(setCalls).toHaveLength(0);
+  });
+
   it('backfills legacy bank accounts with linked 1110 child chart accounts', async () => {
     collectionSnapshots.set('businesses/business-1/chartOfAccounts', [
       {
@@ -435,6 +470,65 @@ describe('manageAccountingConfiguration', () => {
     ).rejects.toMatchObject({
       code: 'failed-precondition',
       message: 'Todas las cuentas usadas por el perfil deben estar activas.',
+    });
+    expect(setCalls).toHaveLength(0);
+  });
+
+  it('rejects posting profiles that reference cuenta mayor accounts', async () => {
+    collectionSnapshots.set('businesses/business-1/chartOfAccounts', [
+      {
+        id: 'cash-root',
+        data: {
+          code: '1100',
+          name: 'Caja',
+          type: 'asset',
+          status: 'active',
+          postingAllowed: true,
+        },
+      },
+      {
+        id: 'cash-detail',
+        data: {
+          code: '1101',
+          name: 'Caja principal',
+          type: 'asset',
+          status: 'active',
+          postingAllowed: true,
+          parentId: 'cash-root',
+        },
+      },
+    ]);
+    collectionSnapshots.set(
+      'businesses/business-1/accountingPostingProfiles',
+      [],
+    );
+
+    await expect(
+      createAccountingPostingProfile({
+        data: {
+          businessId: 'business-1',
+          profile: {
+            name: 'Venta prueba',
+            eventType: 'invoice.committed',
+            priority: 10,
+            linesTemplate: [
+              {
+                side: 'debit',
+                accountId: 'cash-root',
+                amountSource: 'document_total',
+              },
+              {
+                side: 'credit',
+                accountId: 'cash-root',
+                amountSource: 'document_total',
+              },
+            ],
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'failed-precondition',
+      message: 'Todas las cuentas usadas por el perfil deben ser Cuentas Detalle.',
     });
     expect(setCalls).toHaveLength(0);
   });

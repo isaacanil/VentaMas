@@ -28,6 +28,10 @@ import {
   getAccountingEventDefinition,
 } from '@/utils/accounting/accountingEvents';
 import {
+  buildChartOfAccountChildrenByParentId,
+  isChartOfAccountPostingAllowedForEntries,
+} from '@/utils/accounting/chartOfAccounts';
+import {
   ACCOUNTING_POSTING_AMOUNT_SOURCE_LABELS,
   ACCOUNTING_POSTING_PAYMENT_TERM_LABELS,
   ACCOUNTING_POSTING_SETTLEMENT_KIND_LABELS,
@@ -120,6 +124,10 @@ export const AddPostingProfileModal = ({
       ),
     [editingProfile],
   );
+  const childCountByParentId = useMemo(
+    () => buildChartOfAccountChildrenByParentId(chartOfAccounts),
+    [chartOfAccounts],
+  );
   const defaultFormValues = useMemo(() => {
     if (!lockedEventType) {
       return DEFAULT_FORM_VALUES;
@@ -137,23 +145,33 @@ export const AddPostingProfileModal = ({
   const accountOptions = useMemo(
     () =>
       chartOfAccounts
-        .filter(
-          (account) =>
-            (account.status === 'active' && account.postingAllowed) ||
-            referencedAccountIds.has(account.id),
-        )
-        .map((account) => ({
-          disabled: account.status !== 'active' || !account.postingAllowed,
-          label: [
-            `${account.code} · ${account.name}`,
-            account.status !== 'active' ? 'Inactiva' : null,
-            !account.postingAllowed ? 'No admite asientos' : null,
-          ]
-            .filter(Boolean)
-            .join(' · '),
-          value: account.id,
-        })),
-    [chartOfAccounts, referencedAccountIds],
+        .filter((account) => {
+          const canPost = isChartOfAccountPostingAllowedForEntries(
+            account,
+            childCountByParentId.get(account.id)?.length ?? 0,
+          );
+
+          return canPost || referencedAccountIds.has(account.id);
+        })
+        .map((account) => {
+          const canPost = isChartOfAccountPostingAllowedForEntries(
+            account,
+            childCountByParentId.get(account.id)?.length ?? 0,
+          );
+
+          return {
+            disabled: !canPost,
+            label: [
+              `${account.code} · ${account.name}`,
+              account.status !== 'active' ? 'Inactiva' : null,
+              !canPost ? 'Cuenta Mayor' : null,
+            ]
+              .filter(Boolean)
+              .join(' · '),
+            value: account.id,
+          };
+        }),
+    [chartOfAccounts, childCountByParentId, referencedAccountIds],
   );
 
   useEffect(() => {
@@ -225,8 +243,9 @@ export const AddPostingProfileModal = ({
     if (!moduleKey) return null;
 
     return (
-      ACCOUNTING_MODULE_LABELS[moduleKey as keyof typeof ACCOUNTING_MODULE_LABELS] ??
-      moduleKey
+      ACCOUNTING_MODULE_LABELS[
+        moduleKey as keyof typeof ACCOUNTING_MODULE_LABELS
+      ] ?? moduleKey
     );
   }, [watchedModuleKey, form, effectiveEventType]);
 
@@ -305,7 +324,9 @@ export const AddPostingProfileModal = ({
           <Form.Item
             label="Nombre"
             name="name"
-            rules={[{ required: true, message: 'Ingrese el nombre de la regla.' }]}
+            rules={[
+              { required: true, message: 'Ingrese el nombre de la regla.' },
+            ]}
           >
             <Input placeholder="Ej. Venta al contado" />
           </Form.Item>
@@ -355,12 +376,17 @@ export const AddPostingProfileModal = ({
         <SectionTitle>
           <Text strong>Condiciones de aplicación</Text>
           <Tooltip title="Filtros opcionales que determinan cuándo se dispara este asiento.">
-            <InfoCircleOutlined style={{ fontSize: '12px', color: '#8c8c8c' }} />
+            <InfoCircleOutlined
+              style={{ fontSize: '12px', color: '#8c8c8c' }}
+            />
           </Tooltip>
         </SectionTitle>
 
         <ThreeColumnGrid>
-          <Form.Item label="Término de pago" name={['conditions', 'paymentTerm']}>
+          <Form.Item
+            label="Término de pago"
+            name={['conditions', 'paymentTerm']}
+          >
             <Select allowClear options={PAYMENT_TERM_OPTIONS} />
           </Form.Item>
 
@@ -445,7 +471,10 @@ export const AddPostingProfileModal = ({
                           noStyle
                           name={[field.name, 'accountId']}
                           rules={[
-                            { required: true, message: 'Seleccione la cuenta.' },
+                            {
+                              required: true,
+                              message: 'Seleccione la cuenta.',
+                            },
                           ]}
                         >
                           <Select
@@ -517,7 +546,11 @@ export const AddPostingProfileModal = ({
                                         '_showDetail',
                                       ]);
                                       form.setFieldValue(
-                                        ['linesTemplate', field.name, '_showDetail'],
+                                        [
+                                          'linesTemplate',
+                                          field.name,
+                                          '_showDetail',
+                                        ],
                                         !current,
                                       );
                                     }}

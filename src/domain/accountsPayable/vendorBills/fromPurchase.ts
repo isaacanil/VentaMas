@@ -5,19 +5,27 @@ import {
   resolvePurchasePaymentState,
   resolvePurchasePaymentTerms,
 } from '@/utils/purchase/financials';
-import {
-  resolvePurchaseWorkflowStatus,
-} from '@/utils/purchase/workflow';
+import { resolvePurchaseWorkflowStatus } from '@/utils/purchase/workflow';
 import type { Purchase } from '@/utils/purchase/types';
 import { toCleanString } from '@/utils/text';
 
-import type { VendorBill, VendorBillStatus } from './types';
+import type {
+  VendorBill,
+  VendorBillApprovalStatus,
+  VendorBillStatus,
+} from './types';
 
 const OPEN_BALANCE_THRESHOLD = 0.01;
-const ACCOUNTS_PAYABLE_VISIBLE_STATUSES = new Set<VendorBillStatus>([
+export const OPEN_VENDOR_BILL_STATUSES = [
   'approved',
+  'on_hold',
+  'disputed',
   'partially_paid',
-]);
+] as const satisfies readonly VendorBillStatus[];
+
+const ACCOUNTS_PAYABLE_VISIBLE_STATUSES = new Set<VendorBillStatus>(
+  OPEN_VENDOR_BILL_STATUSES,
+);
 
 const resolveSupplierIdentity = (
   purchase: Purchase,
@@ -29,14 +37,16 @@ const resolveSupplierIdentity = (
     };
 
     return {
-      supplierId: toCleanString(purchase.providerId) ?? toCleanString(provider.id),
+      supplierId:
+        toCleanString(purchase.providerId) ?? toCleanString(provider.id),
       supplierName: toCleanString(provider.name),
     };
   }
 
   if (typeof purchase.provider === 'string') {
     return {
-      supplierId: toCleanString(purchase.providerId) ?? toCleanString(purchase.provider),
+      supplierId:
+        toCleanString(purchase.providerId) ?? toCleanString(purchase.provider),
       supplierName: null,
     };
   }
@@ -78,12 +88,196 @@ const hasFinancialAccountsPayableActivity = (purchase: Purchase): boolean => {
   );
 };
 
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+
+const ACTIVE_CONTROL_STATUSES = new Set([
+  'active',
+  'blocked',
+  'disputed',
+  'held',
+  'in_dispute',
+  'on_hold',
+  'open',
+  'payment_hold',
+  'pending',
+]);
+
+const RELEASED_CONTROL_STATUSES = new Set([
+  'cancelled',
+  'canceled',
+  'closed',
+  'cleared',
+  'inactive',
+  'released',
+  'resolved',
+  'void',
+  'voided',
+]);
+
+const VOIDED_CONTROL_STATUSES = new Set([
+  'cancelled',
+  'canceled',
+  'void',
+  'voided',
+]);
+
+const isActiveControlRecord = (value: unknown): boolean => {
+  if (value === true) return true;
+
+  const record = asRecord(value);
+  if (record.active === true || record.isActive === true) return true;
+  if (record.active === false || record.isActive === false) return false;
+
+  const status = toCleanString(
+    record.status ?? record.state ?? record.approvalStatus,
+  )?.toLowerCase();
+  if (!status || RELEASED_CONTROL_STATUSES.has(status)) return false;
+
+  return ACTIVE_CONTROL_STATUSES.has(status);
+};
+
+const resolvePurchaseAccountsPayableControls = (
+  purchase: Purchase,
+): Record<string, unknown> =>
+  asRecord(
+    (purchase as Record<string, unknown>).accountsPayable ??
+      (purchase as Record<string, unknown>).payables ??
+      (purchase as Record<string, unknown>).vendorBill,
+  );
+
+const isVoidedAccountsPayableControl = (
+  accountsPayable: Record<string, unknown>,
+): boolean => {
+  const status = toCleanString(
+    accountsPayable.status ??
+      accountsPayable.state ??
+      accountsPayable.approvalStatus,
+  )?.toLowerCase();
+
+  return (
+    VOIDED_CONTROL_STATUSES.has(status ?? '') ||
+    Boolean(accountsPayable.voidedAt) ||
+    Boolean(toCleanString(accountsPayable.voidedBy))
+  );
+};
+
+const resolveVendorBillControlledStatus = ({
+  baseStatus,
+  isVoided,
+  paymentHold,
+  dispute,
+}: {
+  baseStatus: VendorBillStatus;
+  isVoided: boolean;
+  paymentHold: unknown;
+  dispute: unknown;
+}): VendorBillStatus => {
+  if (isVoided) return 'voided';
+  if (isActiveControlRecord(dispute)) return 'disputed';
+  if (isActiveControlRecord(paymentHold)) return 'on_hold';
+  return baseStatus;
+};
+
+const resolveControlReason = (value: unknown): string | null => {
+  const record = asRecord(value);
+  return (
+    toCleanString(
+      record.reason ?? record.note ?? record.comment ?? record.description,
+    ) ?? null
+  );
+};
+
+const resolveVendorBillPaymentControlSnapshot = ({
+  approvalStatus,
+  dispute,
+  paymentHold,
+  status,
+}: Pick<
+  VendorBill,
+  'approvalStatus' | 'dispute' | 'paymentHold' | 'status'
+>) => {
+  if (status === 'paid' || status === 'voided') {
+    return {
+      canRegisterPayment: false,
+      label: 'Cerrada',
+      reason: null,
+      status: 'closed' as const,
+      tone: 'neutral' as const,
+    };
+  }
+
+  if (status === 'disputed' || isActiveControlRecord(dispute)) {
+    return {
+      canRegisterPayment: false,
+      label: 'En disputa',
+      reason: resolveControlReason(dispute),
+      status: 'disputed' as const,
+      tone: 'danger' as const,
+    };
+  }
+
+  if (status === 'on_hold' || isActiveControlRecord(paymentHold)) {
+    return {
+      canRegisterPayment: false,
+      label: 'Retenida',
+      reason: resolveControlReason(paymentHold),
+      status: 'on_hold' as const,
+      tone: 'warning' as const,
+    };
+  }
+
+  const normalizedApprovalStatus = toCleanString(approvalStatus)?.toLowerCase();
+  if (
+    normalizedApprovalStatus &&
+    ['draft', 'pending', 'pending_approval', 'rejected'].includes(
+      normalizedApprovalStatus,
+    )
+  ) {
+    return {
+      canRegisterPayment: false,
+      label: 'No aprobada',
+      reason: null,
+      status: 'pending_approval' as const,
+      tone: 'neutral' as const,
+    };
+  }
+
+  return {
+    canRegisterPayment: true,
+    label: 'Aprobada',
+    reason: null,
+    status: 'payable' as const,
+    tone: 'success' as const,
+  };
+};
+
 const hasHistoricallyPostedVendorBillGrounds = (purchase: Purchase): boolean =>
   toMillis(purchase.completedAt) != null;
+
+export const isPurchaseReceiptInventoryPending = (
+  purchase: Purchase,
+): boolean => {
+  const status = toCleanString(
+    purchase.receiptInventoryState?.status,
+  )?.toLowerCase();
+
+  return (
+    status === 'pending' ||
+    status === 'pending_inventory' ||
+    status === 'applying'
+  );
+};
 
 export const shouldMaterializeVendorBillFromPurchase = (
   purchase: Purchase,
 ): boolean => {
+  if (isPurchaseReceiptInventoryPending(purchase)) {
+    return false;
+  }
+
   const workflowStatus = resolvePurchaseWorkflowStatus(purchase);
   if (workflowStatus === 'canceled') {
     return (
@@ -132,21 +326,50 @@ export const buildVendorBillFromPurchase = (
     null;
 
   const { supplierId, supplierName } = resolveSupplierIdentity(purchase);
+  const accountsPayable = resolvePurchaseAccountsPayableControls(purchase);
+  const isVoided = isVoidedAccountsPayableControl(accountsPayable);
+  const paymentHold = (accountsPayable.paymentHold ??
+    accountsPayable.hold ??
+    null) as VendorBill['paymentHold'];
+  const dispute = (accountsPayable.dispute ?? null) as VendorBill['dispute'];
+  const baseStatus = resolveVendorBillStatus(purchase, balance, paid);
+  const status = resolveVendorBillControlledStatus({
+    baseStatus,
+    isVoided,
+    paymentHold,
+    dispute,
+  });
+  const approvalStatus =
+    (isVoided ? 'voided' : null) ??
+    (toCleanString(accountsPayable.approvalStatus)?.toLowerCase() as
+      | VendorBillApprovalStatus
+      | undefined) ??
+    (resolvePurchaseWorkflowStatus(purchase) === 'completed'
+      ? 'approved'
+      : resolvePurchaseWorkflowStatus(purchase) === 'canceled'
+        ? 'voided'
+        : 'draft');
 
   return {
     id: `purchase:${purchaseId}`,
     reference: String(purchase.numberId ?? purchaseId),
     vendorReference:
       toCleanString(
-        purchase.vendorReference ?? purchase.invoiceNumber ?? purchase.reference,
+        purchase.vendorReference ??
+          purchase.invoiceNumber ??
+          purchase.reference,
       ) ?? null,
-    status: resolveVendorBillStatus(purchase, balance, paid),
-    approvalStatus:
-      resolvePurchaseWorkflowStatus(purchase) === 'completed'
-        ? 'approved'
-        : resolvePurchaseWorkflowStatus(purchase) === 'canceled'
-          ? 'voided'
-          : 'draft',
+    status,
+    approvalStatus,
+    voidedAt: (accountsPayable.voidedAt as VendorBill['voidedAt']) ?? null,
+    voidedBy: toCleanString(accountsPayable.voidedBy) ?? null,
+    voidReason: toCleanString(accountsPayable.voidReason) ?? null,
+    voidEvidenceNote: toCleanString(accountsPayable.voidEvidenceNote) ?? null,
+    voidEvidenceUrls: Array.isArray(accountsPayable.voidEvidenceUrls)
+      ? (accountsPayable.voidEvidenceUrls
+          .map((entry) => toCleanString(entry))
+          .filter(Boolean) as string[])
+      : [],
     sourceDocumentType: 'purchase',
     sourceDocumentId: purchaseId,
     supplierId,
@@ -160,16 +383,25 @@ export const buildVendorBillFromPurchase = (
     monetary: purchase.monetary ?? null,
     paymentTerms,
     paymentState,
+    paymentControl: resolveVendorBillPaymentControlSnapshot({
+      approvalStatus,
+      dispute,
+      paymentHold,
+      status,
+    }),
+    paymentHold,
+    dispute,
     totals: {
       total: Number(paymentState?.total ?? totals.total ?? 0),
       paid: Number(paymentState?.paid ?? 0),
       balance: Number(paymentState?.balance ?? totals.total ?? 0),
     },
-    documentNature: Array.isArray(purchase.replenishments) &&
-      purchase.replenishments.length
-      ? 'inventory'
-      : 'expense',
-    settlementTiming: paymentTerms?.isImmediate === true ? 'immediate' : 'deferred',
+    documentNature:
+      Array.isArray(purchase.replenishments) && purchase.replenishments.length
+        ? 'inventory'
+        : 'expense',
+    settlementTiming:
+      paymentTerms?.isImmediate === true ? 'immediate' : 'deferred',
     purchase: {
       ...purchase,
       paymentTerms,

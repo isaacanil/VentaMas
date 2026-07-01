@@ -207,12 +207,7 @@ export const JournalBookToolbar = ({
           setPreviewOnly(isSelected);
         }}
       >
-        <VmSwitch.Control>
-          <VmSwitch.Thumb />
-        </VmSwitch.Control>
-        <VmSwitch.Content>
-          <ToggleLabel>Solo previos (No posteados)</ToggleLabel>
-        </VmSwitch.Content>
+        <ToggleLabel>Solo previos (No posteados)</ToggleLabel>
       </VmSwitch>
     </ToolbarToggle>
   </Toolbar>

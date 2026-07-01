@@ -136,6 +136,22 @@ const loadAccountingEventsInRange = async ({ businessId, end, start }) => {
   );
 };
 
+const buildAccountChildrenByParentId = (accounts = []) =>
+  accounts.reduce((accumulator, account) => {
+    const parentId = toCleanString(account.parentId);
+    if (!parentId) return accumulator;
+
+    const children = accumulator.get(parentId) || [];
+    children.push(account);
+    accumulator.set(parentId, children);
+    return accumulator;
+  }, new Map());
+
+const isAccountPostingAllowedForEntries = (account, childCount = 0) =>
+  toCleanString(account?.status) !== 'inactive' &&
+  account?.postingAllowed !== false &&
+  childCount === 0;
+
 const resolveEventProjectionStatus = (event) => {
   const projection = asRecord(event.projection);
   return (
@@ -429,6 +445,7 @@ const loadFiscalYearCloseContext = async ({ businessId, year }) => {
       .get(),
   ]);
   const accounts = mapSnapshotDocs(accountsSnap);
+  const childCountByParentId = buildAccountChildrenByParentId(accounts);
   const accountsById = new Map(
     accounts.map((account) => [account.id, account]),
   );
@@ -436,8 +453,10 @@ const loadFiscalYearCloseContext = async ({ businessId, year }) => {
     accounts.find(
       (account) =>
         toCleanString(account.systemKey) === 'retained_earnings' &&
-        toCleanString(account.status) !== 'inactive' &&
-        account.postingAllowed !== false,
+        isAccountPostingAllowedForEntries(
+          account,
+          childCountByParentId.get(account.id)?.length || 0,
+        ),
     ) ?? null;
   const closingAccountsById = new Map(
     accounts
@@ -445,8 +464,10 @@ const loadFiscalYearCloseContext = async ({ businessId, year }) => {
         const type = toCleanString(account.type);
         return (
           (type === 'income' || type === 'expense') &&
-          toCleanString(account.status) !== 'inactive' &&
-          account.postingAllowed !== false
+          isAccountPostingAllowedForEntries(
+            account,
+            childCountByParentId.get(account.id)?.length || 0,
+          )
         );
       })
       .map((account) => [account.id, account]),

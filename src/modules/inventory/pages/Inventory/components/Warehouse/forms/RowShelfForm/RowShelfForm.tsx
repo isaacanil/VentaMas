@@ -89,7 +89,13 @@ export default function RowShelfForm(_props: RowShelfFormProps) {
     const isUpdatingRowShelf = Boolean(formData?.id);
     const saveRowShelf = isUpdatingRowShelf
       ? () =>
-          updateRowShelf(user, warehouseId, shelfId, formData.id as string, newRowShelf)
+          updateRowShelf(
+            user,
+            warehouseId,
+            shelfId,
+            formData.id as string,
+            newRowShelf,
+          )
       : () => createRowShelf(user, warehouseId, shelfId, newRowShelf);
     const successMessage = resolveRowShelfSaveMessage(isUpdatingRowShelf);
 
@@ -123,8 +129,8 @@ export default function RowShelfForm(_props: RowShelfFormProps) {
       destroyOnClose
     >
       <Spin
+        description={formData?.id ? 'Actualizando fila...' : 'Creando fila...'}
         spinning={loading}
-        tip={formData?.id ? 'Actualizando fila...' : 'Creando fila...'}
       >
         <Form
           form={form}

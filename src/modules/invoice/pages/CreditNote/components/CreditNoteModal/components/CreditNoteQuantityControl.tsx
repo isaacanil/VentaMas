@@ -13,6 +13,8 @@ type CreditNoteQuantityControlProps = {
   originalQuantity: number;
   creditedByOthers: number;
   maxQuantity: number;
+  minQuantity?: number;
+  step?: number;
   isEditable: boolean;
   onQuantityChange: (value: number | null) => void;
   compact?: boolean;
@@ -25,6 +27,8 @@ export const CreditNoteQuantityControl = ({
   originalQuantity,
   creditedByOthers,
   maxQuantity,
+  minQuantity = 1,
+  step = 1,
   isEditable,
   onQuantityChange,
   compact = false,
@@ -42,8 +46,9 @@ export const CreditNoteQuantityControl = ({
   return (
     <QuantityEditor>
       <QuantityInput
-        min={1}
+        min={minQuantity}
         max={maxQuantity}
+        step={step}
         value={quantity}
         onChange={(value) =>
           onQuantityChange(typeof value === 'number' ? value : null)

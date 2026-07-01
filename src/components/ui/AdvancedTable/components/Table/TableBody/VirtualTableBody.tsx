@@ -14,7 +14,6 @@ import styled from 'styled-components';
 
 import { CellRenderer } from '@/components/ui/AdvancedTable/components/CellRenderer/CellRenderer';
 import { Row } from '@/components/ui/AdvancedTable/components/Table/TableRow.styles';
-import { CenteredText } from '@/components/ui/CenteredText';
 import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/types/AdvancedTableTypes';
 import type { TableRow } from '@/components/ui/AdvancedTable/types/ColumnTypes';
 
@@ -231,7 +230,9 @@ export const VirtualTableBody = <RowData extends TableRow>({
   if (!hasData && !loading) {
     return (
       <Body>
-        <CenteredText text={emptyText} />
+        <EmptyState aria-live="polite">
+          <EmptyStateText>{emptyText}</EmptyStateText>
+        </EmptyState>
       </Body>
     );
   }
@@ -309,6 +310,26 @@ const Container = styled.div`
   & .virtuoso-scroller {
     /* Opcional: Estilos para el scrollbar si se desean personalizar aquí */
   }
+`;
+
+const EmptyState = styled.div`
+  position: sticky;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: min(100%, 100vw);
+  min-height: 220px;
+  height: 100%;
+  padding: 24px 16px;
+  pointer-events: none;
+`;
+
+const EmptyStateText = styled.div`
+  max-width: min(420px, calc(100vw - 32px));
+  color: var(--ds-color-text-secondary, #555);
+  font-size: 14px;
+  line-height: 1.45;
+  text-align: center;
 `;
 
 const GroupHeader = styled.div`

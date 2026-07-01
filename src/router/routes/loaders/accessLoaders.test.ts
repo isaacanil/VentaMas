@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { protectedRouteLoader } from './accessLoaders';
+import accountsPayableRoutes from '../paths/AccountsPayable';
 import devRoutes from '../paths/Dev';
 import labRoutes from '../paths/Lab';
 import { registerRoutes } from '../routeVisibility';
@@ -31,7 +32,7 @@ const createLoaderArgs = (pathname: string) =>
 
 describe('protectedRouteLoader', () => {
   beforeEach(() => {
-    registerRoutes([...devRoutes, ...labRoutes]);
+    registerRoutes([...devRoutes, ...labRoutes, ...accountsPayableRoutes]);
     mockState = {
       user: {
         authReady: true,
@@ -129,6 +130,35 @@ describe('protectedRouteLoader', () => {
 
     const result = protectedRouteLoader(
       createLoaderArgs(PRINT_PAGINATION_LAB_PATH),
+    );
+
+    expect(result).toBeNull();
+  });
+
+  it('redirects users without accounting read away from accounts payable', () => {
+    const result = protectedRouteLoader(
+      createLoaderArgs(ROUTES_NAME.ACCOUNT_PAYABLE.ACCOUNT_PAYABLE_LIST),
+    );
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        status: 302,
+      }),
+    );
+    expect((result as Response).headers.get('Location')).toBe(
+      ROUTES_NAME.BASIC_TERM.HOME,
+    );
+  });
+
+  it('allows accounting read users through accounts payable', () => {
+    mockState.user.user = {
+      ...mockState.user.user,
+      role: 'accountant',
+      activeRole: 'accountant',
+    };
+
+    const result = protectedRouteLoader(
+      createLoaderArgs(ROUTES_NAME.ACCOUNT_PAYABLE.ACCOUNT_PAYABLE_LIST),
     );
 
     expect(result).toBeNull();

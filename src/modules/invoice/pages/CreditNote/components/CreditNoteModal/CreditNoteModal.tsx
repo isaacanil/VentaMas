@@ -40,11 +40,15 @@ import { RelatedNotesTab } from './components/RelatedNotesTab';
 import { ResponsiveContainer } from './components/ResponsiveContainer';
 import { useCreditNoteColumns } from './hooks/useCreditNoteColumns';
 import { useCreditNoteSelection } from './hooks/useCreditNoteSelection';
+import { getCreditNoteLineKey } from './hooks/useCreditNoteSelection.helpers';
 import {
   CREDIT_NOTE_TEXT_CORRECTION_AMOUNT_MESSAGE,
   isCreditNoteTextCorrectionWithAmount,
 } from './utils/modificationCode';
-import { resolveQuantity } from './utils/quantity';
+import {
+  applyCreditNoteLineQuantity,
+  resolveCreditNoteLineQuantity,
+} from './utils/quantity';
 
 import type { CreditNoteRecord } from '@/types/creditNote';
 import type {
@@ -263,8 +267,8 @@ export const CreditNoteModal = () => {
     const map: QuantityByItem = {};
     otherCreditNotes.forEach((cn) => {
       (cn.items || []).forEach((it) => {
-        const itemId = String(it.id);
-        const qty = resolveQuantity(it.amountToBuy);
+        const itemId = String(getCreditNoteLineKey(it));
+        const qty = resolveCreditNoteLineQuantity(it);
         map[itemId] = (map[itemId] || 0) + qty;
       });
     });
@@ -274,8 +278,8 @@ export const CreditNoteModal = () => {
   const existingItemQuantities = useMemo(() => {
     const map: QuantityByItem = {};
     (creditNoteData?.items || []).forEach((it) => {
-      const itemId = String(it.id);
-      map[itemId] = resolveQuantity(it.amountToBuy);
+      const itemId = String(getCreditNoteLineKey(it));
+      map[itemId] = resolveCreditNoteLineQuantity(it);
     });
     return map;
   }, [creditNoteData]);
@@ -290,8 +294,8 @@ export const CreditNoteModal = () => {
     return (
       currentInvoice.products
         .map((item) => {
-          const itemId = String(item.id);
-          const totalQty = resolveQuantity(item.amountToBuy); // Cantidad original en la factura
+          const itemId = String(getCreditNoteLineKey(item));
+          const totalQty = resolveCreditNoteLineQuantity(item); // Cantidad original en la factura
           const creditedByOthers = creditedQuantities[itemId] || 0; // Ya acreditado por otras NC (excluye esta)
 
           // La máxima cantidad que se puede acreditar para este item.
@@ -306,7 +310,8 @@ export const CreditNoteModal = () => {
           (item) =>
             item.maxAvailableQty > 0 ||
             (mode === 'edit' &&
-              (existingItemQuantities[String(item.id)] || 0) > 0),
+              (existingItemQuantities[String(getCreditNoteLineKey(item))] ||
+                0) > 0),
         )
     );
   }, [currentInvoice, creditedQuantities, existingItemQuantities, mode]);
@@ -441,18 +446,23 @@ export const CreditNoteModal = () => {
     };
 
     const selectedProducts = availableInvoiceItems
-      .filter((item) => selectedItems.includes(item.id))
-      .map((item) => ({
-        ...item,
-        amountToBuy: itemQuantities[String(item.id)] || 1,
-      }));
+      .filter((item) => selectedItems.includes(getCreditNoteLineKey(item)))
+      .map((item) =>
+        applyCreditNoteLineQuantity(
+          item,
+          itemQuantities[String(getCreditNoteLineKey(item))] || 1,
+        ),
+      );
 
     // Validación final: verificar que ninguna cantidad exceda lo disponible
     const invalidItems = selectedProducts.filter((item) => {
       const availableItem = availableInvoiceItems.find(
-        (ai) => ai.id === item.id,
+        (ai) => getCreditNoteLineKey(ai) === getCreditNoteLineKey(item),
       );
-      return availableItem && item.amountToBuy > availableItem.maxAvailableQty;
+      return (
+        availableItem &&
+        resolveCreditNoteLineQuantity(item) > availableItem.maxAvailableQty
+      );
     });
 
     if (invalidItems.length > 0) {
@@ -538,19 +548,23 @@ export const CreditNoteModal = () => {
   };
 
   const totalAmount = selectedItems.reduce((sum, id) => {
-    const item = availableInvoiceItems.find((it) => it.id === id);
+    const item = availableInvoiceItems.find(
+      (it) => getCreditNoteLineKey(it) === id,
+    );
     if (!item) return sum;
     const qty = itemQuantities[String(id)] || 1;
-    const itemCopy = { ...item, amountToBuy: qty };
+    const itemCopy = applyCreditNoteLineQuantity(item, qty);
     return sum + getTotalPrice(itemCopy, taxationEnabled);
   }, 0);
 
   // Calcular ITBIS total correctamente
   const totalItbis = selectedItems.reduce((sum, id) => {
-    const item = availableInvoiceItems.find((it) => it.id === id);
+    const item = availableInvoiceItems.find(
+      (it) => getCreditNoteLineKey(it) === id,
+    );
     if (!item) return sum;
     const qty = itemQuantities[String(id)] || 1;
-    const itemCopy = { ...item, amountToBuy: qty };
+    const itemCopy = applyCreditNoteLineQuantity(item, qty);
     return sum + getTax(itemCopy, taxationEnabled);
   }, 0);
 
@@ -574,12 +588,14 @@ export const CreditNoteModal = () => {
     itemId: string | undefined,
     value: number | null,
   ) => {
-    if (!value || value < 1) return;
+    if (!value || value <= 0) return;
 
     // Verificar que no exceda la cantidad máxima disponible
-    const item = availableInvoiceItems.find((it) => it.id === itemId);
+    const item = availableInvoiceItems.find(
+      (it) => getCreditNoteLineKey(it) === itemId,
+    );
     if (item && value > item.maxAvailableQty) {
-      const originalQty = resolveQuantity(item.amountToBuy);
+      const originalQty = resolveCreditNoteLineQuantity(item);
       const creditedByOthers = creditedQuantities[String(itemId)] || 0;
 
       message.warning({

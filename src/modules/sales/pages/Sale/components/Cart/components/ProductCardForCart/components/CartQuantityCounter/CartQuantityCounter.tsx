@@ -11,6 +11,7 @@ import {
   exceedsRestrictedStock,
   normalizeCounterAmount,
   parseCounterInputValue,
+  resolveMaxCounterAmountForStock,
 } from './CartQuantityCounter.helpers';
 import {
   ButtonCounter,
@@ -22,6 +23,8 @@ import { DeleteProductAlert } from './components/DeleteProductAlert/DeleteProduc
 
 export type CartQuantityCounterItem = {
   restrictSaleWithoutStock?: boolean;
+  saleUnitConversionFactor?: number;
+  allowFractional?: boolean;
 };
 
 export type CartQuantityCounterProps = {
@@ -42,16 +45,36 @@ export const CartQuantityCounter = ({
   const inputAmount = normalizeCounterAmount(amountToBuy);
 
   const restrictSaleWithoutStock = item.restrictSaleWithoutStock;
+  const saleUnitConversionFactor = item.saleUnitConversionFactor;
+  const allowFractional = item.allowFractional === true;
+  const maxCounterAmount = resolveMaxCounterAmountForStock({
+    stock,
+    saleUnitConversionFactor,
+    allowFractional,
+  });
+  const stockLabel =
+    saleUnitConversionFactor && saleUnitConversionFactor > 1
+      ? `${stock} unidades base`
+      : `${stock} unidades`;
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = parseCounterInputValue(event.target.value);
+    const value = parseCounterInputValue(event.target.value, allowFractional);
     if (value === null) return;
 
-    if (exceedsRestrictedStock({ value, stock, restrictSaleWithoutStock })) {
+    if (
+      exceedsRestrictedStock({
+        value,
+        stock,
+        restrictSaleWithoutStock,
+        saleUnitConversionFactor,
+      })
+    ) {
       alert(
-        `La cantidad solicitada no puede exceder el stock disponible (${stock} unidades).`,
+        `La cantidad solicitada no puede exceder el stock disponible (${stockLabel}).`,
       );
-      dispatch(onChangeValueAmountToProduct({ id, value: stock ?? 0 }));
+      if (maxCounterAmount && maxCounterAmount > 0) {
+        dispatch(onChangeValueAmountToProduct({ id, value: maxCounterAmount }));
+      }
       return;
     }
 
@@ -68,9 +91,10 @@ export const CartQuantityCounter = ({
         value: newValue,
         stock,
         restrictSaleWithoutStock,
+        saleUnitConversionFactor,
       })
     ) {
-      alert(`No puedes agregar más de ${stock} unidades.`);
+      alert(`No puedes agregar más de ${stockLabel}.`);
       return;
     }
 
@@ -97,8 +121,8 @@ export const CartQuantityCounter = ({
         </ButtonCounter>
         <CounterDisplay
           type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
+          inputMode={allowFractional ? 'decimal' : 'numeric'}
+          pattern={allowFractional ? '[0-9]*[.,]?[0-9]*' : '[0-9]*'}
           value={inputAmount}
           onChange={handleInputChange}
           aria-label="Cantidad"
@@ -109,6 +133,7 @@ export const CartQuantityCounter = ({
             value: inputAmount + 1,
             stock,
             restrictSaleWithoutStock,
+            saleUnitConversionFactor,
           })}
           aria-label="Aumentar cantidad"
         >

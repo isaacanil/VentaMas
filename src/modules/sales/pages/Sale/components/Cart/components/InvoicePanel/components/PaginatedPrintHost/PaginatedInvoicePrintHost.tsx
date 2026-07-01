@@ -23,10 +23,14 @@ type PaginatedInvoicePrintHostProps = {
   onPrinted: () => void;
   pending: boolean;
   printFrozenDocument?: typeof printFrozenPaginatedDocument;
+  printAttemptTimeoutMs?: number;
   readyTimeoutMs?: number;
 };
 
-const PRINT_READY_TIMEOUT_MS = 4_000;
+const PRINT_READY_TIMEOUT_MS = 6_000;
+const PRINT_ATTEMPT_TIMEOUT_MS = 10_000;
+const PRINT_MAX_ATTEMPTS = 2;
+const PRINT_RETRY_DELAY_MS = 250;
 const PRINT_TIMEOUT_RESULT = 'timeout' as const;
 
 const createInvoiceKey = (invoice: InvoiceData | null | undefined) => {
@@ -68,20 +72,38 @@ const resolveFallbackReason = (
 const waitForFrozenPrintResult = async (
   printPromise: Promise<boolean>,
   timeoutMs: number,
+  onTimeout?: () => void,
 ) => {
   let timeoutId: number | undefined;
+  let didTimeout = false;
+  const observedPrintPromise = printPromise.catch((error) => {
+    if (didTimeout) {
+      return false;
+    }
+
+    throw error;
+  });
   const timeoutPromise = new Promise<typeof PRINT_TIMEOUT_RESULT>((resolve) => {
-    timeoutId = window.setTimeout(() => resolve(PRINT_TIMEOUT_RESULT), timeoutMs);
+    timeoutId = window.setTimeout(() => {
+      didTimeout = true;
+      onTimeout?.();
+      resolve(PRINT_TIMEOUT_RESULT);
+    }, timeoutMs);
   });
 
   try {
-    return await Promise.race([printPromise, timeoutPromise]);
+    return await Promise.race([observedPrintPromise, timeoutPromise]);
   } finally {
     if (timeoutId !== undefined) {
       window.clearTimeout(timeoutId);
     }
   }
 };
+
+const waitForPrintRetry = () =>
+  new Promise<void>((resolve) => {
+    window.setTimeout(resolve, PRINT_RETRY_DELAY_MS);
+  });
 
 export const PaginatedInvoicePrintHost = ({
   business,
@@ -90,6 +112,7 @@ export const PaginatedInvoicePrintHost = ({
   onPrinted,
   pending,
   printFrozenDocument = printFrozenPaginatedDocument,
+  printAttemptTimeoutMs = PRINT_ATTEMPT_TIMEOUT_MS,
   readyTimeoutMs = PRINT_READY_TIMEOUT_MS,
 }: PaginatedInvoicePrintHostProps) => {
   const hostRef = useRef<HTMLDivElement | null>(null);
@@ -197,48 +220,74 @@ export const PaginatedInvoicePrintHost = ({
 
     void (async () => {
       let blockedMessage: string | null = null;
+      let lastPrintError: unknown = null;
 
-      try {
-        const printed = await waitForFrozenPrintResult(
-          printFrozenDocument({
-            allowConservativeSnapshot: !currentRuntimeState.readyToPrint,
-            onBlocked: (message) => {
-              blockedMessage = message;
-            },
-            source,
-            title: printTitle,
-          }),
-          readyTimeoutMs,
-        );
+      for (let attempt = 1; attempt <= PRINT_MAX_ATTEMPTS; attempt += 1) {
+        const abortController =
+          typeof AbortController === 'function'
+            ? new AbortController()
+            : null;
+        blockedMessage = null;
 
-        if (printed === PRINT_TIMEOUT_RESULT) {
-          onPrintBlocked(
-            resolveFallbackReason(
-              'paginated-print-timeout',
-              currentRuntimeState,
-            ),
+        try {
+          const printed = await waitForFrozenPrintResult(
+            printFrozenDocument({
+              allowConservativeSnapshot: !currentRuntimeState.readyToPrint,
+              onBlocked: (message) => {
+                blockedMessage = message;
+              },
+              signal: abortController?.signal,
+              source,
+              title: printTitle,
+            }),
+            printAttemptTimeoutMs,
+            () => abortController?.abort(),
           );
-          return;
+
+          if (printed === PRINT_TIMEOUT_RESULT) {
+            if (attempt >= PRINT_MAX_ATTEMPTS) {
+              onPrintBlocked(
+                resolveFallbackReason(
+                  'paginated-print-timeout',
+                  currentRuntimeState,
+                  `intentos=${attempt}`,
+                ),
+              );
+              return;
+            }
+
+            await waitForPrintRetry();
+            continue;
+          }
+
+          if (printed) {
+            onPrinted();
+            return;
+          }
+        } catch (error) {
+          lastPrintError = error;
         }
 
-        if (printed) {
-          onPrinted();
-          return;
+        if (attempt < PRINT_MAX_ATTEMPTS) {
+          await waitForPrintRetry();
         }
+      }
 
-        onPrintBlocked(
-          resolveFallbackReason(
-            'paginated-print-freeze-blocked',
-            currentRuntimeState,
-            blockedMessage,
-          ),
-        );
-      } catch (error) {
-        console.warn('[InvoicePanel] paginated print failed', error);
+      if (lastPrintError) {
+        console.warn('[InvoicePanel] paginated print failed', lastPrintError);
         onPrintBlocked(
           resolveFallbackReason('paginated-print-error', currentRuntimeState),
         );
+        return;
       }
+
+      onPrintBlocked(
+        resolveFallbackReason(
+          'paginated-print-freeze-blocked',
+          currentRuntimeState,
+          blockedMessage,
+        ),
+      );
     })();
   }, [
     currentRuntimeState,
@@ -247,9 +296,9 @@ export const PaginatedInvoicePrintHost = ({
     onPrintBlocked,
     onPrinted,
     pending,
+    printAttemptTimeoutMs,
     printFrozenDocument,
     printTitle,
-    readyTimeoutMs,
     requestKey,
   ]);
 

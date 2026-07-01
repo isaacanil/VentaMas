@@ -18,9 +18,43 @@ export const ALLOWED_TASKS = new Set([
   'consumeCreditNotes',
   'closePreorder',
   'updateInventory',
+  'issueElectronicTaxReceipt',
 ]);
 
 export const DEFAULT_TASKS = ['createCanonicalInvoice', 'attachToCashCount'];
+
+async function supersedeFailedTasks({
+  outboxCol,
+  type,
+  replacementTaskId,
+  authUid,
+  reason,
+}) {
+  const failedSnap = await outboxCol
+    .where('type', '==', type)
+    .where('status', '==', 'failed')
+    .get();
+
+  if (failedSnap.empty) return 0;
+
+  await Promise.all(
+    failedSnap.docs.map((doc) =>
+      doc.ref.set(
+        {
+          status: 'superseded',
+          supersededBy: replacementTaskId,
+          supersededAt: FieldValue.serverTimestamp(),
+          supersededByUser: authUid || null,
+          supersededReason: reason || null,
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      ),
+    ),
+  );
+
+  return failedSnap.docs.length;
+}
 
 export function sanitizeTasks(value) {
   if (!value) return DEFAULT_TASKS;
@@ -88,7 +122,21 @@ export async function enqueueRepairTask({
     .get();
 
   if (!pendingSnap.empty) {
-    return { status: 'skipped', reason: 'pending_task_exists' };
+    const pendingTaskId = pendingSnap.docs[0]?.id || null;
+    const supersededFailedTasks = pendingTaskId
+      ? await supersedeFailedTasks({
+          outboxCol,
+          type,
+          replacementTaskId: pendingTaskId,
+          authUid,
+          reason,
+        })
+      : 0;
+    return {
+      status: 'skipped',
+      reason: 'pending_task_exists',
+      supersededFailedTasks,
+    };
   }
 
   const taskRef = outboxCol.doc();
@@ -111,6 +159,14 @@ export async function enqueueRepairTask({
     requestedReason: reason || null,
   });
 
+  const supersededFailedTasks = await supersedeFailedTasks({
+    outboxCol,
+    type,
+    replacementTaskId: taskRef.id,
+    authUid,
+    reason,
+  });
+
   await auditSafe({
     businessId,
     invoiceId,
@@ -119,10 +175,11 @@ export async function enqueueRepairTask({
       type,
       requestedBy: authUid,
       payloadKeys: Object.keys(normalizedPayload || {}),
+      supersededFailedTasks,
     },
   });
 
-  return { status: 'scheduled', taskId: taskRef.id };
+  return { status: 'scheduled', taskId: taskRef.id, supersededFailedTasks };
 }
 
 export async function scheduleRepairTasks({

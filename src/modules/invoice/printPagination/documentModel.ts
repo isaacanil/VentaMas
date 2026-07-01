@@ -1,3 +1,4 @@
+import { unitsOfMeasure } from '@/domain/products/unitsOfMeasure';
 import type { DebitNoteRecord } from '@/modules/invoice/types/debitNote';
 import {
   resolveElectronicTaxReceiptSnapshot,
@@ -556,8 +557,23 @@ const parsePositiveNumber = (value: unknown): number | null => {
   return Number.isFinite(numeric) && numeric > 0 ? numeric : null;
 };
 
+const unitDescriptionByCode = new Map(
+  unitsOfMeasure.map((unit) => [unit.unit.toLowerCase(), unit.description]),
+);
+
+const resolveWeightUnitLabel = (unitCode: string | null): string | null => {
+  if (!unitCode) return null;
+
+  const description = unitDescriptionByCode.get(unitCode.toLowerCase());
+  return description ? `${description} (${unitCode})` : unitCode;
+};
+
 const resolveWeightUnit = (product: InvoiceProduct): string | null => {
   const weightDetail = toRecord(product.weightDetail);
+
+  if (weightDetail?.isSoldByWeight !== true) {
+    return null;
+  }
 
   return (
     cleanString(weightDetail?.weightUnit) ||
@@ -566,14 +582,17 @@ const resolveWeightUnit = (product: InvoiceProduct): string | null => {
   );
 };
 
-const resolveLineQuantity = (product: InvoiceProduct): number =>
-  parsePositiveNumber(resolveInvoiceProductQuantity(product)) ??
-  parsePositiveNumber(toRecord(product.weightDetail)?.weight) ??
-  0;
+const resolveLineQuantity = (product: InvoiceProduct): number => {
+  const weightDetail = toRecord(product.weightDetail);
+  if (weightDetail?.isSoldByWeight === true) {
+    return parsePositiveNumber(weightDetail.weight) ?? 0;
+  }
+
+  return parsePositiveNumber(resolveInvoiceProductQuantity(product)) ?? 0;
+};
 
 const buildDescriptionLines = (product: InvoiceProduct): string[] => {
-  const measurement = cleanString(product.measurement);
-  const weightUnit = resolveWeightUnit(product);
+  const weightUnitLabel = resolveWeightUnitLabel(resolveWeightUnit(product));
 
   return [
     cleanString(product.name) ||
@@ -583,11 +602,7 @@ const buildDescriptionLines = (product: InvoiceProduct): string[] => {
       ? `Marca: ${product.brand}`
       : null,
     cleanString(product.comment) ? `Nota: ${product.comment}` : null,
-    measurement
-      ? `Unidad: ${measurement}`
-      : weightUnit
-        ? `Unidad: ${weightUnit}`
-        : null,
+    weightUnitLabel ? `Unidad: ${weightUnitLabel}` : null,
   ].filter((line): line is string => Boolean(line));
 };
 

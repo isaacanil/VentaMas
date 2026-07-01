@@ -6,11 +6,9 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Button,
-  Drawer,
   Form,
   Input,
   InputNumber,
-  Modal,
   Select,
   Space,
   Switch,
@@ -19,6 +17,8 @@ import {
 import React, { useCallback, useMemo, useState } from 'react';
 
 import { DatePicker } from '@/components/common/DatePicker';
+import { VmButton, VmDrawer, VmModal } from '@/components/heroui';
+import type { VmButtonProps, VmDrawerProps } from '@/components/heroui';
 import { useOverflowCollapse } from '@/hooks/useOverflowCollapse';
 import useViewportWidth from '@/hooks/useViewportWidth';
 
@@ -47,6 +47,7 @@ import {
   DesktopMeasureForm,
   DesktopPinned,
   DrawerContent,
+  MobileFilterForm,
   MobileHeader,
   MobileWrapper,
   ModalContent,
@@ -164,14 +165,15 @@ export type FilterBarItem =
 
 type RenderItemsConfig = {
   registerRef?: (index: number) => (node: HTMLElement | null) => void;
+  fullWidth?: boolean;
   wrapWithFormItem?: boolean;
 };
 
 const DEFAULT_BREAKPOINTS = { mobile: 500, desktop: 1200 } as const;
 const EMPTY_ITEMS: FilterBarItem[] = [];
 const EMPTY_BREAKPOINTS: FilterBarBreakpoints = {};
-const EMPTY_DRAWER_PROPS: React.ComponentProps<typeof Drawer> = {};
-const EMPTY_BUTTON_PROPS: React.ComponentProps<typeof Button> = {};
+const EMPTY_DRAWER_PROPS: Partial<VmDrawerProps> = {};
+const EMPTY_BUTTON_PROPS: Partial<VmButtonProps> = {};
 const EMPTY_FORM_PROPS: React.ComponentProps<typeof Form> = {};
 const DEFAULT_RENDER_ITEMS_CONFIG: RenderItemsConfig = {};
 const DEFAULT_LABELS: Required<FilterBarLabels> = {
@@ -283,6 +285,7 @@ const renderControl = (item: FilterBarItem) => {
 const renderItems = (
   items: FilterBarItem[],
   {
+    fullWidth = false,
     registerRef,
     wrapWithFormItem = true,
   }: RenderItemsConfig = DEFAULT_RENDER_ITEMS_CONFIG,
@@ -317,8 +320,9 @@ const renderItems = (
               : null
           }
           style={{
-            display: 'inline-flex',
-            ...(item.minWidth ? { minWidth: item.minWidth } : {}),
+            display: fullWidth ? 'flex' : 'inline-flex',
+            ...(fullWidth ? { width: '100%', minWidth: 0 } : {}),
+            ...(!fullWidth && item.minWidth ? { minWidth: item.minWidth } : {}),
             ...item.wrapperStyle,
           }}
         >
@@ -338,8 +342,8 @@ type FilterBarProps = {
   modalWidth?: number | string;
   showClearInModal?: boolean;
   showClearInDrawer?: boolean;
-  drawerProps?: React.ComponentProps<typeof Drawer>;
-  moreButtonProps?: React.ComponentProps<typeof Button>;
+  drawerProps?: Partial<VmDrawerProps>;
+  moreButtonProps?: Partial<VmButtonProps>;
   formProps?: React.ComponentProps<typeof Form>;
 };
 
@@ -392,7 +396,10 @@ export const FilterBar = ({
     () => renderItems(pinnedMainItems),
     [pinnedMainItems],
   );
-  const mobileFilters = useMemo(() => renderItems(mobileItems), [mobileItems]);
+  const mobileFilters = useMemo(
+    () => renderItems(mobileItems, { fullWidth: true }),
+    [mobileItems],
+  );
 
   const hasActiveExtras = useMemo(
     () => modalItems.some(isItemActive),
@@ -403,9 +410,15 @@ export const FilterBar = ({
   const modalFilters = useMemo(() => renderItems(modalItems), [modalItems]);
 
   const openDrawer = useCallback(() => setDrawerVisible(true), []);
-  const closeDrawer = useCallback(() => setDrawerVisible(false), []);
+  const handleDrawerOpenChange = useCallback(
+    (isOpen: boolean) => setDrawerVisible(isOpen),
+    [],
+  );
   const openModal = useCallback(() => setModalVisible(true), []);
-  const closeModal = useCallback(() => setModalVisible(false), []);
+  const handleModalOpenChange = useCallback(
+    (isOpen: boolean) => setModalVisible(isOpen),
+    [],
+  );
 
   const clearButtonText = labels.clear ?? DEFAULT_LABELS.clear;
 
@@ -413,54 +426,48 @@ export const FilterBar = ({
     return (
       <MobileWrapper>
         <MobileHeader>
-          <Button
-            icon={<FontAwesomeIcon icon={faFilter} />}
-            onClick={openDrawer}
+          <VmButton
+            variant="secondary"
+            onPress={openDrawer}
             aria-label={labels.drawerTrigger ?? DEFAULT_LABELS.drawerTrigger}
           >
+            <FontAwesomeIcon icon={faFilter} />
             {labels.drawerTrigger ?? DEFAULT_LABELS.drawerTrigger}
-          </Button>
+          </VmButton>
           {mobileHeaderRight ? (
             <div className="mobile-extra">{mobileHeaderRight}</div>
           ) : null}
         </MobileHeader>
 
-        <Drawer
+        <VmDrawer
           title={labels.drawerTitle ?? DEFAULT_LABELS.drawerTitle}
           placement="bottom"
-          onClose={closeDrawer}
-          open={drawerVisible}
-          size="large"
-          styles={{
-            wrapper: {
-              height: '100vh',
-            },
-          }}
+          isOpen={drawerVisible}
+          onOpenChange={handleDrawerOpenChange}
+          showHandle={false}
           {...drawerProps}
         >
           <DrawerContent>
-            <Form
-              layout="vertical"
-              style={{
-                display: 'flex',
-                gap: '1.25rem',
-                flexDirection: 'column',
+            <MobileFilterForm
+              onSubmit={(event) => {
+                event.preventDefault();
               }}
-              {...formProps}
             >
               {mobileFilters}
               {showClearInDrawer && hasActiveFilters && onClearFilters ? (
-                <Button
-                  icon={<FontAwesomeIcon icon={faFilterCircleXmark} />}
-                  onClick={onClearFilters}
-                  type="default"
-                  block
+                <VmButton
+                  variant="secondary"
+                  fullWidth
+                  onPress={onClearFilters}
                   aria-label={clearButtonText}
-                />
+                >
+                  <FontAwesomeIcon icon={faFilterCircleXmark} />
+                  {clearButtonText}
+                </VmButton>
               ) : null}
-            </Form>
+            </MobileFilterForm>
           </DrawerContent>
-        </Drawer>
+        </VmDrawer>
       </MobileWrapper>
     );
   }
@@ -484,14 +491,18 @@ export const FilterBar = ({
 
         {showMoreButton ? (
           <Tooltip title={labels.more ?? DEFAULT_LABELS.more}>
-            <Button
-              icon={<FontAwesomeIcon icon={faEllipsis} />}
-              onClick={openModal}
-              size="middle"
-              type={hasActiveExtras || hasOverflow ? 'primary' : 'text'}
+            <VmButton
+              isIconOnly
+              size="sm"
+              variant={
+                hasActiveExtras || hasOverflow ? 'primary' : 'secondary'
+              }
+              onPress={openModal}
               aria-label={labels.more ?? DEFAULT_LABELS.more}
               {...moreButtonProps}
-            />
+            >
+              <FontAwesomeIcon icon={faEllipsis} />
+            </VmButton>
           </Tooltip>
         ) : null}
 
@@ -508,30 +519,36 @@ export const FilterBar = ({
       </DesktopActions>
 
       {showMoreButton ? (
-        <Modal
+        <VmModal
           title={labels.modalTitle ?? DEFAULT_LABELS.modalTitle}
-          open={modalVisible}
-          onCancel={closeModal}
-          footer={null}
-          width={modalWidth}
-          centered
+          isOpen={modalVisible}
+          onOpenChange={handleModalOpenChange}
+          placement="center"
+          dialogProps={{
+            style: {
+              width:
+                typeof modalWidth === 'number' ? `${modalWidth}px` : modalWidth,
+              maxWidth: 'calc(100vw - 48px)',
+            },
+          }}
         >
           <ModalContent>
             <Form layout="vertical" {...formProps}>
               {modalFilters}
               {showClearInModal && hasActiveFilters && onClearFilters ? (
-                <Button
-                  icon={<FontAwesomeIcon icon={faFilterCircleXmark} />}
-                  onClick={onClearFilters}
-                  block
+                <VmButton
+                  variant="secondary"
+                  fullWidth
+                  onPress={onClearFilters}
                   aria-label={clearButtonText}
                 >
+                  <FontAwesomeIcon icon={faFilterCircleXmark} />
                   {clearButtonText}
-                </Button>
+                </VmButton>
               ) : null}
             </Form>
           </ModalContent>
-        </Modal>
+        </VmModal>
       ) : null}
     </Bar>
   );

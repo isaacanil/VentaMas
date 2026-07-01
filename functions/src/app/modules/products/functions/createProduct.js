@@ -20,6 +20,51 @@ const sanitizeNumber = (value, fallback = 0) => {
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 
+const normalizePricingForPersistence = (rawPricing) => {
+  const pricing = asRecord(rawPricing);
+  if (!Object.keys(pricing).length) return pricing;
+
+  const price = sanitizeNumber(pricing.price, 0);
+  const listPrice = sanitizeNumber(pricing.listPrice, 0);
+  const canonicalListPrice =
+    listPrice > 0 ? listPrice : price > 0 ? price : 0;
+
+  return {
+    ...pricing,
+    listPrice: canonicalListPrice,
+    price: canonicalListPrice,
+  };
+};
+
+const normalizeProductPricingForPersistence = (product) => {
+  if (product.pricing) {
+    product.pricing = normalizePricingForPersistence(product.pricing);
+  }
+
+  if (Array.isArray(product.saleUnits)) {
+    product.saleUnits = product.saleUnits.map((unit) => {
+      const normalizedUnit = { ...asRecord(unit) };
+      if (normalizedUnit.pricing) {
+        normalizedUnit.pricing = normalizePricingForPersistence(
+          normalizedUnit.pricing,
+        );
+      }
+      return normalizedUnit;
+    });
+  }
+
+  if (product.selectedSaleUnit) {
+    product.selectedSaleUnit = { ...asRecord(product.selectedSaleUnit) };
+    if (product.selectedSaleUnit.pricing) {
+      product.selectedSaleUnit.pricing = normalizePricingForPersistence(
+        product.selectedSaleUnit.pricing,
+      );
+    }
+  }
+
+  return product;
+};
+
 const buildBaseAuditFields = (userId) => ({
   createdAt: FieldValue.serverTimestamp(),
   createdBy: userId,
@@ -38,7 +83,7 @@ const buildCreateProductPayload = (rawProduct, businessId) => {
   };
 
   product.stock = sanitizeNumber(product.stock, 0);
-  return product;
+  return normalizeProductPricingForPersistence(product);
 };
 
 export const createProduct = onCall(async (request) => {

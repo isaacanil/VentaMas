@@ -264,6 +264,15 @@ describe('routeVisibility', () => {
     expect(printPaginationRoute?.isPublic).not.toBe(true);
   });
 
+  it('protects accounts payable behind accounting read access', () => {
+    expect(getRouteMeta(ROUTES_NAME.ACCOUNT_PAYABLE.ACCOUNT_PAYABLE_LIST)).toEqual(
+      expect.objectContaining({
+        requiredCapabilities: ['accountingRead'],
+        requiredCapabilitiesMode: 'any',
+      }),
+    );
+  });
+
   it('keeps dev routes without devOnly explicitly allowlisted', () => {
     const devRoutesWithoutDevOnly = collectMountableRoutes(devRoutes)
       .filter(({ route }) => route.devOnly !== true)

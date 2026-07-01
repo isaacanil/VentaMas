@@ -72,6 +72,7 @@ describe('finalize.service', () => {
   let accountingEventRef;
   let pendingQuery;
   let failedQuery;
+  let doneQuery;
   let tx;
   let invoiceSnapshot;
   let usageSnapshot;
@@ -90,6 +91,7 @@ describe('finalize.service', () => {
 
     pendingQuery = { kind: 'pending' };
     failedQuery = { kind: 'failed' };
+    doneQuery = { kind: 'done' };
 
     const outboxCol = {
       where: vi.fn((_field, _operator, status) => {
@@ -100,6 +102,9 @@ describe('finalize.service', () => {
         }
         if (status === 'failed') {
           return failedQuery;
+        }
+        if (status === 'done') {
+          return doneQuery;
         }
         throw new Error(`Unexpected outbox status query: ${status}`);
       }),
@@ -149,6 +154,7 @@ describe('finalize.service', () => {
         if (ref === invoiceRef) return invoiceSnapshot;
         if (ref === pendingQuery) return { empty: true };
         if (ref === failedQuery) return { empty: true, docs: [] };
+        if (ref === doneQuery) return { empty: true, docs: [] };
         if (ref === usageRef) return usageSnapshot;
         if (ref === accountingSettingsRef) {
           return {
@@ -246,6 +252,7 @@ describe('finalize.service', () => {
       if (ref === invoiceRef) return invoiceSnapshot;
       if (ref === pendingQuery) return { empty: true };
       if (ref === failedQuery) return { empty: false, docs: failedDocs };
+      if (ref === doneQuery) return { empty: true, docs: [] };
       if (ref === accountingSettingsRef) {
         return {
           exists: true,
@@ -390,6 +397,7 @@ describe('finalize.service', () => {
       if (ref === invoiceRef) return invoiceSnapshot;
       if (ref === pendingQuery) return { empty: true };
       if (ref === failedQuery) return { empty: false, docs: failedDocs };
+      if (ref === doneQuery) return { empty: true, docs: [] };
       throw new Error('Unexpected ref/query in tx.get');
     });
 
@@ -452,6 +460,80 @@ describe('finalize.service', () => {
           failed: true,
           failedTaskTypes: ['attachToCashCount', 'updateInventory'],
         },
+      }),
+    );
+  });
+
+  it('ignores failed outbox tasks superseded by later done tasks of the same type', async () => {
+    const failedDocs = [
+      {
+        id: 'old-fiscal-task',
+        data: () => ({
+          type: 'issueElectronicTaxReceipt',
+          status: 'failed',
+          lastError: 'GISYS FACT issue failed (422)',
+          createdAt: '2026-06-25T05:35:07.394Z',
+        }),
+      },
+    ];
+    const doneDocs = [
+      {
+        id: 'new-fiscal-task',
+        data: () => ({
+          type: 'issueElectronicTaxReceipt',
+          status: 'done',
+          createdAt: '2026-06-25T05:37:30.138Z',
+        }),
+      },
+    ];
+
+    tx.get.mockImplementation(async (ref) => {
+      if (ref === invoiceRef) return invoiceSnapshot;
+      if (ref === pendingQuery) return { empty: true };
+      if (ref === failedQuery) return { empty: false, docs: failedDocs };
+      if (ref === doneQuery) return { empty: false, docs: doneDocs };
+      if (ref === accountingSettingsRef) {
+        return {
+          exists: true,
+          data: () => ({
+            generalAccountingEnabled: true,
+            functionalCurrency: 'DOP',
+          }),
+        };
+      }
+      if (ref === canonicalInvoiceRef) {
+        return { exists: true, data: () => ({ data: { id: 'invoice-1' } }) };
+      }
+      throw new Error('Unexpected ref/query in tx.get');
+    });
+    summarizeOutboxTasksMock.mockImplementation((docs) =>
+      docs.map((doc) => ({
+        id: doc.id,
+        type: doc.data().type,
+        status: doc.data().status,
+        lastError: doc.data().lastError || null,
+      })),
+    );
+
+    await attemptFinalizeInvoice({
+      businessId: 'business-1',
+      invoiceId: 'invoice-1',
+    });
+
+    expect(scheduleCompensationsInTxMock).not.toHaveBeenCalled();
+    expect(areOnlyNonBlockingFailuresMock).not.toHaveBeenCalled();
+    expect(tx.update).toHaveBeenCalledWith(
+      invoiceRef,
+      expect.objectContaining({
+        status: 'committed',
+        updatedAt: { __op: 'serverTimestamp' },
+      }),
+    );
+    expect(auditTxMock).toHaveBeenCalledWith(
+      tx,
+      expect.objectContaining({
+        event: 'finalize_ignored_superseded_failures',
+        data: { ignored: 1 },
       }),
     );
   });

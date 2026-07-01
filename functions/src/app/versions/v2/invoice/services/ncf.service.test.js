@@ -5,8 +5,6 @@ const serverTimestampMock = vi.hoisted(() =>
   vi.fn(() => ({ __op: 'serverTimestamp' })),
 );
 
-let usageRefCounter = 0;
-
 vi.mock('../../../../core/config/firebase.js', () => ({
   db: {
     collection: vi.fn((collectionName) => {
@@ -31,11 +29,12 @@ vi.mock('../../../../core/config/firebase.js', () => ({
 
             if (subcollectionName === 'ncfUsage') {
               return {
-                doc: vi.fn(() => {
-                  usageRefCounter += 1;
+                doc: vi.fn((usageId) => {
                   return {
-                    id: `usage-${usageRefCounter}`,
-                    path: `businesses/${businessId}/ncfUsage/usage-${usageRefCounter}`,
+                    id: usageId,
+                    kind: 'usageRef',
+                    businessId,
+                    path: `businesses/${businessId}/ncfUsage/${usageId}`,
                   };
                 }),
               };
@@ -63,7 +62,6 @@ describe('ncf.service', () => {
   let receiptRef;
 
   beforeEach(() => {
-    usageRefCounter = 0;
     serverTimestampMock.mockClear();
     getTaxReceiptDocFromTxMock.mockReset();
 
@@ -75,6 +73,9 @@ describe('ncf.service', () => {
           return {
             empty: query.code !== 'B0101101',
           };
+        }
+        if (query?.kind === 'usageRef') {
+          return { exists: false };
         }
 
         throw new Error(`Unexpected tx.get query: ${JSON.stringify(query)}`);
@@ -107,7 +108,7 @@ describe('ncf.service', () => {
       }),
     ).resolves.toEqual({
       ncfCode: 'B0101102',
-      usageId: 'usage-1',
+      usageId: 'B0101102',
       taxReceiptRef: receiptRef,
     });
 
@@ -120,10 +121,10 @@ describe('ncf.service', () => {
     });
     expect(tx.set).toHaveBeenCalledWith(
       expect.objectContaining({
-        id: 'usage-1',
+        id: 'B0101102',
       }),
       {
-        id: 'usage-1',
+        id: 'B0101102',
         ncfCode: 'B0101102',
         taxReceiptName: 'fiscal-consumer',
         generatedAt: { __op: 'serverTimestamp' },
@@ -155,7 +156,7 @@ describe('ncf.service', () => {
       }),
     ).resolves.toEqual({
       ncfCode: 'B0200000001',
-      usageId: 'usage-1',
+      usageId: 'B0200000001',
       taxReceiptRef: receiptRef,
     });
 
@@ -190,7 +191,7 @@ describe('ncf.service', () => {
       }),
     ).resolves.toEqual({
       ncfCode: 'B020000000011',
-      usageId: 'usage-1',
+      usageId: 'B020000000011',
       taxReceiptRef: receiptRef,
     });
 

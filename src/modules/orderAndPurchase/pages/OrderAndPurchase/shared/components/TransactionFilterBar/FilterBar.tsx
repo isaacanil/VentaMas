@@ -4,7 +4,13 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from 'antd';
-import { memo, useCallback, useEffect, useMemo } from 'react';
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  type ReactNode,
+} from 'react';
 
 import {
   FilterBar as CommonFilterBar,
@@ -45,6 +51,7 @@ interface FilterBarProps {
   trailingItems?: FilterBarItem[];
   hasActiveExtraFilters?: boolean;
   onClearExtraFilters?: () => void;
+  mobileHeaderRight?: ReactNode;
   compactSortButton?: boolean;
   sortLabel?: string;
 }
@@ -96,6 +103,7 @@ export const FilterBar = memo(
     trailingItems = [],
     hasActiveExtraFilters = false,
     onClearExtraFilters,
+    mobileHeaderRight,
     compactSortButton = false,
     sortLabel = 'Orden',
   }: FilterBarProps) => {
@@ -289,6 +297,7 @@ export const FilterBar = memo(
       <CommonFilterBar
         items={items as FilterBarItem[]}
         hasActiveFilters={shouldShowClearButton ? hasAnyActiveFilters : false}
+        mobileHeaderRight={mobileHeaderRight}
         onClearFilters={shouldShowClearButton ? handleClearFilters : undefined}
         labels={{
           drawerTrigger: 'Filtros',

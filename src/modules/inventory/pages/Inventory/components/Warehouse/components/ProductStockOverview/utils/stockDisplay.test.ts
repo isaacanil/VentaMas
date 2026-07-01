@@ -5,9 +5,11 @@ import {
   toStockDateMs,
   type StockQuantityDisplayValue,
 } from './stockDisplay';
+import { DEFAULT_COUNT_LOCALE } from '@/utils/formatCounts';
 
-const formatStockQuantityLegacy = (value: StockQuantityDisplayValue): string =>
-  Number(value ?? 0).toLocaleString();
+const formatStockQuantityExpected = (
+  value: StockQuantityDisplayValue,
+): string => new Intl.NumberFormat(DEFAULT_COUNT_LOCALE).format(Number(value ?? 0));
 
 describe('stockDisplay', () => {
   describe('toStockDateMs', () => {
@@ -37,7 +39,7 @@ describe('stockDisplay', () => {
   });
 
   describe('formatStockQuantity', () => {
-    it('matches Number(value ?? 0).toLocaleString() for stock quantities', () => {
+    it('matches the shared inventory count locale for stock quantities', () => {
       const values: StockQuantityDisplayValue[] = [
         1234,
         1234.5,
@@ -50,7 +52,7 @@ describe('stockDisplay', () => {
       ];
 
       for (const value of values) {
-        expect(formatStockQuantity(value)).toBe(formatStockQuantityLegacy(value));
+        expect(formatStockQuantity(value)).toBe(formatStockQuantityExpected(value));
       }
     });
   });

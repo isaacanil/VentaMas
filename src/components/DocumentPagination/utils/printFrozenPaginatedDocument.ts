@@ -17,6 +17,7 @@ export type CreateFrozenPaginatedDocumentHtmlOptions = {
   allowConservativeSnapshot?: boolean;
   onBlocked?: (message: string) => void;
   selector?: string;
+  signal?: AbortSignal;
   source?: HTMLElement | null;
   title?: string;
 };
@@ -29,15 +30,18 @@ export type PrintFrozenPaginatedDocumentOptions = {
   ) => Promise<void> | void;
   onBlocked?: (message: string) => void;
   selector?: string;
+  signal?: AbortSignal;
   source?: HTMLElement | null;
   title?: string;
 };
 
 const DEFAULT_FRAME_CLEANUP_DELAY_MS = 1_000;
 const DEFAULT_PRINT_SELECTOR = '[data-print-pagination-pages]';
+const RESOURCE_READY_TIMEOUT_MS = 2_500;
 const PAGE_OVERFLOW_TOLERANCE_PX = 2;
 const PRINT_PAGE_HEIGHT_MM = 297;
 const PRINT_PAGE_WIDTH_MM = 210;
+const RESOURCE_WAIT_TIMEOUT = 'timeout' as const;
 const showPrintBlockedMessage = (
   message: string,
   onBlocked?: (message: string) => void,
@@ -58,6 +62,58 @@ const escapeHtml = (value: string) =>
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;');
+
+const createAbortError = () => {
+  if (typeof DOMException === 'function') {
+    return new DOMException('Impresion cancelada por timeout.', 'AbortError');
+  }
+
+  const error = new Error('Impresion cancelada por timeout.');
+  error.name = 'AbortError';
+  return error;
+};
+
+const throwIfAborted = (signal?: AbortSignal) => {
+  if (!signal?.aborted) return;
+  throw createAbortError();
+};
+
+const waitForGuardedPromise = async <T,>(
+  promise: Promise<T>,
+  {
+    signal,
+    timeoutMs = RESOURCE_READY_TIMEOUT_MS,
+  }: {
+    signal?: AbortSignal;
+    timeoutMs?: number;
+  } = {},
+) => {
+  throwIfAborted(signal);
+
+  let timeoutId: number | undefined;
+  let abortListener: (() => void) | undefined;
+
+  try {
+    return await new Promise<T | typeof RESOURCE_WAIT_TIMEOUT>(
+      (resolve, reject) => {
+        timeoutId = window.setTimeout(
+          () => resolve(RESOURCE_WAIT_TIMEOUT),
+          timeoutMs,
+        );
+        abortListener = () => reject(createAbortError());
+        signal?.addEventListener('abort', abortListener, { once: true });
+        promise.then(resolve, reject);
+      },
+    );
+  } finally {
+    if (timeoutId !== undefined) {
+      window.clearTimeout(timeoutId);
+    }
+    if (abortListener) {
+      signal?.removeEventListener('abort', abortListener);
+    }
+  }
+};
 
 const collectDocumentStyles = () =>
   Array.from(
@@ -106,6 +162,12 @@ const prepareFrozenSnapshot = (source: HTMLElement) => {
   return frozenSource;
 };
 
+const isOptionalPrintImage = (image: HTMLImageElement) =>
+  image.dataset.printOptionalImage === 'true';
+
+const isBrokenPrintImage = (image: HTMLImageElement) =>
+  !image.complete || (image.naturalWidth === 0 && image.naturalHeight === 0);
+
 const normalizeFrozenImages = (source: HTMLElement, frozenSource: HTMLElement) => {
   const sourceImages = Array.from(source.querySelectorAll('img'));
   const frozenImages = Array.from(frozenSource.querySelectorAll('img'));
@@ -114,6 +176,11 @@ const normalizeFrozenImages = (source: HTMLElement, frozenSource: HTMLElement) =
     const frozenImage = frozenImages[index];
 
     if (!frozenImage) {
+      return;
+    }
+
+    if (isOptionalPrintImage(sourceImage) && isBrokenPrintImage(sourceImage)) {
+      frozenImage.remove();
       return;
     }
 
@@ -128,7 +195,10 @@ const normalizeFrozenImages = (source: HTMLElement, frozenSource: HTMLElement) =
   });
 };
 
-const waitForFonts = async (targetDocument: Document) => {
+const waitForFonts = async (
+  targetDocument: Document,
+  signal?: AbortSignal,
+) => {
   const fontSet = (
     targetDocument as Document & {
       fonts?: {
@@ -141,10 +211,13 @@ const waitForFonts = async (targetDocument: Document) => {
     return;
   }
 
-  await fontSet.ready.catch(() => undefined);
+  await waitForGuardedPromise(fontSet.ready, { signal }).catch(() => undefined);
 };
 
-const waitForImages = async (targetDocument: Document) => {
+const waitForImages = async (
+  targetDocument: Document,
+  signal?: AbortSignal,
+) => {
   const imagePromises = Array.from(targetDocument.images).map(
     (image) =>
       new Promise<void>((resolve) => {
@@ -158,50 +231,64 @@ const waitForImages = async (targetDocument: Document) => {
       }),
   );
 
-  await Promise.all(imagePromises);
+  await waitForGuardedPromise(Promise.all(imagePromises), {
+    signal,
+  }).catch(() => undefined);
 };
 
 const resolveBrokenSourceImages = (source: HTMLElement) =>
   Array.from(source.querySelectorAll('img'))
     .filter((image) => {
+      if (isOptionalPrintImage(image)) {
+        return false;
+      }
+
       if (!image.src && !image.currentSrc) {
         return false;
       }
 
-      return (
-        !image.complete ||
-        (image.naturalWidth === 0 && image.naturalHeight === 0)
-      );
+      return isBrokenPrintImage(image);
     })
     .map((image, index) => image.currentSrc || image.src || `imagen ${index + 1}`);
 
-const waitForFrameLayout = async (targetWindow: Window) => {
-  await new Promise<void>((resolve) => {
+const waitForFrameLayout = async (
+  targetWindow: Window,
+  signal?: AbortSignal,
+) => {
+  await waitForGuardedPromise(new Promise<void>((resolve) => {
     if (typeof targetWindow.requestAnimationFrame === 'function') {
       targetWindow.requestAnimationFrame(() => resolve());
       return;
     }
 
     resolve();
-  });
+  }), { signal }).catch(() => undefined);
 };
 
-const waitForSourceImages = async (source: HTMLElement) => {
+const waitForSourceImages = async (
+  source: HTMLElement,
+  signal?: AbortSignal,
+) => {
   const imagePromises = Array.from(source.querySelectorAll('img')).map(
     async (image) => {
-      if (typeof image.decode === 'function') {
-        await image.decode().catch(() => undefined);
-        return;
-      }
-
       if (image.complete) {
         return;
       }
 
-      await new Promise<void>((resolve) => {
-        image.addEventListener('load', () => resolve(), { once: true });
-        image.addEventListener('error', () => resolve(), { once: true });
-      });
+      if (typeof image.decode === 'function') {
+        await waitForGuardedPromise(image.decode(), {
+          signal,
+        }).catch(() => undefined);
+        return;
+      }
+
+      await waitForGuardedPromise(
+        new Promise<void>((resolve) => {
+          image.addEventListener('load', () => resolve(), { once: true });
+          image.addEventListener('error', () => resolve(), { once: true });
+        }),
+        { signal },
+      ).catch(() => undefined);
     },
   );
 
@@ -418,14 +505,18 @@ const validateSnapshotFrame = async ({
   frameDocument,
   frameWindow,
   onBlocked,
+  signal,
 }: {
   frameDocument: Document;
   frameWindow: Window;
   onBlocked?: (message: string) => void;
+  signal?: AbortSignal;
 }) => {
-  await waitForFonts(frameDocument);
-  await waitForImages(frameDocument);
-  await waitForFrameLayout(frameWindow);
+  throwIfAborted(signal);
+  await waitForFonts(frameDocument, signal);
+  await waitForImages(frameDocument, signal);
+  await waitForFrameLayout(frameWindow, signal);
+  throwIfAborted(signal);
 
   const overflowingPages = resolveOverflowingSnapshotPages(frameDocument);
   if (overflowingPages.length > 0) {
@@ -468,11 +559,14 @@ const createFrozenPaginatedDocumentHtmlSnapshot = async ({
   allowConservativeSnapshot = false,
   onBlocked,
   selector = DEFAULT_PRINT_SELECTOR,
+  signal,
   source: providedSource,
   title,
 }: CreateFrozenPaginatedDocumentHtmlOptions = {}): Promise<
   FrozenPaginatedDocumentHtmlSnapshot | null
 > => {
+  throwIfAborted(signal);
+
   if (typeof window === 'undefined' || typeof document === 'undefined') {
     showPrintBlockedMessage(
       'El snapshot congelado solo esta disponible en el navegador.',
@@ -504,8 +598,9 @@ const createFrozenPaginatedDocumentHtmlSnapshot = async ({
     return null;
   }
 
-  await waitForFonts(document);
-  await waitForSourceImages(source);
+  await waitForFonts(document, signal);
+  await waitForSourceImages(source, signal);
+  throwIfAborted(signal);
   if (
     source.dataset.printPaginationReady !== 'true' &&
     !allowConservativeSnapshot
@@ -566,6 +661,7 @@ export const createFrozenPaginatedDocumentHtml = async (
     frameDocument: snapshotFrame.frameDocument,
     frameWindow: snapshotFrame.frameWindow,
     onBlocked: options.onBlocked,
+    signal: options.signal,
   });
   snapshotFrame.frameElement.remove();
 
@@ -578,6 +674,7 @@ export const printFrozenPaginatedDocument = async ({
   onBeforePrint,
   onBlocked,
   selector = DEFAULT_PRINT_SELECTOR,
+  signal,
   source: providedSource,
   title,
 }: PrintFrozenPaginatedDocumentOptions = {}) => {
@@ -591,6 +688,7 @@ export const printFrozenPaginatedDocument = async ({
     source: providedSource,
     title,
     allowConservativeSnapshot,
+    signal,
   });
 
   if (!snapshot) {
@@ -611,6 +709,7 @@ export const printFrozenPaginatedDocument = async ({
     frameDocument: printFrame.frameDocument,
     frameWindow: printFrame.frameWindow,
     onBlocked,
+    signal,
   });
   if (!isValid) {
     printFrame.frameElement.remove();
@@ -618,12 +717,14 @@ export const printFrozenPaginatedDocument = async ({
   }
 
   try {
+    throwIfAborted(signal);
     await onBeforePrint?.({
       frameDocument: printFrame.frameDocument,
       frameElement: printFrame.frameElement,
       frameWindow: printFrame.frameWindow,
       source: snapshot.source,
     });
+    throwIfAborted(signal);
   } catch (error) {
     printFrame.frameElement.remove();
     throw error;

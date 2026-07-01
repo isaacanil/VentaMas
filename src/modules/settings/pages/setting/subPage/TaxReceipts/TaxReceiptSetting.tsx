@@ -26,7 +26,6 @@ import { fbEnabledTaxReceipt } from '@/firebase/Settings/taxReceipt/fbEnabledTax
 import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt';
 import { serializeFirestoreDocuments } from '@/utils/serialization/serializeFirestoreData';
 import type { TaxReceiptDocument } from '@/types/taxReceipt';
-import { filterPredefinedReceipts } from '@/utils/taxReceipt';
 
 import AddReceiptDrawer from './components/AddReceiptModal/AddReceiptModal';
 import { ElectronicTaxReceiptBusinessLinkSection } from './components/ElectronicTaxReceiptBusinessLinkSection/ElectronicTaxReceiptBusinessLinkSection';
@@ -153,33 +152,6 @@ export const TaxReceiptSetting = () => {
 
   const handleOpenAddPredefinedReceipt = () => setIsAddModalVisible(true);
   const handleCloseAddPredefinedReceipt = () => setIsAddModalVisible(false);
-
-  const handleAddPredefinedReceipts = (newReceipts) => {
-    const { unique, duplicateNames, duplicateSeries } =
-      filterPredefinedReceipts(newReceipts, itemsLocal);
-
-    let warningMsg = '';
-    if (duplicateNames.length) {
-      warningMsg += `Se omitieron ${duplicateNames.length} comprobante(s) con nombre(s) duplicado(s): ${duplicateNames.join(', ')}. `;
-    }
-    if (duplicateSeries.length) {
-      warningMsg += `Se omitieron ${duplicateSeries.length} comprobante(s) con serie(s) duplicada(s): ${duplicateSeries.join(', ')}.`;
-    }
-    if (warningMsg) {
-      message.warning(warningMsg);
-    }
-
-    if (unique.length) {
-      setItemsLocal([...itemsLocal, ...unique]);
-      message.success(
-        `${unique.length} comprobante(s) añadidos correctamente. No olvides guardar los cambios.`,
-      );
-    } else if (!warningMsg) {
-      message.error(
-        'No se agregaron comprobantes. Todos ya existen en el sistema.',
-      );
-    }
-  };
 
   const summaryMetrics = useMemo(
     () => buildFiscalAttentionSummary(itemsLocal, Boolean(taxReceiptEnabled)),
@@ -488,7 +460,6 @@ export const TaxReceiptSetting = () => {
         <AddReceiptDrawer
           visible={isAddModalVisible}
           onCancel={handleCloseAddPredefinedReceipt}
-          onAddReceipt={handleAddPredefinedReceipts}
           existingReceipts={itemsLocal}
         />
 

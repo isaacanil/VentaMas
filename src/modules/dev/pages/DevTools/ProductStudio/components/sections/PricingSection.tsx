@@ -1,8 +1,18 @@
 import { InfoCircleOutlined } from '@/constants/icons/antd';
-import { Form, InputNumber, Space, Tooltip, Typography } from 'antd';
+import { Form, InputNumber, Select, Space, Tooltip, Typography } from 'antd';
 import { useMemo } from 'react';
+import { useSelector } from 'react-redux';
+import type { FocusEvent } from 'react';
 import styled from 'styled-components';
 
+import { selectCartTaxationEnabled } from '@/features/cart/cartSlice';
+import {
+  normalizeProductPricingCurrency,
+  type ProductPricingCurrency,
+  type ProductPricingFormValues,
+} from '@/domain/products/pricingForm';
+import { shouldSelectZeroPriceInput } from '@/domain/products/priceInputFocus';
+import { initTaxes, taxLabel } from '@/domain/products/productDefaults';
 import {
   FieldGrid,
   SectionCard,
@@ -10,11 +20,10 @@ import {
   SectionHeader,
   SectionTitle,
 } from '@/modules/dev/pages/DevTools/ProductStudio/components/SectionLayout';
-import type { PricingTax } from '@/types/products';
+import { isUnsetOptionalPriceValue } from './pricingSectionValidation';
 
 const { Text } = Typography;
 
-type PriceValue = number | string | null | undefined;
 type PriceRowKey =
   | 'listPrice'
   | 'midPrice'
@@ -22,15 +31,7 @@ type PriceRowKey =
   | 'cardPrice'
   | 'offerPrice';
 
-interface PricingValues {
-  cost?: PriceValue;
-  tax?: PricingTax;
-  listPrice?: PriceValue;
-  midPrice?: PriceValue;
-  minPrice?: PriceValue;
-  cardPrice?: PriceValue;
-  offerPrice?: PriceValue;
-}
+type PricingValues = ProductPricingFormValues;
 
 interface PricingSectionProps {
   domId: string;
@@ -38,6 +39,19 @@ interface PricingSectionProps {
 }
 
 const EMPTY_PRICING_VALUES: PricingValues = {};
+
+const CURRENCY_OPTIONS: Array<{
+  value: ProductPricingCurrency;
+  label: string;
+}> = [
+  { value: 'DOP', label: 'DOP - Peso dominicano' },
+  { value: 'USD', label: 'USD - Dólar estadounidense' },
+];
+
+const TAX_OPTIONS = initTaxes.map((tax) => ({
+  value: tax,
+  label: taxLabel(tax),
+}));
 
 interface PriceRow {
   key: PriceRowKey;
@@ -149,7 +163,7 @@ const GainCell = styled.span<{ $isNegative?: boolean }>`
 
 const CompactFormItem = styled(Form.Item)`
   margin: 0 !important;
-  
+
   .ant-form-item-explain {
     min-height: 0 !important;
     font-size: 11px;
@@ -184,9 +198,7 @@ const formatCurrency = (value: number | null): string => {
     return '—';
   }
   // format negative numbers nicely
-  return value < 0
-    ? `-${Math.abs(value).toFixed(2)}`
-    : `${value.toFixed(2)}`;
+  return value < 0 ? `-${Math.abs(value).toFixed(2)}` : `${value.toFixed(2)}`;
 };
 
 const formatPercent = (value: number | null): string => {
@@ -195,6 +207,9 @@ const formatPercent = (value: number | null): string => {
   }
   return `${value.toFixed(1)}%`;
 };
+
+const getCurrencyMarker = (currency: ProductPricingCurrency): string =>
+  currency === 'DOP' ? 'RD$' : currency;
 
 const hasGainValue = (
   margin: number | null,
@@ -206,12 +221,24 @@ const hasGainValue = (
   );
 };
 
+const handlePriceNumberFocus = (event: FocusEvent<HTMLInputElement>) => {
+  if (!shouldSelectZeroPriceInput(event.currentTarget.value)) {
+    return;
+  }
+  event.currentTarget.select();
+};
+
 export const PricingSection = ({
   domId,
   pricingValues = EMPTY_PRICING_VALUES,
 }: PricingSectionProps) => {
+  const taxationEnabled = useSelector(selectCartTaxationEnabled);
   const cost = Number(pricingValues?.cost) || 0;
-  const taxRate = Number(pricingValues?.tax) || 0;
+  const taxRate = taxationEnabled ? Number(pricingValues?.tax) || 0 : 0;
+  const pricingCurrency = normalizeProductPricingCurrency(
+    pricingValues?.currency,
+  );
+  const currencyMarker = getCurrencyMarker(pricingCurrency);
 
   const priceMatrix = useMemo<PriceRowWithMetrics[]>(() => {
     return PRICE_ROWS.map((row) => {
@@ -224,8 +251,9 @@ export const PricingSection = ({
       const taxAmount = isValidAmount ? amount * (taxRate / 100) : null;
       const total = isValidAmount ? amount + taxAmount : null;
       const margin = isValidAmount ? amount - cost : null;
-      const gainPercent =
-        isValidAmount ? ((amount - cost) / amount) * 100 : null;
+      const gainPercent = isValidAmount
+        ? ((amount - cost) / amount) * 100
+        : null;
 
       return {
         ...row,
@@ -252,8 +280,18 @@ export const PricingSection = ({
       <Space orientation="vertical" size="large" style={{ width: '100%' }}>
         <FieldGrid>
           <Form.Item
+            name={['pricing', 'currency']}
+            label="Moneda del precio"
+            help="Define la moneda operativa del costo y los precios de este producto."
+            rules={[
+              { required: true, message: 'Selecciona la moneda del precio.' },
+            ]}
+          >
+            <Select options={CURRENCY_OPTIONS} popupMatchSelectWidth={false} />
+          </Form.Item>
+          <Form.Item
             name={['pricing', 'cost']}
-            label="Costo (RD$)"
+            label={`Costo (${currencyMarker})`}
             rules={[
               { required: true, message: 'Registra el costo base.' },
               {
@@ -272,24 +310,26 @@ export const PricingSection = ({
               min={0}
               style={{ width: '100%' }}
               placeholder="0.00"
+              onFocus={handlePriceNumberFocus}
             />
           </Form.Item>
           <Form.Item
             name={['pricing', 'tax']}
             label="ITBIS %"
             tooltip="Asegúrate de usar siempre el ITBIS vigente."
+            help={
+              taxationEnabled
+                ? undefined
+                : 'El impuesto no se aplicará según la política fiscal activa del negocio.'
+            }
+            rules={[{ required: true, message: 'Selecciona el ITBIS.' }]}
           >
-            <InputNumber
-              min={0}
-              max={100}
-              style={{ width: '100%' }}
-              placeholder="18"
-            />
+            <Select options={TAX_OPTIONS} popupMatchSelectWidth={false} />
           </Form.Item>
         </FieldGrid>
 
         <div>
-          <Text strong>Lista de precios (RD$)</Text>
+          <Text strong>Lista de precios ({currencyMarker})</Text>
           <PriceTableWrapper>
             <PriceTableRow $header>
               <span>Tipo</span>
@@ -333,6 +373,9 @@ export const PricingSection = ({
                         ) {
                           return Promise.resolve();
                         }
+                        if (isUnsetOptionalPriceValue(row, value)) {
+                          return Promise.resolve();
+                        }
                         if (row.key === 'listPrice' && Number(value) <= 0) {
                           return Promise.reject(
                             new Error(
@@ -345,9 +388,7 @@ export const PricingSection = ({
                           Number(currentCost) > 0 &&
                           Number(value) < Number(currentCost)
                         ) {
-                          return Promise.reject(
-                            new Error('Menor al costo.'),
-                          );
+                          return Promise.reject(new Error('Menor al costo.'));
                         }
                         return Promise.resolve();
                       },
@@ -358,6 +399,7 @@ export const PricingSection = ({
                     min={0}
                     style={{ width: '100%' }}
                     placeholder="0.00"
+                    onFocus={handlePriceNumberFocus}
                   />
                 </CompactFormItem>
                 <NumericCell>{formatCurrency(row.taxAmount)}</NumericCell>

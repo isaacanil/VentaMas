@@ -73,7 +73,7 @@ export function validateProductPricing(product: ProductImport): ProductImport {
   const hasListPrice = listPrice > 0;
 
   const resolvedListPrice = hasListPrice ? listPrice : hasPrice ? price : 0;
-  const resolvedPrice = hasPrice ? price : resolvedListPrice;
+  const resolvedPrice = resolvedListPrice;
 
   next.pricing = {
     ...next.pricing,

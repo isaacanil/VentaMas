@@ -211,7 +211,7 @@ export const AuthorizationRequests = ({
         </FilterBar>
 
         <CardsSection>
-          <CardsSpin spinning={loading} tip="Cargando...">
+          <CardsSpin description="Cargando..." spinning={loading}>
             <CardsContent>
               {paginatedRequests.length === 0 && !loading ? (
                 <EmptyState>

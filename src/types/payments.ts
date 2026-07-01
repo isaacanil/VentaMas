@@ -44,6 +44,16 @@ export interface PaymentMethodEntry {
   supplierCreditNoteId?: string | null;
 }
 
+export type PaymentWithholdingApplicationType = 'itbis' | 'isr' | 'other';
+
+export interface PaymentWithholdingApplication {
+  type?: PaymentWithholdingApplicationType | string | null;
+  amount: number;
+  reference?: string | null;
+  taxPeriod?: string | null;
+  sourceDocumentId?: string | null;
+}
+
 export type PaymentStateStatus =
   | 'unpaid'
   | 'partial'
@@ -82,6 +92,9 @@ export interface PaymentEvent {
   counterpartyId?: string | null;
   paymentMethods: PaymentMethodEntry[];
   totalAmount: number;
+  withholdingAmount?: number | null;
+  withholdingApplications?: PaymentWithholdingApplication[] | null;
+  settlementAmount?: number | null;
   appliedAmount?: number | null;
   unappliedAmount?: number | null;
   cashAccountId?: string | null;
@@ -94,10 +107,13 @@ export interface PaymentEvent {
   createdBy?: string | null;
   updatedBy?: string | null;
   exchangeRateSnapshot?: ExchangeRateSnapshot | null;
+  evidenceNote?: string | null;
   evidenceUrls?: string[] | null;
   status?: PaymentEventStatus;
   voidedAt?: TimestampLike | null;
   voidedBy?: string | null;
+  voidEvidenceNote?: string | null;
+  voidEvidenceUrls?: string[] | null;
   voidReason?: string | null;
   metadata?: Record<string, unknown>;
 }
@@ -108,6 +124,7 @@ export interface AccountsPayablePayment extends PaymentEvent {
   counterpartyType: 'supplier';
   purchaseId?: string | null;
   vendorBillId?: string | null;
+  paymentRunId?: string | null;
   supplierId?: string | null;
   receiptNumber?: string | null;
   nextPaymentAt?: TimestampLike | null;

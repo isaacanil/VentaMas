@@ -7,12 +7,14 @@ const {
   getDocRef,
   getPilotAccountingSettingsForBusinessMock,
   isAccountingRolloutEnabledForBusinessMock,
+  runAccountingEventProjectionMock,
 } = vi.hoisted(() => {
   const hoistedDocumentSnapshots = new Map();
   const hoistedDocumentRefs = new Map();
   const hoistedBuildAccountingEventMock = vi.fn();
   const hoistedGetPilotAccountingSettingsForBusinessMock = vi.fn();
   const hoistedIsAccountingRolloutEnabledForBusinessMock = vi.fn();
+  const hoistedRunAccountingEventProjectionMock = vi.fn();
 
   const hoistedGetDocRef = (path) => {
     if (!hoistedDocumentRefs.has(path)) {
@@ -39,6 +41,7 @@ const {
       hoistedGetPilotAccountingSettingsForBusinessMock,
     isAccountingRolloutEnabledForBusinessMock:
       hoistedIsAccountingRolloutEnabledForBusinessMock,
+    runAccountingEventProjectionMock: hoistedRunAccountingEventProjectionMock,
   };
 });
 
@@ -73,23 +76,37 @@ vi.mock('../../../core/config/firebase.js', () => ({
   },
 }));
 
-vi.mock('../../../versions/v2/accounting/utils/accountingRollout.util.js', () => ({
-  getPilotAccountingSettingsForBusiness: (...args) =>
-    getPilotAccountingSettingsForBusinessMock(...args),
-  isAccountingRolloutEnabledForBusiness: (...args) =>
-    isAccountingRolloutEnabledForBusinessMock(...args),
-}));
+vi.mock(
+  '../../../versions/v2/accounting/utils/accountingRollout.util.js',
+  () => ({
+    getPilotAccountingSettingsForBusiness: (...args) =>
+      getPilotAccountingSettingsForBusinessMock(...args),
+    isAccountingRolloutEnabledForBusiness: (...args) =>
+      isAccountingRolloutEnabledForBusinessMock(...args),
+  }),
+);
 
-vi.mock('../../../versions/v2/accounting/utils/accountingEvent.util.js', async () => {
-  const actual = await vi.importActual(
-    '../../../versions/v2/accounting/utils/accountingEvent.util.js',
-  );
+vi.mock(
+  '../../../versions/v2/accounting/accountingEventProjection.service.js',
+  () => ({
+    runAccountingEventProjection: (...args) =>
+      runAccountingEventProjectionMock(...args),
+  }),
+);
 
-  return {
-    ...actual,
-    buildAccountingEvent: (...args) => buildAccountingEventMock(...args),
-  };
-});
+vi.mock(
+  '../../../versions/v2/accounting/utils/accountingEvent.util.js',
+  async () => {
+    const actual = await vi.importActual(
+      '../../../versions/v2/accounting/utils/accountingEvent.util.js',
+    );
+
+    return {
+      ...actual,
+      buildAccountingEvent: (...args) => buildAccountingEventMock(...args),
+    };
+  },
+);
 
 import { syncPurchaseCommittedAccountingEvent } from './syncPurchaseCommittedAccountingEvent.js';
 
@@ -107,6 +124,10 @@ describe('syncPurchaseCommittedAccountingEvent', () => {
     buildAccountingEventMock.mockReturnValue({
       id: 'purchase.committed__purchase-1',
       eventType: 'purchase.committed',
+    });
+    runAccountingEventProjectionMock.mockResolvedValue({
+      ok: true,
+      status: 'voided',
     });
   });
 
@@ -170,10 +191,10 @@ describe('syncPurchaseCommittedAccountingEvent', () => {
         currency: 'USD',
         functionalCurrency: 'DOP',
         createdBy: 'system:purchase-accounting-event-sync',
-        metadata: {
+        metadata: expect.objectContaining({
           sourcePurchaseCreatedBy: 'client-created-user',
           sourcePurchaseUpdatedBy: 'client-updated-user',
-        },
+        }),
         monetary: expect.objectContaining({
           amount: 100,
           subtotalAmount: 82,
@@ -207,6 +228,97 @@ describe('syncPurchaseCommittedAccountingEvent', () => {
         eventType: 'purchase.committed',
       },
       { merge: true },
+    );
+    expect(runAccountingEventProjectionMock).not.toHaveBeenCalled();
+  });
+
+  it('does not emit purchase.committed while receipt inventory is pending', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+    });
+
+    await syncPurchaseCommittedAccountingEvent({
+      params: {
+        businessId: 'business-1',
+        purchaseId: 'purchase-1',
+      },
+      data: {
+        before: {
+          data: () => ({
+            status: 'pending',
+            workflowStatus: 'pending_receipt',
+          }),
+        },
+        after: {
+          data: () => ({
+            status: 'completed',
+            workflowStatus: 'completed',
+            totalAmount: 100,
+            receiptInventoryState: {
+              status: 'pending',
+              operationId: 'receipt-1',
+              warehouseId: 'warehouse-1',
+            },
+          }),
+        },
+      },
+    });
+
+    expect(buildAccountingEventMock).not.toHaveBeenCalled();
+    expect(
+      getDocRef(
+        'businesses/business-1/accountingEvents/purchase.committed__purchase-1',
+      ).set,
+    ).not.toHaveBeenCalled();
+  });
+
+  it('emits purchase.committed when completed receipt inventory becomes applied', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+    });
+
+    await syncPurchaseCommittedAccountingEvent({
+      params: {
+        businessId: 'business-1',
+        purchaseId: 'purchase-1',
+      },
+      data: {
+        before: {
+          data: () => ({
+            status: 'completed',
+            workflowStatus: 'completed',
+            receiptInventoryState: {
+              status: 'pending',
+              operationId: 'receipt-1',
+              warehouseId: 'warehouse-1',
+            },
+          }),
+        },
+        after: {
+          data: () => ({
+            status: 'completed',
+            workflowStatus: 'completed',
+            providerId: 'supplier-1',
+            totalAmount: 100,
+            receiptInventoryState: {
+              status: 'applied',
+              operationId: 'receipt-1',
+              warehouseId: 'warehouse-1',
+            },
+          }),
+        },
+      },
+    });
+
+    expect(buildAccountingEventMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        businessId: 'business-1',
+        eventType: 'purchase.committed',
+        sourceId: 'purchase-1',
+        counterpartyId: 'supplier-1',
+      }),
     );
   });
 
@@ -527,6 +639,170 @@ describe('syncPurchaseCommittedAccountingEvent', () => {
     });
 
     expect(buildAccountingEventMock).not.toHaveBeenCalled();
+  });
+
+  it('voids the purchase.committed accounting event when the completed AP bill is voided', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+    });
+    buildAccountingEventMock.mockImplementationOnce((input) => ({
+      id: 'purchase.committed__purchase-1',
+      eventType: 'purchase.committed',
+      status: input.status,
+      payload: input.payload,
+      metadata: input.metadata,
+    }));
+
+    await syncPurchaseCommittedAccountingEvent({
+      params: {
+        businessId: 'business-1',
+        purchaseId: 'purchase-1',
+      },
+      data: {
+        before: {
+          data: () => ({
+            status: 'completed',
+            workflowStatus: 'completed',
+            accountsPayable: {
+              approvalStatus: 'approved',
+              approvedBy: 'reviewer-1',
+            },
+          }),
+        },
+        after: {
+          data: () => ({
+            status: 'completed',
+            workflowStatus: 'completed',
+            providerId: 'supplier-1',
+            numberId: 'PC-001',
+            completedAt: {
+              toMillis: () => Date.parse('2026-04-05T10:00:00.000Z'),
+            },
+            updatedAt: {
+              toMillis: () => Date.parse('2026-04-06T12:00:00.000Z'),
+            },
+            totals: {
+              subtotal: 1000,
+              tax: 180,
+              total: 1180,
+            },
+            accountsPayable: {
+              approvalStatus: 'voided',
+              status: 'voided',
+              voidedAt: {
+                toMillis: () => Date.parse('2026-04-06T11:30:00.000Z'),
+              },
+              voidedBy: 'controller-1',
+              voidReason: 'Factura duplicada por suplidor',
+              voidEvidenceNote: 'Ticket AP-VOID-1',
+              voidEvidenceUrls: ['https://files.example/void.pdf'],
+              lastControlEventId: 'control-event-1',
+            },
+          }),
+        },
+      },
+    });
+
+    expect(buildAccountingEventMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        businessId: 'business-1',
+        eventType: 'purchase.committed',
+        status: 'voided',
+        sourceId: 'purchase-1',
+        sourceDocumentId: 'purchase-1',
+        counterpartyId: 'supplier-1',
+        occurredAt: expect.objectContaining({
+          millis: Date.parse('2026-04-06T11:30:00.000Z'),
+        }),
+        payload: expect.objectContaining({
+          accountsPayableControlStatus: 'voided',
+          accountsPayableControlEventId: 'control-event-1',
+          accountsPayableVoidReason: 'Factura duplicada por suplidor',
+          fiscalTotals: expect.objectContaining({
+            total: 1180,
+            netPayableAmount: 1180,
+          }),
+        }),
+        metadata: expect.objectContaining({
+          accountsPayableVoidedBy: 'controller-1',
+          accountsPayableControlEventId: 'control-event-1',
+          accountsPayableVoidReason: 'Factura duplicada por suplidor',
+          accountsPayableVoidEvidenceNote: 'Ticket AP-VOID-1',
+          accountsPayableVoidEvidenceUrls: ['https://files.example/void.pdf'],
+        }),
+      }),
+    );
+
+    expect(
+      getDocRef(
+        'businesses/business-1/accountingEvents/purchase.committed__purchase-1',
+      ).set,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'purchase.committed__purchase-1',
+        eventType: 'purchase.committed',
+        status: 'voided',
+        voidedBy: 'controller-1',
+        voidReason: 'Factura duplicada por suplidor',
+      }),
+      { merge: true },
+    );
+    expect(runAccountingEventProjectionMock).toHaveBeenCalledWith({
+      businessId: 'business-1',
+      eventId: 'purchase.committed__purchase-1',
+      accountingEvent: expect.objectContaining({
+        id: 'purchase.committed__purchase-1',
+        eventType: 'purchase.committed',
+        status: 'voided',
+      }),
+    });
+  });
+
+  it('does not void the accounting event again when AP was already voided before the write', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+    });
+
+    await syncPurchaseCommittedAccountingEvent({
+      params: {
+        businessId: 'business-1',
+        purchaseId: 'purchase-1',
+      },
+      data: {
+        before: {
+          data: () => ({
+            status: 'completed',
+            workflowStatus: 'completed',
+            accountsPayable: {
+              approvalStatus: 'voided',
+              status: 'voided',
+              voidedBy: 'controller-1',
+            },
+          }),
+        },
+        after: {
+          data: () => ({
+            status: 'completed',
+            workflowStatus: 'completed',
+            accountsPayable: {
+              approvalStatus: 'voided',
+              status: 'voided',
+              voidedBy: 'controller-1',
+              lastControlEventId: 'event-2',
+            },
+          }),
+        },
+      },
+    });
+
+    expect(buildAccountingEventMock).not.toHaveBeenCalled();
+    expect(
+      getDocRef(
+        'businesses/business-1/accountingEvents/purchase.committed__purchase-1',
+      ).set,
+    ).not.toHaveBeenCalled();
   });
 
   it('skips emission when general accounting is disabled', async () => {

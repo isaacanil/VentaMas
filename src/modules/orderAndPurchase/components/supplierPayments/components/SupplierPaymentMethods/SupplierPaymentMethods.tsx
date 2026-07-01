@@ -59,6 +59,7 @@ interface SupplierPaymentMethodsProps {
   cashRegisters: CashRegisterOption[];
   balance: number;
   totalToRegister: number;
+  settlementAdjustmentAmount?: number;
   availableSupplierCreditNotes: SupplierCreditNote[];
   availableSupplierCreditBalance: number;
   onChange: (methods: SupplierPaymentMethodDraft[]) => void;
@@ -75,6 +76,7 @@ export const SupplierPaymentMethods = ({
   cashRegisters,
   balance,
   totalToRegister,
+  settlementAdjustmentAmount = 0,
   availableSupplierCreditNotes,
   availableSupplierCreditBalance,
   onChange,
@@ -131,8 +133,48 @@ export const SupplierPaymentMethods = ({
   }, [methods]);
 
   const remainingBalance = roundToTwoDecimals(
-    Math.max(balance - totalToRegister, 0),
+    Math.max(balance - totalToRegister - settlementAdjustmentAmount, 0),
   );
+  const totalSettlementAmount = roundToTwoDecimals(
+    totalToRegister + settlementAdjustmentAmount,
+  );
+  const settlementShowcases =
+    settlementAdjustmentAmount > THRESHOLD
+      ? [
+          {
+            title: 'Salida de caja',
+            valueType: 'price' as const,
+            value: totalToRegister,
+          },
+          {
+            title: 'Retención fiscal',
+            valueType: 'price' as const,
+            value: settlementAdjustmentAmount,
+            description: 'No genera caja/banco',
+          },
+          {
+            title: 'Total liquidado',
+            valueType: 'price' as const,
+            value: totalSettlementAmount,
+          },
+          {
+            title: 'Balance pendiente',
+            valueType: 'price' as const,
+            value: remainingBalance,
+          },
+        ]
+      : [
+          {
+            title: 'Total a registrar',
+            valueType: 'price' as const,
+            value: totalToRegister,
+          },
+          {
+            title: 'Balance pendiente',
+            valueType: 'price' as const,
+            value: remainingBalance,
+          },
+        ];
 
   const updateMethod = (
     methodCode: SupplierPaymentMethodCode,
@@ -400,20 +442,7 @@ export const SupplierPaymentMethods = ({
         })}
       </Items>
 
-      <ShowcaseList
-        showcases={[
-          {
-            title: 'Total a registrar',
-            valueType: 'price',
-            value: totalToRegister,
-          },
-          {
-            title: 'Balance pendiente',
-            valueType: 'price',
-            value: remainingBalance,
-          },
-        ]}
-      />
+      <ShowcaseList showcases={settlementShowcases} />
     </Container>
   );
 };

@@ -5,11 +5,12 @@ const firestoreMock = vi.hoisted(() => {
   const docs = new Map();
   const writes = [];
 
-  const createSnap = (id, payload) => ({
+  const createSnap = (id, payload, path = id) => ({
     id,
     exists: payload !== undefined && payload !== null,
     data: () => payload,
     get: (field) => payload?.[field],
+    ref: createDocRef(path),
   });
 
   const setPath = (path, payload, options = {}) => {
@@ -28,7 +29,14 @@ const firestoreMock = vi.hoisted(() => {
   };
 
   const createDocRef = (path) => ({
-    get: vi.fn(async () => createSnap(path.split('/').pop(), getPath(path))),
+    delete: vi.fn(async () => {
+      const target = path.startsWith('users/') ? users : docs;
+      const id = path.startsWith('users/') ? path.split('/').pop() : path;
+      target.delete(id);
+    }),
+    get: vi.fn(async () =>
+      createSnap(path.split('/').pop(), getPath(path), path),
+    ),
     set: vi.fn(async (payload, options) => setPath(path, payload, options)),
     update: vi.fn(async (payload) => setPath(path, payload, { merge: true })),
   });
@@ -41,7 +49,7 @@ const firestoreMock = vi.hoisted(() => {
           get: vi.fn(async () => {
             const matchingDocs = Array.from(users.entries())
               .filter(([, payload]) => payload?.[field] === value)
-              .map(([id, payload]) => createSnap(id, payload));
+              .map(([id, payload]) => createSnap(id, payload, `users/${id}`));
 
             return {
               empty: matchingDocs.length === 0,
@@ -98,6 +106,7 @@ const firestoreMock = vi.hoisted(() => {
 });
 
 const resolveCallableAuthUidMock = vi.hoisted(() => vi.fn());
+const createCustomTokenMock = vi.hoisted(() => vi.fn());
 
 vi.mock('firebase-functions/v2/https', () => ({
   HttpsError: class HttpsError extends Error {
@@ -112,7 +121,7 @@ vi.mock('firebase-functions/v2/https', () => ({
 vi.mock('../../../../core/config/firebase.js', () => ({
   admin: {
     auth: () => ({
-      createCustomToken: vi.fn(),
+      createCustomToken: createCustomTokenMock,
     }),
   },
   db: {
@@ -156,6 +165,7 @@ vi.mock('../../billing/utils/subscriptionAccess.util.js', () => ({
 }));
 
 import {
+  clientRefreshSession,
   clientSendEmailVerification,
   clientSetUserPassword,
   clientUpdateUser,
@@ -207,12 +217,18 @@ const callUpdateUserWithSession = (userData, sessionToken = 'session-token') =>
     data: { userData, sessionToken },
   });
 
+const callRefreshSession = (sessionToken = 'session-token') =>
+  clientRefreshSession({
+    data: { sessionToken },
+  });
+
 const resetAuthControllerTestState = () => {
   vi.clearAllMocks();
   firestoreMock.reset();
   resolveCallableAuthUidMock.mockImplementation(
     async (request) => request?.auth?.uid || null,
   );
+  createCustomTokenMock.mockResolvedValue('firebase-custom-token');
   seedActor();
 };
 
@@ -265,6 +281,72 @@ const seedOtherBusinessTarget = () => {
     },
   });
 };
+
+const seedActiveActorBusiness = () => {
+  firestoreMock.docs.set('businesses/business-1', {
+    name: 'Business 1',
+    ownerUid: 'owner-user',
+    status: 'active',
+  });
+  firestoreMock.docs.set('businesses/business-1/members/admin-user', {
+    role: 'admin',
+    status: 'active',
+  });
+};
+
+describe('clientRefreshSession', () => {
+  beforeEach(() => {
+    resetAuthControllerTestState();
+    seedActiveActorBusiness();
+    seedSession();
+  });
+
+  it('returns a Firebase custom token for an active session', async () => {
+    const result = await callRefreshSession();
+
+    expect(result).toMatchObject({
+      ok: true,
+      firebaseCustomToken: 'firebase-custom-token',
+    });
+    expect(createCustomTokenMock).toHaveBeenCalledWith('admin-user');
+    expect(firestoreMock.docs.get('sessionTokens/session-token')).toMatchObject({
+      status: 'active',
+    });
+  });
+
+  it('does not revoke the session when creating the Firebase token fails', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    createCustomTokenMock.mockRejectedValueOnce(new Error('iam unavailable'));
+
+    await expect(callRefreshSession()).rejects.toMatchObject({
+      code: 'internal',
+    });
+
+    expect(firestoreMock.docs.has('sessionTokens/session-token')).toBe(true);
+    expect(
+      firestoreMock.writes.some(
+        (write) =>
+          write.path.startsWith('sessionLogs/') &&
+          write.payload?.event === 'access-revoked',
+      ),
+    ).toBe(false);
+
+    errorSpy.mockRestore();
+  });
+
+  it('revokes the session when the user account is inactive', async () => {
+    firestoreMock.users.set('admin-user', {
+      ...firestoreMock.users.get('admin-user'),
+      active: false,
+    });
+
+    await expect(callRefreshSession()).rejects.toMatchObject({
+      code: 'permission-denied',
+    });
+
+    expect(firestoreMock.docs.has('sessionTokens/session-token')).toBe(false);
+  });
+});
 
 describe('clientUpdateUser', () => {
   beforeEach(() => {
