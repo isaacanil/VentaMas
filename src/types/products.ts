@@ -3,6 +3,7 @@ import type { SupportedDocumentCurrency } from '@/utils/accounting/currencies';
 export type { SupportedDocumentCurrency };
 
 export type ProductItemType = 'product' | 'service' | 'combo';
+export type ProductInventoryRole = 'raw_material';
 
 export type PricingTax =
   | number
@@ -31,6 +32,23 @@ export interface ProductPromotion {
   end?: unknown;
   discount?: number;
   isActive?: boolean;
+}
+
+export type ProductComboInventoryPolicy = 'components' | 'self';
+
+export interface ProductComboComponent {
+  id?: string;
+  productId: string;
+  productName?: string;
+  sku?: string | number | null;
+  quantity: number;
+  unitName?: string | null;
+}
+
+export interface ProductComboConfig {
+  enabled?: boolean;
+  inventoryPolicy?: ProductComboInventoryPolicy;
+  components?: ProductComboComponent[];
 }
 
 export interface ProductWeightDetail {
@@ -79,6 +97,7 @@ export interface ProductRecord extends Record<string, unknown> {
   productImageURL?: string;
   category?: string;
   itemType?: ProductItemType;
+  inventoryRole?: ProductInventoryRole | null;
   type?: string;
   pricing?: ProductPricing;
   promotions?: ProductPromotion;
@@ -94,6 +113,7 @@ export interface ProductRecord extends Record<string, unknown> {
   amountToBuy?: number;
   createdBy?: string;
   isVisible?: boolean;
+  isSellable?: boolean;
   trackInventory?: boolean;
   qrcode?: string;
   qrCode?: string;
@@ -107,6 +127,7 @@ export interface ProductRecord extends Record<string, unknown> {
   selectedSaleUnit?: ProductSaleUnit | null;
   selectedSaleUnitId?: string | null;
   baseQuantity?: number | null;
+  combo?: ProductComboConfig | null;
   isSoldInUnits?: boolean;
   productStockId?: string | null;
   batchId?: string | number | null;

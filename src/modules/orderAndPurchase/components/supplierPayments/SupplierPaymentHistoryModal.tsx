@@ -1,5 +1,5 @@
-import { Button, Empty, Tag, Typography, message } from 'antd';
 import { ProfileOutlined } from '@ant-design/icons';
+import { Alert, Button, Empty, Tag, Typography, message } from 'antd';
 import { DateTime } from 'luxon';
 import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -10,6 +10,11 @@ import { selectUser } from '@/features/auth/userSlice';
 import { fbVoidAccountsPayablePayment } from '@/firebase/purchase/fbVoidAccountsPayablePayment';
 import { useOpenAccountingEntry } from '@/modules/accounting/public';
 import { useAccountsPayablePayments } from '@/modules/accountsPayable/public';
+import {
+  isVoidedAccountsPayablePaymentStatus,
+  resolveAccountsPayablePaymentAccountingEventType,
+  resolveAccountsPayablePaymentStatusTag,
+} from '@/modules/accountsPayable/utils/accountsPayablePaymentStatus';
 import type {
   AccountsPayablePayment,
   PaymentMethodEntry,
@@ -21,12 +26,12 @@ import { formatPrice } from '@/utils/format/formatPrice';
 import { resolvePaymentSettlementSummary } from '@/utils/payments/paymentSettlementSummary';
 import type { Purchase } from '@/utils/purchase/types';
 
+import { SupplierPaymentVoidModal } from './SupplierPaymentVoidModal';
 import { resolveSupplierPaymentCallableErrorMessage } from './utils/supplierPaymentErrors';
 import {
   roundToTwoDecimals,
   toFiniteNumber,
 } from './utils/supplierPaymentMethods';
-import { SupplierPaymentVoidModal } from './SupplierPaymentVoidModal';
 
 const { Text, Title } = Typography;
 
@@ -40,17 +45,6 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
   card: 'Tarjeta',
   transfer: 'Transferencia',
   supplierCreditNote: 'Saldo a favor',
-};
-
-const resolvePaymentStatusTag = (status?: string | null) => {
-  switch (String(status || '').toLowerCase()) {
-    case 'void':
-      return { color: 'red', label: 'Anulado' };
-    case 'draft':
-      return { color: 'gold', label: 'Borrador' };
-    default:
-      return { color: 'green', label: 'Registrado' };
-  }
 };
 
 const formatPaymentDate = (value: unknown): string => {
@@ -97,14 +91,13 @@ export const SupplierPaymentHistoryModal = ({
   const businessId =
     user?.businessID ?? user?.businessId ?? user?.activeBusinessId ?? null;
   const providerName = useMemo(() => resolveProviderName(purchase), [purchase]);
-  const { payments, loading } = useAccountsPayablePayments(
-    businessId,
-    purchase?.id,
-    open,
-    {
-      includeVoided: true,
-    },
-  );
+  const {
+    error: paymentsError,
+    loading,
+    payments,
+  } = useAccountsPayablePayments(businessId, purchase?.id, open, {
+    includeVoided: true,
+  });
   const canVoidPayments = hasFinancialDocumentVoidAccess(user);
   const [voidingPayment, setVoidingPayment] =
     useState<AccountsPayablePayment | null>(null);
@@ -155,16 +148,16 @@ export const SupplierPaymentHistoryModal = ({
   return (
     <>
       <ModalShell
-        title="Historial de pagos"
-        open={open}
-        onCancel={onCancel}
-        width={760}
+        destroyOnHidden
         footer={[
           <Button key="close" onClick={onCancel}>
             Cerrar
           </Button>,
         ]}
-        destroyOnHidden
+        onCancel={onCancel}
+        open={open}
+        title="Historial de pagos"
+        width={760}
       >
         <Content>
           <Header>
@@ -193,6 +186,12 @@ export const SupplierPaymentHistoryModal = ({
               description="Cargando pagos..."
               image={Empty.PRESENTED_IMAGE_SIMPLE}
             />
+          ) : paymentsError ? (
+            <Alert
+              message="No se pudo cargar el historial de pagos."
+              showIcon
+              type="warning"
+            />
           ) : payments.length === 0 ? (
             <Empty
               description="Esta compra todavía no tiene pagos registrados."
@@ -204,7 +203,11 @@ export const SupplierPaymentHistoryModal = ({
                 const paymentMethods = normalizePaymentMethods(payment);
                 const settlementSummary =
                   resolvePaymentSettlementSummary(payment);
-                const statusTag = resolvePaymentStatusTag(payment.status);
+                const isVoidedPayment =
+                  isVoidedAccountsPayablePaymentStatus(payment.status);
+                const statusTag = resolveAccountsPayablePaymentStatusTag(
+                  payment.status,
+                );
 
                 return (
                   <PaymentCard key={payment.id}>
@@ -283,10 +286,10 @@ export const SupplierPaymentHistoryModal = ({
                         Evidencia de registro: {payment.evidenceNote.trim()}
                       </MetaLine>
                     ) : null}
-                    {payment.status === 'void' && payment.voidReason && (
+                    {isVoidedPayment && payment.voidReason ? (
                       <MetaLine>Motivo: {payment.voidReason}</MetaLine>
-                    )}
-                    {payment.status === 'void' &&
+                    ) : null}
+                    {isVoidedPayment &&
                     typeof payment.voidEvidenceNote === 'string' &&
                     payment.voidEvidenceNote.trim() ? (
                       <MetaLine>
@@ -297,26 +300,26 @@ export const SupplierPaymentHistoryModal = ({
 
                     <ActionsRow>
                       <Button
-                        type="link"
                         icon={<ProfileOutlined />}
                         onClick={() =>
                           openAccountingEntry({
                             eventType:
-                              payment.status === 'void'
-                                ? 'accounts_payable.payment.voided'
-                                : 'accounts_payable.payment.recorded',
+                              resolveAccountsPayablePaymentAccountingEventType(
+                                payment.status,
+                              ),
                             sourceDocumentId: payment.id,
                             sourceDocumentType: 'accountsPayablePayment',
                           })
                         }
+                        type="link"
                       >
                         Ver asiento contable
                       </Button>
-                      {payment.status !== 'void' && canVoidPayments ? (
+                      {!isVoidedPayment && canVoidPayments ? (
                         <Button
                           danger
-                          type="link"
                           onClick={() => handleVoidPayment(payment)}
+                          type="link"
                         >
                           Anular pago
                         </Button>

@@ -2,11 +2,16 @@ import { describe, expect, it } from 'vitest';
 
 import {
   filterInventoriableProducts,
+  filterSellableProducts,
   isInventoriableProduct,
+  isComponentTrackedCombo,
   isProductExplicitlyInventoryTracked,
   isProductExplicitlyNotInventoryTracked,
   isProductInventoryTrackingEnabled,
+  isProductVisibleForSale,
+  isRawMaterialProduct,
   isServiceProduct,
+  isSellableProduct,
   resolveProductInventoryTracking,
   shouldResolveProductPhysicalStock,
 } from './productInventoryLogic';
@@ -82,7 +87,63 @@ describe('productInventoryLogic', () => {
         trackInventory: false,
         restrictSaleWithoutStock: true,
       }),
+    ).toBe(false);
+    expect(
+      shouldResolveProductPhysicalStock({
+        itemType: 'combo',
+        trackInventory: true,
+        restrictSaleWithoutStock: true,
+        combo: { inventoryPolicy: 'components' },
+      }),
+    ).toBe(false);
+    expect(
+      shouldResolveProductPhysicalStock({
+        itemType: 'combo',
+        trackInventory: true,
+        combo: { inventoryPolicy: 'self' },
+      }),
     ).toBe(true);
+  });
+
+  it('identifies raw materials as inventory products that are not sellable', () => {
+    const rawMaterial = {
+      itemType: 'product',
+      inventoryRole: 'raw_material',
+      isSellable: true,
+      isVisible: true,
+    };
+
+    expect(isRawMaterialProduct(rawMaterial)).toBe(true);
+    expect(isSellableProduct(rawMaterial)).toBe(false);
+    expect(isProductVisibleForSale(rawMaterial)).toBe(false);
+    expect(resolveProductInventoryTracking(rawMaterial)).toBe(true);
+    expect(shouldResolveProductPhysicalStock(rawMaterial)).toBe(true);
+  });
+
+  it('keeps services and combos sellable by default while honoring explicit blocks', () => {
+    expect(isSellableProduct({ itemType: 'service' })).toBe(true);
+    expect(isSellableProduct({ itemType: 'combo' })).toBe(true);
+    expect(isSellableProduct({ itemType: 'product', isSellable: false })).toBe(
+      false,
+    );
+    expect(isProductVisibleForSale({ itemType: 'product', isVisible: false }))
+      .toBe(false);
+  });
+
+  it('identifies component-tracked combos as virtual parent stock items', () => {
+    expect(
+      isComponentTrackedCombo({
+        itemType: 'combo',
+        combo: { inventoryPolicy: 'components' },
+      }),
+    ).toBe(true);
+    expect(
+      isComponentTrackedCombo({
+        itemType: 'combo',
+        combo: { inventoryPolicy: 'self' },
+      }),
+    ).toBe(false);
+    expect(isComponentTrackedCombo({ itemType: 'product' })).toBe(false);
   });
 
   it('filters inventoriable products with item type fallbacks', () => {
@@ -98,5 +159,20 @@ describe('productInventoryLogic', () => {
       filterInventoriableProducts(products).map((product) => product.id),
     ).toEqual(['product-default', 'combo-enabled']);
     expect(isInventoriableProduct({ itemType: 'service' })).toBe(false);
+  });
+
+  it('filters sale-visible products without dropping services and combos', () => {
+    const products = [
+      { id: 'product-default' },
+      { id: 'service', itemType: 'service' },
+      { id: 'combo', itemType: 'combo' },
+      { id: 'hidden', itemType: 'product', isVisible: false },
+      { id: 'blocked', itemType: 'product', isSellable: false },
+      { id: 'raw', itemType: 'product', inventoryRole: 'raw_material' },
+    ];
+
+    expect(filterSellableProducts(products).map((product) => product.id)).toEqual(
+      ['product-default', 'service', 'combo'],
+    );
   });
 });

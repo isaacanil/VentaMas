@@ -6,9 +6,15 @@ import {
 import { normalizeSaleUnitForCart } from '@/domain/products/saleUnits';
 import {
   buildNormalizedProductSnapshot,
+  normalizeComboConfig,
+  normalizeComboComponents,
   normalizeItemType,
+  normalizeProductInventoryRole,
   normalizeTrackInventoryValue,
+  withRawMaterialDefaults,
+  withServiceDefaults,
 } from '@/domain/products/normalization';
+import { PRODUCT_BRAND_DEFAULT } from '@/domain/products/productDefaults';
 import {
   normalizeProductPricingCurrency,
   normalizeProductPricingTax,
@@ -17,6 +23,7 @@ import {
 } from '@/domain/products/pricingForm';
 import type {
   PricingTax,
+  ProductComboConfig,
   ProductPricing,
   ProductRecord,
   ProductSaleUnit,
@@ -40,6 +47,15 @@ export const hasBusinessId = (value: unknown): value is UserWithBusiness => {
   if (!isRecord(value)) return false;
   const businessId = value.businessID;
   return typeof businessId === 'string' && businessId.trim().length > 0;
+};
+
+export const getProductStudioBusinessId = (value: unknown): string | null => {
+  if (!isRecord(value)) return null;
+  const businessId =
+    value.businessID ?? value.businessId ?? value.activeBusinessId;
+  return typeof businessId === 'string' && businessId.trim()
+    ? businessId.trim()
+    : null;
 };
 
 export const hasUserUid = (value: unknown): value is { uid: string } => {
@@ -118,6 +134,61 @@ const readPositiveNumber = (value: unknown, fallback: number): number => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 };
 
+const normalizeComboConfigForStudio = (
+  combo: ProductRecord['combo'],
+): ProductComboConfig => ({
+  enabled: true,
+  inventoryPolicy: 'components',
+  components: normalizeComboComponents(combo?.components),
+});
+
+const withStudioComboDefaults = (product: ProductRecord): ProductRecord => ({
+  ...product,
+  inventoryRole: null,
+  isSellable: true,
+  isVisible: true,
+  brand: PRODUCT_BRAND_DEFAULT,
+  brandId: null,
+  netContent: '',
+  size: '',
+  activeIngredients: '',
+  measurement: '',
+  footer: '',
+  stock: 0,
+  totalUnits: null,
+  packSize: 1,
+  trackInventory: true,
+  restrictSaleWithoutStock: product.restrictSaleWithoutStock !== false,
+  saleUnits: [],
+  selectedSaleUnit: null,
+  selectedSaleUnitId: null,
+  weightDetail: {
+    ...product.weightDetail,
+    isSoldByWeight: false,
+  },
+  warranty: {
+    ...product.warranty,
+    status: false,
+  },
+  combo: normalizeComboConfigForStudio(product.combo),
+});
+
+const withStudioServiceDefaults = (product: ProductRecord): ProductRecord =>
+  withServiceDefaults({
+    ...product,
+    itemType: 'service',
+    trackInventory: false,
+  });
+
+const withStudioRawMaterialDefaults = (
+  product: ProductRecord,
+): ProductRecord =>
+  withRawMaterialDefaults({
+    ...product,
+    itemType: 'product',
+    inventoryRole: 'raw_material',
+  });
+
 const normalizeSaleUnitPricingForForm = (
   pricing: ProductPricing | undefined,
 ): ProductPricingFormValues | undefined => {
@@ -195,16 +266,38 @@ export const normalizeProductForStudioSubmit = (
   if (!product) return product;
 
   const pricingForForm = normalizePricingForForm(product.pricing);
+  const itemType = normalizeItemType(product.itemType, product.type);
+  const inventoryRole = normalizeProductInventoryRole(
+    product.inventoryRole,
+    itemType,
+  );
 
-  return {
+  const normalizedProduct: ProductRecord = {
     ...product,
+    itemType,
+    inventoryRole,
     pricing: pricingForForm
       ? normalizePricingForUpdate(pricingForForm)
       : product.pricing,
     saleUnits: Array.isArray(product.saleUnits)
       ? normalizeSaleUnitsForUpdate(product.saleUnits, product)
       : product.saleUnits,
+    combo: normalizeComboConfig(product.combo, itemType),
   };
+
+  if (itemType === 'combo') {
+    return withStudioComboDefaults(normalizedProduct);
+  }
+
+  if (itemType === 'service') {
+    return withStudioServiceDefaults(normalizedProduct);
+  }
+
+  if (inventoryRole === 'raw_material') {
+    return withStudioRawMaterialDefaults(normalizedProduct);
+  }
+
+  return normalizedProduct;
 };
 
 export const getNormalizedProductValues = (
@@ -214,6 +307,7 @@ export const getNormalizedProductValues = (
   if (!snapshot) return {};
   return {
     ...snapshot,
+    inventoryRole: snapshot.inventoryRole ?? 'sellable',
     pricing: normalizePricingForForm(product?.pricing),
     saleUnits: normalizeSaleUnitsForForm(snapshot.saleUnits),
     weightDetail: snapshot.weightDetail as ProductWeightDetail | undefined,
@@ -233,6 +327,8 @@ export const toProductPreviewSnapshot = (
     : computedTax;
 
   return {
+    itemType: source.itemType,
+    combo: source.combo,
     pricing: pricing ? { ...pricing, tax: normalizedTax } : undefined,
     stock: source.stock,
     trackInventory: source.trackInventory,
@@ -241,6 +337,8 @@ export const toProductPreviewSnapshot = (
     brand: source.brand,
     category: source.category,
     type: source.type,
+    inventoryRole: source.inventoryRole,
+    isSellable: source.isSellable,
     isVisible: source.isVisible,
   };
 };
@@ -280,19 +378,83 @@ export const getChangedProductPatch = ({
     };
   }
 
+  if (key === 'inventoryRole') {
+    const itemType = normalizeItemType(product?.itemType, product?.type);
+    const inventoryRole = normalizeProductInventoryRole(value, itemType);
+
+    if (inventoryRole === 'raw_material') {
+      return withStudioRawMaterialDefaults({
+        ...(product as ProductRecord),
+        itemType: 'product',
+        inventoryRole,
+      } as ProductRecord);
+    }
+
+    return {
+      inventoryRole: null,
+      isSellable: true,
+      isVisible: true,
+      trackInventory: normalizeTrackInventoryValue(
+        product?.trackInventory,
+        'product',
+      ),
+      restrictSaleWithoutStock: product?.restrictSaleWithoutStock ?? false,
+    };
+  }
+
   if (key === 'itemType') {
     const normalizedItemType = normalizeItemType(value);
     const trackInventoryValue =
-      normalizedItemType === 'service'
-        ? false
-        : normalizeTrackInventoryValue(
-            product?.trackInventory,
-            normalizedItemType,
-          );
+      normalizedItemType === 'combo'
+        ? true
+        : normalizedItemType === 'service'
+          ? false
+          : normalizeTrackInventoryValue(
+              product?.trackInventory,
+              normalizedItemType,
+            );
+
+    const patch: ProductPatch = {
+      itemType: normalizedItemType,
+      inventoryRole: null,
+      isSellable: true,
+      trackInventory: trackInventoryValue,
+      combo:
+        normalizedItemType === 'combo'
+          ? normalizeComboConfigForStudio(product?.combo)
+          : normalizeComboConfig(product?.combo, normalizedItemType),
+    };
+
+    if (normalizedItemType === 'combo') {
+      return withStudioComboDefaults({
+        ...(product as ProductRecord),
+        ...patch,
+        itemType: 'combo',
+      } as ProductRecord);
+    }
+
+    if (normalizedItemType === 'service') {
+      return withStudioServiceDefaults({
+        ...(product as ProductRecord),
+        ...patch,
+        itemType: 'service',
+      } as ProductRecord);
+    }
+
+    return patch;
+  }
+
+  if (key === 'combo') {
+    const normalizedItemType = normalizeItemType(
+      product?.itemType,
+      product?.type,
+    );
 
     return {
-      itemType: normalizedItemType,
-      trackInventory: trackInventoryValue,
+      combo:
+        normalizedItemType === 'combo'
+          ? normalizeComboConfigForStudio(value as ProductRecord['combo'])
+          : normalizeComboConfig(value, normalizedItemType),
     };
   }
 

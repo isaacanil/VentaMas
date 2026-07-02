@@ -20,6 +20,10 @@ import {
   buildMissingPhysicalSelectionMessage,
 } from '@/modules/sales/pages/Sale/utils/productStockSelection';
 import { getProductStockByProductId } from '@/firebase/warehouse/productStockService';
+import {
+  isProductVisibleForSale,
+  shouldResolveProductPhysicalStock,
+} from '@/domain/products/productInventoryLogic';
 
 type GuardFailure =
   | {
@@ -28,6 +32,13 @@ type GuardFailure =
       description: string;
       message: string;
       ok: false;
+    }
+  | {
+      code: 'non-sellable-product';
+      description: string;
+      message: string;
+      ok: false;
+      product: Product;
     }
   | {
       code: 'physical-selection';
@@ -78,6 +89,7 @@ const isProductMissingPhysicalSelection = (
 ) =>
   Boolean(
     product?.restrictSaleWithoutStock &&
+      shouldResolveProductPhysicalStock(product) &&
     (!product?.productStockId || !product?.batchId),
   );
 
@@ -157,6 +169,20 @@ export const validateInvoiceSubmissionGuards = async ({
       cashCountState: cashCountResult.state,
       message: 'No se puede facturar sin un cuadre abierto',
       description: resolveCashCountDescription(cashCountResult.state),
+    };
+  }
+
+  const nonSellableProduct = (
+    Array.isArray(cart?.products) ? cart.products : []
+  ).find((product) => !isProductVisibleForSale(product));
+
+  if (nonSellableProduct) {
+    return {
+      ok: false,
+      code: 'non-sellable-product',
+      message: 'Artículo no vendible',
+      description: `"${resolveProductName(nonSellableProduct)}" es de uso interno y no puede facturarse.`,
+      product: nonSellableProduct,
     };
   }
 

@@ -100,6 +100,9 @@ interface BrandMeta {
 }
 
 interface IdentitySectionProps {
+  isCombo?: boolean;
+  isService?: boolean;
+  isRawMaterial?: boolean;
   domId: string;
   brandMeta: BrandMeta;
   brandOptions: BrandOption[];
@@ -114,6 +117,9 @@ interface IdentitySectionProps {
 }
 
 export const IdentitySection = ({
+  isCombo = false,
+  isService = false,
+  isRawMaterial = false,
   domId,
   brandMeta,
   brandOptions,
@@ -128,58 +134,99 @@ export const IdentitySection = ({
 }: IdentitySectionProps) => (
   <SectionCard id={domId}>
     <SectionHeader>
-      <SectionTitle level={4}>General</SectionTitle>
+      <SectionTitle level={4}>
+        {isCombo
+          ? 'Información del combo'
+          : isService
+            ? 'Servicio'
+            : isRawMaterial
+              ? 'Materia prima'
+              : 'General'}
+      </SectionTitle>
       <SectionDescription>
-        Define cómo se verá y clasificará tu artículo.
+        {isCombo
+          ? 'Define cómo se identificará y venderá este combo.'
+          : isService
+            ? 'Define cómo se identificará y facturará este servicio.'
+            : isRawMaterial
+              ? 'Define cómo se identificará este insumo interno.'
+              : 'Define cómo se verá y clasificará tu artículo.'}
       </SectionDescription>
     </SectionHeader>
 
-    <ImagePanel>
-      <PreviewFrame>
-        {product?.image ? (
-          <img
-            src={product.image}
-            alt={product?.name || 'Producto'}
-            onError={(event: SyntheticEvent<HTMLImageElement>) => {
-              event.currentTarget.src = imgFailed;
-            }}
-          />
-        ) : (
-          <EmptyPreviewIcon />
-        )}
-      </PreviewFrame>
-      <PreviewActions>
-        <PreviewButton
-          type="primary"
-          icon={<CloudUploadOutlined />}
-          onClick={onOpenImageManager}
-        >
-          Agregar
-        </PreviewButton>
-        <PreviewButton
-          icon={<ReloadOutlined />}
-          onClick={onResetImage}
-          disabled={!product?.image}
-        >
-          Restablecer
-        </PreviewButton>
-        <Text type="secondary">
-          Usa una imagen cuadrada para que tu producto se vea mejor en catálogos
-          y POS.
-        </Text>
-      </PreviewActions>
-    </ImagePanel>
+    {!isCombo ? (
+      <ImagePanel>
+        <PreviewFrame>
+          {product?.image ? (
+            <img
+              src={product.image}
+              alt={product?.name || (isService ? 'Servicio' : 'Producto')}
+              onError={(event: SyntheticEvent<HTMLImageElement>) => {
+                event.currentTarget.src = imgFailed;
+              }}
+            />
+          ) : (
+            <EmptyPreviewIcon />
+          )}
+        </PreviewFrame>
+        <PreviewActions>
+          <PreviewButton
+            type="primary"
+            icon={<CloudUploadOutlined />}
+            onClick={onOpenImageManager}
+          >
+            Agregar
+          </PreviewButton>
+          <PreviewButton
+            icon={<ReloadOutlined />}
+            onClick={onResetImage}
+            disabled={!product?.image}
+          >
+            Restablecer
+          </PreviewButton>
+          <Text type="secondary">
+            Usa una imagen cuadrada para que tu{' '}
+            {isService
+              ? 'servicio'
+              : isRawMaterial
+                ? 'materia prima'
+                : 'producto'} se vea mejor.
+          </Text>
+        </PreviewActions>
+      </ImagePanel>
+    ) : null}
 
     <FieldGrid>
       <Form.Item
         name="name"
-        label="Nombre comercial"
+        label={
+          isCombo
+            ? 'Nombre del combo'
+            : isService
+              ? 'Nombre del servicio'
+              : 'Nombre comercial'
+        }
         rules={[
-          { required: true, message: 'Introduce un nombre.' },
+          {
+            required: true,
+            message: isCombo
+              ? 'Introduce un nombre para el combo.'
+              : isService
+                ? 'Introduce un nombre para el servicio.'
+              : 'Introduce un nombre.',
+          },
           { type: 'string', min: 4, message: 'Usa al menos 4 caracteres.' },
         ]}
       >
-        <Input placeholder="Ej: Acetaminofén 500mg 24 tablets" />
+        <Input
+          placeholder={
+            isCombo
+              ? 'Ej: Combo desayuno familiar'
+              : isService
+                ? 'Ej: Instalación básica'
+              : 'Ej: Acetaminofén 500mg 24 tablets'
+          }
+        />
       </Form.Item>
 
       <Form.Item
@@ -197,48 +244,83 @@ export const IdentitySection = ({
         />
       </Form.Item>
 
-      <Form.Item
-        name="type"
-        label="Familia / línea"
-        rules={[{ required: true, message: 'Especifica la familia.' }]}
-      >
-        <Input placeholder="Farmacia, Cosméticos, Bebidas…" />
-      </Form.Item>
+      {!isCombo ? (
+        <Form.Item
+          name="type"
+          label={isService ? 'Tipo de servicio' : 'Familia / línea'}
+          rules={[
+            {
+              required: true,
+              message: isService
+                ? 'Especifica el tipo de servicio.'
+                : 'Especifica la familia.',
+            },
+          ]}
+        >
+          <Input
+            placeholder={
+              isService
+                ? 'Instalación, asesoría, mantenimiento'
+                : 'Farmacia, Cosméticos, Bebidas…'
+            }
+          />
+        </Form.Item>
+      ) : null}
 
-      <Form.Item name="netContent" label="Contenido neto">
-        <Input placeholder="Ej: 500 ml, 30 cápsulas" />
-      </Form.Item>
+      {!isCombo && !isService ? (
+        <Form.Item
+          name="inventoryRole"
+          label="Rol"
+          tooltip="Define si se venderá al cliente o si será solo inventario interno."
+          rules={[{ required: true, message: 'Selecciona un rol.' }]}
+        >
+          <Select
+            options={[
+              { value: 'sellable', label: 'Producto vendible' },
+              { value: 'raw_material', label: 'Materia prima' },
+            ]}
+          />
+        </Form.Item>
+      ) : null}
+
+      {!isCombo && !isService ? (
+        <Form.Item name="netContent" label="Contenido neto">
+          <Input placeholder="Ej: 500 ml, 30 cápsulas" />
+        </Form.Item>
+      ) : null}
     </FieldGrid>
 
     <Row gutter={16}>
-      <Col xs={24} md={12}>
-        <Form.Item
-          name="brandId"
-          label={brandMeta.label}
-          tooltip="Este campo se adapta al tipo de producto."
-          extra={brandMeta.helper}
-        >
-          <FieldWithAction>
-            <Select
-              showSearch
-              placeholder={brandMeta.placeholder}
-              options={brandOptions}
-              optionFilterProp="label"
-              filterOption={(inputValue, option) =>
-                matchesSelectOptionText(inputValue, option?.label)
-              }
-            />
-            <Button
-              icon={<PlusOutlined />}
-              type="default"
-              shape="circle"
-              onClick={onOpenBrandModal}
-              aria-label="Agregar marca"
-            />
-          </FieldWithAction>
-        </Form.Item>
-      </Col>
-      <Col xs={24} md={12}>
+      {!isCombo && !isService ? (
+        <Col xs={24} md={12}>
+          <Form.Item
+            name="brandId"
+            label={brandMeta.label}
+            tooltip="Este campo se adapta al tipo de producto."
+            extra={brandMeta.helper}
+          >
+            <FieldWithAction>
+              <Select
+                showSearch
+                placeholder={brandMeta.placeholder}
+                options={brandOptions}
+                optionFilterProp="label"
+                filterOption={(inputValue, option) =>
+                  matchesSelectOptionText(inputValue, option?.label)
+                }
+              />
+              <Button
+                icon={<PlusOutlined />}
+                type="default"
+                shape="circle"
+                onClick={onOpenBrandModal}
+                aria-label="Agregar marca"
+              />
+            </FieldWithAction>
+          </Form.Item>
+        </Col>
+      ) : null}
+      <Col xs={24} md={isCombo || isService ? 24 : 12}>
         <Form.Item name="category" label="Categoría">
           <FieldWithAction>
             <Select
@@ -281,62 +363,68 @@ export const IdentitySection = ({
       </Col>
     </Row>
 
-    <FieldGrid>
-      <Form.Item name="size" label="Presentación / tamaño">
-        <Input placeholder="Caja x 24, Frasco 1L…" />
-      </Form.Item>
-      <Form.Item name="measurement" label="Medida interna">
-        <Input placeholder="Útil para reportes internos" />
-      </Form.Item>
-      <Form.Item name="footer" label="Pie / nota adicional">
-        <Input placeholder="Información legal u observaciones" />
-      </Form.Item>
-      <Form.Item name="activeIngredients" label="Principio activo">
-        <FieldWithAction>
-          <Select
-            showSearch
-            placeholder="Selecciona el principio activo"
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              matchesSelectOptionText(input, option?.children)
-            }
-            allowClear
-          >
-            <Option key="none" value="none">
-              Ninguno
-            </Option>
-            {activeIngredients.map((ingredient) => (
-              <Option key={ingredient.id} value={ingredient.name}>
-                {ingredient.name}
+    {!isCombo && !isService ? (
+      <FieldGrid>
+        <Form.Item name="size" label="Presentación / tamaño">
+          <Input placeholder="Caja x 24, Frasco 1L…" />
+        </Form.Item>
+        <Form.Item name="measurement" label="Medida interna">
+          <Input placeholder="Útil para reportes internos" />
+        </Form.Item>
+        <Form.Item name="footer" label="Pie / nota adicional">
+          <Input placeholder="Información legal u observaciones" />
+        </Form.Item>
+        <Form.Item name="activeIngredients" label="Principio activo">
+          <FieldWithAction>
+            <Select
+              showSearch
+              placeholder="Selecciona el principio activo"
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                matchesSelectOptionText(input, option?.children)
+              }
+              allowClear
+            >
+              <Option key="none" value="none">
+                Ninguno
               </Option>
-            ))}
-          </Select>
-          <Button
-            icon={<PlusOutlined />}
-            type="default"
-            shape="circle"
-            onClick={onAddActiveIngredient}
-            aria-label="Agregar principio activo"
-          />
-        </FieldWithAction>
-      </Form.Item>
-    </FieldGrid>
+              {activeIngredients.map((ingredient) => (
+                <Option key={ingredient.id} value={ingredient.name}>
+                  {ingredient.name}
+                </Option>
+              ))}
+            </Select>
+            <Button
+              icon={<PlusOutlined />}
+              type="default"
+              shape="circle"
+              onClick={onAddActiveIngredient}
+              aria-label="Agregar principio activo"
+            />
+          </FieldWithAction>
+        </Form.Item>
+      </FieldGrid>
+    ) : null}
 
-    <Divider titlePlacement="left">
-      <DividerLabel>
-        <SettingOutlined /> Visibilidad
-      </DividerLabel>
-    </Divider>
+    {!isRawMaterial ? (
+      <>
+        <Divider titlePlacement="left">
+          <DividerLabel>
+            <SettingOutlined /> Visibilidad
+          </DividerLabel>
+        </Divider>
 
-    <FieldGrid>
-      <SwitchField
-        name="isVisible"
-        label="Mostrar en catálogos"
-        tooltip="Controla si este producto aparece en tus catálogos y punto de venta."
-        valuePropName="checked"
-      >
-        <Switch />
-      </SwitchField>
-    </FieldGrid>
+        <FieldGrid>
+          <SwitchField
+            name="isVisible"
+            label="Mostrar en catálogos"
+            tooltip="Controla si este producto aparece en tus catálogos y punto de venta."
+            valuePropName="checked"
+          >
+            <Switch />
+          </SwitchField>
+        </FieldGrid>
+      </>
+    ) : null}
   </SectionCard>
 );

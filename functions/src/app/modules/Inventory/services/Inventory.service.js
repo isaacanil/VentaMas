@@ -293,6 +293,7 @@ export async function adjustProductInventory(
     pendingQty,
     requestedQuantity,
     saleUnitSnapshot,
+    comboComponentSnapshot,
     lineId,
     backorderId,
     backorderRef,
@@ -320,6 +321,7 @@ export async function adjustProductInventory(
         pendingQuantity: pendingQty,
         pendingBaseQuantity: pendingQty,
         saleUnit: saleUnitSnapshot,
+        comboComponent: comboComponentSnapshot || null,
         status: 'pending',
         createdAt: ts,
         createdBy: uid,
@@ -339,6 +341,7 @@ export async function adjustProductInventory(
     productStockId,
     requestedQuantity,
     saleUnitSnapshot,
+    comboComponentSnapshot,
     lineId,
     movementId,
     movementRef,
@@ -365,6 +368,7 @@ export async function adjustProductInventory(
         quantity: quantityMoved,
         requestedQuantity: requestedQuantity ?? quantityMoved,
         saleUnit: saleUnitSnapshot,
+        comboComponent: comboComponentSnapshot || null,
         movementType: MovementType.Exit,
         movementReason: MovementReason.Sale,
         isDeleted: false,
@@ -374,9 +378,22 @@ export async function adjustProductInventory(
     return movementId;
   };
 
-  for (let index = 0; index < products.length; index += 1) {
-    const prereq = prereqMap.get(index);
-    const prod = prereq?.prod || products[index];
+  const inventoryWorkItems =
+    Array.isArray(inventoryPrevreqs) && inventoryPrevreqs.length > 0
+      ? inventoryPrevreqs.map((prereq) => ({
+          index: prereq.index,
+          prereq,
+          prod: prereq.prod || products[prereq.index],
+        }))
+      : products.map((prod, index) => ({
+          index,
+          prereq: prereqMap.get(index),
+          prod,
+        }));
+
+  for (const workItem of inventoryWorkItems) {
+    const { index, prereq } = workItem;
+    const prod = workItem.prod;
     if (!shouldAdjustInventoryLine(prod)) continue;
     assertSupportedWeightInventoryLine(prod);
 
@@ -392,6 +409,7 @@ export async function adjustProductInventory(
     const quantityRequested = resolveInventoryBaseQuantity(prod);
     if (quantityRequested === 0) continue;
     const saleUnitSnapshot = buildSaleUnitMovementSnapshot(prod);
+    const comboComponentSnapshot = prod?.comboComponent || null;
     const lineId = rawLineId || cid || null;
     const sideEffectState = resolveInventorySideEffectState({
       businessID,
@@ -433,6 +451,7 @@ export async function adjustProductInventory(
         pendingQty: quantityRequested,
         requestedQuantity: quantityRequested,
         saleUnitSnapshot,
+        comboComponentSnapshot,
         lineId,
         backorderId: sideEffectState.backorderId,
         backorderRef: sideEffectState.backorderRef,
@@ -502,6 +521,7 @@ export async function adjustProductInventory(
         requestedQuantity: quantityRequested,
         sourceLocation,
         saleUnitSnapshot,
+        comboComponentSnapshot,
         lineId,
         movementId: sideEffectState.movementId,
         movementRef: sideEffectState.movementRef,
@@ -523,6 +543,7 @@ export async function adjustProductInventory(
             lineId: lineId || null,
             quantity: qtyToConsume,
             saleUnit: saleUnitSnapshot,
+            comboComponent: comboComponentSnapshot,
             unitCost: roundMoney(unitCost),
             totalCost: roundMoney(unitCost * qtyToConsume),
           });
@@ -539,6 +560,7 @@ export async function adjustProductInventory(
         pendingQty: backorderQty,
         requestedQuantity: quantityRequested,
         saleUnitSnapshot,
+        comboComponentSnapshot,
         lineId,
         backorderId: sideEffectState.backorderId,
         backorderRef: sideEffectState.backorderRef,

@@ -12,6 +12,7 @@ import styled from 'styled-components';
 import type { TableColumnsType as ColumnsType } from 'antd';
 import type { TablePaginationConfig } from 'antd';
 
+import { filterSellableProducts } from '@/domain/products/productInventoryLogic';
 import { formatPrice } from '@/utils/format';
 import { getTotalPrice } from '@/utils/pricing';
 import type { InvoiceProduct } from '@/types/invoice';
@@ -56,7 +57,14 @@ export const ProductListModal = ({
     }
   }, [isReadOnly, isVisible, onClose]);
 
-  const categoryStats = useMemo(() => getCategoryStats(products), [products]);
+  const sellableProducts = useMemo(
+    () => filterSellableProducts(products),
+    [products],
+  );
+  const categoryStats = useMemo(
+    () => getCategoryStats(sellableProducts),
+    [sellableProducts],
+  );
 
   const safeCategoryFilter = useMemo(
     () => getSafeCategoryFilter(categoryFilter, categoryStats),
@@ -66,13 +74,13 @@ export const ProductListModal = ({
   const displayProducts = useMemo(
     () =>
       filterAndSortProducts({
-        products,
+        products: sellableProducts,
         searchTerm,
         categoryFilter: safeCategoryFilter,
         sortField,
         sortDirection,
       }),
-    [products, searchTerm, safeCategoryFilter, sortField, sortDirection],
+    [sellableProducts, searchTerm, safeCategoryFilter, sortField, sortDirection],
   );
 
   const columns: ColumnsType<InvoiceProduct> = [

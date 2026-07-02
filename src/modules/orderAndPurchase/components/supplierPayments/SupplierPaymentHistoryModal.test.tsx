@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -24,6 +24,21 @@ vi.mock('@/modules/accounting/public', () => ({
 vi.mock('@/modules/accountsPayable/public', () => ({
   useAccountsPayablePayments: mocks.useAccountsPayablePayments,
 }));
+
+vi.mock('antd', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('antd')>();
+
+  return {
+    ...actual,
+    Tag: ({
+      children,
+      color,
+    }: {
+      children: ReactNode;
+      color?: string;
+    }) => <span data-color={color}>{children}</span>,
+  };
+});
 
 vi.mock('@/components/common/Modal', () => ({
   ModalShell: ({
@@ -81,6 +96,14 @@ const payment = {
   ],
 } as AccountsPayablePayment;
 
+const createPayment = (
+  overrides: Record<string, unknown> = {},
+): AccountsPayablePayment =>
+  ({
+    ...payment,
+    ...overrides,
+  }) as unknown as AccountsPayablePayment;
+
 describe('SupplierPaymentHistoryModal', () => {
   beforeEach(() => {
     mocks.useOpenAccountingEntry.mockReturnValue(vi.fn());
@@ -91,6 +114,7 @@ describe('SupplierPaymentHistoryModal', () => {
       role: 'admin',
     });
     mocks.useAccountsPayablePayments.mockReturnValue({
+      error: null,
       loading: false,
       payments: [payment],
     });
@@ -120,5 +144,90 @@ describe('SupplierPaymentHistoryModal', () => {
     expect(screen.getByText('$54.00')).toBeInTheDocument();
     expect(screen.getByText('Retención ISR')).toBeInTheDocument();
     expect(screen.getByText('$20.00')).toBeInTheDocument();
+  });
+
+  it('shows query errors instead of an empty payment history', () => {
+    mocks.useAccountsPayablePayments.mockReturnValue({
+      error: new Error('permission denied'),
+      loading: false,
+      payments: [],
+    });
+
+    render(
+      <SupplierPaymentHistoryModal
+        onCancel={vi.fn()}
+        open
+        purchase={purchase}
+      />,
+    );
+
+    expect(
+      screen.getByText('No se pudo cargar el historial de pagos.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('Esta compra todavía no tiene pagos registrados.'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('renders legacy inactive statuses as voided and blocks repeated voiding', () => {
+    const openAccountingEntry = vi.fn();
+    mocks.useOpenAccountingEntry.mockReturnValue(openAccountingEntry);
+    mocks.useAccountsPayablePayments.mockReturnValue({
+      error: null,
+      loading: false,
+      payments: [
+        createPayment({
+          id: 'void-payment',
+          receiptNumber: 'REC-VOID',
+          status: 'void',
+          voidEvidenceNote: 'Soporte de anulación void',
+          voidReason: 'Anulación void',
+        }),
+        createPayment({
+          id: 'voided-payment',
+          receiptNumber: 'REC-VOIDED',
+          status: 'voided',
+          voidEvidenceNote: 'Soporte de anulación voided',
+          voidReason: 'Anulación voided',
+        }),
+        createPayment({
+          id: 'canceled-payment',
+          receiptNumber: 'REC-CANCELED',
+          status: 'canceled',
+          voidReason: 'Cancelación importada',
+        }),
+        createPayment({
+          id: 'cancelled-payment',
+          receiptNumber: 'REC-CANCELLED',
+          status: 'cancelled',
+          voidReason: 'Cancelación legacy',
+        }),
+      ],
+    });
+
+    render(
+      <SupplierPaymentHistoryModal
+        onCancel={vi.fn()}
+        open
+        purchase={purchase}
+      />,
+    );
+
+    expect(screen.getAllByText('Anulado')).toHaveLength(4);
+    expect(screen.queryByRole('button', { name: 'Anular pago' })).toBeNull();
+    expect(screen.getByText('Motivo: Anulación voided')).toBeInTheDocument();
+    expect(
+      screen.getByText('Evidencia de anulación: Soporte de anulación voided'),
+    ).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getAllByRole('button', { name: /Ver asiento contable/ })[1],
+    );
+
+    expect(openAccountingEntry).toHaveBeenCalledWith({
+      eventType: 'accounts_payable.payment.voided',
+      sourceDocumentId: 'voided-payment',
+      sourceDocumentType: 'accountsPayablePayment',
+    });
   });
 });

@@ -50,17 +50,21 @@ const CompactFields = styled.div`
 interface InventorySectionProps {
   domId: string;
   isUpdateMode: boolean;
+  isRawMaterial?: boolean;
 }
 
 export const InventorySection = ({
   domId,
   isUpdateMode,
+  isRawMaterial = false,
 }: InventorySectionProps) => (
   <SectionCard id={domId}>
     <SectionHeader>
       <SectionTitle level={4}>Inventario</SectionTitle>
       <SectionDescription>
-        Define cómo se moverá el stock y los permisos de venta.
+        {isRawMaterial
+          ? 'Define existencias y empaque interno.'
+          : 'Define cómo se moverá el stock y los permisos de venta.'}
       </SectionDescription>
     </SectionHeader>
     {isUpdateMode && (
@@ -78,16 +82,18 @@ export const InventorySection = ({
         tooltip="Activa para hacer seguimiento de las existencias de este producto."
         valuePropName="checked"
       >
-        <Switch />
+        <Switch disabled={isRawMaterial} />
       </SwitchField>
-      <SwitchField
-        name="restrictSaleWithoutStock"
-        label="Bloquear sin stock"
-        tooltip="Restringe la venta cuando no hay unidades disponibles."
-        valuePropName="checked"
-      >
-        <Switch />
-      </SwitchField>
+      {!isRawMaterial ? (
+        <SwitchField
+          name="restrictSaleWithoutStock"
+          label="Bloquear sin stock"
+          tooltip="Restringe la venta cuando no hay unidades disponibles."
+          valuePropName="checked"
+        >
+          <Switch />
+        </SwitchField>
+      ) : null}
       <Form.Item
         name="stock"
         label="Stock disponible"
@@ -109,83 +115,87 @@ export const InventorySection = ({
       </Form.Item>
     </FieldGrid>
 
-    <SubSectionHeader>
-      <SubSectionTitle>
-        <BarcodeOutlined /> Venta por peso
-      </SubSectionTitle>
-      <HeaderRight>
-        <Tooltip title="Activa si este producto se pesa al momento de la venta.">
-          <InfoCircleOutlined style={{ color: '#94a3b8', fontSize: 14 }} />
-        </Tooltip>
-        <Form.Item
-          name={['weightDetail', 'isSoldByWeight']}
-          valuePropName="checked"
-          style={{ marginBottom: 0 }}
-        >
-          <Switch checkedChildren="Sí" unCheckedChildren="No" />
+    {!isRawMaterial ? (
+      <>
+        <SubSectionHeader>
+          <SubSectionTitle>
+            <BarcodeOutlined /> Venta por peso
+          </SubSectionTitle>
+          <HeaderRight>
+            <Tooltip title="Activa si este producto se pesa al momento de la venta.">
+              <InfoCircleOutlined style={{ color: '#94a3b8', fontSize: 14 }} />
+            </Tooltip>
+            <Form.Item
+              name={['weightDetail', 'isSoldByWeight']}
+              valuePropName="checked"
+              style={{ marginBottom: 0 }}
+            >
+              <Switch checkedChildren="Sí" unCheckedChildren="No" />
+            </Form.Item>
+          </HeaderRight>
+        </SubSectionHeader>
+
+        <Form.Item noStyle dependencies={[['weightDetail', 'isSoldByWeight']]}>
+          {({ getFieldValue }) => {
+            const isSoldByWeight = getFieldValue([
+              'weightDetail',
+              'isSoldByWeight',
+            ]);
+
+            return (
+              <CompactFields
+                style={{
+                  opacity: isSoldByWeight ? 1 : 0.5,
+                  transition: 'opacity 0.2s',
+                }}
+              >
+                <Form.Item
+                  name={['weightDetail', 'weight']}
+                  label="Peso promedio"
+                  style={{ marginBottom: 0, width: 120 }}
+                >
+                  <InputNumber
+                    min={0}
+                    style={{ width: '100%' }}
+                    placeholder="0.00"
+                    disabled={!isSoldByWeight}
+                  />
+                </Form.Item>
+                <Form.Item
+                  name={['weightDetail', 'weightUnit']}
+                  label="Unidad"
+                  dependencies={[['weightDetail', 'isSoldByWeight']]}
+                  rules={[
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        if (
+                          getFieldValue(['weightDetail', 'isSoldByWeight']) &&
+                          !value
+                        ) {
+                          return Promise.reject(
+                            new Error('Seleccionar una unidad de medida.'),
+                          );
+                        }
+                        return Promise.resolve();
+                      },
+                    }),
+                  ]}
+                  style={{ marginBottom: 0, width: 140 }}
+                >
+                  <Select
+                    placeholder="Selecciona"
+                    disabled={!isSoldByWeight}
+                    options={unitsOfMeasure.map((unit) => ({
+                      value: unit.unit,
+                      label: unit.unit,
+                    }))}
+                  />
+                </Form.Item>
+              </CompactFields>
+            );
+          }}
         </Form.Item>
-      </HeaderRight>
-    </SubSectionHeader>
-
-    <Form.Item noStyle dependencies={[['weightDetail', 'isSoldByWeight']]}>
-      {({ getFieldValue }) => {
-        const isSoldByWeight = getFieldValue([
-          'weightDetail',
-          'isSoldByWeight',
-        ]);
-
-        return (
-          <CompactFields
-            style={{
-              opacity: isSoldByWeight ? 1 : 0.5,
-              transition: 'opacity 0.2s',
-            }}
-          >
-            <Form.Item
-              name={['weightDetail', 'weight']}
-              label="Peso promedio"
-              style={{ marginBottom: 0, width: 120 }}
-            >
-              <InputNumber
-                min={0}
-                style={{ width: '100%' }}
-                placeholder="0.00"
-                disabled={!isSoldByWeight}
-              />
-            </Form.Item>
-            <Form.Item
-              name={['weightDetail', 'weightUnit']}
-              label="Unidad"
-              dependencies={[['weightDetail', 'isSoldByWeight']]}
-              rules={[
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (
-                      getFieldValue(['weightDetail', 'isSoldByWeight']) &&
-                      !value
-                    ) {
-                      return Promise.reject(
-                        new Error('Seleccionar una unidad de medida.'),
-                      );
-                    }
-                    return Promise.resolve();
-                  },
-                }),
-              ]}
-              style={{ marginBottom: 0, width: 140 }}
-            >
-              <Select
-                placeholder="Selecciona"
-                disabled={!isSoldByWeight}
-                options={unitsOfMeasure.map((unit) => ({
-                  value: unit.unit,
-                  label: unit.unit,
-                }))}
-              />
-            </Form.Item>
-          </CompactFields>
-        );
-      }}
-    </Form.Item>
+      </>
+    ) : null}
   </SectionCard>
 );

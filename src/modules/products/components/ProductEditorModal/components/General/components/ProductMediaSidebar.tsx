@@ -13,23 +13,38 @@ import {
 } from './ProductMediaSidebar.styles';
 
 interface ProductMediaSidebarProps {
+  isService?: boolean;
+  isRawMaterial?: boolean;
   product: ProductRecord;
   showImageManager: () => void;
 }
 
 export const ProductMediaSidebar = ({
+  isService = false,
+  isRawMaterial = false,
   product,
   showImageManager,
 }: ProductMediaSidebarProps) => {
   return (
     <Col
-      span={8}
+      xs={24}
+      lg={8}
       style={{
         display: 'grid',
+        minWidth: 0,
       }}
     >
-      <Space orientation="vertical">
-        <Card title="Imagen del producto" size="small">
+      <Space orientation="vertical" style={{ maxWidth: '100%', minWidth: 0, width: '100%' }}>
+        <Card
+          title={
+            isService
+              ? 'Imagen del servicio'
+              : isRawMaterial
+                ? 'Imagen de la materia prima'
+                : 'Imagen del producto'
+          }
+          size="small"
+        >
           <Space
             orientation="vertical"
             style={{
@@ -55,9 +70,13 @@ export const ProductMediaSidebar = ({
             </Button>
           </Space>
         </Card>
-        <ProductQRCode product={product} />
-        <BarCode product={product} />
-        <WarrantyInfo />
+        {!isService && !isRawMaterial ? (
+          <>
+            <ProductQRCode product={product} />
+            <BarCode product={product} />
+            <WarrantyInfo />
+          </>
+        ) : null}
       </Space>
     </Col>
   );

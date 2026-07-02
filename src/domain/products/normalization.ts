@@ -9,6 +9,9 @@ import {
 } from '@/domain/products/productDefaults';
 import { normalizeSupportedDocumentCurrency } from '@/utils/accounting/currencies';
 import type {
+  ProductComboComponent,
+  ProductComboConfig,
+  ProductInventoryRole,
   ProductItemType,
   ProductPricing,
   ProductRecord,
@@ -45,6 +48,200 @@ export const parseBooleanValue = (value: unknown): boolean | null => {
   }
   return null;
 };
+
+export const normalizeProductInventoryRole = (
+  value: unknown,
+  itemType: ProductItemType,
+): ProductInventoryRole | null => {
+  if (itemType !== 'product') return null;
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim().toLowerCase().replace(/[\s-]+/g, '_');
+  if (
+    ['raw_material', 'materia_prima', 'insumo', 'ingredient'].includes(
+      normalized,
+    )
+  ) {
+    return 'raw_material';
+  }
+  return null;
+};
+
+const cleanStringValue = (value: unknown): string => {
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (typeof value !== 'string') return '';
+  return value.replace(/\s+/g, ' ').trim();
+};
+
+const roundQuantity = (value: number): number =>
+  Math.round((value + Number.EPSILON) * 1_000_000) / 1_000_000;
+
+const readComboComponents = (combo: unknown): unknown[] => {
+  if (!combo || typeof combo !== 'object') return [];
+  const components = (combo as { components?: unknown }).components;
+  return Array.isArray(components) ? components : [];
+};
+
+export const normalizeComboComponents = (
+  components: unknown,
+): ProductComboComponent[] => {
+  if (!Array.isArray(components)) return [];
+
+  const normalizedComponents = components
+    .map((component) => {
+      if (!component || typeof component !== 'object') return null;
+      const record = component as Record<string, unknown>;
+      const productId = cleanStringValue(record.productId ?? record.idProduct);
+      const quantity = toFiniteNumber(record.quantity, 0);
+      if (!productId || quantity <= 0) return null;
+
+      const normalized: ProductComboComponent = {
+        productId,
+        quantity,
+      };
+      const id = cleanStringValue(record.id);
+      const productName = cleanStringValue(
+        record.productName ?? record.name ?? record.label,
+      );
+      const unitName = cleanStringValue(record.unitName);
+      if (id) normalized.id = id;
+      if (productName) normalized.productName = productName;
+      if (unitName) normalized.unitName = unitName;
+      if (record.sku !== undefined && record.sku !== null) {
+        normalized.sku = record.sku as string | number;
+      }
+      return normalized;
+    })
+    .filter((component): component is ProductComboComponent =>
+      Boolean(component),
+    );
+
+  const componentsByProductId = new Map<string, ProductComboComponent>();
+  for (const component of normalizedComponents) {
+    const existing = componentsByProductId.get(component.productId);
+    if (!existing) {
+      componentsByProductId.set(component.productId, { ...component });
+      continue;
+    }
+
+    existing.quantity = roundQuantity(existing.quantity + component.quantity);
+    if (!existing.id && component.id) existing.id = component.id;
+    if (!existing.productName && component.productName) {
+      existing.productName = component.productName;
+    }
+    if (!existing.unitName && component.unitName) {
+      existing.unitName = component.unitName;
+    }
+    if (existing.sku === undefined && component.sku !== undefined) {
+      existing.sku = component.sku;
+    }
+  }
+
+  return [...componentsByProductId.values()];
+};
+
+export const normalizeComboConfig = (
+  combo: unknown,
+  itemType: ProductItemType,
+): ProductComboConfig | null => {
+  const components = normalizeComboComponents(readComboComponents(combo));
+  const rawPolicy =
+    combo && typeof combo === 'object'
+      ? (combo as { inventoryPolicy?: unknown }).inventoryPolicy
+      : undefined;
+  const inventoryPolicy =
+    rawPolicy === 'self' || rawPolicy === 'components'
+      ? rawPolicy
+      : 'components';
+
+  if (itemType !== 'combo') {
+    return null;
+  }
+
+  return {
+    enabled: itemType === 'combo',
+    inventoryPolicy,
+    components,
+  };
+};
+
+export const withServiceDefaults = (
+  product: ProductRecord,
+): ProductRecord => ({
+  ...product,
+  inventoryRole: null,
+  isSellable: true,
+  brandId: null,
+  netContent: '',
+  size: '',
+  activeIngredients: '',
+  measurement: '',
+  footer: '',
+  stock: 0,
+  totalUnits: null,
+  packSize: 1,
+  trackInventory: false,
+  restrictSaleWithoutStock: false,
+  saleUnits: [],
+  selectedSaleUnit: null,
+  selectedSaleUnitId: null,
+  productStockId: null,
+  batchId: null,
+  batchInfo: null,
+  weightDetail: {
+    isSoldByWeight: false,
+  },
+  warranty: {
+    ...product.warranty,
+    status: false,
+  },
+  combo: null,
+});
+
+const normalizeRawMaterialPricing = (
+  pricing: ProductPricing | undefined,
+): ProductPricing | undefined => {
+  if (!pricing) return pricing;
+  return {
+    ...pricing,
+    price: 0,
+    listPrice: 0,
+    avgPrice: 0,
+    minPrice: 0,
+    cardPrice: 0,
+    offerPrice: 0,
+    listPriceEnable: false,
+    avgPriceEnable: false,
+    minPriceEnable: false,
+  };
+};
+
+export const withRawMaterialDefaults = (
+  product: ProductRecord,
+): ProductRecord => ({
+  ...product,
+  itemType: 'product',
+  inventoryRole: 'raw_material',
+  isSellable: false,
+  isVisible: false,
+  trackInventory: true,
+  restrictSaleWithoutStock: true,
+  pricing: normalizeRawMaterialPricing(product.pricing),
+  saleUnits: [],
+  selectedSaleUnit: null,
+  selectedSaleUnitId: null,
+  combo: null,
+  qrcode: '',
+  qrCode: '',
+  barcode: '',
+  weightDetail: {
+    ...product.weightDetail,
+    isSoldByWeight: false,
+  },
+  warranty: {
+    ...product.warranty,
+    status: false,
+  },
+});
 
 export const normalizeItemType = (
   value: unknown,
@@ -197,6 +394,41 @@ export const normalizeProductForPersistence = (
     normalizedProduct.itemType,
     normalizedProduct.type,
   );
+  const normalizedInventoryRole = normalizeProductInventoryRole(
+    normalizedProduct.inventoryRole,
+    normalizedProduct.itemType,
+  );
+  if (normalizedInventoryRole) {
+    normalizedProduct.inventoryRole = normalizedInventoryRole;
+  } else if (normalizedProduct.inventoryRole !== undefined) {
+    normalizedProduct.inventoryRole = null;
+  }
+  const normalizedSellableFlag = parseBooleanValue(
+    normalizedProduct.isSellable,
+  );
+  normalizedProduct.isSellable =
+    normalizedInventoryRole === 'raw_material'
+      ? false
+      : normalizedSellableFlag ?? true;
+  normalizedProduct.combo = normalizeComboConfig(
+    normalizedProduct.combo,
+    normalizedProduct.itemType,
+  );
+  if (normalizedProduct.itemType === 'service') {
+    Object.assign(normalizedProduct, withServiceDefaults(normalizedProduct));
+  }
+  if (normalizedInventoryRole === 'raw_material') {
+    Object.assign(
+      normalizedProduct,
+      withRawMaterialDefaults(normalizedProduct),
+    );
+  }
+  if (
+    normalizedProduct.itemType === 'combo' &&
+    normalizedProduct.combo?.inventoryPolicy === 'components'
+  ) {
+    normalizedProduct.stock = 0;
+  }
   normalizedProduct.trackInventory = normalizeTrackInventoryValue(
     normalizedProduct.trackInventory,
     normalizedProduct.itemType,

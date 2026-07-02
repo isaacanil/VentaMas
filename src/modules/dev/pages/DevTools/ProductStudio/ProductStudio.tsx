@@ -1,5 +1,6 @@
 import { MenuApp } from '@/modules/navigation/public';
 import { productStudioProductEditorAdapters } from '@/modules/products/public';
+import { useMemo } from 'react';
 
 import { ActionBar } from './components/ActionBar';
 import { ProductForm } from './components/form/ProductForm';
@@ -21,16 +22,31 @@ import {
 } from './components/StudioLayout';
 import { useProductStudioController } from './hooks/useProductStudioController';
 import { useSectionNavigation } from './hooks/useSectionNavigation';
+import { getProductStudioSections } from './utils/sections';
 
 const ProductStudioImageManager =
   productStudioProductEditorAdapters.ImageManager;
 
+const getStudioItemLabel = (product?: {
+  itemType?: string | null;
+  inventoryRole?: string | null;
+}) => {
+  if (product?.itemType === 'service') return 'servicio';
+  if (product?.itemType === 'combo') return 'combo';
+  if (
+    product?.itemType === 'product' &&
+    product?.inventoryRole === 'raw_material'
+  ) {
+    return 'materia prima';
+  }
+  return 'producto';
+};
+
 export default function ProductStudio() {
-  const { scrollContainerRef, activeSection, handleSectionNavigation } =
-    useSectionNavigation();
   const {
     form,
     product,
+    businessId,
     categories,
     activeIngredients,
     previewSnapshot,
@@ -56,11 +72,25 @@ export default function ProductStudio() {
     submitting,
     summaryVisible,
   } = useProductStudioController();
+  const visibleSections = useMemo(
+    () => getProductStudioSections(product?.itemType, product?.inventoryRole),
+    [product?.inventoryRole, product?.itemType],
+  );
+  const itemLabel = getStudioItemLabel(product);
+  const isRawMaterial =
+    product?.itemType === 'product' && product?.inventoryRole === 'raw_material';
+  const sectionName = isRawMaterial
+    ? 'Materia prima'
+    : isUpdateMode
+      ? `Editando ${itemLabel}`
+      : `Creando ${itemLabel}`;
+  const { scrollContainerRef, activeSection, handleSectionNavigation } =
+    useSectionNavigation(visibleSections);
 
   return (
     <PageContainer>
       <MenuApp
-        sectionName={isUpdateMode ? 'Editando producto' : 'Creando producto'}
+        sectionName={sectionName}
         toolbarProps={{
           isUpdateMode,
           navigationVisible,
@@ -75,6 +105,7 @@ export default function ProductStudio() {
             <SectionNavigator
               activeSection={activeSection}
               onNavigate={handleSectionNavigation}
+              sections={visibleSections}
             />
           </DesktopSidebar>
         )}
@@ -91,6 +122,7 @@ export default function ProductStudio() {
                   brandOptions={brandOptions}
                   categories={categories}
                   activeIngredients={activeIngredients}
+                  businessId={businessId}
                   sectionDomIds={sectionDomIds}
                   product={product}
                   isUpdateMode={isUpdateMode}
@@ -123,12 +155,14 @@ export default function ProductStudio() {
                 <SectionNavigator
                   activeSection={activeSection}
                   onNavigate={handleSectionNavigation}
+                  sections={visibleSections}
                 />
               </MobileBottomNav>
             )}
             <StudioErrors product={product} />
             <ActionBar
               isUpdateMode={isUpdateMode}
+              itemLabel={itemLabel}
               submitting={submitting}
               onReset={handleReset}
               onSubmit={handleSubmit}

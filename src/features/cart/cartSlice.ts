@@ -26,6 +26,7 @@ import {
   resolveProductBaseQuantity,
   resolveSaleUnitConversionFactor,
 } from '@/domain/products/saleUnits';
+import { isProductVisibleForSale } from '@/domain/products/productInventoryLogic';
 
 import { initialState, defaultDelivery } from './default/default';
 import { resolveProductForCartDocumentCurrency } from './utils/documentPricing';
@@ -77,13 +78,6 @@ const normalizeExchangeRate = (value: unknown): number | null => {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 };
-
-const resolveActiveProductPricing = (
-  product?: Product | null,
-): Product['pricing'] | null =>
-  (product?.selectedSaleUnit?.pricing as Product['pricing'] | undefined) ??
-  product?.pricing ??
-  null;
 
 const normalizeRateEffectiveAt = (
   value: unknown,
@@ -592,13 +586,13 @@ export const cartSlice = createSlice({
         }
         if (hasExplicitPrice && manualOverride) {
           product.pricingSource = {
-            ...(product.pricingSource ?? {}),
+            ...product.pricingSource,
             mode: 'manual-price',
             resolvedFrom: product.selectedSaleUnit ? 'saleUnit' : 'product',
           };
         } else if (pricing || saleUnit) {
           product.pricingSource = {
-            ...(product.pricingSource ?? {}),
+            ...product.pricingSource,
             mode:
               product.pricingSource?.mode === 'mixed-currency'
                 ? 'mixed-currency'
@@ -614,6 +608,10 @@ export const cartSlice = createSlice({
       state.data.payment.value = totalPurchase;
     },
     addProduct: (state: CartState, action: PayloadAction<Product>) => {
+      if (!isProductVisibleForSale(action.payload)) {
+        return;
+      }
+
       const functionalCurrency = normalizeDocumentCurrency(
         state.data.functionalCurrency ?? state.data.documentCurrency,
       );

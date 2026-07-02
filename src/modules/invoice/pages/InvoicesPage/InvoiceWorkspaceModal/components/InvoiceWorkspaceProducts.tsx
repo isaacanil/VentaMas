@@ -1,6 +1,6 @@
 import { EditOutlined } from '@/constants/icons/antd';
 import { message } from 'antd';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import {
@@ -10,6 +10,10 @@ import {
   VmInput,
   VmModal,
 } from '@/components/heroui';
+import {
+  filterSellableProducts,
+  isProductVisibleForSale,
+} from '@/domain/products/productInventoryLogic';
 import { useGetProducts } from '@/firebase/products/fbGetProducts';
 import type { InvoiceData, InvoiceProduct } from '@/types/invoice';
 import type { UserIdentity } from '@/types/users';
@@ -88,6 +92,15 @@ export const InvoiceWorkspaceProducts = ({
   const [priceEditor, setPriceEditor] = useState<PriceEditorState>(null);
   const { products: catalogProducts, loading: catalogProductsLoading } =
     useGetProducts();
+  const sellableCatalogProducts = useMemo(
+    () =>
+      filterSellableProducts(
+        Array.isArray(catalogProducts)
+          ? (catalogProducts as InvoiceProduct[])
+          : [],
+      ),
+    [catalogProducts],
+  );
   const {
     authorizationModal,
     canEditDirectly,
@@ -133,6 +146,10 @@ export const InvoiceWorkspaceProducts = ({
 
   const handleAddProduct = (product: InvoiceProduct) => {
     if (!canEditDirectly) return;
+    if (!isProductVisibleForSale(product)) {
+      message.warning('Este artículo es de uso interno y no puede facturarse.');
+      return;
+    }
     setDraft((current) => addWorkspaceDraftProduct(current, product));
     message.success(`${getProductName(product)} agregado`);
   };
@@ -338,7 +355,7 @@ export const InvoiceWorkspaceProducts = ({
         isOpen={isProductPickerOpen}
         onAddProduct={handleAddProduct}
         onClose={() => setIsProductPickerOpen(false)}
-        products={catalogProducts as InvoiceProduct[]}
+        products={sellableCatalogProducts}
       />
 
       <VmModal

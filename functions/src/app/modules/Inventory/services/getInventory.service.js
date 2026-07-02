@@ -3,6 +3,11 @@ import { https } from 'firebase-functions';
 
 import { db } from '../../../core/config/firebase.js';
 import { resolveInventoryBaseQuantity } from '../utils/saleUnitQuantity.util.js';
+import {
+  buildComboComponentInventoryLine,
+  getComboComponents,
+  isComponentTrackedCombo,
+} from '../utils/comboInventoryLines.util.js';
 
 const normalizeId = (value) => {
   if (value == null) return '';
@@ -14,8 +19,25 @@ const hasSelectedPhysicalStock = (product) =>
     normalizeId(product?.productStockId) && normalizeId(product?.batchId),
   );
 
+const isServiceItemType = (value) =>
+  ['service', 'services', 'servicio', 'servicios'].includes(
+    normalizeId(value).toLowerCase(),
+  );
+
+const isServiceInventoryLine = (product, catalogProduct = {}) =>
+  isServiceItemType(product?.itemType) ||
+  isServiceItemType(product?.type) ||
+  isServiceItemType(catalogProduct?.itemType) ||
+  isServiceItemType(catalogProduct?.type);
+
 const shouldResolveInventoryLine = (product) =>
-  Boolean(product?.trackInventory) || hasSelectedPhysicalStock(product);
+  !isServiceInventoryLine(product) &&
+  (Boolean(product?.trackInventory) || hasSelectedPhysicalStock(product));
+
+const shouldReadCatalogForInventoryPolicy = (product) => {
+  const itemType = normalizeId(product?.itemType);
+  return itemType !== 'service' && Boolean(normalizeId(product?.id));
+};
 
 const getPhysicalStockQuantity = (data = {}) => {
   const rawQuantity = data.quantity;
@@ -267,24 +289,103 @@ export async function collectInventoryPrereqs(tx, { user, products, saleId }) {
   const productCache = new Map();
   const batchCache = new Map();
   const stockCache = new Map();
+  const inventoryLines = [];
+
+  const readProductSnap = async (productId, { required = true } = {}) => {
+    let productSnap = productCache.get(productId);
+    if (!productSnap) {
+      try {
+        productSnap = await getProductDocFromTx(tx, user.businessID, productId);
+      } catch (error) {
+        if (!required && error?.code === 'not-found') {
+          return null;
+        }
+        throw error;
+      }
+      productCache.set(productId, productSnap);
+    }
+    return productSnap;
+  };
+
+  const expandComboLine = async ({
+    prod,
+    index,
+    productData = {},
+  }) => {
+    const parentLineId = resolveInventoryLineId(prod, index);
+    const components = getComboComponents(prod, productData);
+    for (
+      let componentIndex = 0;
+      componentIndex < components.length;
+      componentIndex += 1
+    ) {
+      const component = components[componentIndex];
+      const componentProductSnap = await readProductSnap(component.productId);
+      inventoryLines.push({
+        index: `combo-${index}-${componentIndex}`,
+        prod: buildComboComponentInventoryLine({
+          comboLine: prod,
+          comboProductData: productData,
+          component,
+          componentIndex,
+          componentProductData: componentProductSnap.data?.() || {},
+          parentLineId,
+        }),
+        productSnap: componentProductSnap,
+      });
+    }
+  };
 
   for (let index = 0; index < products.length; index += 1) {
     const prod = products[index];
-    if (!shouldResolveInventoryLine(prod)) continue;
-
-    const productId = prod.id;
+    const productId = normalizeId(prod?.id);
+    const resolvesFromPayload = shouldResolveInventoryLine(prod);
     if (!productId) {
+      if (isComponentTrackedCombo(prod, null)) {
+        await expandComboLine({ prod, index });
+        continue;
+      }
+      if (!resolvesFromPayload) continue;
       throw new https.HttpsError(
         'invalid-argument',
         'Todos los productos con inventario deben tener un id',
       );
     }
 
-    let productSnap = productCache.get(productId);
-    if (!productSnap) {
-      productSnap = await getProductDocFromTx(tx, user.businessID, productId);
-      productCache.set(productId, productSnap);
+    let productSnap = null;
+    let productData = {};
+    if (
+      resolvesFromPayload ||
+      shouldReadCatalogForInventoryPolicy(prod)
+    ) {
+      productSnap = await readProductSnap(productId, {
+        required: resolvesFromPayload,
+      });
+      productData = productSnap?.data?.() || {};
     }
+
+    if (isComponentTrackedCombo(prod, productData)) {
+      await expandComboLine({ prod, index, productData });
+      continue;
+    }
+
+    if (isServiceInventoryLine(prod, productData)) {
+      continue;
+    }
+
+    const resolvesFromCatalog = productData.trackInventory === true;
+    if (!resolvesFromPayload && !resolvesFromCatalog) continue;
+
+    inventoryLines.push({
+      index,
+      prod: resolvesFromCatalog ? { ...prod, trackInventory: true } : prod,
+      productSnap,
+    });
+  }
+
+  for (const inventoryLine of inventoryLines) {
+    const { index, prod, productSnap } = inventoryLine;
+    const productId = prod.id;
 
     const restrictSale =
       Boolean(prod?.restrictSaleWithoutStock) ||

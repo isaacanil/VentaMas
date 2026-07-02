@@ -21,6 +21,28 @@ type ProductEditorModalProps = {
 
 type ProductEditorView = 'product-form' | 'image-manager';
 
+const getModalItemMeta = (product?: {
+  itemType?: string | null;
+  inventoryRole?: string | null;
+}) => {
+  if (product?.itemType === 'service') {
+    return { editTitle: 'Editar servicio', newTitle: 'Nuevo servicio' };
+  }
+  if (product?.itemType === 'combo') {
+    return { editTitle: 'Editar combo', newTitle: 'Nuevo combo' };
+  }
+  if (
+    product?.itemType === 'product' &&
+    product.inventoryRole === 'raw_material'
+  ) {
+    return {
+      editTitle: 'Editar materia prima',
+      newTitle: 'Nueva materia prima',
+    };
+  }
+  return { editTitle: 'Editar producto', newTitle: 'Nuevo producto' };
+};
+
 export const ProductEditorModal = ({ isOpen }: ProductEditorModalProps) => {
   const [view, setView] = useState<ProductEditorView>('product-form');
   const dispatch = useDispatch();
@@ -34,6 +56,11 @@ export const ProductEditorModal = ({ isOpen }: ProductEditorModalProps) => {
     (state: { updateProduct?: { product?: ProductRecord } }) =>
       state.updateProduct?.product?.name,
   );
+  const productForLabel = useSelector(
+    (state: { updateProduct?: { product?: ProductRecord } }) =>
+      state.updateProduct?.product,
+  );
+  const itemMeta = getModalItemMeta(productForLabel);
 
   const showImageManager = () => setView('image-manager');
   const hideImageManager = () => setView('product-form');
@@ -60,9 +87,13 @@ export const ProductEditorModal = ({ isOpen }: ProductEditorModalProps) => {
     <Modal
       centered={true}
       open={isOpen}
-      width={1200}
+      width="min(1200px, calc(100vw - 24px))"
       style={{ top: 5 }}
-      title={status === 'update' ? `Editar: ${productName || ''}` : 'Nuevo Producto'}
+      title={
+        status === 'update'
+          ? `${itemMeta.editTitle}: ${productName || ''}`
+          : itemMeta.newTitle
+      }
       onCancel={handleCloseModal}
       footer={null}
     >

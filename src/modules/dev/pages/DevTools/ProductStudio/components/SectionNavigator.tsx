@@ -3,7 +3,11 @@ import styled from 'styled-components';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CSSProperties, FC, MouseEvent as ReactMouseEvent } from 'react';
 
-import { FORM_SECTIONS, type SectionId } from '../utils/sections';
+import {
+  FORM_SECTIONS,
+  type SectionConfig,
+  type SectionId,
+} from '../utils/sections';
 
 const SectionNavigatorWrapper = styled.aside`
   position: sticky;
@@ -131,11 +135,13 @@ interface IndicatorGeometry {
 interface SectionNavigatorProps {
   activeSection: string;
   onNavigate: (sectionId: string) => void;
+  sections?: SectionConfig[];
 }
 
 export const SectionNavigator: FC<SectionNavigatorProps> = ({
   activeSection,
   onNavigate,
+  sections = FORM_SECTIONS,
 }) => {
   const navRef = useRef<HTMLElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -313,7 +319,7 @@ export const SectionNavigator: FC<SectionNavigatorProps> = ({
             style={indicatorStyle}
           />
         ) : null}
-        {FORM_SECTIONS.map((section) => {
+        {sections.map((section) => {
           const Icon = section.icon;
           return (
             <NavButton

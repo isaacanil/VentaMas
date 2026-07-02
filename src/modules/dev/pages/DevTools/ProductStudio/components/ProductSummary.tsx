@@ -133,16 +133,72 @@ interface ProductSummaryProps {
   previewMetrics: ProductPreviewMetrics;
 }
 
+const isComponentTrackedCombo = (product?: ProductSnapshot | null): boolean =>
+  product?.itemType === 'combo' &&
+  (product.combo?.inventoryPolicy ?? 'components') === 'components';
+
+const isRawMaterial = (product?: ProductSnapshot | null): boolean =>
+  product?.itemType === 'product' && product.inventoryRole === 'raw_material';
+
+const getInventoryModeLabel = (
+  product: ProductSnapshot | null | undefined,
+  previewMetrics: ProductPreviewMetrics,
+) => {
+  if (isRawMaterial(product)) return 'Materia prima';
+  if (product?.itemType === 'service') return 'Servicio';
+  if (isComponentTrackedCombo(product)) return 'Combo por receta';
+  return previewMetrics.trackInventory ? 'Inventariable' : 'Sin inventario';
+};
+
+const getStockValueLabel = (
+  product: ProductSnapshot | null | undefined,
+  previewMetrics: ProductPreviewMetrics,
+) => {
+  if (product?.itemType === 'service') return 'No aplica';
+  if (isComponentTrackedCombo(product)) return 'Por componentes';
+  return `${previewMetrics.stock} unidades`;
+};
+
+const getItemTypeLabel = (product: ProductSnapshot | null | undefined) => {
+  if (isRawMaterial(product)) return 'Materia prima';
+  if (product?.itemType === 'service') return 'Servicio';
+  if (product?.itemType === 'combo') return 'Combo';
+  return product?.type || 'Producto';
+};
+
+const getNameFallback = (product: ProductSnapshot | null | undefined) => {
+  if (isRawMaterial(product)) return 'Materia prima sin nombre';
+  if (product?.itemType === 'service') return 'Servicio sin nombre';
+  if (product?.itemType === 'combo') return 'Combo sin nombre';
+  return 'Producto sin nombre';
+};
+
+const getSecondaryDescription = (
+  product: ProductSnapshot | null | undefined,
+) => {
+  const itemTypeLabel = getItemTypeLabel(product);
+  const category = product?.category || 'Sin categoría';
+
+  if (product?.itemType === 'service' || product?.itemType === 'combo') {
+    return `${category} · ${itemTypeLabel}`;
+  }
+
+  return `${product?.brand || PRODUCT_BRAND_DEFAULT} · ${category} · ${itemTypeLabel}`;
+};
+
 export const ProductSummary: React.FC<ProductSummaryProps> = ({
   product,
   previewMetrics,
-}) => (
-  <SummaryCard>
+}) => {
+  const rawMaterial = isRawMaterial(product);
+
+  return (
+    <SummaryCard>
     <PreviewImage>
       {product?.image ? (
         <Image
           src={product.image}
-          alt={product?.name || 'Producto'}
+          alt={product?.name || getNameFallback(product)}
           fallback={imgFailed}
           preview={{ mask: 'Previsualizar' }}
         />
@@ -156,19 +212,23 @@ export const ProductSummary: React.FC<ProductSummaryProps> = ({
 
     <PreviewDetails>
       <Title level={4} style={{ margin: 0 }}>
-        {product?.name || 'Producto sin nombre'}
+        {product?.name || getNameFallback(product)}
       </Title>
-      <Text type="secondary">
-        {product?.brand || PRODUCT_BRAND_DEFAULT} ·{' '}
-        {product?.category || 'Sin categoría'} ·{' '}
-        {product?.type || 'Producto'}
-      </Text>
+      <Text type="secondary">{getSecondaryDescription(product)}</Text>
       <Space size="small" wrap style={{ marginTop: 4, justifyContent: 'center' }}>
         <ModesTag $color={previewMetrics.trackInventory ? 'info' : 'warning'}>
-          {previewMetrics.trackInventory ? 'Inventariable' : 'Sin inventario'}
+          {getInventoryModeLabel(product, previewMetrics)}
         </ModesTag>
-        <ModesTag $color={product?.isVisible === false ? 'danger' : 'info'}>
-          {product?.isVisible === false ? 'Oculto' : 'Publicado'}
+        <ModesTag
+          $color={
+            rawMaterial || product?.isVisible === false ? 'danger' : 'info'
+          }
+        >
+          {rawMaterial
+            ? 'No vendible'
+            : product?.isVisible === false
+              ? 'Oculto'
+              : 'Publicado'}
         </ModesTag>
       </Space>
     </PreviewDetails>
@@ -177,18 +237,27 @@ export const ProductSummary: React.FC<ProductSummaryProps> = ({
     <MetricsContainer>
       <MetricRow>
         <span className="label">Stock</span>
-        <span className="value">{previewMetrics.stock} unidades</span>
-      </MetricRow>
-      <MetricRow>
-        <span className="label">Precio</span>
         <span className="value">
-          {previewMetrics.currencyMarker} {previewMetrics.price?.toFixed(2)}
+          {getStockValueLabel(product, previewMetrics)}
         </span>
       </MetricRow>
       <MetricRow>
-        <span className="label">Ganancia</span>
-        <span className="value">{previewMetrics.margin}%</span>
+        <span className="label">{rawMaterial ? 'Costo' : 'Precio'}</span>
+        <span className="value">
+          {previewMetrics.currencyMarker}{' '}
+          {(rawMaterial
+            ? previewMetrics.cost
+            : previewMetrics.price
+          )?.toFixed(2)}
+        </span>
+      </MetricRow>
+      <MetricRow>
+        <span className="label">{rawMaterial ? 'Venta' : 'Ganancia'}</span>
+        <span className="value">
+          {rawMaterial ? 'No aplica' : `${previewMetrics.margin}%`}
+        </span>
       </MetricRow>
     </MetricsContainer>
-  </SummaryCard>
-);
+    </SummaryCard>
+  );
+};

@@ -29,6 +29,10 @@ import {
   normalizeSaleUnitForCart,
   resolveProductBaseQuantity,
 } from '@/domain/products/saleUnits';
+import {
+  filterSellableProducts,
+  isProductVisibleForSale,
+} from '@/domain/products/productInventoryLogic';
 import { clearTaxReceiptData } from '@/features/taxReceipt/taxReceiptSlice';
 import { useIsOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
 import { useGetProducts } from '@/firebase/products/fbGetProducts';
@@ -292,7 +296,7 @@ export const Sales = (): JSX.Element => {
 
   const productsList = products;
   const visibleProducts = useMemo(
-    () => productsList.filter((product) => product.isVisible !== false),
+    () => filterSellableProducts(productsList),
     [productsList],
   );
   const sellableProductEntries = useMemo(
@@ -326,13 +330,23 @@ export const Sales = (): JSX.Element => {
         )
     : [];
   const productsByBarcode = useMemo(
-    () => buildSaleBarcodeIndex(productsList),
-    [productsList],
+    () => buildSaleBarcodeIndex(visibleProducts),
+    [visibleProducts],
   );
 
   // NOTA: El bloqueo de clics ahora se maneja mediante un overlay en ProductControlEfficient
 
   const dispatchResolvedScannedProduct = (product: ProductRecord) => {
+    if (!isProductVisibleForSale(product)) {
+      notification.warning({
+        title: 'Producto no vendible',
+        description:
+          'Este artículo es de uso interno y no puede agregarse a la venta.',
+        placement: 'top',
+      });
+      return false;
+    }
+
     const documentCurrency = normalizeSupportedDocumentCurrency(
       cartData?.documentCurrency,
     );

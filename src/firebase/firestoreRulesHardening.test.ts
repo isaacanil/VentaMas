@@ -190,7 +190,20 @@ describe('firestore financial hardening rules', () => {
       /function productPricingUnchanged\(\) \{[\s\S]*?request\.resource\.data\.diff\(resource\.data\)\.affectedKeys\(\)\.hasAny\(\[[\s\S]*?'pricing'[\s\S]*?\]\)/,
     );
     expect(rules).toMatch(
-      /match \/businesses\/\{businessId\}\/products\/\{productId\} \{[\s\S]*?allow create: if hasBusinessWriteAccess\(businessId\)[\s\S]*?hasSynchronizedProductPricing\(request\.resource\.data\);[\s\S]*?allow update: if hasBusinessWriteAccess\(businessId\)[\s\S]*?productPricingUnchanged\(\)[\s\S]*?hasSynchronizedProductPricing\(request\.resource\.data\)/,
+      /match \/businesses\/\{businessId\}\/products\/\{productId\} \{[\s\S]*?allow create: if hasBusinessWriteAccess\(businessId\)[\s\S]*?hasSynchronizedProductPricing\(request\.resource\.data\)[\s\S]*?allow update: if hasBusinessWriteAccess\(businessId\)[\s\S]*?productPricingUnchanged\(\)[\s\S]*?hasSynchronizedProductPricing\(request\.resource\.data\)/,
+    );
+  });
+
+  it('requires a minimally valid component recipe for direct combo product writes', () => {
+    expect(rules).toContain('function hasValidProductCombo(data)');
+    expect(rules).toContain("data.itemType != 'combo'");
+    expect(rules).toContain(
+      "data.combo.get('inventoryPolicy', 'components') == 'components'",
+    );
+    expect(rules).toContain('data.combo.components is list');
+    expect(rules).toContain('data.combo.components.size() > 0');
+    expect(rules).toMatch(
+      /match \/businesses\/\{businessId\}\/products\/\{productId\} \{[\s\S]*?allow create:[\s\S]*?hasValidProductCombo\(request\.resource\.data\)[\s\S]*?allow update:[\s\S]*?hasValidProductCombo\(request\.resource\.data\)/,
     );
   });
 

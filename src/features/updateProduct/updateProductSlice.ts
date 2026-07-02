@@ -21,6 +21,7 @@ const createEmptyProduct = () => ({
   image: '',
   category: '',
   itemType: DEFAULT_PRODUCT_ITEM_TYPE,
+  inventoryRole: null,
   pricing: {
     currency: 'DOP',
     cost: 0,
@@ -60,6 +61,7 @@ const createEmptyProduct = () => ({
   createdBy: 'unknown',
   id: '',
   isVisible: true,
+  isSellable: true,
   trackInventory: true,
   qrcode: '',
   barcode: '',

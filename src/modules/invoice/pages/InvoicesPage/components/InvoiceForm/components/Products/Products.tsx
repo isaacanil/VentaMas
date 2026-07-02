@@ -7,6 +7,10 @@ import type { TablePaginationConfig } from 'antd';
 
 import { icons } from '@/constants/icons/icons';
 import {
+  filterSellableProducts,
+  isProductVisibleForSale,
+} from '@/domain/products/productInventoryLogic';
+import {
   addProductInvoiceForm,
   changeAmountToBuyProduct,
   deleteProductInvoiceForm,
@@ -146,6 +150,10 @@ export const Products = ({ invoice, isEditLocked = false }: ProductsProps) => {
     paginationState,
   } = uiState;
   const { products } = useGetProducts();
+  const sellableProducts = useMemo(
+    () => filterSellableProducts(Array.isArray(products) ? products : []),
+    [products],
+  );
 
   const invoiceProducts = useMemo<InvoiceProduct[]>(
     () => (Array.isArray(invoice?.products) ? invoice.products : []),
@@ -313,6 +321,10 @@ export const Products = ({ invoice, isEditLocked = false }: ProductsProps) => {
   };
   const handleAddProduct = (product: InvoiceProduct) => {
     if (readOnly) return;
+    if (!isProductVisibleForSale(product)) {
+      message.warning('Este artículo es de uso interno y no puede facturarse.');
+      return;
+    }
     dispatch(addProductInvoiceForm({ product }));
     dispatchUi({ type: 'setProductListModalVisible', value: false });
   };
@@ -360,7 +372,7 @@ export const Products = ({ invoice, isEditLocked = false }: ProductsProps) => {
         onClose={() =>
           dispatchUi({ type: 'setProductListModalVisible', value: false })
         }
-        products={Array.isArray(products) ? products : []}
+        products={sellableProducts}
         onAddProduct={handleAddProduct}
         isReadOnly={readOnly}
       />

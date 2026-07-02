@@ -260,6 +260,142 @@ describe('adjustProductInventory', () => {
     });
   });
 
+  it('consumes component stock for virtual combo component prereqs', async () => {
+    const tx = {
+      get: vi.fn(),
+      set: vi.fn(),
+      update: vi.fn(),
+    };
+    const componentSnap = makeSnapshot(
+      'businesses/business-1/products/coffee',
+      {
+        stock: 10,
+      },
+    );
+    const productStockSnap = makeSnapshot(
+      'businesses/business-1/productsStock/stock-coffee',
+      {
+        quantity: 10,
+        unitCost: 20,
+      },
+    );
+    const batchSnap = makeSnapshot(
+      'businesses/business-1/batches/batch-coffee',
+      {
+        numberId: 'B-COFFEE',
+        quantity: 10,
+      },
+    );
+
+    await adjustProductInventory(tx, {
+      user: {
+        businessID: 'business-1',
+        uid: 'user-1',
+      },
+      products: [
+        {
+          id: 'combo-1',
+          name: 'Combo desayuno',
+          itemType: 'combo',
+          amountToBuy: 2,
+          trackInventory: true,
+        },
+      ],
+      sale: {
+        id: 'invoice-1',
+      },
+      accountingSettings: {
+        generalAccountingEnabled: true,
+        rolloutEnabled: true,
+        functionalCurrency: 'DOP',
+      },
+      inventoryPrevreqs: [
+        {
+          index: 'combo-0-0',
+          prod: {
+            id: 'coffee',
+            name: 'Cafe',
+            amountToBuy: 4,
+            baseQuantity: 4,
+            trackInventory: true,
+            productStockId: 'stock-coffee',
+            batchId: 'batch-coffee',
+            lineId: 'combo-line::combo-component::coffee::coffee-line',
+            comboComponent: {
+              id: 'coffee-line',
+              productId: 'coffee',
+              productName: 'Cafe',
+              quantityPerCombo: 2,
+              requestedComboQuantity: 2,
+              requestedBaseQuantity: 4,
+              parentComboId: 'combo-1',
+              parentComboName: 'Combo desayuno',
+              parentLineId: 'combo-line',
+            },
+          },
+          component: true,
+          productSnap: componentSnap,
+          productStockSnap,
+          batchSnap,
+        },
+      ],
+    });
+
+    const productStockUpdate = tx.update.mock.calls.find(
+      ([ref]) => ref.path === 'businesses/business-1/productsStock/stock-coffee',
+    );
+    expect(productStockUpdate?.[1]).toMatchObject({
+      quantity: 6,
+      stock: 6,
+    });
+
+    const productUpdate = tx.update.mock.calls.find(
+      ([ref]) => ref.path === 'businesses/business-1/products/coffee',
+    );
+    expect(productUpdate?.[1]).toMatchObject({
+      stock: 6,
+    });
+
+    const movementCall = tx.set.mock.calls.find(([ref]) =>
+      ref.path.includes('/movements/'),
+    );
+    expect(movementCall?.[1]).toMatchObject({
+      productId: 'coffee',
+      productName: 'Cafe',
+      quantity: 4,
+      requestedQuantity: 4,
+      comboComponent: {
+        parentComboId: 'combo-1',
+        parentComboName: 'Combo desayuno',
+        requestedBaseQuantity: 4,
+      },
+    });
+
+    const accountingEventCall = tx.set.mock.calls.find(
+      ([ref]) =>
+        ref.path ===
+        'businesses/business-1/accountingEvents/inventory.cogs.recorded__invoice-1',
+    );
+    expect(accountingEventCall?.[1]).toMatchObject({
+      monetary: {
+        amount: 80,
+        functionalAmount: 80,
+      },
+      payload: {
+        lines: [
+          expect.objectContaining({
+            productId: 'coffee',
+            quantity: 4,
+            totalCost: 80,
+            comboComponent: expect.objectContaining({
+              parentComboId: 'combo-1',
+            }),
+          }),
+        ],
+      },
+    });
+  });
+
   it('uses auto-resolved stock ids from inventory prereqs for movements and cogs', async () => {
     const tx = {
       get: vi.fn(),

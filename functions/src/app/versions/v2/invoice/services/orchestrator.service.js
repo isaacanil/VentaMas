@@ -63,8 +63,95 @@ const hasSelectedPhysicalStock = (product) =>
     toCleanString(product?.productStockId) && toCleanString(product?.batchId),
   );
 
+const normalizeInventoryItemType = (value, rawType) => {
+  for (const source of [value, rawType]) {
+    const normalized = toCleanString(source)?.toLowerCase();
+    if (!normalized) continue;
+    if (['servicio', 'servicios', 'service', 'services'].includes(normalized)) {
+      return 'service';
+    }
+    if (
+      ['combo', 'combos', 'combinado', 'combinados', 'kit', 'bundle'].includes(
+        normalized,
+      ) ||
+      normalized.includes('combo') ||
+      normalized.includes('kit')
+    ) {
+      return 'combo';
+    }
+    if (['producto', 'productos', 'product', 'products'].includes(normalized)) {
+      return 'product';
+    }
+  }
+
+  return null;
+};
+
+const isServiceInventoryProduct = (product) =>
+  normalizeInventoryItemType(product?.itemType, product?.type) === 'service';
+
 const shouldTrackProductInventory = (product) =>
-  Boolean(product?.trackInventory) || hasSelectedPhysicalStock(product);
+  !isServiceInventoryProduct(product) &&
+  (Boolean(product?.trackInventory) || hasSelectedPhysicalStock(product));
+
+const normalizeInventoryComboComponents = (components) => {
+  if (!Array.isArray(components)) return [];
+
+  const componentsByProductId = new Map();
+  for (const component of components) {
+    const record = asRecord(component);
+    const productId =
+      toCleanString(record.productId) || toCleanString(record.idProduct);
+    const quantity = safeNumber(record.quantity);
+    if (!productId || quantity == null || quantity <= 0) continue;
+
+    const current = componentsByProductId.get(productId) || {
+      id: toCleanString(record.id) || null,
+      productId,
+      productName:
+        toCleanString(record.productName) ||
+        toCleanString(record.name) ||
+        toCleanString(record.label) ||
+        null,
+      quantity: 0,
+      unitName: toCleanString(record.unitName) || null,
+    };
+    current.quantity =
+      Math.round((current.quantity + quantity + Number.EPSILON) * 1_000_000) /
+      1_000_000;
+    if (current.sku === undefined && record.sku != null) {
+      current.sku = record.sku;
+    }
+    componentsByProductId.set(productId, current);
+  }
+
+  return [...componentsByProductId.values()];
+};
+
+const buildInventoryComboSnapshot = (product) => {
+  const itemType = normalizeInventoryItemType(product?.itemType, product?.type);
+  if (itemType !== 'combo') {
+    return {
+      combo: null,
+      itemType,
+    };
+  }
+
+  const combo = asRecord(product?.combo);
+  const inventoryPolicy =
+    toCleanString(combo.inventoryPolicy)?.toLowerCase() === 'self'
+      ? 'self'
+      : 'components';
+
+  return {
+    combo: {
+      enabled: true,
+      inventoryPolicy,
+      components: normalizeInventoryComboComponents(combo.components),
+    },
+    itemType,
+  };
+};
 
 const stripAccents = (value) =>
   String(value || '')
@@ -672,13 +759,17 @@ export async function createPendingInvoice({
     const products = Array.isArray(payload?.cart?.products)
       ? payload.cart.products.map((p) => {
           const selectedSaleUnit = p.selectedSaleUnit || p.saleUnit || null;
+          const comboSnapshot = buildInventoryComboSnapshot(p);
+          const isService = comboSnapshot.itemType === 'service';
           return {
             id: p.id,
             name: p.name,
+            itemType: comboSnapshot.itemType,
+            combo: comboSnapshot.combo,
             amountToBuy: p.amountToBuy,
             baseQuantity: p.baseQuantity,
             lineId: p.lineId || p.cid || null,
-            selectedSaleUnit: selectedSaleUnit
+            selectedSaleUnit: !isService && selectedSaleUnit
               ? {
                   id: selectedSaleUnit.id || null,
                   unitName: selectedSaleUnit.unitName || null,
@@ -702,16 +793,18 @@ export async function createPendingInvoice({
                     : null,
                 }
               : null,
-            weightDetail: p.weightDetail
+            weightDetail: !isService && p.weightDetail
               ? {
                   isSoldByWeight: p.weightDetail.isSoldByWeight === true,
                   weight: p.weightDetail.weight,
                   weightUnit: p.weightDetail.weightUnit || null,
                 }
+              : isService
+                ? { isSoldByWeight: false }
               : null,
             trackInventory: shouldTrackProductInventory(p),
-            productStockId: p.productStockId,
-            batchId: p.batchId,
+            productStockId: isService ? null : p.productStockId,
+            batchId: isService ? null : p.batchId,
           };
         })
       : [];

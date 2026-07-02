@@ -7,9 +7,11 @@ import type { ProductRecord } from '@/types/products';
 import { Footer } from './General.styles';
 import { ProductMediaSidebar } from './components/ProductMediaSidebar';
 import { useGeneralProductForm } from './hooks/useGeneralProductForm';
+import { ComboRecipeEditor } from '../../../ComboRecipeEditor';
+import { ComboAvailabilityInfo } from '../sections/ComboAvailabilityInfo';
 import { InventoryInfo } from '../sections/InventoryInfo';
 import { PriceCalculator } from '../sections/PriceCalculator';
-import { PriceInfo } from '../sections/PriceInfo';
+import { ComboPriceInfo, PriceInfo } from '../sections/PriceInfo';
 import { ProductInfo } from '../sections/ProductInfo';
 import { SaleUnitsInfo } from '../sections/SaleUnitsInfo';
 
@@ -23,6 +25,7 @@ export const General = ({ showImageManager }: GeneralProps) => {
   };
   const {
     form,
+    businessId,
     handleChangeValues,
     handleFormKeyDown,
     handleReset,
@@ -32,6 +35,15 @@ export const General = ({ showImageManager }: GeneralProps) => {
     submit,
     submitLabel,
   } = useGeneralProductForm();
+  const watchedItemType = Form.useWatch('itemType', form);
+  const itemType = watchedItemType ?? product?.itemType;
+  const isCombo = itemType === 'combo';
+  const isService = itemType === 'service';
+  const watchedInventoryRole = Form.useWatch('inventoryRole', form);
+  const inventoryRole = watchedInventoryRole ?? product?.inventoryRole;
+  const isRawMaterial =
+    itemType === 'product' && inventoryRole === 'raw_material';
+
   return (
     <Spin
       description="Cargando..."
@@ -44,37 +56,70 @@ export const General = ({ showImageManager }: GeneralProps) => {
         onFinish={onFinish}
         onValuesChange={handleChangeValues}
         onKeyDown={handleFormKeyDown}
+        scrollToFirstError={{ behavior: 'smooth', block: 'center' }}
         style={{
-          gap: '10px',
-          display: 'grid',
+          minWidth: 0,
+          width: '100%',
         }}
       >
-        <Row gutter={16}>
+        <Row
+          gutter={16}
+          style={{ marginBottom: 10, minWidth: 0, width: '100%' }}
+        >
           <Col
-            span={16}
+            xs={24}
+            lg={isCombo ? 24 : 16}
             style={{
               display: 'grid',
+              minWidth: 0,
             }}
           >
             <Space
               orientation="vertical"
               style={{
+                maxWidth: '100%',
+                minWidth: 0,
                 width: '100%',
               }}
             >
-              <ProductInfo product={product} productBrands={productBrands} />
-              <InventoryInfo />
+              <ProductInfo
+                isCombo={isCombo}
+                isService={isService}
+                isRawMaterial={isRawMaterial}
+                product={product}
+                productBrands={productBrands}
+              />
+              {isCombo ? <ComboAvailabilityInfo /> : null}
+              {!isCombo && !isService ? (
+                <InventoryInfo isRawMaterial={isRawMaterial} />
+              ) : null}
+              {isCombo ? (
+                <ComboRecipeEditor
+                  businessId={businessId}
+                  currentProductId={product?.id}
+                />
+              ) : null}
 
-              <PriceInfo />
+              {isCombo ? (
+                <ComboPriceInfo />
+              ) : (
+                <PriceInfo isService={isService} isRawMaterial={isRawMaterial} />
+              )}
             </Space>
           </Col>
-          <ProductMediaSidebar
-            product={product}
-            showImageManager={showImageManager}
-          />
+          {!isCombo ? (
+            <ProductMediaSidebar
+              isService={isService}
+              isRawMaterial={isRawMaterial}
+              product={product}
+              showImageManager={showImageManager}
+            />
+          ) : null}
         </Row>
-        <PriceCalculator />
-        <SaleUnitsInfo pricing={product?.pricing} />
+        {!isCombo && !isRawMaterial ? <PriceCalculator /> : null}
+        {!isCombo && !isService && !isRawMaterial ? (
+          <SaleUnitsInfo pricing={product?.pricing} />
+        ) : null}
         <Footer>
           <Button htmlType="button" onClick={handleReset}>
             Cancelar

@@ -41,12 +41,12 @@ const columns: TableProps<PriceRow>['columns'] = [
     key: 'amount',
     render: (text: number, record: PriceRow) => (
       <Form.Item
+        initialValue={text}
         name={record.name}
         rules={getPriceRules(record)}
         style={{ margin: 0 }}
       >
         <InputNumber
-          defaultValue={text}
           min={0}
           onFocus={handlePriceNumberFocus}
           step={0.1}
@@ -188,6 +188,7 @@ export const PriceCalculator = () => {
       columns={columns}
       dataSource={tableData}
       pagination={false}
+      scroll={{ x: 'max-content' }}
       size="small"
     />
   );

@@ -35,6 +35,9 @@ type PricingValues = ProductPricingFormValues;
 
 interface PricingSectionProps {
   domId: string;
+  isCombo?: boolean;
+  isService?: boolean;
+  isRawMaterial?: boolean;
   pricingValues?: PricingValues;
 }
 
@@ -230,6 +233,9 @@ const handlePriceNumberFocus = (event: FocusEvent<HTMLInputElement>) => {
 
 export const PricingSection = ({
   domId,
+  isCombo = false,
+  isService = false,
+  isRawMaterial = false,
   pricingValues = EMPTY_PRICING_VALUES,
 }: PricingSectionProps) => {
   const taxationEnabled = useSelector(selectCartTaxationEnabled);
@@ -270,10 +276,20 @@ export const PricingSection = ({
     <SectionCard id={domId}>
       <SectionHeader>
         <Space>
-          <SectionTitle level={4}>Estrategia de precios</SectionTitle>
+          <SectionTitle level={4}>
+            {isCombo
+              ? 'Precio del combo'
+              : isRawMaterial
+                ? 'Costo de materia prima'
+                : 'Estrategia de precios'}
+          </SectionTitle>
         </Space>
         <SectionDescription>
-          Controla tus márgenes antes de publicar.
+          {isCombo
+            ? 'Define la moneda, el precio de venta y el ITBIS del combo.'
+            : isRawMaterial
+              ? 'Registra el costo operativo sin publicar precios de venta.'
+              : 'Controla tus márgenes antes de publicar.'}
         </SectionDescription>
       </SectionHeader>
 
@@ -282,37 +298,76 @@ export const PricingSection = ({
           <Form.Item
             name={['pricing', 'currency']}
             label="Moneda del precio"
-            help="Define la moneda operativa del costo y los precios de este producto."
+            help={`Define la moneda operativa del ${
+              isRawMaterial ? 'costo' : 'costo y los precios'
+            } de este ${
+              isService
+                ? 'servicio'
+                : isCombo
+                  ? 'combo'
+                  : isRawMaterial
+                    ? 'insumo'
+                    : 'producto'
+            }.`}
             rules={[
               { required: true, message: 'Selecciona la moneda del precio.' },
             ]}
           >
             <Select options={CURRENCY_OPTIONS} popupMatchSelectWidth={false} />
           </Form.Item>
-          <Form.Item
-            name={['pricing', 'cost']}
-            label={`Costo (${currencyMarker})`}
-            rules={[
-              { required: true, message: 'Registra el costo base.' },
-              {
-                validator(_, value) {
-                  if (value != null && value !== '' && Number(value) < 0) {
-                    return Promise.reject(
-                      new Error('El costo no puede ser negativo.'),
-                    );
-                  }
-                  return Promise.resolve();
+          {!isCombo ? (
+            <Form.Item
+              name={['pricing', 'cost']}
+              label={`Costo (${currencyMarker})`}
+              rules={[
+                { required: true, message: 'Registra el costo base.' },
+                {
+                  validator(_, value) {
+                    if (value != null && value !== '' && Number(value) < 0) {
+                      return Promise.reject(
+                        new Error('El costo no puede ser negativo.'),
+                      );
+                    }
+                    return Promise.resolve();
+                  },
                 },
-              },
-            ]}
-          >
-            <InputNumber
-              min={0}
-              style={{ width: '100%' }}
-              placeholder="0.00"
-              onFocus={handlePriceNumberFocus}
-            />
-          </Form.Item>
+              ]}
+            >
+              <InputNumber
+                min={0}
+                style={{ width: '100%' }}
+                placeholder="0.00"
+                onFocus={handlePriceNumberFocus}
+              />
+            </Form.Item>
+          ) : null}
+          {isCombo ? (
+            <Form.Item
+              name={['pricing', 'listPrice']}
+              label={`Precio de venta (${currencyMarker})`}
+              rules={[
+                {
+                  required: true,
+                  message: 'Indica el precio de venta.',
+                },
+                {
+                  validator(_, value) {
+                    if (Number(value) > 0) return Promise.resolve();
+                    return Promise.reject(
+                      new Error('El precio debe ser mayor que cero.'),
+                    );
+                  },
+                },
+              ]}
+            >
+              <InputNumber
+                min={0.01}
+                style={{ width: '100%' }}
+                placeholder="0.00"
+                onFocus={handlePriceNumberFocus}
+              />
+            </Form.Item>
+          ) : null}
           <Form.Item
             name={['pricing', 'tax']}
             label="ITBIS %"
@@ -328,9 +383,10 @@ export const PricingSection = ({
           </Form.Item>
         </FieldGrid>
 
-        <div>
-          <Text strong>Lista de precios ({currencyMarker})</Text>
-          <PriceTableWrapper>
+        {!isCombo && !isRawMaterial ? (
+          <div>
+            <Text strong>Lista de precios ({currencyMarker})</Text>
+            <PriceTableWrapper>
             <PriceTableRow $header>
               <span>Tipo</span>
               <span>Monto</span>
@@ -422,12 +478,13 @@ export const PricingSection = ({
                 <NumericCell>{formatCurrency(row.total)}</NumericCell>
               </PriceTableRow>
             ))}
-          </PriceTableWrapper>
-          <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
-            Completa tus precios para ver cómo varían el ITBIS, la ganancia y el
-            total.
-          </Text>
-        </div>
+            </PriceTableWrapper>
+            <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
+              Completa tus precios para ver cómo varían el ITBIS, la ganancia y
+              el total.
+            </Text>
+          </div>
+        ) : null}
       </Space>
     </SectionCard>
   );

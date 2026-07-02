@@ -9,10 +9,14 @@ import type { ProductRecord } from '@/types/products';
 import AdjustInventoryModal from './AdjustInventoryModal';
 
 type InventoryInfoProps = {
+  isRawMaterial?: boolean;
   onSaveAdjustments?: (stock: number, totalUnits: number) => void;
 };
 
-export const InventoryInfo = ({ onSaveAdjustments }: InventoryInfoProps) => {
+export const InventoryInfo = ({
+  isRawMaterial = false,
+  onSaveAdjustments,
+}: InventoryInfoProps) => {
   const { product, status } = useSelector(selectUpdateProductData) as {
     product: ProductRecord;
     status: string | false;
@@ -32,7 +36,7 @@ export const InventoryInfo = ({ onSaveAdjustments }: InventoryInfoProps) => {
   return (
     <Card title="Gestión de Inventarios" id="part-2" size="small">
       <Row gutter={16}>
-        <Col span={12}>
+        <Col xs={24} sm={12}>
           <Form.Item
             name="trackInventory"
             label=""
@@ -40,25 +44,29 @@ export const InventoryInfo = ({ onSaveAdjustments }: InventoryInfoProps) => {
             valuePropName="checked" // Esto es necesario para los Checkbox
             help="Activa o desactiva el seguimiento de inventario para este producto."
           >
-            <Checkbox title="Inventariable">Inventariable</Checkbox>
-          </Form.Item>
-        </Col>
-        <Col span={12}>
-          <Form.Item
-            name="restrictSaleWithoutStock"
-            label=""
-            tooltip="Si está activado, no se podrá vender este producto si no hay stock."
-            valuePropName="checked"
-            help="Si está activado, no se podrá vender este producto si no hay stock."
-          >
-            <Checkbox title="Inventariable">
-              Restringir venta sin stock
+            <Checkbox disabled={isRawMaterial} title="Inventariable">
+              Inventariable
             </Checkbox>
           </Form.Item>
         </Col>
+        {!isRawMaterial ? (
+          <Col xs={24} sm={12}>
+            <Form.Item
+              name="restrictSaleWithoutStock"
+              label=""
+              tooltip="Si está activado, no se podrá vender este producto si no hay stock."
+              valuePropName="checked"
+              help="Si está activado, no se podrá vender este producto si no hay stock."
+            >
+              <Checkbox title="Inventariable">
+                Restringir venta sin stock
+              </Checkbox>
+            </Form.Item>
+          </Col>
+        ) : null}
       </Row>
       <Row gutter={16}>
-        <Col span={12}>
+        <Col xs={24} sm={12}>
           <Form.Item
             name="stock"
             label="Stock"
@@ -77,7 +85,7 @@ export const InventoryInfo = ({ onSaveAdjustments }: InventoryInfoProps) => {
             />
           </Form.Item>
         </Col>
-        <Col span={12}>
+        <Col xs={24} sm={12}>
           <Form.Item
             name="packSize"
             label="Cantidad de Productos por Paquete"
@@ -121,63 +129,67 @@ export const InventoryInfo = ({ onSaveAdjustments }: InventoryInfoProps) => {
             </Grid> */}
 
       <Row gutter={16}>
-        <Col span={12}>
-          <Form.Item
-            name={['weightDetail', 'isSoldByWeight']}
-            label=""
-            valuePropName="checked" // Esto es necesario para los Checkbox
-            help="El precio se calcula por el peso en el momento de la venta."
-          >
-            <Checkbox title="Se vende por peso">Se vende por peso</Checkbox>
-          </Form.Item>
-        </Col>
-        {product?.weightDetail?.isSoldByWeight ? (
+        {!isRawMaterial ? (
           <>
-            <Col span={6}>
+            <Col xs={24} sm={12}>
               <Form.Item
-                name={['weightDetail', 'weight']}
-                label="Peso"
-                rules={[
-                  { required: true, message: 'Indicar el peso.' },
-                  {
-                    type: 'number',
-                    min: 0,
-                    message: 'Introducir un peso valido.',
-                  },
-                ]}
+                name={['weightDetail', 'isSoldByWeight']}
+                label=""
+                valuePropName="checked" // Esto es necesario para los Checkbox
+                help="El precio se calcula por el peso en el momento de la venta."
               >
-                <InputNumber
-                  min={0}
-                  step={0.001}
-                  style={{
-                    width: '100%',
-                  }}
-                />
+                <Checkbox title="Se vende por peso">Se vende por peso</Checkbox>
               </Form.Item>
             </Col>
-            <Col span={6}>
-              <Form.Item
-                name={['weightDetail', 'weightUnit']}
-                label="Unidad de Medida"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Seleccionar una unidad de medida.',
-                  },
-                ]}
-              >
-                <Select
-                  options={unitsOfMeasure.map((unit) => ({
-                    value: unit.unit,
-                    label: unit.unit,
-                  }))}
-                />
-              </Form.Item>
-            </Col>
+            {product?.weightDetail?.isSoldByWeight ? (
+              <>
+                <Col xs={12} sm={6}>
+                  <Form.Item
+                    name={['weightDetail', 'weight']}
+                    label="Peso"
+                    rules={[
+                      { required: true, message: 'Indicar el peso.' },
+                      {
+                        type: 'number',
+                        min: 0,
+                        message: 'Introducir un peso valido.',
+                      },
+                    ]}
+                  >
+                    <InputNumber
+                      min={0}
+                      step={0.001}
+                      style={{
+                        width: '100%',
+                      }}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={12} sm={6}>
+                  <Form.Item
+                    name={['weightDetail', 'weightUnit']}
+                    label="Unidad de Medida"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Seleccionar una unidad de medida.',
+                      },
+                    ]}
+                  >
+                    <Select
+                      options={unitsOfMeasure.map((unit) => ({
+                        value: unit.unit,
+                        label: unit.unit,
+                      }))}
+                    />
+                  </Form.Item>
+                </Col>
+              </>
+            ) : (
+              <Col xs={24} sm={12}></Col>
+            )}
           </>
-        ) : (
-          <Col span={12}></Col>
-        )}
+        ) : null}
 
         <AdjustInventoryModal
           visible={isModalVisible}

@@ -218,6 +218,275 @@ describe('createProduct', () => {
     });
   });
 
+  it('normalizes component-tracked combos without creating initial physical inventory', async () => {
+    prepareLimitedCreateOperationMock.mockResolvedValue({
+      authUid: 'user-1',
+      businessId: 'business-1',
+      input: {
+        businessID: 'business-1',
+        name: 'Combo desayuno',
+        itemType: 'kit',
+        stock: '8',
+        combo: {
+          inventoryPolicy: 'unknown-policy',
+          components: [
+            {
+              id: 'line-1',
+              idProduct: ' coffee ',
+              name: '  Cafe  ',
+              quantity: '2',
+              unitName: 'Unidad',
+              sku: 'CAF-1',
+            },
+            {
+              id: 'line-duplicate',
+              productId: 'coffee',
+              productName: 'Cafe duplicado',
+              quantity: '1.25',
+            },
+            { productId: 'milk', quantity: 0 },
+            { productName: 'Sin producto', quantity: 1 },
+            null,
+          ],
+        },
+      },
+      metricKey: 'productsTotal',
+      incrementBy: 1,
+    });
+
+    await expect(createProduct({ data: {} })).resolves.toEqual({
+      ok: true,
+      productId: 'product-id',
+      businessId: 'business-1',
+    });
+
+    const writesByPath = Object.fromEntries(
+      transactionSetMock.mock.calls.map(([ref, data]) => [ref.path, data]),
+    );
+
+    expect(Object.keys(writesByPath)).toEqual([
+      'businesses/business-1/products/product-id',
+    ]);
+    expect(writesByPath['businesses/business-1/products/product-id']).toEqual(
+      expect.objectContaining({
+        id: 'product-id',
+        businessID: 'business-1',
+        name: 'Combo desayuno',
+        itemType: 'combo',
+        stock: 0,
+        combo: {
+          enabled: true,
+          inventoryPolicy: 'components',
+          components: [
+            {
+              id: 'line-1',
+              productId: 'coffee',
+              productName: 'Cafe',
+              quantity: 3.25,
+              unitName: 'Unidad',
+              sku: 'CAF-1',
+            },
+          ],
+        },
+      }),
+    );
+    expect(getNextIDTransactionalMock).not.toHaveBeenCalled();
+    expect(getDefaultWarehouseMock).not.toHaveBeenCalled();
+    expect(incrementBusinessUsageMetricMock).toHaveBeenCalledWith({
+      businessId: 'business-1',
+      metricKey: 'productsTotal',
+      incrementBy: 1,
+      tx: transaction,
+    });
+  });
+
+  it('normalizes services without creating initial physical inventory', async () => {
+    prepareLimitedCreateOperationMock.mockResolvedValue({
+      authUid: 'user-1',
+      businessId: 'business-1',
+      input: {
+        businessID: 'business-1',
+        name: 'Instalacion',
+        itemType: 'servicio',
+        stock: '8',
+        trackInventory: true,
+        restrictSaleWithoutStock: true,
+        productStockId: 'stock-1',
+        batchId: 'batch-1',
+        saleUnits: [{ id: 'box' }],
+        selectedSaleUnit: { id: 'box' },
+        weightDetail: {
+          isSoldByWeight: true,
+          weight: 2,
+          weightUnit: 'lb',
+        },
+        combo: {
+          inventoryPolicy: 'components',
+          components: [{ productId: 'coffee', quantity: 1 }],
+        },
+      },
+      metricKey: 'productsTotal',
+      incrementBy: 1,
+    });
+
+    await expect(createProduct({ data: {} })).resolves.toEqual({
+      ok: true,
+      productId: 'product-id',
+      businessId: 'business-1',
+    });
+
+    const writesByPath = Object.fromEntries(
+      transactionSetMock.mock.calls.map(([ref, data]) => [ref.path, data]),
+    );
+
+    expect(Object.keys(writesByPath)).toEqual([
+      'businesses/business-1/products/product-id',
+    ]);
+    expect(writesByPath['businesses/business-1/products/product-id']).toEqual(
+      expect.objectContaining({
+        id: 'product-id',
+        businessID: 'business-1',
+        name: 'Instalacion',
+        itemType: 'service',
+        stock: 0,
+        trackInventory: false,
+        restrictSaleWithoutStock: false,
+        totalUnits: null,
+        packSize: 1,
+        saleUnits: [],
+        selectedSaleUnit: null,
+        selectedSaleUnitId: null,
+        productStockId: null,
+        batchId: null,
+        batchInfo: null,
+        weightDetail: expect.objectContaining({ isSoldByWeight: false }),
+        combo: null,
+      }),
+    );
+    expect(getNextIDTransactionalMock).not.toHaveBeenCalled();
+    expect(getDefaultWarehouseMock).not.toHaveBeenCalled();
+    expect(incrementBusinessUsageMetricMock).toHaveBeenCalledWith({
+      businessId: 'business-1',
+      metricKey: 'productsTotal',
+      incrementBy: 1,
+      tx: transaction,
+    });
+  });
+
+  it('normalizes raw materials as inventory-only products with initial stock', async () => {
+    prepareLimitedCreateOperationMock.mockResolvedValue({
+      authUid: 'user-1',
+      businessId: 'business-1',
+      input: {
+        businessID: 'business-1',
+        name: 'Harina',
+        itemType: 'product',
+        inventoryRole: 'materia prima',
+        isSellable: true,
+        isVisible: true,
+        stock: '12',
+        trackInventory: false,
+        restrictSaleWithoutStock: false,
+        pricing: {
+          cost: 40,
+          price: 75,
+          listPrice: 75,
+        },
+        saleUnits: [{ id: 'box' }],
+        selectedSaleUnit: { id: 'box' },
+        selectedSaleUnitId: 'box',
+        qrcode: 'QR-RAW',
+        barcode: 'BAR-RAW',
+        weightDetail: { isSoldByWeight: true, weight: 1, weightUnit: 'lb' },
+        warranty: { status: true, quantity: 1, unit: 'months' },
+      },
+      metricKey: 'productsTotal',
+      incrementBy: 1,
+    });
+
+    await expect(createProduct({ data: {} })).resolves.toEqual({
+      ok: true,
+      productId: 'product-id',
+      businessId: 'business-1',
+    });
+
+    const writesByPath = Object.fromEntries(
+      transactionSetMock.mock.calls.map(([ref, data]) => [ref.path, data]),
+    );
+
+    expect(Object.keys(writesByPath)).toEqual([
+      'businesses/business-1/products/product-id',
+      'businesses/business-1/batches/batch-id',
+      'businesses/business-1/productsStock/stock-id',
+      'businesses/business-1/movements/movement-id',
+    ]);
+    const product = writesByPath['businesses/business-1/products/product-id'];
+    expect(product).toEqual(
+      expect.objectContaining({
+        id: 'product-id',
+        name: 'Harina',
+        itemType: 'product',
+        inventoryRole: 'raw_material',
+        isSellable: false,
+        isVisible: false,
+        stock: 12,
+        trackInventory: true,
+        restrictSaleWithoutStock: true,
+        saleUnits: [],
+        selectedSaleUnit: null,
+        selectedSaleUnitId: null,
+        qrcode: '',
+        barcode: '',
+        warranty: { status: false, quantity: 1, unit: 'months' },
+      }),
+    );
+    expect(product.weightDetail).toEqual(
+      expect.objectContaining({ isSoldByWeight: false }),
+    );
+    expect(product.pricing).toEqual(
+      expect.objectContaining({
+        cost: 40,
+        price: 0,
+        listPrice: 0,
+        avgPrice: 0,
+        minPrice: 0,
+        cardPrice: 0,
+        offerPrice: 0,
+      }),
+    );
+    expect(writesByPath['businesses/business-1/batches/batch-id']).toEqual(
+      expect.objectContaining({
+        productId: 'product-id',
+        quantity: 12,
+      }),
+    );
+  });
+
+  it('rejects component-tracked combos without valid recipe components', async () => {
+    prepareLimitedCreateOperationMock.mockResolvedValue({
+      authUid: 'user-1',
+      businessId: 'business-1',
+      input: {
+        businessID: 'business-1',
+        name: 'Combo vacio',
+        itemType: 'combo',
+        combo: {
+          inventoryPolicy: 'components',
+          components: [{ productId: '', quantity: 1 }],
+        },
+      },
+      metricKey: 'productsTotal',
+      incrementBy: 1,
+    });
+
+    await expect(createProduct({ data: {} })).rejects.toMatchObject({
+      code: 'invalid-argument',
+      message:
+        'Un combo por componentes requiere al menos un producto en la receta.',
+    });
+    expect(runTransactionMock).not.toHaveBeenCalled();
+  });
+
   it('normalizes persisted product pricing so price follows listPrice', async () => {
     prepareLimitedCreateOperationMock.mockResolvedValue({
       authUid: 'user-1',

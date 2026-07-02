@@ -205,11 +205,40 @@ describe('productStockSelection', () => {
     expect(
       shouldResolveProductStockSelection({
         id: 'product-1',
-        itemType: 'service',
-        trackInventory: false,
+        itemType: 'product',
         restrictSaleWithoutStock: true,
       } as never),
     ).toBe(true);
+  });
+
+  it('does not require parent physical stock for component-tracked combos', async () => {
+    const combo = {
+      id: 'combo-1',
+      name: 'Combo desayuno',
+      itemType: 'combo',
+      trackInventory: true,
+      restrictSaleWithoutStock: true,
+      combo: {
+        inventoryPolicy: 'components',
+        components: [{ productId: 'coffee', quantity: 2 }],
+      },
+    } as never;
+
+    expect(shouldResolveProductStockSelection(combo)).toBe(false);
+
+    const result = await resolveProductStockSelection({
+      product: combo,
+      user: { uid: 'user-1', businessID: 'business-1' } as never,
+    });
+
+    expect(getProductStockByProductIdMock).not.toHaveBeenCalled();
+    expect(result).toEqual(
+      expect.objectContaining({
+        kind: 'direct',
+        availableStockCount: 0,
+        availableLocationCount: 0,
+      }),
+    );
   });
 
   it('returns unavailable for strict products without available stock', async () => {

@@ -37,6 +37,34 @@ const createCartProduct = (overrides: Partial<Product> = {}): Product => ({
 });
 
 describe('cartSlice', () => {
+  it('ignora materia prima y productos no vendibles al agregar al carrito', () => {
+    let state = reducer(
+      undefined,
+      addProduct(
+        createCartProduct({
+          id: 'raw-1',
+          inventoryRole: 'raw_material',
+          isSellable: false,
+          isVisible: false,
+        }),
+      ),
+    );
+
+    expect(state.data.products).toHaveLength(0);
+
+    state = reducer(
+      state,
+      addProduct(
+        createCartProduct({
+          id: 'hidden-1',
+          isSellable: false,
+        }),
+      ),
+    );
+
+    expect(state.data.products).toHaveLength(0);
+  });
+
   it('separa lineas por lote o ubicacion y fusiona solo la misma existencia fisica', () => {
     let state = reducer(
       undefined,
@@ -79,6 +107,49 @@ describe('cartSlice', () => {
     expect(state.data.products[0]?.amountToBuy).toBe(1);
     expect(state.data.products[1]?.cid).toBe('medicine-1::stock-b::batch-b');
     expect(state.data.products[1]?.amountToBuy).toBe(2);
+  });
+
+  it('conserva metadata de combo al agregar y fusionar la misma linea comercial', () => {
+    let state = reducer(
+      undefined,
+      addProduct(
+        createCartProduct({
+          id: 'combo-1',
+          itemType: 'combo',
+          combo: {
+            enabled: true,
+            inventoryPolicy: 'components',
+            components: [{ productId: 'coffee', quantity: 2 }],
+          },
+        }),
+      ),
+    );
+
+    state = reducer(
+      state,
+      addProduct(
+        createCartProduct({
+          id: 'combo-1',
+          itemType: 'combo',
+          combo: {
+            enabled: true,
+            inventoryPolicy: 'components',
+            components: [{ productId: 'coffee', quantity: 2 }],
+          },
+        }),
+      ),
+    );
+
+    expect(state.data.products).toHaveLength(1);
+    expect(state.data.products[0]).toMatchObject({
+      id: 'combo-1',
+      itemType: 'combo',
+      amountToBuy: 2,
+      combo: {
+        inventoryPolicy: 'components',
+        components: [{ productId: 'coffee', quantity: 2 }],
+      },
+    });
   });
 
   it('separa lineas por unidad de venta y calcula la cantidad base', () => {

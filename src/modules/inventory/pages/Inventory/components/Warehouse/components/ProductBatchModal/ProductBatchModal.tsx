@@ -256,7 +256,7 @@ type ProductRecord = {
   id: string;
   name?: string;
   restrictSaleWithoutStock?: boolean;
-  selectedSaleUnit?: { id?: string | null } | null;
+  selectedSaleUnit?: { id?: string | null; unitName?: string | null } | null;
 } & Record<string, unknown>;
 
 type ProductStockItem = ProductStockRecord | InventoryStockItem;

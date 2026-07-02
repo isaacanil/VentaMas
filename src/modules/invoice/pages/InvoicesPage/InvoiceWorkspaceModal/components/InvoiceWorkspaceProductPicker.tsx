@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import { VmButton, VmChip, VmInput, VmModal } from '@/components/heroui';
+import { filterSellableProducts } from '@/domain/products/productInventoryLogic';
 import type { InvoiceData, InvoiceProduct } from '@/types/invoice';
 import {
   formatWorkspaceAmount,
@@ -80,7 +81,7 @@ export const InvoiceWorkspaceProductPicker = ({
 
   const visibleProducts = useMemo(() => {
     const safeProducts = Array.isArray(products) ? products : [];
-    return safeProducts
+    return filterSellableProducts(safeProducts)
       .filter((product) => matchesSearch(product, normalizedSearch))
       .slice(0, MAX_VISIBLE_PRODUCTS);
   }, [normalizedSearch, products]);

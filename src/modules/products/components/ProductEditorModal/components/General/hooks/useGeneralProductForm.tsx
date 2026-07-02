@@ -23,13 +23,17 @@ import {
 import {
   buildNormalizedProductSnapshot,
   buildSanitizedProductForSubmit,
-  normalizeItemType,
-  normalizeTrackInventoryValue,
 } from '@/domain/products/normalization';
 import { normalizeChangedProductPricingPatch } from '@/domain/products/pricingForm';
 import type { ProductRecord } from '@/types/products';
 import type { UserWithBusiness } from '@/types/users';
-import { normalizeSaleUnitsChangeForModal } from './useGeneralProductForm.helpers';
+import {
+  normalizeComboChangeForModal,
+  normalizeSaleUnitsChangeForModal,
+  buildInventoryRoleChangePatchForModal,
+  buildItemTypeChangePatchForModal,
+  withComboInventoryPolicyForSubmit,
+} from './useGeneralProductForm.helpers';
 
 interface ValidationError {
   errorFields?: Array<{ errors?: string[] }>;
@@ -52,6 +56,7 @@ export const useGeneralProductForm = () => {
     user?.businessID && user?.uid
       ? (user as UserWithBusiness & { uid: string })
       : null;
+  const businessId = user?.businessID || user?.businessId || null;
 
   const productFormSyncKey = `${status ?? 'unknown'}:${product?.id || 'new'}`;
   const lastSyncedProductKeyRef = useRef<string | null>(null);
@@ -62,7 +67,10 @@ export const useGeneralProductForm = () => {
     if (!normalizedForForm) return;
 
     lastSyncedProductKeyRef.current = productFormSyncKey;
-    form.setFieldsValue(normalizedForForm);
+    form.setFieldsValue({
+      ...normalizedForForm,
+      inventoryRole: normalizedForForm.inventoryRole ?? 'sellable',
+    });
   }, [form, product, productFormSyncKey]);
 
   const handleChangeValues = (
@@ -117,28 +125,41 @@ export const useGeneralProductForm = () => {
       return;
     }
 
-    if (key === 'itemType') {
-      const normalizedItemType = normalizeItemType(value);
-      const trackInventoryValue =
-        normalizedItemType === 'service'
-          ? false
-          : normalizeTrackInventoryValue(
-              product?.trackInventory,
-              normalizedItemType,
-            );
-
+    if (key === 'combo') {
       dispatch(
         ChangeProductData({
           product: {
-            itemType: normalizedItemType,
-            trackInventory: trackInventoryValue,
+            combo: normalizeComboChangeForModal(changeValue, allValues),
           },
         }),
       );
-      form.setFieldsValue({
-        itemType: normalizedItemType,
-        trackInventory: trackInventoryValue,
-      });
+      return;
+    }
+
+    if (key === 'inventoryRole') {
+      const productPatch = buildInventoryRoleChangePatchForModal(
+        value,
+        product,
+      );
+
+      dispatch(
+        ChangeProductData({
+          product: productPatch,
+        }),
+      );
+      form.setFieldsValue(productPatch);
+      return;
+    }
+
+    if (key === 'itemType') {
+      const productPatch = buildItemTypeChangePatchForModal(value, product);
+
+      dispatch(
+        ChangeProductData({
+          product: productPatch,
+        }),
+      );
+      form.setFieldsValue(productPatch);
       return;
     }
 
@@ -177,7 +198,14 @@ export const useGeneralProductForm = () => {
   const onFinish = async (_values: ProductRecord) => {
     setSubmit(true);
     const isUpdatingProduct = status === 'update';
-    const sanitizedProduct = buildSanitizedProductForSubmit(product);
+    const formValues = form.getFieldsValue(true) as Partial<ProductRecord>;
+    const productForSubmit = withComboInventoryPolicyForSubmit({
+      ...product,
+      itemType: formValues.itemType ?? product?.itemType,
+      inventoryRole: formValues.inventoryRole ?? product?.inventoryRole,
+      combo: formValues.combo ?? product?.combo,
+    });
+    const sanitizedProduct = buildSanitizedProductForSubmit(productForSubmit);
 
     if (isUpdatingProduct) {
       if (!userWithBusiness) {
@@ -315,6 +343,7 @@ export const useGeneralProductForm = () => {
 
   return {
     form,
+    businessId,
     handleChangeValues,
     handleFormKeyDown,
     handleReset,

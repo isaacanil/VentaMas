@@ -431,6 +431,19 @@ service cloud.firestore {
         || data.pricing.get('price', null) == data.pricing.get('listPrice', null);
     }
 
+    function hasValidProductCombo(data) {
+      return !data.keys().hasAny(['itemType'])
+        || data.itemType != 'combo'
+        || (
+          data.keys().hasAny(['combo'])
+          && data.combo is map
+          && data.combo.get('inventoryPolicy', 'components') == 'components'
+          && data.combo.keys().hasAny(['components'])
+          && data.combo.components is list
+          && data.combo.components.size() > 0
+        );
+    }
+
     function productPricingUnchanged() {
       return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
         'pricing'
@@ -853,12 +866,14 @@ service cloud.firestore {
     match /businesses/{businessId}/products/{productId} {
       allow read: if hasBusinessAccess(businessId);
       allow create: if hasBusinessWriteAccess(businessId)
-        && hasSynchronizedProductPricing(request.resource.data);
+        && hasSynchronizedProductPricing(request.resource.data)
+        && hasValidProductCombo(request.resource.data);
       allow update: if hasBusinessWriteAccess(businessId)
         && (
           productPricingUnchanged()
           || hasSynchronizedProductPricing(request.resource.data)
-        );
+        )
+        && hasValidProductCombo(request.resource.data);
       allow delete: if hasBusinessWriteAccess(businessId);
     }
 

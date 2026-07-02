@@ -11,6 +11,7 @@ const Bar = styled.div`
 
 interface ActionBarProps {
   isUpdateMode: boolean;
+  itemLabel?: string;
   submitting: boolean;
   onReset: () => void;
   onSubmit: () => void;
@@ -19,6 +20,7 @@ interface ActionBarProps {
 
 export const ActionBar: React.FC<ActionBarProps> = ({
   isUpdateMode,
+  itemLabel = 'producto',
   submitting,
   onReset,
   onSubmit,
@@ -38,7 +40,7 @@ export const ActionBar: React.FC<ActionBarProps> = ({
         onClick={onSubmit}
         loading={submitting}
       >
-        {isUpdateMode ? 'Guardar cambios' : 'Crear producto'}
+        {isUpdateMode ? 'Guardar cambios' : `Crear ${itemLabel}`}
       </Button>
     </Space>
   </Bar>

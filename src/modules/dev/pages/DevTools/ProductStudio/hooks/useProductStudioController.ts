@@ -40,6 +40,7 @@ import {
   type SectionId,
 } from '../utils/sections';
 import {
+  getProductStudioBusinessId,
   getChangedProductPatch,
   getNormalizedProductValues,
   hasBusinessId,
@@ -92,6 +93,7 @@ export const useProductStudioController = () => {
   const { data: productBrands = [] } = useListenProductBrands();
   const { data: activeIngredients = [] } = useListenActiveIngredients();
   const { configureAddProductCategoryModal } = useCategoryState();
+  const businessId = useMemo(() => getProductStudioBusinessId(user), [user]);
 
   const productIdFromParams = useMemo(
     () => new URLSearchParams(location.search).get('productId') || '',
@@ -244,7 +246,11 @@ export const useProductStudioController = () => {
       const key = getFieldKey(changedValues);
       if (!key) return;
       const value =
-        key === 'saleUnits' ? allValues.saleUnits : changedValues[key];
+        key === 'saleUnits'
+          ? allValues.saleUnits
+          : key === 'combo'
+            ? allValues.combo
+            : changedValues[key];
       const isEditingProduct = isUpdateMode || status === 'update';
 
       if (key === 'stock' && isEditingProduct) {
@@ -276,11 +282,8 @@ export const useProductStudioController = () => {
 
       dispatch(ChangeProductData({ product: patch }));
 
-      if (key === 'itemType') {
-        form.setFieldsValue({
-          itemType: patch.itemType,
-          trackInventory: patch.trackInventory,
-        });
+      if (key === 'itemType' || key === 'inventoryRole') {
+        form.setFieldsValue(patch as Partial<ProductFormValues>);
       }
 
       if (key === 'brand' && value !== patch.brand) {
@@ -311,7 +314,13 @@ export const useProductStudioController = () => {
     form
       .validateFields()
       .then(async () => {
-        const productForSubmit = normalizeProductForStudioSubmit(product);
+        const formValues = form.getFieldsValue(true) as Partial<ProductRecord>;
+        const productForSubmit = normalizeProductForStudioSubmit({
+          ...product,
+          itemType: formValues.itemType ?? product?.itemType,
+          inventoryRole: formValues.inventoryRole ?? product?.inventoryRole,
+          combo: formValues.combo ?? product?.combo,
+        });
         const sanitizedProduct =
           buildSanitizedProductForSubmit(productForSubmit);
         if (!sanitizedProduct) {
@@ -439,6 +448,7 @@ export const useProductStudioController = () => {
   return {
     form,
     product,
+    businessId,
     categories,
     activeIngredients,
     previewSnapshot,

@@ -1,5 +1,7 @@
 import type {
   ProductBatchInfo,
+  ProductComboConfig,
+  ProductItemType,
   ProductSaleUnit,
   SupportedDocumentCurrency,
 } from '../../types/products';
@@ -38,6 +40,8 @@ export interface Product {
   id: string;
   cid: string;
   name: string;
+  itemType?: ProductItemType;
+  combo?: ProductComboConfig | null;
   price?: number | { unit?: number | string; total?: number | string };
   amountToBuy: number;
   productStockId?: string;

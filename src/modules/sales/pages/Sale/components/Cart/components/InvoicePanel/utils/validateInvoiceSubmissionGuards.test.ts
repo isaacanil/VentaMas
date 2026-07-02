@@ -161,6 +161,97 @@ describe('validateInvoiceSubmissionGuards', () => {
     expect(getProductStockByProductId).not.toHaveBeenCalled();
   });
 
+  it('permite combos por componentes sin exigir lote fisico del producto padre', async () => {
+    vi.mocked(checkOpenCashReconciliation).mockResolvedValue({
+      state: 'open',
+      cashCount: {} as never,
+    });
+
+    const result = await validateInvoiceSubmissionGuards({
+      cart: {
+        products: [
+          {
+            id: 'combo-1',
+            name: 'Combo desayuno',
+            itemType: 'combo',
+            combo: {
+              inventoryPolicy: 'components',
+              components: [{ productId: 'coffee', quantity: 2 }],
+            },
+            amountToBuy: 1,
+            restrictSaleWithoutStock: true,
+          },
+        ],
+      },
+      user: user as never,
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(getProductStockByProductId).not.toHaveBeenCalled();
+  });
+
+  it('permite servicios aunque tengan flags fisicos heredados', async () => {
+    vi.mocked(checkOpenCashReconciliation).mockResolvedValue({
+      state: 'open',
+      cashCount: {} as never,
+    });
+
+    const result = await validateInvoiceSubmissionGuards({
+      cart: {
+        products: [
+          {
+            id: 'service-1',
+            name: 'Instalacion',
+            itemType: 'service',
+            amountToBuy: 1,
+            restrictSaleWithoutStock: true,
+          },
+        ],
+      },
+      user: user as never,
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(getProductStockByProductId).not.toHaveBeenCalled();
+  });
+
+  it('bloquea el submit cuando el carrito contiene materia prima', async () => {
+    vi.mocked(checkOpenCashReconciliation).mockResolvedValue({
+      state: 'open',
+      cashCount: {} as never,
+    });
+
+    const result = await validateInvoiceSubmissionGuards({
+      cart: {
+        products: [
+          {
+            id: 'raw-1',
+            name: 'Harina',
+            itemType: 'product',
+            inventoryRole: 'raw_material',
+            isSellable: false,
+            isVisible: false,
+            amountToBuy: 1,
+          },
+        ],
+      },
+      user: user as never,
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: false,
+        code: 'non-sellable-product',
+        message: 'Artículo no vendible',
+      }),
+    );
+    if (result.ok) {
+      throw new Error('Se esperaba una falla de artículo no vendible');
+    }
+    expect(result.description).toContain('Harina');
+    expect(getProductStockByProductId).not.toHaveBeenCalled();
+  });
+
   it('bloquea el submit cuando un producto por peso tiene unidad no soportada', async () => {
     vi.mocked(checkOpenCashReconciliation).mockResolvedValue({
       state: 'open',

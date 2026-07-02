@@ -9,6 +9,12 @@ export interface ProductPricingSnapshot {
 }
 
 export interface ProductSnapshot {
+  itemType?: string;
+  inventoryRole?: string | null;
+  isSellable?: boolean;
+  combo?: {
+    inventoryPolicy?: string;
+  } | null;
   pricing?: ProductPricingSnapshot;
   stock?: number | string;
   trackInventory?: boolean;

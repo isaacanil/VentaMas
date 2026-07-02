@@ -5,6 +5,13 @@ import { db } from '@/firebase/firebaseconfig';
 import type { AccountsPayablePayment } from '@/types/payments';
 import { toMillis } from '@/utils/date/toMillis';
 
+import {
+  shouldShowAccountsPayablePayment,
+  type AccountsPayablePaymentVisibilityOptions,
+} from '../utils/accountsPayablePaymentStatus';
+
+export { shouldShowAccountsPayablePayment } from '../utils/accountsPayablePaymentStatus';
+
 const normalizeAccountsPayablePayment = (
   id: string,
   value: unknown,
@@ -12,40 +19,6 @@ const normalizeAccountsPayablePayment = (
   ...(value as AccountsPayablePayment),
   id,
 });
-
-interface UseAccountsPayablePaymentsOptions {
-  includeVoided?: boolean;
-}
-
-const HIDDEN_ACCOUNTS_PAYABLE_PAYMENT_STATUSES = new Set(['draft']);
-const VOIDED_ACCOUNTS_PAYABLE_PAYMENT_STATUSES = new Set([
-  'canceled',
-  'cancelled',
-  'void',
-  'voided',
-]);
-
-export const shouldShowAccountsPayablePayment = (
-  payment: { status?: string | null },
-  options: UseAccountsPayablePaymentsOptions = {},
-): boolean => {
-  const status = String(payment.status ?? '')
-    .trim()
-    .toLowerCase();
-
-  if (HIDDEN_ACCOUNTS_PAYABLE_PAYMENT_STATUSES.has(status)) {
-    return false;
-  }
-
-  if (
-    options.includeVoided !== true &&
-    VOIDED_ACCOUNTS_PAYABLE_PAYMENT_STATUSES.has(status)
-  ) {
-    return false;
-  }
-
-  return true;
-};
 
 interface AccountsPayablePaymentsState {
   error: Error | null;
@@ -95,7 +68,7 @@ export const useAccountsPayablePayments = (
   businessId: string | null | undefined,
   purchaseId: string | null | undefined,
   isOpen: boolean,
-  options: UseAccountsPayablePaymentsOptions = {},
+  options: AccountsPayablePaymentVisibilityOptions = {},
 ) => {
   const [state, dispatchState] = useReducer(reducer, initialState);
   const includeVoided = options.includeVoided === true;

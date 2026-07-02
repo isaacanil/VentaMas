@@ -6,7 +6,6 @@ import { formatPriceByCurrency } from '@/utils/format';
 import { resolveProductLineCurrency } from '@/utils/accounting/lineMonetary';
 import { getWeightedUnitPriceForDisplay } from '@/domain/products/weightPriceDisplay';
 import { resolveProductBaseQuantity } from '@/domain/products/saleUnits';
-import { shouldLabelStockAsBaseUnits } from '../utils/stock.utils';
 
 import {
   getAmountBackground,

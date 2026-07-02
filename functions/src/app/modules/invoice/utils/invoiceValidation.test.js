@@ -576,6 +576,57 @@ describe('invoiceValidation sale unit catalog checks', () => {
     });
   });
 
+  it('freezes combo metadata from the catalog in the trusted cart', async () => {
+    const result = await validateInvoiceCartAgainstCatalog(
+      buildCart({
+        products: [
+          baseProduct({
+            id: 'combo-1',
+            itemType: 'product',
+            combo: {
+              inventoryPolicy: 'components',
+              components: [{ productId: 'client-stale', quantity: 99 }],
+            },
+          }),
+        ],
+      }),
+      {
+        businessId: 'business-1',
+        loadProductCatalog: buildCatalogLoader({
+          product: catalogProduct({
+            id: 'combo-1',
+            type: 'Kit promocional',
+            combo: {
+              inventoryPolicy: 'components',
+              components: [
+                { productId: 'coffee', productName: 'Cafe', quantity: 2 },
+              ],
+            },
+          }),
+        }),
+      },
+    );
+
+    expect(result).toMatchObject({
+      isValid: true,
+      trustedCart: {
+        products: [
+          expect.objectContaining({
+            id: 'combo-1',
+            itemType: 'combo',
+            combo: {
+              enabled: true,
+              inventoryPolicy: 'components',
+              components: [
+                { productId: 'coffee', productName: 'Cafe', quantity: 2 },
+              ],
+            },
+          }),
+        ],
+      },
+    });
+  });
+
   it('rejects inactive products from the catalog', async () => {
     await expect(
       validateInvoiceCartAgainstCatalog(buildCart(), {
@@ -587,6 +638,24 @@ describe('invoiceValidation sale unit catalog checks', () => {
     ).resolves.toMatchObject({
       isValid: false,
       code: INVOICE_VALIDATION_CODES.PRODUCT_INACTIVE,
+    });
+  });
+
+  it('rejects raw materials from the catalog', async () => {
+    await expect(
+      validateInvoiceCartAgainstCatalog(buildCart(), {
+        businessId: 'business-1',
+        loadProductCatalog: buildCatalogLoader({
+          product: catalogProduct({
+            inventoryRole: 'raw_material',
+            isSellable: false,
+            isVisible: false,
+          }),
+        }),
+      }),
+    ).resolves.toMatchObject({
+      isValid: false,
+      code: INVOICE_VALIDATION_CODES.PRODUCT_NOT_SELLABLE,
     });
   });
 

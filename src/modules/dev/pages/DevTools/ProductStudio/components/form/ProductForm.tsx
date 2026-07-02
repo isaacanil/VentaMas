@@ -3,6 +3,7 @@ import type { FormInstance } from 'antd';
 import styled from 'styled-components';
 
 import { CodesSection } from '@/modules/dev/pages/DevTools/ProductStudio/components/sections/CodesSection';
+import { ComboAvailabilitySection } from '@/modules/dev/pages/DevTools/ProductStudio/components/sections/ComboAvailabilitySection';
 import { IdentitySection } from '@/modules/dev/pages/DevTools/ProductStudio/components/sections/IdentitySection';
 import { InventorySection } from '@/modules/dev/pages/DevTools/ProductStudio/components/sections/InventorySection';
 import { PricingSection } from '@/modules/dev/pages/DevTools/ProductStudio/components/sections/PricingSection';
@@ -17,6 +18,7 @@ import type {
 } from '@/types/products';
 import type { SectionId } from '@/modules/dev/pages/DevTools/ProductStudio/utils/sections';
 import type { ProductPricingFormValues } from '@/domain/products/pricingForm';
+import { ComboRecipeEditor } from '@/modules/products/components/ComboRecipeEditor';
 
 const FormWrapper = styled.div`
   width: 100%;
@@ -36,7 +38,11 @@ export type ProductSaleUnitFormValues = Omit<ProductSaleUnit, 'pricing'> & {
   pricing?: PricingValues;
 };
 
-export type ProductFormValues = Omit<ProductRecord, 'pricing' | 'saleUnits'> & {
+export type ProductFormValues = Omit<
+  ProductRecord,
+  'pricing' | 'saleUnits' | 'inventoryRole'
+> & {
+  inventoryRole?: ProductRecord['inventoryRole'] | 'sellable';
   pricing?: PricingValues;
   saleUnits?: ProductSaleUnitFormValues[];
 };
@@ -53,6 +59,7 @@ interface ProductFormProps {
   brandOptions: BrandOption[];
   categories: CategoryDocument[];
   activeIngredients: ActiveIngredient[];
+  businessId?: string | null;
   sectionDomIds: SectionDomIds;
   product?: ProductRecord | null;
   isUpdateMode: boolean;
@@ -70,6 +77,7 @@ export const ProductForm = ({
   brandOptions,
   categories,
   activeIngredients,
+  businessId,
   sectionDomIds,
   product,
   isUpdateMode,
@@ -79,7 +87,17 @@ export const ProductForm = ({
   onOpenImageManager,
   onResetImage,
 }: ProductFormProps) => {
+  const watchedItemType = Form.useWatch('itemType', form);
+  const itemType = watchedItemType ?? product?.itemType;
+  const isCombo = itemType === 'combo';
+  const isService = itemType === 'service';
+  const watchedInventoryRole = Form.useWatch('inventoryRole', form);
+  const inventoryRole = watchedInventoryRole ?? product?.inventoryRole;
+  const isRawMaterial =
+    itemType === 'product' && inventoryRole === 'raw_material';
   const pricingValues = Form.useWatch<PricingValues>('pricing', form);
+  const currentProductId =
+    typeof product?.id === 'string' && product.id.trim() ? product.id : null;
 
   return (
     <FormWrapper>
@@ -96,6 +114,9 @@ export const ProductForm = ({
           style={{ width: '100%', paddingBottom: '12rem' }}
         >
           <IdentitySection
+            isCombo={isCombo}
+            isService={isService}
+            isRawMaterial={isRawMaterial}
             domId={sectionDomIds.identity}
             brandMeta={brandMeta}
             brandOptions={brandOptions}
@@ -109,24 +130,54 @@ export const ProductForm = ({
             onResetImage={onResetImage}
           />
 
-          <PricingSection
-            domId={sectionDomIds.pricing}
-            pricingValues={pricingValues}
-          />
+          {!isCombo ? (
+            <PricingSection
+              domId={sectionDomIds.pricing}
+              isService={isService}
+              isRawMaterial={isRawMaterial}
+              pricingValues={pricingValues}
+            />
+          ) : null}
 
-          <SaleUnitsSection
-            domId={sectionDomIds.saleUnits}
-            pricingValues={pricingValues}
-          />
+          {!isCombo && !isService && !isRawMaterial ? (
+            <SaleUnitsSection
+              domId={sectionDomIds.saleUnits}
+              pricingValues={pricingValues}
+            />
+          ) : null}
 
-          <InventorySection
-            domId={sectionDomIds.inventory}
-            isUpdateMode={isUpdateMode}
-          />
+          {!isCombo && !isService ? (
+            <InventorySection
+              domId={sectionDomIds.inventory}
+              isUpdateMode={isUpdateMode}
+              isRawMaterial={isRawMaterial}
+            />
+          ) : null}
 
-          <WarrantySection domId={sectionDomIds.warranty} />
+          {isCombo ? (
+            <>
+              <ComboAvailabilitySection />
+              <div id={sectionDomIds.combo}>
+                <ComboRecipeEditor
+                  businessId={businessId}
+                  currentProductId={currentProductId}
+                />
+              </div>
+              <PricingSection
+                domId={sectionDomIds.pricing}
+                isCombo
+                pricingValues={pricingValues}
+              />
+            </>
+          ) : null}
 
-          <CodesSection domId={sectionDomIds.codes} product={product} />
+          {!isCombo && !isService && !isRawMaterial ? (
+            <WarrantySection domId={sectionDomIds.warranty} />
+          ) : null}
+
+          {!isCombo && !isService && !isRawMaterial ? (
+            <CodesSection domId={sectionDomIds.codes} product={product} />
+          ) : null}
         </Space>
       </Form>
     </FormWrapper>

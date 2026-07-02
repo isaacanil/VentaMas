@@ -30,6 +30,11 @@ import { useOpenAccountingEntry } from '@/modules/accounting/public';
 import { useAccountsPayablePayments } from '@/modules/accountsPayable/hooks/useAccountsPayablePayments';
 import { useVendorBillControlEvents } from '@/modules/accountsPayable/hooks/useVendorBillControlEvents';
 import {
+  isVoidedAccountsPayablePaymentStatus,
+  resolveAccountsPayablePaymentAccountingEventType,
+  resolveAccountsPayablePaymentStatusTag,
+} from '@/modules/accountsPayable/utils/accountsPayablePaymentStatus';
+import {
   SupplierPaymentVoidModal,
   resolveSupplierPaymentCallableErrorMessage,
 } from '@/modules/orderAndPurchase/public';
@@ -603,6 +608,11 @@ export const AccountsPayableDetailDrawer = ({
                   {visiblePayments.map((payment) => {
                     const settlementSummary =
                       resolvePaymentSettlementSummary(payment);
+                    const isVoidedPayment =
+                      isVoidedAccountsPayablePaymentStatus(payment.status);
+                    const statusTag = resolveAccountsPayablePaymentStatusTag(
+                      payment.status,
+                    );
 
                     return (
                       <PaymentCard key={payment.id}>
@@ -660,10 +670,10 @@ export const AccountsPayableDetailDrawer = ({
                             )}
                           </SettlementGrid>
                         ) : null}
-                        {payment.status === 'void' && payment.voidReason ? (
+                        {isVoidedPayment && payment.voidReason ? (
                           <MetaLine>Motivo: {payment.voidReason}</MetaLine>
                         ) : null}
-                        {payment.status === 'void' &&
+                        {isVoidedPayment &&
                         typeof payment.voidEvidenceNote === 'string' &&
                         payment.voidEvidenceNote.trim() ? (
                           <MetaLine>
@@ -677,9 +687,9 @@ export const AccountsPayableDetailDrawer = ({
                             onClick={() =>
                               openAccountingEntry({
                                 eventType:
-                                  payment.status === 'void'
-                                    ? 'accounts_payable.payment.voided'
-                                    : 'accounts_payable.payment.recorded',
+                                  resolveAccountsPayablePaymentAccountingEventType(
+                                    payment.status,
+                                  ),
                                 sourceDocumentId: payment.id,
                                 sourceDocumentType: 'accountsPayablePayment',
                               })
@@ -706,7 +716,7 @@ export const AccountsPayableDetailDrawer = ({
                               Evidencia pago
                             </Button>
                           ) : null}
-                          {payment.status !== 'void' && canVoidPayments ? (
+                          {!isVoidedPayment && canVoidPayments ? (
                             <Button
                               danger
                               onClick={() => handleVoidPayment(payment)}
@@ -715,13 +725,7 @@ export const AccountsPayableDetailDrawer = ({
                               Anular
                             </Button>
                           ) : null}
-                          <Tag
-                            color={payment.status === 'void' ? 'red' : 'green'}
-                          >
-                            {payment.status === 'void'
-                              ? 'Anulado'
-                              : 'Registrado'}
-                          </Tag>
+                          <Tag color={statusTag.color}>{statusTag.label}</Tag>
                         </ActionsRow>
                       </PaymentCard>
                     );

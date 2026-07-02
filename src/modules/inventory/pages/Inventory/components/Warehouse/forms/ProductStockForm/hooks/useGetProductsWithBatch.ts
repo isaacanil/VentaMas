@@ -7,6 +7,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
+import { shouldResolveProductPhysicalStock } from '@/domain/products/productInventoryLogic';
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
 import type { ProductRecord } from '@/types/products';
@@ -44,7 +45,7 @@ export const getProductsWithBatchListener = (
         id: doc.id, // Incluir el ID del documento si es necesario
         ...(doc.data() as ProductRecord),
       }));
-      onData(productsArray);
+      onData(productsArray.filter(shouldResolveProductPhysicalStock));
     },
     (error) => {
       console.error('Error en la suscripción de productos:', error);

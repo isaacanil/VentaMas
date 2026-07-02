@@ -403,6 +403,135 @@ describe('orchestrator.service', () => {
     });
   });
 
+  it('freezes combo recipe snapshots in the inventory outbox task', async () => {
+    await createPendingInvoice({
+      businessId: 'business-1',
+      userId: 'user-1',
+      idempotencyKey: 'idem-1',
+      payload: {
+        cart: {
+          id: 'cart-combo',
+          products: [
+            {
+              id: 'combo-1',
+              name: 'Combo desayuno',
+              itemType: 'combo',
+              amountToBuy: 2,
+              combo: {
+                inventoryPolicy: 'components',
+                components: [
+                  {
+                    id: 'coffee-line',
+                    productId: 'coffee',
+                    productName: 'Cafe',
+                    quantity: 2,
+                  },
+                ],
+              },
+            },
+          ],
+          payment: { value: 500 },
+          totalPurchaseWithoutTaxes: { value: 500 },
+          totalTaxes: { value: 0 },
+          totalPurchase: { value: 500 },
+        },
+        client: { id: 'client-1' },
+      },
+    });
+
+    const inventoryTaskWrite = tx.set.mock.calls.find(
+      ([ref]) =>
+        ref.path ===
+        'businesses/business-1/invoicesV2/cart-combo/outbox/task-inventory',
+    );
+    expect(inventoryTaskWrite?.[1]).toMatchObject({
+      type: 'updateInventory',
+      payload: {
+        products: [
+          expect.objectContaining({
+            id: 'combo-1',
+            name: 'Combo desayuno',
+            itemType: 'combo',
+            amountToBuy: 2,
+            combo: expect.objectContaining({
+              enabled: true,
+              inventoryPolicy: 'components',
+              components: [
+                expect.objectContaining({
+                  id: 'coffee-line',
+                  productId: 'coffee',
+                  productName: 'Cafe',
+                  quantity: 2,
+                }),
+              ],
+            }),
+          }),
+        ],
+      },
+    });
+  });
+
+  it('cleans service inventory fields in the inventory outbox task', async () => {
+    await createPendingInvoice({
+      businessId: 'business-1',
+      userId: 'user-1',
+      idempotencyKey: 'idem-1',
+      payload: {
+        cart: {
+          id: 'cart-service',
+          products: [
+            {
+              id: 'service-1',
+              name: 'Instalacion',
+              itemType: 'service',
+              amountToBuy: 1,
+              trackInventory: true,
+              productStockId: 'stock-1',
+              batchId: 'batch-1',
+              selectedSaleUnit: {
+                id: 'box-12',
+                quantity: 12,
+                conversionFactorToBase: 12,
+              },
+              weightDetail: {
+                isSoldByWeight: true,
+                weight: 2,
+                weightUnit: 'lb',
+              },
+            },
+          ],
+          payment: { value: 500 },
+          totalPurchaseWithoutTaxes: { value: 500 },
+          totalTaxes: { value: 0 },
+          totalPurchase: { value: 500 },
+        },
+        client: { id: 'client-1' },
+      },
+    });
+
+    const inventoryTaskWrite = tx.set.mock.calls.find(
+      ([ref]) =>
+        ref.path ===
+        'businesses/business-1/invoicesV2/cart-service/outbox/task-inventory',
+    );
+    expect(inventoryTaskWrite?.[1]).toMatchObject({
+      type: 'updateInventory',
+      payload: {
+        products: [
+          expect.objectContaining({
+            id: 'service-1',
+            itemType: 'service',
+            trackInventory: false,
+            productStockId: null,
+            batchId: null,
+            selectedSaleUnit: null,
+            weightDetail: { isSoldByWeight: false },
+          }),
+        ],
+      },
+    });
+  });
+
   it('deriva snapshot monetario sin confiar en cart.monetary del cliente', async () => {
     isAccountingRolloutEnabledForBusinessMock.mockReturnValue(true);
     const trustedMonetary = {

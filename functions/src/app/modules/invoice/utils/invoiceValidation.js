@@ -36,6 +36,7 @@ export const INVOICE_VALIDATION_CODES = Object.freeze({
   CREDIT_NOTE_PAYMENT_INCONSISTENT: 'CREDIT_NOTE_PAYMENT_INCONSISTENT',
   PRODUCT_NOT_FOUND: 'PRODUCT_NOT_FOUND',
   PRODUCT_INACTIVE: 'PRODUCT_INACTIVE',
+  PRODUCT_NOT_SELLABLE: 'PRODUCT_NOT_SELLABLE',
   PRODUCT_PRICE_INCONSISTENT: 'PRODUCT_PRICE_INCONSISTENT',
   PRODUCT_TAX_INCONSISTENT: 'PRODUCT_TAX_INCONSISTENT',
   BASE_QUANTITY_INCONSISTENT: 'BASE_QUANTITY_INCONSISTENT',
@@ -70,6 +71,122 @@ const toCleanString = (value) => {
 
 const normalizeId = (value) => toCleanString(value);
 
+const roundQuantity = (value) =>
+  Math.round((Number(value) + Number.EPSILON) * 1_000_000) / 1_000_000;
+
+const normalizeCatalogItemType = (value, rawType) => {
+  for (const source of [value, rawType]) {
+    const normalized = toCleanString(source)?.toLowerCase();
+    if (!normalized) continue;
+    if (['servicio', 'servicios', 'service', 'services'].includes(normalized)) {
+      return 'service';
+    }
+    if (
+      ['combo', 'combos', 'combinado', 'combinados', 'kit', 'bundle'].includes(
+        normalized,
+      ) ||
+      normalized.includes('combo') ||
+      normalized.includes('kit')
+    ) {
+      return 'combo';
+    }
+    if (['producto', 'productos', 'product', 'products'].includes(normalized)) {
+      return 'product';
+    }
+  }
+
+  return 'product';
+};
+
+const normalizeCatalogInventoryRole = (value, itemType) => {
+  if (itemType !== 'product') return null;
+  const normalized = toCleanString(value)?.toLowerCase().replace(/[\s-]+/g, '_');
+  if (
+    ['raw_material', 'materia_prima', 'insumo', 'ingredient'].includes(
+      normalized,
+    )
+  ) {
+    return 'raw_material';
+  }
+  return null;
+};
+
+const normalizeComboInventoryPolicy = (value) => {
+  const normalized = toCleanString(value)?.toLowerCase();
+  return normalized === 'self' ? 'self' : 'components';
+};
+
+const normalizeComboComponents = (components) => {
+  if (!Array.isArray(components)) return [];
+
+  const normalizedComponents = components
+    .map((component) => {
+      if (!isRecord(component)) return null;
+      const productId = normalizeId(component.productId ?? component.idProduct);
+      const quantity = safeNumber(component.quantity);
+      if (!productId || quantity == null || quantity <= 0) return null;
+
+      const normalized = {
+        productId,
+        quantity,
+      };
+      const id = normalizeId(component.id);
+      const productName = toCleanString(
+        component.productName ?? component.name ?? component.label,
+      );
+      const unitName = toCleanString(component.unitName);
+      if (id) normalized.id = id;
+      if (productName) normalized.productName = productName;
+      if (unitName) normalized.unitName = unitName;
+      if (component.sku !== undefined && component.sku !== null) {
+        normalized.sku = component.sku;
+      }
+      return normalized;
+    })
+    .filter(Boolean);
+
+  const componentsByProductId = new Map();
+  for (const component of normalizedComponents) {
+    const existing = componentsByProductId.get(component.productId);
+    if (!existing) {
+      componentsByProductId.set(component.productId, { ...component });
+      continue;
+    }
+
+    existing.quantity = roundQuantity(existing.quantity + component.quantity);
+    if (!existing.id && component.id) existing.id = component.id;
+    if (!existing.productName && component.productName) {
+      existing.productName = component.productName;
+    }
+    if (!existing.unitName && component.unitName) {
+      existing.unitName = component.unitName;
+    }
+    if (existing.sku === undefined && component.sku !== undefined) {
+      existing.sku = component.sku;
+    }
+  }
+
+  return [...componentsByProductId.values()];
+};
+
+const buildTrustedComboSnapshot = (catalogProduct) => {
+  const itemType = normalizeCatalogItemType(
+    catalogProduct?.itemType,
+    catalogProduct?.type,
+  );
+  if (itemType !== 'combo') return { itemType, combo: null };
+
+  const combo = isRecord(catalogProduct?.combo) ? catalogProduct.combo : {};
+  return {
+    itemType,
+    combo: {
+      enabled: true,
+      inventoryPolicy: normalizeComboInventoryPolicy(combo.inventoryPolicy),
+      components: normalizeComboComponents(combo.components),
+    },
+  };
+};
+
 const hasSupportedOrMissingWeightUnit = (unit) => {
   const cleanUnit = toCleanString(unit);
   return cleanUnit == null || isSupportedWeightUnit(cleanUnit);
@@ -102,6 +219,15 @@ const isInactiveCatalogRecord = (record) => {
   if (record.isDeleted === true || record.deleted === true) return true;
   const status = toCleanString(record.status)?.toLowerCase();
   return status ? INACTIVE_CATALOG_STATUSES.has(status) : false;
+};
+
+const isNonSellableCatalogRecord = (record) => {
+  if (!isRecord(record)) return false;
+  const itemType = normalizeCatalogItemType(record.itemType, record.type);
+  if (normalizeCatalogInventoryRole(record.inventoryRole, itemType)) {
+    return true;
+  }
+  return record.isSellable === false || record.isVisible === false;
 };
 
 const roundCurrency = (value) =>
@@ -944,8 +1070,10 @@ const buildTrustedSaleUnitLine = ({ payloadProduct, catalogProduct, saleUnits })
   if (weightError) return { error: weightError };
 
   const trustedFactor = readSaleUnitFactor(trustedUnit);
+  const trustedComboSnapshot = buildTrustedComboSnapshot(catalogProduct);
   const trustedLine = {
     ...payloadProduct,
+    ...trustedComboSnapshot,
     weightDetail,
     pricing: {
       ...payloadProduct.pricing,
@@ -996,8 +1124,10 @@ const buildTrustedProductLine = ({ payloadProduct, catalogProduct, saleUnits }) 
   } = buildTrustedWeightDetail({ payloadProduct, catalogProduct });
   if (weightError) return { error: weightError };
 
+  const trustedComboSnapshot = buildTrustedComboSnapshot(catalogProduct);
   const trustedLine = {
     ...payloadProduct,
+    ...trustedComboSnapshot,
     weightDetail,
     pricing: {
       ...payloadProduct.pricing,
@@ -1055,6 +1185,13 @@ export async function validateInvoiceCartAgainstCatalog(
       return validationError(
         INVOICE_VALIDATION_CODES.PRODUCT_INACTIVE,
         `El producto ${productId} esta inactivo en el catalogo actual.`,
+        { productId },
+      );
+    }
+    if (isNonSellableCatalogRecord(catalogProduct)) {
+      return validationError(
+        INVOICE_VALIDATION_CODES.PRODUCT_NOT_SELLABLE,
+        `El producto ${productId} no esta disponible para facturacion.`,
         { productId },
       );
     }
